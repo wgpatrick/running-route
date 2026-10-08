@@ -839,7 +839,7 @@ details[open] summary { margin-bottom: 6px; }
       </div>
       <div class="field">
         <label class="label" for="amountIn" id="amountLabel">Miles</label>
-        <input type="text" id="amountIn" class="num" value="7" inputmode="decimal">
+        <input type="text" id="amountIn" class="num" value="7" inputmode="decimal" placeholder="Any">
       </div>
       <div class="field">
         <label class="label" for="paceIn">Pace (min/mi)</label>
@@ -1378,13 +1378,13 @@ function RouterLib() {
             const mx = (g.x[before] + g.x[after]) / 2, my = (g.y[before] + g.y[after]) / 2;
             let r = Math.max(300, (T - base.L) / 2.4);
             let c = null;
-            for (let it = 0; it < 3; it++) {
+            for (let it = 0; it < 5; it++) {
               const v = pick(mx + r * Math.cos(th), my + r * Math.sin(th), 200, bias);
               if (v < 0) break;
               const seq = [S, ...order.slice(0, pos), v, ...order.slice(pos), E];
               c = tryRoute(seq, { kind: 'detour', th });
               if (!c) break;
-              if (Math.abs(c.L - T) / T < 0.04) break;
+              if (Math.abs(c.L - T) / T < 0.025) break;
               r *= Math.max(0.4, Math.min(2.2, 1 + (T - c.L) / Math.max(c.L - base.L, 200)));
             }
             finish(c);
@@ -1397,12 +1397,12 @@ function RouterLib() {
     } else if (S === E && P.shape === 'out-and-back') {
       for (let b = 0; b < bearings; b++) {
         const th = (b / bearings + seed * 0.37) * 2 * Math.PI; let r = T / 2 / 1.25, c = null;
-        for (let it = 0; it < 3; it++) {
+        for (let it = 0; it < 5; it++) {
           const v = pick(sx + r * Math.cos(th), sy + r * Math.sin(th), 200, bias); if (v < 0) break;
           const p1 = search(S, v, C, null); if (!p1) break;
           const p = p1.concat(p1.slice().reverse().map(ae => ~ae));
           c = { path: p, L: pathLength(g, p), nodes: [S, v, S], meta: { kind: 'oab', th } };
-          if (Math.abs(c.L - T) / T < 0.04) break;
+          if (Math.abs(c.L - T) / T < 0.025) break;
           r *= T / c.L;
         }
         finish(c); progress && progress((b + 1) / bearings);
@@ -1415,7 +1415,7 @@ function RouterLib() {
         const th = (b / bearings + seed * 0.37) * 2 * Math.PI;
         const spread = 0.55 + 0.25 * ((b * 7 + seed) % 3) / 2; // vary triangle shape
         let r = S === E ? T / 4.1 : Math.max(250, (T - direct) / 3.2), c = null;
-        for (let it = 0; it < 3; it++) {
+        for (let it = 0; it < 5; it++) {
           let ax, ay, bx, by;
           if (S === E) {
             ax = sx + r * Math.cos(th - spread); ay = sy + r * Math.sin(th - spread);
@@ -1429,13 +1429,15 @@ function RouterLib() {
           if (A < 0 || B < 0) break;
           c = tryRoute([S, A, B, E], { kind: 'loop', th });
           if (!c) break;
-          if (Math.abs(c.L - T) / T < 0.04) break;
+          if (Math.abs(c.L - T) / T < 0.025) break;
           r = S === E ? r * Math.max(0.5, Math.min(1.8, T / c.L)) : Math.max(120, r + (T - c.L) * 0.45);
         }
         finish(c); progress && progress((b + 1) / bearings);
       }
     }
     // rank and keep a diverse top set
+    // when enough candidates hit the distance, drop the ones that miss it
+    if (T) { const ok = cands.filter(c => Math.abs(c.a.length - T) / T <= 0.05); if (ok.length >= Math.min(3, P.count || 3)) cands.splice(0, cands.length, ...ok); }
     cands.sort((a, b) => a.score - b.score);
     const out = [];
     for (const c of cands) {
@@ -1454,6 +1456,186 @@ function RouterLib() {
   return { decode, decodeBase64Gz, geocode, plan, nearestNode, estimateSeconds, gapFactor, normStreet, MI, M_LAT, M_LON };
 }
 if (typeof module !== 'undefined') module.exports = RouterLib;
+
+</script>
+<script>
+// Turns a runner's plain-English request into planner settings.
+// The local parser is deterministic and owns the numbers (distance, time, pace);
+// Claude's reading is merged in for nuance but never invents stops, endpoints or mileage.
+function ParseLib(places) {
+  const KM = 1.609344;
+  const ALIASES = {
+    'bernal': 'Bernal Heights Summit', 'bernal hill': 'Bernal Heights Summit', 'bernal heights': 'Bernal Heights Summit', 'twin peaks': 'Twin Peaks',
+    'christmas tree point': 'Twin Peaks', 'coit': 'Coit Tower', 'telegraph hill': 'Coit Tower', 'mt sutro': 'Mount Sutro', 'mount sutro': 'Mount Sutro', 'sutro forest': 'Mount Sutro',
+    'mt davidson': 'Mount Davidson', 'davidson': 'Mount Davidson',
+    'golden gate park': 'Stow Lake', 'gg park': 'Stow Lake', 'ocean beach': 'Ocean Beach', 'the beach': 'Ocean Beach', 'great highway': 'Ocean Beach', 'embarcadero': 'Ferry Building', 'ferry building': 'Ferry Building',
+    'presidio': 'Crissy Field', 'crissy': 'Crissy Field', 'the marina': 'Palace of Fine Arts', 'palace of fine arts': 'Palace of Fine Arts', 'mclaren': 'McLaren Park Summit', 'glen canyon': 'Glen Canyon Park', 'glen park': 'Glen Canyon Park',
+    'dolores': 'Dolores Park (top)', 'potrero hill': 'McKinley Square', 'mckinley': 'McKinley Square', 'buena vista': 'Buena Vista Park', 'corona heights': 'Corona Heights',
+    'tank hill': 'Tank Hill', 'grand view': 'Grand View Park', 'grandview': 'Grand View Park', 'turtle hill': 'Grand View Park', 'tiled steps': '16th Ave Tiled Steps', 'mosaic steps': '16th Ave Tiled Steps', '16th ave steps': '16th Ave Tiled Steps',
+    'holly park': 'Holly Park', 'billy goat': 'Billy Goat Hill', 'kite hill': 'Kite Hill', 'nob hill': 'Huntington Park', 'huntington park': 'Huntington Park', 'russian hill': 'Russian Hill Park', 'alta plaza': 'Alta Plaza',
+    'lafayette': 'Lafayette Park', 'lake merced': 'Lake Merced', 'stern grove': 'Stern Grove', 'stow lake': 'Stow Lake', 'panhandle': 'Panhandle', 'precita': 'Precita Park',
+    'alamo square': 'Alamo Square', 'painted ladies': 'Alamo Square', 'lone mountain': 'Lone Mountain', 'strawberry hill': 'Strawberry Hill', 'bayview hill': 'Bayview Hill',
+    'mission bay': 'Mission Bay', 'oracle park': 'Oracle Park', 'ballpark': 'Oracle Park', 'ball park': 'Oracle Park', 'aquatic park': 'Alcatraz View: Aquatic Park', 'sutro heights': 'Sutro Heights', 'sutro baths': 'Sutro Heights',
+    "heron's head": "Heron's Head Park", 'herons head': "Heron's Head Park", 'mount olympus': 'Mount Olympus', 'duboce': 'Duboce Park', 'starr king': 'Starr King Open Space', 'diamond heights': 'Walter Haas Playground',
+    'walter haas': 'Walter Haas Playground',
+  };
+  const WORDS = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, thirteen: 13,
+    fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19, twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, ninety: 90 };
+
+  const paceToSec = (p) => { const m = String(p ?? '').trim().match(/^(\d{1,2})(?::(\d{1,2}))?$/); if (!m) return null; const s = (+m[1]) * 60 + (+(m[2] || 0)); return s >= 180 && s <= 1800 ? s : null; };
+  const secToPace = (s) => { s = Math.round(s); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
+
+  // "forty five" -> "45", "twenty-five" -> "25", "a half" stays for later rules
+  function wordsToDigits(t) {
+    t = t.replace(/\b(twenty|thirty|forty|fifty)[ -](one|two|three|four|five|six|seven|eight|nine)\b/g, (_, a, b) => String(WORDS[a] + WORDS[b]));
+    return t.replace(/\b(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|ninety)\b/g, (w) => String(WORDS[w]));
+  }
+
+  function mentionedPlaces(text) {
+    const t = ' ' + text.toLowerCase().replace(/[^a-z0-9' ]+/g, ' ').replace(/\s+/g, ' ') + ' ';
+    const out = []; const used = [];
+    const keys = Object.keys(ALIASES).concat(places.map(p => p.name.toLowerCase().replace(/ \(.*\)/, '').replace(/[^a-z0-9' ]+/g, ' ').trim()));
+    for (const k of [...new Set(keys)].sort((a, b) => b.length - a.length)) {
+      const i = t.indexOf(' ' + k + ' ');
+      if (i < 0 || used.some(([a, b]) => i + 1 < b && i + 1 + k.length > a)) continue;
+      used.push([i + 1, i + 1 + k.length]);
+      const name = ALIASES[k] || places.find(p => p.name.toLowerCase().replace(/ \(.*\)/, '').replace(/[^a-z0-9' ]+/g, ' ').trim() === k)?.name;
+      if (name && !out.some(o => o.name === name)) out.push({ name, at: i });
+    }
+    return out.sort((a, b) => a.at - b.at).map(o => o.name);
+  }
+
+  function localParse(text) {
+    const r = { distanceMi: null, minutes: null, pace: null, hill: null, fast: false, trails: false, avoidSteps: false, shape: null, dests: [], hillTop: false, start: null, end: null };
+    let t = ' ' + wordsToDigits(text.toLowerCase().replace(/[–—]/g, '-')).replace(/\s+/g, ' ') + ' ';
+    let m;
+    // --- pace first, then remove it so "12 min pace" is never read as a 12 minute run ---
+    const PACE_CUE = String.raw`(?:\s*(?:min(?:ute)?s?|mins?)?\s*(?:\/\s*mi(?:le)?|per mi(?:le)?|pace|min(?:ute)?s? ?\/ ?mi|[- ]?min(?:ute)?s? miles?|[- ]?min(?:ute)? mile pace|miles?\b(?= pace)))`;
+    const paceRes = [
+      new RegExp(String.raw`\b(\d{1,2}):(\d{2})s?` + PACE_CUE, 'g'),                       // 8:30 pace, 8:30/mi, 8:30 min miles
+      new RegExp(String.raw`\b(\d{1,2}(?:\.\d+)?)[- ]?(?:min(?:ute)?s?)\s*(?:\/\s*mi(?:le)?|per mi(?:le)?|pace|miles?|mile pace)`, 'g'), // 12 min pace, 12-minute miles
+      /\bpace (?:of |around |about |at )?(\d{1,2})(?::(\d{2}))?\b/g,                       // pace of 9:30 / pace 9
+      /\bat (?:an? |about |around )?(\d{1,2}):(\d{2})s?\b(?!\s*(?:am|pm|hours?|hrs?))/g,     // at 7:15 (bare)
+    ];
+    for (const re of paceRes) {
+      re.lastIndex = 0; m = re.exec(t);
+      if (m) {
+        let sec;
+        if (m[2] !== undefined && /:/.test(m[0])) sec = (+m[1]) * 60 + (+m[2]);
+        else if (m[2] !== undefined) sec = (+m[1]) * 60 + (+m[2]);
+        else sec = Math.round(parseFloat(m[1]) * 60);
+        if (sec >= 180 && sec <= 1800) { r.pace = secToPace(sec); t = t.slice(0, m.index) + ' ' + t.slice(m.index + m[0].length); break; }
+      }
+    }
+    // --- duration ---
+    let mins = null;
+    if ((m = t.match(/\b(\d{1,2}):(\d{2}):(\d{2})\b/))) { mins = (+m[1]) * 60 + (+m[2]) + (+m[3]) / 60; t = t.replace(m[0], ' '); }
+    else if ((m = t.match(/\bfor (\d{1,2}):(\d{2})\b/))) { mins = (+m[1]) * 60 + (+m[2]); t = t.replace(m[0], ' '); }
+    if (mins == null) {
+      let h = 0, found = false;
+      if ((m = t.match(/\b(\d+(?:\.\d+)?)\s*(?:-\s*)?(?:h|hr|hrs|hours?)\b(?:\s*(?:and\s+)?(?:a\s+)?(half|quarter|3 quarters))?/))) {
+        h = parseFloat(m[1]) + (m[2] === 'half' ? 0.5 : m[2] === 'quarter' ? 0.25 : m[2] ? 0.75 : 0); found = true; t = t.replace(m[0], ' ');
+      } else if ((m = t.match(/\b(\d+)h(\d{1,2})\b/))) { h = +m[1] + (+m[2]) / 60; found = true; t = t.replace(m[0], ' '); }
+      else if ((m = t.match(/\bhalf (?:an )?hour\b/))) { h = 0.5; found = true; t = t.replace(m[0], ' '); }
+      else if ((m = t.match(/\b(?:an?|1) (half|quarter)?\s*hour(?: and an? (half|quarter))?\b/))) {
+        h = m[1] === 'half' ? 0.5 : m[1] === 'quarter' ? 0.25 : 1; if (m[2] === 'half') h += 0.5; if (m[2] === 'quarter') h += 0.25; found = true; t = t.replace(m[0], ' ');
+      } else if ((m = t.match(/\bhalf (?:an )?hour\b/))) { h = 0.5; found = true; t = t.replace(m[0], ' '); }
+      if ((m = t.match(/\b(\d+(?:\.\d+)?)\s*(?:-\s*)?(?:m|min|mins|minutes?)\b(?!\s*(?:\/|per|pace|miles?))/))) { mins = h * 60 + parseFloat(m[1]); t = t.replace(m[0], ' '); }
+      else if (found) mins = h * 60;
+    }
+    if (mins != null && mins > 0) r.minutes = Math.round(mins);
+    // --- distance ---
+    if (/\bhalf[- ]marathon\b/.test(t)) r.distanceMi = 13.1;
+    else if (/\bmarathon\b/.test(t)) r.distanceMi = 26.2;
+    else if ((m = t.match(/\b(\d+(?:\.\d+)?)\s*(?:-\s*)?(?:k|km|kms|kilometers?|kilometres?)\b/))) r.distanceMi = +(parseFloat(m[1]) / KM).toFixed(2);
+    else if ((m = t.match(/\b(\d+(?:\.\d+)?)\s*(?:-\s*)?(?:mi|miles?|mile)\b/))) r.distanceMi = parseFloat(m[1]);
+    else if ((m = t.match(/\b(\d+(?:\.\d+)?) and a half (?:mi|miles?)\b/))) r.distanceMi = parseFloat(m[1]) + 0.5;
+    else if (/\b(?:a|1) mile\b/.test(t)) r.distanceMi = 1;
+    // --- character of the run ---
+    if (/\b(flat|flatish|recovery|easy|gentle|no hills|avoid hills|avoid the hills|level|not hilly|without hills)\b/.test(t)) r.hill = 'flat';
+    if (/\b(rolling|some hills|a few hills|moderate|a little climbing|bit of climbing)\b/.test(t)) r.hill = 'rolling';
+    if (!/\b(no hills|avoid (?:the )?hills|not hilly|without hills)\b/.test(t) && /\b(hilly|hills|climb|climbing|climbs|vert|steep|elevation|uphill|hill (?:workout|repeats|run|training|session))\b/.test(t) && !/\b(a few hills|some hills|a little climbing|bit of climbing)\b/.test(t)) r.hill = 'hilly';
+    if (/\b(max(imum)? (climb|climbing|hills|vert)|brutal|all the hills|as much climbing|hill repeats|lots of climbing|most climbing|as hilly as)\b/.test(t)) r.hill = 'max';
+    if (/\b(fast|tempo|speed|speedy|race pace|pr|threshold|workout|intervals|quick pace)\b/.test(t)) { r.fast = true; if (!r.hill) r.hill = 'flat'; }
+    if (/\b(trails?|dirt|nature|woods|forest|unpaved|off[- ]road|through the parks?|in the park)\b/.test(t)) r.trails = true;
+    if (/\b(no stairs|avoid stairs|no steps|avoid steps|without stairs|skip the stairs)\b/.test(t)) r.avoidSteps = true;
+    if (/\b(out[- ]and[- ]back|out & back|there and back|and back|turn around)\b/.test(t)) r.shape = 'out-and-back';
+    if (/\b(hill ?tops?|summit|summits|peaks?|views?|viewpoint|overlook|lookout|vista|top of a hill|up a hill)\b/.test(t)) r.hillTop = true;
+    // --- places, start, end ---
+    if ((m = text.match(/\b(?:end(?:ing)?|finish(?:ing)?|stop(?:ping)?)\s+(?:up\s+)?(?:at|on|near|by)\s+(?:the\s+)?([^,.;]+)/i))) r.end = m[1].replace(/\s+(?:and|with|via|through)\b.*$/i, '').trim();
+    if ((m = text.match(/\b(?:start(?:ing)?|begin(?:ning)?)\s+(?:at|on|near|from)\s+(?:the\s+)?([^,.;]+?)(?=\s+(?:to|then|ending|end|finish|run|for|with|going)\b|\s+\d+(?:\.\d+)?\s*(?:mi|miles?|k|km|min|minutes?)\b|[,.;]|$)/i)) ||
+        (m = text.match(/\bfrom\s+(?:the\s+)?(\d+\s+[a-z0-9 ]+?(?:st|street|ave|avenue|blvd|way|rd|road|dr|drive|pl|place|ter|terrace)\b|[a-z0-9 ]+?\s*(?:&|and)\s*[a-z0-9 ]+?(?=\s+(?:to|then|ending)\b|[,.;]|$))/i))) r.start = m[1].trim();
+    if (!r.start && (m = text.match(/\bfrom\s+(?:the\s+)?([^,.;]+)/i))) { // "from <known place>"
+      const pl = mentionedPlaces(m[1].split(/\s+(?:to|then|and|ending|end|finish|run|for|with|via|through)\b/i)[0]);
+      if (pl.length) r.start = pl[0];
+    }
+    const HOMEW = /^(home|my (?:house|place|home|apartment)|the house)$/i;
+    if (r.start && HOMEW.test(r.start)) r.start = null;
+    if (r.end && HOMEW.test(r.end)) r.end = r.start ? 'home' : null; // finishing at home only matters when starting elsewhere
+    const endPlaces = r.end ? mentionedPlaces(r.end) : [], startPlaces = r.start ? mentionedPlaces(r.start) : [];
+    r.dests = mentionedPlaces(text).filter(n => !endPlaces.includes(n) && !startPlaces.includes(n));
+    if (r.dests.length) r.hillTop = false;
+    if (r.distanceMi == null && r.minutes == null) {
+      if (/\b(long|longer|longish)\b/.test(t)) r.distanceMi = 9;
+      else if (/\b(short|quick|shakeout|shake out)\b/.test(t)) r.distanceMi = 3;
+    }
+    return r;
+  }
+
+  // Merge Claude's JSON reading with the local parse. Claude can refine terrain and flags;
+  // numbers come from the text whenever the text states them, and places must be named in the text.
+  function mergeClaude(text, local, c) {
+    if (!c || typeof c !== 'object') return local;
+    const num = (v) => (typeof v === 'number' && isFinite(v) && v > 0 ? v : null);
+    const r = { ...local, summary: typeof c.summary === 'string' ? c.summary.slice(0, 120) : null };
+    // numbers: trust the text first
+    if (local.minutes == null && local.distanceMi == null) {
+      const cm = num(c.duration_minutes), cd = num(c.distance_miles);
+      if (cm) r.minutes = Math.round(cm);
+      else if (cd) r.distanceMi = Math.round(cd * 100) / 100;
+    }
+    if (!local.pace && paceToSec(c.pace)) r.pace = secToPace(paceToSec(c.pace));
+    // flags
+    if (['flat', 'rolling', 'hilly', 'max'].includes(c.terrain)) r.hill = c.terrain;
+    for (const [k, ck] of [['fast', 'fast'], ['trails', 'trails'], ['avoidSteps', 'avoid_stairs']]) if (typeof c[ck] === 'boolean') r[k] = c[ck] || local[k];
+    if (c.shape === 'out-and-back' || c.shape === 'loop') r.shape = local.shape || c.shape;
+    // places: only ones the runner actually named
+    const named = mentionedPlaces(text);
+    const cd = Array.isArray(c.destinations) ? c.destinations.filter(n => named.includes(n)) : [];
+    const endPl = r.end ? mentionedPlaces(r.end) : [];
+    r.dests = (cd.length ? cd.concat(local.dests.filter(n => !cd.includes(n))) : local.dests).filter(n => !endPl.includes(n));
+    const hillWords = /\b(hill ?tops?|summit|peaks?|views?|viewpoint|overlook|lookout|vista|hill)\b/i.test(text);
+    r.hillTop = !r.dests.length && (local.hillTop || (c.hilltop === true && hillWords));
+    // endpoints: only when the runner signalled one
+    if (!local.end && typeof c.end === 'string' && c.end.trim() && /\b(end|ending|finish|finishing|stop|stopping|to)\b/i.test(text) && !/^home$/i.test(c.end.trim())) {
+      const e = c.end.trim();
+      if (text.toLowerCase().includes(e.toLowerCase().split(/[ ,]/)[0])) r.end = e;
+    }
+    if (!local.start && typeof c.start === 'string' && c.start.trim() && /\b(start|starting|from|begin)\b/i.test(text) && !/^home$/i.test(c.start.trim())) {
+      const s = c.start.trim();
+      if (text.toLowerCase().includes(s.toLowerCase().split(/[ ,]/)[0])) r.start = s;
+    }
+    return r;
+  }
+
+  // Decide distance vs time mode and the target mileage.
+  function resolve(r, currentPace) {
+    let pace = r.pace && paceToSec(r.pace) ? r.pace : currentPace;
+    let mode, amount;
+    if (r.minutes && r.distanceMi) { // both given: plan the distance, derive the pace
+      mode = 'distance'; amount = r.distanceMi;
+      if (!r.pace) { const s = r.minutes * 60 / r.distanceMi; if (s >= 180 && s <= 1800) pace = secToPace(s); }
+    } else if (r.minutes) { mode = 'time'; amount = r.minutes; }
+    else if (r.distanceMi) { mode = 'distance'; amount = Math.round(r.distanceMi * 100) / 100; }
+    else if (r.dests.length || r.end) { mode = 'distance'; amount = null; } // no length asked: just go there
+    else { mode = 'distance'; amount = 5; }
+    const miles = amount == null ? null : mode === 'distance' ? amount : amount * 60 / paceToSec(pace);
+    return { mode, amount, pace, miles };
+  }
+
+  return { localParse, mergeClaude, resolve, mentionedPlaces, paceToSec, secToPace };
+}
+if (typeof module !== 'undefined') module.exports = ParseLib;
 
 </script>
 <script>
@@ -1486,61 +1668,11 @@ const EXAMPLES = [
   '45 min tempo at 7:15 pace, trails if possible',
 ];
 
-// ---------- natural language: quick local parser ----------
-function paceToSec(p) { const m = String(p).match(/^(\d{1,2})(?::(\d{1,2}))?$/); return m ? (+m[1]) * 60 + (+(m[2] || 0)) : null; }
+// ---------- natural language ----------
+let PL = null; // ParseLib, created once places are loaded
+const paceToSec = (p) => { const m = String(p ?? '').trim().match(/^(\d{1,2})(?::(\d{1,2}))?$/); return m ? (+m[1]) * 60 + (+(m[2] || 0)) : null; };
 function secToPace(s) { s = Math.round(s); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
 function fmtDur(s) { s = Math.round(s); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), ss = s % 60; return h ? `${h}:${String(m).padStart(2, '0')}:${String(ss).padStart(2, '0')}` : `${m}:${String(ss).padStart(2, '0')}`; }
-
-const ALIASES = {
-  'bernal': 'Bernal Heights Summit', 'bernal hill': 'Bernal Heights Summit', 'bernal heights': 'Bernal Heights Summit', 'twin peaks': 'Twin Peaks',
-  'coit': 'Coit Tower', 'telegraph hill': 'Coit Tower', 'sutro': 'Mount Sutro', 'mt sutro': 'Mount Sutro', 'mt davidson': 'Mount Davidson', 'davidson': 'Mount Davidson',
-  'golden gate park': 'Stow Lake', 'gg park': 'Stow Lake', 'ocean': 'Ocean Beach', 'beach': 'Ocean Beach', 'embarcadero': 'Ferry Building', 'ferry building': 'Ferry Building',
-  'presidio': 'Crissy Field', 'crissy': 'Crissy Field', 'marina': 'Palace of Fine Arts', 'mclaren': 'McLaren Park Summit', 'glen canyon': 'Glen Canyon Park', 'glen park': 'Glen Canyon Park',
-  'dolores': 'Dolores Park (top)', 'potrero': 'McKinley Square', 'potrero hill': 'McKinley Square', 'buena vista': 'Buena Vista Park', 'corona heights': 'Corona Heights',
-  'tank hill': 'Tank Hill', 'grand view': 'Grand View Park', 'turtle hill': 'Grand View Park', 'tiled steps': '16th Ave Tiled Steps', 'mosaic steps': '16th Ave Tiled Steps',
-  'holly park': 'Holly Park', 'billy goat': 'Billy Goat Hill', 'kite hill': 'Kite Hill', 'nob hill': 'Huntington Park', 'russian hill': 'Russian Hill Park', 'alta plaza': 'Alta Plaza',
-  'lafayette': 'Lafayette Park', 'lake merced': 'Lake Merced', 'stern grove': 'Stern Grove', 'stow lake': 'Stow Lake', 'panhandle': 'Panhandle', 'precita': 'Precita Park',
-  'alamo square': 'Alamo Square', 'painted ladies': 'Alamo Square', 'lone mountain': 'Lone Mountain', 'strawberry hill': 'Strawberry Hill', 'bayview hill': 'Bayview Hill',
-  'mission bay': 'Mission Bay', 'oracle park': 'Oracle Park', 'ballpark': 'Oracle Park', 'aquatic park': 'Alcatraz View: Aquatic Park', 'sutro heights': 'Sutro Heights',
-  'heron': "Heron's Head Park", 'mount olympus': 'Mount Olympus', 'duboce': 'Duboce Park', 'starr king': 'Starr King Open Space', 'diamond heights': 'Walter Haas Playground',
-};
-function localParse(text) {
-  const t = ' ' + text.toLowerCase().replace(/[–—]/g, '-') + ' ';
-  const r = { distanceMi: null, minutes: null, pace: null, hill: null, fast: false, trails: false, avoidSteps: false, shape: null, dests: [], hillTop: false, start: null, end: null };
-  let m;
-  if ((m = t.match(/half[- ]marathon/))) r.distanceMi = 13.1;
-  else if ((m = t.match(/(\d+(?:\.\d+)?)\s*(?:-\s*)?(k|km|kilometers?|kms)\b/))) r.distanceMi = +m[1] / 1.609344;
-  else if ((m = t.match(/(\d+(?:\.\d+)?)\s*(?:-\s*)?(mi|miles?|mile)\b/))) r.distanceMi = +m[1];
-  if ((m = t.match(/(\d+(?:\.\d+)?)\s*(?:-\s*)?(h|hr|hrs|hours?)\b/))) r.minutes = +m[1] * 60;
-  else if (/\b(an|one) hour\b/.test(t)) r.minutes = 60;
-  else if (/\bhalf (an )?hour\b/.test(t)) r.minutes = 30;
-  if ((m = t.match(/(\d+)\s*(?:-\s*)?(m|min|mins|minutes?)\b/))) r.minutes = (r.minutes || 0) + +m[1];
-  if ((m = t.match(/(\d{1,2}:\d{2})\s*(?:\/\s*mi|min\/mi|per mile|pace|min miles?)?/))) r.pace = m[1];
-  if (/\b(flat|recovery|easy|gentle|no hills|avoid hills)\b/.test(t)) r.hill = 'flat';
-  if (/\b(rolling|some hills|moderate)\b/.test(t)) r.hill = 'rolling';
-  if (/\b(hilly|hills|climb|climbing|vert|steep|elevation)\b/.test(t)) r.hill = 'hilly';
-  if (/\b(max(imum)? (climb|climbing|hills|vert)|brutal|all the hills|as much climbing|hill repeats|lots of climbing)\b/.test(t)) r.hill = 'max';
-  if (/\b(fast|tempo|speed|quick|race pace|pr|threshold|workout)\b/.test(t)) { r.fast = true; if (!r.hill) r.hill = 'flat'; }
-  if (/\b(trails?|dirt|nature|woods|forest|unpaved|off[- ]road|through the parks?)\b/.test(t)) r.trails = true;
-  if (/\b(no stairs|avoid stairs|no steps|avoid steps)\b/.test(t)) r.avoidSteps = true;
-  if (/\b(out[- ]and[- ]back|out & back|there and back|and back)\b/.test(t)) r.shape = 'out-and-back';
-  if (/\b(hill ?tops?|summit|peak|views?|viewpoint|overlook|lookout|hill)\b/.test(t)) r.hillTop = true;
-  // named places
-  const found = new Set();
-  for (const k of Object.keys(ALIASES).sort((a, b) => b.length - a.length)) {
-    if (t.includes(' ' + k) && ![...found].some(f => f.includes(k))) { found.add(k); r.dests.push(ALIASES[k]); }
-  }
-  if (G) for (const p of G.places) { const n = p.name.toLowerCase().replace(/ \(.*\)/, ''); if (t.includes(n) && !r.dests.includes(p.name)) r.dests.push(p.name); }
-  r.dests = [...new Set(r.dests)];
-  if ((m = text.match(/\b(?:end(?:ing)?|finish(?:ing)?)\s+(?:at|on|near)\s+(?:the\s+)?([^,.;]+)/i))) { r.end = m[1].trim(); r.dests = r.dests.filter(d => !m[1].toLowerCase().includes(d.toLowerCase().replace(/ \(.*\)/, ''))); }
-  if ((m = text.match(/\b(?:start(?:ing)?|from|begin(?:ning)?)\s+(?:at|on|near)?\s*(?:the\s+)?([^,.;]+?)(?:\s+(?:to|and|ending|end)\b|[,.;]|$)/i))) r.start = m[1].trim();
-  if (r.dests.length) r.hillTop = false;
-  if (r.distanceMi == null && r.minutes == null) {
-    if (/\blong\b/.test(t)) r.distanceMi = 9;
-    else if (/\bshort\b|\bquick\b/.test(t)) r.distanceMi = 3;
-  }
-  return r;
-}
 
 // ---------- natural language: Claude ----------
 let samplePromise = null;
@@ -1559,7 +1691,9 @@ Reply with only JSON, no prose:
  "terrain": "flat"|"rolling"|"hilly"|"max"|null, "fast": boolean, "trails": boolean, "avoid_stairs": boolean,
  "shape": "loop"|"out-and-back"|null, "destinations": [exact names from the list, in visiting order],
  "hilltop": boolean, "start": string|null, "end": string|null, "summary": string}
-Rules: "long" with no number means 9 miles, "short" means 3. "fast"/"tempo" means fast=true and flatter terrain unless hills are asked for.
+Rules: only list destinations the runner explicitly named; never add stops on your own (a "flat" or "easy" run has no destinations unless named).
+Copy numbers exactly as stated; do not compute a distance from a time. "12 min pace" is a pace, not a duration.
+"long" with no number means 9 miles, "short" means 3. "fast"/"tempo" means fast=true and flatter terrain unless hills are asked for.
 "cool hilltop"/"a view" with no named place means hilltop=true and no destinations. start/end are only set when the runner names a different place or address (an address, intersection, or a name from the list); null means home.
 Convert km to miles. summary is a short phrase restating the plan (max 12 words).`;
   try {
@@ -1568,15 +1702,9 @@ Convert km to miles. summary is a short phrase restating the plan (max 12 words)
   } catch (e) { if (e && e.code === 'not_granted') samplePromise = Promise.resolve(null); return null; }
 }
 
-function applyParse(r, fromClaude) {
-  if (fromClaude) {
-    const c = r;
-    r = { distanceMi: c.distance_miles ?? null, minutes: c.duration_minutes ?? null, pace: c.pace || null, hill: c.terrain || null, fast: !!c.fast, trails: !!c.trails,
-      avoidSteps: !!c.avoid_stairs, shape: c.shape || null, dests: (c.destinations || []).filter(n => G.places.some(p => p.name === n)), hillTop: !!c.hilltop, start: c.start || null, end: c.end || null, summary: c.summary };
-  }
-  if (r.pace && paceToSec(r.pace)) S.pace = r.pace;
-  if (r.minutes && !r.distanceMi) { S.mode = 'time'; S.amount = Math.round(r.minutes); }
-  else if (r.distanceMi) { S.mode = 'distance'; S.amount = Math.round(r.distanceMi * 10) / 10; }
+function applyParse(r) {
+  const v = PL.resolve(r, S.pace);
+  S.pace = v.pace; S.mode = v.mode; S.amount = v.amount == null ? null : Math.round(v.amount * 100) / 100;
   S.hill = r.hill || (r.hillTop || r.dests.length ? 'hilly' : 'rolling');
   if (r.hillTop && S.hill === 'flat') S.hill = 'rolling';
   S.fast = r.fast; S.trails = r.trails; S.avoidSteps = r.avoidSteps; S.shape = r.shape || 'loop';
@@ -1585,25 +1713,30 @@ function applyParse(r, fromClaude) {
   syncForm();
   return r;
 }
+function targetMiles() {
+  if (S.amount == null || !(S.amount > 0)) return null;
+  return S.mode === 'distance' ? S.amount : S.amount * 60 / (paceToSec(S.pace) || 510);
+}
 
 function describeSettings(r) {
   const bits = [];
-  bits.push(S.mode === 'distance' ? `<b>${S.amount} mi</b>` : `<b>${S.amount} min</b> at ${S.pace}/mi`);
+  const tm = targetMiles();
+  bits.push(tm == null ? '<b>any distance</b>' : S.mode === 'distance' ? `<b>${S.amount} mi</b>` : `<b>${S.amount} min</b> at ${S.pace}/mi = <b>${tm.toFixed(2)} mi</b>`);
   bits.push(`<b>${{ flat: 'flat', rolling: 'rolling', hilly: 'hilly', max: 'max climbing' }[S.hill]}</b>`);
   if (S.fast) bits.push('fast');
   if (S.trails) bits.push('trails');
   if (S.hillTop) bits.push('to a hilltop');
   if (S.dests.length) bits.push('via ' + S.dests.join(', '));
-  bits.push(S.shape === 'out-and-back' ? 'out & back' : (S.endText ? 'to ' + esc(S.endText) : 'loop'));
+  bits.push(S.shape === 'out-and-back' ? 'out & back' : (S.endText ? 'finish at ' + esc(S.endText) : 'loop'));
   if (S.startText && S.startText !== '339 Elsie St') bits.push('from ' + esc(S.startText));
-  return (r && r.summary ? esc(r.summary) + ' · ' : 'Read as ') + bits.join(' · ');
+  return 'Planning ' + bits.join(' · ');
 }
 const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 // ---------- form sync ----------
 function syncForm() {
   $('startIn').value = S.startText; $('endIn').value = S.endText;
-  $('amountIn').value = S.amount; $('paceIn').value = S.pace;
+  $('amountIn').value = S.amount == null ? '' : S.amount; $('paceIn').value = S.pace;
   $('amountLabel').textContent = S.mode === 'distance' ? 'Miles' : 'Minutes';
   for (const [id, v] of [['modeSeg', S.mode], ['shapeSeg', S.shape], ['hillSeg', S.hill]])
     for (const b of $(id).querySelectorAll('button')) b.classList.toggle('on', b.dataset.v === v);
@@ -1623,10 +1756,10 @@ function syncForm() {
 }
 function readForm() {
   S.startText = $('startIn').value.trim(); S.endText = $('endIn').value.trim();
-  const a = parseFloat($('amountIn').value); if (a > 0) S.amount = a;
+  const a = parseFloat($('amountIn').value); S.amount = a > 0 ? a : null;
   if (paceToSec($('paceIn').value.trim())) { S.pace = $('paceIn').value.trim(); savePrefs(); }
 }
-function wireSeg(id, key) { $(id).addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; S[key] = b.dataset.v; if (key === 'mode') { readForm(); S.amount = S.mode === 'time' ? Math.round(S.amount * paceToSec(S.pace) / 60) : Math.round(S.amount * 60 / paceToSec(S.pace) * 10) / 10; } syncForm(); }); }
+function wireSeg(id, key) { $(id).addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; S[key] = b.dataset.v; if (key === 'mode') { readForm(); if (S.amount != null) S.amount = S.mode === 'time' ? Math.round(S.amount * paceToSec(S.pace) / 60) : Math.round(S.amount * 60 / paceToSec(S.pace) * 10) / 10; } syncForm(); }); }
 wireSeg('modeSeg', 'mode'); wireSeg('shapeSeg', 'shape'); wireSeg('hillSeg', 'hill');
 for (const [id, k] of [['tFast', 'fast'], ['tTrails', 'trails'], ['tSteps', 'avoidSteps'], ['tHill', 'hillTop']]) $(id).onclick = () => { S[k] = !S[k]; if (k === 'hillTop' && S[k]) S.dests = []; syncForm(); };
 for (const ex of EXAMPLES) { const b = document.createElement('button'); b.className = 'chip'; b.textContent = ex; b.onclick = () => { $('prompt').value = ex; onAsk(); }; $('examples').appendChild(b); }
@@ -1637,11 +1770,11 @@ function setStatus(html, busy) { $('status').innerHTML = (busy ? '<span class="s
 async function onAsk() {
   if (!G) return;
   const text = $('prompt').value.trim();
-  const local = applyParse(localParse(text), false);
+  const local = applyParse(PL.localParse(text));
   $('understood').innerHTML = describeSettings(local);
   setStatus('Reading your request…', true);
   const ai = await Promise.race([claudeParse(text), new Promise(r => setTimeout(() => r(null), 15000))]);
-  if (ai) { const r = applyParse(ai, true); $('understood').innerHTML = describeSettings(r); $('aiHint').textContent = 'Interpreted by Claude'; }
+  if (ai) { const r = applyParse(PL.mergeClaude(text, local, ai)); $('understood').innerHTML = describeSettings(r); $('aiHint').textContent = 'Interpreted by Claude'; }
   else $('aiHint').textContent = '';
   seed = 0; runPlan();
 }
@@ -1654,10 +1787,10 @@ function runPlan() {
   if (S.endText) { end = lib.geocode(G, S.endText, HOME); if (!end) { setStatus(`Couldn't find “${esc(S.endText)}”. Try an address, an intersection, or pick on the map.`); return; } }
   S.start = start; S.end = end;
   const paceSec = paceToSec(S.pace) || 510;
-  const miles = S.mode === 'distance' ? S.amount : S.amount * 60 / paceSec;
+  const miles = targetMiles();
   const P = {
     start, end: end && (Math.abs(end.lat - start.lat) + Math.abs(end.lon - start.lon) > 1e-5) ? end : null,
-    targetM: miles > 0 ? miles * MI : null, hill: S.hill, fast: S.fast, trails: S.trails, avoidSteps: S.avoidSteps,
+    targetM: miles ? miles * MI : null, hill: S.hill, fast: S.fast, trails: S.trails, avoidSteps: S.avoidSteps,
     shape: S.endText ? 'loop' : S.shape, hillTop: S.hillTop, seed,
     destinations: S.dests.map(n => G.places.find(p => p.name === n)).filter(Boolean),
   };
@@ -1669,7 +1802,8 @@ function runPlan() {
     results = m.res.routes; sel = 0;
     if (!results.length) { setStatus('No route found. Try a different start or a shorter distance.'); renderAll(); return; }
     const off = P.targetM ? results[0].length / P.targetM : 1;
-    setStatus(`${results.length} options · ${m.res.ms} ms` + (P.targetM && off > 1.15 ? ' · the required stops make this longer than you asked for' : ''));
+    const minL = Math.min(...results.map(r => r.length));
+    setStatus(`${results.length} option${results.length > 1 ? 's' : ''}` + (P.targetM ? ` for ${(P.targetM / MI).toFixed(2)} mi` : '') + (P.targetM && minL > P.targetM * 1.1 ? ` · going through ${esc(S.dests.join(' and ') || 'those stops')} takes at least ${(minL / MI).toFixed(1)} mi from here` : ''));
     renderAll(); fitRoute();
   };
   worker.postMessage({ type: 'plan', id, P, paceSec });
@@ -1991,7 +2125,8 @@ async function boot() {
   $('mapLoading').hidden = true;
   worker = new Worker(URL.createObjectURL(new Blob([WORKER_SRC], { type: 'text/javascript' })));
   await new Promise((res) => { worker.onmessage = (e) => { if (e.data.type === 'ready') res(); }; worker.postMessage({ type: 'init', b64 }); });
-  const local = applyParse(localParse($('prompt').value), false);
+  PL = ParseLib(G.places);
+  const local = applyParse(PL.localParse($('prompt').value));
   $('understood').innerHTML = describeSettings(local);
   runPlan();
 }

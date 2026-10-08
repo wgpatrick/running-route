@@ -485,13 +485,13 @@ function RouterLib() {
             const mx = (g.x[before] + g.x[after]) / 2, my = (g.y[before] + g.y[after]) / 2;
             let r = Math.max(300, (T - base.L) / 2.4);
             let c = null;
-            for (let it = 0; it < 3; it++) {
+            for (let it = 0; it < 5; it++) {
               const v = pick(mx + r * Math.cos(th), my + r * Math.sin(th), 200, bias);
               if (v < 0) break;
               const seq = [S, ...order.slice(0, pos), v, ...order.slice(pos), E];
               c = tryRoute(seq, { kind: 'detour', th });
               if (!c) break;
-              if (Math.abs(c.L - T) / T < 0.04) break;
+              if (Math.abs(c.L - T) / T < 0.025) break;
               r *= Math.max(0.4, Math.min(2.2, 1 + (T - c.L) / Math.max(c.L - base.L, 200)));
             }
             finish(c);
@@ -504,12 +504,12 @@ function RouterLib() {
     } else if (S === E && P.shape === 'out-and-back') {
       for (let b = 0; b < bearings; b++) {
         const th = (b / bearings + seed * 0.37) * 2 * Math.PI; let r = T / 2 / 1.25, c = null;
-        for (let it = 0; it < 3; it++) {
+        for (let it = 0; it < 5; it++) {
           const v = pick(sx + r * Math.cos(th), sy + r * Math.sin(th), 200, bias); if (v < 0) break;
           const p1 = search(S, v, C, null); if (!p1) break;
           const p = p1.concat(p1.slice().reverse().map(ae => ~ae));
           c = { path: p, L: pathLength(g, p), nodes: [S, v, S], meta: { kind: 'oab', th } };
-          if (Math.abs(c.L - T) / T < 0.04) break;
+          if (Math.abs(c.L - T) / T < 0.025) break;
           r *= T / c.L;
         }
         finish(c); progress && progress((b + 1) / bearings);
@@ -522,7 +522,7 @@ function RouterLib() {
         const th = (b / bearings + seed * 0.37) * 2 * Math.PI;
         const spread = 0.55 + 0.25 * ((b * 7 + seed) % 3) / 2; // vary triangle shape
         let r = S === E ? T / 4.1 : Math.max(250, (T - direct) / 3.2), c = null;
-        for (let it = 0; it < 3; it++) {
+        for (let it = 0; it < 5; it++) {
           let ax, ay, bx, by;
           if (S === E) {
             ax = sx + r * Math.cos(th - spread); ay = sy + r * Math.sin(th - spread);
@@ -536,13 +536,15 @@ function RouterLib() {
           if (A < 0 || B < 0) break;
           c = tryRoute([S, A, B, E], { kind: 'loop', th });
           if (!c) break;
-          if (Math.abs(c.L - T) / T < 0.04) break;
+          if (Math.abs(c.L - T) / T < 0.025) break;
           r = S === E ? r * Math.max(0.5, Math.min(1.8, T / c.L)) : Math.max(120, r + (T - c.L) * 0.45);
         }
         finish(c); progress && progress((b + 1) / bearings);
       }
     }
     // rank and keep a diverse top set
+    // when enough candidates hit the distance, drop the ones that miss it
+    if (T) { const ok = cands.filter(c => Math.abs(c.a.length - T) / T <= 0.05); if (ok.length >= Math.min(3, P.count || 3)) cands.splice(0, cands.length, ...ok); }
     cands.sort((a, b) => a.score - b.score);
     const out = [];
     for (const c of cands) {
