@@ -1,0 +1,778 @@
+<title>SF Morning Runs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>/*LEAFLET_CSS*/</style>
+<style>
+/* Layout: control rail on the left, topo map filling the right with the elevation profile docked under it; stacks on phones. */
+:root {
+  --bg: #e9ece7; --panel: #f6f7f3; --ink: #18201d; --muted: #5b6862; --line: #d2d8d1;
+  --accent: #1e6b5c; --accent-ink: #ffffff; --accent-soft: #d6e7e1;
+  --land-lo: #eef0ea; --land-hi: #d9d2c0; --water: #c9dbe2; --contour: rgba(90,80,60,.28); --street: rgba(24,32,29,.55); --street-major: rgba(24,32,29,.8); --trail: #3f7d4a;
+  --g0: #2e9e6f; --g1: #d9b62b; --g2: #e7802c; --g3: #d33d36; --g4: #8e2b7d;
+  --casing: #ffffff; --shadow: 0 1px 2px rgba(20,30,25,.08), 0 6px 20px rgba(20,30,25,.08);
+  --f-display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --f-body: "Instrument Sans", "Helvetica Neue", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #111614; --panel: #171e1b; --ink: #e5ebe7; --muted: #95a39d; --line: #2a3430;
+  --accent: #5cc0a6; --accent-ink: #0b1411; --accent-soft: #1d3730;
+  --land-lo: #1a201d; --land-hi: #3a382f; --water: #10222a; --contour: rgba(220,210,180,.16); --street: rgba(229,235,231,.42); --street-major: rgba(229,235,231,.7); --trail: #7cc68a;
+  --casing: #0d1210; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.3); color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #111614; --panel: #171e1b; --ink: #e5ebe7; --muted: #95a39d; --line: #2a3430;
+  --accent: #5cc0a6; --accent-ink: #0b1411; --accent-soft: #1d3730;
+  --land-lo: #1a201d; --land-hi: #3a382f; --water: #10222a; --contour: rgba(220,210,180,.16); --street: rgba(229,235,231,.42); --street-major: rgba(229,235,231,.7); --trail: #7cc68a;
+  --casing: #0d1210; --shadow: 0 1px 2px rgba(0,0,0,.3), 0 6px 20px rgba(0,0,0,.3); color-scheme: dark; }
+
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.45 var(--f-body); }
+* { box-sizing: border-box; }
+button, input, select { font: inherit; color: inherit; }
+.app { display: grid; grid-template-columns: minmax(340px, 420px) minmax(0, 1fr); height: 100%; }
+.rail-top { display: flex; flex-direction: column; gap: 18px; }
+.rail { overflow-y: auto; border-right: 1px solid var(--line); background: var(--panel); padding: 20px 20px 32px; display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+.stage { display: grid; grid-template-rows: minmax(0, 1fr) auto; min-width: 0; min-height: 0; }
+#map { min-height: 0; background: var(--bg); }
+@media (max-width: 860px) {
+  .app { grid-template-columns: 1fr; height: auto; }
+  .app { display: flex; flex-direction: column; }
+  .rail { display: contents; }
+  .rail-top { order: 1; background: var(--panel); padding: 16px 16px 20px; }
+  .stage { order: 2; grid-template-rows: 60vh auto; }
+  .detail { order: 3; background: var(--panel); padding: 20px 16px 32px; border-top: 1px solid var(--line); }
+  .detail:empty { display: none; }
+}
+
+.brand { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.brand h1 { font: 800 26px/1.05 var(--f-display); letter-spacing: -.02em; margin: 0; text-wrap: balance; }
+.brand .home { font: 12px var(--f-mono); color: var(--muted); white-space: nowrap; }
+.label { font: 600 11px/1 var(--f-body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+.ask { display: flex; flex-direction: column; gap: 8px; }
+.ask textarea { width: 100%; min-height: 64px; resize: vertical; border: 1.5px solid var(--line); background: var(--bg); border-radius: 10px; padding: 10px 12px; font: 500 16px/1.35 var(--f-body); color: var(--ink); }
+.ask textarea:focus { outline: none; border-color: var(--accent); }
+.ask-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.btn { border: 0; border-radius: 999px; padding: 9px 16px; font-weight: 600; cursor: pointer; background: var(--accent); color: var(--accent-ink); }
+.btn:hover { filter: brightness(1.06); }
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.btn:focus-visible, .chip:focus-visible, .seg button:focus-visible, .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn[disabled] { opacity: .55; cursor: progress; }
+.examples { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 4px 10px; font-size: 13px; cursor: pointer; color: var(--muted); }
+.chip:hover { color: var(--ink); border-color: var(--muted); }
+.chip.on { background: var(--accent-soft); color: var(--ink); border-color: var(--accent); }
+.understood { font-size: 13px; color: var(--muted); min-height: 1.4em; }
+.understood b { color: var(--ink); font-weight: 600; }
+
+.form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 10px; }
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.field.wide { grid-column: 1 / -1; }
+.field input[type=text] { width: 100%; border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 7px 10px; min-width: 0; }
+.field input:focus { outline: none; border-color: var(--accent); }
+.inline { display: flex; gap: 6px; align-items: center; }
+.inline input { flex: 1; }
+.pickbtn { border: 1px solid var(--line); background: transparent; border-radius: 8px; padding: 6px 8px; cursor: pointer; font-size: 12px; color: var(--muted); white-space: nowrap; }
+.pickbtn.on { border-color: var(--accent); color: var(--accent); }
+.num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.seg { display: flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+.seg button { flex: 1; border: 0; background: transparent; padding: 7px 4px; cursor: pointer; font-size: 13px; color: var(--muted); }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button.on { background: var(--ink); color: var(--panel); }
+.toggles { display: flex; flex-wrap: wrap; gap: 6px; }
+.hint { font-size: 12px; color: var(--muted); }
+.dests { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.dests .chip.on::after { content: " ×"; }
+
+.status { font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: center; min-height: 20px; }
+.spinner { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--accent); animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+
+.cards { display: flex; flex-direction: column; gap: 10px; }
+.card { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; cursor: pointer; background: var(--bg); display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; text-align: left; width: 100%; }
+.card.on { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--panel); }
+.card .tag { grid-row: span 3; font: 800 22px/1 var(--f-display); color: var(--muted); padding-top: 2px; }
+.card.on .tag { color: var(--accent); }
+.card .name { font: 700 16px/1.2 var(--f-display); min-width: 0; }
+.card .stats { display: flex; flex-wrap: wrap; gap: 4px 14px; font: 13px var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.card .stats b { color: var(--ink); font-weight: 500; }
+.card svg { width: 100%; height: 30px; display: block; }
+
+.detail { display: flex; flex-direction: column; gap: 14px; }
+.kpis { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+.kpi { border-top: 2px solid var(--ink); padding-top: 6px; }
+.kpi .v { font: 700 22px/1.1 var(--f-display); font-variant-numeric: tabular-nums; }
+.kpi .v small { font: 500 12px var(--f-mono); color: var(--muted); margin-left: 2px; }
+.kpi .k { font-size: 12px; color: var(--muted); }
+.gradebar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+.list { display: flex; flex-direction: column; }
+.list .row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 10px; padding: 6px 0; border-bottom: 1px dashed var(--line); font-size: 14px; }
+.list .row span:last-child { font: 13px var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+details summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+details[open] summary { margin-bottom: 6px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.actions a.btn { text-decoration: none; display: inline-block; }
+.toast { font-size: 13px; color: var(--accent); min-height: 1.2em; }
+
+.profile { border-top: 1px solid var(--line); background: var(--panel); padding: 10px 16px 12px; position: relative; }
+.profile-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.profile-head .readout { font: 13px var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+#profile { width: 100%; height: 150px; display: block; touch-action: none; }
+#profile text { fill: var(--muted); font: 11px var(--f-mono); }
+#profile .grid { stroke: var(--line); stroke-width: 1; }
+#profile .cursor { stroke: var(--ink); stroke-width: 1; }
+
+/* map chrome */
+.leaflet-container { background: var(--bg); font-family: var(--f-body); }
+.leaflet-control-zoom a { background: var(--panel) !important; color: var(--ink) !important; border-color: var(--line) !important; }
+.leaflet-control-attribution { background: color-mix(in srgb, var(--panel) 80%, transparent) !important; color: var(--muted) !important; font-size: 10px; }
+.leaflet-control-attribution a { color: var(--muted) !important; }
+.peak-label { font: 600 11px/1.1 var(--f-body); color: var(--ink); white-space: nowrap; text-shadow: 0 0 3px var(--bg), 0 0 3px var(--bg), 0 0 3px var(--bg); pointer-events: none; }
+.peak-label small { font: 10px var(--f-mono); color: var(--muted); display: block; }
+.pin { width: 16px; height: 16px; border-radius: 50%; border: 3px solid var(--casing); box-shadow: 0 0 0 1.5px var(--ink); }
+.pin.start { background: var(--accent); }
+.pin.end { background: var(--ink); }
+.pin.hover { width: 12px; height: 12px; background: var(--ink); border-width: 2px; }
+.map-loading[hidden] { display: none; }
+.map-loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 14px; z-index: 500; pointer-events: none; }
+.stage { position: relative; }
+.empty { color: var(--muted); font-size: 14px; }
+</style>
+
+<div class="app">
+  <aside class="rail">
+   <div class="rail-top">
+    <div class="brand">
+      <h1>SF Morning Runs</h1>
+      <span class="home" id="homeLabel">⌂ 339 Elsie St</span>
+    </div>
+
+    <section class="ask">
+      <label class="label" for="prompt">Describe the run</label>
+      <textarea id="prompt" rows="2">go to a cool hilltop with a 7 mile long route</textarea>
+      <div class="ask-row">
+        <button class="btn" id="planBtn">Plan routes</button>
+        <button class="btn ghost" id="shuffleBtn" title="Same settings, new variations">Shuffle</button>
+        <span class="hint" id="aiHint"></span>
+      </div>
+      <div class="examples" id="examples"></div>
+      <div class="understood" id="understood"></div>
+    </section>
+
+    <section class="form" aria-label="Run settings">
+      <div class="field wide">
+        <label class="label" for="startIn">Start</label>
+        <div class="inline"><input type="text" id="startIn" value="339 Elsie St" autocomplete="off"><button class="pickbtn" id="pickStart">Pick on map</button></div>
+      </div>
+      <div class="field wide">
+        <label class="label" for="endIn">Finish</label>
+        <div class="inline"><input type="text" id="endIn" placeholder="Same as start" autocomplete="off"><button class="pickbtn" id="pickEnd">Pick on map</button></div>
+      </div>
+      <div class="field">
+        <span class="label">Plan by</span>
+        <div class="seg" id="modeSeg"><button data-v="distance" class="on">Distance</button><button data-v="time">Time</button></div>
+      </div>
+      <div class="field">
+        <label class="label" for="amountIn" id="amountLabel">Miles</label>
+        <input type="text" id="amountIn" class="num" value="7" inputmode="decimal">
+      </div>
+      <div class="field">
+        <label class="label" for="paceIn">Pace (min/mi)</label>
+        <input type="text" id="paceIn" class="num" value="8:30" inputmode="numeric">
+      </div>
+      <div class="field">
+        <span class="label">Shape</span>
+        <div class="seg" id="shapeSeg"><button data-v="loop" class="on">Loop</button><button data-v="out-and-back">Out &amp; back</button></div>
+      </div>
+      <div class="field wide">
+        <span class="label">Terrain</span>
+        <div class="seg" id="hillSeg"><button data-v="flat">Flat</button><button data-v="rolling" class="on">Rolling</button><button data-v="hilly">Hilly</button><button data-v="max">Max climb</button></div>
+      </div>
+      <div class="field wide">
+        <div class="toggles">
+          <button class="chip" id="tFast" aria-pressed="false">Fast / tempo</button>
+          <button class="chip" id="tTrails" aria-pressed="false">Prefer trails &amp; parks</button>
+          <button class="chip" id="tSteps" aria-pressed="false">Avoid stairs</button>
+          <button class="chip" id="tHill" aria-pressed="false">Include a hilltop</button>
+        </div>
+      </div>
+      <div class="field wide">
+        <span class="label">Go through</span>
+        <div class="dests" id="dests"></div>
+        <details>
+          <summary class="hint">Add a hill or spot</summary>
+          <div class="dests" id="placePicker"></div>
+        </details>
+      </div>
+    </section>
+
+    <div class="status" id="status"></div>
+    <section class="cards" id="cards" aria-label="Route options"></section>
+   </div>
+    <section class="detail" id="detail"></section>
+  </aside>
+
+  <main class="stage">
+    <div id="map"></div>
+    <div class="map-loading" id="mapLoading">Loading San Francisco streets and terrain…</div>
+    <div class="profile">
+      <div class="profile-head"><span class="label">Elevation profile</span><span class="readout" id="readout">Hover the profile to scrub the route</span></div>
+      <svg id="profile" viewBox="0 0 800 150" preserveAspectRatio="none" aria-label="Elevation profile"></svg>
+    </div>
+  </main>
+</div>
+
+<script type="application/octet-stream" id="graphData">%%BLOB%%</script>
+<script type="application/octet-stream" id="terrainData">%%TERRAIN%%</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script id="routerSrc">
+/*ROUTER*/
+</script>
+<script>
+(() => {
+const TERRAIN_BOUNDS = %%TERRAIN_BOUNDS%%;
+const HOME = { lat: 37.7387, lon: -122.41984, label: '339 Elsie St' };
+const MI = 1609.344, FT = 3.28084;
+const $ = (id) => document.getElementById(id);
+const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const lib = RouterLib();
+let G = null, worker = null, map = null, routeLayer = null, markers = {}, hoverMarker = null;
+let results = [], sel = 0, reqId = 0, picking = null, seed = 0;
+
+// ---------- state ----------
+const S = {
+  startText: '339 Elsie St', endText: '', mode: 'distance', amount: 7, pace: '8:30', shape: 'loop',
+  hill: 'rolling', fast: false, trails: false, avoidSteps: false, hillTop: false, dests: [],
+  start: HOME, end: null,
+};
+try { const p = JSON.parse(localStorage.getItem('sfruns.prefs') || 'null'); if (p && p.pace) S.pace = p.pace; } catch (e) {}
+const savePrefs = () => { try { localStorage.setItem('sfruns.prefs', JSON.stringify({ pace: S.pace })); } catch (e) {} };
+
+const EXAMPLES = [
+  'go to a cool hilltop with a 7 mile long route',
+  'long and fast route',
+  'easy flat 30 minutes',
+  'hilly 10k through Bernal and Holly Park',
+  'Twin Peaks and back, max climbing',
+  '6 miles ending at the Ferry Building',
+  '45 min tempo at 7:15 pace, trails if possible',
+];
+
+// ---------- natural language: quick local parser ----------
+function paceToSec(p) { const m = String(p).match(/^(\d{1,2})(?::(\d{1,2}))?$/); return m ? (+m[1]) * 60 + (+(m[2] || 0)) : null; }
+function secToPace(s) { s = Math.round(s); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
+function fmtDur(s) { s = Math.round(s); const h = Math.floor(s / 3600), m = Math.floor(s % 3600 / 60), ss = s % 60; return h ? `${h}:${String(m).padStart(2, '0')}:${String(ss).padStart(2, '0')}` : `${m}:${String(ss).padStart(2, '0')}`; }
+
+const ALIASES = {
+  'bernal': 'Bernal Heights Summit', 'bernal hill': 'Bernal Heights Summit', 'bernal heights': 'Bernal Heights Summit', 'twin peaks': 'Twin Peaks',
+  'coit': 'Coit Tower', 'telegraph hill': 'Coit Tower', 'sutro': 'Mount Sutro', 'mt sutro': 'Mount Sutro', 'mt davidson': 'Mount Davidson', 'davidson': 'Mount Davidson',
+  'golden gate park': 'Stow Lake', 'gg park': 'Stow Lake', 'ocean': 'Ocean Beach', 'beach': 'Ocean Beach', 'embarcadero': 'Ferry Building', 'ferry building': 'Ferry Building',
+  'presidio': 'Crissy Field', 'crissy': 'Crissy Field', 'marina': 'Palace of Fine Arts', 'mclaren': 'McLaren Park Summit', 'glen canyon': 'Glen Canyon Park', 'glen park': 'Glen Canyon Park',
+  'dolores': 'Dolores Park (top)', 'potrero': 'McKinley Square', 'potrero hill': 'McKinley Square', 'buena vista': 'Buena Vista Park', 'corona heights': 'Corona Heights',
+  'tank hill': 'Tank Hill', 'grand view': 'Grand View Park', 'turtle hill': 'Grand View Park', 'tiled steps': '16th Ave Tiled Steps', 'mosaic steps': '16th Ave Tiled Steps',
+  'holly park': 'Holly Park', 'billy goat': 'Billy Goat Hill', 'kite hill': 'Kite Hill', 'nob hill': 'Huntington Park', 'russian hill': 'Russian Hill Park', 'alta plaza': 'Alta Plaza',
+  'lafayette': 'Lafayette Park', 'lake merced': 'Lake Merced', 'stern grove': 'Stern Grove', 'stow lake': 'Stow Lake', 'panhandle': 'Panhandle', 'precita': 'Precita Park',
+  'alamo square': 'Alamo Square', 'painted ladies': 'Alamo Square', 'lone mountain': 'Lone Mountain', 'strawberry hill': 'Strawberry Hill', 'bayview hill': 'Bayview Hill',
+  'mission bay': 'Mission Bay', 'oracle park': 'Oracle Park', 'ballpark': 'Oracle Park', 'aquatic park': 'Alcatraz View: Aquatic Park', 'sutro heights': 'Sutro Heights',
+  'heron': "Heron's Head Park", 'mount olympus': 'Mount Olympus', 'duboce': 'Duboce Park', 'starr king': 'Starr King Open Space', 'diamond heights': 'Walter Haas Playground',
+};
+function localParse(text) {
+  const t = ' ' + text.toLowerCase().replace(/[–—]/g, '-') + ' ';
+  const r = { distanceMi: null, minutes: null, pace: null, hill: null, fast: false, trails: false, avoidSteps: false, shape: null, dests: [], hillTop: false, start: null, end: null };
+  let m;
+  if ((m = t.match(/half[- ]marathon/))) r.distanceMi = 13.1;
+  else if ((m = t.match(/(\d+(?:\.\d+)?)\s*(?:-\s*)?(k|km|kilometers?|kms)\b/))) r.distanceMi = +m[1] / 1.609344;
+  else if ((m = t.match(/(\d+(?:\.\d+)?)\s*(?:-\s*)?(mi|miles?|mile)\b/))) r.distanceMi = +m[1];
+  if ((m = t.match(/(\d+(?:\.\d+)?)\s*(?:-\s*)?(h|hr|hrs|hours?)\b/))) r.minutes = +m[1] * 60;
+  else if (/\b(an|one) hour\b/.test(t)) r.minutes = 60;
+  else if (/\bhalf (an )?hour\b/.test(t)) r.minutes = 30;
+  if ((m = t.match(/(\d+)\s*(?:-\s*)?(m|min|mins|minutes?)\b/))) r.minutes = (r.minutes || 0) + +m[1];
+  if ((m = t.match(/(\d{1,2}:\d{2})\s*(?:\/\s*mi|min\/mi|per mile|pace|min miles?)?/))) r.pace = m[1];
+  if (/\b(flat|recovery|easy|gentle|no hills|avoid hills)\b/.test(t)) r.hill = 'flat';
+  if (/\b(rolling|some hills|moderate)\b/.test(t)) r.hill = 'rolling';
+  if (/\b(hilly|hills|climb|climbing|vert|steep|elevation)\b/.test(t)) r.hill = 'hilly';
+  if (/\b(max(imum)? (climb|climbing|hills|vert)|brutal|all the hills|as much climbing|hill repeats|lots of climbing)\b/.test(t)) r.hill = 'max';
+  if (/\b(fast|tempo|speed|quick|race pace|pr|threshold|workout)\b/.test(t)) { r.fast = true; if (!r.hill) r.hill = 'flat'; }
+  if (/\b(trails?|dirt|nature|woods|forest|unpaved|off[- ]road|through the parks?)\b/.test(t)) r.trails = true;
+  if (/\b(no stairs|avoid stairs|no steps|avoid steps)\b/.test(t)) r.avoidSteps = true;
+  if (/\b(out[- ]and[- ]back|out & back|there and back|and back)\b/.test(t)) r.shape = 'out-and-back';
+  if (/\b(hill ?tops?|summit|peak|views?|viewpoint|overlook|lookout|hill)\b/.test(t)) r.hillTop = true;
+  // named places
+  const found = new Set();
+  for (const k of Object.keys(ALIASES).sort((a, b) => b.length - a.length)) {
+    if (t.includes(' ' + k) && ![...found].some(f => f.includes(k))) { found.add(k); r.dests.push(ALIASES[k]); }
+  }
+  if (G) for (const p of G.places) { const n = p.name.toLowerCase().replace(/ \(.*\)/, ''); if (t.includes(n) && !r.dests.includes(p.name)) r.dests.push(p.name); }
+  r.dests = [...new Set(r.dests)];
+  if ((m = text.match(/\b(?:end(?:ing)?|finish(?:ing)?)\s+(?:at|on|near)\s+(?:the\s+)?([^,.;]+)/i))) { r.end = m[1].trim(); r.dests = r.dests.filter(d => !m[1].toLowerCase().includes(d.toLowerCase().replace(/ \(.*\)/, ''))); }
+  if ((m = text.match(/\b(?:start(?:ing)?|from|begin(?:ning)?)\s+(?:at|on|near)?\s*(?:the\s+)?([^,.;]+?)(?:\s+(?:to|and|ending|end)\b|[,.;]|$)/i))) r.start = m[1].trim();
+  if (r.dests.length) r.hillTop = false;
+  if (r.distanceMi == null && r.minutes == null) {
+    if (/\blong\b/.test(t)) r.distanceMi = 9;
+    else if (/\bshort\b|\bquick\b/.test(t)) r.distanceMi = 3;
+  }
+  return r;
+}
+
+// ---------- natural language: Claude ----------
+let samplePromise = null;
+function getSample() { if (!samplePromise) samplePromise = (window.claude?.use ? window.claude.use('sample') : Promise.resolve(null)).catch(() => null); return samplePromise; }
+async function claudeParse(text) {
+  const sample = await getSample(); if (!sample) return null;
+  const places = G.places.map(p => `${p.name} (${p.kind}, ${Math.round(p.el * FT)} ft)`).join('; ');
+  const prompt = `You convert a runner's request into settings for a San Francisco running-route planner.
+Home (default start and finish) is 339 Elsie St in Bernal Heights.
+Known hills and spots (use these exact names for destinations): ${places}.
+
+Request: """${text}"""
+
+Reply with only JSON, no prose:
+{"distance_miles": number|null, "duration_minutes": number|null, "pace": "m:ss"|null,
+ "terrain": "flat"|"rolling"|"hilly"|"max"|null, "fast": boolean, "trails": boolean, "avoid_stairs": boolean,
+ "shape": "loop"|"out-and-back"|null, "destinations": [exact names from the list, in visiting order],
+ "hilltop": boolean, "start": string|null, "end": string|null, "summary": string}
+Rules: "long" with no number means 9 miles, "short" means 3. "fast"/"tempo" means fast=true and flatter terrain unless hills are asked for.
+"cool hilltop"/"a view" with no named place means hilltop=true and no destinations. start/end are only set when the runner names a different place or address (an address, intersection, or a name from the list); null means home.
+Convert km to miles. summary is a short phrase restating the plan (max 12 words).`;
+  try {
+    const out = await sample.json(prompt, { modelTier: 'quick' });
+    return out && typeof out === 'object' ? out : null;
+  } catch (e) { if (e && e.code === 'not_granted') samplePromise = Promise.resolve(null); return null; }
+}
+
+function applyParse(r, fromClaude) {
+  if (fromClaude) {
+    const c = r;
+    r = { distanceMi: c.distance_miles ?? null, minutes: c.duration_minutes ?? null, pace: c.pace || null, hill: c.terrain || null, fast: !!c.fast, trails: !!c.trails,
+      avoidSteps: !!c.avoid_stairs, shape: c.shape || null, dests: (c.destinations || []).filter(n => G.places.some(p => p.name === n)), hillTop: !!c.hilltop, start: c.start || null, end: c.end || null, summary: c.summary };
+  }
+  if (r.pace && paceToSec(r.pace)) S.pace = r.pace;
+  if (r.minutes && !r.distanceMi) { S.mode = 'time'; S.amount = Math.round(r.minutes); }
+  else if (r.distanceMi) { S.mode = 'distance'; S.amount = Math.round(r.distanceMi * 10) / 10; }
+  S.hill = r.hill || (r.hillTop || r.dests.length ? 'hilly' : 'rolling');
+  if (r.hillTop && S.hill === 'flat') S.hill = 'rolling';
+  S.fast = r.fast; S.trails = r.trails; S.avoidSteps = r.avoidSteps; S.shape = r.shape || 'loop';
+  S.dests = r.dests.slice(0, 5); S.hillTop = r.hillTop && !S.dests.length;
+  S.startText = r.start || '339 Elsie St'; S.endText = r.end || '';
+  syncForm();
+  return r;
+}
+
+function describeSettings(r) {
+  const bits = [];
+  bits.push(S.mode === 'distance' ? `<b>${S.amount} mi</b>` : `<b>${S.amount} min</b> at ${S.pace}/mi`);
+  bits.push(`<b>${{ flat: 'flat', rolling: 'rolling', hilly: 'hilly', max: 'max climbing' }[S.hill]}</b>`);
+  if (S.fast) bits.push('fast');
+  if (S.trails) bits.push('trails');
+  if (S.hillTop) bits.push('to a hilltop');
+  if (S.dests.length) bits.push('via ' + S.dests.join(', '));
+  bits.push(S.shape === 'out-and-back' ? 'out & back' : (S.endText ? 'to ' + esc(S.endText) : 'loop'));
+  if (S.startText && S.startText !== '339 Elsie St') bits.push('from ' + esc(S.startText));
+  return (r && r.summary ? esc(r.summary) + ' · ' : 'Read as ') + bits.join(' · ');
+}
+const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+// ---------- form sync ----------
+function syncForm() {
+  $('startIn').value = S.startText; $('endIn').value = S.endText;
+  $('amountIn').value = S.amount; $('paceIn').value = S.pace;
+  $('amountLabel').textContent = S.mode === 'distance' ? 'Miles' : 'Minutes';
+  for (const [id, v] of [['modeSeg', S.mode], ['shapeSeg', S.shape], ['hillSeg', S.hill]])
+    for (const b of $(id).querySelectorAll('button')) b.classList.toggle('on', b.dataset.v === v);
+  for (const [id, v] of [['tFast', S.fast], ['tTrails', S.trails], ['tSteps', S.avoidSteps], ['tHill', S.hillTop]]) { $(id).classList.toggle('on', v); $(id).setAttribute('aria-pressed', v); }
+  const d = $('dests'); d.innerHTML = '';
+  if (!S.dests.length) d.innerHTML = `<span class="hint">${S.hillTop ? 'Any hilltop that fits the distance' : 'Nothing required'}</span>`;
+  for (const n of S.dests) { const b = document.createElement('button'); b.className = 'chip on'; b.textContent = n; b.onclick = () => { S.dests = S.dests.filter(x => x !== n); syncForm(); }; d.appendChild(b); }
+  if (G) {
+    const pp = $('placePicker'); pp.innerHTML = '';
+    for (const p of G.places.slice().sort((a, b) => (a.kind === b.kind ? b.el - a.el : a.kind === 'hill' ? -1 : 1))) {
+      if (S.dests.includes(p.name)) continue;
+      const b = document.createElement('button'); b.className = 'chip'; b.title = p.blurb;
+      b.textContent = p.kind === 'hill' ? `▲ ${p.name} ${Math.round(p.el * FT)}′` : p.name;
+      b.onclick = () => { S.dests.push(p.name); S.hillTop = false; syncForm(); }; pp.appendChild(b);
+    }
+  }
+}
+function readForm() {
+  S.startText = $('startIn').value.trim(); S.endText = $('endIn').value.trim();
+  const a = parseFloat($('amountIn').value); if (a > 0) S.amount = a;
+  if (paceToSec($('paceIn').value.trim())) { S.pace = $('paceIn').value.trim(); savePrefs(); }
+}
+function wireSeg(id, key) { $(id).addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; S[key] = b.dataset.v; if (key === 'mode') { readForm(); S.amount = S.mode === 'time' ? Math.round(S.amount * paceToSec(S.pace) / 60) : Math.round(S.amount * 60 / paceToSec(S.pace) * 10) / 10; } syncForm(); }); }
+wireSeg('modeSeg', 'mode'); wireSeg('shapeSeg', 'shape'); wireSeg('hillSeg', 'hill');
+for (const [id, k] of [['tFast', 'fast'], ['tTrails', 'trails'], ['tSteps', 'avoidSteps'], ['tHill', 'hillTop']]) $(id).onclick = () => { S[k] = !S[k]; if (k === 'hillTop' && S[k]) S.dests = []; syncForm(); };
+for (const ex of EXAMPLES) { const b = document.createElement('button'); b.className = 'chip'; b.textContent = ex; b.onclick = () => { $('prompt').value = ex; onAsk(); }; $('examples').appendChild(b); }
+
+// ---------- planning ----------
+function setStatus(html, busy) { $('status').innerHTML = (busy ? '<span class="spinner"></span>' : '') + html; $('planBtn').disabled = !!busy; }
+
+async function onAsk() {
+  if (!G) return;
+  const text = $('prompt').value.trim();
+  const local = applyParse(localParse(text), false);
+  $('understood').innerHTML = describeSettings(local);
+  setStatus('Reading your request…', true);
+  const ai = await Promise.race([claudeParse(text), new Promise(r => setTimeout(() => r(null), 15000))]);
+  if (ai) { const r = applyParse(ai, true); $('understood').innerHTML = describeSettings(r); $('aiHint').textContent = 'Interpreted by Claude'; }
+  else $('aiHint').textContent = '';
+  seed = 0; runPlan();
+}
+
+function runPlan() {
+  readForm();
+  const start = lib.geocode(G, S.startText, HOME);
+  if (!start) { setStatus(`Couldn't find “${esc(S.startText)}”. Try a street address, an intersection like “Cortland & Mission”, or pick on the map.`); return; }
+  let end = null;
+  if (S.endText) { end = lib.geocode(G, S.endText, HOME); if (!end) { setStatus(`Couldn't find “${esc(S.endText)}”. Try an address, an intersection, or pick on the map.`); return; } }
+  S.start = start; S.end = end;
+  const paceSec = paceToSec(S.pace) || 510;
+  const miles = S.mode === 'distance' ? S.amount : S.amount * 60 / paceSec;
+  const P = {
+    start, end: end && (Math.abs(end.lat - start.lat) + Math.abs(end.lon - start.lon) > 1e-5) ? end : null,
+    targetM: miles > 0 ? miles * MI : null, hill: S.hill, fast: S.fast, trails: S.trails, avoidSteps: S.avoidSteps,
+    shape: S.endText ? 'loop' : S.shape, hillTop: S.hillTop, seed,
+    destinations: S.dests.map(n => G.places.find(p => p.name === n)).filter(Boolean),
+  };
+  setStatus('Searching ' + (P.hillTop ? 'hilltops and ' : '') + 'streets for routes…', true);
+  const id = ++reqId;
+  worker.onmessage = (ev) => {
+    const m = ev.data; if (m.id !== id) return;
+    if (m.type === 'error') { setStatus('Planning failed: ' + esc(m.message)); return; }
+    results = m.res.routes; sel = 0;
+    if (!results.length) { setStatus('No route found. Try a different start or a shorter distance.'); renderAll(); return; }
+    const off = P.targetM ? results[0].length / P.targetM : 1;
+    setStatus(`${results.length} options · ${m.res.ms} ms` + (P.targetM && off > 1.15 ? ' · the required stops make this longer than you asked for' : ''));
+    renderAll(); fitRoute();
+  };
+  worker.postMessage({ type: 'plan', id, P, paceSec });
+}
+$('planBtn').onclick = onAsk;
+$('shuffleBtn').onclick = () => { if (G) { seed++; runPlan(); } };
+$('prompt').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onAsk(); } });
+for (const id of ['startIn', 'endIn', 'amountIn', 'paceIn']) $(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); runPlan(); } });
+
+// ---------- rendering ----------
+const GRADE_BREAKS = [0.03, 0.06, 0.10, 0.15];
+function gradeColor(gr) { const a = Math.abs(gr); const i = a < .03 ? 0 : a < .06 ? 1 : a < .10 ? 2 : a < .15 ? 3 : 4; return css('--g' + i); }
+function routeName(r, i) {
+  const hills = r.passed.filter(p => p.kind === 'hill');
+  const pace = paceToSec(S.pace) || 510;
+  if (S.end) { const via = r.passed.filter(p => p.kind === 'hill').map(p => p.name).slice(0, 2); const main = r.streets.filter(s => s.name !== 'path' && s.name !== 'stairs').sort((a, b) => b.len - a.len)[0]; return `To ${S.end.label || S.endText} via ${via.length ? via.join(' + ') : (main ? main.name : 'side streets')}`; }
+  if (S.dests.length) return S.dests.join(' + ') + (r.passed.length > S.dests.length ? ' · ' + r.passed.filter(p => !S.dests.includes(p.name)).slice(0, 2).map(p => p.name).join(', ') : '');
+  if (hills.length) return hills.map(h => h.name).slice(0, 2).join(' + ') + (S.endText ? '' : ' loop');
+  const main = r.streets.filter(s => s.name !== 'path' && s.name !== 'stairs').sort((a, b) => b.len - a.len)[0];
+  const spot = r.passed.find(p => p.kind === 'place');
+  return spot ? `${spot.name} via ${main ? main.name : 'side streets'}` : `Loop via ${main ? main.name : 'side streets'}`;
+}
+function sparkline(r) {
+  const p = r.profile, n = p.length; if (n < 2) return '';
+  const lo = Math.min(...p), hi = Math.max(...p) + 1;
+  const pts = p.map((v, i) => `${(i / (n - 1) * 300).toFixed(1)},${(28 - (v - lo) / (hi - lo) * 24).toFixed(1)}`).join(' ');
+  return `<svg viewBox="0 0 300 30" preserveAspectRatio="none" aria-hidden="true"><polygon points="0,30 ${pts} 300,30" fill="var(--accent-soft)"/><polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>`;
+}
+function renderAll() { renderCards(); renderDetail(); drawRoute(); drawProfile(); }
+function renderCards() {
+  const c = $('cards'); c.innerHTML = '';
+  const pace = paceToSec(S.pace) || 510;
+  results.forEach((r, i) => {
+    r.secs = lib.estimateSeconds(r, pace);
+    const b = document.createElement('button'); b.className = 'card' + (i === sel ? ' on' : '');
+    b.innerHTML = `<span class="tag">${'ABC'[i]}</span><span class="name">${esc(routeName(r, i))}</span>
+      <span class="stats"><span><b>${(r.length / MI).toFixed(2)}</b> mi</span><span><b>${fmtDur(r.secs)}</b></span><span>↑<b>${Math.round(r.gain * FT)}</b> ft</span><span>max <b>${Math.round(r.maxUp * 100)}%</b></span></span>
+      ${sparkline(r)}`;
+    b.onclick = () => { sel = i; renderAll(); fitRoute(); };
+    c.appendChild(b);
+  });
+}
+function renderDetail() {
+  const d = $('detail'); const r = results[sel];
+  if (!r) { d.innerHTML = ''; return; }
+  const pace = paceToSec(S.pace) || 510;
+  const avg = r.secs / (r.length / MI);
+  const tot = r.bins.reduce((a, b) => a + b, 0) || 1;
+  const binC = [0, 1, 2, 3].map(i => css('--g' + (i === 3 ? 3 : i)));
+  const binL = ['under 3%', '3–6%', '6–10%', '10%+'];
+  d.innerHTML = `
+    <div class="kpis">
+      <div class="kpi"><div class="v">${(r.length / MI).toFixed(2)}<small>mi</small></div><div class="k">${(r.length / 1000).toFixed(1)} km</div></div>
+      <div class="kpi"><div class="v">${fmtDur(r.secs)}</div><div class="k">at ${S.pace} flat pace → ${secToPace(avg)}/mi on this terrain</div></div>
+      <div class="kpi"><div class="v">${Math.round(r.gain * FT)}<small>ft</small></div><div class="k">climb · ${Math.round(r.gain / (r.length / MI) * FT)} ft/mi · high point ${Math.round(r.high.el * FT)} ft</div></div>
+    </div>
+    <div>
+      <div class="gradebar" role="img" aria-label="Distance by steepness">${r.bins.map((b, i) => `<span style="flex:${b};background:${binC[i]}"></span>`).join('')}</div>
+      <div class="legend" style="margin-top:6px">${r.bins.map((b, i) => `<span><i style="background:${binC[i]}"></i>${binL[i]} ${(b / MI).toFixed(1)} mi</span>`).join('')}</div>
+    </div>
+    ${r.climbs.length ? `<div><div class="label" style="margin-bottom:4px">Biggest climbs</div><div class="list">${r.climbs.slice(0, 4).map(c => `<div class="row"><span>${esc(c.street)} <span class="hint">at mile ${(c.from / MI).toFixed(1)}</span></span><span>+${Math.round(c.gain * FT)} ft · ${(c.grade * 100).toFixed(1)}% avg</span></div>`).join('')}</div><div class="hint" style="margin-top:4px">Steepest 100 m stretch: ${(r.maxUp * 100).toFixed(0)}% up, ${(-r.maxDn * 100).toFixed(0)}% down${r.steps ? ` · ${r.steps} stair section${r.steps > 1 ? 's' : ''}` : ''}</div></div>` : `<div class="hint">No sustained climbs. Steepest 100 m stretch is ${(r.maxUp * 100).toFixed(0)}%.</div>`}
+    ${r.passed.length ? `<div><div class="label" style="margin-bottom:4px">Along the way</div><div class="list">${r.passed.map(p => `<div class="row"><span>${p.kind === 'hill' ? '▲ ' : ''}${esc(p.name)}</span><span>mile ${(p.at / MI).toFixed(1)}</span></div>`).join('')}</div></div>` : ''}
+    <details><summary>Street by street (${r.streets.length})</summary><div class="list">${r.streets.map(s => `<div class="row"><span>${esc(s.name)}</span><span>${(s.len / MI).toFixed(2)} mi</span></div>`).join('')}</div></details>
+    <div class="actions">
+      <a class="btn" href="${gmapsLink(r)}" target="_blank" rel="noopener">Open in Google Maps</a>
+      <button class="btn ghost" id="gpxBtn">Download GPX</button>
+      <button class="btn ghost" id="copyBtn">Copy summary</button>
+    </div>
+    <div class="toast" id="toast"></div>
+    <div class="hint">Google Maps gets about ten points along the route, so it may smooth a few corners. GPX has the full track for a watch.</div>`;
+  $('copyBtn').onclick = () => copySummary(r);
+  $('gpxBtn').onclick = () => downloadGpx(r);
+  getDownloads().then(dl => { const b = $('gpxBtn'); if (b && !dl) b.hidden = true; });
+}
+function gmapsLink(r) {
+  const g = r.geom, n = g.lat.length, L = r.length;
+  const pts = []; const k = 9;
+  for (let j = 1; j <= k; j++) { const target = L * j / (k + 1); let i = 0; while (i < n - 1 && g.cum[i] < target) i++; pts.push(`${g.lat[i].toFixed(5)},${g.lon[i].toFixed(5)}`); }
+  const o = `${g.lat[0].toFixed(5)},${g.lon[0].toFixed(5)}`, d = `${g.lat[n - 1].toFixed(5)},${g.lon[n - 1].toFixed(5)}`;
+  return `https://www.google.com/maps/dir/?api=1&origin=${o}&destination=${d}&waypoints=${encodeURIComponent(pts.join('|'))}&travelmode=walking`;
+}
+function summaryText(r) {
+  return `${routeName(r)} — ${(r.length / MI).toFixed(2)} mi, ~${fmtDur(r.secs)} at ${S.pace}/mi, +${Math.round(r.gain * FT)} ft (max ${Math.round(r.maxUp * 100)}%).\n` +
+    `From ${S.start.label || S.startText}${S.end ? ' to ' + (S.end.label || S.endText) : ''}.\n` +
+    (r.climbs.length ? `Climbs: ${r.climbs.slice(0, 3).map(c => `${c.street} +${Math.round(c.gain * FT)} ft`).join('; ')}.\n` : '') +
+    `Streets: ${r.streets.filter(s => s.len > 150).map(s => s.name).join(' → ')}`;
+}
+async function copySummary(r) {
+  const t = summaryText(r);
+  try { await navigator.clipboard.writeText(t); $('toast').textContent = 'Copied'; }
+  catch (e) { $('toast').innerHTML = `<textarea readonly style="width:100%;height:90px">${esc(t)}</textarea>`; $('toast').querySelector('textarea').select(); }
+}
+let dlPromise = null;
+function getDownloads() { if (!dlPromise) dlPromise = (window.claude?.use ? window.claude.use('downloads') : Promise.resolve(null)).catch(() => null); return dlPromise; }
+async function downloadGpx(r) {
+  const dl = await getDownloads(); if (!dl) return;
+  const g = r.geom; const name = routeName(r);
+  const pts = g.lat.map((la, i) => `<trkpt lat="${la.toFixed(6)}" lon="${g.lon[i].toFixed(6)}"><ele>${g.el[i].toFixed(1)}</ele></trkpt>`).join('\n');
+  const gpx = `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="SF Morning Runs" xmlns="http://www.topografix.com/GPX/1/1"><trk><name>${esc(name)}</name><trkseg>\n${pts}\n</trkseg></trk></gpx>\n`;
+  try { await dl.save({ filename: name.replace(/[^\w\- +]/g, '').replace(/\s+/g, '-').slice(0, 60) + '.gpx', data: gpx }); $('toast').textContent = 'GPX saved'; }
+  catch (e) { $('toast').textContent = e && e.code === 'declined' ? 'Download cancelled' : 'Could not save the GPX file'; }
+}
+
+// ---------- profile ----------
+function drawProfile() {
+  const svg = $('profile'); const r = results[sel];
+  const W = Math.max(300, Math.round(svg.clientWidth || 800)), H = 150, padL = 44, padR = 8, padT = 10, padB = 20;
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  if (!r) { svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle">Plan a route to see its hills</text>`; return; }
+  const p = r.profile.map(v => v * FT), n = p.length, step = r.gradeStep;
+  const L = (n - 1) * step / MI;
+  let lo = Math.min(...p), hi = Math.max(...p);
+  const span = Math.max(100, hi - lo); lo = Math.max(lo - span * 0.08, Math.min(lo, 0) - 5); hi = lo + span * 1.18;
+  const X = (i) => padL + (i * step / MI) / L * (W - padL - padR), Y = (v) => padT + (1 - (v - lo) / (hi - lo)) * (H - padT - padB);
+  const tickE = niceStep(hi - lo, 4); let g = '';
+  for (let v = Math.ceil(lo / tickE) * tickE; v <= hi; v += tickE) g += `<line class="grid" x1="${padL}" x2="${W - padR}" y1="${Y(v)}" y2="${Y(v)}"/><text x="${padL - 6}" y="${Y(v) + 4}" text-anchor="end">${Math.round(v)}′</text>`;
+  const tickD = niceStep(L, 6);
+  for (let d = 0; d <= L + 1e-9; d += tickD) g += `<text x="${padL + d / L * (W - padL - padR)}" y="${H - 5}" text-anchor="middle">${+d.toFixed(1)} mi</text>`;
+  let cols = '';
+  for (let i = 0; i < n - 1; i++) cols += `<polygon points="${X(i)},${Y(lo)} ${X(i)},${Y(p[i])} ${X(i + 1)},${Y(p[i + 1])} ${X(i + 1)},${Y(lo)}" fill="${gradeColor(r.colorGrades[i])}" fill-opacity=".85" stroke="${gradeColor(r.colorGrades[i])}" stroke-width=".6"/>`;
+  const line = p.map((v, i) => `${X(i)},${Y(v)}`).join(' ');
+  svg.innerHTML = g + cols + `<polyline points="${line}" fill="none" stroke="var(--ink)" stroke-width="1.5" vector-effect="non-scaling-stroke"/><line class="cursor" id="pcur" x1="-10" x2="-10" y1="${padT}" y2="${H - padB}" vector-effect="non-scaling-stroke"/>`;
+  svg._scale = { padL, padR, W, L, n, step };
+}
+function niceStep(range, count) { const raw = range / count, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p; return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * p; }
+function scrub(ev) {
+  const svg = $('profile'), r = results[sel], s = svg._scale; if (!r || !s) return;
+  const rect = svg.getBoundingClientRect(); const x = (ev.clientX - rect.left) / rect.width * s.W;
+  const d = Math.max(0, Math.min(1, (x - s.padL) / (s.W - s.padL - s.padR))) * r.length;
+  const i = Math.min(s.n - 1, Math.round(d / s.step));
+  const cur = $('pcur'); if (cur) { const px = s.padL + d / r.length * (s.W - s.padL - s.padR); cur.setAttribute('x1', px); cur.setAttribute('x2', px); }
+  const gm = r.geom; let k = 0; while (k < gm.cum.length - 1 && gm.cum[k] < d) k++;
+  $('readout').textContent = `mile ${(d / MI).toFixed(2)} · ${Math.round(r.profile[i] * FT)} ft · ${(r.grades[i] * 100).toFixed(1)}% grade`;
+  if (map) { if (!hoverMarker) hoverMarker = L.marker([gm.lat[k], gm.lon[k]], { icon: L.divIcon({ className: '', html: '<div class="pin hover"></div>', iconSize: [12, 12], iconAnchor: [6, 6] }), interactive: false, zIndexOffset: 1000 }).addTo(map); else hoverMarker.setLatLng([gm.lat[k], gm.lon[k]]); }
+}
+$('profile').addEventListener('pointermove', scrub);
+$('profile').addEventListener('pointerdown', scrub);
+let rsT; addEventListener('resize', () => { clearTimeout(rsT); rsT = setTimeout(drawProfile, 150); });
+
+// ---------- map ----------
+function initMap() {
+  map = L.map('map', { zoomControl: true, minZoom: 12, maxZoom: 18, maxBounds: [[37.68, -122.56], [37.84, -122.33]], maxBoundsViscosity: 0.8, attributionControl: true, preferCanvas: true })
+    .setView([HOME.lat, HOME.lon], 14);
+  map.attributionControl.setPrefix(false);
+  map.attributionControl.addAttribution('Streets © OpenStreetMap contributors via Overture Maps · Terrain: USGS 3DEP via AWS Terrain Tiles');
+  map.createPane('terrain').style.zIndex = 150;
+  map.createPane('streets').style.zIndex = 250;
+  terrainOverlay = L.imageOverlay(renderTerrain(), TERRAIN_BOUNDS, { pane: 'terrain', interactive: false }).addTo(map);
+  streetLayer = new StreetLayer({ pane: 'streets', tileSize: 256, updateWhenZooming: false }).addTo(map);
+  peakLayer = L.layerGroup().addTo(map);
+  drawPeaks();
+  map.on('zoomend', drawPeaks);
+  map.on('click', (e) => {
+    if (!picking) return;
+    const lbl = `${e.latlng.lat.toFixed(5)}, ${e.latlng.lng.toFixed(5)}`;
+    if (picking === 'start') S.startText = lbl; else S.endText = lbl;
+    $(picking === 'start' ? 'startIn' : 'endIn').value = lbl;
+    picking = null; $('pickStart').classList.remove('on'); $('pickEnd').classList.remove('on'); map.getContainer().style.cursor = '';
+    readForm(); runPlan();
+  });
+}
+let terrainOverlay, streetLayer, peakLayer, terrainImg = null;
+function renderTerrain() {
+  const src = terrainImg; const w = src.width, h = src.height;
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h; const cx = cv.getContext('2d');
+  cx.drawImage(src, 0, 0); const id = cx.getImageData(0, 0, w, h), d = id.data;
+  const rgb = (c) => { const t = document.createElement('canvas').getContext('2d'); t.fillStyle = c; t.fillRect(0, 0, 1, 1); return t.getImageData(0, 0, 1, 1).data; };
+  const lo = rgb(css('--land-lo')), hi = rgb(css('--land-hi')), wa = rgb(css('--water')), co = rgb(css('--contour'));
+  const dark = matchesDark();
+  for (let i = 0; i < d.length; i += 4) {
+    const hs = d[i] / 255, el = d[i + 1] / 255, b = d[i + 2];
+    if (b === 255) { d[i] = wa[0]; d[i + 1] = wa[1]; d[i + 2] = wa[2]; d[i + 3] = 255; continue; }
+    const t = Math.pow(el, 0.8);
+    let r = lo[0] + (hi[0] - lo[0]) * t, g = lo[1] + (hi[1] - lo[1]) * t, bb = lo[2] + (hi[2] - lo[2]) * t;
+    const sh = dark ? 0.55 + 0.75 * hs : 0.72 + 0.4 * hs;
+    r *= sh; g *= sh; bb *= sh;
+    if (b === 140) { const a = co[3] / 255; r = r * (1 - a) + co[0] * a; g = g * (1 - a) + co[1] * a; bb = bb * (1 - a) + co[2] * a; }
+    d[i] = r; d[i + 1] = g; d[i + 2] = bb; d[i + 3] = 255;
+  }
+  cx.putImageData(id, 0, 0); return cv.toDataURL();
+}
+function matchesDark() { const t = document.documentElement.dataset.theme; return t ? t === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches; }
+function onTheme() { if (!map) return; terrainOverlay.setUrl(renderTerrain()); streetLayer.redraw(); drawRoute(); drawProfile(); renderDetail(); }
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', onTheme);
+new MutationObserver(onTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+// mercator vertex cache + bucket index for street tiles
+let MX, MY, BK;
+function prepStreets() {
+  const n = G.vLat.length; MX = new Float64Array(n); MY = new Float64Array(n);
+  for (let i = 0; i < n; i++) { MX[i] = (G.vLon[i] + 180) / 360; const s = Math.sin(G.vLat[i] * Math.PI / 180); MY[i] = 0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI); }
+  BK = new Map(); const Z = 15;
+  for (let e = 0; e < G.nE; e++) {
+    const o = G.vOff[e], k = G.eN[e]; const keys = new Set();
+    for (let j = 0; j < k; j++) keys.add(Math.floor(MX[o + j] * (1 << Z)) * 100000 + Math.floor(MY[o + j] * (1 << Z)));
+    for (const key of keys) { let a = BK.get(key); if (!a) BK.set(key, a = []); a.push(e); }
+  }
+}
+const StreetLayer = L.GridLayer.extend({
+  createTile(c) {
+    const cv = document.createElement('canvas'); cv.width = cv.height = 512; cv.style.width = cv.style.height = '256px';
+    const cx = cv.getContext('2d'); cx.scale(2, 2);
+    const z = c.z, Z = 15, scale = 256 * Math.pow(2, z);
+    const ox = c.x * 256, oy = c.y * 256;
+    // collect edges from buckets covering this tile (with a margin)
+    const f = Math.pow(2, Z - z);
+    const x0 = Math.floor((c.x - .05) * f), x1 = Math.floor((c.x + 1.05) * f), y0 = Math.floor((c.y - .05) * f), y1 = Math.floor((c.y + 1.05) * f);
+    const es = new Set();
+    for (let bx = x0; bx <= x1; bx++) for (let by = y0; by <= y1; by++) { const a = BK.get(bx * 100000 + by); if (a) for (const e of a) es.add(e); }
+    const cls = G.classes, groups = { minor: [], walk: [], steps: [], major: [], side: [] };
+    for (const e of es) {
+      const k = cls[G.eCls[e]];
+      if (k === 'sidewalk' || k === 'crosswalk') { if (z >= 16) groups.side.push(e); }
+      else if (k === 'path' || k === 'footway' || k === 'track' || k === 'bridleway' || k === 'pedestrian' || k === 'cycleway') { if (z >= 13) groups.walk.push(e); }
+      else if (k === 'steps') { if (z >= 14) groups.steps.push(e); }
+      else if (k === 'primary' || k === 'secondary' || k === 'trunk') groups.major.push(e);
+      else groups.minor.push(e);
+    }
+    const w = (base) => base * Math.max(0.35, Math.pow(1.45, z - 15));
+    const stroke = (list, color, width, dash) => {
+      if (!list.length) return; cx.beginPath();
+      for (const e of list) { const o = G.vOff[e], n = G.eN[e]; cx.moveTo(MX[o] * scale - ox, MY[o] * scale - oy); for (let j = 1; j < n; j++) cx.lineTo(MX[o + j] * scale - ox, MY[o + j] * scale - oy); }
+      cx.strokeStyle = color; cx.lineWidth = width; cx.setLineDash(dash || []); cx.lineCap = 'round'; cx.lineJoin = 'round'; cx.stroke();
+    };
+    stroke(groups.side, css('--street'), w(0.5));
+    stroke(groups.minor, css('--street'), w(1.3));
+    stroke(groups.walk, css('--trail'), w(1.3), z >= 15 ? [w(3), w(2.5)] : null);
+    stroke(groups.steps, css('--trail'), w(2.6), [w(1), w(1.5)]);
+    stroke(groups.major, css('--street-major'), w(2.2));
+    return cv;
+  }
+});
+function drawPeaks() {
+  peakLayer.clearLayers(); const z = map.getZoom();
+  for (const p of G.places) {
+    if (p.kind !== 'hill' && z < 15) continue;
+    if (p.kind === 'hill' && z < 13 && p.el < 120) continue;
+    const html = p.kind === 'hill' ? `<div class="peak-label">▲ ${esc(p.name)}<small>${Math.round(p.el * FT)} ft</small></div>` : `<div class="peak-label" style="font-weight:500;color:var(--muted)">${esc(p.name)}</div>`;
+    L.marker([p.lat, p.lon], { icon: L.divIcon({ className: '', html, iconSize: null, iconAnchor: [5, 8] }), interactive: false, keyboard: false }).addTo(peakLayer);
+  }
+}
+function drawRoute() {
+  if (!map) return;
+  if (routeLayer) routeLayer.remove();
+  routeLayer = L.layerGroup().addTo(map);
+  if (hoverMarker) { hoverMarker.remove(); hoverMarker = null; }
+  // faint alternates
+  results.forEach((r, i) => { if (i !== sel) L.polyline(r.geom.lat.map((la, k) => [la, r.geom.lon[k]]), { color: css('--ink'), weight: 3, opacity: 0.25, dashArray: '2 6', interactive: true }).on('click', () => { sel = i; renderAll(); }).addTo(routeLayer); });
+  const r = results[sel]; if (!r) return;
+  const g = r.geom, ll = g.lat.map((la, k) => [la, g.lon[k]]);
+  L.polyline(ll, { color: css('--casing'), weight: 9, opacity: 0.95, interactive: false }).addTo(routeLayer);
+  // colour by grade, merging runs of the same colour
+  let cur = null, seg = [];
+  const flush = () => { if (seg.length > 1) L.polyline(seg, { color: cur, weight: 5, opacity: 1, interactive: false, lineCap: 'round' }).addTo(routeLayer); };
+  for (let k = 0; k < ll.length; k++) {
+    const gi = Math.min(r.grades.length - 1, Math.round(g.cum[k] / r.gradeStep));
+    const c = gradeColor(r.colorGrades[gi]);
+    if (c !== cur) { if (seg.length) { flush(); seg = [seg[seg.length - 1]]; } cur = c; }
+    seg.push(ll[k]);
+  }
+  flush();
+  // mile markers
+  for (let m = 1; m * MI < r.length; m++) { let k = 0; while (k < g.cum.length - 1 && g.cum[k] < m * MI) k++; L.marker(ll[k], { icon: L.divIcon({ className: '', html: `<div style="font:600 10px var(--f-mono);background:var(--ink);color:var(--panel);border-radius:8px;padding:1px 5px;transform:translate(-50%,-50%);white-space:nowrap">${m}</div>`, iconSize: null }), interactive: false }).addTo(routeLayer); }
+  const pin = (cls) => L.divIcon({ className: '', html: `<div class="pin ${cls}"></div>`, iconSize: [16, 16], iconAnchor: [8, 8] });
+  L.marker(ll[0], { icon: pin('start'), title: 'Start' }).addTo(routeLayer);
+  if (S.end) L.marker(ll[ll.length - 1], { icon: pin('end'), title: 'Finish' }).addTo(routeLayer);
+}
+function fitRoute() { const r = results[sel]; if (!map || !r) return; map.fitBounds(L.latLngBounds(r.geom.lat.map((la, k) => [la, r.geom.lon[k]])), { padding: [30, 30], maxZoom: 16 }); }
+$('pickStart').onclick = () => { picking = picking === 'start' ? null : 'start'; $('pickStart').classList.toggle('on', picking === 'start'); $('pickEnd').classList.remove('on'); if (map) map.getContainer().style.cursor = picking ? 'crosshair' : ''; };
+$('pickEnd').onclick = () => { picking = picking === 'end' ? null : 'end'; $('pickEnd').classList.toggle('on', picking === 'end'); $('pickStart').classList.remove('on'); if (map) map.getContainer().style.cursor = picking ? 'crosshair' : ''; };
+
+// ---------- worker ----------
+const WORKER_SRC = `${document.getElementById('routerSrc').textContent}
+const lib = RouterLib(); let g = null;
+function hillTopPlan(P) {
+  const MI = 1609.344, T = P.targetM;
+  const sx = (P.start.lon + 122.44) * lib.M_LON, sy = (P.start.lat - 37.76) * lib.M_LAT;
+  const hills = g.places.filter(p => p.kind === 'hill').map(h => {
+    const d = Math.hypot((h.lon + 122.44) * lib.M_LON - sx, (h.lat - 37.76) * lib.M_LAT - sy);
+    const est = 2.7 * d;
+    let fit = h.el / 60;
+    if (T) { if (est > T * 1.1) fit -= (est - T * 1.1) / T * 25; if (est < T * 0.25) fit -= 1.5; }
+    else if (d > 3000) fit -= 10;
+    return { h, d, fit };
+  }).sort((a, b) => b.fit - a.fit).slice(0, 5);
+  let all = [];
+  for (const c of hills) {
+    const res = lib.plan(g, Object.assign({}, P, { destinations: [c.h], count: 2 }));
+    for (const r of res.routes) { r.score -= c.h.el / 90; r.hill = c.h.name; all.push(r); }
+  }
+  all.sort((a, b) => a.score - b.score);
+  const out = [], seen = new Set();
+  for (const r of all) if (!seen.has(r.hill)) { out.push(r); seen.add(r.hill); if (out.length === 3) break; }
+  for (const r of all) if (out.length < 3 && !out.includes(r)) out.push(r);
+  return { routes: out };
+}
+self.onmessage = async (ev) => {
+  const m = ev.data;
+  if (m.type === 'init') { g = await lib.decodeBase64Gz(m.b64); self.postMessage({ type: 'ready' }); return; }
+  if (m.type === 'plan') {
+    try {
+      const t0 = Date.now();
+      const res = m.P.hillTop && !(m.P.destinations || []).length ? hillTopPlan(m.P) : lib.plan(g, m.P);
+      for (const r of res.routes) { r.geom = { lat: r.geom.lat, lon: r.geom.lon, el: r.geom.el, cum: r.geom.cum }; }
+      self.postMessage({ type: 'result', id: m.id, res: { routes: res.routes, ms: Date.now() - t0 } });
+    } catch (e) { self.postMessage({ type: 'error', id: m.id, message: String(e && e.message || e) }); }
+  }
+};`;
+
+// ---------- boot ----------
+async function boot() {
+  const b64 = $('graphData').textContent;
+  const img = new Image(); img.src = 'data:image/png;base64,' + $('terrainData').textContent.trim();
+  await img.decode(); terrainImg = img;
+  G = await lib.decodeBase64Gz(b64);
+  prepStreets();
+  syncForm();
+  if (typeof L !== 'undefined') initMap();
+  $('mapLoading').hidden = true;
+  worker = new Worker(URL.createObjectURL(new Blob([WORKER_SRC], { type: 'text/javascript' })));
+  await new Promise((res) => { worker.onmessage = (e) => { if (e.data.type === 'ready') res(); }; worker.postMessage({ type: 'init', b64 }); });
+  const local = applyParse(localParse($('prompt').value), false);
+  $('understood').innerHTML = describeSettings(local);
+  runPlan();
+}
+setStatus('Loading map data…', true);
+drawProfile();
+boot().catch(e => { setStatus('Could not load the map data: ' + esc(e.message || e)); $('mapLoading').textContent = 'Map failed to load.'; });
+})();
+</script>
