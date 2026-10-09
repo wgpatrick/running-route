@@ -47,7 +47,7 @@ function ParseLib(places) {
   }
 
   function localParse(text) {
-    const r = { distanceMi: null, minutes: null, pace: null, hill: null, maxGrade: null, fast: false, trails: false, avoidSteps: false, shape: null, dests: [], hillTop: false, start: null, end: null };
+    const r = { distanceMi: null, minutes: null, pace: null, hill: null, maxGrade: null, scenic: false, fast: false, trails: false, avoidSteps: false, shape: null, dests: [], hillTop: false, start: null, end: null };
     let t = ' ' + wordsToDigits(text.toLowerCase().replace(/[–—]/g, '-')).replace(/\s+/g, ' ') + ' ';
     let m;
     // --- pace first, then remove it so "12 min pace" is never read as a 12 minute run ---
@@ -115,6 +115,7 @@ function ParseLib(places) {
     if (/\b(fast|tempo|speed|speedy|race pace|pr|threshold|workout|intervals|quick pace)\b/.test(t)) { r.fast = true; if (!r.hill) r.hill = 'flat'; }
     if (/\b(trails?|dirt|nature|woods|forest|unpaved|off[- ]road|through the parks?|in the park)\b/.test(t)) r.trails = true;
     if (/\b(no stairs|avoid stairs|no steps|avoid steps|without stairs|skip the stairs)\b/.test(t)) r.avoidSteps = true;
+    if (/\b(scenic|pretty|beautiful|nice streets|nice route|nice neighborhoods?|greenery|green streets|leafy|tree[- ]lined|waterfront|along the water|by the water|by the bay|along the bay|on the bay|quiet streets|quiet roads|quiet|peaceful|residential streets|avoid industrial|no industrial|not industrial|through (?:the )?parks)\b/.test(t)) r.scenic = true;
     if (/\b(out[- ]and[- ]back|out & back|there and back|and back|turn around)\b/.test(t)) r.shape = 'out-and-back';
     if (/\b(hill ?tops?|summit|summits|peaks?|views?|viewpoint|overlook|lookout|vista|top of a hill|up a hill)\b/.test(t)) r.hillTop = true;
     // --- places, start, end ---
@@ -157,7 +158,7 @@ function ParseLib(places) {
     // flags
     if (['flat', 'rolling', 'hilly', 'max'].includes(c.terrain)) r.hill = c.terrain;
     if (!local.maxGrade && num(c.max_grade_percent) && /\b(steep|grade|incline|slope|gradient|%|percent|gentle)\b/i.test(text)) r.maxGrade = snapGrade(c.max_grade_percent / 100);
-    for (const [k, ck] of [['fast', 'fast'], ['trails', 'trails'], ['avoidSteps', 'avoid_stairs']]) if (typeof c[ck] === 'boolean') r[k] = c[ck] || local[k];
+    for (const [k, ck] of [['fast', 'fast'], ['trails', 'trails'], ['avoidSteps', 'avoid_stairs'], ['scenic', 'scenic']]) if (typeof c[ck] === 'boolean') r[k] = c[ck] || local[k];
     if (c.shape === 'out-and-back' || c.shape === 'loop') r.shape = local.shape || c.shape;
     // places: only ones the runner actually named
     const named = mentionedPlaces(text);

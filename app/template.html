@@ -138,8 +138,14 @@ details[open] summary { margin-bottom: 6px; }
 .pin.start { background: var(--accent); }
 .pin.end { background: var(--ink); }
 .pin.hover { width: 12px; height: 12px; background: var(--ink); border-width: 2px; }
+.amen { width: 18px; height: 18px; border-radius: 50%; background: var(--panel); border: 1.5px solid var(--ink); color: var(--ink); font: 700 10px/1 var(--f-mono); display: inline-grid; place-items: center; vertical-align: -3px; }
+.amen.water { border-color: #2b7fb8; color: #2b7fb8; }
+.saved .row { grid-template-columns: minmax(0,1fr) auto; align-items: center; }
+.saved .row .meta { font: 12px var(--f-mono); color: var(--muted); display: block; }
+.saved .row .btns { display: flex; gap: 4px; }
+.saved .row .btns button { min-height: 32px; padding: 4px 8px; }
 .map-loading[hidden] { display: none; }
-.map-hint { background: color-mix(in srgb, var(--panel) 85%, transparent); color: var(--muted); font-size: 12px; padding: 4px 8px; border-radius: 6px; margin-bottom: 18px !important; pointer-events: none; }
+.map-hint { background: color-mix(in srgb, var(--panel) 85%, transparent); color: var(--muted); font-size: 12px; padding: 4px 8px; border-radius: 6px; pointer-events: none; }
 .map-loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 14px; z-index: 500; pointer-events: none; }
 .stage { position: relative; }
 .empty { color: var(--muted); font-size: 14px; }
@@ -207,7 +213,8 @@ details[open] summary { margin-bottom: 6px; }
       </div>
       <div class="field wide">
         <div class="toggles">
-          <button class="chip" id="tFast" aria-pressed="false">Fast / tempo</button>
+          <button class="chip" id="tScenic" aria-pressed="false" title="Parks, the waterfront and quiet streets; avoids industrial blocks and big roads">Scenic</button>
+          <button class="chip" id="tFast" aria-pressed="false" title="Flatter, faster streets with fewer stoplights">Fast / tempo</button>
           <button class="chip" id="tTrails" aria-pressed="false">Prefer trails &amp; parks</button>
           <button class="chip" id="tSteps" aria-pressed="false">Avoid stairs</button>
           <button class="chip" id="tHill" aria-pressed="false">Include a hilltop</button>
@@ -226,6 +233,9 @@ details[open] summary { margin-bottom: 6px; }
     <div class="update-row"><button class="btn" id="updateBtn">Update routes</button><span class="hint">Buttons replan right away. Typed fields replan when you leave the field.</span></div>
     <div class="status" id="status"></div>
     <section class="cards" id="cards" aria-label="Route options"></section>
+    <section class="saved">
+      <details id="savedDetails"><summary id="savedSummary">Saved runs</summary><div class="list" id="savedList"><div class="hint">Routes you save or mark as run appear here, on every device where you open this page.</div></div></details>
+    </section>
    </div>
     <section class="detail" id="detail"></section>
   </aside>
@@ -274,11 +284,93 @@ function rememberShown(routes) {
   try { const seen = loadSeen().concat(routes.map(r => r.edges)).slice(-SEEN_MAX); localStorage.setItem(SEEN_KEY, JSON.stringify(seen)); } catch (e) {}
 }
 function forgetSeen() { try { localStorage.removeItem(SEEN_KEY); } catch (e) {} }
+// Saved runs: the artifact's shared database when this page runs inside Claude, else this browser's storage.
+const LOCAL_RUNS = 'sfruns.runs.v1';
+let savedRuns = [], runStore = null;
+const fmtDay = (iso) => iso ? new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) : '';
+async function initRunStore() {
+  const db = window.claude?.use ? await window.claude.use('db').catch(() => null) : null;
+  if (db) {
+    const col = db.collection('runs');
+    runStore = {
+      kind: 'db',
+      add: async (doc) => (await col.add(doc)).id,
+      update: (id, patch) => db.doc('runs/' + id).update(patch),
+      remove: (id) => db.doc('runs/' + id).delete(),
+    };
+    col.orderBy('savedAt', 'desc').limit(200).onSnapshot((snap) => { savedRuns = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderSaved(); },
+      (e) => { setSavedNote('Saved runs are unavailable right now (' + esc(e.code) + ').'); });
+  } else {
+    const load = () => { try { const v = JSON.parse(localStorage.getItem(LOCAL_RUNS) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } };
+    const store = (v) => { try { localStorage.setItem(LOCAL_RUNS, JSON.stringify(v)); } catch (e) {} };
+    runStore = {
+      kind: 'local',
+      add: async (doc) => { const id = 'r' + Date.now().toString(36); store([{ id, ...doc }, ...load()]); savedRuns = load(); renderSaved(); return id; },
+      update: async (id, patch) => { store(load().map(r => r.id === id ? { ...r, ...patch } : r)); savedRuns = load(); renderSaved(); },
+      remove: async (id) => { store(load().filter(r => r.id !== id)); savedRuns = load(); renderSaved(); },
+    };
+    savedRuns = load(); renderSaved();
+  }
+}
+function setSavedNote(html) { $('savedList').innerHTML = `<div class="hint">${html}</div>`; }
+function runDoc(r, ran) {
+  const g = r.geom, coords = []; let last = -1e9;
+  for (let i = 0; i < g.lat.length; i++) if (g.cum[i] - last >= 60 || i === g.lat.length - 1) { coords.push([+g.lat[i].toFixed(5), +g.lon[i].toFixed(5)]); last = g.cum[i]; }
+  const now = new Date().toISOString();
+  return { name: routeName(r), savedAt: now, lastRanAt: ran ? now : null, timesRan: ran ? 1 : 0, ranDates: ran ? [now] : [],
+    lengthM: Math.round(r.length), gainM: Math.round(r.gain), lights: r.lights || 0, summary: describeSettings().replace(/<[^>]+>/g, ''),
+    start: S.start ? { lat: S.start.lat, lon: S.start.lon, label: S.start.label || S.startText } : null, end: S.end ? { lat: S.end.lat, lon: S.end.lon, label: S.end.label || S.endText } : null,
+    version: G.version, path: r.path || [], coords };
+}
+async function saveRoute(r, ran) {
+  if (!runStore) { $('saveHint').textContent = 'Still connecting to your saved runs…'; return; }
+  try {
+    if (r._savedId) {
+      if (ran) { const run = savedRuns.find(x => x.id === r._savedId); const now = new Date().toISOString(); const dates = ((run && run.ranDates) || []).concat([now]).slice(-50);
+        await runStore.update(r._savedId, { lastRanAt: now, timesRan: dates.length, ranDates: dates }); r._timesRan = dates.length; r._lastRanAt = now; }
+    } else { const id = await runStore.add(runDoc(r, ran)); r._savedId = id; r._timesRan = ran ? 1 : 0; r._lastRanAt = ran ? new Date().toISOString() : null; }
+    renderDetail(); $('saveHint').textContent = ran ? 'Logged. Nice run.' : 'Saved.';
+    $('savedDetails').open = true;
+  } catch (e) { $('saveHint').textContent = 'Could not save (' + esc(e && e.code || e) + ').'; }
+}
+function renderSaved() {
+  const n = savedRuns.length; $('savedSummary').textContent = `Saved runs${n ? ` (${n})` : ''}`;
+  if (!n) { setSavedNote('Routes you save or mark as run appear here' + (runStore && runStore.kind === 'db' ? ', on every device where you open this page.' : '.')); return; }
+  const list = $('savedList'); list.innerHTML = '';
+  for (const run of savedRuns) {
+    const row = document.createElement('div'); row.className = 'row';
+    row.innerHTML = `<span><span>${esc(run.name || 'Saved run')}</span><span class="meta">${(run.lengthM / MI).toFixed(1)} mi · +${Math.round(run.gainM * FT)} ft${run.timesRan ? ` · ran ${run.timesRan}× · last ${fmtDay(run.lastRanAt)}` : ' · not run yet'}</span></span>
+      <span class="btns"><button class="pickbtn show">Show</button><button class="pickbtn ran">Ran it</button><button class="pickbtn del" title="Delete">×</button></span>`;
+    row.querySelector('.show').onclick = () => showSavedRun(run);
+    row.querySelector('.ran').onclick = async () => { const now = new Date().toISOString(); const dates = (run.ranDates || []).concat([now]).slice(-50); await runStore.update(run.id, { lastRanAt: now, timesRan: dates.length, ranDates: dates }); const cur = results[sel]; if (cur && cur._savedId === run.id) { cur._timesRan = dates.length; cur._lastRanAt = now; renderDetail(); } };
+    const del = row.querySelector('.del');
+    del.onclick = () => { if (del.dataset.armed) runStore.remove(run.id); else { del.dataset.armed = '1'; del.textContent = 'Delete?'; setTimeout(() => { del.dataset.armed = ''; del.textContent = '×'; }, 3000); } };
+    list.appendChild(row);
+  }
+}
+function showSavedRun(run) {
+  if (!G) return;
+  let path = run.version === G.version && run.path && run.path.length ? run.path : null;
+  if (!path && run.coords && run.coords.length > 1) path = lib.pathFromCoords(G, run.coords);
+  if (!path) { setStatus('Could not place that saved run on the current map.'); return; }
+  S.start = run.start || HOME; S.end = run.end || null; S.startText = (run.start && run.start.label) || '339 Elsie St'; S.endText = (run.end && run.end.label) || '';
+  const r = lib.reanalyze(G, path, {});
+  r._savedId = run.id; r._name = run.name; r._timesRan = run.timesRan || 0; r._lastRanAt = run.lastRanAt || null;
+  results = [r]; sel = 0; syncForm();
+  setStatus(`Showing saved run “${esc(run.name || '')}”${run.version !== G.version ? ' (retraced onto the current map)' : ''}`);
+  renderAll(); fitRoute(); revealResults();
+}
+// Streets from runs you did in the last three weeks, so new plans go elsewhere
+function recentlyRanEdges() {
+  const cutoff = Date.now() - 21 * 86400e3, out = [];
+  for (const run of savedRuns) if (run.lastRanAt && Date.parse(run.lastRanAt) > cutoff && run.version === G.version && Array.isArray(run.path)) out.push(...new Set(run.path.map(ae => ae >= 0 ? ae : ~ae)));
+  return out;
+}
 
 // ---------- state ----------
 const S = {
   startText: '339 Elsie St', endText: '', mode: 'distance', amount: 7, pace: '8:30', shape: 'loop',
-  hill: 'rolling', maxGrade: null, fast: false, trails: false, avoidSteps: false, hillTop: false, dests: [],
+  hill: 'rolling', maxGrade: null, fast: false, scenic: false, trails: false, avoidSteps: false, hillTop: false, dests: [],
   start: HOME, end: null,
 };
 // The runner's usual pace: only what they type into the Pace field is remembered, never a pace from a one-off request.
@@ -316,13 +408,14 @@ Request: """${text}"""
 
 Reply with only JSON, no prose:
 {"distance_miles": number|null, "duration_minutes": number|null, "pace": "m:ss"|null,
- "terrain": "flat"|"rolling"|"hilly"|"max"|null, "fast": boolean, "trails": boolean, "avoid_stairs": boolean, "max_grade_percent": number|null,
+ "terrain": "flat"|"rolling"|"hilly"|"max"|null, "fast": boolean, "trails": boolean, "avoid_stairs": boolean, "scenic": boolean, "max_grade_percent": number|null,
  "shape": "loop"|"out-and-back"|null, "destinations": [exact names from the list, in visiting order],
  "hilltop": boolean, "start": string|null, "end": string|null, "summary": string}
 Rules: only list destinations the runner explicitly named; never add stops on your own (a "flat" or "easy" run has no destinations unless named).
 Copy numbers exactly as stated; do not compute a distance from a time. "12 min pace" is a pace, not a duration.
 "long" with no number means 9 miles, "short" means 3. "fast"/"tempo" means fast=true and flatter terrain unless hills are asked for.
 "cool hilltop"/"a view" with no named place means hilltop=true and no destinations. start/end are only set when the runner names a different place or address (an address, intersection, or a name from the list); null means home.
+scenic is true when the runner wants pretty, green, quiet or waterfront streets, or to avoid industrial areas.
 max_grade_percent is set only when the runner limits steepness ("avoid steep hills" means 8, "nothing over 10%" means 10).
 Convert km to miles. summary is a short phrase restating the plan (max 12 words).`;
   try {
@@ -337,7 +430,7 @@ function applyParse(r) {
   S.hill = r.hill || (r.hillTop ? 'hilly' : 'rolling'); // naming a stop isn't a request for hills
   if (r.hillTop && S.hill === 'flat') S.hill = 'rolling';
   S.maxGrade = r.maxGrade || null;
-  S.fast = r.fast; S.trails = r.trails; S.avoidSteps = r.avoidSteps; S.shape = r.shape || 'loop';
+  S.fast = r.fast; S.scenic = !!r.scenic; S.trails = r.trails; S.avoidSteps = r.avoidSteps; S.shape = r.shape || 'loop';
   S.dests = r.dests.slice(0, 5); S.hillTop = r.hillTop && !S.dests.length;
   S.startText = r.start || '339 Elsie St'; S.endText = r.end || '';
   syncForm();
@@ -354,7 +447,8 @@ function describeSettings(r) {
   bits.push(tm == null ? '<b>any distance</b>' : S.mode === 'distance' ? `<b>${S.amount} mi</b>` : `<b>${S.amount} min</b> at ${S.pace}/mi = <b>${tm.toFixed(2)} mi</b>`);
   bits.push(`<b>${{ flat: 'flattest', rolling: 'rolling', hilly: 'hilly', max: 'max climbing' }[S.hill]}</b>`);
   if (S.maxGrade) bits.push(`nothing over ${Math.round(S.maxGrade * 100)}%`);
-  if (S.fast) bits.push('fast');
+  if (S.scenic) bits.push('scenic');
+  if (S.fast) bits.push('fast, fewer lights');
   if (S.trails) bits.push('trails');
   if (S.hillTop) bits.push('to a hilltop');
   if (S.dests.length) bits.push('via ' + S.dests.join(', '));
@@ -372,7 +466,7 @@ function syncForm() {
   for (const b of $('gradeSeg').querySelectorAll('button')) b.classList.toggle('on', (b.dataset.v ? +b.dataset.v : null) === S.maxGrade);
   for (const [id, v] of [['modeSeg', S.mode], ['shapeSeg', S.shape], ['hillSeg', S.hill]])
     for (const b of $(id).querySelectorAll('button')) b.classList.toggle('on', b.dataset.v === v);
-  for (const [id, v] of [['tFast', S.fast], ['tTrails', S.trails], ['tSteps', S.avoidSteps], ['tHill', S.hillTop]]) { $(id).classList.toggle('on', v); $(id).setAttribute('aria-pressed', v); }
+  for (const [id, v] of [['tScenic', S.scenic], ['tFast', S.fast], ['tTrails', S.trails], ['tSteps', S.avoidSteps], ['tHill', S.hillTop]]) { $(id).classList.toggle('on', v); $(id).setAttribute('aria-pressed', v); }
   const d = $('dests'); d.innerHTML = '';
   if (!S.dests.length) d.innerHTML = `<span class="hint">${S.hillTop ? 'Any hilltop that fits the distance' : 'Nothing required'}</span>`;
   for (const n of S.dests) { const b = document.createElement('button'); b.className = 'chip on'; b.textContent = n; b.onclick = () => { readForm(); S.dests = S.dests.filter(x => x !== n); syncForm(); replanSoon(); }; d.appendChild(b); }
@@ -413,7 +507,7 @@ $('paceIn').addEventListener('input', (e) => {
 function wireSeg(id, key) { $(id).addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b || S[key] === b.dataset.v) return; readForm(); S[key] = b.dataset.v; if (key === 'mode') { if (S.amount != null) S.amount = S.mode === 'time' ? Math.round(S.amount * paceToSec(S.pace) / 60) : Math.round(S.amount * 60 / paceToSec(S.pace) * 10) / 10; } syncForm(); replanSoon(); }); }
 $('gradeSeg').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; const v = b.dataset.v ? +b.dataset.v : null; if (v === S.maxGrade) return; readForm(); S.maxGrade = v; syncForm(); replanSoon(); });
 wireSeg('modeSeg', 'mode'); wireSeg('shapeSeg', 'shape'); wireSeg('hillSeg', 'hill');
-for (const [id, k] of [['tFast', 'fast'], ['tTrails', 'trails'], ['tSteps', 'avoidSteps'], ['tHill', 'hillTop']]) $(id).onclick = () => { readForm(); S[k] = !S[k]; if (k === 'hillTop' && S[k]) S.dests = []; syncForm(); replanSoon(); };
+for (const [id, k] of [['tScenic', 'scenic'], ['tFast', 'fast'], ['tTrails', 'trails'], ['tSteps', 'avoidSteps'], ['tHill', 'hillTop']]) $(id).onclick = () => { readForm(); S[k] = !S[k]; if (k === 'hillTop' && S[k]) S.dests = []; syncForm(); replanSoon(); };
 for (const ex of EXAMPLES) { const b = document.createElement('button'); b.className = 'chip'; b.textContent = ex; b.onclick = () => { $('prompt').value = ex; onAsk(); }; $('examples').appendChild(b); }
 
 // ---------- planning ----------
@@ -441,7 +535,7 @@ async function onAsk() {
   if (settingsKey() !== before) { $('aiHint').textContent = 'Adjusted by Claude'; runPlan({ explicit: true }); }
   else $('aiHint').textContent = 'Claude agrees';
 }
-const settingsKey = () => JSON.stringify([S.startText, S.endText, S.mode, S.amount, S.pace, S.shape, S.hill, S.maxGrade, S.fast, S.trails, S.avoidSteps, S.hillTop, S.dests]);
+const settingsKey = () => JSON.stringify([S.startText, S.endText, S.mode, S.amount, S.pace, S.shape, S.hill, S.maxGrade, S.fast, S.scenic, S.trails, S.avoidSteps, S.hillTop, S.dests]);
 
 let planBusy = false, planQueued = null;
 function showProblem(msg) { results = []; renderAll(); setStatus(msg); }
@@ -460,13 +554,14 @@ async function runPlan(opts = {}) {
   const miles = targetMiles();
   const P = {
     start, end: end && (Math.abs(end.lat - start.lat) + Math.abs(end.lon - start.lon) > 1e-5) ? end : null,
-    targetM: miles ? miles * MI : null, hill: S.hill, fast: S.fast, trails: S.trails, avoidSteps: S.avoidSteps,
+    targetM: miles ? miles * MI : null, hill: S.hill, fast: S.fast, scenic: S.scenic, trails: S.trails, avoidSteps: S.avoidSteps,
     shape: S.endText ? 'loop' : S.shape, hillTop: S.hillTop, seed: Math.floor(Math.random() * 1e6), maxGrade: S.maxGrade,
     destinations: S.dests.map(n => G.places.find(p => p.name === n)).filter(Boolean),
   };
   // steer away from recently shown routes; Shuffle pushes harder away from the ones on screen
   const seen = loadSeen(), avoid = { edges: [], weights: [] };
   for (const r of seen) for (const e of r) { avoid.edges.push(e); avoid.weights.push(0.6); }
+  const ranEdges = recentlyRanEdges(); for (const e of ranEdges) { avoid.edges.push(e); avoid.weights.push(1.2); }
   if (shuffleNext) for (const r of results) for (const e of (r.edges || [])) { avoid.edges.push(e); avoid.weights.push(1.5); }
   shuffleNext = false; P.avoid = avoid;
   const seenCount = seen.length;
@@ -484,7 +579,7 @@ async function runPlan(opts = {}) {
   let note = '';
   if (T && minL > T * 1.1) note = S.dests.length ? ` · going through ${esc(S.dests.join(' and '))} takes at least ${(minL / MI).toFixed(1)} mi from here` : P.end ? ` · getting to your finish takes at least ${(minL / MI).toFixed(1)} mi` : ` · the closest I could find is ${(minL / MI).toFixed(1)} mi` + (P.hillTop && P.maxGrade ? ` (hilltops are ringed by steep streets, so a grade limit makes them far; try ${Math.round(P.maxGrade * 100) < 12 ? Math.round(P.maxGrade * 100) + 2 + '% or ' : ''}Any)` : '');
   else if (T && maxL < T * 0.9) note = P.shape === 'out-and-back' && !P.end ? ` · the longest out & back that fits in SF from here is about ${(maxL / MI).toFixed(1)} mi; try a loop` : ` · the longest I could fit is ${(maxL / MI).toFixed(1)} mi`;
-  setStatus(`${results.length} option${results.length > 1 ? 's' : ''}` + (T ? ` for ${(T / MI).toFixed(2)} mi` : '') + note + (seenCount ? ` · steering away from ${seenCount} routes you've seen <button class="pickbtn" id="forgetBtn">Forget them</button>` : ''));
+  setStatus(`${results.length} option${results.length > 1 ? 's' : ''}` + (T ? ` for ${(T / MI).toFixed(2)} mi` : '') + note + (seenCount || ranEdges.length ? ` · steering away from ${seenCount ? seenCount + ' routes you\'ve seen' : ''}${seenCount && ranEdges.length ? ' and ' : ''}${ranEdges.length ? 'runs you did lately' : ''}` + (seenCount ? ` <button class="pickbtn" id="forgetBtn">Forget them</button>` : '') : ''));
   const fb = $('forgetBtn'); if (fb) fb.onclick = () => { forgetSeen(); fb.replaceWith(document.createTextNode('(forgotten)')); };
   renderAll(); fitRoute();
   if (opts.explicit && opts.reveal) revealResults();
@@ -548,7 +643,7 @@ function renderCards() {
     r.secs = lib.estimateSeconds(r, pace);
     const b = document.createElement('button'); b.className = 'card' + (i === sel ? ' on' : '');
     b.innerHTML = `<span class="tag">${'ABC'[i]}</span><span class="name">${esc(routeName(r))}</span>
-      <span class="stats"><span><b>${(r.length / MI).toFixed(2)}</b> mi</span><span><b>${fmtDur(r.secs)}</b></span><span>↑<b>${Math.round(r.gain * FT)}</b> ft</span><span>max <b>${Math.round(r.maxUp * 100)}%</b></span>${r.maxGrade ? `<span>&gt;${Math.round(r.maxGrade * 100)}%: <b>${((r.overUp + r.overDn) / MI).toFixed(2)}</b> mi</span>` : ''}</span>
+      <span class="stats"><span><b>${(r.length / MI).toFixed(2)}</b> mi</span><span><b>${fmtDur(r.secs)}</b></span><span>↑<b>${Math.round(r.gain * FT)}</b> ft</span><span>max <b>${Math.round(r.maxUp * 100)}%</b></span><span><b>${r.lights}</b> lights</span>${r.maxGrade ? `<span>&gt;${Math.round(r.maxGrade * 100)}%: <b>${((r.overUp + r.overDn) / MI).toFixed(2)}</b> mi</span>` : ''}</span>
       ${sparkline(r)}`;
     b.onclick = () => { sel = i; rememberShown([r]); renderAll(); fitRoute(); };
     c.appendChild(b);
@@ -574,6 +669,8 @@ function renderDetail() {
     </div>
     ${climbBackNote(r)}
     ${r.maxGrade ? steepNote(r) : ''}
+    <div class="hint"><b>${r.lights} stoplight${r.lights === 1 ? '' : 's'}</b> (${(r.lights / (r.length / MI)).toFixed(1)} per mile) · longest stretch without one ${(r.longestGap / MI).toFixed(1)} mi${r.greenM + r.waterM > 150 ? ` · <b>${((r.greenM + r.waterM) / MI).toFixed(1)} mi</b> in parks or along the water` : ''}${r.industrialM > 150 ? ` · ${(r.industrialM / MI).toFixed(1)} mi industrial` : ''}${r.majorM > 300 ? ` · ${(r.majorM / MI).toFixed(1)} mi on big roads` : ''}</div>
+    <div><div class="label" style="margin-bottom:4px">Water &amp; bathrooms</div>${r.amenities.length ? `<div class="list">${r.amenities.map(a => `<div class="row"><span><span class="amen ${a.kind}" aria-hidden="true">${a.kind === 'water' ? 'W' : 'T'}</span> ${a.kind === 'water' ? 'Fountain' : 'Restroom'}${a.name ? ' · ' + esc(a.name) : ''}${a.off > 40 ? ` <span class="hint">${Math.round(a.off * FT)} ft off route</span>` : ''}</span><span>mile ${(a.at / MI).toFixed(1)}</span></div>`).join('')}</div>` : '<div class="hint">None mapped within 400 ft of this route.</div>'}</div>
     ${r.climbs.length ? `<div><div class="label" style="margin-bottom:4px">Biggest climbs</div><div class="list">${r.climbs.slice(0, 4).map(c => `<div class="row"><span>${esc(c.street)} <span class="hint">at mile ${(c.from / MI).toFixed(1)}</span></span><span>+${Math.round(c.gain * FT)} ft · ${(c.grade * 100).toFixed(1)}% avg</span></div>`).join('')}</div><div class="hint" style="margin-top:4px">Steepest 100 m stretch: ${(r.maxUp * 100).toFixed(0)}% up, ${(-r.maxDn * 100).toFixed(0)}% down${r.steps ? ` · ${r.steps} stair section${r.steps > 1 ? 's' : ''}` : ''}</div></div>` : `<div class="hint">No sustained climbs. Steepest 100 m stretch is ${(r.maxUp * 100).toFixed(0)}%.</div>`}
     ${r.passed.length ? `<div><div class="label" style="margin-bottom:4px">Along the way</div><div class="list">${r.passed.map(p => `<div class="row"><span>${p.kind === 'hill' ? '▲ ' : ''}${esc(p.name)}</span><span>mile ${(p.at / MI).toFixed(1)}</span></div>`).join('')}</div></div>` : ''}
     <details><summary>Street by street (${r.streets.length})</summary><div class="list">${r.streets.map(s => `<div class="row"><span>${esc(s.name)}</span><span>${(s.len / MI).toFixed(2)} mi</span></div>`).join('')}</div></details>
@@ -582,9 +679,16 @@ function renderDetail() {
       <button class="btn ghost" id="gpxBtn">Download GPX</button>
       <button class="btn ghost" id="copyBtn">Copy summary</button>
     </div>
+    <div class="actions">
+      <button class="btn" id="ranBtn">I ran this</button>
+      <button class="btn ghost" id="saveBtn">${r._savedId ? 'Saved' : 'Save route'}</button>
+      <span class="hint" id="saveHint">${r._savedId ? (r._timesRan ? `Ran ${r._timesRan}× · last ${fmtDay(r._lastRanAt)}` : 'Saved, not run yet') : 'Saved runs sync across your devices'}</span>
+    </div>
     <div class="toast" id="toast"></div>
     <div class="hint">Google Maps only takes ${matchMedia('(pointer: coarse)').matches ? '3 points from a phone' : '9 points'}, so it may pick its own streets between them. The GPX file has the exact route for a watch.</div>`;
   $('copyBtn').onclick = () => copySummary(r);
+  $('saveBtn').onclick = () => saveRoute(r, false);
+  $('ranBtn').onclick = () => saveRoute(r, true);
   $('gpxBtn').onclick = () => downloadGpx(r);
   getDownloads().then(dl => { const b = $('gpxBtn'); if (b && !dl) b.hidden = true; });
 }
@@ -696,7 +800,7 @@ function initMap() {
   map.attributionControl.setPrefix(false);
   if (touch) { // say how to move the map, since one finger scrolls the page
     const Hint = L.Control.extend({ onAdd() { const d = L.DomUtil.create('div', 'map-hint'); d.textContent = 'Two fingers to move the map'; return d; } });
-    new Hint({ position: 'bottomleft' }).addTo(map);
+    new Hint({ position: 'topright' }).addTo(map);
   }
   map.attributionControl.addAttribution('Streets © OpenStreetMap contributors via Overture Maps · Terrain: USGS 3DEP via AWS Terrain Tiles');
   map.createPane('terrain').style.zIndex = 150;
@@ -823,6 +927,7 @@ function drawRoute() {
   // mile markers
   for (let m = 1; m * MI < r.length; m++) { let k = 0; while (k < g.cum.length - 1 && g.cum[k] < m * MI) k++; L.marker(ll[k], { icon: L.divIcon({ className: '', html: `<div style="font:600 10px var(--f-mono);background:var(--ink);color:var(--panel);border-radius:8px;padding:1px 5px;transform:translate(-50%,-50%);white-space:nowrap">${m}</div>`, iconSize: null }), interactive: false }).addTo(routeLayer); }
   const pin = (cls) => L.divIcon({ className: '', html: `<div class="pin ${cls}"></div>`, iconSize: [16, 16], iconAnchor: [8, 8] });
+  for (const a of r.amenities || []) L.marker([a.lat, a.lon], { icon: L.divIcon({ className: '', html: `<div class="amen ${a.kind}">${a.kind === 'water' ? 'W' : 'T'}</div>`, iconSize: [18, 18], iconAnchor: [9, 9] }), title: (a.kind === 'water' ? 'Drinking fountain' : 'Restroom') + (a.name ? ': ' + a.name : ''), keyboard: false }).addTo(routeLayer);
   L.marker(ll[0], { icon: pin('start'), title: 'Start' }).addTo(routeLayer);
   if (S.end) L.marker(ll[ll.length - 1], { icon: pin('end'), title: 'Finish' }).addTo(routeLayer);
 }
@@ -877,6 +982,7 @@ async function boot() {
   await img.decode(); terrainImg = img;
   G = await lib.decodeBase64Gz(b64);
   PL = ParseLib(G.places);
+  initRunStore();
   prepStreets();
   syncForm();
   if (typeof L !== 'undefined') initMap();

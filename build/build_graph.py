@@ -1,5 +1,7 @@
 """Build a compact walkable street graph of SF with elevation, for the in-browser router."""
 import pyarrow.parquet as pq, numpy as np, shapely, math, json, collections, gzip, base64, struct
+from env import Env, LAT0, LON0, M_LAT, M_LON
+ENV = Env()
 seg = pq.read_table('data/segments.parquet').to_pandas()
 D = np.load('data/dem.npz'); dem = D['dem']; Z=int(D['z']); X0=int(D['x0']); Y0=int(D['y0'])
 def elev(lon, lat):
@@ -106,7 +108,7 @@ for c,i in nodes.items(): node_ll[i]=conn_xy[c]
 node_el=elev(node_ll[:,0],node_ll[:,1])
 # per-edge densified geometry with elevation
 names=['']; name_ix={'':0}
-E_u=[];E_v=[];E_len=[];E_cls=[];E_name=[];E_off=[];E_n=[];E_up=[];E_dn=[]
+E_u=[];E_v=[];E_len=[];E_cls=[];E_name=[];E_off=[];E_n=[];E_up=[];E_dn=[];E_env=[]
 G=[]  # flat list of int16 triples (dlon,dlat,delev)
 tot_len=0
 for e in edges:
@@ -130,6 +132,7 @@ for e in edges:
     if e[3] not in name_ix: name_ix[e[3]]=len(names); names.append(e[3])
     E_u.append(u);E_v.append(v);E_len.append(round(L*10));E_cls.append(CLASSES.index(e[2]));E_name.append(name_ix[e[3]])
     E_up.append(round(up*10)); E_dn.append(round(dn*10))
+    E_env.append(ENV.edge_flags([((x-LON0)*M_LON,(y-LAT0)*M_LAT) for x,y in dense]))
     E_off.append(len(G)//3); E_n.append(len(dense))
     # interior + end vertices as deltas from previous (start = node u); elev in decimeters
     prev=(round(dense[0][0]*1e5),round(dense[0][1]*1e5),round(el[0]*10))
@@ -137,6 +140,8 @@ for e in edges:
         cur=(round(x*1e5),round(y*1e5),round(z*10))
         G.extend([cur[0]-prev[0],cur[1]-prev[1],cur[2]-prev[2]]); prev=cur
 print('total km',round(tot_len/1000),'geom verts',len(G)//3, 'names',len(names))
+node_sig=ENV.node_signal([((x-LON0)*M_LON,(y-LAT0)*M_LAT) for x,y in node_ll])
+print('edges green/water/industrial', sum(1 for f in E_env if f&1), sum(1 for f in E_env if f&2), sum(1 for f in E_env if f&4), 'signal nodes', int(node_sig.sum()))
 G=np.array(G); assert np.abs(G).max()<32767, np.abs(G).max()
 def b64(a,dt): return base64.b64encode(np.asarray(a,dtype=dt).tobytes()).decode()
 nl=np.round(node_ll*1e5).astype(np.int32)
@@ -145,6 +150,7 @@ blob={
  'nodeLon':b64(nl[:,0],'<i4'),'nodeLat':b64(nl[:,1],'<i4'),'nodeEl':b64(np.round(node_el*10),'<i2'),
  'eU':b64(E_u,'<i4'),'eV':b64(E_v,'<i4'),'eLen':b64(E_len,'<u4'),'eCls':b64(E_cls,'<u1'),'eName':b64(E_name,'<u2'),
  'eUp':b64(E_up,'<u2'),'eDn':b64(E_dn,'<u2'),'eOff':b64(E_off,'<u4'),'eN':b64(E_n,'<u2'),'geom':b64(G,'<i2'),
+ 'eEnv':b64(E_env,'<u1'),'nodeSig':b64(node_sig,'<u1'),'amenities':ENV.amenities,
 }
 json.dump(blob,open('data/graph.json','w'))
 raw=open('data/graph.json','rb').read()

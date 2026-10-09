@@ -16,7 +16,7 @@ const out = process.argv[2];
   await page.waitForFunction(() => document.querySelectorAll('.card').length > 0, null, { timeout: 60000 });
   const settle = async () => { await page.waitForTimeout(700); await page.waitForFunction(() => !document.getElementById('planBtn').disabled, null, { timeout: 60000 }); };
   const state = async () => ({ miles: await page.$$eval('.card .stats', els => els.map(e => parseFloat(e.textContent))), names: await page.$$eval('.card .name', els => els.map(e => e.textContent)),
-    understood: (await page.textContent('#understood')).trim(), cardText: await page.$$eval('.card .stats', els => els.map(e => e.textContent)), detail: await page.textContent('#detail'), pace: await page.inputValue('#paceIn'), amount: await page.inputValue('#amountIn'), status: await page.textContent('#status') });
+    understood: (await page.textContent('#understood')).trim(), cardText: await page.$$eval('.card .stats', els => els.map(e => e.textContent)), detail: await page.textContent('#detail'), saved: await page.textContent('#savedSummary'), savedList: await page.textContent('#savedList'), pace: await page.inputValue('#paceIn'), amount: await page.inputValue('#amountIn'), status: await page.textContent('#status') });
   const step = async (label, fn, check) => {
     await fn(); await settle(); const s = await state(); const ok = check(s); if (!ok) fails++;
     console.log(`${ok ? 'PASS' : 'FAIL'} ${label}\n   ${s.understood}\n   ${s.status} | ${s.miles.join(', ')} mi | ${s.names.join(' / ')}`);
@@ -56,6 +56,15 @@ const out = process.argv[2];
   await step('Forget them clears history', () => page.click('#forgetBtn'), s => /forgotten/.test(s.status));
   await page.click('#gradeSeg button[data-v="0.08"]'); await settle();
   await page.screenshot({ path: path.join(out, 'form-edits.png') });
+  // scenic + saved runs (localStorage fallback here; the real page uses the artifact database)
+  await step('Scenic chip', () => page.click('#tScenic'), s => /scenic/.test(s.understood) && s.miles.length > 0);
+  await step('details list lights and water/bathrooms', () => page.click('#tScenic'), s => /stoplight/.test(s.detail) && /Water & bathrooms/.test(s.detail));
+  await step('I ran this saves and logs', () => page.click('#ranBtn'), s => /Logged/.test(s.detail) && /Saved runs \(1\)/.test(s.saved));
+  await step('Ran it again counts', () => page.click('#savedList .ran'), s => /ran 2×/.test(s.savedList));
+  const shownName = await page.$eval('.card.on .name', e => e.textContent);
+  await page.fill('#prompt', 'easy 2 miles'); await page.click('#planBtn'); await settle();
+  await step('Show a saved run brings it back', () => page.click('#savedList .show'), s => s.names.length === 1 && s.names[0] === shownName && /Showing saved run/.test(s.status));
+  await step('delete needs a second tap', async () => { await page.click('#savedList .del'); await page.click('#savedList .del'); }, s => !/Saved runs \(/.test(s.saved));
   await step('new prompt still re-reads the description', async () => { await page.fill('#prompt', 'hilly 5 miles'); await page.click('#planBtn'); }, s => /5 mi/.test(s.understood) && /hilly/.test(s.understood) && near(s.miles, 5));
   await browser.close();
   console.log(fails ? `${fails} failures` : 'all form-edit cases passed');

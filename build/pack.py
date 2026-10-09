@@ -2,13 +2,15 @@
 import json, base64, gzip, struct, numpy as np, math, io
 from PIL import Image, ImageFilter
 g=json.load(open('data/graph.json')); addr=json.load(open('data/addr.json')); places=json.load(open('data/places.json'))
-DT={'nodeLon':'i4','nodeLat':'i4','nodeEl':'i2','eU':'i4','eV':'i4','eLen':'u4','eCls':'u1','eName':'u2','eUp':'u2','eDn':'u2','eOff':'u4','eN':'u2','geom':'i2'}
+DT={'nodeLon':'i4','nodeLat':'i4','nodeEl':'i2','eU':'i4','eV':'i4','eLen':'u4','eCls':'u1','eName':'u2','eUp':'u2','eDn':'u2','eOff':'u4','eN':'u2','geom':'i2','eEnv':'u1','nodeSig':'u1'}
 fields=[]; body=b''
 for k,dt in DT.items():
     raw=base64.b64decode(g[k])
     while len(body)%4: body+=b'\0'
     fields.append({'k':k,'dt':dt,'off':len(body),'len':len(raw)}); body+=raw
-header=json.dumps({'classes':g['classes'],'names':g['names'],'fields':fields,'addr':addr,'places':places},separators=(',',':')).encode()
+import datetime, hashlib
+version=datetime.date.today().isoformat()+'-'+hashlib.md5(base64.b64decode(g['eU'])).hexdigest()[:6]  # changes whenever edge ids change
+header=json.dumps({'classes':g['classes'],'names':g['names'],'fields':fields,'addr':addr,'places':places,'amenities':g['amenities'],'version':version},separators=(',',':')).encode()
 pad=(4-(len(header)+4)%4)%4; header+=b' '*pad
 blob=struct.pack('<I',len(header))+header+body
 gz=gzip.compress(blob,9); b64=base64.b64encode(gz).decode()

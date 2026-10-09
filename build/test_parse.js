@@ -79,6 +79,9 @@ const CASES = [
   ['run 1:30 at 10:00 pace', { miles: 9, pace: '10:00' }],
   ['6 mi @ 9:15', { miles: 6, pace: '9:15' }],
   ['out the door at 6, 40 min easy', { miles: 40 / 8.5, pace: '8:30' }],
+  ['scenic 5 miles along the water', { miles: 5, scenic: true }],
+  ['quiet streets, avoid industrial, 4 mi', { miles: 4, scenic: true }],
+  ['a nice 5 miler', { miles: 5, scenic: false }],
   ['100 minutes at 12:00 pace, lake merced', { miles: 100 / 12, pace: '12:00', dests: ['Lake Merced'] }],
 ];
 // What we saw Claude return for the first case: invented stops and a wrong distance
@@ -97,7 +100,7 @@ for (const [prompt, exp] of CASES) {
   if (exp.miles === null) check(tag, s.miles === null, `miles ${s.miles} should be open`);
   else if (exp.miles != null) check(tag, close(s.miles, exp.miles, 0.02), `miles ${s.miles.toFixed(2)} != ${exp.miles.toFixed(2)}`);
   if (exp.pace) check(tag, s.pace === exp.pace, `pace ${s.pace} != ${exp.pace}`);
-  for (const k of ['hill', 'fast', 'trails', 'avoidSteps', 'shape', 'hillTop', 'maxGrade']) if (k in exp) check(tag, r[k] === exp[k], `${k} ${r[k]} != ${exp[k]}`);
+  for (const k of ['hill', 'fast', 'trails', 'avoidSteps', 'shape', 'hillTop', 'maxGrade', 'scenic']) if (k in exp) check(tag, r[k] === exp[k], `${k} ${r[k]} != ${exp[k]}`);
   if (exp.dests) check(tag, JSON.stringify(r.dests) === JSON.stringify(exp.dests), `dests [${r.dests}] != [${exp.dests}]`);
   if ('end' in exp) check(tag, (r.end || '').toLowerCase().includes(exp.end.toLowerCase()), `end ${r.end}`);
   if ('start' in exp) check(tag, (r.start || '').toLowerCase() === exp.start.toLowerCase(), `start ${r.start}`);

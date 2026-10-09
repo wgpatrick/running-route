@@ -20,6 +20,8 @@ function RouterLib() {
     const nN = f.nodeLon.length, nE = f.eU.length;
     const g = {
       classes: header.classes, names: header.names, addr: header.addr, places: header.places,
+      amenities: header.amenities || [], version: header.version || '',
+      eEnv: f.eEnv || new Uint8Array(f.eU.length), nodeSig: f.nodeSig || new Uint8Array(f.nodeLon.length),
       nN, nE,
       lat: new Float64Array(nN), lon: new Float64Array(nN), el: new Float32Array(nN),
       x: new Float64Array(nN), y: new Float64Array(nN),
@@ -262,12 +264,21 @@ function RouterLib() {
     const W = { flat: [25, 8], rolling: [1.5, 0.6], hilly: [-1.0, 0.3], max: [-2.4, 0] }[prefs.hill || 'rolling'];
     const floor = prefs.hill === 'hilly' || prefs.hill === 'max' ? 0.25 : 0.6;
     const SM = prefs.maxGrade ? steepMetres(g, prefs.maxGrade) : null;
+    // scenic: parks and the waterfront are worth a detour, industrial blocks and big roads are not
+    const SCENIC = prefs.scenic ? g.classes.map(c => ({ trunk: 1.8, primary: 1.45, secondary: 1.15, tertiary: 1.05, residential: 0.95, living_street: 0.9 }[c] || 1)) : null;
+    const SIG_PEN = prefs.fast ? 55 : 0; // metres of running a stoplight is worth at tempo pace
     const cost = new Float32Array(2 * g.nE); // [2e] forward, [2e+1] backward
     for (let e = 0; e < g.nE; e++) {
-      const L = g.eLen[e], base = L * F[g.eCls[e]];
+      const L = g.eLen[e]; let base = L * F[g.eCls[e]];
+      if (SCENIC) {
+        const env = g.eEnv[e]; let m = SCENIC[g.eCls[e]];
+        if (env & 1) m *= 0.7; if (env & 2) m *= 0.75; if (env & 4) m *= 1.7;
+        base *= m;
+      }
       for (let d = 0; d < 2; d++) {
         const up = d ? g.eDn[e] : g.eUp[e], dn = d ? g.eUp[e] : g.eDn[e];
         let c = base + W[0] * up + W[1] * dn;
+        if (SIG_PEN) { const from = d ? g.eV[e] : g.eU[e], to = d ? g.eU[e] : g.eV[e]; if (g.nodeSig[to] && !g.nodeSig[from]) c += SIG_PEN; } // pay once per light, on arrival
         if (SM) { // steer around anything steeper than the runner's limit, up or down
           const [u, w] = steepDir(SM, d ? ~e : e);
           c += u * 90 + w * 70;
@@ -276,7 +287,7 @@ function RouterLib() {
         cost[2 * e + d] = Math.max(c, L * floor);
       }
     }
-    return { cost, hMin: Math.min(floor, ...F) };
+    return { cost, hMin: Math.min(floor, ...F) * (SCENIC ? 0.7 * 0.75 * 0.9 : 1) };
   }
 
   function makeSearch(g) {
@@ -457,7 +468,29 @@ function RouterLib() {
     }
     passed.sort((a, b) => a.at - b.at);
     let hiI = 0; for (let i = 0; i < el.length; i++) if (el[i] > el[hiI]) hiI = i;
+    // stoplights: count each signalised intersection once (its corner and crosswalk nodes sit within ~40 m)
+    const lightsAt = []; let at = 0, inSig = false;
+    for (const ae of path) {
+      const e = ae >= 0 ? ae : ~ae, to = ae >= 0 ? g.eV[e] : g.eU[e];
+      at += g.eLen[e];
+      const sig = !!g.nodeSig[to];
+      if (sig && !inSig && (!lightsAt.length || at - lightsAt[lightsAt.length - 1] > 40)) lightsAt.push(at);
+      inSig = sig;
+    }
+    let longestGap = 0; { let prev = 0; for (const x of lightsAt.concat([L])) { longestGap = Math.max(longestGap, x - prev); prev = x; } }
+    // surroundings
+    let greenM = 0, waterM = 0, industrialM = 0, majorM = 0;
+    for (const ae of path) { const e = ae >= 0 ? ae : ~ae, env = g.eEnv[e], len = g.eLen[e], cls = g.classes[g.eCls[e]]; if (env & 1) greenM += len; if (env & 2) waterM += len; if (env & 4) industrialM += len; if (cls === 'primary' || cls === 'trunk' || cls === 'secondary') majorM += len; }
+    // fountains and toilets within 120 m of the route
+    const amenities = [];
+    for (const [alat, alon, kind, name] of g.amenities) {
+      let bd = Infinity, bi = 0;
+      for (let i = 0; i < lat.length; i += 2) { const d = ((lon[i] - alon) * M_LON) ** 2 + ((lat[i] - alat) * M_LAT) ** 2; if (d < bd) { bd = d; bi = i; } }
+      if (bd < 120 * 120) amenities.push({ kind, name, lat: alat, lon: alon, at: cum[bi], off: Math.sqrt(bd) });
+    }
+    amenities.sort((a, b) => a.at - b.at);
     return {
+      lights: lightsAt.length, lightsAt, longestGap, greenM, waterM, industrialM, majorM, amenities,
       length: L, gain, loss, maxUp, maxDn, bins, climbs: climbs.slice(0, 5), streets: seq2, overlap: rep / Math.max(L, 1),
       steps: stepsN, passed, overUp, overDn, steep50, steepRanges, maxGrade: P.maxGrade || null, high: { el: el[hiI], at: cum[hiI], lat: lat[hiI], lon: lon[hiI] },
       colorGrades: gradeAt.map((_, i) => { let s = 0, n = 0; for (let j = Math.max(0, i - 3); j <= Math.min(gradeAt.length - 1, i + 3); j++) { s += gradeAt[j]; n++; } return s / n; }),
@@ -504,6 +537,8 @@ function RouterLib() {
     if (P.shape !== 'out-and-back') s += a.overlap / 0.12;
     if (P.fast) s += (a.bins[2] + 2 * a.bins[3]) / a.length / 0.04 + a.steps * 0.5;
     if (P.avoidSteps) s += a.steps * 2;
+    if (P.fast) s += a.lights / (a.length / MI) / 2.5; // lights per mile
+    if (P.scenic) s += (a.industrialM + 0.5 * a.majorM - 0.6 * (a.greenM + a.waterM)) / a.length / 0.08;
     if (P.maxGrade) s += Math.max(0, a.overUp + 0.8 * a.overDn - (P._unavoidable || 0)) / (0.005 * a.length);
     return s;
   }
@@ -703,9 +738,46 @@ function RouterLib() {
       if (!tooClose) out.push(c);
       if (out.length >= (P.count || 3)) break;
     }
-    return { routes: out.map(c => ({ ...c.a, edges: [...new Set(c.path.map(ae => ae >= 0 ? ae : ~ae))], score: c.score, kind: c.meta.kind, unavoidable: Math.min(unavoidable, c.a.overUp + c.a.overDn) })), ms: Date.now() - t0, snapped: { start: S, end: E } };
+    return { routes: out.map(c => ({ ...c.a, path: c.path, edges: [...new Set(c.path.map(ae => ae >= 0 ? ae : ~ae))], score: c.score, kind: c.meta.kind, unavoidable: Math.min(unavoidable, c.a.overUp + c.a.overDn) })), ms: Date.now() - t0, snapped: { start: S, end: E } };
   }
 
-  return { inSF, decode, decodeBase64Gz, geocode, plan, nearestNode, estimateSeconds, gapFactor, normStreet, MI, M_LAT, M_LON };
+  // A saved run again: from its edge path when the graph is the same build, else re-traced from its coordinates.
+  function reanalyze(g, path, P) {
+    const a = analyze(g, path, P || {});
+    return { ...a, path, edges: [...new Set(path.map(ae => ae >= 0 ? ae : ~ae))] };
+  }
+  function pathFromCoords(g, coords) {
+    // Map-matching: streets within 25 m of the saved line cost their length, everything else 8x, then route
+    // through a few waypoints along the line so loops keep their direction.
+    const CELL = 30, cells = new Map(), key = (x, y) => Math.floor(x / CELL) * 100003 + Math.floor(y / CELL);
+    const pts = coords.map(([la, lo]) => toXY(la, lo));
+    for (const [x, y] of pts) { const k = key(x, y); let a = cells.get(k); if (!a) cells.set(k, a = []); a.push([x, y]); }
+    const nearLine = (x, y) => {
+      for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) {
+        const a = cells.get(key(x + dx * CELL, y + dy * CELL)); if (!a) continue;
+        for (const [px, py] of a) if ((px - x) ** 2 + (py - y) ** 2 < 25 * 25) return true;
+      }
+      return false;
+    };
+    const C = { cost: new Float32Array(2 * g.nE), hMin: 1 }, near = new Uint8Array(g.nE);
+    for (let e = 0; e < g.nE; e++) {
+      const o = g.vOff[e], n = g.eN[e]; let hit = 0;
+      for (let j = 0; j < n; j++) { const [x, y] = toXY(g.vLat[o + j], g.vLon[o + j]); if (nearLine(x, y)) hit++; }
+      near[e] = hit >= Math.max(1, Math.ceil(0.8 * n)) ? 1 : 0;
+      C.cost[2 * e] = C.cost[2 * e + 1] = g.eLen[e] * (near[e] ? 1 : 8);
+    }
+    // waypoint = nearest endpoint of a matched street to a sample point
+    const nearNode = new Uint8Array(g.nN); for (let e = 0; e < g.nE; e++) if (near[e]) { nearNode[g.eU[e]] = 1; nearNode[g.eV[e]] = 1; }
+    const snap = (x, y) => { let best = -1, bd = Infinity; for (let n = 0; n < g.nN; n++) if (nearNode[n]) { const d = (g.x[n] - x) ** 2 + (g.y[n] - y) ** 2; if (d < bd) { bd = d; best = n; } } return best; };
+    const nodes = []; let acc = 0;
+    for (let i = 0; i < pts.length; i++) {
+      if (i) acc += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+      if (i === 0 || acc >= 700 || i === pts.length - 1) { const n = snap(pts[i][0], pts[i][1]); if (n >= 0 && nodes[nodes.length - 1] !== n) nodes.push(n); acc = 0; }
+    }
+    const search = makeSearch(g), path = [];
+    for (let i = 0; i + 1 < nodes.length; i++) { const p = search(nodes[i], nodes[i + 1], C, null); if (!p) return null; path.push(...p); }
+    return path;
+  }
+  return { inSF, decode, decodeBase64Gz, geocode, plan, reanalyze, pathFromCoords, nearestNode, estimateSeconds, gapFactor, normStreet, MI, M_LAT, M_LON };
 }
 if (typeof module !== 'undefined') module.exports = RouterLib;
