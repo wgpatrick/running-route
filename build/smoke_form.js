@@ -48,6 +48,12 @@ const out = process.argv[2];
   await step('steepest grade 8% (click)', async () => { await page.click('#shapeSeg button[data-v=loop]'); await page.click('#gradeSeg button[data-v="0.08"]'); },
     s => /nothing over 8%/.test(s.understood) && s.cardText.every(t => />8%: [0-9.]+ mi/.test(t)) && /steeper than 8%|Nothing steeper than 8%/.test(s.detail));
   await step('steepest grade back to Any', () => page.click('#gradeSeg button[data-v=""]'), s => !/nothing over/.test(s.understood) && s.cardText.every(t => !/>8%/.test(t)));
+  // variety: same settings planned again, and Shuffle, should give new routes
+  const before = (await state()).names.join('|') + (await state()).miles.join('|');
+  await step('Update routes again with same settings gives different routes', () => page.click('#updateBtn'), s => s.names.join('|') + s.miles.join('|') !== before && /steering away/.test(s.status));
+  const before2 = (await state()).miles.join('|') + (await state()).names.join('|');
+  await step('Shuffle gives different routes', () => page.click('#shuffleBtn'), s => s.miles.join('|') + s.names.join('|') !== before2);
+  await step('Forget them clears history', () => page.click('#forgetBtn'), s => /forgotten/.test(s.status));
   await page.click('#gradeSeg button[data-v="0.08"]'); await settle();
   await page.screenshot({ path: path.join(out, 'form-edits.png') });
   await step('new prompt still re-reads the description', async () => { await page.fill('#prompt', 'hilly 5 miles'); await page.click('#planBtn'); }, s => /5 mi/.test(s.understood) && /hilly/.test(s.understood) && near(s.miles, 5));

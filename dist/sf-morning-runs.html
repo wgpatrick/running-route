@@ -818,7 +818,7 @@ details[open] summary { margin-bottom: 6px; }
       <textarea id="prompt" rows="2">go to a cool hilltop with a 7 mile long route</textarea>
       <div class="ask-row">
         <button class="btn" id="planBtn">Plan routes</button>
-        <button class="btn ghost" id="shuffleBtn" title="Same settings, new variations">Shuffle</button>
+        <button class="btn ghost" id="shuffleBtn" title="Same settings, different streets">Shuffle</button>
         <span class="hint" id="aiHint"></span>
       </div>
       <div class="examples" id="examples"></div>
@@ -1315,7 +1315,7 @@ function RouterLib() {
     const seq = [];
     for (const ae of path) {
       const e = ae >= 0 ? ae : ~ae, cls = g.classes[g.eCls[e]];
-      let nm = g.names[g.eName[e]];
+      let nm = cleanName(g.names[g.eName[e]]);
       if (!nm) nm = cls === 'steps' ? 'stairs' : (cls === 'path' || cls === 'track' || cls === 'footway' || cls === 'bridleway' || cls === 'pedestrian') ? 'path' : '';
       const last = seq[seq.length - 1];
       if (last && (last.name === nm || !nm)) last.len += g.eLen[e];
@@ -1349,12 +1349,14 @@ function RouterLib() {
       lowEl: Math.min(...el), geom: { lat, lon, el, cum }, gradeStep: step, grades: gradeAt, profile: rs,
     };
   }
+  // "Mission Street, W. Sidewalk" -> "Mission Street"
+  const cleanName = (n) => (n || '').replace(/,?\s*(?:[NSEW]\.?|North|South|East|West)?\s*Sidewalk$/i, '').trim();
   function dominantName(g, path, cum, edgeAt, from, to) {
     const tally = new Map();
     for (let i = 1; i < cum.length; i++) {
       if (cum[i] < from || cum[i - 1] > to) continue;
       const e = edgeAt[i]; const cls = g.classes[g.eCls[e]];
-      const nm = g.names[g.eName[e]] || (cls === 'steps' ? 'stairs' : (cls === 'sidewalk' || cls === 'crosswalk') ? '' : 'park paths');
+      const nm = cleanName(g.names[g.eName[e]]) || (cls === 'steps' ? 'stairs' : (cls === 'sidewalk' || cls === 'crosswalk') ? '' : 'park paths');
       tally.set(nm, (tally.get(nm) || 0) + (nm ? 1 : 0.3) * (cum[i] - cum[i - 1]));
     }
     let best = '', bl = 0; for (const [n, l] of tally) if (l > bl) { bl = l; best = n; }
@@ -1393,10 +1395,30 @@ function RouterLib() {
 
   function plan(g, P, progress) {
     const t0 = Date.now();
-    const C = makeCost(g, P);
-    const search = makeSearch(g);
     const S = nearestNode(g, P.start.lat, P.start.lon, { good: true });
     const E = P.end ? nearestNode(g, P.end.lat, P.end.lon, { good: true }) : S;
+    const C = makeCost(g, P);
+    // --- variety ---
+    // Streets right around the start/finish are shared by every route, so they're exempt from repeat penalties.
+    const DOOR = 350, nearDoor = (n) => Math.hypot(g.x[n] - g.x[S], g.y[n] - g.y[S]) < DOOR || Math.hypot(g.x[n] - g.x[E], g.y[n] - g.y[E]) < DOOR;
+    const doorEdge = (e) => nearDoor(g.eU[e]) && nearDoor(g.eV[e]);
+    // Small per-edge noise so near-equal grid streets take turns instead of the same one always winning.
+    if (P.seed != null) {
+      let lo = 1;
+      for (let e = 0; e < g.nE; e++) {
+        let h = Math.imul(e ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(P.seed + 1, 0xc2b2ae35); h ^= h >>> 13; h = Math.imul(h, 0x27d4eb2d); h ^= h >>> 15;
+        const m = 0.82 + 0.36 * ((h >>> 0) / 4294967296); lo = Math.min(lo, m);
+        C.cost[2 * e] *= m; C.cost[2 * e + 1] *= m;
+      }
+      C.hMin *= lo;
+    }
+    // Recently shown routes: make their streets cost more so new plans explore elsewhere.
+    const seenW = new Float32Array(g.nE);
+    if (P.avoid && P.avoid.edges) {
+      P.avoid.edges.forEach((e, i) => { if (e >= 0 && e < g.nE && !doorEdge(e)) seenW[e] += P.avoid.weights ? P.avoid.weights[i] : 1; });
+      for (let e = 0; e < g.nE; e++) if (seenW[e]) { const m = 1 + Math.min(2.5, seenW[e]); C.cost[2 * e] *= m; C.cost[2 * e + 1] *= m; }
+    }
+    const search = makeSearch(g);
     const T = P.targetM || null;
     const dests = (P.destinations || []).map(d => nearestNode(g, d.lat, d.lon, { good: true }));
     // a loop crosses the doorstep twice (out and home); a one-way run once at each end
@@ -1415,7 +1437,12 @@ function RouterLib() {
       const c = { path: p, L, nodes, meta };
       return c;
     };
-    const finish = (c) => { if (!c) return; c.a = analyze(g, c.path, P); c.score = scoreRoute(c.a, P); cands.push(c); };
+    const finish = (c) => {
+      if (!c) return; c.a = analyze(g, c.path, P); c.score = scoreRoute(c.a, P);
+      let rep = 0; for (const ae of c.path) { const e = ae >= 0 ? ae : ~ae; if (seenW[e]) rep += g.eLen[e] * Math.min(1, seenW[e]); }
+      c.a.repeatFrac = rep / c.L; c.score += 4 * c.a.repeatFrac;
+      cands.push(c);
+    };
     const pick = (x, y, rad, bias) => {
       // node near (x, y); terrain bias pulls toward high or low ground
       let ns = nodesNear(g, x, y, rad);
@@ -1522,16 +1549,18 @@ function RouterLib() {
     cands.sort((a, b) => a.score - b.score);
     const out = [];
     for (const c of cands) {
-      const set = new Set(c.path.map(ae => ae >= 0 ? ae : ~ae));
+      // options must differ: at most 45% shared distance, not counting the doorstep
+      const set = new Set(c.path.map(ae => ae >= 0 ? ae : ~ae).filter(e => !doorEdge(e)));
+      let mine = 0; for (const e of set) mine += g.eLen[e];
       let tooClose = false;
       for (const o of out) {
-        let inter = 0, lo = 0; for (const ae of o.path) { const e = ae >= 0 ? ae : ~ae; if (set.has(e)) inter += g.eLen[e]; lo += g.eLen[e]; }
-        if (inter / Math.min(lo, c.L) > 0.6) { tooClose = true; break; }
+        let inter = 0, lo = 0; for (const e of new Set(o.path.map(ae => ae >= 0 ? ae : ~ae))) { if (doorEdge(e)) continue; if (set.has(e)) inter += g.eLen[e]; lo += g.eLen[e]; }
+        if (inter / Math.max(1, Math.min(lo, mine)) > 0.45) { tooClose = true; break; }
       }
       if (!tooClose) out.push(c);
       if (out.length >= (P.count || 3)) break;
     }
-    return { routes: out.map(c => ({ ...c.a, score: c.score, kind: c.meta.kind, unavoidable: Math.min(unavoidable, c.a.overUp + c.a.overDn) })), ms: Date.now() - t0, snapped: { start: S, end: E } };
+    return { routes: out.map(c => ({ ...c.a, edges: [...new Set(c.path.map(ae => ae >= 0 ? ae : ~ae))], score: c.score, kind: c.meta.kind, unavoidable: Math.min(unavoidable, c.a.overUp + c.a.overDn) })), ms: Date.now() - t0, snapped: { start: S, end: E } };
   }
 
   return { decode, decodeBase64Gz, geocode, plan, nearestNode, estimateSeconds, gapFactor, normStreet, MI, M_LAT, M_LON };
@@ -1737,7 +1766,14 @@ const $ = (id) => document.getElementById(id);
 const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const lib = RouterLib();
 let G = null, worker = null, map = null, routeLayer = null, markers = {}, hoverMarker = null;
-let results = [], sel = 0, reqId = 0, picking = null, seed = 0;
+let results = [], sel = 0, reqId = 0, picking = null, shuffleNext = false;
+// Routes you've been shown (this browser only), so later plans explore new streets.
+const SEEN_KEY = 'sfruns.seen', SEEN_MAX = 24;
+function loadSeen() { try { const v = JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+function rememberShown(routes) {
+  try { const seen = loadSeen().concat(routes.map(r => r.edges)).slice(-SEEN_MAX); localStorage.setItem(SEEN_KEY, JSON.stringify(seen)); } catch (e) {}
+}
+function forgetSeen() { try { localStorage.removeItem(SEEN_KEY); } catch (e) {} }
 
 // ---------- state ----------
 const S = {
@@ -1890,7 +1926,7 @@ async function onAsk() {
   const ai = await Promise.race([claudeParse(text), new Promise(r => setTimeout(() => r(null), 15000))]);
   if (ai) { const r = applyParse(PL.mergeClaude(text, local, ai)); $('understood').innerHTML = describeSettings(r); $('aiHint').textContent = 'Interpreted by Claude'; }
   else $('aiHint').textContent = '';
-  seed = 0; runPlan();
+  runPlan();
 }
 
 function runPlan() {
@@ -1906,50 +1942,73 @@ function runPlan() {
   const P = {
     start, end: end && (Math.abs(end.lat - start.lat) + Math.abs(end.lon - start.lon) > 1e-5) ? end : null,
     targetM: miles ? miles * MI : null, hill: S.hill, fast: S.fast, trails: S.trails, avoidSteps: S.avoidSteps,
-    shape: S.endText ? 'loop' : S.shape, hillTop: S.hillTop, seed, maxGrade: S.maxGrade,
+    shape: S.endText ? 'loop' : S.shape, hillTop: S.hillTop, seed: Math.floor(Math.random() * 1e6), maxGrade: S.maxGrade,
     destinations: S.dests.map(n => G.places.find(p => p.name === n)).filter(Boolean),
   };
+  // steer away from recently shown routes; Shuffle pushes harder away from the ones on screen
+  const seen = loadSeen(), avoid = { edges: [], weights: [] };
+  for (const r of seen) for (const e of r) { avoid.edges.push(e); avoid.weights.push(0.6); }
+  if (shuffleNext) for (const r of results) for (const e of (r.edges || [])) { avoid.edges.push(e); avoid.weights.push(1.5); }
+  shuffleNext = false; P.avoid = avoid;
+  const seenCount = seen.length;
   setStatus('Searching ' + (P.hillTop ? 'hilltops and ' : '') + 'streets for routes…', true);
   const id = ++reqId;
   worker.onmessage = (ev) => {
     const m = ev.data; if (m.id !== id) return;
     if (m.type === 'error') { setStatus('Planning failed: ' + esc(m.message)); return; }
-    results = m.res.routes; sel = 0;
+    results = m.res.routes; sel = 0; rememberShown(results);
     if (!results.length) { setStatus('No route found. Try a different start or a shorter distance.'); renderAll(); return; }
     const off = P.targetM ? results[0].length / P.targetM : 1;
     const minL = Math.min(...results.map(r => r.length));
-    setStatus(`${results.length} option${results.length > 1 ? 's' : ''}` + (P.targetM ? ` for ${(P.targetM / MI).toFixed(2)} mi` : '') + (P.targetM && minL > P.targetM * 1.1 ? ` · going through ${esc(S.dests.join(' and ') || 'those stops')} takes at least ${(minL / MI).toFixed(1)} mi from here` : ''));
+    setStatus(`${results.length} option${results.length > 1 ? 's' : ''}` + (P.targetM ? ` for ${(P.targetM / MI).toFixed(2)} mi` : '') + (P.targetM && minL > P.targetM * 1.1 ? ` · going through ${esc(S.dests.join(' and ') || 'those stops')} takes at least ${(minL / MI).toFixed(1)} mi from here` : '') + (seenCount ? ` · steering away from ${seenCount} routes you've seen <button class="pickbtn" id="forgetBtn">Forget them</button>` : ''));
+    const fb = $('forgetBtn'); if (fb) fb.onclick = () => { forgetSeen(); fb.replaceWith(document.createTextNode('(forgotten)')); };
     renderAll(); fitRoute();
   };
   worker.postMessage({ type: 'plan', id, P, paceSec });
 }
 let lastPrompt = null, replanT = null;
 // Settings edits replan from the form; the description is only re-read when its text changes.
-function replanSoon(delay = 350) { if (!G) return; clearTimeout(replanT); replanT = setTimeout(() => { seed = 0; runPlan(); }, delay); }
-$('planBtn').onclick = () => { if ($('prompt').value.trim() === lastPrompt) { seed = 0; runPlan(); } else onAsk(); };
-$('updateBtn').onclick = () => { clearTimeout(replanT); seed = 0; runPlan(); };
-$('shuffleBtn').onclick = () => { if (G) { seed++; runPlan(); } };
+function replanSoon(delay = 350) { if (!G) return; clearTimeout(replanT); replanT = setTimeout(() => { runPlan(); }, delay); }
+$('planBtn').onclick = () => { if ($('prompt').value.trim() === lastPrompt) { runPlan(); } else onAsk(); };
+$('updateBtn').onclick = () => { clearTimeout(replanT); runPlan(); };
+$('shuffleBtn').onclick = () => { if (G) { shuffleNext = true; runPlan(); } };
 $('prompt').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onAsk(); } });
 for (const id of ['startIn', 'endIn', 'amountIn', 'paceIn']) {
   const el = $(id); let before = el.value;
   el.addEventListener('focus', () => { before = el.value; });
-  el.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); before = el.value; clearTimeout(replanT); seed = 0; runPlan(); } });
+  el.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); before = el.value; clearTimeout(replanT); runPlan(); } });
   el.addEventListener('change', () => { if (el.value !== before) { before = el.value; replanSoon(0); } });
 }
 
 // ---------- rendering ----------
 const GRADE_BREAKS = [0.03, 0.06, 0.10, 0.15];
 function gradeColor(gr) { const a = Math.abs(gr); const i = a < .03 ? 0 : a < .06 ? 1 : a < .10 ? 2 : a < .15 ? 3 : 4; return css('--g' + i); }
-function routeName(r, i) {
-  const hills = r.passed.filter(p => p.kind === 'hill');
-  const pace = paceToSec(S.pace) || 510;
-  if (S.end) { const via = r.passed.filter(p => p.kind === 'hill').map(p => p.name).slice(0, 2); const main = r.streets.filter(s => s.name !== 'path' && s.name !== 'stairs').sort((a, b) => b.len - a.len)[0]; return `To ${S.end.label || S.endText} via ${via.length ? via.join(' + ') : (main ? main.name : 'side streets')}`; }
-  if (S.dests.length) return S.dests.join(' + ') + (r.passed.length > S.dests.length ? ' · ' + r.passed.filter(p => !S.dests.includes(p.name)).slice(0, 2).map(p => p.name).join(', ') : '');
-  if (hills.length) return hills.map(h => h.name).slice(0, 2).join(' + ') + (S.endText ? '' : S.shape === 'out-and-back' ? ' out & back' : ' loop');
-  const main = r.streets.filter(s => s.name !== 'path' && s.name !== 'stairs').sort((a, b) => b.len - a.len)[0];
-  const spot = r.passed.find(p => p.kind === 'place');
-  const kind = S.shape === 'out-and-back' ? 'Out & back' : 'Loop';
-  return spot ? `${spot.name} via ${main ? main.name : 'side streets'}` : `${kind} via ${main ? main.name : 'side streets'}`;
+// Route names: places passed near the start/finish don't count (every loop from home "passes" them),
+// and options on screen never share a name.
+function baseRouteName(r) {
+  const away = r.passed.filter(p => p.at > 400 && p.at < r.length - 400);
+  const hills = away.filter(p => p.kind === 'hill');
+  const main = r.streets.filter(s => s.name !== 'path' && s.name !== 'stairs' && s.name !== 'sidewalks').sort((a, b) => b.len - a.len)[0];
+  if (S.end) { const via = hills.map(p => p.name).slice(0, 2); return `To ${S.end.label || S.endText} via ${via.length ? via.join(' + ') : (main ? main.name : 'side streets')}`; }
+  if (S.dests.length) { const extra = away.filter(p => !S.dests.includes(p.name)).slice(0, 2).map(p => p.name); return S.dests.join(' + ') + (extra.length ? ' · ' + extra.join(', ') : ''); }
+  const kind = S.shape === 'out-and-back' ? 'out & back' : 'loop';
+  if (hills.length) return hills.map(h => h.name).slice(0, 2).join(' + ') + ' ' + kind;
+  const spot = away.find(p => p.kind === 'place');
+  return spot ? `${spot.name} via ${main ? main.name : 'side streets'}` : `${kind[0].toUpperCase() + kind.slice(1)} via ${main ? main.name : 'side streets'}`;
+}
+function routeName(r) {
+  if (r._name) return r._name;
+  const names = results.map(baseRouteName);
+  results.forEach((x, i) => {
+    let n = names[i];
+    if (names.filter(m => m === n).length > 1) { // add the longest street this route has that the others with the same name don't
+      const others = new Set(results.filter((y, j) => j !== i && names[j] === names[i]).flatMap(y => y.streets.map(s => s.name)));
+      const own = x.streets.filter(s => !others.has(s.name) && s.name !== 'path' && s.name !== 'stairs' && s.name !== 'sidewalks' && !n.includes(s.name)).sort((a, b) => b.len - a.len)[0];
+      if (own) n += (n.includes(' via ') ? ' & ' : ' via ') + own.name;
+    }
+    x._name = n;
+  });
+  return r._name || baseRouteName(r);
 }
 function sparkline(r) {
   const p = r.profile, n = p.length; if (n < 2) return '';
@@ -1964,7 +2023,7 @@ function renderCards() {
   results.forEach((r, i) => {
     r.secs = lib.estimateSeconds(r, pace);
     const b = document.createElement('button'); b.className = 'card' + (i === sel ? ' on' : '');
-    b.innerHTML = `<span class="tag">${'ABC'[i]}</span><span class="name">${esc(routeName(r, i))}</span>
+    b.innerHTML = `<span class="tag">${'ABC'[i]}</span><span class="name">${esc(routeName(r))}</span>
       <span class="stats"><span><b>${(r.length / MI).toFixed(2)}</b> mi</span><span><b>${fmtDur(r.secs)}</b></span><span>↑<b>${Math.round(r.gain * FT)}</b> ft</span><span>max <b>${Math.round(r.maxUp * 100)}%</b></span>${r.maxGrade ? `<span>&gt;${Math.round(r.maxGrade * 100)}%: <b>${((r.overUp + r.overDn) / MI).toFixed(2)}</b> mi</span>` : ''}</span>
       ${sparkline(r)}`;
     b.onclick = () => { sel = i; renderAll(); fitRoute(); };

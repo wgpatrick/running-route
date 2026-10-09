@@ -415,7 +415,7 @@ function RouterLib() {
     const seq = [];
     for (const ae of path) {
       const e = ae >= 0 ? ae : ~ae, cls = g.classes[g.eCls[e]];
-      let nm = g.names[g.eName[e]];
+      let nm = cleanName(g.names[g.eName[e]]);
       if (!nm) nm = cls === 'steps' ? 'stairs' : (cls === 'path' || cls === 'track' || cls === 'footway' || cls === 'bridleway' || cls === 'pedestrian') ? 'path' : '';
       const last = seq[seq.length - 1];
       if (last && (last.name === nm || !nm)) last.len += g.eLen[e];
@@ -449,12 +449,14 @@ function RouterLib() {
       lowEl: Math.min(...el), geom: { lat, lon, el, cum }, gradeStep: step, grades: gradeAt, profile: rs,
     };
   }
+  // "Mission Street, W. Sidewalk" -> "Mission Street"
+  const cleanName = (n) => (n || '').replace(/,?\s*(?:[NSEW]\.?|North|South|East|West)?\s*Sidewalk$/i, '').trim();
   function dominantName(g, path, cum, edgeAt, from, to) {
     const tally = new Map();
     for (let i = 1; i < cum.length; i++) {
       if (cum[i] < from || cum[i - 1] > to) continue;
       const e = edgeAt[i]; const cls = g.classes[g.eCls[e]];
-      const nm = g.names[g.eName[e]] || (cls === 'steps' ? 'stairs' : (cls === 'sidewalk' || cls === 'crosswalk') ? '' : 'park paths');
+      const nm = cleanName(g.names[g.eName[e]]) || (cls === 'steps' ? 'stairs' : (cls === 'sidewalk' || cls === 'crosswalk') ? '' : 'park paths');
       tally.set(nm, (tally.get(nm) || 0) + (nm ? 1 : 0.3) * (cum[i] - cum[i - 1]));
     }
     let best = '', bl = 0; for (const [n, l] of tally) if (l > bl) { bl = l; best = n; }
@@ -493,10 +495,30 @@ function RouterLib() {
 
   function plan(g, P, progress) {
     const t0 = Date.now();
-    const C = makeCost(g, P);
-    const search = makeSearch(g);
     const S = nearestNode(g, P.start.lat, P.start.lon, { good: true });
     const E = P.end ? nearestNode(g, P.end.lat, P.end.lon, { good: true }) : S;
+    const C = makeCost(g, P);
+    // --- variety ---
+    // Streets right around the start/finish are shared by every route, so they're exempt from repeat penalties.
+    const DOOR = 350, nearDoor = (n) => Math.hypot(g.x[n] - g.x[S], g.y[n] - g.y[S]) < DOOR || Math.hypot(g.x[n] - g.x[E], g.y[n] - g.y[E]) < DOOR;
+    const doorEdge = (e) => nearDoor(g.eU[e]) && nearDoor(g.eV[e]);
+    // Small per-edge noise so near-equal grid streets take turns instead of the same one always winning.
+    if (P.seed != null) {
+      let lo = 1;
+      for (let e = 0; e < g.nE; e++) {
+        let h = Math.imul(e ^ 0x9e3779b9, 0x85ebca6b) ^ Math.imul(P.seed + 1, 0xc2b2ae35); h ^= h >>> 13; h = Math.imul(h, 0x27d4eb2d); h ^= h >>> 15;
+        const m = 0.82 + 0.36 * ((h >>> 0) / 4294967296); lo = Math.min(lo, m);
+        C.cost[2 * e] *= m; C.cost[2 * e + 1] *= m;
+      }
+      C.hMin *= lo;
+    }
+    // Recently shown routes: make their streets cost more so new plans explore elsewhere.
+    const seenW = new Float32Array(g.nE);
+    if (P.avoid && P.avoid.edges) {
+      P.avoid.edges.forEach((e, i) => { if (e >= 0 && e < g.nE && !doorEdge(e)) seenW[e] += P.avoid.weights ? P.avoid.weights[i] : 1; });
+      for (let e = 0; e < g.nE; e++) if (seenW[e]) { const m = 1 + Math.min(2.5, seenW[e]); C.cost[2 * e] *= m; C.cost[2 * e + 1] *= m; }
+    }
+    const search = makeSearch(g);
     const T = P.targetM || null;
     const dests = (P.destinations || []).map(d => nearestNode(g, d.lat, d.lon, { good: true }));
     // a loop crosses the doorstep twice (out and home); a one-way run once at each end
@@ -515,7 +537,12 @@ function RouterLib() {
       const c = { path: p, L, nodes, meta };
       return c;
     };
-    const finish = (c) => { if (!c) return; c.a = analyze(g, c.path, P); c.score = scoreRoute(c.a, P); cands.push(c); };
+    const finish = (c) => {
+      if (!c) return; c.a = analyze(g, c.path, P); c.score = scoreRoute(c.a, P);
+      let rep = 0; for (const ae of c.path) { const e = ae >= 0 ? ae : ~ae; if (seenW[e]) rep += g.eLen[e] * Math.min(1, seenW[e]); }
+      c.a.repeatFrac = rep / c.L; c.score += 4 * c.a.repeatFrac;
+      cands.push(c);
+    };
     const pick = (x, y, rad, bias) => {
       // node near (x, y); terrain bias pulls toward high or low ground
       let ns = nodesNear(g, x, y, rad);
@@ -622,16 +649,18 @@ function RouterLib() {
     cands.sort((a, b) => a.score - b.score);
     const out = [];
     for (const c of cands) {
-      const set = new Set(c.path.map(ae => ae >= 0 ? ae : ~ae));
+      // options must differ: at most 45% shared distance, not counting the doorstep
+      const set = new Set(c.path.map(ae => ae >= 0 ? ae : ~ae).filter(e => !doorEdge(e)));
+      let mine = 0; for (const e of set) mine += g.eLen[e];
       let tooClose = false;
       for (const o of out) {
-        let inter = 0, lo = 0; for (const ae of o.path) { const e = ae >= 0 ? ae : ~ae; if (set.has(e)) inter += g.eLen[e]; lo += g.eLen[e]; }
-        if (inter / Math.min(lo, c.L) > 0.6) { tooClose = true; break; }
+        let inter = 0, lo = 0; for (const e of new Set(o.path.map(ae => ae >= 0 ? ae : ~ae))) { if (doorEdge(e)) continue; if (set.has(e)) inter += g.eLen[e]; lo += g.eLen[e]; }
+        if (inter / Math.max(1, Math.min(lo, mine)) > 0.45) { tooClose = true; break; }
       }
       if (!tooClose) out.push(c);
       if (out.length >= (P.count || 3)) break;
     }
-    return { routes: out.map(c => ({ ...c.a, score: c.score, kind: c.meta.kind, unavoidable: Math.min(unavoidable, c.a.overUp + c.a.overDn) })), ms: Date.now() - t0, snapped: { start: S, end: E } };
+    return { routes: out.map(c => ({ ...c.a, edges: [...new Set(c.path.map(ae => ae >= 0 ? ae : ~ae))], score: c.score, kind: c.meta.kind, unavoidable: Math.min(unavoidable, c.a.overUp + c.a.overDn) })), ms: Date.now() - t0, snapped: { start: S, end: E } };
   }
 
   return { decode, decodeBase64Gz, geocode, plan, nearestNode, estimateSeconds, gapFactor, normStreet, MI, M_LAT, M_LON };
