@@ -730,7 +730,7 @@ button, input, select { font: inherit; color: inherit; }
 .form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 10px; }
 .field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
 .field.wide { grid-column: 1 / -1; }
-.field input[type=text] { width: 100%; border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 7px 10px; min-width: 0; }
+.field input[type=text] { font-size: 16px; width: 100%; border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 7px 10px; min-width: 0; }
 .field input:focus { outline: none; border-color: var(--accent); }
 .inline { display: flex; gap: 6px; align-items: center; }
 .inline input { flex: 1; }
@@ -844,7 +844,7 @@ details[open] summary { margin-bottom: 6px; }
       </div>
       <div class="field">
         <label class="label" for="paceIn">Pace (min/mi)</label>
-        <input type="text" id="paceIn" class="num" value="8:30" inputmode="numeric">
+        <input type="text" id="paceIn" class="num" value="8:30" inputmode="numeric" placeholder="8:30" autocomplete="off">
       </div>
       <div class="field">
         <span class="label">Shape</span>
@@ -1759,8 +1759,27 @@ function syncForm() {
 function readForm() {
   S.startText = $('startIn').value.trim(); S.endText = $('endIn').value.trim();
   const a = parseFloat($('amountIn').value); S.amount = a > 0 ? a : null;
-  if (paceToSec($('paceIn').value.trim())) { S.pace = $('paceIn').value.trim(); savePrefs(); }
+  const pv = normPace($('paceIn').value);
+  if (pv) { S.pace = pv; $('paceIn').value = pv; savePrefs(); }
 }
+// Pace entry works from a number pad: "830" -> 8:30, "1200" -> 12:00, "12" -> 12:00, "8.5" -> 8:30, "8:30" stays.
+function normPace(v) {
+  v = String(v || '').trim();
+  let sec = null, m;
+  if ((m = v.match(/^(\d{1,2}):(\d{1,2})$/))) sec = +m[1] * 60 + +m[2];
+  else if ((m = v.match(/^(\d{1,2})[.,](\d+)$/))) sec = Math.round(parseFloat(m[1] + '.' + m[2]) * 60);
+  else if ((m = v.match(/^(\d{3,4})$/))) sec = +v.slice(0, -2) * 60 + +v.slice(-2);
+  else if ((m = v.match(/^(\d{1,2})$/))) sec = +m[1] * 60;
+  if (sec == null || sec < 180 || sec > 1800 || (/^\d{3,4}$/.test(v) && +v.slice(-2) > 59)) return null;
+  return secToPace(sec);
+}
+// Show the colon as digits are typed on a number pad
+$('paceIn').addEventListener('input', (e) => {
+  const el = e.target, v = el.value;
+  if (/^\d{3,4}$/.test(v)) { el.value = v.slice(0, -2) + ':' + v.slice(-2); el.setSelectionRange(el.value.length, el.value.length); }
+  else if (/^\d{1,2}:\d{3}$/.test(v)) { const d = v.replace(':', ''); el.value = d.slice(0, -2) + ':' + d.slice(-2); }
+  else if (/^\d{1,2}$/.test(v.replace(':', '')) && /^\d:\d$/.test(v)) { el.value = v.replace(':', ''); }
+});
 function wireSeg(id, key) { $(id).addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b || S[key] === b.dataset.v) return; readForm(); S[key] = b.dataset.v; if (key === 'mode') { if (S.amount != null) S.amount = S.mode === 'time' ? Math.round(S.amount * paceToSec(S.pace) / 60) : Math.round(S.amount * 60 / paceToSec(S.pace) * 10) / 10; } syncForm(); replanSoon(); }); }
 wireSeg('modeSeg', 'mode'); wireSeg('shapeSeg', 'shape'); wireSeg('hillSeg', 'hill');
 for (const [id, k] of [['tFast', 'fast'], ['tTrails', 'trails'], ['tSteps', 'avoidSteps'], ['tHill', 'hillTop']]) $(id).onclick = () => { readForm(); S[k] = !S[k]; if (k === 'hillTop' && S[k]) S.dests = []; syncForm(); replanSoon(); };

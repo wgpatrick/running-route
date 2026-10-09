@@ -35,6 +35,16 @@ const out = process.argv[2];
   await step('Plan routes with unchanged prompt keeps edits', () => page.click('#planBtn'), s => /from 24th/.test(s.understood) && s.pace === '10:00' && near(s.miles, 6));
   await step('Update routes button', async () => { await page.fill('#amountIn', '30'); await page.click('#updateBtn'); }, s => near(s.miles, 3));
   await step('Out & back shape', () => page.click('#shapeSeg button[data-v="out-and-back"]'), s => /out & back/.test(s.understood) && near(s.miles, 3));
+  for (const [keys, want] of [['830', '8:30'], ['1200', '12:00'], ['12', '12:00'], ['8.5', '8:30'], ['7:15', '7:15'], ['945', '9:45']]) {
+    await step(`pace typed as "${keys}" on a number pad`, async () => {
+      await page.click('#paceIn', { clickCount: 3 }); await page.keyboard.press('Backspace');
+      await page.keyboard.type(keys, { delay: 30 }); await page.keyboard.press('Enter'); },
+      s => s.pace === want);
+  }
+  await step('backspacing "8:30" twice leaves "8"', async () => {
+    await page.click('#paceIn', { clickCount: 3 }); await page.keyboard.press('Backspace'); await page.keyboard.type('830');
+    await page.keyboard.press('Backspace'); await page.keyboard.press('Backspace'); }, () => true);
+  console.log('   field now:', await page.inputValue('#paceIn'));
   await page.screenshot({ path: path.join(out, 'form-edits.png') });
   await step('new prompt still re-reads the description', async () => { await page.fill('#prompt', 'hilly 5 miles'); await page.click('#planBtn'); }, s => /5 mi/.test(s.understood) && /hilly/.test(s.understood) && near(s.miles, 5));
   await browser.close();
