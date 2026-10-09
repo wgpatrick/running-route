@@ -2,12 +2,13 @@
 
 A single-page run planner for San Francisco.
 
-Features: distance or time + pace targets; Flattest/Rolling/Hilly/Max terrain and a steepest-grade limit; Scenic (parks, waterfront, quiet streets), Fast/tempo (fewer stoplights), trails, stair avoidance; hilltop and named-stop routing; stoplight counts, fountains and restrooms along each route; saved runs and a run log (artifact `db` capability, with a browser-storage fallback) that steer new plans away from streets you ran recently. Describe a run in plain English ("go to a cool hilltop with a 7 mile long route", "long and fast route", "easy flat 30 minutes") and it plans three route options from 339 Elsie St (or any address, intersection, or map point), with grade-colored maps, an elevation profile, climb breakdowns, and grade-adjusted time estimates.
+Features: distance or time + pace targets; Flattest/Rolling/Hilly/Max terrain and a steepest-grade limit; Scenic (parks, waterfront, quiet streets), Fast/tempo (fewer stoplights), trails, stair avoidance; hilltop and named-stop routing; stoplight counts, fountains and restrooms along each route; saved runs and a run log (artifact `db` capability, with a browser-storage fallback) that steer new plans away from streets you ran recently; GPX export as a zip download, a Gmail attachment or a Google Drive file (`downloads` and `mcp` capabilities), plus a turn-by-turn cue sheet. Describe a run in plain English ("go to a cool hilltop with a 7 mile long route", "long and fast route", "easy flat 30 minutes") and it plans three route options from 339 Elsie St (or any address, intersection, or map point), with grade-colored maps, an elevation profile, climb breakdowns, and grade-adjusted time estimates.
 
 Everything runs in the browser: the SF walkable street network (Overture Maps / OpenStreetMap) and terrain (USGS 3DEP via AWS Terrain Tiles) are packed into the page, and routing is an A* search with terrain-aware costs in a Web Worker. When published as a Claude artifact, requests are interpreted by Claude (`sample` capability), with a local parser as a fallback; GPX export uses the `downloads` capability.
 
 ## Layout
 - `app/template.html` – UI, map, profile, natural-language parsing
+- `app/export.js` – GPX text, a stored ZIP (the viewer can't save .gpx directly), base64, turn-by-turn cue sheet
 - `app/router.js` – graph decoding, geocoding, route planning and analysis
 - `build/` – data pipeline
   - `fetch_overture.py seg|addr` – roads and addresses from Overture (S3)
@@ -25,6 +26,7 @@ Everything runs in the browser: the SF walkable street network (Overture Maps / 
   - `test_grade.js` – steepness limits: steep distance a route could have avoided, and distance accuracy
   - `test_edge.js` – long runs (to a marathon), out & back limits, stops, open distance, outside SF
   - `smoke_races.js` – overlapping requests, taps during startup, tiny routes, unknown places
+  - `test_export.js` – the zip unpacks with Python's zipfile, GPX parses, cue sheet reads sensibly
   - `test_env.js` – Scenic/Fast preferences change surroundings and stoplights as intended; saved-run retrace accuracy
   - `test_variety.js` – repeated plans with route memory should keep producing new routes (`old` arg shows the previous behaviour)
 
