@@ -245,10 +245,11 @@ function RouterLib() {
       if (prefs.trails && (c === 'path' || c === 'track' || c === 'footway' || c === 'bridleway')) f *= 0.7;
       if (prefs.fast) { if (c === 'steps') f = 5; if (c === 'cycleway' || c === 'path') f *= 0.9; if (c === 'primary' || c === 'secondary') f *= 0.95; }
       if (prefs.avoidSteps && c === 'steps') f = 20;
-      if (prefs.hill === 'flat' && c === 'steps') f *= 2;
+      if (prefs.hill === 'flat' && c === 'steps') f *= 4;
       F[i] = f;
     });
-    const W = { flat: [7, 2], rolling: [1.5, 0.6], hilly: [-1.0, 0.3], max: [-2.4, 0] }[prefs.hill || 'rolling'];
+    // metres of extra distance each metre of climb/descent is worth; 'flat' (Flattest) minimises total climbing
+    const W = { flat: [25, 8], rolling: [1.5, 0.6], hilly: [-1.0, 0.3], max: [-2.4, 0] }[prefs.hill || 'rolling'];
     const floor = prefs.hill === 'hilly' || prefs.hill === 'max' ? 0.25 : 0.6;
     const SM = prefs.maxGrade ? steepMetres(g, prefs.maxGrade) : null;
     const cost = new Float32Array(2 * g.nE); // [2e] forward, [2e+1] backward
@@ -395,19 +396,23 @@ function RouterLib() {
         at += L;
       }
     }
-    // climbs: a climb ends once we drop 8 m below its peak
+    // climbs: stretches where the 100 m grade stays above 2.5%, bridging short flat bits (<=100 m, <5 m drop),
+    // so a long gentle rise isn't reported as one "climb" and a steep pitch isn't hidden inside it
     const climbs = [];
     {
-      let start = 0, peak = 0;
-      for (let i = 1; i < rs.length; i++) {
-        if (rs[i] > rs[peak]) peak = i;
-        if (rs[peak] - rs[i] > 8 || i === rs.length - 1) {
-          const gainC = rs[peak] - rs[start];
-          if (gainC >= 15 && peak > start) climbs.push({ from: start * step, to: peak * step, gain: gainC, grade: gainC / ((peak - start) * step) });
-          start = i; peak = i;
-        }
-        if (rs[i] < rs[start]) { start = i; if (peak < start) peak = i; }
+      let a = -1, lastUp = -1;
+      const close = (endI) => {
+        let s0 = a, e0 = endI;
+        for (let k = Math.max(0, a - 2); k <= a; k++) if (rs[k] < rs[s0]) s0 = k;
+        for (let k = endI; k <= Math.min(rs.length - 1, endI + 2); k++) if (rs[k] > rs[e0]) e0 = k;
+        const gainC = rs[e0] - rs[s0];
+        if (gainC >= 12 && e0 > s0) climbs.push({ from: s0 * step, to: e0 * step, gain: gainC, grade: gainC / ((e0 - s0) * step) });
+      };
+      for (let i = 0; i < rs.length; i++) {
+        if (gradeAt[i] > 0.025) { if (a < 0) a = i; lastUp = i; }
+        else if (a >= 0 && (i - lastUp > 4 || rs[lastUp] - rs[i] > 5)) { close(lastUp); a = -1; }
       }
+      if (a >= 0) close(lastUp);
     }
     for (const c of climbs) c.street = dominantName(g, path, cum, edgeAt, c.from, c.to);
     climbs.sort((a, b) => b.gain - a.gain);
@@ -482,7 +487,7 @@ function RouterLib() {
     if (T) s += ((a.length - T) / T / 0.05) ** 2;
     const gpk = a.gain / (a.length / 1000);
     const hill = P.hill || 'rolling';
-    if (hill === 'flat') s += gpk / 6;
+    if (hill === 'flat') s += gpk * 1.4;
     else if (hill === 'rolling') s += Math.abs(gpk - 14) / 8;
     else if (hill === 'hilly') s += Math.max(0, 28 - gpk) / 6;
     else s += Math.max(0, 60 - gpk) / 8;
@@ -557,6 +562,7 @@ function RouterLib() {
       return best;
     };
     // hilltops are ringed by steep streets, so with a grade limit 'hilly' means long gradual climbs instead
+    const pickRad = P.hill === 'flat' ? 450 : 220; // look wider for low ground when minimising climbing
     const bias = P.hill === 'flat' ? 'low' : (P.hill === 'hilly' || P.hill === 'max') && !P.maxGrade ? 'high' : null;
     const sx = g.x[S], sy = g.y[S], ex = g.x[E], ey = g.y[E];
     const seed = P.seed || 0;
@@ -568,7 +574,8 @@ function RouterLib() {
       while (rest.length) { let bi = 0, bd = Infinity; rest.forEach((n, i) => { const d = Math.hypot(g.x[n] - cx, g.y[n] - cy); if (d < bd) { bd = d; bi = i; } }); const n = rest.splice(bi, 1)[0]; order.push(n); cx = g.x[n]; cy = g.y[n]; }
     }
 
-    const bearings = P.maxGrade ? 16 : 10; // grade limits make loops harder to fit, so try more directions
+    // more directions when loops are hard to fit: grade limits, or Flattest (only some directions lead to flat ground)
+    const bearings = P.hill === 'flat' ? 28 : P.maxGrade ? 16 : 10;
     if (order.length) {
       const base = tryRoute([S, ...order, E], { kind: 'direct' });
       if (base) {
@@ -583,7 +590,7 @@ function RouterLib() {
             let r = Math.max(300, (T - base.L) / 2.4);
             let c = null;
             for (let it = 0; it < 5; it++) {
-              const v = pick(mx + r * Math.cos(th), my + r * Math.sin(th), 200, bias);
+              const v = pick(mx + r * Math.cos(th), my + r * Math.sin(th), pickRad, bias);
               if (v < 0) break;
               const seq = [S, ...order.slice(0, pos), v, ...order.slice(pos), E];
               c = tryRoute(seq, { kind: 'detour', th });
@@ -602,7 +609,7 @@ function RouterLib() {
       for (let b = 0; b < bearings; b++) {
         const th = (b / bearings + seed * 0.37) * 2 * Math.PI; let r = T / 2 / 1.25, c = null;
         for (let it = 0; it < 5; it++) {
-          const v = pick(sx + r * Math.cos(th), sy + r * Math.sin(th), 200, bias); if (v < 0) break;
+          const v = pick(sx + r * Math.cos(th), sy + r * Math.sin(th), pickRad, bias); if (v < 0) break;
           const p1 = search(S, v, C, null); if (!p1) break;
           const p = p1.concat(p1.slice().reverse().map(ae => ~ae));
           c = { path: p, L: pathLength(g, p), nodes: [S, v, S], meta: { kind: 'oab', th } };
@@ -629,7 +636,7 @@ function RouterLib() {
             ax = sx + (mx - sx) * 0.5 + r * Math.cos(th); ay = sy + (my - sy) * 0.5 + r * Math.sin(th);
             bx = ex + (mx - ex) * 0.5 + r * Math.cos(th); by = ey + (my - ey) * 0.5 + r * Math.sin(th);
           }
-          const A = pick(ax, ay, 220, bias), B = pick(bx, by, 220, bias);
+          const A = pick(ax, ay, pickRad, bias), B = pick(bx, by, pickRad, bias);
           if (A < 0 || B < 0) break;
           c = tryRoute([S, A, B, E], { kind: 'loop', th });
           if (!c) break;

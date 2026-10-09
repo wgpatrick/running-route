@@ -191,7 +191,7 @@ details[open] summary { margin-bottom: 6px; }
       </div>
       <div class="field wide">
         <span class="label">Terrain</span>
-        <div class="seg" id="hillSeg"><button data-v="flat">Flat</button><button data-v="rolling" class="on">Rolling</button><button data-v="hilly">Hilly</button><button data-v="max">Max climb</button></div>
+        <div class="seg" id="hillSeg"><button data-v="flat" title="Least total climbing possible for the distance">Flattest</button><button data-v="rolling" class="on">Rolling</button><button data-v="hilly">Hilly</button><button data-v="max">Max climb</button></div>
       </div>
       <div class="field wide">
         <span class="label">Steepest grade</span>
@@ -227,7 +227,7 @@ details[open] summary { margin-bottom: 6px; }
     <div id="map"></div>
     <div class="map-loading" id="mapLoading">Loading San Francisco streets and terrain…</div>
     <div class="profile">
-      <div class="profile-head"><span class="label">Elevation profile</span><span class="readout" id="readout">Hover the profile to scrub the route</span></div>
+      <div class="profile-head"><span class="label">Elevation profile</span><span class="readout" id="readout">Touch or hover the profile to find that spot on the map</span></div>
       <svg id="profile" viewBox="0 0 800 150" preserveAspectRatio="none" aria-label="Elevation profile"></svg>
     </div>
   </main>
@@ -335,7 +335,7 @@ function describeSettings(r) {
   const bits = [];
   const tm = targetMiles();
   bits.push(tm == null ? '<b>any distance</b>' : S.mode === 'distance' ? `<b>${S.amount} mi</b>` : `<b>${S.amount} min</b> at ${S.pace}/mi = <b>${tm.toFixed(2)} mi</b>`);
-  bits.push(`<b>${{ flat: 'flat', rolling: 'rolling', hilly: 'hilly', max: 'max climbing' }[S.hill]}</b>`);
+  bits.push(`<b>${{ flat: 'flattest', rolling: 'rolling', hilly: 'hilly', max: 'max climbing' }[S.hill]}</b>`);
   if (S.maxGrade) bits.push(`nothing over ${Math.round(S.maxGrade * 100)}%`);
   if (S.fast) bits.push('fast');
   if (S.trails) bits.push('trails');
@@ -533,6 +533,7 @@ function renderDetail() {
       <div class="gradebar" role="img" aria-label="Distance by steepness">${r.bins.map((b, i) => `<span style="flex:${b};background:${binC[i]}"></span>`).join('')}</div>
       <div class="legend" style="margin-top:6px">${r.bins.map((b, i) => `<span><i style="background:${binC[i]}"></i>${binL[i]} ${(b / MI).toFixed(1)} mi</span>`).join('')}</div>
     </div>
+    ${climbBackNote(r)}
     ${r.maxGrade ? steepNote(r) : ''}
     ${r.climbs.length ? `<div><div class="label" style="margin-bottom:4px">Biggest climbs</div><div class="list">${r.climbs.slice(0, 4).map(c => `<div class="row"><span>${esc(c.street)} <span class="hint">at mile ${(c.from / MI).toFixed(1)}</span></span><span>+${Math.round(c.gain * FT)} ft · ${(c.grade * 100).toFixed(1)}% avg</span></div>`).join('')}</div><div class="hint" style="margin-top:4px">Steepest 100 m stretch: ${(r.maxUp * 100).toFixed(0)}% up, ${(-r.maxDn * 100).toFixed(0)}% down${r.steps ? ` · ${r.steps} stair section${r.steps > 1 ? 's' : ''}` : ''}</div></div>` : `<div class="hint">No sustained climbs. Steepest 100 m stretch is ${(r.maxUp * 100).toFixed(0)}%.</div>`}
     ${r.passed.length ? `<div><div class="label" style="margin-bottom:4px">Along the way</div><div class="list">${r.passed.map(p => `<div class="row"><span>${p.kind === 'hill' ? '▲ ' : ''}${esc(p.name)}</span><span>mile ${(p.at / MI).toFixed(1)}</span></div>`).join('')}</div></div>` : ''}
@@ -547,6 +548,13 @@ function renderDetail() {
   $('copyBtn').onclick = () => copySummary(r);
   $('gpxBtn').onclick = () => downloadGpx(r);
   getDownloads().then(dl => { const b = $('gpxBtn'); if (b && !dl) b.hidden = true; });
+}
+// Starting on a hill means some climbing is just getting home again; say how much.
+function climbBackNote(r) {
+  const g = r.geom, endEl = g.el[g.el.length - 1], back = endEl - r.lowEl;
+  if (back * FT < 40 || r.gain <= 0) return '';
+  const share = Math.min(100, Math.round(back / r.gain * 100));
+  return `<div class="hint"><b>${Math.round(back * FT)} ft</b> of the ${Math.round(r.gain * FT)} ft climb (${share}%) is getting back up to your finish at ${Math.round(endEl * FT)} ft from this route's low point at ${Math.round(r.lowEl * FT)} ft. No route that drops that low can avoid it.</div>`;
 }
 function steepNote(r) {
   const lim = Math.round(r.maxGrade * 100), over = r.overUp + r.overDn, un = Math.min(over, r.unavoidable || 0);
