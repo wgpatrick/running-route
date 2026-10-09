@@ -674,19 +674,21 @@ function renderDetail() {
     ${r.climbs.length ? `<div><div class="label" style="margin-bottom:4px">Biggest climbs</div><div class="list">${r.climbs.slice(0, 4).map(c => `<div class="row"><span>${esc(c.street)} <span class="hint">at mile ${(c.from / MI).toFixed(1)}</span></span><span>+${Math.round(c.gain * FT)} ft · ${(c.grade * 100).toFixed(1)}% avg</span></div>`).join('')}</div><div class="hint" style="margin-top:4px">Steepest 100 m stretch: ${(r.maxUp * 100).toFixed(0)}% up, ${(-r.maxDn * 100).toFixed(0)}% down${r.steps ? ` · ${r.steps} stair section${r.steps > 1 ? 's' : ''}` : ''}</div></div>` : `<div class="hint">No sustained climbs. Steepest 100 m stretch is ${(r.maxUp * 100).toFixed(0)}%.</div>`}
     ${r.passed.length ? `<div><div class="label" style="margin-bottom:4px">Along the way</div><div class="list">${r.passed.map(p => `<div class="row"><span>${p.kind === 'hill' ? '▲ ' : ''}${esc(p.name)}</span><span>mile ${(p.at / MI).toFixed(1)}</span></div>`).join('')}</div></div>` : ''}
     <details><summary>Street by street (${r.streets.length})</summary><div class="list">${r.streets.map(s => `<div class="row"><span>${esc(s.name)}</span><span>${(s.len / MI).toFixed(2)} mi</span></div>`).join('')}</div></details>
-    <div class="actions">
-      <a class="btn" href="${gmapsLink(r)}" target="_blank" rel="noopener">Open in Google Maps</a>
+    <div class="actions" id="gmActions">
+      <a class="btn" id="gmLink" href="${gmapsLink(r)}" target="_blank" rel="noopener">Open in Google Maps</a>
       <button class="btn ghost" id="gpxBtn">Download GPX</button>
       <button class="btn ghost" id="copyBtn">Copy summary</button>
     </div>
+    <div class="hint" id="gmHint">Working out the stops that make Google Maps follow this exact route…</div>
     <div class="actions">
       <button class="btn" id="ranBtn">I ran this</button>
       <button class="btn ghost" id="saveBtn">${r._savedId ? 'Saved' : 'Save route'}</button>
       <span class="hint" id="saveHint">${r._savedId ? (r._timesRan ? `Ran ${r._timesRan}× · last ${fmtDay(r._lastRanAt)}` : 'Saved, not run yet') : 'Saved runs sync across your devices'}</span>
     </div>
     <div class="toast" id="toast"></div>
-    <div class="hint">Google Maps only takes ${matchMedia('(pointer: coarse)').matches ? '3 points from a phone' : '9 points'}, so it may pick its own streets between them. The GPX file has the exact route for a watch.</div>`;
+    <div class="hint">The GPX file carries the exact route for a watch or apps like Strava and Komoot.</div>`;
   $('copyBtn').onclick = () => copySummary(r);
+  fillGoogleLinks(r);
   $('saveBtn').onclick = () => saveRoute(r, false);
   $('ranBtn').onclick = () => saveRoute(r, true);
   $('gpxBtn').onclick = () => downloadGpx(r);
@@ -731,6 +733,25 @@ function gmapsLink(r) {
   const pt = (i) => `${g.lat[i].toFixed(5)},${g.lon[i].toFixed(5)}`;
   const way = chosen.slice(1, -1).map(pt);
   return `https://www.google.com/maps/dir/?api=1&origin=${pt(0)}&destination=${pt(n - 1)}&waypoints=${encodeURIComponent(way.join('|'))}&travelmode=walking`;
+}
+// Google Maps directions take at most 10 stops; the worker picks the ones that make Google's own walking
+// directions follow this route, or splits it into exact parts when 10 aren't enough.
+const gmUrl = (stops) => 'https://www.google.com/maps/dir/' + stops.map(([la, lo]) => `${la.toFixed(5)},${lo.toFixed(5)}`).join('/') + '/data=!4m2!4m1!3e2';
+async function fillGoogleLinks(r) {
+  if (!r._gm) {
+    if (!r.path || !r.path.length) { const h = $('gmHint'); if (h) h.textContent = ''; return; }
+    await workerReady;
+    const m = await workerCall({ type: 'stops', path: r.path });
+    if (m.type !== 'result') { const h = $('gmHint'); if (h) h.textContent = 'Could not work out Google Maps stops for this route.'; return; }
+    r._gm = m.res;
+  }
+  if (results[sel] !== r) return; // the runner moved on to another route
+  const gm = r._gm, link = $('gmLink'), hint = $('gmHint'); if (!link || !hint) return;
+  link.href = gmUrl(gm.stops);
+  const pct = Math.round(gm.fidelity * 100);
+  if (gm.fidelity >= 0.985) { hint.innerHTML = `Google Maps should follow this route exactly (${gm.stops.length} stops). It opens in walking mode; if it shows another mode, switch to walking.`; return; }
+  const parts = gm.parts.map((p, i) => `<a class="btn ghost" href="${gmUrl(p.stops)}" target="_blank" rel="noopener">Part ${i + 1} · miles ${(p.fromM / MI).toFixed(1)}–${(p.toM / MI).toFixed(1)}</a>`).join('');
+  hint.innerHTML = `The one-link version should match about <b>${pct}%</b> of this route: Google allows 10 stops and this route needs ${gm.needed + 2}. For the exact route, open it in parts:<div class="actions" style="margin-top:6px">${parts}</div>`;
 }
 function summaryText(r) {
   return `${routeName(r)} — ${(r.length / MI).toFixed(2)} mi, ~${fmtDur(r.secs)} at ${S.pace}/mi, +${Math.round(r.gain * FT)} ft (max ${Math.round(r.maxUp * 100)}%).\n` +
@@ -965,6 +986,11 @@ function hillTopPlan(P) {
 self.onmessage = async (ev) => {
   const m = ev.data;
   if (m.type === 'init') { g = await lib.decodeBase64Gz(m.b64); self.postMessage({ type: 'ready' }); return; }
+  if (m.type === 'stops') {
+    try { self.postMessage({ type: 'result', id: m.id, res: lib.googleStops(g, m.path) }); }
+    catch (e) { self.postMessage({ type: 'error', id: m.id, message: String(e && e.message || e) }); }
+    return;
+  }
   if (m.type === 'plan') {
     try {
       const t0 = Date.now();

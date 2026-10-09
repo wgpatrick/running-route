@@ -29,5 +29,12 @@ for (const seed of [3, 5, 8]) {
   console.log(`retrace seed ${seed}: ${(r.length / MI).toFixed(2)} mi -> ${(a2.length / MI).toFixed(2)} mi, ${(close / n * 100).toFixed(0)}% within 30 m; amenities ${r.amenities.length}, lights ${r.lights}, longest gap ${(r.longestGap / MI).toFixed(2)} mi`);
   if (!ok) { fail++; console.log('  FAIL retrace'); }
 }
+// Google Maps stops: short routes exact in one link, long ones exact in parts, all fast
+for (const [label, P] of [['5 mi', { targetM: 5 * MI, hill: 'rolling', seed: 1 }], ['8 mi', { targetM: 8 * MI, hill: 'rolling', seed: 2 }], ['13.1 mi scenic', { targetM: 13.1 * MI, scenic: true, seed: 1 }]]) {
+  const r = R.plan(g, Object.assign({ start: HOME }, P)).routes[0]; const t0 = Date.now(); const s = R.googleStops(g, r.path); const ms = Date.now() - t0;
+  const partsOk = s.parts.every(p => p.stops.length <= 10) && (s.needed <= 8 || s.parts.length >= 2);
+  console.log(`google stops ${label}: ${s.stops.length} stops, needs ${s.needed + 2}, one link matches ${(s.fidelity * 100).toFixed(0)}%, parts ${s.parts.map(p => p.stops.length).join('+') || 'none'}, ${ms} ms`);
+  if (!(s.stops.length <= 10 && s.fidelity >= 0.75 && partsOk && ms < 2000)) { fail++; console.log('  FAIL google stops'); }
+}
 console.log(fail ? fail + ' failures' : 'env checks passed');
 process.exit(fail ? 1 : 0);

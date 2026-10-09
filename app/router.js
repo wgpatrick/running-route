@@ -778,6 +778,69 @@ function RouterLib() {
     for (let i = 0; i + 1 < nodes.length; i++) { const p = search(nodes[i], nodes[i + 1], C, null); if (!p) return null; path.push(...p); }
     return path;
   }
-  return { inSF, decode, decodeBase64Gz, geocode, plan, reanalyze, pathFromCoords, nearestNode, estimateSeconds, gapFactor, normStreet, MI, M_LAT, M_LON };
+  // Stops for a Google Maps directions link (at most 10 points): placed where Google's own walking
+  // directions would otherwise leave this route, judged by shortest-by-distance paths on our map.
+  function googleStops(g, path, budget = 8) {
+    const nodes = [path[0] >= 0 ? g.eU[path[0]] : g.eV[~path[0]]], cum = [0]; let at = 0;
+    for (const ae of path) { const e = ae >= 0 ? ae : ~ae; at += g.eLen[e]; nodes.push(ae >= 0 ? g.eV[e] : g.eU[e]); cum.push(at); }
+    const m = nodes.length - 1, L = at;
+    // corridor: every vertex of the route's streets, tagged with its position so a leg only matches its own stretch
+    const CELL = 30, cells = new Map(), key = (x, y) => Math.floor(x / CELL) * 100003 + Math.floor(y / CELL);
+    path.forEach((ae, k) => { const e = ae >= 0 ? ae : ~ae, o = g.vOff[e], n = g.eN[e]; for (let j = 0; j < n; j++) { const [x, y] = toXY(g.vLat[o + j], g.vLon[o + j]); const kk = key(x, y); let a = cells.get(kk); if (!a) cells.set(kk, a = []); a.push([x, y, k]); } });
+    const near = (x, y, kLo, kHi) => { for (let dx = -1; dx <= 1; dx++) for (let dy = -1; dy <= 1; dy++) { const a = cells.get(key(x + dx * CELL, y + dy * CELL)); if (a) for (const [px, py, k] of a) if (k >= kLo && k < kHi && (px - x) ** 2 + (py - y) ** 2 < 25 * 25) return true; } return false; };
+    const C = { cost: new Float32Array(2 * g.nE), hMin: 1 };
+    for (let e = 0; e < g.nE; e++) C.cost[2 * e] = C.cost[2 * e + 1] = g.eLen[e];
+    const search = makeSearch(g);
+    // metres of the shortest path a->b that stay on this route, and its total
+    const leg = (a, b) => {
+      if (a === b) return [0, 0];
+      if (nodes[a] === nodes[b]) return [0, cum[b] - cum[a]]; // same spot (a loop or a turnaround): directions would go nowhere
+      const p = search(nodes[a], nodes[b], C, null); if (!p) return [0, cum[b] - cum[a]];
+      let inM = 0, tot = 0;
+      for (const ae of p) { const e = ae >= 0 ? ae : ~ae, o = g.vOff[e], n = g.eN[e]; let hit = 0; for (let j = 0; j < n; j++) { const [x, y] = toXY(g.vLat[o + j], g.vLon[o + j]); if (near(x, y, a, b)) hit++; } inM += g.eLen[e] * hit / n; tot += g.eLen[e]; }
+      return [inM, tot];
+    };
+    const fid = (a, b) => { const [i, t] = leg(a, b); return t ? i / t : 1; };
+    // greedy: from each stop, reach as far as Google would still follow us, then stop there
+    const needed = [0]; let a = 0, guard = 0;
+    while (a < m && guard++ < 60) {
+      if (fid(a, m) >= 0.97) { needed.push(m); break; }
+      let lo = a + 1, hi = m - 1, best = a + 1;
+      while (lo <= hi) { const mid = (lo + hi) >> 1; if (fid(a, mid) >= 0.97) { best = mid; lo = mid + 1; } else hi = mid - 1; }
+      needed.push(best); a = best;
+    }
+    if (needed[needed.length - 1] !== m) needed.push(m);
+    const K = needed.length, memo = new Map();
+    const legN = (i, j) => { const k = i * 1000 + j; if (!memo.has(k)) memo.set(k, leg(needed[i], needed[j])); return memo.get(k); };
+    let chosen = needed;
+    if (K - 2 > budget) {
+      // pick the stops (at most `budget`) that keep the most of the route on Google's path
+      const best = Array.from({ length: K }, () => new Float64Array(budget + 1).fill(-1)), prev = Array.from({ length: K }, () => new Int32Array(budget + 1).fill(-1));
+      best[0][0] = 0;
+      for (let j = 1; j < K; j++) for (let c = 0; c <= budget; c++) {
+        for (let i = 0; i < j; i++) {
+          const cp = i === 0 ? c : c - 1; if (cp < 0 || best[i][cp] < 0) continue;
+          if (i === 0 && c > 0) continue; // the first leg adds no stop, so c must still be 0 there
+          const v = best[i][cp] + legN(i, j)[0];
+          if (v > best[j][c]) { best[j][c] = v; prev[j][c] = i; }
+        }
+      }
+      let bc = 0; for (let c = 1; c <= budget; c++) if (best[K - 1][c] > best[K - 1][bc]) bc = c;
+      const idx = []; for (let j = K - 1, c = bc; j > 0; ) { idx.push(j); const i = prev[j][c]; if (i > 0) c--; j = i; }
+      idx.push(0); idx.reverse(); chosen = idx.map(i => needed[i]);
+    }
+    const chosenIdx = chosen.map(n => needed.indexOf(n));
+    let inM = 0, tot = 0;
+    for (let i = 0; i + 1 < chosenIdx.length; i++) { const [a1, b1] = legN(chosenIdx[i], chosenIdx[i + 1]); inM += a1; tot += b1; }
+    const pt = (i) => [+g.lat[nodes[i]].toFixed(5), +g.lon[nodes[i]].toFixed(5)];
+    // exact coverage in parts of at most budget+2 points each, consecutive parts sharing a stop
+    const parts = [];
+    if (K - 2 > budget) {
+      const nParts = Math.ceil((K - 1) / (budget + 1)), per = Math.ceil((K - 1) / nParts);
+      for (let i = 0; i < K - 1; i += per) { const j = Math.min(K - 1, i + per); parts.push({ stops: needed.slice(i, j + 1).map(pt), fromM: cum[needed[i]], toM: cum[needed[j]] }); }
+    }
+    return { stops: chosen.map(pt), fidelity: tot ? inM / tot : 1, needed: K - 2, parts };
+  }
+  return { inSF, decode, decodeBase64Gz, geocode, plan, reanalyze, pathFromCoords, googleStops, nearestNode, estimateSeconds, gapFactor, normStreet, MI, M_LAT, M_LON };
 }
 if (typeof module !== 'undefined') module.exports = RouterLib;
