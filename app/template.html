@@ -54,13 +54,13 @@ button, input, select { font: inherit; color: inherit; }
 .ask textarea { width: 100%; min-height: 64px; resize: vertical; border: 1.5px solid var(--line); background: var(--bg); border-radius: 10px; padding: 10px 12px; font: 500 16px/1.35 var(--f-body); color: var(--ink); }
 .ask textarea:focus { outline: none; border-color: var(--accent); }
 .ask-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.btn { border: 0; border-radius: 999px; padding: 9px 16px; font-weight: 600; cursor: pointer; background: var(--accent); color: var(--accent-ink); }
+.btn { border: 0; border-radius: 999px; padding: 11px 18px; min-height: 44px; font-weight: 600; cursor: pointer; background: var(--accent); color: var(--accent-ink); }
 .btn:hover { filter: brightness(1.06); }
 .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
 .btn:focus-visible, .chip:focus-visible, .seg button:focus-visible, .card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .btn[disabled] { opacity: .55; cursor: progress; }
 .examples { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 4px 10px; font-size: 13px; cursor: pointer; color: var(--muted); }
+.chip { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 6px 12px; min-height: 36px; font-size: 13px; cursor: pointer; color: var(--muted); }
 .chip:hover { color: var(--ink); border-color: var(--muted); }
 .chip.on { background: var(--accent-soft); color: var(--ink); border-color: var(--accent); }
 .understood { font-size: 13px; color: var(--muted); min-height: 1.4em; }
@@ -73,11 +73,11 @@ button, input, select { font: inherit; color: inherit; }
 .field input:focus { outline: none; border-color: var(--accent); }
 .inline { display: flex; gap: 6px; align-items: center; }
 .inline input { flex: 1; }
-.pickbtn { border: 1px solid var(--line); background: transparent; border-radius: 8px; padding: 6px 8px; cursor: pointer; font-size: 12px; color: var(--muted); white-space: nowrap; }
+.pickbtn { border: 1px solid var(--line); background: transparent; border-radius: 8px; padding: 6px 10px; min-height: 40px; cursor: pointer; font-size: 12px; color: var(--muted); white-space: nowrap; }
 .pickbtn.on { border-color: var(--accent); color: var(--accent); }
 .num { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
 .seg { display: flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
-.seg button { flex: 1; border: 0; background: transparent; padding: 7px 4px; cursor: pointer; font-size: 13px; color: var(--muted); }
+.seg button { flex: 1; border: 0; background: transparent; padding: 7px 4px; min-height: 40px; cursor: pointer; font-size: 13px; color: var(--muted); }
 .seg button + button { border-left: 1px solid var(--line); }
 .seg button.on { background: var(--ink); color: var(--panel); }
 .toggles { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -113,7 +113,7 @@ button, input, select { font: inherit; color: inherit; }
 .list { display: flex; flex-direction: column; }
 .list .row { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 10px; padding: 6px 0; border-bottom: 1px dashed var(--line); font-size: 14px; }
 .list .row span:last-child { font: 13px var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
-details summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+details summary { cursor: pointer; font-weight: 600; font-size: 14px; padding: 8px 0; }
 details[open] summary { margin-bottom: 6px; }
 .actions { display: flex; flex-wrap: wrap; gap: 8px; }
 .actions a.btn { text-decoration: none; display: inline-block; }
@@ -122,7 +122,7 @@ details[open] summary { margin-bottom: 6px; }
 .profile { border-top: 1px solid var(--line); background: var(--panel); padding: 10px 16px 12px; position: relative; }
 .profile-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
 .profile-head .readout { font: 13px var(--f-mono); color: var(--muted); font-variant-numeric: tabular-nums; }
-#profile { width: 100%; height: 150px; display: block; touch-action: none; }
+#profile { width: 100%; height: 150px; display: block; touch-action: pan-y; } /* vertical swipes still scroll the page */
 #profile text { fill: var(--muted); font: 11px var(--f-mono); }
 #profile .grid { stroke: var(--line); stroke-width: 1; }
 #profile .cursor { stroke: var(--ink); stroke-width: 1; }
@@ -139,9 +139,16 @@ details[open] summary { margin-bottom: 6px; }
 .pin.end { background: var(--ink); }
 .pin.hover { width: 12px; height: 12px; background: var(--ink); border-width: 2px; }
 .map-loading[hidden] { display: none; }
+.map-hint { background: color-mix(in srgb, var(--panel) 85%, transparent); color: var(--muted); font-size: 12px; padding: 4px 8px; border-radius: 6px; margin-bottom: 18px !important; pointer-events: none; }
 .map-loading { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); font-size: 14px; z-index: 500; pointer-events: none; }
 .stage { position: relative; }
 .empty { color: var(--muted); font-size: 14px; }
+@media (max-width: 860px) {
+  /* one swipeable row of examples instead of a wall of chips */
+  .examples { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-inline: -16px; padding-inline: 16px; -webkit-overflow-scrolling: touch; }
+  .examples::-webkit-scrollbar { display: none; }
+  .examples .chip { flex: none; }
+}
 </style>
 
 <div class="app">
@@ -216,7 +223,7 @@ details[open] summary { margin-bottom: 6px; }
       </div>
     </section>
 
-    <div class="update-row"><button class="btn" id="updateBtn">Update routes</button><span class="hint">Setting changes replan automatically. Typed fields replan on Enter.</span></div>
+    <div class="update-row"><button class="btn" id="updateBtn">Update routes</button><span class="hint">Buttons replan right away. Typed fields replan when you leave the field.</span></div>
     <div class="status" id="status"></div>
     <section class="cards" id="cards" aria-label="Route options"></section>
    </div>
@@ -252,8 +259,16 @@ const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n
 const lib = RouterLib();
 let G = null, worker = null, map = null, routeLayer = null, markers = {}, hoverMarker = null;
 let results = [], sel = 0, reqId = 0, picking = null, shuffleNext = false;
+let workerReadyResolve; const workerReady = new Promise(r => { workerReadyResolve = r; });
+const pendingCalls = new Map();
+function workerCall(msg) { return new Promise((res) => { const id = ++reqId; pendingCalls.set(id, res); worker.postMessage({ ...msg, id }); }); }
+function onWorkerMessage(e) {
+  const m = e.data;
+  if (m.type === 'ready') { workerReadyResolve(); return; }
+  const res = pendingCalls.get(m.id); if (res) { pendingCalls.delete(m.id); res(m); }
+}
 // Routes you've been shown (this browser only), so later plans explore new streets.
-const SEEN_KEY = 'sfruns.seen', SEEN_MAX = 24;
+const SEEN_KEY = 'sfruns.seen.v2', SEEN_MAX = 24; // bump when the street graph is rebuilt (edge ids change)
 function loadSeen() { try { const v = JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
 function rememberShown(routes) {
   try { const seen = loadSeen().concat(routes.map(r => r.edges)).slice(-SEEN_MAX); localStorage.setItem(SEEN_KEY, JSON.stringify(seen)); } catch (e) {}
@@ -266,8 +281,10 @@ const S = {
   hill: 'rolling', maxGrade: null, fast: false, trails: false, avoidSteps: false, hillTop: false, dests: [],
   start: HOME, end: null,
 };
-try { const p = JSON.parse(localStorage.getItem('sfruns.prefs') || 'null'); if (p && p.pace) S.pace = p.pace; } catch (e) {}
-const savePrefs = () => { try { localStorage.setItem('sfruns.prefs', JSON.stringify({ pace: S.pace })); } catch (e) {} };
+// The runner's usual pace: only what they type into the Pace field is remembered, never a pace from a one-off request.
+let defaultPace = '8:30';
+try { const p = JSON.parse(localStorage.getItem('sfruns.prefs') || 'null'); if (p && p.pace) S.pace = defaultPace = p.pace; } catch (e) {}
+const savePrefs = () => { defaultPace = S.pace; try { localStorage.setItem('sfruns.prefs', JSON.stringify({ pace: S.pace })); } catch (e) {} };
 
 const EXAMPLES = [
   'go to a cool hilltop with a 7 mile long route',
@@ -315,9 +332,9 @@ Convert km to miles. summary is a short phrase restating the plan (max 12 words)
 }
 
 function applyParse(r) {
-  const v = PL.resolve(r, S.pace);
+  const v = PL.resolve(r, defaultPace);
   S.pace = v.pace; S.mode = v.mode; S.amount = v.amount == null ? null : Math.round(v.amount * 100) / 100;
-  S.hill = r.hill || (r.hillTop || r.dests.length ? 'hilly' : 'rolling');
+  S.hill = r.hill || (r.hillTop ? 'hilly' : 'rolling'); // naming a stop isn't a request for hills
   if (r.hillTop && S.hill === 'flat') S.hill = 'rolling';
   S.maxGrade = r.maxGrade || null;
   S.fast = r.fast; S.trails = r.trails; S.avoidSteps = r.avoidSteps; S.shape = r.shape || 'loop';
@@ -341,7 +358,7 @@ function describeSettings(r) {
   if (S.trails) bits.push('trails');
   if (S.hillTop) bits.push('to a hilltop');
   if (S.dests.length) bits.push('via ' + S.dests.join(', '));
-  bits.push(S.shape === 'out-and-back' ? 'out & back' : (S.endText ? 'finish at ' + esc(S.endText) : 'loop'));
+  bits.push(S.endText ? 'finish at ' + esc(S.endText) : S.shape === 'out-and-back' ? 'out & back' : 'loop');
   if (S.startText && S.startText !== '339 Elsie St') bits.push('from ' + esc(S.startText));
   return 'Planning ' + bits.join(' · ');
 }
@@ -373,7 +390,7 @@ function readForm() {
   S.startText = $('startIn').value.trim(); S.endText = $('endIn').value.trim();
   const a = parseFloat($('amountIn').value); S.amount = a > 0 ? a : null;
   const pv = normPace($('paceIn').value);
-  if (pv) { S.pace = pv; $('paceIn').value = pv; savePrefs(); }
+  if (pv) { S.pace = pv; $('paceIn').value = pv; }
 }
 // Pace entry works from a number pad: "830" -> 8:30, "1200" -> 12:00, "12" -> 12:00, "8.5" -> 8:30, "8:30" stays.
 function normPace(v) {
@@ -400,27 +417,44 @@ for (const [id, k] of [['tFast', 'fast'], ['tTrails', 'trails'], ['tSteps', 'avo
 for (const ex of EXAMPLES) { const b = document.createElement('button'); b.className = 'chip'; b.textContent = ex; b.onclick = () => { $('prompt').value = ex; onAsk(); }; $('examples').appendChild(b); }
 
 // ---------- planning ----------
+function revealResults() {
+  if (!matchMedia('(max-width: 860px)').matches) return;
+  const c = $('cards'), r = c.getBoundingClientRect();
+  if (r.top < 0 || r.top > innerHeight * 0.6) c.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+}
 function setStatus(html, busy) { $('status').innerHTML = (busy ? '<span class="spinner"></span>' : '') + html; $('planBtn').disabled = !!busy; }
 
+let askId = 0, formEdits = 0;
 async function onAsk() {
-  if (!G) return;
+  if (!G || !PL) return;
   const text = $('prompt').value.trim(); lastPrompt = text;
+  const my = ++askId, editsAtStart = formEdits;
   const local = applyParse(PL.localParse(text));
-  $('understood').innerHTML = describeSettings(local);
-  setStatus('Reading your request…', true);
+  runPlan({ explicit: true, reveal: true });
+  $('aiHint').textContent = (await getSample()) ? 'Checking with Claude…' : '';
   const ai = await Promise.race([claudeParse(text), new Promise(r => setTimeout(() => r(null), 15000))]);
-  if (ai) { const r = applyParse(PL.mergeClaude(text, local, ai)); $('understood').innerHTML = describeSettings(r); $('aiHint').textContent = 'Interpreted by Claude'; }
-  else $('aiHint').textContent = '';
-  runPlan();
+  // a newer request or a settings edit since then wins over this reply
+  if (my !== askId || formEdits !== editsAtStart) return;
+  if (!ai) { $('aiHint').textContent = ''; return; }
+  const before = settingsKey();
+  applyParse(PL.mergeClaude(text, local, ai));
+  if (settingsKey() !== before) { $('aiHint').textContent = 'Adjusted by Claude'; runPlan({ explicit: true }); }
+  else $('aiHint').textContent = 'Claude agrees';
 }
+const settingsKey = () => JSON.stringify([S.startText, S.endText, S.mode, S.amount, S.pace, S.shape, S.hill, S.maxGrade, S.fast, S.trails, S.avoidSteps, S.hillTop, S.dests]);
 
-function runPlan() {
+let planBusy = false, planQueued = null;
+function showProblem(msg) { results = []; renderAll(); setStatus(msg); }
+async function runPlan(opts = {}) {
+  if (!G) return;
+  await workerReady;
+  if (planBusy) { planQueued = { explicit: opts.explicit || (planQueued && planQueued.explicit) }; return; } // the newest request runs when this one ends
   readForm();
-  if (G) $('understood').innerHTML = describeSettings();
-  const start = lib.geocode(G, S.startText, HOME);
-  if (!start) { setStatus(`Couldn't find “${esc(S.startText)}”. Try a street address, an intersection like “Cortland & Mission”, or pick on the map.`); return; }
+  $('understood').innerHTML = describeSettings();
+  const start = lib.geocode(G, S.startText, HOME, PL && PL.aliases);
+  if (!start) return showProblem(`Couldn't find “${esc(S.startText)}” in San Francisco. Try a street address, an intersection like “Cortland & Mission”, a park, or pick on the map.`);
   let end = null;
-  if (S.endText) { end = lib.geocode(G, S.endText, HOME); if (!end) { setStatus(`Couldn't find “${esc(S.endText)}”. Try an address, an intersection, or pick on the map.`); return; } }
+  if (S.endText) { end = lib.geocode(G, S.endText, HOME, PL && PL.aliases); if (!end) return showProblem(`Couldn't find “${esc(S.endText)}” in San Francisco. Try an address, an intersection, a park, or pick on the map.`); }
   S.start = start; S.end = end;
   const paceSec = paceToSec(S.pace) || 510;
   const miles = targetMiles();
@@ -437,32 +471,37 @@ function runPlan() {
   shuffleNext = false; P.avoid = avoid;
   const seenCount = seen.length;
   setStatus('Searching ' + (P.hillTop ? 'hilltops and ' : '') + 'streets for routes…', true);
-  const id = ++reqId;
-  worker.onmessage = (ev) => {
-    const m = ev.data; if (m.id !== id) return;
-    if (m.type === 'error') { setStatus('Planning failed: ' + esc(m.message)); return; }
-    results = m.res.routes; sel = 0; rememberShown(results);
-    if (!results.length) { setStatus('No route found. Try a different start or a shorter distance.'); renderAll(); return; }
-    const off = P.targetM ? results[0].length / P.targetM : 1;
-    const minL = Math.min(...results.map(r => r.length));
-    setStatus(`${results.length} option${results.length > 1 ? 's' : ''}` + (P.targetM ? ` for ${(P.targetM / MI).toFixed(2)} mi` : '') + (P.targetM && minL > P.targetM * 1.1 ? ` · going through ${esc(S.dests.join(' and ') || 'those stops')} takes at least ${(minL / MI).toFixed(1)} mi from here` : '') + (seenCount ? ` · steering away from ${seenCount} routes you've seen <button class="pickbtn" id="forgetBtn">Forget them</button>` : ''));
-    const fb = $('forgetBtn'); if (fb) fb.onclick = () => { forgetSeen(); fb.replaceWith(document.createTextNode('(forgotten)')); };
-    renderAll(); fitRoute();
-  };
-  worker.postMessage({ type: 'plan', id, P, paceSec });
+  planBusy = true;
+  const m = await workerCall({ type: 'plan', P, paceSec });
+  planBusy = false;
+  if (planQueued) { const q = planQueued; planQueued = null; runPlan(q); return; } // settings changed meanwhile: skip this stale result
+  if (m.type === 'error') return showProblem('Planning failed: ' + esc(m.message));
+  if (m.res.error) return showProblem(esc(m.res.error));
+  results = m.res.routes; sel = 0;
+  if (opts.explicit) rememberShown(results);
+  if (!results.length) return showProblem('No route found. Try a different start or a shorter distance.');
+  const T = P.targetM, minL = Math.min(...results.map(r => r.length)), maxL = Math.max(...results.map(r => r.length));
+  let note = '';
+  if (T && minL > T * 1.1) note = S.dests.length ? ` · going through ${esc(S.dests.join(' and '))} takes at least ${(minL / MI).toFixed(1)} mi from here` : P.end ? ` · getting to your finish takes at least ${(minL / MI).toFixed(1)} mi` : ` · the closest I could find is ${(minL / MI).toFixed(1)} mi` + (P.hillTop && P.maxGrade ? ` (hilltops are ringed by steep streets, so a grade limit makes them far; try ${Math.round(P.maxGrade * 100) < 12 ? Math.round(P.maxGrade * 100) + 2 + '% or ' : ''}Any)` : '');
+  else if (T && maxL < T * 0.9) note = P.shape === 'out-and-back' && !P.end ? ` · the longest out & back that fits in SF from here is about ${(maxL / MI).toFixed(1)} mi; try a loop` : ` · the longest I could fit is ${(maxL / MI).toFixed(1)} mi`;
+  setStatus(`${results.length} option${results.length > 1 ? 's' : ''}` + (T ? ` for ${(T / MI).toFixed(2)} mi` : '') + note + (seenCount ? ` · steering away from ${seenCount} routes you've seen <button class="pickbtn" id="forgetBtn">Forget them</button>` : ''));
+  const fb = $('forgetBtn'); if (fb) fb.onclick = () => { forgetSeen(); fb.replaceWith(document.createTextNode('(forgotten)')); };
+  renderAll(); fitRoute();
+  if (opts.explicit && opts.reveal) revealResults();
 }
 let lastPrompt = null, replanT = null;
 // Settings edits replan from the form; the description is only re-read when its text changes.
-function replanSoon(delay = 350) { if (!G) return; clearTimeout(replanT); replanT = setTimeout(() => { runPlan(); }, delay); }
-$('planBtn').onclick = () => { if ($('prompt').value.trim() === lastPrompt) { runPlan(); } else onAsk(); };
-$('updateBtn').onclick = () => { clearTimeout(replanT); runPlan(); };
-$('shuffleBtn').onclick = () => { if (G) { shuffleNext = true; runPlan(); } };
+function replanSoon(delay = 350) { if (!G) return; formEdits++; clearTimeout(replanT); replanT = setTimeout(() => { runPlan(); }, delay); }
+$('planBtn').onclick = () => { if ($('prompt').value.trim() === lastPrompt) { runPlan({ explicit: true, reveal: true }); } else onAsk(); };
+$('updateBtn').onclick = () => { formEdits++; clearTimeout(replanT); runPlan({ explicit: true, reveal: true }); };
+$('shuffleBtn').onclick = () => { if (G) { shuffleNext = true; runPlan({ explicit: true, reveal: true }); } };
 $('prompt').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onAsk(); } });
 for (const id of ['startIn', 'endIn', 'amountIn', 'paceIn']) {
   const el = $(id); let before = el.value;
   el.addEventListener('focus', () => { before = el.value; });
-  el.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); before = el.value; clearTimeout(replanT); runPlan(); } });
-  el.addEventListener('change', () => { if (el.value !== before) { before = el.value; replanSoon(0); } });
+  const keepPace = () => { if (id === 'paceIn') { const pv = normPace(el.value); if (pv) { S.pace = pv; savePrefs(); } } };
+  el.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); before = el.value; keepPace(); formEdits++; clearTimeout(replanT); runPlan({ explicit: true }); } });
+  el.addEventListener('change', () => { if (el.value !== before) { before = el.value; keepPace(); replanSoon(0); } });
 }
 
 // ---------- rendering ----------
@@ -511,7 +550,7 @@ function renderCards() {
     b.innerHTML = `<span class="tag">${'ABC'[i]}</span><span class="name">${esc(routeName(r))}</span>
       <span class="stats"><span><b>${(r.length / MI).toFixed(2)}</b> mi</span><span><b>${fmtDur(r.secs)}</b></span><span>↑<b>${Math.round(r.gain * FT)}</b> ft</span><span>max <b>${Math.round(r.maxUp * 100)}%</b></span>${r.maxGrade ? `<span>&gt;${Math.round(r.maxGrade * 100)}%: <b>${((r.overUp + r.overDn) / MI).toFixed(2)}</b> mi</span>` : ''}</span>
       ${sparkline(r)}`;
-    b.onclick = () => { sel = i; renderAll(); fitRoute(); };
+    b.onclick = () => { sel = i; rememberShown([r]); renderAll(); fitRoute(); };
     c.appendChild(b);
   });
 }
@@ -544,7 +583,7 @@ function renderDetail() {
       <button class="btn ghost" id="copyBtn">Copy summary</button>
     </div>
     <div class="toast" id="toast"></div>
-    <div class="hint">Google Maps gets about ten points along the route, so it may smooth a few corners. GPX has the full track for a watch.</div>`;
+    <div class="hint">Google Maps only takes ${matchMedia('(pointer: coarse)').matches ? '3 points from a phone' : '9 points'}, so it may pick its own streets between them. The GPX file has the exact route for a watch.</div>`;
   $('copyBtn').onclick = () => copySummary(r);
   $('gpxBtn').onclick = () => downloadGpx(r);
   getDownloads().then(dl => { const b = $('gpxBtn'); if (b && !dl) b.hidden = true; });
@@ -563,12 +602,31 @@ function steepNote(r) {
   return `<div class="hint"><b>${(over / MI).toFixed(2)} mi steeper than ${lim}%</b>, marked with a dashed outline on the map and shaded on the profile.` +
     (un > 10 ? ` ${(un / MI).toFixed(2)} mi of that can't be avoided ${where}.` : '') + `</div>`;
 }
+// Google Maps takes up to 9 waypoints on a computer but only 3 on phones, so pick the points that keep the
+// route's shape best (Douglas-Peucker order: most off the line so far first), then put them in route order.
 function gmapsLink(r) {
-  const g = r.geom, n = g.lat.length, L = r.length;
-  const pts = []; const k = 9;
-  for (let j = 1; j <= k; j++) { const target = L * j / (k + 1); let i = 0; while (i < n - 1 && g.cum[i] < target) i++; pts.push(`${g.lat[i].toFixed(5)},${g.lon[i].toFixed(5)}`); }
-  const o = `${g.lat[0].toFixed(5)},${g.lon[0].toFixed(5)}`, d = `${g.lat[n - 1].toFixed(5)},${g.lon[n - 1].toFixed(5)}`;
-  return `https://www.google.com/maps/dir/?api=1&origin=${o}&destination=${d}&waypoints=${encodeURIComponent(pts.join('|'))}&travelmode=walking`;
+  const g = r.geom, n = g.lat.length, k = matchMedia('(pointer: coarse)').matches ? 3 : 9;
+  const X = (i) => g.lon[i] * 88000, Y = (i) => g.lat[i] * 111320;
+  const chosen = [0, n - 1];
+  for (let added = 0; added < k; added++) {
+    chosen.sort((a, b) => a - b);
+    let best = -1, bd = 0;
+    for (let c = 0; c + 1 < chosen.length; c++) {
+      const a = chosen[c], b = chosen[c + 1], dx = X(b) - X(a), dy = Y(b) - Y(a), L2 = dx * dx + dy * dy;
+      for (let i = a + 1; i < b; i++) {
+        let d;
+        if (L2 < 1) d = Math.hypot(X(i) - X(a), Y(i) - Y(a)); // loop: start and end coincide
+        else { const t = Math.max(0, Math.min(1, ((X(i) - X(a)) * dx + (Y(i) - Y(a)) * dy) / L2)); d = Math.hypot(X(i) - X(a) - t * dx, Y(i) - Y(a) - t * dy); }
+        if (d > bd) { bd = d; best = i; }
+      }
+    }
+    if (best < 0) break;
+    chosen.push(best);
+  }
+  chosen.sort((a, b) => a - b);
+  const pt = (i) => `${g.lat[i].toFixed(5)},${g.lon[i].toFixed(5)}`;
+  const way = chosen.slice(1, -1).map(pt);
+  return `https://www.google.com/maps/dir/?api=1&origin=${pt(0)}&destination=${pt(n - 1)}&waypoints=${encodeURIComponent(way.join('|'))}&travelmode=walking`;
 }
 function summaryText(r) {
   return `${routeName(r)} — ${(r.length / MI).toFixed(2)} mi, ~${fmtDur(r.secs)} at ${S.pace}/mi, +${Math.round(r.gain * FT)} ft (max ${Math.round(r.maxUp * 100)}%).\n` +
@@ -600,6 +658,7 @@ function drawProfile() {
   if (!r) { svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle">Plan a route to see its hills</text>`; return; }
   const p = r.profile.map(v => v * FT), n = p.length, step = r.gradeStep;
   const L = (n - 1) * step / MI;
+  if (n < 3 || L < 0.02) { svg.innerHTML = `<text x="${W / 2}" y="${H / 2}" text-anchor="middle">This route is too short to chart</text>`; svg._scale = null; return; }
   let lo = Math.min(...p), hi = Math.max(...p);
   const span = Math.max(100, hi - lo); lo = Math.max(lo - span * 0.08, Math.min(lo, 0) - 5); hi = lo + span * 1.18;
   const X = (i) => padL + (i * step / MI) / L * (W - padL - padR), Y = (v) => padT + (1 - (v - lo) / (hi - lo)) * (H - padT - padB);
@@ -614,7 +673,7 @@ function drawProfile() {
   svg.innerHTML = steepBands + g + cols + `<polyline points="${line}" fill="none" stroke="var(--ink)" stroke-width="1.5" vector-effect="non-scaling-stroke"/><line class="cursor" id="pcur" x1="-10" x2="-10" y1="${padT}" y2="${H - padB}" vector-effect="non-scaling-stroke"/>`;
   svg._scale = { padL, padR, W, L, n, step };
 }
-function niceStep(range, count) { const raw = range / count, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p; return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * p; }
+function niceStep(range, count) { if (!(range > 0)) return 1; const raw = range / count, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p; return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * p; }
 function scrub(ev) {
   const svg = $('profile'), r = results[sel], s = svg._scale; if (!r || !s) return;
   const rect = svg.getBoundingClientRect(); const x = (ev.clientX - rect.left) / rect.width * s.W;
@@ -631,9 +690,14 @@ let rsT; addEventListener('resize', () => { clearTimeout(rsT); rsT = setTimeout(
 
 // ---------- map ----------
 function initMap() {
-  map = L.map('map', { zoomControl: true, minZoom: 12, maxZoom: 18, maxBounds: [[37.68, -122.56], [37.84, -122.33]], maxBoundsViscosity: 0.8, attributionControl: true, preferCanvas: true })
+  const touch = matchMedia('(pointer: coarse)').matches;
+  map = L.map('map', { dragging: !touch, tap: false, zoomControl: true, minZoom: 12, maxZoom: 18, maxBounds: [[37.68, -122.56], [37.84, -122.33]], maxBoundsViscosity: 0.8, attributionControl: true, preferCanvas: true })
     .setView([HOME.lat, HOME.lon], 14);
   map.attributionControl.setPrefix(false);
+  if (touch) { // say how to move the map, since one finger scrolls the page
+    const Hint = L.Control.extend({ onAdd() { const d = L.DomUtil.create('div', 'map-hint'); d.textContent = 'Two fingers to move the map'; return d; } });
+    new Hint({ position: 'bottomleft' }).addTo(map);
+  }
   map.attributionControl.addAttribution('Streets © OpenStreetMap contributors via Overture Maps · Terrain: USGS 3DEP via AWS Terrain Tiles');
   map.createPane('terrain').style.zIndex = 150;
   map.createPane('streets').style.zIndex = 250;
@@ -648,7 +712,7 @@ function initMap() {
     if (picking === 'start') S.startText = lbl; else S.endText = lbl;
     $(picking === 'start' ? 'startIn' : 'endIn').value = lbl;
     picking = null; $('pickStart').classList.remove('on'); $('pickEnd').classList.remove('on'); map.getContainer().style.cursor = '';
-    readForm(); runPlan();
+    readForm(); formEdits++; runPlan({ explicit: true });
   });
 }
 let terrainOverlay, streetLayer, peakLayer, terrainImg = null;
@@ -785,7 +849,9 @@ function hillTopPlan(P) {
     const res = lib.plan(g, Object.assign({}, P, { destinations: [c.h], count: 2 }));
     for (const r of res.routes) { r.score -= c.h.el / 90; r.hill = c.h.name; all.push(r); }
   }
-  all.sort((a, b) => a.score - b.score);
+  // with a target distance, only offer hilltops that fit it (when any do)
+  if (T) { const fit = all.filter(r => Math.abs(r.length - T) / T <= 0.08); all = fit.length ? fit.sort((a, b) => a.score - b.score) : all.sort((a, b) => Math.abs(a.length - T) - Math.abs(b.length - T)); }
+  else all.sort((a, b) => a.score - b.score);
   const out = [], seen = new Set();
   for (const r of all) if (!seen.has(r.hill)) { out.push(r); seen.add(r.hill); if (out.length === 3) break; }
   for (const r of all) if (out.length < 3 && !out.includes(r)) out.push(r);
@@ -799,7 +865,7 @@ self.onmessage = async (ev) => {
       const t0 = Date.now();
       const res = m.P.hillTop && !(m.P.destinations || []).length ? hillTopPlan(m.P) : lib.plan(g, m.P);
       for (const r of res.routes) { r.geom = { lat: r.geom.lat, lon: r.geom.lon, el: r.geom.el, cum: r.geom.cum }; }
-      self.postMessage({ type: 'result', id: m.id, res: { routes: res.routes, ms: Date.now() - t0 } });
+      self.postMessage({ type: 'result', id: m.id, res: { routes: res.routes, ms: Date.now() - t0, error: res.error || null } });
     } catch (e) { self.postMessage({ type: 'error', id: m.id, message: String(e && e.message || e) }); }
   }
 };`;
@@ -810,13 +876,15 @@ async function boot() {
   const img = new Image(); img.src = 'data:image/png;base64,' + $('terrainData').textContent.trim();
   await img.decode(); terrainImg = img;
   G = await lib.decodeBase64Gz(b64);
+  PL = ParseLib(G.places);
   prepStreets();
   syncForm();
   if (typeof L !== 'undefined') initMap();
   $('mapLoading').hidden = true;
   worker = new Worker(URL.createObjectURL(new Blob([WORKER_SRC], { type: 'text/javascript' })));
-  await new Promise((res) => { worker.onmessage = (e) => { if (e.data.type === 'ready') res(); }; worker.postMessage({ type: 'init', b64 }); });
-  PL = ParseLib(G.places);
+  worker.onmessage = onWorkerMessage;
+  worker.postMessage({ type: 'init', b64 });
+  await workerReady;
   lastPrompt = $('prompt').value.trim();
   const local = applyParse(PL.localParse($('prompt').value));
   $('understood').innerHTML = describeSettings(local);

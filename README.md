@@ -19,6 +19,8 @@ Everything runs in the browser: the SF walkable street network (Overture Maps / 
   - `smoke_prompts.js` – types prompts into the real page with a mocked Claude reply
   - `smoke_form.js` – edits each setting directly and checks the routes follow
   - `test_grade.js` – steepness limits: steep distance a route could have avoided, and distance accuracy
+  - `test_edge.js` – long runs (to a marathon), out & back limits, stops, open distance, outside SF
+  - `smoke_races.js` – overlapping requests, taps during startup, tiny routes, unknown places
   - `test_variety.js` – repeated plans with route memory should keep producing new routes (`old` arg shows the previous behaviour)
 
 ## Rebuild

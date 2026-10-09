@@ -65,6 +65,14 @@ P=[
 ("Mission Bay",37.7705,-122.3910,"place","Waterfront paths and parks"),
 ("Duboce Park",37.7690,-122.4335,"place","Neighborhood park in the Lower Haight"),
 ("Alcatraz View: Aquatic Park",37.8065,-122.4225,"place","Pier, beach and Muni pier loop"),
+("Fort Funston",37.7143,-122.5025,"place","Clifftop dunes and hang gliders above the ocean"),
+("Lands End",37.7804,-122.5050,"place","Coastal trail with Golden Gate views"),
+("Golden Gate Bridge",37.8077,-122.4750,"place","South end of the bridge at the welcome center"),
+("Baker Beach",37.7936,-122.4836,"place","Beach below the Presidio bluffs"),
+("City Hall",37.7793,-122.4193,"place","Civic Center plaza"),
+("Fort Mason",37.8065,-122.4312,"place","Great Meadow and waterfront piers"),
+("Washington Square",37.8008,-122.4100,"place","North Beach's park"),
+("Lake Merced Boathouse",37.7275,-122.4935,"place","North end of the Lake Merced loop"),
 ]
 lat=np.array([p[1] for p in P]); lon=np.array([p[2] for p in P])
 # refine hills to the local DEM max within ~150 m

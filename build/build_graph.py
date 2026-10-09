@@ -29,8 +29,10 @@ for r in seg.itertuples():
     if r.access_restrictions is not None:
         for a in r.access_restrictions:
             w=a['when'] or {}; modes=w.get('mode'); 
-            if a['access_type']=='denied' and a['between'] is None:
-                if modes is None and w.get('vehicle') is None and w.get('using') is None: denied=True
+            # Only a blanket, all-day, both-directions denial (or one naming pedestrians) closes a way to runners.
+            # A denial with a heading is a one-way street for vehicles; with 'during' it's time-limited.
+            if a['access_type']=='denied' and a['between'] is None and w.get('heading') is None and w.get('during') is None:
+                if modes is None and w.get('vehicle') is None and w.get('using') is None and w.get('recognized') is None: denied=True
                 elif modes is not None and 'foot' in list(modes): denied=True
     if denied: continue
     if cls=='footway' and sub in ('sidewalk','crosswalk'): cls=sub

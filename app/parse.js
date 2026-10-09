@@ -55,11 +55,15 @@ function ParseLib(places) {
     const paceRes = [
       new RegExp(String.raw`\b(\d{1,2}):(\d{2})s?` + PACE_CUE, 'g'),                       // 8:30 pace, 8:30/mi, 8:30 min miles
       new RegExp(String.raw`\b(\d{1,2}(?:\.\d+)?)[- ]?(?:min(?:ute)?s?)\s*(?:\/\s*mi(?:le)?|per mi(?:le)?|pace|miles?|mile pace)`, 'g'), // 12 min pace, 12-minute miles
-      /\bpace (?:of |around |about |at )?(\d{1,2})(?::(\d{2}))?\b/g,                       // pace of 9:30 / pace 9
-      /\bat (?:an? |about |around )?(\d{1,2}):(\d{2})s?\b(?!\s*(?:am|pm|hours?|hrs?))/g,     // at 7:15 (bare)
+      /\bpace (?:of |around |about |at )?(\d{1,2})(?::(\d{2}))?\b(?!\s*(?:mi\b|miles?|milers?|k\b|km|min|minutes?|hours?))/g, // pace of 9:30 / pace 9 (not "pace 7 miles")
+      /(?:\bat|@) ?(?:an? |about |around )?(\d{1,2}):(\d{2})s?\b(?!\s*(?:am|pm|a\.m|p\.m|hours?|hrs?))/g,     // at 7:15 / @ 7:15 (bare)
     ];
+    // "leave at 6:15", "at 6:45 this morning", "6am" are times of day, not paces
+    const isClock = (m) => /\b(?:leave|leaving|left|start|starting|head(?:ing)? out|out the door|wake|waking|up|alarm|by|before|after|until|meet|meeting|back by|done by)\s+(?:at\s+|by\s+|around\s+)?$/.test(t.slice(Math.max(0, m.index - 24), m.index + (m[0].startsWith('at') ? 3 : 0)).replace(/at\s*$/, '')) ||
+      /^\s*(?:am|pm|a\.m|p\.m|o'?clock|this morning|tomorrow|tonight|sharp)\b/.test(t.slice(m.index + m[0].length));
     for (const re of paceRes) {
       re.lastIndex = 0; m = re.exec(t);
+      while (m && isClock(m)) m = re.exec(t);
       if (m) {
         let sec;
         if (m[2] !== undefined && /:/.test(m[0])) sec = (+m[1]) * 60 + (+m[2]);
@@ -68,10 +72,12 @@ function ParseLib(places) {
         if (sec >= 180 && sec <= 1800) { r.pace = secToPace(sec); t = t.slice(0, m.index) + ' ' + t.slice(m.index + m[0].length); break; }
       }
     }
+    t = t.replace(/\b(?:leave|leaving|start|starting|head(?:ing)? out|out the door|by|before|after)\s+(?:at\s+|by\s+)?\d{1,2}(?::\d{2})?\s*(?:am|pm|a\.m\.?|p\.m\.?)?\b/g, ' ')
+         .replace(/\b\d{1,2}(?::\d{2})?\s*(?:am|pm|a\.m\.?|p\.m\.?|o'?clock)\b|\bat \d{1,2}:\d{2} (?:this morning|tomorrow|tonight)\b/g, ' ');
     // --- duration ---
     let mins = null;
     if ((m = t.match(/\b(\d{1,2}):(\d{2}):(\d{2})\b/))) { mins = (+m[1]) * 60 + (+m[2]) + (+m[3]) / 60; t = t.replace(m[0], ' '); }
-    else if ((m = t.match(/\bfor (\d{1,2}):(\d{2})\b/))) { mins = (+m[1]) * 60 + (+m[2]); t = t.replace(m[0], ' '); }
+    else if ((m = t.match(/\b(?:for|run|jog|go)\s+(\d):([0-5]\d)\b/))) { mins = (+m[1]) * 60 + (+m[2]); t = t.replace(m[0], ' '); } // "run 1:30" = 90 min
     if (mins == null) {
       let h = 0, found = false;
       if ((m = t.match(/\b(\d+(?:\.\d+)?)\s*(?:-\s*)?(?:h|hr|hrs|hours?)\b(?:\s*(?:and\s+)?(?:a\s+)?(half|quarter|3 quarters))?/))) {
@@ -86,12 +92,14 @@ function ParseLib(places) {
     }
     if (mins != null && mins > 0) r.minutes = Math.round(mins);
     // --- distance ---
-    if (/\bhalf[- ]marathon\b/.test(t)) r.distanceMi = 13.1;
-    else if (/\bmarathon\b/.test(t)) r.distanceMi = 26.2;
-    else if ((m = t.match(/\b(\d+(?:\.\d+)?)\s*(?:-\s*)?(?:k|km|kms|kilometers?|kilometres?)\b/))) r.distanceMi = +(parseFloat(m[1]) / KM).toFixed(2);
-    else if ((m = t.match(/\b(\d+(?:\.\d+)?)\s*(?:-\s*)?(?:mi|miles?|mile)\b/))) r.distanceMi = parseFloat(m[1]);
+    if ((m = t.match(/\b(\d+(?:\.\d+)?)\s*(?:-\s*)?(?:k|km|kms|kilometers?|kilometres?)\b/))) r.distanceMi = +(parseFloat(m[1]) / KM).toFixed(2);
+    else if ((m = t.match(/\b(\d+(?:\.\d+)?)\s*(?:-\s*)?(?:mi|miles?|mile|milers?)\b/))) r.distanceMi = parseFloat(m[1]);
+    else if (/\bhalf[- ]marathon\b(?!\s*(?:pace|effort|race pace))/.test(t)) r.distanceMi = 13.1;
+    else if (/\bmarathon\b(?!\s*(?:pace|effort|race pace))/.test(t) && !/\bhalf[- ]marathon\b/.test(t)) r.distanceMi = 26.2;
     else if ((m = t.match(/\b(\d+(?:\.\d+)?) and a half (?:mi|miles?)\b/))) r.distanceMi = parseFloat(m[1]) + 0.5;
     else if (/\b(?:a|1) mile\b/.test(t)) r.distanceMi = 1;
+    // bare number after a run word: "easy 6", "run 4" (miles), when nothing else gave a length
+    if (r.distanceMi == null && r.minutes == null && (m = t.match(/\b(?:easy|run|jog|quick|short|long|do|go|steady|tempo|recovery)\s+(?:an?\s+)?(\d{1,2}(?:\.\d)?)\b(?!\s*(?:%|:|percent|min|minutes?|am|pm))/)) && +m[1] >= 1 && +m[1] <= 30) r.distanceMi = parseFloat(m[1]);
     // --- steepness limit (before distance/time so "8%" isn't misread) ---
     if ((m = t.match(/\b(?:under|below|less than|max(?:imum)?|no more than|nothing (?:over|above|steeper than|more than)|not (?:over|above|steeper than)|at most|up to|limit(?: of)?|cap(?: of)?)\s*(?:of\s*|a\s*)?(\d{1,2}(?:\.\d)?)\s*(?:%|percent|pc)(?:\s*(?:grade|slope|incline|gradient))?/)) ||
         (m = t.match(/\b(\d{1,2}(?:\.\d)?)\s*(?:%|percent)\s*(?:grade|slope|incline|gradient)?\s*(?:max(?:imum)?|or less|limit|cap|tops)\b/)) ||
@@ -99,9 +107,10 @@ function ParseLib(places) {
       r.maxGrade = snapGrade(parseFloat(m[1]) / 100); t = t.replace(m[0], ' ');
     } else if (/\b(no|avoid(?:ing)?|without|skip|nothing|not too|minimal|minimi[sz]e)\s+(?:the\s+|any\s+|really\s+|super\s+|too\s+)?(steep|steepest|steep hills|big hills|steep climbs|steep streets|crazy hills)\b/.test(t) || /\bgentle (?:grades?|slopes?|hills)\b/.test(t)) r.maxGrade = 0.08;
     // --- character of the run ---
-    if (/\b(flat|flatish|recovery|easy|gentle|no hills|avoid hills|avoid the hills|level|not hilly|without hills)\b/.test(t)) r.hill = 'flat';
+    const NOT_HILLY = /\b(no hills|avoid (?:the )?hills|not (?:too |very |that |super )?hilly|without hills|skip (?:the )?hills|minimal (?:climbing|elevation|hills|vert)|low elevation|little climbing|less climbing|no climbing|not much climbing|minimi[sz]e (?:climbing|elevation|incline|hills))\b/;
+    if (/\b(flat|flatish|flattest|recovery|easy|gentle|level)\b/.test(t) || NOT_HILLY.test(t)) r.hill = 'flat';
     if (/\b(rolling|some hills|a few hills|moderate|a little climbing|bit of climbing)\b/.test(t)) r.hill = 'rolling';
-    if (!/\b(no hills|avoid (?:the )?hills|not hilly|without hills)\b/.test(t) && !(r.maxGrade && !/\b(hilly|climb|climbing|vert)\b/.test(t)) && /\b(hilly|hills|climb|climbing|climbs|vert|steep|elevation|uphill|hill (?:workout|repeats|run|training|session))\b/.test(t) && !/\b(a few hills|some hills|a little climbing|bit of climbing)\b/.test(t)) r.hill = 'hilly';
+    if (!NOT_HILLY.test(t) && !(r.maxGrade && !/\b(hilly|climb|climbing|vert)\b/.test(t)) && /\b(hilly|hills|climb|climbing|climbs|vert|steep|elevation|uphill|hill (?:workout|repeats|run|training|session))\b/.test(t) && !/\b(a few hills|some hills|a little climbing|bit of climbing)\b/.test(t)) r.hill = 'hilly';
     if (/\b(max(imum)? (climb|climbing|hills|vert)|brutal|all the hills|as much climbing|hill repeats|lots of climbing|most climbing|as hilly as)\b/.test(t)) r.hill = 'max';
     if (/\b(fast|tempo|speed|speedy|race pace|pr|threshold|workout|intervals|quick pace)\b/.test(t)) { r.fast = true; if (!r.hill) r.hill = 'flat'; }
     if (/\b(trails?|dirt|nature|woods|forest|unpaved|off[- ]road|through the parks?|in the park)\b/.test(t)) r.trails = true;
@@ -109,14 +118,17 @@ function ParseLib(places) {
     if (/\b(out[- ]and[- ]back|out & back|there and back|and back|turn around)\b/.test(t)) r.shape = 'out-and-back';
     if (/\b(hill ?tops?|summit|summits|peaks?|views?|viewpoint|overlook|lookout|vista|top of a hill|up a hill)\b/.test(t)) r.hillTop = true;
     // --- places, start, end ---
-    if ((m = text.match(/\b(?:end(?:ing)?|finish(?:ing)?|stop(?:ping)?)\s+(?:up\s+)?(?:at|on|near|by)\s+(?:the\s+)?([^,.;]+)/i))) r.end = m[1].replace(/\s+(?:and|with|via|through)\b.*$/i, '').trim();
+    if ((m = text.match(/\b(?:end(?:ing)?|finish(?:ing)?|stop(?:ping)?)\s+(?:up\s+)?(?:at|on|near|by)\s+(?:the\s+)?([^,.;]+)/i)))
+      r.end = m[1].replace(/\s+(?:with|via|through|then|after|for)\b.*$/i, '').replace(/\s+and\s+(?:then|run|go|come|do|back|get|grab|\d).*$/i, '').replace(/\s+\d+(?:\.\d+)?\s*(?:mi|miles?|k|km|min|minutes?)\b.*$/i, '').trim();
     if ((m = text.match(/\b(?:start(?:ing)?|begin(?:ning)?)\s+(?:at|on|near|from)\s+(?:the\s+)?([^,.;]+?)(?=\s+(?:to|then|ending|end|finish|run|for|with|going)\b|\s+\d+(?:\.\d+)?\s*(?:mi|miles?|k|km|min|minutes?)\b|[,.;]|$)/i)) ||
-        (m = text.match(/\bfrom\s+(?:the\s+)?(\d+\s+[a-z0-9 ]+?(?:st|street|ave|avenue|blvd|way|rd|road|dr|drive|pl|place|ter|terrace)\b|[a-z0-9 ]+?\s*(?:&|and)\s*[a-z0-9 ]+?(?=\s+(?:to|then|ending)\b|[,.;]|$))/i))) r.start = m[1].trim();
+        (m = text.match(/\bfrom\s+(?:the\s+)?(\d+\s+[a-z0-9 ]+?(?:st|street|ave|avenue|blvd|way|rd|road|dr|drive|pl|place|ter|terrace)\b|[a-z0-9 ]+?\s*(?:&|and)\s*[a-z0-9 ]+?(?=\s+(?:to|then|ending|end|finish|run|jog|for|go|going|back)\b|\s+\d|[,.;]|$))/i))) r.start = m[1].trim();
     if (!r.start && (m = text.match(/\bfrom\s+(?:the\s+)?([^,.;]+)/i))) { // "from <known place>"
       const pl = mentionedPlaces(m[1].split(/\s+(?:to|then|and|ending|end|finish|run|for|with|via|through)\b/i)[0]);
       if (pl.length) r.start = pl[0];
     }
     const HOMEW = /^(home|my (?:house|place|home|apartment)|the house)$/i;
+    const homeFinish = /\b(?:run|running|jog|jogging|head|heading|go|going|come|coming|get|back)\s+(?:back\s+)?home\b|\b(?:end|ending|finish|finishing)\s+(?:up\s+)?(?:at\s+)?home\b/i.test(text);
+    if (r.start && homeFinish && !r.end) r.end = 'home';
     if (r.start && HOMEW.test(r.start)) r.start = null;
     if (r.end && HOMEW.test(r.end)) r.end = r.start ? 'home' : null; // finishing at home only matters when starting elsewhere
     const endPlaces = r.end ? mentionedPlaces(r.end) : [], startPlaces = r.start ? mentionedPlaces(r.start) : [];
@@ -155,7 +167,7 @@ function ParseLib(places) {
     const hillWords = /\b(hill ?tops?|summit|peaks?|views?|viewpoint|overlook|lookout|vista|hill)\b/i.test(text);
     r.hillTop = !r.dests.length && (local.hillTop || (c.hilltop === true && hillWords));
     // endpoints: only when the runner signalled one
-    if (!local.end && typeof c.end === 'string' && c.end.trim() && /\b(end|ending|finish|finishing|stop|stopping|to)\b/i.test(text) && !/^home$/i.test(c.end.trim())) {
+    if (!local.end && typeof c.end === 'string' && c.end.trim() && /\b(end|ending|finish|finishing|stop|stopping|to)\b/i.test(text) && (!/^home$/i.test(c.end.trim()) || r.start)) {
       const e = c.end.trim();
       if (text.toLowerCase().includes(e.toLowerCase().split(/[ ,]/)[0])) r.end = e;
     }
@@ -181,6 +193,6 @@ function ParseLib(places) {
     return { mode, amount, pace, miles };
   }
 
-  return { localParse, mergeClaude, resolve, mentionedPlaces, paceToSec, secToPace };
+  return { localParse, mergeClaude, resolve, mentionedPlaces, paceToSec, secToPace, aliases: ALIASES };
 }
 if (typeof module !== 'undefined') module.exports = ParseLib;

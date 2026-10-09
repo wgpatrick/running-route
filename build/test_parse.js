@@ -62,6 +62,23 @@ const CASES = [
   ['7 miles, 12% max', { miles: 7, maxGrade: 0.12 }],
   ['hilly 6 miles but no steep climbs', { miles: 6, maxGrade: 0.08, hill: 'hilly' }],
   ['hilly 10k', { miles: 6.21, maxGrade: null, hill: 'hilly' }],
+  // review regressions
+  ['10 miles at marathon pace', { miles: 10 }],
+  ['half marathon pace 7 miles', { miles: 7 }],
+  ['a 7 miler', { miles: 7 }],
+  ['a long 14 miler', { miles: 14 }],
+  ['6 miles finishing at Cortland and Mission', { miles: 6, end: 'Cortland and Mission' }],
+  ['leave at 6:15, easy 5 miles', { miles: 5, pace: '8:30', hill: 'flat' }],
+  ['5 miles at 6:45 this morning', { miles: 5, pace: '8:30' }],
+  ['run home from the Ferry Building', { miles: null, start: 'Ferry Building', end: 'home', dests: [] }],
+  ['from 24th and Mission run 4 miles', { miles: 4, start: '24th and Mission' }],
+  ['not too hilly 5 miles', { miles: 5, hill: 'flat' }],
+  ['skip the hills, 4 miles', { miles: 4, hill: 'flat' }],
+  ['minimal climbing 6 miles', { miles: 6, hill: 'flat' }],
+  ['easy 6', { miles: 6, hill: 'flat' }],
+  ['run 1:30 at 10:00 pace', { miles: 9, pace: '10:00' }],
+  ['6 mi @ 9:15', { miles: 6, pace: '9:15' }],
+  ['out the door at 6, 40 min easy', { miles: 40 / 8.5, pace: '8:30' }],
   ['100 minutes at 12:00 pace, lake merced', { miles: 100 / 12, pace: '12:00', dests: ['Lake Merced'] }],
 ];
 // What we saw Claude return for the first case: invented stops and a wrong distance

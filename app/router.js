@@ -93,6 +93,7 @@ function RouterLib() {
     for (let r = 0; r <= 8 && (best < 0 || r <= 2); r++) {
       for (let dy = -r; dy <= r; dy++) for (let dx = -r; dx <= r; dx++) {
         if (Math.max(Math.abs(dx), Math.abs(dy)) !== r) continue;
+        if (cx + dx < 0 || cx + dx >= G.GW) continue; // keys are row-major; don't wrap into the next row
         const a = G.cells.get((cy + dy) * G.GW + cx + dx); if (!a) continue;
         for (const i of a) {
           if (opts.good && !g.goodNode[i]) continue;
@@ -161,12 +162,21 @@ function RouterLib() {
     }
     return best && best.p;
   }
-  function geocode(g, text, home) {
+  const SF_BOX = { s: 37.700, n: 37.835, w: -122.530, e: -122.350 };
+  const inSF = (lat, lon) => lat > SF_BOX.s && lat < SF_BOX.n && lon > SF_BOX.w && lon < SF_BOX.e;
+  function geocode(g, text, home, aliases) {
     const raw = (text || '').trim();
     const s = raw.toLowerCase();
     if (!s || /^(home|my place|my house|my home|start|same|same as start)$/.test(s) || s.startsWith('339 elsie')) return home;
     let m = s.match(/^\s*(-?\d{2}\.\d+)\s*,\s*(-?\d{3}\.\d+)\s*$/);
-    if (m) return { lat: +m[1], lon: +m[2], label: raw };
+    if (m) return inSF(+m[1], +m[2]) ? { lat: +m[1], lon: +m[2], label: raw } : null;
+    // exact place name or nickname ("Mt Davidson", "Glen Park")
+    {
+      const k = s.replace(/^the\s+/, '').replace(/[.,]/g, '').replace(/\s+/g, ' ').trim();
+      const name = (aliases && aliases[k]) || null;
+      const p = g.places.find(p => p.name.toLowerCase() === k || p.name.toLowerCase().replace(/ \(.*\)/, '') === k || (name && p.name === name));
+      if (p) return { lat: p.lat, lon: p.lon, label: p.name };
+    }
     // intersection
     m = raw.match(/^(.+?)\s+(?:&|and|at|\/|@|x)\s+(.+)$/i);
     if (m) {
@@ -209,11 +219,11 @@ function RouterLib() {
       }
       if (best && best.gap < 400) return { lat: best.lat, lon: best.lon, label: num + ' ' + titleCase(best.key) };
     }
-    const p = placeMatch(g, raw);
-    if (p) return { lat: p.lat, lon: p.lon, label: p.name };
-    // bare street name: middle of the street
+    // bare street name ("Mission" is Mission Street, not Mission Bay): middle of the street
     const E = streetEdges(g, raw);
     if (E.length) { const e = E[Math.floor(E.length / 2)]; return { lat: g.lat[g.eU[e]], lon: g.lon[g.eU[e]], label: titleCase(raw) }; }
+    const p = placeMatch(g, raw);
+    if (p) return { lat: p.lat, lon: p.lon, label: p.name };
     return null;
   }
   const titleCase = (s) => s.toLowerCase().replace(/\b[a-z]/g, c => c.toUpperCase());
@@ -502,6 +512,7 @@ function RouterLib() {
     const t0 = Date.now();
     const S = nearestNode(g, P.start.lat, P.start.lon, { good: true });
     const E = P.end ? nearestNode(g, P.end.lat, P.end.lon, { good: true }) : S;
+    if (S < 0 || E < 0) return { routes: [], ms: 0, error: `The ${S < 0 ? 'start' : 'finish'} is too far from any street or path on the map.` };
     const C = makeCost(g, P);
     // --- variety ---
     // Streets right around the start/finish are shared by every route, so they're exempt from repeat penalties.
@@ -563,6 +574,11 @@ function RouterLib() {
     };
     // hilltops are ringed by steep streets, so with a grade limit 'hilly' means long gradual climbs instead
     const pickRad = P.hill === 'flat' ? 450 : 220; // look wider for low ground when minimising climbing
+    // like pick(), but if the spot is in the bay or off the map, pull it back toward (cx, cy) until it lands
+    const pickToward = (cx, cy, r, th) => {
+      for (const f of [1, 0.85, 0.7, 0.55, 0.4, 0.25]) { const v = pick(cx + f * r * Math.cos(th), cy + f * r * Math.sin(th), pickRad, bias); if (v >= 0) return v; }
+      return -1;
+    };
     const bias = P.hill === 'flat' ? 'low' : (P.hill === 'hilly' || P.hill === 'max') && !P.maxGrade ? 'high' : null;
     const sx = g.x[S], sy = g.y[S], ex = g.x[E], ey = g.y[E];
     const seed = P.seed || 0;
@@ -576,7 +592,16 @@ function RouterLib() {
 
     // more directions when loops are hard to fit: grade limits, or Flattest (only some directions lead to flat ground)
     const bearings = P.hill === 'flat' ? 28 : P.maxGrade ? 16 : 10;
-    if (order.length) {
+    if (order.length && S === E && P.shape === 'out-and-back') {
+      // there and back the same way through the stops
+      for (let b = 0; b < 3; b++) {
+        const out = routeVia(g, search, C, [S, ...order]); if (!out) break;
+        const p = out.concat(out.slice().reverse().map(ae => ~ae));
+        finish({ path: p, L: pathLength(g, p), nodes: [S, ...order, S], meta: { kind: 'oab' } });
+        // vary the outbound leg a little for the next option
+        for (const ae of out) { const e = ae >= 0 ? ae : ~ae; C.cost[2 * e] *= 1.6; C.cost[2 * e + 1] *= 1.6; }
+      }
+    } else if (order.length) {
       const base = tryRoute([S, ...order, E], { kind: 'direct' });
       if (base) {
         if (!T || base.L >= T * 0.93) finish(base);
@@ -590,7 +615,7 @@ function RouterLib() {
             let r = Math.max(300, (T - base.L) / 2.4);
             let c = null;
             for (let it = 0; it < 5; it++) {
-              const v = pick(mx + r * Math.cos(th), my + r * Math.sin(th), pickRad, bias);
+              const v = pickToward(mx, my, r, th);
               if (v < 0) break;
               const seq = [S, ...order.slice(0, pos), v, ...order.slice(pos), E];
               c = tryRoute(seq, { kind: 'detour', th });
@@ -604,12 +629,13 @@ function RouterLib() {
         }
       }
     } else if (!T) {
+      if (S === E) return { routes: [], ms: Date.now() - t0, error: 'Set a distance or time, or add a stop or a finish point.' };
       finish(tryRoute([S, E], { kind: 'direct' }));
     } else if (S === E && P.shape === 'out-and-back') {
       for (let b = 0; b < bearings; b++) {
         const th = (b / bearings + seed * 0.37) * 2 * Math.PI; let r = T / 2 / 1.25, c = null;
         for (let it = 0; it < 5; it++) {
-          const v = pick(sx + r * Math.cos(th), sy + r * Math.sin(th), pickRad, bias); if (v < 0) break;
+          const v = pickToward(sx, sy, r, th); if (v < 0) break;
           const p1 = search(S, v, C, null); if (!p1) break;
           const p = p1.concat(p1.slice().reverse().map(ae => ~ae));
           c = { path: p, L: pathLength(g, p), nodes: [S, v, S], meta: { kind: 'oab', th } };
@@ -627,16 +653,12 @@ function RouterLib() {
         const spread = 0.55 + 0.25 * ((b * 7 + seed) % 3) / 2; // vary triangle shape
         let r = S === E ? T / 4.1 : Math.max(250, (T - direct) / 3.2), c = null;
         for (let it = 0; it < 5; it++) {
-          let ax, ay, bx, by;
-          if (S === E) {
-            ax = sx + r * Math.cos(th - spread); ay = sy + r * Math.sin(th - spread);
-            bx = sx + r * Math.cos(th + spread); by = sy + r * Math.sin(th + spread);
-          } else {
+          let A, B;
+          if (S === E) { A = pickToward(sx, sy, r, th - spread); B = pickToward(sx, sy, r, th + spread); }
+          else {
             const mx = (sx + ex) / 2, my = (sy + ey) / 2;
-            ax = sx + (mx - sx) * 0.5 + r * Math.cos(th); ay = sy + (my - sy) * 0.5 + r * Math.sin(th);
-            bx = ex + (mx - ex) * 0.5 + r * Math.cos(th); by = ey + (my - ey) * 0.5 + r * Math.sin(th);
+            A = pickToward(sx + (mx - sx) * 0.5, sy + (my - sy) * 0.5, r, th); B = pickToward(ex + (mx - ex) * 0.5, ey + (my - ey) * 0.5, r, th);
           }
-          const A = pick(ax, ay, pickRad, bias), B = pick(bx, by, pickRad, bias);
           if (A < 0 || B < 0) break;
           c = tryRoute([S, A, B, E], { kind: 'loop', th });
           if (!c) break;
@@ -644,6 +666,20 @@ function RouterLib() {
           r = S === E ? r * Math.max(0.5, Math.min(1.8, T / c.L)) : Math.max(120, r + (T - c.L) * 0.45);
         }
         finish(c); progress && progress((b + 1) / bearings);
+      }
+    }
+    // Long loops: if two turnaround points can't stretch far enough inside SF, tour the city through four.
+    if (T && S === E && P.shape !== 'out-and-back' && !order.length && !cands.some(c => Math.abs(c.L - T) / T <= 0.08)) {
+      for (let b = 0; b < 8; b++) {
+        const th0 = (b / 8 + seed * 0.37) * 2 * Math.PI; let r = T / (2 * Math.PI * 1.15), c = null;
+        for (let it = 0; it < 5; it++) {
+          const vias = [0, 1, 2, 3].map(k => pickToward(sx, sy, r, th0 + k * Math.PI / 2));
+          if (vias.some(v => v < 0)) break;
+          c = tryRoute([S, ...vias, S], { kind: 'tour', th: th0 });
+          if (!c || Math.abs(c.L - T) / T < 0.03) break;
+          r *= Math.max(0.6, Math.min(1.6, T / c.L));
+        }
+        finish(c);
       }
     }
     // rank and keep a diverse top set
@@ -670,6 +706,6 @@ function RouterLib() {
     return { routes: out.map(c => ({ ...c.a, edges: [...new Set(c.path.map(ae => ae >= 0 ? ae : ~ae))], score: c.score, kind: c.meta.kind, unavoidable: Math.min(unavoidable, c.a.overUp + c.a.overDn) })), ms: Date.now() - t0, snapped: { start: S, end: E } };
   }
 
-  return { decode, decodeBase64Gz, geocode, plan, nearestNode, estimateSeconds, gapFactor, normStreet, MI, M_LAT, M_LON };
+  return { inSF, decode, decodeBase64Gz, geocode, plan, nearestNode, estimateSeconds, gapFactor, normStreet, MI, M_LAT, M_LON };
 }
 if (typeof module !== 'undefined') module.exports = RouterLib;
