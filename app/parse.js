@@ -21,6 +21,8 @@ function ParseLib(places) {
   const WORDS = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, thirteen: 13,
     fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19, twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, ninety: 90 };
 
+  // the planner offers 12/10/8/6%; round a stated limit to the nearest of those, preferring the stricter one
+  const snapGrade = (x) => [0.06, 0.08, 0.1, 0.12].reduce((b, o) => (Math.abs(o - x) < Math.abs(b - x) - 1e-9 ? o : b), 0.06);
   const paceToSec = (p) => { const m = String(p ?? '').trim().match(/^(\d{1,2})(?::(\d{1,2}))?$/); if (!m) return null; const s = (+m[1]) * 60 + (+(m[2] || 0)); return s >= 180 && s <= 1800 ? s : null; };
   const secToPace = (s) => { s = Math.round(s); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
 
@@ -45,7 +47,7 @@ function ParseLib(places) {
   }
 
   function localParse(text) {
-    const r = { distanceMi: null, minutes: null, pace: null, hill: null, fast: false, trails: false, avoidSteps: false, shape: null, dests: [], hillTop: false, start: null, end: null };
+    const r = { distanceMi: null, minutes: null, pace: null, hill: null, maxGrade: null, fast: false, trails: false, avoidSteps: false, shape: null, dests: [], hillTop: false, start: null, end: null };
     let t = ' ' + wordsToDigits(text.toLowerCase().replace(/[–—]/g, '-')).replace(/\s+/g, ' ') + ' ';
     let m;
     // --- pace first, then remove it so "12 min pace" is never read as a 12 minute run ---
@@ -90,10 +92,16 @@ function ParseLib(places) {
     else if ((m = t.match(/\b(\d+(?:\.\d+)?)\s*(?:-\s*)?(?:mi|miles?|mile)\b/))) r.distanceMi = parseFloat(m[1]);
     else if ((m = t.match(/\b(\d+(?:\.\d+)?) and a half (?:mi|miles?)\b/))) r.distanceMi = parseFloat(m[1]) + 0.5;
     else if (/\b(?:a|1) mile\b/.test(t)) r.distanceMi = 1;
+    // --- steepness limit (before distance/time so "8%" isn't misread) ---
+    if ((m = t.match(/\b(?:under|below|less than|max(?:imum)?|no more than|nothing (?:over|above|steeper than|more than)|not (?:over|above|steeper than)|at most|up to|limit(?: of)?|cap(?: of)?)\s*(?:of\s*|a\s*)?(\d{1,2}(?:\.\d)?)\s*(?:%|percent|pc)(?:\s*(?:grade|slope|incline|gradient))?/)) ||
+        (m = t.match(/\b(\d{1,2}(?:\.\d)?)\s*(?:%|percent)\s*(?:grade|slope|incline|gradient)?\s*(?:max(?:imum)?|or less|limit|cap|tops)\b/)) ||
+        (m = t.match(/\b(?:max(?:imum)?|steepest)\s*(?:grade|slope|incline|gradient)\s*(?:of\s*)?(\d{1,2}(?:\.\d)?)\s*(?:%|percent)?/))) {
+      r.maxGrade = snapGrade(parseFloat(m[1]) / 100); t = t.replace(m[0], ' ');
+    } else if (/\b(no|avoid(?:ing)?|without|skip|nothing|not too|minimal|minimi[sz]e)\s+(?:the\s+|any\s+|really\s+|super\s+|too\s+)?(steep|steepest|steep hills|big hills|steep climbs|steep streets|crazy hills)\b/.test(t) || /\bgentle (?:grades?|slopes?|hills)\b/.test(t)) r.maxGrade = 0.08;
     // --- character of the run ---
     if (/\b(flat|flatish|recovery|easy|gentle|no hills|avoid hills|avoid the hills|level|not hilly|without hills)\b/.test(t)) r.hill = 'flat';
     if (/\b(rolling|some hills|a few hills|moderate|a little climbing|bit of climbing)\b/.test(t)) r.hill = 'rolling';
-    if (!/\b(no hills|avoid (?:the )?hills|not hilly|without hills)\b/.test(t) && /\b(hilly|hills|climb|climbing|climbs|vert|steep|elevation|uphill|hill (?:workout|repeats|run|training|session))\b/.test(t) && !/\b(a few hills|some hills|a little climbing|bit of climbing)\b/.test(t)) r.hill = 'hilly';
+    if (!/\b(no hills|avoid (?:the )?hills|not hilly|without hills)\b/.test(t) && !(r.maxGrade && !/\b(hilly|climb|climbing|vert)\b/.test(t)) && /\b(hilly|hills|climb|climbing|climbs|vert|steep|elevation|uphill|hill (?:workout|repeats|run|training|session))\b/.test(t) && !/\b(a few hills|some hills|a little climbing|bit of climbing)\b/.test(t)) r.hill = 'hilly';
     if (/\b(max(imum)? (climb|climbing|hills|vert)|brutal|all the hills|as much climbing|hill repeats|lots of climbing|most climbing|as hilly as)\b/.test(t)) r.hill = 'max';
     if (/\b(fast|tempo|speed|speedy|race pace|pr|threshold|workout|intervals|quick pace)\b/.test(t)) { r.fast = true; if (!r.hill) r.hill = 'flat'; }
     if (/\b(trails?|dirt|nature|woods|forest|unpaved|off[- ]road|through the parks?|in the park)\b/.test(t)) r.trails = true;
@@ -136,6 +144,7 @@ function ParseLib(places) {
     if (!local.pace && paceToSec(c.pace)) r.pace = secToPace(paceToSec(c.pace));
     // flags
     if (['flat', 'rolling', 'hilly', 'max'].includes(c.terrain)) r.hill = c.terrain;
+    if (!local.maxGrade && num(c.max_grade_percent) && /\b(steep|grade|incline|slope|gradient|%|percent|gentle)\b/i.test(text)) r.maxGrade = snapGrade(c.max_grade_percent / 100);
     for (const [k, ck] of [['fast', 'fast'], ['trails', 'trails'], ['avoidSteps', 'avoid_stairs']]) if (typeof c[ck] === 'boolean') r[k] = c[ck] || local[k];
     if (c.shape === 'out-and-back' || c.shape === 'loop') r.shape = local.shape || c.shape;
     // places: only ones the runner actually named

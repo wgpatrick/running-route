@@ -16,7 +16,7 @@ const out = process.argv[2];
   await page.waitForFunction(() => document.querySelectorAll('.card').length > 0, null, { timeout: 60000 });
   const settle = async () => { await page.waitForTimeout(700); await page.waitForFunction(() => !document.getElementById('planBtn').disabled, null, { timeout: 60000 }); };
   const state = async () => ({ miles: await page.$$eval('.card .stats', els => els.map(e => parseFloat(e.textContent))), names: await page.$$eval('.card .name', els => els.map(e => e.textContent)),
-    understood: (await page.textContent('#understood')).trim(), pace: await page.inputValue('#paceIn'), amount: await page.inputValue('#amountIn'), status: await page.textContent('#status') });
+    understood: (await page.textContent('#understood')).trim(), cardText: await page.$$eval('.card .stats', els => els.map(e => e.textContent)), detail: await page.textContent('#detail'), pace: await page.inputValue('#paceIn'), amount: await page.inputValue('#amountIn'), status: await page.textContent('#status') });
   const step = async (label, fn, check) => {
     await fn(); await settle(); const s = await state(); const ok = check(s); if (!ok) fails++;
     console.log(`${ok ? 'PASS' : 'FAIL'} ${label}\n   ${s.understood}\n   ${s.status} | ${s.miles.join(', ')} mi | ${s.names.join(' / ')}`);
@@ -45,6 +45,10 @@ const out = process.argv[2];
     await page.click('#paceIn', { clickCount: 3 }); await page.keyboard.press('Backspace'); await page.keyboard.type('830');
     await page.keyboard.press('Backspace'); await page.keyboard.press('Backspace'); }, () => true);
   console.log('   field now:', await page.inputValue('#paceIn'));
+  await step('steepest grade 8% (click)', async () => { await page.click('#shapeSeg button[data-v=loop]'); await page.click('#gradeSeg button[data-v="0.08"]'); },
+    s => /nothing over 8%/.test(s.understood) && s.cardText.every(t => />8%: [0-9.]+ mi/.test(t)) && /steeper than 8%|Nothing steeper than 8%/.test(s.detail));
+  await step('steepest grade back to Any', () => page.click('#gradeSeg button[data-v=""]'), s => !/nothing over/.test(s.understood) && s.cardText.every(t => !/>8%/.test(t)));
+  await page.click('#gradeSeg button[data-v="0.08"]'); await settle();
   await page.screenshot({ path: path.join(out, 'form-edits.png') });
   await step('new prompt still re-reads the description', async () => { await page.fill('#prompt', 'hilly 5 miles'); await page.click('#planBtn'); }, s => /5 mi/.test(s.understood) && /hilly/.test(s.understood) && near(s.miles, 5));
   await browser.close();

@@ -855,6 +855,11 @@ details[open] summary { margin-bottom: 6px; }
         <div class="seg" id="hillSeg"><button data-v="flat">Flat</button><button data-v="rolling" class="on">Rolling</button><button data-v="hilly">Hilly</button><button data-v="max">Max climb</button></div>
       </div>
       <div class="field wide">
+        <span class="label">Steepest grade</span>
+        <div class="seg" id="gradeSeg"><button data-v="" class="on">Any</button><button data-v="0.12">12%</button><button data-v="0.1">10%</button><button data-v="0.08">8%</button><button data-v="0.06">6%</button></div>
+        <span class="hint">Avoids streets and paths steeper than this, up or down. For scale: 5% is a gentle hill, 10% is a real effort, 15% or more is SF steep.</span>
+      </div>
+      <div class="field wide">
         <div class="toggles">
           <button class="chip" id="tFast" aria-pressed="false">Fast / tempo</button>
           <button class="chip" id="tTrails" aria-pressed="false">Prefer trails &amp; parks</button>
@@ -943,6 +948,7 @@ function RouterLib() {
       }
     }
     Object.assign(g, { vOff, vLat, vLon, vEl });
+    g.steepCache = new Map(); g.STEPS = header.classes.indexOf('steps');
     // CSR adjacency (directed half-edges)
     const deg = new Uint32Array(nN + 1);
     for (let e = 0; e < nE; e++) { deg[f.eU[e] + 1]++; deg[f.eV[e] + 1]++; }
@@ -1144,12 +1150,17 @@ function RouterLib() {
     });
     const W = { flat: [7, 2], rolling: [1.5, 0.6], hilly: [-1.0, 0.3], max: [-2.4, 0] }[prefs.hill || 'rolling'];
     const floor = prefs.hill === 'hilly' || prefs.hill === 'max' ? 0.25 : 0.6;
+    const SM = prefs.maxGrade ? steepMetres(g, prefs.maxGrade) : null;
     const cost = new Float32Array(2 * g.nE); // [2e] forward, [2e+1] backward
     for (let e = 0; e < g.nE; e++) {
       const L = g.eLen[e], base = L * F[g.eCls[e]];
       for (let d = 0; d < 2; d++) {
         const up = d ? g.eDn[e] : g.eUp[e], dn = d ? g.eUp[e] : g.eDn[e];
         let c = base + W[0] * up + W[1] * dn;
+        if (SM) { // steer around anything steeper than the runner's limit, up or down
+          const [u, w] = steepDir(SM, d ? ~e : e);
+          c += u * 90 + w * 70;
+        }
         if (prefs.fast && L > 5) { const gr = up / L; if (gr > 0.05) c += L * (gr - 0.05) * 25; const gd = dn / L; if (gd > 0.08) c += L * (gd - 0.08) * 10; }
         cost[2 * e + d] = Math.max(c, L * floor);
       }
@@ -1196,10 +1207,52 @@ function RouterLib() {
     return all;
   }
 
+  // Least distance steeper than `lim` needed to get `rad` metres away from node s
+  // (some doorsteps sit on a hill, so a little steepness can be unavoidable).
+  function steepEscape(g, s, lim, rad = 700) {
+    const SM = steepMetres(g, lim), N = g.nN, d = new Float64Array(N).fill(Infinity), over = new Float32Array(N), heap = new Heap(4096);
+    d[s] = 0; heap.push(0, s); let best = Infinity;
+    while (heap.n) {
+      const u = heap.pop(); const du = d[u];
+      if (du > (best === Infinity ? Infinity : best * 1000 + rad * 3)) break;
+      if (Math.hypot(g.x[u] - g.x[s], g.y[u] - g.y[s]) > rad) { best = Math.min(best, over[u]); continue; }
+      for (let k = g.adjStart[u]; k < g.adjStart[u + 1]; k++) {
+        const ae = g.adjE[k], e = ae >= 0 ? ae : ~ae, v = g.adjTo[k];
+        const [a, b] = steepDir(SM, ae), sm = a + b, c = g.eLen[e] + sm * 1000;
+        if (du + c < d[v]) { d[v] = du + c; over[v] = over[u] + sm; heap.push(d[v], v); }
+      }
+    }
+    return best === Infinity ? 0 : best;
+  }
+
+  // For a grade limit, metres of each edge that are steeper than it (40 m windows),
+  // split into uphill and downhill when the edge is run forward. Stairs always count.
+  function steepMetres(g, lim) {
+    const key = Math.round(lim * 1000);
+    if (g.steepCache.has(key)) return g.steepCache.get(key);
+    const upF = new Float32Array(g.nE), dnF = new Float32Array(g.nE);
+    for (let e = 0; e < g.nE; e++) {
+      const o = g.vOff[e], n = g.eN[e];
+      if (g.eCls[e] === g.STEPS && lim < 0.25) { const net = g.vEl[o + n - 1] - g.vEl[o]; if (net >= 0) upF[e] = g.eLen[e]; else dnF[e] = g.eLen[e]; continue; }
+      const cum = [0];
+      for (let j = 1; j < n; j++) cum.push(cum[j - 1] + Math.hypot((g.vLon[o + j] - g.vLon[o + j - 1]) * M_LON, (g.vLat[o + j] - g.vLat[o + j - 1]) * M_LAT));
+      const L = cum[n - 1];
+      if (L < 40) { const gr = (g.vEl[o + n - 1] - g.vEl[o]) / Math.max(L, 15); if (gr > lim) upF[e] = L; else if (-gr > lim) dnF[e] = L; continue; }
+      for (let k = 0; k + 1 < n; k++) {
+        let a = k, b = k + 1;
+        while (cum[b] - cum[a] < 40 && (a > 0 || b < n - 1)) { if (a > 0) a--; if (cum[b] - cum[a] < 40 && b < n - 1) b++; }
+        const gr = (g.vEl[o + b] - g.vEl[o + a]) / Math.max(cum[b] - cum[a], 1), seg = cum[k + 1] - cum[k];
+        if (gr > lim) upF[e] += seg; else if (-gr > lim) dnF[e] += seg;
+      }
+    }
+    const r = { upF, dnF }; g.steepCache.set(key, r); return r;
+  }
+  const steepDir = (sm, ae) => ae >= 0 ? [sm.upF[ae], sm.dnF[ae]] : [sm.dnF[~ae], sm.upF[~ae]]; // [uphill m, downhill m] as run
+
   function pathLength(g, path) { let L = 0; for (const ae of path) L += g.eLen[ae >= 0 ? ae : ~ae]; return L; }
 
   // ---------- analysis ----------
-  function analyze(g, path, opts) {
+  function analyze(g, path, P = {}) {
     const lat = [], lon = [], el = [], cum = [], edgeAt = [];
     let L = 0;
     for (const ae of path) {
@@ -1229,6 +1282,18 @@ function RouterLib() {
       gradeAt.push(gr);
       maxUp = Math.max(maxUp, gr); maxDn = Math.min(maxDn, gr);
       const ag = Math.abs(gr); bins[ag < 0.03 ? 0 : ag < 0.06 ? 1 : ag < 0.10 ? 2 : 3] += step;
+    }
+    // distance steeper than the runner's limit (same measure the router uses)
+    let overUp = 0, overDn = 0, steep50 = 0;
+    for (let i = 0; i + 2 < rs.length; i++) steep50 = Math.max(steep50, Math.abs((rs[i + 2] - rs[i]) / (2 * step)));
+    const steepRanges = [];
+    if (P.maxGrade) {
+      const SM = steepMetres(g, P.maxGrade); let at = 0;
+      for (const ae of path) {
+        const [u, w] = steepDir(SM, ae), L = g.eLen[ae >= 0 ? ae : ~ae]; overUp += u; overDn += w;
+        if (u + w > 0) { const last = steepRanges[steepRanges.length - 1]; if (last && at - last[1] < 15) last[1] = at + L; else steepRanges.push([at, at + L]); }
+        at += L;
+      }
     }
     // climbs: a climb ends once we drop 8 m below its peak
     const climbs = [];
@@ -1279,7 +1344,7 @@ function RouterLib() {
     let hiI = 0; for (let i = 0; i < el.length; i++) if (el[i] > el[hiI]) hiI = i;
     return {
       length: L, gain, loss, maxUp, maxDn, bins, climbs: climbs.slice(0, 5), streets: seq2, overlap: rep / Math.max(L, 1),
-      steps: stepsN, passed, high: { el: el[hiI], at: cum[hiI], lat: lat[hiI], lon: lon[hiI] },
+      steps: stepsN, passed, overUp, overDn, steep50, steepRanges, maxGrade: P.maxGrade || null, high: { el: el[hiI], at: cum[hiI], lat: lat[hiI], lon: lon[hiI] },
       colorGrades: gradeAt.map((_, i) => { let s = 0, n = 0; for (let j = Math.max(0, i - 3); j <= Math.min(gradeAt.length - 1, i + 3); j++) { s += gradeAt[j]; n++; } return s / n; }),
       lowEl: Math.min(...el), geom: { lat, lon, el, cum }, gradeStep: step, grades: gradeAt, profile: rs,
     };
@@ -1322,6 +1387,7 @@ function RouterLib() {
     if (P.shape !== 'out-and-back') s += a.overlap / 0.12;
     if (P.fast) s += (a.bins[2] + 2 * a.bins[3]) / a.length / 0.04 + a.steps * 0.5;
     if (P.avoidSteps) s += a.steps * 2;
+    if (P.maxGrade) s += Math.max(0, a.overUp + 0.8 * a.overDn - (P._unavoidable || 0)) / (0.005 * a.length);
     return s;
   }
 
@@ -1333,6 +1399,14 @@ function RouterLib() {
     const E = P.end ? nearestNode(g, P.end.lat, P.end.lon, { good: true }) : S;
     const T = P.targetM || null;
     const dests = (P.destinations || []).map(d => nearestNode(g, d.lat, d.lon, { good: true }));
+    // a loop crosses the doorstep twice (out and home); a one-way run once at each end
+    const unavoidable = P._unavoidable = P.maxGrade ? (E === S ? 2 * steepEscape(g, S, P.maxGrade) : steepEscape(g, S, P.maxGrade) + steepEscape(g, E, P.maxGrade)) : 0;
+    // with a grade limit, turnaround points should sit in gentle terrain
+    let nodeSteep = null;
+    if (P.maxGrade) {
+      const SM = steepMetres(g, P.maxGrade); nodeSteep = new Float32Array(g.nN);
+      for (let e = 0; e < g.nE; e++) { const m = SM.upF[e] + SM.dnF[e]; if (m) { nodeSteep[g.eU[e]] += m; nodeSteep[g.eV[e]] += m; } }
+    }
     const cands = [];
     const tryRoute = (nodes, meta) => {
       const p = routeVia(g, search, C, nodes);
@@ -1341,7 +1415,7 @@ function RouterLib() {
       const c = { path: p, L, nodes, meta };
       return c;
     };
-    const finish = (c) => { if (!c) return; c.a = analyze(g, c.path); c.score = scoreRoute(c.a, P); cands.push(c); };
+    const finish = (c) => { if (!c) return; c.a = analyze(g, c.path, P); c.score = scoreRoute(c.a, P); cands.push(c); };
     const pick = (x, y, rad, bias) => {
       // node near (x, y); terrain bias pulls toward high or low ground
       let ns = nodesNear(g, x, y, rad);
@@ -1350,12 +1424,13 @@ function RouterLib() {
       let best = ns[0], bv = -Infinity;
       for (const n of ns) {
         const d = Math.hypot(g.x[n] - x, g.y[n] - y);
-        const v = (bias === 'high' ? g.el[n] : bias === 'low' ? -g.el[n] : 0) - d * 0.05 * (bias ? 1 : 20);
+        const v = (bias === 'high' ? g.el[n] : bias === 'low' ? -g.el[n] : 0) - d * 0.05 * (bias ? 1 : 20) - (nodeSteep ? nodeSteep[n] * 5 : 0);
         if (v > bv) { bv = v; best = n; }
       }
       return best;
     };
-    const bias = P.hill === 'flat' ? 'low' : (P.hill === 'hilly' || P.hill === 'max') ? 'high' : null;
+    // hilltops are ringed by steep streets, so with a grade limit 'hilly' means long gradual climbs instead
+    const bias = P.hill === 'flat' ? 'low' : (P.hill === 'hilly' || P.hill === 'max') && !P.maxGrade ? 'high' : null;
     const sx = g.x[S], sy = g.y[S], ex = g.x[E], ey = g.y[E];
     const seed = P.seed || 0;
 
@@ -1366,7 +1441,7 @@ function RouterLib() {
       while (rest.length) { let bi = 0, bd = Infinity; rest.forEach((n, i) => { const d = Math.hypot(g.x[n] - cx, g.y[n] - cy); if (d < bd) { bd = d; bi = i; } }); const n = rest.splice(bi, 1)[0]; order.push(n); cx = g.x[n]; cy = g.y[n]; }
     }
 
-    const bearings = 10;
+    const bearings = P.maxGrade ? 16 : 10; // grade limits make loops harder to fit, so try more directions
     if (order.length) {
       const base = tryRoute([S, ...order, E], { kind: 'direct' });
       if (base) {
@@ -1439,7 +1514,11 @@ function RouterLib() {
     }
     // rank and keep a diverse top set
     // when enough candidates hit the distance, drop the ones that miss it
-    if (T) { const ok = cands.filter(c => Math.abs(c.a.length - T) / T <= 0.05); if (ok.length >= Math.min(3, P.count || 3)) cands.splice(0, cands.length, ...ok); }
+    if (T) {
+      const ok = cands.filter(c => Math.abs(c.a.length - T) / T <= 0.05), near = cands.filter(c => Math.abs(c.a.length - T) / T <= 0.08);
+      if (ok.length >= Math.min(3, P.count || 3)) cands.splice(0, cands.length, ...ok);
+      else if (near.length) cands.splice(0, cands.length, ...near); // fewer options beats a wrong distance
+    }
     cands.sort((a, b) => a.score - b.score);
     const out = [];
     for (const c of cands) {
@@ -1452,7 +1531,7 @@ function RouterLib() {
       if (!tooClose) out.push(c);
       if (out.length >= (P.count || 3)) break;
     }
-    return { routes: out.map(c => ({ ...c.a, score: c.score, kind: c.meta.kind })), ms: Date.now() - t0, snapped: { start: S, end: E } };
+    return { routes: out.map(c => ({ ...c.a, score: c.score, kind: c.meta.kind, unavoidable: Math.min(unavoidable, c.a.overUp + c.a.overDn) })), ms: Date.now() - t0, snapped: { start: S, end: E } };
   }
 
   return { decode, decodeBase64Gz, geocode, plan, nearestNode, estimateSeconds, gapFactor, normStreet, MI, M_LAT, M_LON };
@@ -1484,6 +1563,8 @@ function ParseLib(places) {
   const WORDS = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12, thirteen: 13,
     fourteen: 14, fifteen: 15, sixteen: 16, seventeen: 17, eighteen: 18, nineteen: 19, twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, ninety: 90 };
 
+  // the planner offers 12/10/8/6%; round a stated limit to the nearest of those, preferring the stricter one
+  const snapGrade = (x) => [0.06, 0.08, 0.1, 0.12].reduce((b, o) => (Math.abs(o - x) < Math.abs(b - x) - 1e-9 ? o : b), 0.06);
   const paceToSec = (p) => { const m = String(p ?? '').trim().match(/^(\d{1,2})(?::(\d{1,2}))?$/); if (!m) return null; const s = (+m[1]) * 60 + (+(m[2] || 0)); return s >= 180 && s <= 1800 ? s : null; };
   const secToPace = (s) => { s = Math.round(s); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); };
 
@@ -1508,7 +1589,7 @@ function ParseLib(places) {
   }
 
   function localParse(text) {
-    const r = { distanceMi: null, minutes: null, pace: null, hill: null, fast: false, trails: false, avoidSteps: false, shape: null, dests: [], hillTop: false, start: null, end: null };
+    const r = { distanceMi: null, minutes: null, pace: null, hill: null, maxGrade: null, fast: false, trails: false, avoidSteps: false, shape: null, dests: [], hillTop: false, start: null, end: null };
     let t = ' ' + wordsToDigits(text.toLowerCase().replace(/[–—]/g, '-')).replace(/\s+/g, ' ') + ' ';
     let m;
     // --- pace first, then remove it so "12 min pace" is never read as a 12 minute run ---
@@ -1553,10 +1634,16 @@ function ParseLib(places) {
     else if ((m = t.match(/\b(\d+(?:\.\d+)?)\s*(?:-\s*)?(?:mi|miles?|mile)\b/))) r.distanceMi = parseFloat(m[1]);
     else if ((m = t.match(/\b(\d+(?:\.\d+)?) and a half (?:mi|miles?)\b/))) r.distanceMi = parseFloat(m[1]) + 0.5;
     else if (/\b(?:a|1) mile\b/.test(t)) r.distanceMi = 1;
+    // --- steepness limit (before distance/time so "8%" isn't misread) ---
+    if ((m = t.match(/\b(?:under|below|less than|max(?:imum)?|no more than|nothing (?:over|above|steeper than|more than)|not (?:over|above|steeper than)|at most|up to|limit(?: of)?|cap(?: of)?)\s*(?:of\s*|a\s*)?(\d{1,2}(?:\.\d)?)\s*(?:%|percent|pc)(?:\s*(?:grade|slope|incline|gradient))?/)) ||
+        (m = t.match(/\b(\d{1,2}(?:\.\d)?)\s*(?:%|percent)\s*(?:grade|slope|incline|gradient)?\s*(?:max(?:imum)?|or less|limit|cap|tops)\b/)) ||
+        (m = t.match(/\b(?:max(?:imum)?|steepest)\s*(?:grade|slope|incline|gradient)\s*(?:of\s*)?(\d{1,2}(?:\.\d)?)\s*(?:%|percent)?/))) {
+      r.maxGrade = snapGrade(parseFloat(m[1]) / 100); t = t.replace(m[0], ' ');
+    } else if (/\b(no|avoid(?:ing)?|without|skip|nothing|not too|minimal|minimi[sz]e)\s+(?:the\s+|any\s+|really\s+|super\s+|too\s+)?(steep|steepest|steep hills|big hills|steep climbs|steep streets|crazy hills)\b/.test(t) || /\bgentle (?:grades?|slopes?|hills)\b/.test(t)) r.maxGrade = 0.08;
     // --- character of the run ---
     if (/\b(flat|flatish|recovery|easy|gentle|no hills|avoid hills|avoid the hills|level|not hilly|without hills)\b/.test(t)) r.hill = 'flat';
     if (/\b(rolling|some hills|a few hills|moderate|a little climbing|bit of climbing)\b/.test(t)) r.hill = 'rolling';
-    if (!/\b(no hills|avoid (?:the )?hills|not hilly|without hills)\b/.test(t) && /\b(hilly|hills|climb|climbing|climbs|vert|steep|elevation|uphill|hill (?:workout|repeats|run|training|session))\b/.test(t) && !/\b(a few hills|some hills|a little climbing|bit of climbing)\b/.test(t)) r.hill = 'hilly';
+    if (!/\b(no hills|avoid (?:the )?hills|not hilly|without hills)\b/.test(t) && !(r.maxGrade && !/\b(hilly|climb|climbing|vert)\b/.test(t)) && /\b(hilly|hills|climb|climbing|climbs|vert|steep|elevation|uphill|hill (?:workout|repeats|run|training|session))\b/.test(t) && !/\b(a few hills|some hills|a little climbing|bit of climbing)\b/.test(t)) r.hill = 'hilly';
     if (/\b(max(imum)? (climb|climbing|hills|vert)|brutal|all the hills|as much climbing|hill repeats|lots of climbing|most climbing|as hilly as)\b/.test(t)) r.hill = 'max';
     if (/\b(fast|tempo|speed|speedy|race pace|pr|threshold|workout|intervals|quick pace)\b/.test(t)) { r.fast = true; if (!r.hill) r.hill = 'flat'; }
     if (/\b(trails?|dirt|nature|woods|forest|unpaved|off[- ]road|through the parks?|in the park)\b/.test(t)) r.trails = true;
@@ -1599,6 +1686,7 @@ function ParseLib(places) {
     if (!local.pace && paceToSec(c.pace)) r.pace = secToPace(paceToSec(c.pace));
     // flags
     if (['flat', 'rolling', 'hilly', 'max'].includes(c.terrain)) r.hill = c.terrain;
+    if (!local.maxGrade && num(c.max_grade_percent) && /\b(steep|grade|incline|slope|gradient|%|percent|gentle)\b/i.test(text)) r.maxGrade = snapGrade(c.max_grade_percent / 100);
     for (const [k, ck] of [['fast', 'fast'], ['trails', 'trails'], ['avoidSteps', 'avoid_stairs']]) if (typeof c[ck] === 'boolean') r[k] = c[ck] || local[k];
     if (c.shape === 'out-and-back' || c.shape === 'loop') r.shape = local.shape || c.shape;
     // places: only ones the runner actually named
@@ -1654,7 +1742,7 @@ let results = [], sel = 0, reqId = 0, picking = null, seed = 0;
 // ---------- state ----------
 const S = {
   startText: '339 Elsie St', endText: '', mode: 'distance', amount: 7, pace: '8:30', shape: 'loop',
-  hill: 'rolling', fast: false, trails: false, avoidSteps: false, hillTop: false, dests: [],
+  hill: 'rolling', maxGrade: null, fast: false, trails: false, avoidSteps: false, hillTop: false, dests: [],
   start: HOME, end: null,
 };
 try { const p = JSON.parse(localStorage.getItem('sfruns.prefs') || 'null'); if (p && p.pace) S.pace = p.pace; } catch (e) {}
@@ -1690,13 +1778,14 @@ Request: """${text}"""
 
 Reply with only JSON, no prose:
 {"distance_miles": number|null, "duration_minutes": number|null, "pace": "m:ss"|null,
- "terrain": "flat"|"rolling"|"hilly"|"max"|null, "fast": boolean, "trails": boolean, "avoid_stairs": boolean,
+ "terrain": "flat"|"rolling"|"hilly"|"max"|null, "fast": boolean, "trails": boolean, "avoid_stairs": boolean, "max_grade_percent": number|null,
  "shape": "loop"|"out-and-back"|null, "destinations": [exact names from the list, in visiting order],
  "hilltop": boolean, "start": string|null, "end": string|null, "summary": string}
 Rules: only list destinations the runner explicitly named; never add stops on your own (a "flat" or "easy" run has no destinations unless named).
 Copy numbers exactly as stated; do not compute a distance from a time. "12 min pace" is a pace, not a duration.
 "long" with no number means 9 miles, "short" means 3. "fast"/"tempo" means fast=true and flatter terrain unless hills are asked for.
 "cool hilltop"/"a view" with no named place means hilltop=true and no destinations. start/end are only set when the runner names a different place or address (an address, intersection, or a name from the list); null means home.
+max_grade_percent is set only when the runner limits steepness ("avoid steep hills" means 8, "nothing over 10%" means 10).
 Convert km to miles. summary is a short phrase restating the plan (max 12 words).`;
   try {
     const out = await sample.json(prompt, { modelTier: 'quick' });
@@ -1709,6 +1798,7 @@ function applyParse(r) {
   S.pace = v.pace; S.mode = v.mode; S.amount = v.amount == null ? null : Math.round(v.amount * 100) / 100;
   S.hill = r.hill || (r.hillTop || r.dests.length ? 'hilly' : 'rolling');
   if (r.hillTop && S.hill === 'flat') S.hill = 'rolling';
+  S.maxGrade = r.maxGrade || null;
   S.fast = r.fast; S.trails = r.trails; S.avoidSteps = r.avoidSteps; S.shape = r.shape || 'loop';
   S.dests = r.dests.slice(0, 5); S.hillTop = r.hillTop && !S.dests.length;
   S.startText = r.start || '339 Elsie St'; S.endText = r.end || '';
@@ -1725,6 +1815,7 @@ function describeSettings(r) {
   const tm = targetMiles();
   bits.push(tm == null ? '<b>any distance</b>' : S.mode === 'distance' ? `<b>${S.amount} mi</b>` : `<b>${S.amount} min</b> at ${S.pace}/mi = <b>${tm.toFixed(2)} mi</b>`);
   bits.push(`<b>${{ flat: 'flat', rolling: 'rolling', hilly: 'hilly', max: 'max climbing' }[S.hill]}</b>`);
+  if (S.maxGrade) bits.push(`nothing over ${Math.round(S.maxGrade * 100)}%`);
   if (S.fast) bits.push('fast');
   if (S.trails) bits.push('trails');
   if (S.hillTop) bits.push('to a hilltop');
@@ -1740,6 +1831,7 @@ function syncForm() {
   $('startIn').value = S.startText; $('endIn').value = S.endText;
   $('amountIn').value = S.amount == null ? '' : S.amount; $('paceIn').value = S.pace;
   $('amountLabel').textContent = S.mode === 'distance' ? 'Miles' : 'Minutes';
+  for (const b of $('gradeSeg').querySelectorAll('button')) b.classList.toggle('on', (b.dataset.v ? +b.dataset.v : null) === S.maxGrade);
   for (const [id, v] of [['modeSeg', S.mode], ['shapeSeg', S.shape], ['hillSeg', S.hill]])
     for (const b of $(id).querySelectorAll('button')) b.classList.toggle('on', b.dataset.v === v);
   for (const [id, v] of [['tFast', S.fast], ['tTrails', S.trails], ['tSteps', S.avoidSteps], ['tHill', S.hillTop]]) { $(id).classList.toggle('on', v); $(id).setAttribute('aria-pressed', v); }
@@ -1781,6 +1873,7 @@ $('paceIn').addEventListener('input', (e) => {
   else if (/^\d{1,2}$/.test(v.replace(':', '')) && /^\d:\d$/.test(v)) { el.value = v.replace(':', ''); }
 });
 function wireSeg(id, key) { $(id).addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b || S[key] === b.dataset.v) return; readForm(); S[key] = b.dataset.v; if (key === 'mode') { if (S.amount != null) S.amount = S.mode === 'time' ? Math.round(S.amount * paceToSec(S.pace) / 60) : Math.round(S.amount * 60 / paceToSec(S.pace) * 10) / 10; } syncForm(); replanSoon(); }); }
+$('gradeSeg').addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; const v = b.dataset.v ? +b.dataset.v : null; if (v === S.maxGrade) return; readForm(); S.maxGrade = v; syncForm(); replanSoon(); });
 wireSeg('modeSeg', 'mode'); wireSeg('shapeSeg', 'shape'); wireSeg('hillSeg', 'hill');
 for (const [id, k] of [['tFast', 'fast'], ['tTrails', 'trails'], ['tSteps', 'avoidSteps'], ['tHill', 'hillTop']]) $(id).onclick = () => { readForm(); S[k] = !S[k]; if (k === 'hillTop' && S[k]) S.dests = []; syncForm(); replanSoon(); };
 for (const ex of EXAMPLES) { const b = document.createElement('button'); b.className = 'chip'; b.textContent = ex; b.onclick = () => { $('prompt').value = ex; onAsk(); }; $('examples').appendChild(b); }
@@ -1813,7 +1906,7 @@ function runPlan() {
   const P = {
     start, end: end && (Math.abs(end.lat - start.lat) + Math.abs(end.lon - start.lon) > 1e-5) ? end : null,
     targetM: miles ? miles * MI : null, hill: S.hill, fast: S.fast, trails: S.trails, avoidSteps: S.avoidSteps,
-    shape: S.endText ? 'loop' : S.shape, hillTop: S.hillTop, seed,
+    shape: S.endText ? 'loop' : S.shape, hillTop: S.hillTop, seed, maxGrade: S.maxGrade,
     destinations: S.dests.map(n => G.places.find(p => p.name === n)).filter(Boolean),
   };
   setStatus('Searching ' + (P.hillTop ? 'hilltops and ' : '') + 'streets for routes…', true);
@@ -1872,7 +1965,7 @@ function renderCards() {
     r.secs = lib.estimateSeconds(r, pace);
     const b = document.createElement('button'); b.className = 'card' + (i === sel ? ' on' : '');
     b.innerHTML = `<span class="tag">${'ABC'[i]}</span><span class="name">${esc(routeName(r, i))}</span>
-      <span class="stats"><span><b>${(r.length / MI).toFixed(2)}</b> mi</span><span><b>${fmtDur(r.secs)}</b></span><span>↑<b>${Math.round(r.gain * FT)}</b> ft</span><span>max <b>${Math.round(r.maxUp * 100)}%</b></span></span>
+      <span class="stats"><span><b>${(r.length / MI).toFixed(2)}</b> mi</span><span><b>${fmtDur(r.secs)}</b></span><span>↑<b>${Math.round(r.gain * FT)}</b> ft</span><span>max <b>${Math.round(r.maxUp * 100)}%</b></span>${r.maxGrade ? `<span>&gt;${Math.round(r.maxGrade * 100)}%: <b>${((r.overUp + r.overDn) / MI).toFixed(2)}</b> mi</span>` : ''}</span>
       ${sparkline(r)}`;
     b.onclick = () => { sel = i; renderAll(); fitRoute(); };
     c.appendChild(b);
@@ -1896,6 +1989,7 @@ function renderDetail() {
       <div class="gradebar" role="img" aria-label="Distance by steepness">${r.bins.map((b, i) => `<span style="flex:${b};background:${binC[i]}"></span>`).join('')}</div>
       <div class="legend" style="margin-top:6px">${r.bins.map((b, i) => `<span><i style="background:${binC[i]}"></i>${binL[i]} ${(b / MI).toFixed(1)} mi</span>`).join('')}</div>
     </div>
+    ${r.maxGrade ? steepNote(r) : ''}
     ${r.climbs.length ? `<div><div class="label" style="margin-bottom:4px">Biggest climbs</div><div class="list">${r.climbs.slice(0, 4).map(c => `<div class="row"><span>${esc(c.street)} <span class="hint">at mile ${(c.from / MI).toFixed(1)}</span></span><span>+${Math.round(c.gain * FT)} ft · ${(c.grade * 100).toFixed(1)}% avg</span></div>`).join('')}</div><div class="hint" style="margin-top:4px">Steepest 100 m stretch: ${(r.maxUp * 100).toFixed(0)}% up, ${(-r.maxDn * 100).toFixed(0)}% down${r.steps ? ` · ${r.steps} stair section${r.steps > 1 ? 's' : ''}` : ''}</div></div>` : `<div class="hint">No sustained climbs. Steepest 100 m stretch is ${(r.maxUp * 100).toFixed(0)}%.</div>`}
     ${r.passed.length ? `<div><div class="label" style="margin-bottom:4px">Along the way</div><div class="list">${r.passed.map(p => `<div class="row"><span>${p.kind === 'hill' ? '▲ ' : ''}${esc(p.name)}</span><span>mile ${(p.at / MI).toFixed(1)}</span></div>`).join('')}</div></div>` : ''}
     <details><summary>Street by street (${r.streets.length})</summary><div class="list">${r.streets.map(s => `<div class="row"><span>${esc(s.name)}</span><span>${(s.len / MI).toFixed(2)} mi</span></div>`).join('')}</div></details>
@@ -1909,6 +2003,13 @@ function renderDetail() {
   $('copyBtn').onclick = () => copySummary(r);
   $('gpxBtn').onclick = () => downloadGpx(r);
   getDownloads().then(dl => { const b = $('gpxBtn'); if (b && !dl) b.hidden = true; });
+}
+function steepNote(r) {
+  const lim = Math.round(r.maxGrade * 100), over = r.overUp + r.overDn, un = Math.min(over, r.unavoidable || 0);
+  if (over < 10) return `<div class="hint"><b>Nothing steeper than ${lim}%</b> on this route.</div>`;
+  const where = S.end ? 'getting off and onto the hills at your start and finish' : 'leaving and coming back to your start';
+  return `<div class="hint"><b>${(over / MI).toFixed(2)} mi steeper than ${lim}%</b>, marked with a dashed outline on the map and shaded on the profile.` +
+    (un > 10 ? ` ${(un / MI).toFixed(2)} mi of that can't be avoided ${where}.` : '') + `</div>`;
 }
 function gmapsLink(r) {
   const g = r.geom, n = g.lat.length, L = r.length;
@@ -1957,7 +2058,8 @@ function drawProfile() {
   let cols = '';
   for (let i = 0; i < n - 1; i++) cols += `<polygon points="${X(i)},${Y(lo)} ${X(i)},${Y(p[i])} ${X(i + 1)},${Y(p[i + 1])} ${X(i + 1)},${Y(lo)}" fill="${gradeColor(r.colorGrades[i])}" fill-opacity=".85" stroke="${gradeColor(r.colorGrades[i])}" stroke-width=".6"/>`;
   const line = p.map((v, i) => `${X(i)},${Y(v)}`).join(' ');
-  svg.innerHTML = g + cols + `<polyline points="${line}" fill="none" stroke="var(--ink)" stroke-width="1.5" vector-effect="non-scaling-stroke"/><line class="cursor" id="pcur" x1="-10" x2="-10" y1="${padT}" y2="${H - padB}" vector-effect="non-scaling-stroke"/>`;
+  const steepBands = (r.steepRanges || []).map(([a, b]) => { const x0 = padL + a / r.length * (W - padL - padR), x1 = padL + Math.min(b, r.length) / r.length * (W - padL - padR); return `<rect x="${x0}" y="${padT}" width="${Math.max(1.5, x1 - x0)}" height="${H - padT - padB}" fill="var(--ink)" fill-opacity=".12"/>`; }).join('');
+  svg.innerHTML = steepBands + g + cols + `<polyline points="${line}" fill="none" stroke="var(--ink)" stroke-width="1.5" vector-effect="non-scaling-stroke"/><line class="cursor" id="pcur" x1="-10" x2="-10" y1="${padT}" y2="${H - padB}" vector-effect="non-scaling-stroke"/>`;
   svg._scale = { padL, padR, W, L, n, step };
 }
 function niceStep(range, count) { const raw = range / count, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p; return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * p; }
@@ -2097,6 +2199,11 @@ function drawRoute() {
     seg.push(ll[k]);
   }
   flush();
+  // stretches steeper than the runner's limit
+  for (const [a, b] of (r.steepRanges || [])) {
+    const pts = []; for (let k = 0; k < ll.length; k++) if (g.cum[k] >= a - 1 && g.cum[k] <= b + 1) pts.push(ll[k]);
+    if (pts.length > 1) L.polyline(pts, { color: css('--ink'), weight: 13, opacity: 0.9, dashArray: '3 6', fill: false, interactive: false }).addTo(routeLayer).bringToBack();
+  }
   // mile markers
   for (let m = 1; m * MI < r.length; m++) { let k = 0; while (k < g.cum.length - 1 && g.cum[k] < m * MI) k++; L.marker(ll[k], { icon: L.divIcon({ className: '', html: `<div style="font:600 10px var(--f-mono);background:var(--ink);color:var(--panel);border-radius:8px;padding:1px 5px;transform:translate(-50%,-50%);white-space:nowrap">${m}</div>`, iconSize: null }), interactive: false }).addTo(routeLayer); }
   const pin = (cls) => L.divIcon({ className: '', html: `<div class="pin ${cls}"></div>`, iconSize: [16, 16], iconAnchor: [8, 8] });

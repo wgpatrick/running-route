@@ -56,6 +56,12 @@ const CASES = [
   ['55 minutes rolling at 9 min/mile', { miles: 55 / 9, pace: '9:00', hill: 'rolling' }],
   ['run 70 minutes at 12 min pace', { miles: 70 / 12, pace: '12:00' }],
   ['flat 1:10:00 at 10 min pace', { miles: 7, pace: '10:00', hill: 'flat' }],
+  ['avoid steep hills, 5 miles', { miles: 5, maxGrade: 0.08 }],
+  ['6 miles nothing over 8%', { miles: 6, maxGrade: 0.08 }],
+  ['flat run under 10% grade, 45 min at 9:00', { miles: 5, pace: '9:00', maxGrade: 0.1, hill: 'flat' }],
+  ['7 miles, 12% max', { miles: 7, maxGrade: 0.12 }],
+  ['hilly 6 miles but no steep climbs', { miles: 6, maxGrade: 0.08, hill: 'hilly' }],
+  ['hilly 10k', { miles: 6.21, maxGrade: null, hill: 'hilly' }],
   ['100 minutes at 12:00 pace, lake merced', { miles: 100 / 12, pace: '12:00', dests: ['Lake Merced'] }],
 ];
 // What we saw Claude return for the first case: invented stops and a wrong distance
@@ -74,7 +80,7 @@ for (const [prompt, exp] of CASES) {
   if (exp.miles === null) check(tag, s.miles === null, `miles ${s.miles} should be open`);
   else if (exp.miles != null) check(tag, close(s.miles, exp.miles, 0.02), `miles ${s.miles.toFixed(2)} != ${exp.miles.toFixed(2)}`);
   if (exp.pace) check(tag, s.pace === exp.pace, `pace ${s.pace} != ${exp.pace}`);
-  for (const k of ['hill', 'fast', 'trails', 'avoidSteps', 'shape', 'hillTop']) if (k in exp) check(tag, r[k] === exp[k], `${k} ${r[k]} != ${exp[k]}`);
+  for (const k of ['hill', 'fast', 'trails', 'avoidSteps', 'shape', 'hillTop', 'maxGrade']) if (k in exp) check(tag, r[k] === exp[k], `${k} ${r[k]} != ${exp[k]}`);
   if (exp.dests) check(tag, JSON.stringify(r.dests) === JSON.stringify(exp.dests), `dests [${r.dests}] != [${exp.dests}]`);
   if ('end' in exp) check(tag, (r.end || '').toLowerCase().includes(exp.end.toLowerCase()), `end ${r.end}`);
   if ('start' in exp) check(tag, (r.start || '').toLowerCase() === exp.start.toLowerCase(), `start ${r.start}`);
@@ -83,7 +89,7 @@ for (const [prompt, exp] of CASES) {
   const end = r.end ? Router.geocode(g, r.end, HOME) : null;
   check(tag, !!start && (!r.end || !!end), `geocode failed start=${r.start} end=${r.end}`);
   const dests = r.dests.map(d => g.places.find(p => p.name === d));
-  const plan = Router.plan(g, { start: start || HOME, end, targetM: s.miles ? s.miles * MI : null, hill: r.hill || (r.hillTop || dests.length ? 'hilly' : 'rolling'), fast: r.fast, trails: r.trails, avoidSteps: r.avoidSteps,
+  const plan = Router.plan(g, { start: start || HOME, end, targetM: s.miles ? s.miles * MI : null, hill: r.hill || (r.hillTop || dests.length ? 'hilly' : 'rolling'), maxGrade: r.maxGrade, fast: r.fast, trails: r.trails, avoidSteps: r.avoidSteps,
     shape: r.end ? 'loop' : (r.shape || 'loop'), destinations: dests });
   const lens = plan.routes.map(x => x.length / MI);
   console.log(`   routes: ${lens.map(l => l.toFixed(2)).join(', ')} mi (target ${s.miles == null ? 'open' : s.miles.toFixed(2)})`);

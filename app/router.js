@@ -48,6 +48,7 @@ function RouterLib() {
       }
     }
     Object.assign(g, { vOff, vLat, vLon, vEl });
+    g.steepCache = new Map(); g.STEPS = header.classes.indexOf('steps');
     // CSR adjacency (directed half-edges)
     const deg = new Uint32Array(nN + 1);
     for (let e = 0; e < nE; e++) { deg[f.eU[e] + 1]++; deg[f.eV[e] + 1]++; }
@@ -249,12 +250,17 @@ function RouterLib() {
     });
     const W = { flat: [7, 2], rolling: [1.5, 0.6], hilly: [-1.0, 0.3], max: [-2.4, 0] }[prefs.hill || 'rolling'];
     const floor = prefs.hill === 'hilly' || prefs.hill === 'max' ? 0.25 : 0.6;
+    const SM = prefs.maxGrade ? steepMetres(g, prefs.maxGrade) : null;
     const cost = new Float32Array(2 * g.nE); // [2e] forward, [2e+1] backward
     for (let e = 0; e < g.nE; e++) {
       const L = g.eLen[e], base = L * F[g.eCls[e]];
       for (let d = 0; d < 2; d++) {
         const up = d ? g.eDn[e] : g.eUp[e], dn = d ? g.eUp[e] : g.eDn[e];
         let c = base + W[0] * up + W[1] * dn;
+        if (SM) { // steer around anything steeper than the runner's limit, up or down
+          const [u, w] = steepDir(SM, d ? ~e : e);
+          c += u * 90 + w * 70;
+        }
         if (prefs.fast && L > 5) { const gr = up / L; if (gr > 0.05) c += L * (gr - 0.05) * 25; const gd = dn / L; if (gd > 0.08) c += L * (gd - 0.08) * 10; }
         cost[2 * e + d] = Math.max(c, L * floor);
       }
@@ -301,10 +307,52 @@ function RouterLib() {
     return all;
   }
 
+  // Least distance steeper than `lim` needed to get `rad` metres away from node s
+  // (some doorsteps sit on a hill, so a little steepness can be unavoidable).
+  function steepEscape(g, s, lim, rad = 700) {
+    const SM = steepMetres(g, lim), N = g.nN, d = new Float64Array(N).fill(Infinity), over = new Float32Array(N), heap = new Heap(4096);
+    d[s] = 0; heap.push(0, s); let best = Infinity;
+    while (heap.n) {
+      const u = heap.pop(); const du = d[u];
+      if (du > (best === Infinity ? Infinity : best * 1000 + rad * 3)) break;
+      if (Math.hypot(g.x[u] - g.x[s], g.y[u] - g.y[s]) > rad) { best = Math.min(best, over[u]); continue; }
+      for (let k = g.adjStart[u]; k < g.adjStart[u + 1]; k++) {
+        const ae = g.adjE[k], e = ae >= 0 ? ae : ~ae, v = g.adjTo[k];
+        const [a, b] = steepDir(SM, ae), sm = a + b, c = g.eLen[e] + sm * 1000;
+        if (du + c < d[v]) { d[v] = du + c; over[v] = over[u] + sm; heap.push(d[v], v); }
+      }
+    }
+    return best === Infinity ? 0 : best;
+  }
+
+  // For a grade limit, metres of each edge that are steeper than it (40 m windows),
+  // split into uphill and downhill when the edge is run forward. Stairs always count.
+  function steepMetres(g, lim) {
+    const key = Math.round(lim * 1000);
+    if (g.steepCache.has(key)) return g.steepCache.get(key);
+    const upF = new Float32Array(g.nE), dnF = new Float32Array(g.nE);
+    for (let e = 0; e < g.nE; e++) {
+      const o = g.vOff[e], n = g.eN[e];
+      if (g.eCls[e] === g.STEPS && lim < 0.25) { const net = g.vEl[o + n - 1] - g.vEl[o]; if (net >= 0) upF[e] = g.eLen[e]; else dnF[e] = g.eLen[e]; continue; }
+      const cum = [0];
+      for (let j = 1; j < n; j++) cum.push(cum[j - 1] + Math.hypot((g.vLon[o + j] - g.vLon[o + j - 1]) * M_LON, (g.vLat[o + j] - g.vLat[o + j - 1]) * M_LAT));
+      const L = cum[n - 1];
+      if (L < 40) { const gr = (g.vEl[o + n - 1] - g.vEl[o]) / Math.max(L, 15); if (gr > lim) upF[e] = L; else if (-gr > lim) dnF[e] = L; continue; }
+      for (let k = 0; k + 1 < n; k++) {
+        let a = k, b = k + 1;
+        while (cum[b] - cum[a] < 40 && (a > 0 || b < n - 1)) { if (a > 0) a--; if (cum[b] - cum[a] < 40 && b < n - 1) b++; }
+        const gr = (g.vEl[o + b] - g.vEl[o + a]) / Math.max(cum[b] - cum[a], 1), seg = cum[k + 1] - cum[k];
+        if (gr > lim) upF[e] += seg; else if (-gr > lim) dnF[e] += seg;
+      }
+    }
+    const r = { upF, dnF }; g.steepCache.set(key, r); return r;
+  }
+  const steepDir = (sm, ae) => ae >= 0 ? [sm.upF[ae], sm.dnF[ae]] : [sm.dnF[~ae], sm.upF[~ae]]; // [uphill m, downhill m] as run
+
   function pathLength(g, path) { let L = 0; for (const ae of path) L += g.eLen[ae >= 0 ? ae : ~ae]; return L; }
 
   // ---------- analysis ----------
-  function analyze(g, path, opts) {
+  function analyze(g, path, P = {}) {
     const lat = [], lon = [], el = [], cum = [], edgeAt = [];
     let L = 0;
     for (const ae of path) {
@@ -334,6 +382,18 @@ function RouterLib() {
       gradeAt.push(gr);
       maxUp = Math.max(maxUp, gr); maxDn = Math.min(maxDn, gr);
       const ag = Math.abs(gr); bins[ag < 0.03 ? 0 : ag < 0.06 ? 1 : ag < 0.10 ? 2 : 3] += step;
+    }
+    // distance steeper than the runner's limit (same measure the router uses)
+    let overUp = 0, overDn = 0, steep50 = 0;
+    for (let i = 0; i + 2 < rs.length; i++) steep50 = Math.max(steep50, Math.abs((rs[i + 2] - rs[i]) / (2 * step)));
+    const steepRanges = [];
+    if (P.maxGrade) {
+      const SM = steepMetres(g, P.maxGrade); let at = 0;
+      for (const ae of path) {
+        const [u, w] = steepDir(SM, ae), L = g.eLen[ae >= 0 ? ae : ~ae]; overUp += u; overDn += w;
+        if (u + w > 0) { const last = steepRanges[steepRanges.length - 1]; if (last && at - last[1] < 15) last[1] = at + L; else steepRanges.push([at, at + L]); }
+        at += L;
+      }
     }
     // climbs: a climb ends once we drop 8 m below its peak
     const climbs = [];
@@ -384,7 +444,7 @@ function RouterLib() {
     let hiI = 0; for (let i = 0; i < el.length; i++) if (el[i] > el[hiI]) hiI = i;
     return {
       length: L, gain, loss, maxUp, maxDn, bins, climbs: climbs.slice(0, 5), streets: seq2, overlap: rep / Math.max(L, 1),
-      steps: stepsN, passed, high: { el: el[hiI], at: cum[hiI], lat: lat[hiI], lon: lon[hiI] },
+      steps: stepsN, passed, overUp, overDn, steep50, steepRanges, maxGrade: P.maxGrade || null, high: { el: el[hiI], at: cum[hiI], lat: lat[hiI], lon: lon[hiI] },
       colorGrades: gradeAt.map((_, i) => { let s = 0, n = 0; for (let j = Math.max(0, i - 3); j <= Math.min(gradeAt.length - 1, i + 3); j++) { s += gradeAt[j]; n++; } return s / n; }),
       lowEl: Math.min(...el), geom: { lat, lon, el, cum }, gradeStep: step, grades: gradeAt, profile: rs,
     };
@@ -427,6 +487,7 @@ function RouterLib() {
     if (P.shape !== 'out-and-back') s += a.overlap / 0.12;
     if (P.fast) s += (a.bins[2] + 2 * a.bins[3]) / a.length / 0.04 + a.steps * 0.5;
     if (P.avoidSteps) s += a.steps * 2;
+    if (P.maxGrade) s += Math.max(0, a.overUp + 0.8 * a.overDn - (P._unavoidable || 0)) / (0.005 * a.length);
     return s;
   }
 
@@ -438,6 +499,14 @@ function RouterLib() {
     const E = P.end ? nearestNode(g, P.end.lat, P.end.lon, { good: true }) : S;
     const T = P.targetM || null;
     const dests = (P.destinations || []).map(d => nearestNode(g, d.lat, d.lon, { good: true }));
+    // a loop crosses the doorstep twice (out and home); a one-way run once at each end
+    const unavoidable = P._unavoidable = P.maxGrade ? (E === S ? 2 * steepEscape(g, S, P.maxGrade) : steepEscape(g, S, P.maxGrade) + steepEscape(g, E, P.maxGrade)) : 0;
+    // with a grade limit, turnaround points should sit in gentle terrain
+    let nodeSteep = null;
+    if (P.maxGrade) {
+      const SM = steepMetres(g, P.maxGrade); nodeSteep = new Float32Array(g.nN);
+      for (let e = 0; e < g.nE; e++) { const m = SM.upF[e] + SM.dnF[e]; if (m) { nodeSteep[g.eU[e]] += m; nodeSteep[g.eV[e]] += m; } }
+    }
     const cands = [];
     const tryRoute = (nodes, meta) => {
       const p = routeVia(g, search, C, nodes);
@@ -446,7 +515,7 @@ function RouterLib() {
       const c = { path: p, L, nodes, meta };
       return c;
     };
-    const finish = (c) => { if (!c) return; c.a = analyze(g, c.path); c.score = scoreRoute(c.a, P); cands.push(c); };
+    const finish = (c) => { if (!c) return; c.a = analyze(g, c.path, P); c.score = scoreRoute(c.a, P); cands.push(c); };
     const pick = (x, y, rad, bias) => {
       // node near (x, y); terrain bias pulls toward high or low ground
       let ns = nodesNear(g, x, y, rad);
@@ -455,12 +524,13 @@ function RouterLib() {
       let best = ns[0], bv = -Infinity;
       for (const n of ns) {
         const d = Math.hypot(g.x[n] - x, g.y[n] - y);
-        const v = (bias === 'high' ? g.el[n] : bias === 'low' ? -g.el[n] : 0) - d * 0.05 * (bias ? 1 : 20);
+        const v = (bias === 'high' ? g.el[n] : bias === 'low' ? -g.el[n] : 0) - d * 0.05 * (bias ? 1 : 20) - (nodeSteep ? nodeSteep[n] * 5 : 0);
         if (v > bv) { bv = v; best = n; }
       }
       return best;
     };
-    const bias = P.hill === 'flat' ? 'low' : (P.hill === 'hilly' || P.hill === 'max') ? 'high' : null;
+    // hilltops are ringed by steep streets, so with a grade limit 'hilly' means long gradual climbs instead
+    const bias = P.hill === 'flat' ? 'low' : (P.hill === 'hilly' || P.hill === 'max') && !P.maxGrade ? 'high' : null;
     const sx = g.x[S], sy = g.y[S], ex = g.x[E], ey = g.y[E];
     const seed = P.seed || 0;
 
@@ -471,7 +541,7 @@ function RouterLib() {
       while (rest.length) { let bi = 0, bd = Infinity; rest.forEach((n, i) => { const d = Math.hypot(g.x[n] - cx, g.y[n] - cy); if (d < bd) { bd = d; bi = i; } }); const n = rest.splice(bi, 1)[0]; order.push(n); cx = g.x[n]; cy = g.y[n]; }
     }
 
-    const bearings = 10;
+    const bearings = P.maxGrade ? 16 : 10; // grade limits make loops harder to fit, so try more directions
     if (order.length) {
       const base = tryRoute([S, ...order, E], { kind: 'direct' });
       if (base) {
@@ -544,7 +614,11 @@ function RouterLib() {
     }
     // rank and keep a diverse top set
     // when enough candidates hit the distance, drop the ones that miss it
-    if (T) { const ok = cands.filter(c => Math.abs(c.a.length - T) / T <= 0.05); if (ok.length >= Math.min(3, P.count || 3)) cands.splice(0, cands.length, ...ok); }
+    if (T) {
+      const ok = cands.filter(c => Math.abs(c.a.length - T) / T <= 0.05), near = cands.filter(c => Math.abs(c.a.length - T) / T <= 0.08);
+      if (ok.length >= Math.min(3, P.count || 3)) cands.splice(0, cands.length, ...ok);
+      else if (near.length) cands.splice(0, cands.length, ...near); // fewer options beats a wrong distance
+    }
     cands.sort((a, b) => a.score - b.score);
     const out = [];
     for (const c of cands) {
@@ -557,7 +631,7 @@ function RouterLib() {
       if (!tooClose) out.push(c);
       if (out.length >= (P.count || 3)) break;
     }
-    return { routes: out.map(c => ({ ...c.a, score: c.score, kind: c.meta.kind })), ms: Date.now() - t0, snapped: { start: S, end: E } };
+    return { routes: out.map(c => ({ ...c.a, score: c.score, kind: c.meta.kind, unavoidable: Math.min(unavoidable, c.a.overUp + c.a.overDn) })), ms: Date.now() - t0, snapped: { start: S, end: E } };
   }
 
   return { decode, decodeBase64Gz, geocode, plan, nearestNode, estimateSeconds, gapFactor, normStreet, MI, M_LAT, M_LON };
