@@ -746,6 +746,7 @@ button, input, select { font: inherit; color: inherit; }
 .dests { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .dests .chip.on::after { content: " ×"; }
 
+.update-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .status { font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: center; min-height: 20px; }
 .spinner { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line); border-top-color: var(--accent); animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -871,6 +872,7 @@ details[open] summary { margin-bottom: 6px; }
       </div>
     </section>
 
+    <div class="update-row"><button class="btn" id="updateBtn">Update routes</button><span class="hint">Setting changes replan automatically. Typed fields replan on Enter.</span></div>
     <div class="status" id="status"></div>
     <section class="cards" id="cards" aria-label="Route options"></section>
    </div>
@@ -1743,14 +1745,14 @@ function syncForm() {
   for (const [id, v] of [['tFast', S.fast], ['tTrails', S.trails], ['tSteps', S.avoidSteps], ['tHill', S.hillTop]]) { $(id).classList.toggle('on', v); $(id).setAttribute('aria-pressed', v); }
   const d = $('dests'); d.innerHTML = '';
   if (!S.dests.length) d.innerHTML = `<span class="hint">${S.hillTop ? 'Any hilltop that fits the distance' : 'Nothing required'}</span>`;
-  for (const n of S.dests) { const b = document.createElement('button'); b.className = 'chip on'; b.textContent = n; b.onclick = () => { S.dests = S.dests.filter(x => x !== n); syncForm(); }; d.appendChild(b); }
+  for (const n of S.dests) { const b = document.createElement('button'); b.className = 'chip on'; b.textContent = n; b.onclick = () => { readForm(); S.dests = S.dests.filter(x => x !== n); syncForm(); replanSoon(); }; d.appendChild(b); }
   if (G) {
     const pp = $('placePicker'); pp.innerHTML = '';
     for (const p of G.places.slice().sort((a, b) => (a.kind === b.kind ? b.el - a.el : a.kind === 'hill' ? -1 : 1))) {
       if (S.dests.includes(p.name)) continue;
       const b = document.createElement('button'); b.className = 'chip'; b.title = p.blurb;
       b.textContent = p.kind === 'hill' ? `▲ ${p.name} ${Math.round(p.el * FT)}′` : p.name;
-      b.onclick = () => { S.dests.push(p.name); S.hillTop = false; syncForm(); }; pp.appendChild(b);
+      b.onclick = () => { readForm(); S.dests.push(p.name); S.hillTop = false; syncForm(); replanSoon(); }; pp.appendChild(b);
     }
   }
 }
@@ -1759,9 +1761,9 @@ function readForm() {
   const a = parseFloat($('amountIn').value); S.amount = a > 0 ? a : null;
   if (paceToSec($('paceIn').value.trim())) { S.pace = $('paceIn').value.trim(); savePrefs(); }
 }
-function wireSeg(id, key) { $(id).addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; S[key] = b.dataset.v; if (key === 'mode') { readForm(); if (S.amount != null) S.amount = S.mode === 'time' ? Math.round(S.amount * paceToSec(S.pace) / 60) : Math.round(S.amount * 60 / paceToSec(S.pace) * 10) / 10; } syncForm(); }); }
+function wireSeg(id, key) { $(id).addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b || S[key] === b.dataset.v) return; readForm(); S[key] = b.dataset.v; if (key === 'mode') { if (S.amount != null) S.amount = S.mode === 'time' ? Math.round(S.amount * paceToSec(S.pace) / 60) : Math.round(S.amount * 60 / paceToSec(S.pace) * 10) / 10; } syncForm(); replanSoon(); }); }
 wireSeg('modeSeg', 'mode'); wireSeg('shapeSeg', 'shape'); wireSeg('hillSeg', 'hill');
-for (const [id, k] of [['tFast', 'fast'], ['tTrails', 'trails'], ['tSteps', 'avoidSteps'], ['tHill', 'hillTop']]) $(id).onclick = () => { S[k] = !S[k]; if (k === 'hillTop' && S[k]) S.dests = []; syncForm(); };
+for (const [id, k] of [['tFast', 'fast'], ['tTrails', 'trails'], ['tSteps', 'avoidSteps'], ['tHill', 'hillTop']]) $(id).onclick = () => { readForm(); S[k] = !S[k]; if (k === 'hillTop' && S[k]) S.dests = []; syncForm(); replanSoon(); };
 for (const ex of EXAMPLES) { const b = document.createElement('button'); b.className = 'chip'; b.textContent = ex; b.onclick = () => { $('prompt').value = ex; onAsk(); }; $('examples').appendChild(b); }
 
 // ---------- planning ----------
@@ -1769,7 +1771,7 @@ function setStatus(html, busy) { $('status').innerHTML = (busy ? '<span class="s
 
 async function onAsk() {
   if (!G) return;
-  const text = $('prompt').value.trim();
+  const text = $('prompt').value.trim(); lastPrompt = text;
   const local = applyParse(PL.localParse(text));
   $('understood').innerHTML = describeSettings(local);
   setStatus('Reading your request…', true);
@@ -1781,6 +1783,7 @@ async function onAsk() {
 
 function runPlan() {
   readForm();
+  if (G) $('understood').innerHTML = describeSettings();
   const start = lib.geocode(G, S.startText, HOME);
   if (!start) { setStatus(`Couldn't find “${esc(S.startText)}”. Try a street address, an intersection like “Cortland & Mission”, or pick on the map.`); return; }
   let end = null;
@@ -1808,10 +1811,19 @@ function runPlan() {
   };
   worker.postMessage({ type: 'plan', id, P, paceSec });
 }
-$('planBtn').onclick = onAsk;
+let lastPrompt = null, replanT = null;
+// Settings edits replan from the form; the description is only re-read when its text changes.
+function replanSoon(delay = 350) { if (!G) return; clearTimeout(replanT); replanT = setTimeout(() => { seed = 0; runPlan(); }, delay); }
+$('planBtn').onclick = () => { if ($('prompt').value.trim() === lastPrompt) { seed = 0; runPlan(); } else onAsk(); };
+$('updateBtn').onclick = () => { clearTimeout(replanT); seed = 0; runPlan(); };
 $('shuffleBtn').onclick = () => { if (G) { seed++; runPlan(); } };
 $('prompt').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); onAsk(); } });
-for (const id of ['startIn', 'endIn', 'amountIn', 'paceIn']) $(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); runPlan(); } });
+for (const id of ['startIn', 'endIn', 'amountIn', 'paceIn']) {
+  const el = $(id); let before = el.value;
+  el.addEventListener('focus', () => { before = el.value; });
+  el.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); before = el.value; clearTimeout(replanT); seed = 0; runPlan(); } });
+  el.addEventListener('change', () => { if (el.value !== before) { before = el.value; replanSoon(0); } });
+}
 
 // ---------- rendering ----------
 const GRADE_BREAKS = [0.03, 0.06, 0.10, 0.15];
@@ -1821,10 +1833,11 @@ function routeName(r, i) {
   const pace = paceToSec(S.pace) || 510;
   if (S.end) { const via = r.passed.filter(p => p.kind === 'hill').map(p => p.name).slice(0, 2); const main = r.streets.filter(s => s.name !== 'path' && s.name !== 'stairs').sort((a, b) => b.len - a.len)[0]; return `To ${S.end.label || S.endText} via ${via.length ? via.join(' + ') : (main ? main.name : 'side streets')}`; }
   if (S.dests.length) return S.dests.join(' + ') + (r.passed.length > S.dests.length ? ' · ' + r.passed.filter(p => !S.dests.includes(p.name)).slice(0, 2).map(p => p.name).join(', ') : '');
-  if (hills.length) return hills.map(h => h.name).slice(0, 2).join(' + ') + (S.endText ? '' : ' loop');
+  if (hills.length) return hills.map(h => h.name).slice(0, 2).join(' + ') + (S.endText ? '' : S.shape === 'out-and-back' ? ' out & back' : ' loop');
   const main = r.streets.filter(s => s.name !== 'path' && s.name !== 'stairs').sort((a, b) => b.len - a.len)[0];
   const spot = r.passed.find(p => p.kind === 'place');
-  return spot ? `${spot.name} via ${main ? main.name : 'side streets'}` : `Loop via ${main ? main.name : 'side streets'}`;
+  const kind = S.shape === 'out-and-back' ? 'Out & back' : 'Loop';
+  return spot ? `${spot.name} via ${main ? main.name : 'side streets'}` : `${kind} via ${main ? main.name : 'side streets'}`;
 }
 function sparkline(r) {
   const p = r.profile, n = p.length; if (n < 2) return '';
@@ -2126,6 +2139,7 @@ async function boot() {
   worker = new Worker(URL.createObjectURL(new Blob([WORKER_SRC], { type: 'text/javascript' })));
   await new Promise((res) => { worker.onmessage = (e) => { if (e.data.type === 'ready') res(); }; worker.postMessage({ type: 'init', b64 }); });
   PL = ParseLib(G.places);
+  lastPrompt = $('prompt').value.trim();
   const local = applyParse(PL.localParse($('prompt').value));
   $('understood').innerHTML = describeSettings(local);
   runPlan();

@@ -17,6 +17,7 @@ Everything runs in the browser: the SF walkable street network (Overture Maps / 
   - `test_router.js`, `smoke.js` – Node and headless-browser checks
   - `test_parse.js` – ~50 prompts: parsed numbers, pace/time → miles, and planned mileage vs target
   - `smoke_prompts.js` – types prompts into the real page with a mocked Claude reply
+  - `smoke_form.js` – edits each setting directly and checks the routes follow
 
 ## Rebuild
 ```
