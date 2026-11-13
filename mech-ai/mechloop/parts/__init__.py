@@ -106,7 +106,8 @@ def mgn12_rail(length: float) -> Stock:
 @part
 def mgn12h_carriage() -> Stock:
     """MGN12H carriage block (long). Local frame: sits on an MGN12 rail whose base is Z=0; top face at Z=13."""
-    block = Pos(0, 0, 8) * Box(45.4, 27, 10) - Pos(0, 0, 5.5) * Box(45.4, 12.4, 5.2)
+    # the block rests on the rail's top face (Z=8) and clears its sides by 0.2 mm
+    block = Pos(0, 0, 8) * Box(45.4, 27, 10) - Pos(0, 0, 5.5) * Box(45.4, 12.4, 5.0)
     holes = [(x, y, 13.0) for x in (-10, 10) for y in (-10, 10)]
     return Stock(block, "MGN12H", "MGN12H carriage block", 0.054,
                  ratings={"dynamic_load_n": 4700.0, "static_load_n": 5880.0, "approximate": True},

@@ -32,3 +32,38 @@ def test_fos_failure_and_bad_selection():
     d = cantilever()
     d.loadcases[0].loaded = lambda f: False
     assert [f.code for f in verify_fea(d).findings] == ["fea_setup"]
+
+
+def test_cantilever_first_mode():
+    from mechloop.model import ModalCase
+
+    d = Design("beam")
+    d.add("beam", Pos(50, 0, 0) * Box(100, 10, 10), material="al6061")
+    d.modalcases.append(ModalCase("mode1", "beam", fixed=lambda f: abs(f.center().X) < 1e-6,
+                                  min_frequency_hz=500, mesh_size=3.0))
+    r = verify_fea(d)
+    # Euler-Bernoulli: f1 = (1.875^2 / 2 pi) sqrt(E I / (rho A L^4)) = 816 Hz
+    assert abs(r.metrics["mode1"]["modes_hz"][0] - 816) / 816 < 0.03, r.metrics
+    assert r.ok
+    d.modalcases[0].min_frequency_hz = 2000
+    assert "frequency_low" in [f.code for f in verify_fea(d).findings]
+
+
+def test_bonded_assembly_matches_single_beam():
+    from mechloop.model import AssemblyCase
+
+    d = Design("two")
+    d.add("a", Pos(25, 0, 0) * Box(50, 10, 10), material="al6061")
+    d.add("b", Pos(75, 0, 0) * Box(50, 10, 10), material="al6061")
+    d.assemblycases.append(AssemblyCase(
+        "tip", ["a", "b"], fixed=[("a", lambda f: abs(f.center().X) < 1e-6)],
+        loaded=("b", lambda f: abs(f.center().X - 100) < 1e-6), force=(0, 0, -100),
+        max_deflection=1.0, min_fos=2.0, mesh_size=2.5))
+    r = verify_fea(d)
+    m = r.metrics["tip"]
+    assert abs(m["deflection_mm"] - 0.59) / 0.59 < 0.03, m   # same as the one-piece cantilever
+    assert m["reaction_imbalance"] < 1e-3 and r.ok
+    # a part that touches nothing must be reported, not silently solved
+    d.add("c", Pos(300, 0, 0) * Box(10, 10, 10))
+    d.assemblycases[0].components = ["a", "b", "c"]
+    assert "fea_unconnected" in [f.code for f in verify_fea(d).findings]

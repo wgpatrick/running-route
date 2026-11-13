@@ -21,14 +21,14 @@ from ..report import VerifierResult, timed
 MAX_NODES = 250_000
 
 
-def _mesh(shape, fixed_pred, load_pred, size: float, workdir: Path):
+def _mesh(shape, fixed_pred, load_pred, size: float, workdir: Path, straight: bool = False):
     import gmsh
     from build123d import export_brep
 
     faces = shape.faces()
     fixed = [f for f in faces if fixed_pred(f)]
-    loaded = [f for f in faces if load_pred(f)]
-    if not fixed or not loaded:
+    loaded = [f for f in faces if load_pred(f)] if load_pred else []
+    if not fixed or (load_pred and not loaded):
         return {"error": f"face selection matched fixed={len(fixed)} loaded={len(loaded)} faces"}
     brep = workdir / "part.brep"
     export_brep(shape, str(brep))
@@ -57,6 +57,7 @@ def _mesh(shape, fixed_pred, load_pred, size: float, workdir: Path):
         gmsh.option.setNumber("Mesh.MeshSizeMax", size)
         gmsh.option.setNumber("Mesh.MeshSizeMin", size / 8)
         gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", 12)
+        gmsh.option.setNumber("Mesh.SecondOrderLinear", 1 if straight else 0)
         gmsh.option.setNumber("Mesh.ElementOrder", 2)
         gmsh.option.setNumber("Mesh.Algorithm3D", 1)
         gmsh.option.setNumber("Mesh.Optimize", 1)
@@ -82,7 +83,8 @@ def _mesh(shape, fixed_pred, load_pred, size: float, workdir: Path):
                         out.append(idx[en.astype(int)].reshape(-1, 6))
             return np.vstack(out)
 
-        return {"xyz": xyz, "tets": tets, "fixed_tris": tris(ftags), "load_tris": tris(ltags),
+        return {"xyz": xyz, "tets": tets, "fixed_tris": tris(ftags),
+                "load_tris": tris(ltags) if ltags else np.zeros((0, 6), dtype=int),
                 "load_area_cad": sum(f.area for f in loaded), "fixed_area_cad": sum(f.area for f in fixed)}
     finally:
         gmsh.finalize()
@@ -197,6 +199,9 @@ def run_loadcase(design: Design, lc: LoadCase, r: VerifierResult, keep_dir: Path
                     return out
                 break
             res = _solve(mesh, mat, force, workdir, f"run{attempt}")
+            if "error" in res and "jacobian" in res["error"]:
+                mesh = _mesh(comp.shape, lc.fixed, lc.loaded, size, workdir, straight=True)
+                res = _solve(mesh, mat, force, workdir, f"run{attempt}")
             if "error" in res:
                 r.add("error", "fea_solver", f"{lc.name}: {res['error']}", loadcase=lc.name)
                 return out
@@ -285,9 +290,283 @@ def run_loadcase(design: Design, lc: LoadCase, r: VerifierResult, keep_dir: Path
         shutil.rmtree(workdir, ignore_errors=True)
 
 
+def run_modal(design: Design, mc, r: VerifierResult) -> dict:
+    comp = design.get(mc.component)
+    mat = MATERIALS[comp.material]
+    bb = comp.shape.bounding_box()
+    size = mc.mesh_size or max(float(np.linalg.norm([bb.size.X, bb.size.Y, bb.size.Z])) / 30.0, 0.4)
+    workdir = Path(tempfile.mkdtemp(prefix="mechloop_modal_"))
+    try:
+        mesh = _mesh(comp.shape, mc.fixed, None, size, workdir, straight=True)
+        if "error" in mesh:
+            r.add("error", "fea_setup", f"{mc.name}: {mesh['error']}.", case=mc.name)
+            return {}
+        xyz, tets = mesh["xyz"], mesh["tets"]
+        if len(xyz) > MAX_NODES:
+            r.add("error", "fea_too_large", f"{mc.name}: mesh has {len(xyz)} nodes; set a larger mesh_size.", case=mc.name)
+            return {}
+        # scale density so the meshed part has the component's real mass (COTS proxies, payload overrides)
+        density = comp.mass() / (comp.shape.volume * 1e-9) * 1e-12  # tonne/mm^3
+        ccx_order = [0, 1, 2, 3, 4, 5, 6, 7, 9, 8]
+        with open(workdir / "modal.inp", "w") as f:
+            f.write("*NODE, NSET=NALL\n")
+            for i, p in enumerate(xyz, 1):
+                f.write(f"{i},{p[0]:.9g},{p[1]:.9g},{p[2]:.9g}\n")
+            f.write("*ELEMENT, TYPE=C3D10, ELSET=EALL\n")
+            for i, t in enumerate(tets, 1):
+                f.write(f"{i}," + ",".join(str(int(t[k]) + 1) for k in ccx_order) + "\n")
+            f.write("*NSET, NSET=NFIX\n")
+            for n in np.unique(mesh["fixed_tris"]):
+                f.write(f"{int(n) + 1},\n")
+            f.write(f"*MATERIAL, NAME=M\n*ELASTIC\n{mat.E},{mat.nu}\n*DENSITY\n{density:.6g}\n")
+            f.write("*SOLID SECTION, ELSET=EALL, MATERIAL=M\n*BOUNDARY\nNFIX,1,3\n")
+            f.write("*STEP\n*FREQUENCY\n3\n*END STEP\n")
+        env = dict(os.environ, OMP_NUM_THREADS=str(os.cpu_count() or 1))
+        p = subprocess.run(["ccx", "modal"], cwd=workdir, capture_output=True, text=True, env=env, timeout=1800)
+        freqs = []
+        dat = workdir / "modal.dat"
+        if dat.exists():
+            grab = False
+            for line in open(dat):
+                if "E I G E N V A L U E   O U T P U T" in line:
+                    grab = True
+                    continue
+                if grab:
+                    parts = line.split()
+                    if len(parts) >= 4 and parts[0].isdigit():
+                        freqs.append(float(parts[3]))
+                    elif freqs and not parts:
+                        break
+        if not freqs:
+            r.add("error", "fea_solver", f"{mc.name}: modal solve failed: {p.stdout[-300:].strip()}", case=mc.name)
+            return {}
+        f1 = freqs[0]
+        if f1 < mc.min_frequency_hz:
+            r.add("error", "frequency_low",
+                  f"{mc.name}: first natural frequency {f1:.0f} Hz < {mc.min_frequency_hz:.0f} Hz on {mc.component}.",
+                  case=mc.name, frequency_hz=round(f1, 1),
+                  hint="Frequency rises with stiffness/mass: deepen sections, shorten spans, add ribs, or cut moving mass.")
+        return {"component": mc.component, "modes_hz": [round(x, 1) for x in freqs], "min_frequency_hz": mc.min_frequency_hz,
+                "nodes": len(xyz), "note": "fixed faces are ideally rigid, so real frequencies will be lower"}
+    finally:
+        shutil.rmtree(workdir, ignore_errors=True)
+
+
+def run_assembly(design: Design, ac, r: VerifierResult) -> dict:
+    """Bonded multi-part linear static: fragment the parts so touching faces share nodes."""
+    import gmsh
+    from build123d import Vertex, export_brep
+
+    comps = [design.get(n) for n in ac.components]
+    workdir = Path(tempfile.mkdtemp(prefix="mechloop_asm_"))
+    try:
+        lo = np.min([[c.shape.bounding_box().min.X, c.shape.bounding_box().min.Y, c.shape.bounding_box().min.Z] for c in comps], axis=0)
+        hi = np.max([[c.shape.bounding_box().max.X, c.shape.bounding_box().max.Y, c.shape.bounding_box().max.Z] for c in comps], axis=0)
+        size = ac.mesh_size or max(float(np.linalg.norm(hi - lo)) / 60.0, 0.6)
+        gmsh.initialize()
+        try:
+            gmsh.option.setNumber("General.Terminal", 0)
+            vols = []
+            for i, c in enumerate(comps):
+                f = workdir / f"p{i}.brep"
+                export_brep(c.shape, str(f))
+                vols.append([t for d, t in gmsh.model.occ.importShapes(str(f)) if d == 3])
+            flat = [(3, t) for v in vols for t in v]
+            _, out_map = gmsh.model.occ.fragment(flat, [])
+            gmsh.model.occ.synchronize()
+            owner: dict[int, int] = {}
+            k = 0
+            for i, v in enumerate(vols):
+                for _ in v:
+                    for d, t in out_map[k]:
+                        owner.setdefault(t, i)  # overlap regions (threads) go to the first part
+                    k += 1
+            # connectivity: every part must share a face with the rest, else the solve is singular
+            vol_faces = {t: {s for _, s in gmsh.model.getBoundary([(3, t)], oriented=False)} for t in owner}
+            part_faces = [set().union(*[vol_faces[t] for t in owner if owner[t] == i]) if any(owner[t] == i for t in owner) else set()
+                          for i in range(len(comps))]
+            seen, stack = {0}, [0]
+            while stack:
+                a = stack.pop()
+                for b in range(len(comps)):
+                    if b not in seen and part_faces[a] & part_faces[b]:
+                        seen.add(b); stack.append(b)
+
+            def select(sel):
+                name, pred = sel
+                if name not in ac.components:
+                    raise ValueError(f"'{name}' is not in this assembly case's components")
+                i = list(ac.components).index(name)
+                cad = [f for f in comps[i].shape.faces() if pred(f)]
+                tags = []
+                for s_tag in part_faces[i]:
+                    c = gmsh.model.occ.getCenterOfMass(2, s_tag)
+                    v = Vertex(*c)
+                    if any(f.distance_to(v) < 1e-3 for f in cad):
+                        tags.append(s_tag)
+                return tags, sum(f.area for f in cad)
+
+            fixed_tags = []
+            for sel in ac.fixed:
+                t, _ = select(sel)
+                fixed_tags += t
+            load_tags, load_area_cad = select(ac.loaded)
+            if not fixed_tags or not load_tags:
+                r.add("error", "fea_setup", f"{ac.name}: face selection matched fixed={len(fixed_tags)} "
+                      f"loaded={len(load_tags)} mesh surfaces.", case=ac.name)
+                return {}
+            grounded = {i for i in range(len(comps)) if part_faces[i] & set(fixed_tags)}
+            reach, stack = set(grounded), list(grounded)
+            while stack:
+                a = stack.pop()
+                for b in range(len(comps)):
+                    if b not in reach and part_faces[a] & part_faces[b]:
+                        reach.add(b); stack.append(b)
+            loose = [ac.components[i] for i in range(len(comps)) if i not in reach]
+            if loose:
+                r.add("error", "fea_unconnected",
+                      f"{ac.name}: {loose} do not touch any fixed part through the listed components, so the "
+                      f"model would be unconstrained.", case=ac.name, parts=loose,
+                      hint="Include the parts that connect them in `components`, or check they actually touch.")
+                return {}
+            gmsh.option.setNumber("Mesh.MeshSizeMax", size)
+            gmsh.option.setNumber("Mesh.MeshSizeMin", size / 8)
+            gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", 8)
+            gmsh.option.setNumber("Mesh.SecondOrderLinear", 1)  # straight edges: no inverted elements at coarse holes
+            gmsh.option.setNumber("Mesh.ElementOrder", 2)
+            gmsh.option.setNumber("Mesh.Algorithm3D", 1)
+            gmsh.model.mesh.generate(3)
+            tags, xyz, _ = gmsh.model.mesh.getNodes()
+            xyz = xyz.reshape(-1, 3)
+            idx = np.zeros(int(tags.max()) + 1, dtype=int)
+            idx[tags.astype(int)] = np.arange(len(tags))
+            part_tets = []
+            for i in range(len(comps)):
+                acc = []
+                for t in owner:
+                    if owner[t] != i:
+                        continue
+                    ets, _, ens = gmsh.model.mesh.getElements(3, t)
+                    for et, en in zip(ets, ens):
+                        if et == 11:
+                            acc.append(idx[en.astype(int)].reshape(-1, 10))
+                part_tets.append(np.vstack(acc) if acc else np.zeros((0, 10), dtype=int))
+
+            def tris(tag_list):
+                out = []
+                for t in tag_list:
+                    ets, _, ens = gmsh.model.mesh.getElements(2, t)
+                    for et, en in zip(ets, ens):
+                        if et == 9:
+                            out.append(idx[en.astype(int)].reshape(-1, 6))
+                return np.vstack(out)
+
+            fixed_tris, load_tris = tris(fixed_tags), tris(load_tags)
+        finally:
+            gmsh.finalize()
+        if len(xyz) > MAX_NODES * 2:
+            r.add("error", "fea_too_large", f"{ac.name}: mesh has {len(xyz)} nodes; set a larger mesh_size.", case=ac.name)
+            return {}
+        areas = _tri_areas(xyz, load_tris)
+        force = np.array(ac.force, dtype=float)
+        traction = force / areas.sum()
+        nodal: dict[int, float] = {}
+        for tri, A in zip(load_tris, areas):
+            for n in tri[3:]:
+                nodal[n] = nodal.get(n, 0.0) + A / 3.0
+        fixed_nodes = np.unique(fixed_tris)
+        ccx_order = [0, 1, 2, 3, 4, 5, 6, 7, 9, 8]
+        with open(workdir / "asm.inp", "w") as f:
+            f.write("*NODE, NSET=NALL\n")
+            for i, p in enumerate(xyz, 1):
+                f.write(f"{i},{p[0]:.9g},{p[1]:.9g},{p[2]:.9g}\n")
+            eid, ranges = 1, []
+            for i, tets in enumerate(part_tets):
+                f.write(f"*ELEMENT, TYPE=C3D10, ELSET=P{i}\n")
+                start = eid
+                for t in tets:
+                    f.write(f"{eid}," + ",".join(str(int(t[k]) + 1) for k in ccx_order) + "\n")
+                    eid += 1
+                ranges.append((start, eid))
+            f.write("*NSET, NSET=NFIX\n")
+            for n in fixed_nodes:
+                f.write(f"{int(n) + 1},\n")
+            for i, c in enumerate(comps):
+                m = MATERIALS[c.material]
+                f.write(f"*MATERIAL, NAME=M{i}\n*ELASTIC\n{m.E},{m.nu}\n*SOLID SECTION, ELSET=P{i}, MATERIAL=M{i}\n")
+            f.write("*BOUNDARY\nNFIX,1,3\n*STEP\n*STATIC\n*CLOAD\n")
+            for n, w in nodal.items():
+                for dd in range(3):
+                    v = traction[dd] * w
+                    if abs(v) > 0:
+                        f.write(f"{int(n) + 1},{dd + 1},{v:.9g}\n")
+            f.write("*NODE PRINT, NSET=NALL\nU\n*NODE PRINT, NSET=NFIX, TOTALS=ONLY\nRF\n")
+            for i in range(len(comps)):
+                f.write(f"*EL PRINT, ELSET=P{i}\nS\n")
+            f.write("*END STEP\n")
+        env = dict(os.environ, OMP_NUM_THREADS=str(os.cpu_count() or 1))
+        p = subprocess.run(["ccx", "asm"], cwd=workdir, capture_output=True, text=True, env=env, timeout=3600)
+        dat = workdir / "asm.dat"
+        if p.returncode != 0 or not dat.exists() or dat.stat().st_size == 0:
+            r.add("error", "fea_solver", f"{ac.name}: CalculiX failed: {p.stdout[-300:].strip()}", case=ac.name)
+            return {}
+        res = _parse_dat(dat, len(xyz), eid - 1)
+        out: dict = {"components": list(ac.components), "nodes": len(xyz), "mesh_size": round(size, 3),
+                     "bonded": True, "load_area_mm2": round(float(areas.sum()), 2)}
+        fmag = float(np.linalg.norm(force))
+        if res["rf"] is None:
+            r.add("error", "fea_no_reactions", f"{ac.name}: no reaction forces in solver output.", case=ac.name)
+        else:
+            imb = float(np.linalg.norm(res["rf"] + force)) / max(fmag, 1e-12)
+            out["reaction_imbalance"] = round(imb, 5)
+            if imb > 0.01:
+                r.add("error", "fea_unbalanced", f"{ac.name}: reactions {res['rf'].round(3).tolist()} do not balance "
+                      f"the applied load {force.tolist()} ({imb:.1%} off); result is not trustworthy.",
+                      case=ac.name, reactions=res["rf"].tolist(), nodes=len(xyz), fixed_nodes=len(fixed_nodes),
+                      load_nodes=len(nodal))
+        if abs(areas.sum() - load_area_cad) / max(load_area_cad, 1e-9) > 0.05:
+            r.add("warning", "fea_load_area", f"{ac.name}: meshed load area {areas.sum():.0f} mm^2 differs from the "
+                  f"selected CAD faces ({load_area_cad:.0f} mm^2); part of the face may be covered by another part.",
+                  case=ac.name)
+        umag = np.linalg.norm(res["U"], axis=1)
+        if ac.probe is not None:
+            n = int(np.linalg.norm(xyz - np.array(ac.probe), axis=1).argmin())
+            defl, at = float(umag[n]), xyz[n].round(1).tolist()
+            out["probe_vector_mm"] = res["U"][n].round(5).tolist()
+        else:
+            defl, at = float(umag.max()), xyz[umag.argmax()].round(1).tolist()
+        out.update({"deflection_mm": round(defl, 5), "deflection_at": at,
+                    "stiffness_n_per_mm": round(fmag / defl, 1) if defl > 0 else None})
+        fixed_mask = np.zeros(len(xyz), dtype=bool)
+        fixed_mask[fixed_nodes] = True
+        per_part = {}
+        for i, (c, (a, b)) in enumerate(zip(comps, ranges)):
+            if b <= a:
+                continue
+            tets = part_tets[i]
+            vm = res["vm_el"][a - 1:b - 1]
+            free = vm[~fixed_mask[tets].any(axis=1)]
+            peak = float(free.max()) if len(free) else float(vm.max())
+            fos = MATERIALS[c.material].yield_mpa / peak if peak > 0 else float("inf")
+            per_part[c.name] = {"peak_vm_mpa": round(peak, 2), "fos": round(min(fos, 9999.0), 1)}
+            if ac.min_fos is not None and fos < ac.min_fos:
+                r.add("error", "fos_low", f"{ac.name}: {c.name} factor of safety {fos:.2f} < {ac.min_fos} "
+                      f"(peak von Mises {peak:.1f} MPa; interface stresses in a bonded model are approximate).",
+                      case=ac.name, part=c.name, fos=round(fos, 2))
+        out["parts"] = per_part
+        if ac.max_deflection is not None and defl > ac.max_deflection:
+            r.add("error", "deflection_high",
+                  f"{ac.name}: deflection {defl:.4f} mm > {ac.max_deflection} mm at {at} "
+                  f"(bonded model, so the real figure is higher).", case=ac.name, deflection=round(defl, 5),
+                  hint="Find the flexible member: compare part stresses/strain, then deepen its section, shorten the overhang or add a second support.")
+        return out
+    finally:
+        shutil.rmtree(workdir, ignore_errors=True)
+
+
 def verify_fea(design: Design, keep_dir: Path | None = None) -> VerifierResult:
     r = VerifierResult("fea")
-    if not design.loadcases:
+    if not design.loadcases and not design.modalcases and not design.assemblycases:
         r.skipped = "design has no load cases"
         return r
     if not shutil.which("ccx"):
@@ -299,4 +578,14 @@ def verify_fea(design: Design, keep_dir: Path | None = None) -> VerifierResult:
                 r.metrics[lc.name] = run_loadcase(design, lc, r, keep_dir)
             except Exception as e:
                 r.add("error", "fea_crashed", f"{lc.name}: {type(e).__name__}: {e}", loadcase=lc.name)
+        for ac in design.assemblycases:
+            try:
+                r.metrics[ac.name] = run_assembly(design, ac, r)
+            except Exception as e:
+                r.add("error", "fea_crashed", f"{ac.name}: {type(e).__name__}: {e}", case=ac.name)
+        for mc in design.modalcases:
+            try:
+                r.metrics[mc.name] = run_modal(design, mc, r)
+            except Exception as e:
+                r.add("error", "fea_crashed", f"{mc.name}: {type(e).__name__}: {e}", case=mc.name)
     return r

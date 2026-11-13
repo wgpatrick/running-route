@@ -1,6 +1,6 @@
-from .model import (MATERIALS, Component, Design, Fastener, Joint, LoadCase, Material,
+from .model import (MATERIALS, AssemblyCase, Component, Design, Fastener, Joint, LoadCase, Material, ModalCase,
                     Requirement)
 from .report import Finding, Report, VerifierResult
 
-__all__ = ["MATERIALS", "Component", "Design", "Fastener", "Joint", "LoadCase", "Material",
+__all__ = ["MATERIALS", "AssemblyCase", "Component", "Design", "Fastener", "Joint", "LoadCase", "Material", "ModalCase",
            "Requirement", "Finding", "Report", "VerifierResult"]

@@ -5,7 +5,7 @@ Bodies: world (frame, Y rails, Y motor) -> ybody (X beam and its rail, X motor)
 """
 from build123d import Box, Cylinder, Location, Pos, Rot
 
-from mechloop import Design, Joint, LoadCase, Requirement
+from mechloop import AssemblyCase, Design, Joint, LoadCase, ModalCase, Requirement
 from mechloop.parts import (Stock, add_corner_bracket, add_screw, clearance_hole, extrusion_2020, gt2_pulley,
                             mgn12_rail, mgn12h_carriage, nema17, place)
 
@@ -91,9 +91,14 @@ def build() -> Design:
     # ---- tool plate and hotend (hung close to the beam to keep it inside the frame) ---
     z_top = z_beam + 10 + 13
     HOT_Y = -31.0
+    RIB = 8.0
     top = Pos(0, -3.25, z_top + 2) * Box(46, 33.5, 4)
     front = Pos(0, -18, z_top - 20) * Box(46, 4, 48)
     tool_plate = top + front
+    # L-shaped ribs over the top and down the front (iteration 5: nozzle stiffness was 40 N/mm without them)
+    for sx in (-1, 1):
+        tool_plate += Pos(sx * 20, -5.25, z_top + 4 + RIB / 2) * Box(6, 45.5 - 8 + RIB, RIB)
+        tool_plate += Pos(sx * 20, -20 - RIB / 2, z_top - 20 + RIB / 2) * Box(6, RIB, 48 + RIB)
     for x in (-10, 10):
         for y in (-10, 10):
             tool_plate -= Pos(x, y, z_top + 2) * Cylinder(clearance_hole("M3") / 2, 4)
@@ -148,6 +153,18 @@ def build() -> Design:
         loaded=lambda f: abs(f.center().Y + 20) < 1e-6,
         force=(0.3 * 5.0 * 3, 0.0, -0.3 * 9.81 * 3),   # 0.3 kg toolhead, 5 m/s^2, x3 dynamic factor
         min_fos=4.0, max_deflection=0.05))
+    # ---- stiffness of the whole moving structure at the tool, toolhead at mid-span (worst case)
+    d.assemblycases.append(AssemblyCase(
+        "tool_stiffness", ["y_plate_left", "y_plate_right", "x_beam", "x_rail", "x_carriage", "tool_plate"],
+        fixed=[("y_plate_left", lambda f: abs(f.center().Z - z_plate) < 1e-6),
+               ("y_plate_right", lambda f: abs(f.center().Z - z_plate) < 1e-6)],
+        loaded=("tool_plate", lambda f: abs(f.center().Y + 20) < 1e-6),
+        force=(0.0, 3.0, -2.0),              # 0.2 kg toolhead at 5 m/s^2 with a 3x dynamic factor, plus its weight
+        probe=(0.0, -20.0, z_top - 44.0), max_deflection=0.02, min_fos=5.0))
+    # ---- the X beam must not resonate near the motion bandwidth
+    d.modalcases.append(ModalCase(
+        "x_beam_mode", "x_beam",
+        fixed=lambda f: abs(abs(f.center().X) - FX / 2) < 1e-6, min_frequency_hz=150.0))
     d.requirements.append(Requirement("X and Y travel >= 200 mm", lambda dd: (
         all(j.range[1] - j.range[0] >= 200 for j in dd.joints), str({j.name: j.range for j in dd.joints}))))
     return d

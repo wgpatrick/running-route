@@ -105,6 +105,37 @@ class LoadCase:
 
 
 @dataclass
+class ModalCase:
+    """Natural-frequency check on one component (resonance / stiffness-to-mass)."""
+
+    name: str
+    component: str
+    fixed: Callable[[Face], bool]
+    min_frequency_hz: float
+    mesh_size: Optional[float] = None
+
+
+@dataclass
+class AssemblyCase:
+    """Static check across several parts meshed together and bonded wherever they touch.
+
+    `fixed` and `loaded` are (component name, face predicate). Deflection is the
+    largest displacement anywhere, or at `probe` (a world point) when given.
+    Bonded contact is stiffer than bolted joints: treat deflection as a lower bound.
+    """
+
+    name: str
+    components: Sequence[str]
+    fixed: Sequence[tuple]  # [(component, predicate), ...]
+    loaded: tuple  # (component, predicate)
+    force: tuple[float, float, float]
+    max_deflection: Optional[float] = None
+    min_fos: Optional[float] = None
+    probe: Optional[tuple[float, float, float]] = None
+    mesh_size: Optional[float] = None
+
+
+@dataclass
 class Requirement:
     """A named, executable acceptance test. `check` returns (ok, detail)."""
 
@@ -119,6 +150,8 @@ class Design:
     joints: list[Joint] = field(default_factory=list)
     fasteners: list[Fastener] = field(default_factory=list)
     loadcases: list[LoadCase] = field(default_factory=list)
+    modalcases: list[ModalCase] = field(default_factory=list)
+    assemblycases: list[AssemblyCase] = field(default_factory=list)
     requirements: list[Requirement] = field(default_factory=list)
     # Pairs allowed to overlap (threads, press fits): {frozenset({a, b}): max_volume_mm3}
     allowed_overlaps: dict = field(default_factory=dict)
