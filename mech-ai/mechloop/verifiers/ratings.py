@@ -76,6 +76,7 @@ def resolve_drives(design: Design, r: VerifierResult | None = None) -> dict:
         else:
             effort = torque * eff * drv.get("ratio", 1.0)  # N*mm
         j.max_effort = round(effort, 2)
+        j.drive_resolved = {"motors": motors, "travel_per_rev": travel_per_rev, "efficiency": eff, "kind": kind}
         # rotor inertia reflected to the joint: kg for a slide, kg*mm^2 for a hinge
         Jr = sum(comps[m].ratings.get("rotor_inertia_gcm2", 0.0) for m in motors) * 1e-7  # kg m^2
         if j.kind == "slide":

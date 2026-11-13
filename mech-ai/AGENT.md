@@ -109,6 +109,14 @@ def build():
 - `add_screw(design, name, size, length, at=<underside of head>, direction=<thread direction>,
   threads_into=..., tnut=False)` adds the screw, its driver-access check and the joint.
 
+## Printers: the digital twin
+
+For a printer design, `python -m mechloop print <printer.py> <design.py>:<part>` (or an STL/STEP file)
+prints a part on it in simulation and reports reachability, step loss, collisions during the print and
+how closely each printed layer matches the part. The design needs joints named x, y, z with resolved
+drives, a `bed` component whose top is the print surface, and `design.tool_point` at the nozzle tip.
+The bed must be able to reach the nozzle (gap at the end of Z travel <= first layer height).
+
 ## What each verifier tells you
 
 | Verifier | Checks | Typical fix |

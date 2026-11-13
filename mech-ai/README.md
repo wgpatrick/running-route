@@ -52,6 +52,35 @@ Caveat: the agents avoided most collisions by working out the layout by hand
 before the first run, and two of them read the verifier source. Most of what
 the verifiers caught, they caught after a check was added or tightened.
 
+## Digital twin: printing on the simulated printer
+
+`python -m mechloop print designs/printer.py examples/motor_bracket.py:bracket`
+slices a part with PrusaSlicer, plans the motion the way printer firmware does
+(look-ahead, per-axis limits, junction deviation), runs it on the machine's own
+dynamics (axis masses from the CAD, motor torque curves, open-loop steppers that can
+lose steps), lays material down where the simulated nozzle actually went, and
+compares each layer with the intended part.
+
+![bracket printing](docs/twin/bracket_printing.gif)
+![printed bracket](docs/twin/bracket_printed.png)
+
+| Run (`designs/print_runs.py`) | Result |
+|---|---|
+| 20 mm cube, 0.2 mm layers | passes: 15 min print, outline 99.3% match, average outline offset 0.02 mm, worst motor lag 0.04 mm |
+| Motor bracket, 0.3 mm layers | passes: 43 min print, 15.6 g, outline 98.2% match, largest unsupported gap 3 mm |
+| What-if: 25x acceleration, motor current at 30% | fails as it should: Y axis loses steps 26 s in, layers displaced up to 8.8 mm (`docs/twin/layer_shift_printed.png`) |
+
+The first twin run found that the printer, which passed every static check, could
+not print at all: the bed stopped 1 mm short of the nozzle, so the first layer
+was unreachable. The brief had allowed that gap.
+
+Modelled: real slicer G-code, firmware-style planning, stepper torque-angle
+dynamics and step loss, gravity on the Z axis, extruder lag, bead width from
+extruded volume, machine collisions over every pose of the print, bridges over
+thin air. Not modelled: heat (melting, cooling, warping, bed adhesion, sag),
+pressure advance, stringing, belt stretch, frame flex. Rail friction, extruder
+lag and stepper damping are assumed values in `PrinterMap`.
+
 ## How much to trust a pass
 
 `tests/test_fault_injection.py` breaks the passing gantry eleven different ways

@@ -87,11 +87,12 @@ MT = 4.0
 Z_YA = Z_PLATE + T_YP + 0.7    # upper (anchored) run of the Y belt lies on the right Y plate
 Z_YC = Z_YA - PR
 Z_XI = Z_XB - 4.25              # underside of the X idler
-NOZZLE_GAP = 1.0               # design gap bed surface -> nozzle with the bed at the top
+NOZZLE_GAP = 0.1               # bed surface -> nozzle with the bed at the top: must not exceed the first layer
+                               # height (the digital twin showed a 1.0 mm gap made the first layer unreachable)
 
 # bed heights follow from the nozzle
 Z_BED = Z_NOZZLE - NOZZLE_GAP - T_BED - PRINT_Z   # bed underside at home (bed at the bottom)
-ZC = Z_BED - 30.0                                 # Z carriage centre at home
+ZC = Z_BED - 30.9                                 # Z carriage centre at home (0.9 lower after the bed datum moved up)
 Z_TAB = ZC - 6.0                                  # underside of the nut tab at home
 
 
@@ -427,8 +428,10 @@ def build() -> Design:
 
     def bed_gap(dd):
         gap = nozzle_tip(dd)[2] - (dd.get("bed").shape.bounding_box().max.Z + jr(dd, "z").range[1])
-        return 0.2 <= gap <= 2.0, f"nozzle tip is {gap:.2f} mm above the bed surface with the bed at the top"
-    d.requirements.append(Requirement("bed surface 0.2-2 mm below the nozzle at the top of Z travel", bed_gap))
+        return -1e-9 <= gap <= 0.2 + 1e-9, f"nozzle tip is {gap:.2f} mm above the bed surface with the bed at the top"
+    # The original brief said 0.2-2 mm. The digital twin showed that is wrong: any gap above the first
+    # layer height makes the first layer unreachable.
+    d.requirements.append(Requirement("bed can reach the nozzle: 0-0.2 mm gap at the top of Z travel", bed_gap))
     d.requirements.append(Requirement("bed carries the 1.0 kg payload as mass", lambda dd: (
         (m := dd.get("bed").mass()) >= dd.get("bed").shape.volume * 2700e-9 + PAYLOAD_KG - 1e-9,
         f"bed + payload {m:.3f} kg")))

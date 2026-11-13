@@ -29,9 +29,27 @@ corner bracket, linear rod, GT2 pulley and idler, T8 lead screw and nut, shaft
 coupler, ball bearings, socket head cap screws, hex nuts. Geometry is proxy geometry built
 from datasheet dimensions; ratings are typical class values.
 
+## Digital twin (`mechloop/twin`)
+
+`mechloop print <printer.py> <part>` prints a part on a printer design in simulation:
+PrusaSlicer G-code, firmware-style look-ahead planning, open-loop stepper dynamics
+with step loss, material deposited along the simulated nozzle path, per-layer
+comparison with the intended part, machine collision checks over the whole print,
+and renders of the printed part and of the machine printing it. A 43-minute print
+takes about 6 minutes to simulate.
+
+Results: a calibration cube and the motor bracket both print within 0.03 mm average
+outline error; a what-if with 25x acceleration and 30% motor current loses steps and
+produces a visibly layer-shifted part. Its first run found that the printer could not
+reach its first layer (bed 1 mm short of the nozzle), which no static check had caught.
+
+Not in the twin: any thermal behaviour (cooling, warping, adhesion, sag), pressure
+advance, belt stretch, frame flex. Friction, extruder lag and stepper damping are
+assumed values, so corner bulge and lag figures are indicative, not calibrated.
+
 ## Evidence that the checks work
 
-- 33 tests. FEA matches beam theory for deflection, stress and first natural
+- 36 tests. FEA matches beam theory for deflection, stress and first natural
   frequency; bonded two-part FEA matches the one-piece result; MuJoCo forces match
   F = m·a and m·g.
 - Fault injection: the passing gantry is broken eleven ways and each break is
@@ -82,5 +100,6 @@ from datasheet dimensions; ratings are typical class values.
    adopt (its viewer, DFM checks and URDF export overlap little with mechloop).
 3. Bolted-joint and contact FEA for the critical joints only.
 4. Sub-assemblies and multi-pose assemblability; the reported build order is valid but still not how a person would build it.
-5. Printability checks and slicer output for the printed parts.
+5. Extend the twin: frame and belt compliance from the FEA stiffness results, a thermal model for warping
+   and cooling, input shaping, and running the twin as a verifier inside the design loop for printers.
 6. Vendor datasheet ingestion for the catalog, starting with motors and rails.

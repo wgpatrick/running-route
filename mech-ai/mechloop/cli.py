@@ -19,6 +19,13 @@ def main(argv=None) -> int:
     h = sub.add_parser("history", help="show the loop history of a design")
     h.add_argument("name")
     h.add_argument("--out", default="out")
+    pr = sub.add_parser("print", help="digital twin: slice a part and print it on a printer design")
+    pr.add_argument("printer", help="python file defining build() -> Design of the printer")
+    pr.add_argument("part", help="<design.py>:<component> or a .stl/.step file; printed as modelled, base on the bed")
+    pr.add_argument("--out", default="out/twin")
+    pr.add_argument("--layer-height", type=float, default=0.2)
+    pr.add_argument("--accel-scale", type=float, default=1.0, help="what-if multiplier on XY acceleration limits")
+    pr.add_argument("--no-render", action="store_true")
     c = sub.add_parser("catalog", help="list off-the-shelf parts")
     c.add_argument("query", nargs="?", default="")
     a = p.parse_args(argv)
@@ -28,6 +35,23 @@ def main(argv=None) -> int:
         rep = run(a.design, a.out, a.only, render=not a.no_render)
         print(rep.to_json(max_findings=a.max_findings))
         return 0 if rep.ok else 1
+    if a.cmd == "print":
+        from .runner import load_design
+        from .twin import PrinterMap, run_print
+
+        printer = load_design(a.printer)
+        if ":" in a.part and a.part.split(":")[0].endswith(".py"):
+            f, comp = a.part.rsplit(":", 1)
+            shape, name = load_design(f).get(comp).shape, comp
+        else:
+            from build123d import import_step, import_stl
+
+            shape = import_step(a.part) if a.part.lower().endswith((".step", ".stp")) else import_stl(a.part)
+            name = Path(a.part).stem
+        rep = run_print(printer, shape, Path(a.out) / name, PrinterMap(layer_height=a.layer_height), name=name,
+                        render=not a.no_render, accel_scale=a.accel_scale)
+        print(json.dumps({k: v for k, v in rep.items() if k != "gcode"}, indent=1, default=float))
+        return 0 if rep["ok"] else 1
     if a.cmd == "history":
         f = Path(a.out) / a.name / "history.jsonl"
         if not f.exists():
