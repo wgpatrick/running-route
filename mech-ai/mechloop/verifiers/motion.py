@@ -111,9 +111,50 @@ def verify_motion(design: Design, per_joint: int = 9) -> VerifierResult:
                      "exact_overlap_checks": exact_checks}
         try:
             r.metrics["drives"] = _dynamics(design, r)
-        except Exception as e:  # dynamics is advisory if the model cannot be built
-            r.add("warning", "dynamics_failed", f"MuJoCo dynamics check failed: {type(e).__name__}: {e}")
+        except Exception as e:
+            r.add("error", "dynamics_failed", f"MuJoCo dynamics check did not run: {type(e).__name__}: {e}")
+        if design.program:
+            try:
+                _program(design, r)
+            except Exception as e:
+                r.add("error", "simulation_failed", f"Motion program simulation did not run: {type(e).__name__}: {e}")
     return r
+
+
+def _program(design: Design, r: VerifierResult) -> None:
+    from ..sim import program_collisions, simulate
+
+    for step in design.program:
+        for k, v in step["to"].items():
+            j = next((x for x in design.joints if x.name == k), None)
+            if j is None:
+                r.add("error", "program_unknown_joint", f"Motion program refers to unknown joint '{k}'.")
+                return
+            if not (j.range[0] - 1e-9 <= v <= j.range[1] + 1e-9):
+                r.add("error", "program_out_of_range",
+                      f"Motion program sends joint {k} to {v}, outside its range {j.range}.", joint=k, target=v)
+                return
+    sim = simulate(design, design.program)
+    r.artifacts_sim = sim
+    tol = design.tracking_tolerance
+    m = {"duration_s": round(sim["duration_s"], 2),
+         "max_tracking_error": {k: round(v, 4) for k, v in sim["max_error"].items()},
+         "final_error": {k: round(v, 4) for k, v in sim["final_error"].items()},
+         "peak_effort": {k: round(v, 2) for k, v in sim["peak_effort"].items()},
+         "time_at_force_limit": {k: f"{v:.1%}" for k, v in sim["saturated_fraction"].items()}}
+    for k, e in sim["max_error"].items():
+        if e > tol:
+            r.add("error", "tracking_error",
+                  f"Simulated joint {k} falls {e:.2f} from its commanded position (tolerance {tol}); "
+                  f"the drive is at its force limit {sim['saturated_fraction'][k]:.0%} of the time.",
+                  joint=k, max_error=round(e, 3),
+                  hint="Lower acceleration/speed in the program or joint limits, reduce moving mass, or use a stronger drive.")
+    hits = program_collisions(design, sim)
+    for h in hits:
+        r.add("error", "program_collision",
+              f"{h['parts'][0]} hits {h['parts'][1]} at t={h['time_s']} s of the motion program, pose {h['pose']}.", **h)
+    m["collisions"] = len(hits)
+    r.metrics["program"] = m
 
 
 # ---------------------------------------------------------------- dynamics

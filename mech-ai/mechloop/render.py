@@ -76,8 +76,23 @@ def render_views(design: Design, path: Path, q: dict | None = None, size=(1600, 
     return path
 
 
-def render_motion(design: Design, path: Path, frames_per_joint: int = 16, size=(800, 600)) -> Path | None:
-    """Animated GIF: each joint travels across its range in turn."""
+def sweep_poses(design: Design, frames_per_joint: int = 16) -> list[dict]:
+    joints = [j for j in design.joints if j.range[0] != j.range[1]]
+    poses = []
+    for j in joints:
+        lo, hi = j.range
+        seq = np.concatenate([np.linspace(0, hi, frames_per_joint // 4), np.linspace(hi, lo, frames_per_joint // 2),
+                              np.linspace(lo, 0, frames_per_joint // 4)])
+        poses += [{j.name: float(v)} for v in seq]
+    for t in np.linspace(0, 1, frames_per_joint // 2):
+        poses.append({j.name: float(j.range[0] + t * (j.range[1] - j.range[0])) for j in joints})
+    return poses
+
+
+def render_motion(design: Design, path: Path, poses: list[dict] | None = None, size=(800, 600),
+                  frame_s: float = 0.08) -> Path | None:
+    """Animated GIF. Default: each joint sweeps its range in turn. Pass `poses`
+    (e.g. sampled from a simulation) to replay a run; the tool point is traced."""
     joints = [j for j in design.joints if j.range[0] != j.range[1]]
     if not joints:
         return None
@@ -85,30 +100,48 @@ def render_motion(design: Design, path: Path, frames_per_joint: int = 16, size=(
 
     pv = _pv()
     polys = _polys(design, pv)
-    poses = []
-    for j in joints:
-        lo, hi = j.range
-        seq = np.concatenate([np.linspace(0, hi, frames_per_joint // 4), np.linspace(hi, lo, frames_per_joint // 2),
-                              np.linspace(lo, 0, frames_per_joint // 4)])
-        poses += [{j.name: float(v)} for v in seq]
-    # final segment: all joints together corner to corner
-    for t in np.linspace(0, 1, frames_per_joint // 2):
-        poses.append({j.name: float(j.range[0] + t * (j.range[1] - j.range[0])) for j in joints})
+    poses = poses or sweep_poses(design)
     pl = pv.Plotter(off_screen=True, window_size=size)
     pl.set_background("white")
-    # fix the camera on the union of extreme poses so the view does not jump
-    _add(pl, polys, forward_kinematics(design, {}))
-    for corner in ({j.name: j.range[0] for j in joints}, {j.name: j.range[1] for j in joints}):
-        _add(pl, polys, forward_kinematics(design, corner))
+    actors = []
+    for c, pd, color in polys:
+        a = pl.add_mesh(pd, color=color, smooth_shading=False, specular=0.2, ambient=0.25)
+        edges = pd.extract_feature_edges(feature_angle=35)
+        e = pl.add_mesh(edges, color="#1b1b1b", line_width=1) if edges.n_points else None
+        actors.append((c.body, a, e))
+    # frame the camera on the whole swept envelope so the view does not jump
+    lo, hi = np.full(3, np.inf), np.full(3, -np.inf)
+    for q in [{}] + [{j.name: v for j, v in zip(joints, corner)} for corner in
+                     ([j.range[0] for j in joints], [j.range[1] for j in joints])]:
+        T = forward_kinematics(design, q)
+        for c, pd, _ in polys:
+            b = np.array(pd.bounds).reshape(3, 2).T
+            pts = (T[c.body] @ np.c_[b, np.ones(2)].T).T[:, :3]
+            lo, hi = np.minimum(lo, pts.min(0)), np.maximum(hi, pts.max(0))
+    pl.add_mesh(pv.Box(bounds=(lo[0], hi[0], lo[1], hi[1], lo[2], hi[2])), opacity=0.0)
     pl.view_isometric()
-    cam = pl.camera_position
-    frames = []
+    trace, trace_actor, frames = [], None, []
     for q in poses:
-        pl.clear()
-        _add(pl, polys, forward_kinematics(design, q))
-        pl.camera_position = cam
+        T = forward_kinematics(design, q)
+        for body, a, e in actors:
+            a.user_matrix = T[body]
+            if e is not None:
+                e.user_matrix = T[body]
+        if design.tool_point:
+            body, p = design.tool_point
+            trace.append((T[body] @ np.array([*p, 1.0]))[:3])
+            if len(trace) > 1:
+                if trace_actor is not None:
+                    pl.remove_actor(trace_actor)
+                trace_actor = pl.add_mesh(pv.lines_from_points(np.array(trace)), color="#d62728", line_width=3)
         frames.append(pl.screenshot(return_img=True))
     pl.close()
     path.parent.mkdir(parents=True, exist_ok=True)
-    imageio.mimsave(str(path), frames, duration=0.08, loop=0)
+    imageio.mimsave(str(path), frames, duration=frame_s, loop=0)
     return path
+
+
+def render_simulation(design: Design, sim: dict, path: Path, fps: int = 20, **kw) -> Path | None:
+    step = max(1, int(round(1.0 / fps / (sim["t"][1] - sim["t"][0]))))
+    poses = [{n: float(sim["q"][i, k]) for k, n in enumerate(sim["names"])} for i in range(0, len(sim["q"]), step)]
+    return render_motion(design, path, poses=poses, frame_s=1.0 / fps, **kw)

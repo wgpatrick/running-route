@@ -24,6 +24,7 @@ class VerifierResult:
     metrics: dict = field(default_factory=dict)
     seconds: float = 0.0
     skipped: str = ""
+    artifacts_sim: object = None  # raw simulation trace, for rendering (not serialised)
 
     @property
     def ok(self) -> bool:

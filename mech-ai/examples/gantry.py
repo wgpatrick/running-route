@@ -136,6 +136,11 @@ def build() -> Design:
     d.joints.append(Joint("x", "slide", "ybody", "xbody", (1, 0, 0), range=(-TRAVEL, TRAVEL),
                           max_speed=300, max_accel=5000,
                           drive={"motor": "x_motor", "kind": "belt", "pulley_teeth": 20}))
+    # ---- motion program: outline a 150 mm square, then cross it diagonally (a print perimeter + travel)
+    d.program = [{"to": {"x": -75, "y": -75}}, {"to": {"x": 75, "y": -75}}, {"to": {"x": 75, "y": 75}},
+                 {"to": {"x": -75, "y": 75}}, {"to": {"x": -75, "y": -75}}, {"to": {"x": 75, "y": 75}},
+                 {"to": {"x": 0, "y": 0}}]
+    d.tool_point = ("xbody", (0.0, HOT_Y, z_top - 64))   # nozzle tip
     # ---- structural check on the printed tool plate ---------------------------
     d.loadcases.append(LoadCase(
         "toolhead_accel", "tool_plate",

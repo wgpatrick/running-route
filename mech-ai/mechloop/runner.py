@@ -93,6 +93,11 @@ def run(path: str | Path, out_root: str | Path = "out", only=None, render: bool 
             gif = render_motion(design, out / "motion.gif")
             if gif:
                 rep.artifacts["motion"] = str(gif)
+            sim = next((r.artifacts_sim for r in rep.results if r.artifacts_sim is not None), None)
+            if sim is not None:
+                from .render import render_simulation
+
+                rep.artifacts["simulation"] = str(render_simulation(design, sim, out / "simulation.gif"))
         except Exception as e:
             rep.artifacts["render_error"] = f"{type(e).__name__}: {e}"
     try:
