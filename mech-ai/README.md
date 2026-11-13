@@ -91,6 +91,16 @@ sensitivity ranking, and a reality check against documented Voron 2.4 measuremen
 Results and caveats are in [`docs/EVALUATION.md`](docs/EVALUATION.md);
 `tests/test_twin_validation.py` holds the tests of the twin itself.
 
+### Simulation in the design loop
+
+For a printer, `mechloop verify` now includes the twin (the design must print a test cube on its
+own simulated machine, with frame stiffness taken from its own FEA), and `mechloop score` gives
+numbers to improve: resonance, sideways error, highest clean acceleration, benchmark time, mass,
+cost. `mechloop assemble` simulates building any design: build order, whether each part stays put
+when you let go, turning the assembly, tools, a time estimate, written instructions and an
+animation. Two agent trials that used these as objectives are in
+[`docs/IMPROVEMENT_TRIALS.md`](docs/IMPROVEMENT_TRIALS.md).
+
 ## How much to trust a pass
 
 `tests/test_fault_injection.py` breaks the passing gantry eleven different ways
