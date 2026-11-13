@@ -76,6 +76,8 @@ class Joint:
     # {"motor": "x_motor", "kind": "belt", "pulley_teeth": 20} or
     # {"motor": ["z1", "z2"], "kind": "leadscrew", "lead": 8, "efficiency": 0.4}
     drive: Optional[dict] = None
+    min_drive_margin: float = 1.5  # available / required effort; friction is not modelled, so keep > 1
+    reflected_inertia: float = 0.0  # motor rotor inertia seen at the joint (filled in from the drive)
 
 
 @dataclass

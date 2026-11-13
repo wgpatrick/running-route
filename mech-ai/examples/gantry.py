@@ -137,10 +137,10 @@ def build() -> Design:
     # Y range is offset so the hotend (31 mm in front of the beam) stays inside the frame opening
     d.joints.append(Joint("y", "slide", "world", "ybody", (0, 1, 0), range=(-86.0, 114.0),
                           max_speed=300, max_accel=3000,
-                          drive={"motor": "y_motor", "kind": "belt", "pulley_teeth": 20}))
+                          drive={"motor": "y_motor", "kind": "belt", "pulley": "y_pulley"}))
     d.joints.append(Joint("x", "slide", "ybody", "xbody", (1, 0, 0), range=(-TRAVEL, TRAVEL),
                           max_speed=300, max_accel=5000,
-                          drive={"motor": "x_motor", "kind": "belt", "pulley_teeth": 20}))
+                          drive={"motor": "x_motor", "kind": "belt", "pulley": "x_pulley"}))
     # ---- motion program: outline a 150 mm square, then cross it diagonally (a print perimeter + travel)
     d.program = [{"to": {"x": -75, "y": -75}}, {"to": {"x": 75, "y": -75}}, {"to": {"x": 75, "y": 75}},
                  {"to": {"x": -75, "y": 75}}, {"to": {"x": -75, "y": -75}}, {"to": {"x": 75, "y": 75}},
@@ -165,6 +165,9 @@ def build() -> Design:
     d.modalcases.append(ModalCase(
         "x_beam_mode", "x_beam",
         fixed=lambda f: abs(abs(f.center().X) - FX / 2) < 1e-6, min_frequency_hz=150.0))
+    d.requirements.append(Requirement("drive margin >= 5x on both axes (friction and belt losses unmodelled)", lambda dd, m: (
+        all(v["margin"] >= 5 for v in m["motion"]["drives"].values()),
+        str({k: v["margin"] for k, v in m["motion"]["drives"].items()}))))
     d.requirements.append(Requirement("X and Y travel >= 200 mm", lambda dd: (
         all(j.range[1] - j.range[0] >= 200 for j in dd.joints), str({j.name: j.range for j in dd.joints}))))
     return d

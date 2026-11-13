@@ -28,7 +28,9 @@ def sample_poses(design: Design, per_joint: int = 9, max_corners: int = 64, n_ra
     joints = [j for j in design.joints if j.range[0] != j.range[1]]
     poses: list[dict[str, float]] = [{}]
     for j in joints:
-        for q in np.linspace(j.range[0], j.range[1], per_joint):
+        span = abs(j.range[1] - j.range[0])
+        n = int(min(41, max(per_joint, span / (10.0 if j.kind == "slide" else 7.5) + 1)))
+        for q in np.linspace(j.range[0], j.range[1], n):
             poses.append({j.name: float(q)})
     corners = list(itertools.product(*[(j.range[0], j.range[1]) for j in joints])) if len(joints) > 1 else []
     rng = np.random.default_rng(seed)
@@ -42,14 +44,28 @@ def sample_poses(design: Design, per_joint: int = 9, max_corners: int = 64, n_ra
     return poses
 
 
+_COLLIDERS: dict[int, tuple] = {}
+
+
 def colliding_pairs(design: Design, q: dict[str, float], skip_same_body: bool = True):
-    """Mesh broad phase at pose q. Returns (pairs, body transforms)."""
+    """Mesh broad phase at pose q. Returns (pairs, body transforms).
+    The collision manager is built once per design and only re-posed."""
     T = forward_kinematics(design, q)
-    cm = trimesh.collision.CollisionManager()
+    key = id(design)
+    sig = tuple((c.name, id(c.shape.wrapped), c.body) for c in design.components)
+    if key not in _COLLIDERS or _COLLIDERS[key][1] != sig:
+        cm = trimesh.collision.CollisionManager()
+        for c in design.components:
+            cm.add_object(c.name, to_trimesh(c.shape))
+        _COLLIDERS[key] = (cm, sig, {})
+    cm, _, last = _COLLIDERS[key]
     body_of = {}
     for c in design.components:
-        cm.add_object(c.name, to_trimesh(c.shape), transform=T[c.body])
         body_of[c.name] = c.body
+        Tb = T[c.body]
+        if c.name not in last or last[c.name] is not Tb and not np.array_equal(last[c.name], Tb):
+            cm.set_transform(c.name, Tb)
+            last[c.name] = Tb
     _, names = cm.in_collision_internal(return_names=True)
     pairs = [tuple(sorted(p)) for p in names
              if not (skip_same_body and body_of[p[0]] == body_of[p[1]])]
@@ -107,6 +123,7 @@ def verify_motion(design: Design, per_joint: int = 9) -> VerifierResult:
                   f"{a} hits {b} during travel: {w['volume_mm3']} mm^3 overlap at pose {pose}, near {w['at']}.",
                   parts=[a, b], **{k: v for k, v in w.items() if k != "first_pose"},
                   hint="Shorten the joint range, move the part out of the swept path, or add clearance.")
+        _runoff(design, r)
         r.metrics = {"joints": len(design.joints), "poses_checked": len(poses),
                      "exact_overlap_checks": exact_checks}
         try:
@@ -119,6 +136,54 @@ def verify_motion(design: Design, per_joint: int = 9) -> VerifierResult:
             except Exception as e:
                 r.add("error", "simulation_failed", f"Motion program simulation did not run: {type(e).__name__}: {e}")
     return r
+
+
+def _runoff(design: Design, r: VerifierResult) -> None:
+    """A guide block or nut must stay on its rail/screw over the whole travel.
+    Running off the end is not a collision, so it needs its own check."""
+    comps = design.components
+    for j in design.joints:
+        if j.kind != "slide":
+            continue
+        a = np.array(j.axis, dtype=float)
+        a /= np.linalg.norm(a)
+        for blk in [c for c in comps if c.meta.get("guides") == j.name]:
+            other_body = j.parent if blk.body == j.child else j.child
+            # its partner: the part on the other side of the joint that it wraps or touches
+            best, best_d = None, 1.0
+            for c in comps:
+                if c.body != other_body:
+                    continue
+                try:
+                    dist = blk.shape.distance_to(c.shape)
+                except Exception:
+                    continue
+                if dist < best_d:
+                    best, best_d = c, dist
+            if best is None:
+                r.add("error", "guide_no_partner",
+                      f"{blk.name} guides joint {j.name} but is not on (within 1 mm of) any rail or screw on "
+                      f"body '{other_body}'.", part=blk.name, joint=j.name)
+                continue
+
+            def extent(s):
+                bb = s.bounding_box()
+                corners = np.array([[x, y, z] for x in (bb.min.X, bb.max.X) for y in (bb.min.Y, bb.max.Y)
+                                    for z in (bb.min.Z, bb.max.Z)])
+                pr = corners @ a
+                return float(pr.min()), float(pr.max())
+
+            b_lo, b_hi = extent(blk.shape)
+            p_lo, p_hi = extent(best.shape)
+            sign = 1.0 if blk.body == j.child else -1.0
+            for q in j.range:
+                lo, hi = b_lo + sign * q, b_hi + sign * q
+                over = max(p_lo - lo, hi - p_hi)
+                if over > 0.5:
+                    r.add("error", "guide_runoff",
+                          f"{blk.name} runs {over:.1f} mm off the end of {best.name} at {j.name}={q:g}.",
+                          part=blk.name, partner=best.name, joint=j.name, overhang_mm=round(over, 1),
+                          hint="Use a longer rail/screw, shift it, or shorten the travel.")
 
 
 def _program(design: Design, r: VerifierResult) -> None:
@@ -317,7 +382,9 @@ def _dynamics(design: Design, r: VerifierResult) -> dict:
     for j in joints:
         unit = "N" if j.kind == "slide" else "N*mm"
         k = 1.0 if j.kind == "slide" else 1e3  # N*m -> N*mm
-        req, hld = need[j.name] * k, hold[j.name] * k
+        # the motor must also accelerate its own rotor
+        refl = j.reflected_inertia * (j.max_accel or 0.0) * (1e-3 if j.kind == "slide" else math.pi / 180 * 1e-6)
+        req, hld = (need[j.name] + refl) * k, hold[j.name] * k
         entry = {"required": round(req, 2), "holding": round(hld, 2), "unit": unit,
                  "available": j.max_effort, "moved_mass_kg": round(inert[j.child]["mass"], 3)}
         if j.name in move_time:
@@ -329,15 +396,11 @@ def _dynamics(design: Design, r: VerifierResult) -> dict:
         else:
             margin = j.max_effort / req if req > 1e-9 else float("inf")
             entry["margin"] = round(margin, 2) if math.isfinite(margin) else "inf"
-            if margin < 1.0:
+            if margin < j.min_drive_margin:
                 r.add("error", "drive_undersized",
                       f"Joint {j.name} needs {req:.1f} {unit} (holding {hld:.1f}) but the drive gives "
-                      f"{j.max_effort:.1f} {unit}.",
+                      f"{j.max_effort:.1f} {unit}: margin {margin:.2f}x < required {j.min_drive_margin}x.",
                       joint=j.name, required=round(req, 2), available=j.max_effort,
                       hint="Lower acceleration, reduce moving mass, change the transmission ratio or pick a stronger motor.")
-            elif margin < 1.5:
-                r.add("warning", "drive_low_margin",
-                      f"Joint {j.name} drive margin is only {margin:.2f}x (friction is not modelled).",
-                      joint=j.name, margin=round(margin, 2))
         out[j.name] = entry
     return out

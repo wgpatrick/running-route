@@ -68,6 +68,10 @@ def verify(design: Design, only: list[str] | None = None, stop_on_geometry_error
                 f.code in ("no_solid", "invalid_brep", "zero_volume", "empty_design", "unknown_material")
                 for f in res.findings):
             blocked = True
+    if not only or "requirements" in only:
+        from .verifiers.geometry import verify_requirements
+
+        rep.results.append(verify_requirements(design, {r.verifier: r.metrics for r in rep.results}))
     return rep
 
 
@@ -83,6 +87,7 @@ def run(path: str | Path, out_root: str | Path = "out", only=None, render: bool 
         rep.results.append(res)
         return rep
     rep = verify(design, only)
+    t_ver = time.time()
     out = Path(out_root) / design.name
     out.mkdir(parents=True, exist_ok=True)
     if render:
@@ -117,6 +122,7 @@ def run(path: str | Path, out_root: str | Path = "out", only=None, render: bool 
     with open(hist, "a") as f:
         f.write(json.dumps(entry) + "\n")
     rep.artifacts["iteration"] = n
+    rep.artifacts["seconds"] = {"verify": round(t_ver - t0, 1), "render_and_export": round(time.time() - t_ver, 1)}
     (out / "report.json").write_text(rep.to_json(max_findings=500))
     return rep
 

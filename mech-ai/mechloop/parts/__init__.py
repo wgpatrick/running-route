@@ -32,11 +32,20 @@ class Stock:
     ratings: dict = field(default_factory=dict)
     interfaces: dict = field(default_factory=dict)  # name -> list[(x, y, z)] or dict
     cost_usd: float | None = None
+    catalog: bool = False  # set only by catalog functions; hand-made proxies stay False
 
 
 def part(fn):
-    _REGISTRY[fn.__name__] = fn
-    return fn
+    import functools
+
+    @functools.wraps(fn)
+    def wrapped(*a, **k):
+        st = fn(*a, **k)
+        st.catalog = True
+        return st
+
+    _REGISTRY[fn.__name__] = wrapped
+    return wrapped
 
 
 def catalog(query: str = "") -> list[dict]:
@@ -55,7 +64,7 @@ def place(design: Design, name: str, stock: Stock, loc: Location = Location(), b
     """Add a catalog part to the design at `loc`. Geometry is never modified."""
     c = design.add(name, stock.shape.moved(loc), material=stock.material, body=body, cots=True,
                    sku=stock.sku, mass_kg=stock.mass_kg, ratings=dict(stock.ratings),
-                   meta={"catalog": True, "description": stock.description, "cost_usd": stock.cost_usd,
+                   meta={"catalog": stock.catalog, "description": stock.description, "cost_usd": stock.cost_usd,
                          "interfaces": {k: [tuple(round(x, 4) for x in tuple((loc * Pos(*p)).position))
                                             for p in v] if isinstance(v, list) else v
                                         for k, v in stock.interfaces.items()}, **meta})
@@ -110,7 +119,8 @@ def mgn12h_carriage() -> Stock:
     block = Pos(0, 0, 8) * Box(45.4, 27, 10) - Pos(0, 0, 5.5) * Box(45.4, 12.4, 5.0)
     holes = [(x, y, 13.0) for x in (-10, 10) for y in (-10, 10)]
     return Stock(block, "MGN12H", "MGN12H carriage block", 0.054,
-                 ratings={"dynamic_load_n": 4700.0, "static_load_n": 5880.0, "approximate": True},
+                 ratings={"dynamic_load_n": 4700.0, "static_load_n": 5880.0, "static_moment_nm": 36.0,
+                          "approximate": True},
                  interfaces={"mount_holes_m3": holes, "top_z": 13.0}, cost_usd=9.0)
 
 
@@ -203,6 +213,22 @@ def bearing(designation: str = "608") -> Stock:
     return Stock(ring, f"BRG-{designation}", f"Ball bearing {designation} ({d}x{D}x{B})", m,
                  ratings={"dynamic_load_n": C, "static_load_n": C0}, interfaces={"bore": d, "od": D, "width": B},
                  cost_usd=1.0)
+
+
+@part
+def shaft_coupler(bore_a: float = 5.0, bore_b: float = 8.0) -> Stock:
+    """Flexible jaw/beam shaft coupler, D19 x L25. Local frame: axis Z, bottom (bore_a side) at Z=0."""
+    body = Pos(0, 0, 12.5) * Cylinder(9.5, 25) - Pos(0, 0, 6.25) * Cylinder(bore_a / 2, 12.5) \
+        - Pos(0, 0, 18.75) * Cylinder(bore_b / 2, 12.5)
+    return Stock(body, f"COUPLER-{bore_a:g}x{bore_b:g}", f"Flexible coupler {bore_a:g} to {bore_b:g} mm", 0.016,
+                 material="al6061", ratings={"rated_torque_nmm": 1500.0, "approximate": True},
+                 interfaces={"bore_a": bore_a, "bore_b": bore_b, "length": 25.0, "od": 19.0}, cost_usd=3.0)
+
+
+def belt_length(teeth_a: int, teeth_b: int, center: float, pitch: float = 2.0) -> float:
+    """Pitch length of a closed belt around two pulleys at a centre distance (mm)."""
+    da, db = teeth_a * pitch / math.pi, teeth_b * pitch / math.pi
+    return 2 * center + math.pi * (da + db) / 2 + (da - db) ** 2 / (4 * center)
 
 
 # --------------------------------------------------------------- fasteners

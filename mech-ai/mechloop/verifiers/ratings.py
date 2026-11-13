@@ -36,12 +36,31 @@ def resolve_drives(design: Design, r: VerifierResult | None = None) -> dict:
                       f"Joint {j.name}: drive motor(s) {missing} not found or have no torque rating.", joint=j.name)
             continue
         kind = drv["kind"]
+        # transmission parts named in the drive must exist; their ratings fill in the numbers
+        refs = {k: drv[k] for k in ("pulley", "screw", "nut", "coupler") if k in drv}
+        bad = [v for v in refs.values() if v not in comps]
+        if bad:
+            if r:
+                r.add("error", "drive_part_missing", f"Joint {j.name}: drive refers to {bad}, not in the design.",
+                      joint=j.name)
+            continue
         if kind == "belt":
-            travel_per_rev = drv.get("pulley_teeth", 20) * drv.get("belt_pitch", 2.0)
+            teeth = comps[refs["pulley"]].ratings.get("teeth") if "pulley" in refs else None
+            travel_per_rev = (teeth or drv.get("pulley_teeth", 20)) * drv.get("belt_pitch", 2.0)
             eff = drv.get("efficiency", 0.95)
         elif kind == "leadscrew":
-            travel_per_rev = drv["lead"]
-            eff = drv.get("efficiency", 0.4)
+            sr = comps[refs["screw"]].ratings if "screw" in refs else {}
+            if "lead" not in drv and "lead_mm" not in sr:
+                if r:
+                    r.add("error", "drive_incomplete", f"Joint {j.name}: leadscrew drive needs 'screw' (a catalog "
+                          f"lead screw part) or 'lead'.", joint=j.name)
+                continue
+            travel_per_rev = drv.get("lead", sr.get("lead_mm"))
+            eff = drv.get("efficiency", sr.get("efficiency", 0.35))
+            if r and "screw" not in refs:
+                r.add("warning", "drive_screw_not_named",
+                      f"Joint {j.name}: name the lead screw part in the drive ('screw': ...) so its presence, "
+                      f"lead and efficiency are checked.", joint=j.name)
         elif kind == "direct":  # hinge driven through a gear ratio
             travel_per_rev = 360.0 / drv.get("ratio", 1.0)
             eff = drv.get("efficiency", 0.9)
@@ -57,7 +76,14 @@ def resolve_drives(design: Design, r: VerifierResult | None = None) -> dict:
         else:
             effort = torque * eff * drv.get("ratio", 1.0)  # N*mm
         j.max_effort = round(effort, 2)
-        out[j.name] = {"motors": motors, "kind": kind, "motor_rpm_at_max_speed": round(rpm, 1),
+        # rotor inertia reflected to the joint: kg for a slide, kg*mm^2 for a hinge
+        Jr = sum(comps[m].ratings.get("rotor_inertia_gcm2", 0.0) for m in motors) * 1e-7  # kg m^2
+        if j.kind == "slide":
+            j.reflected_inertia = Jr * (2 * math.pi / (travel_per_rev * 1e-3)) ** 2
+        else:
+            j.reflected_inertia = Jr * drv.get("ratio", 1.0) ** 2 * 1e6
+        out[j.name] = {"motors": motors, "kind": kind, **({"parts": refs} if refs else {}),
+                       "reflected_rotor_inertia": round(j.reflected_inertia, 4), "motor_rpm_at_max_speed": round(rpm, 1),
                        "motor_torque_nmm_at_speed": round(torque, 1), "available_effort": j.max_effort,
                        "unit": "N" if j.kind == "slide" else "N*mm",
                        "resolution_per_full_step": round(travel_per_rev / 200, 4)}
@@ -86,6 +112,23 @@ def verify_ratings(design: Design) -> VerifierResult:
                     m += carried_mass(j.child)
             return m
 
+        def carried_com(body: str) -> np.ndarray:
+            acc, mt = np.zeros(3), 0.0
+
+            def walk(b):
+                nonlocal acc, mt
+                for c in bodies.get(b, []):
+                    bb = c.shape.bounding_box()
+                    ctr = np.array([(bb.min.X + bb.max.X) / 2, (bb.min.Y + bb.max.Y) / 2, (bb.min.Z + bb.max.Z) / 2])
+                    acc = acc + c.mass() * ctr
+                    mt += c.mass()
+                for jj in design.joints:
+                    if jj.parent == b:
+                        walk(jj.child)
+
+            walk(body)
+            return acc / mt if mt else acc
+
         # guide blocks: components tagged with the joint they guide share the carried load
         guides: dict[str, list] = {}
         for c in design.components:
@@ -102,16 +145,44 @@ def verify_ratings(design: Design) -> VerifierResult:
             accel = (j.max_accel or 0.0) * 1e-3
             per_block = m * (g + accel) / len(blocks)
             sf = blocks[0].ratings["static_load_n"] / per_block if per_block > 0 else float("inf")
+            # overhung load: moment of the carried mass about the centroid of the blocks
+            com = carried_com(j.child)
+            cen = np.mean([[b.shape.center().X, b.shape.center().Y, b.shape.center().Z] for b in blocks], axis=0)
+            arm = (com - cen) * 1e-3
+            gdir = np.array(design.gravity) / np.linalg.norm(design.gravity)
+            moment = float(np.linalg.norm(np.cross(arm, m * (g + accel) * gdir)))  # N*m
             loads[jn] = {"blocks": len(blocks), "carried_mass_kg": round(m, 3),
-                         "load_per_block_n": round(per_block, 2), "static_safety": round(sf, 1)}
+                         "load_per_block_n": round(per_block, 2), "static_safety": round(sf, 1),
+                         "overhang_mm": round(float(np.linalg.norm(arm)) * 1e3, 1), "moment_nm": round(moment, 3)}
+            rated_m = blocks[0].ratings.get("static_moment_nm")
+            if rated_m:
+                pos = np.array([[b.shape.center().X, b.shape.center().Y, b.shape.center().Z] for b in blocks])
+                span = float(np.max(np.linalg.norm(pos - cen, axis=1))) * 2e-3
+                if len(blocks) == 1 or span < 0.02:
+                    msf = rated_m / moment if moment > 0 else float("inf")
+                    loads[jn]["moment_safety"] = round(min(msf, 9999.0), 1)
+                    if msf < 3.0:
+                        r.add("error", "guide_moment_overloaded",
+                              f"Joint {jn}: {moment:.2f} N*m overhung moment on a single guide block vs static "
+                              f"moment rating {rated_m:.1f} N*m (safety {msf:.1f} < 3).", joint=jn,
+                              hint="Add a second block spaced along the rail, or bring the load's centre of mass over the block.")
+                else:
+                    couple = moment / span
+                    sf2 = blocks[0].ratings["static_load_n"] / (per_block + couple)
+                    loads[jn]["couple_force_n"] = round(couple, 1)
+                    loads[jn]["static_safety_with_moment"] = round(min(sf2, 9999.0), 1)
+                    if sf2 < 3.0:
+                        r.add("error", "guide_overloaded",
+                              f"Joint {jn}: with the {moment:.2f} N*m overhung moment each block sees "
+                              f"{per_block + couple:.0f} N (safety {sf2:.1f} < 3).", joint=jn)
             if sf < 3.0:
                 r.add("error", "guide_overloaded",
                       f"Joint {jn}: {per_block:.0f} N per guide block vs static rating "
                       f"{blocks[0].ratings['static_load_n']:.0f} N (safety {sf:.1f} < 3).", joint=jn)
         if loads:
             r.metrics["guide_loads"] = loads
-            r.add("info", "guide_moments_not_checked",
-                  "Guide block checks use direct load only; moment loads from overhung masses are not included.")
+            r.add("info", "guide_moments_approximate",
+                  "Guide moment checks use the home pose and bounding-box centres of mass; treat them as estimates.")
         # bill of materials
         bom: dict[str, dict] = {}
         for c in design.components:

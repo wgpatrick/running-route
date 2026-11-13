@@ -23,7 +23,7 @@ MAX_NODES = 250_000
 
 def _mesh(shape, fixed_pred, load_pred, size: float, workdir: Path, straight: bool = False):
     import gmsh
-    from build123d import export_brep
+    from build123d import CenterOf, export_brep
 
     faces = shape.faces()
     fixed = [f for f in faces if fixed_pred(f)]
@@ -41,7 +41,7 @@ def _mesh(shape, fixed_pred, load_pred, size: float, workdir: Path, straight: bo
         info = [(t, np.array(gmsh.model.occ.getCenterOfMass(2, t)), gmsh.model.occ.getMass(2, t)) for t in surfs]
 
         def match(face):
-            c = face.center()
+            c = face.center(CenterOf.MASS)  # centroid; .center() is a point ON a curved face
             c = np.array([c.X, c.Y, c.Z])
             best = min(info, key=lambda i: np.linalg.norm(i[1] - c) + abs(i[2] - face.area) / max(face.area, 1e-9))
             ok = np.linalg.norm(best[1] - c) < 1e-3 * max(1.0, np.sqrt(face.area)) + 1e-3 and \

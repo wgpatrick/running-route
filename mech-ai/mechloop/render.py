@@ -142,6 +142,6 @@ def render_motion(design: Design, path: Path, poses: list[dict] | None = None, s
 
 
 def render_simulation(design: Design, sim: dict, path: Path, fps: int = 20, **kw) -> Path | None:
-    step = max(1, int(round(1.0 / fps / (sim["t"][1] - sim["t"][0]))))
+    step = max(1, int(round(1.0 / fps / (sim["t"][1] - sim["t"][0]))), len(sim["q"]) // 120)
     poses = [{n: float(sim["q"][i, k]) for k, n in enumerate(sim["names"])} for i in range(0, len(sim["q"]), step)]
     return render_motion(design, path, poses=poses, frame_s=1.0 / fps, **kw)

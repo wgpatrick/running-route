@@ -10,7 +10,8 @@ from OCP.gp import gp_Trsf
 
 from .model import Design, Joint
 
-_MESH_CACHE: dict[int, trimesh.Trimesh] = {}
+# id(wrapped) -> (wrapped, mesh). Holding the wrapped object keeps its id from being reused.
+_MESH_CACHE: dict[int, tuple] = {}
 
 
 def to_trimesh(shape: Shape, tol: float = 0.05, ang: float = 0.3) -> trimesh.Trimesh:
@@ -18,8 +19,8 @@ def to_trimesh(shape: Shape, tol: float = 0.05, ang: float = 0.3) -> trimesh.Tri
     if key not in _MESH_CACHE:
         verts, tris = shape.tessellate(tol, ang)
         v = np.array([(p.X, p.Y, p.Z) for p in verts], dtype=float)
-        _MESH_CACHE[key] = trimesh.Trimesh(v, np.array(tris, dtype=int), process=False)
-    return _MESH_CACHE[key]
+        _MESH_CACHE[key] = (shape.wrapped, trimesh.Trimesh(v, np.array(tris, dtype=int), process=False))
+    return _MESH_CACHE[key][1]
 
 
 def translation(v) -> np.ndarray:

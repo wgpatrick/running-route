@@ -41,6 +41,7 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
         meshes = {n: to_trimesh(c.shape) for n, c in comps.items()}
         bounds = {n: m.bounds for n, m in meshes.items()}
         fast_axis = {f.name: tuple(float(x) for x in f.axis) for f in design.fasteners if f.name in comps}
+        tools_names = set(fast_axis)
         base = base or design.base or max(comps, key=lambda n: comps[n].shape.volume if comps[n].body == "world" else -1)
         remaining = set(comps)
         cm = trimesh.collision.CollisionManager()
@@ -61,6 +62,61 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
             if k not in exact_cache:
                 exact_cache[k] = overlap_volume(comps[a].shape, comps[b].shape)[0]
             return exact_cache[k]
+
+        # which parts each fastener holds: anything it touches or threads into
+        holds: dict[str, set[str]] = {}
+        for f in design.fasteners:
+            if f.name not in comps:
+                continue
+            held = set(f.clamps) & set(comps)
+            for pair, kind in design.joins.items():
+                if f.name in pair and len(pair) == 2:
+                    held |= set(pair) - {f.name}
+            fb = comps[f.name].shape
+            for n, c in comps.items():
+                if n == f.name or n in held or n in tools_names:
+                    continue
+                if bboxes_overlap(fb, c.shape, 0.05):
+                    try:
+                        if fb.distance_to(c.shape) <= 0.05:
+                            held.add(n)
+                    except Exception:
+                        pass
+            holds[f.name] = held
+
+        # contact graph (touching, overlapping-by-intent or joined): used so that every part
+        # is installed onto something already there, not left hanging in mid-air
+        touch: dict[str, set[str]] = {n: set() for n in comps}
+        names_l = list(comps)
+        for i, a in enumerate(names_l):
+            for b in names_l[i + 1:]:
+                if not bboxes_overlap(comps[a].shape, comps[b].shape, 0.05):
+                    continue
+                try:
+                    near = comps[a].shape.distance_to(comps[b].shape) <= 0.05
+                except Exception:
+                    near = True
+                if near:
+                    touch[a].add(b); touch[b].add(a)
+        for pair in design.joins:
+            if len(pair) == 2 and all(n in comps for n in pair):
+                a, b = tuple(pair)
+                touch[a].add(b); touch[b].add(a)
+
+        def leaves_supported(name: str) -> bool:
+            """After removing `name`, is everything left still connected to the base?"""
+            rest = remaining - {name}
+            seen, stack = set(), [base]
+            while stack:
+                n = stack.pop()
+                if n in seen:
+                    continue
+                seen.add(n)
+                stack.extend((touch[n] & rest) - seen)
+            return seen >= rest
+
+        def held_by(name: str) -> set[str]:
+            return {fn for fn, hs in holds.items() if name in hs and fn in remaining}
 
         def try_remove(name: str, dname: str, d) -> set[str]:
             """Return the set of parts blocking removal of `name` along d (empty = free)."""
@@ -106,11 +162,19 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
 
         order: list[dict] = []
         progress = True
-        while len(remaining) > 1 and progress:
+        need_support = True
+        unsupported: list[str] = []
+        while len(remaining) > 1 and (progress or need_support):
+            if not progress:
+                need_support = False  # stuck: allow a step that leaves something unsupported, and report it
             progress = False
             # fasteners first, then small parts: mirrors how things are actually taken apart
             cands = sorted(remaining - {base}, key=lambda n: (n not in fast_axis, comps[n].shape.volume))
             for name in cands:
+                if name not in fast_axis and held_by(name):
+                    continue  # still screwed down: its fasteners come out first
+                if need_support and not leaves_supported(name):
+                    continue
                 dirs = dict(DIRS)
                 if name in fast_axis:  # a screw only comes out along its axis, with a driver on it
                     dirs = {"axis": fast_axis[name]}
@@ -124,6 +188,9 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
                         tool_block[name] = blockers
                     blocked_by[key] = blockers
                     if not blockers:
+                        if not need_support and not leaves_supported(name):
+                            unsupported.append(name)
+                        need_support = True
                         order.append({"part": name, "direction": dname})
                         remaining.discard(name)
                         cm.remove_object(name)
@@ -145,6 +212,13 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
                       fastener=name, blockers=blk,
                       hint="Add an access hole in the blocking part, flip the fastener, or move it clear.")
                 continue
+            still = sorted(held_by(name))
+            if still:
+                r.add("error", "trapped_part",
+                      f"{name} cannot be installed: it is held by fasteners {still} that themselves cannot be driven.",
+                      part=name, held_by=still,
+                      hint="Fix access to those fasteners first; this part is only stuck because they are.")
+                continue
             why = {dn: sorted(blocked_by.get((name, dn), set()) & remaining) for dn in DIRS}
             common = sorted(set.intersection(*[set(v) for v in why.values()])) if why else []
             r.add("error", "trapped_part",
@@ -152,10 +226,15 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
                   f"blocked by {sorted({b for v in why.values() for b in v})}.",
                   part=name, blocked_by_direction=why, always_blocking=common,
                   hint="Split the enclosing part, add an opening or slot along one direction, or reorder so the blocker installs later.")
+        if unsupported and not trapped:
+            r.add("warning", "unsupported_step",
+                  f"The only assembly order found installs something before the part that supports it "
+                  f"(around {sorted(set(unsupported))[:6]}); it would need holding in place or a sub-assembly.",
+                  parts=sorted(set(unsupported)))
         seq = [o["part"] for o in reversed(order)]
-        r.metrics = {"base": base, "assembly_sequence": [base] + seq if len(seq) <= 60 else "omitted",
+        r.metrics = {"base": base, "assembly_sequence": [base] + seq if len(seq) <= 200 else "omitted",
                      "insert_directions": {o["part"]: _opp(o["direction"]) for o in reversed(order)}
-                     if len(order) <= 60 else "omitted",
+                     if len(order) <= 200 else "omitted",
                      "parts_placed": len(order) + 1, "parts_total": len(comps),
                      "complete": not trapped, "exact_overlap_checks": len(exact_cache)}
         if design.fasteners:

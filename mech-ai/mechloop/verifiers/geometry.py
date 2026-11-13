@@ -51,11 +51,26 @@ def verify_geometry(design: Design) -> VerifierResult:
             r.add("error", "mass_exceeded",
                   f"Total mass {mass:.3f} kg exceeds limit {design.max_mass_kg:.3f} kg.",
                   mass=mass, limit=design.max_mass_kg)
+    return r
+
+
+def verify_requirements(design: Design, metrics: dict) -> VerifierResult:
+    """The brief's acceptance tests. `check(design)` or `check(design, metrics)` where
+    metrics is {verifier: its metrics dict} from this run."""
+    import inspect
+
+    r = VerifierResult("requirements")
+    if not design.requirements:
+        r.skipped = "design declares no requirements"
+        return r
+    with timed(r):
         for req in design.requirements:
             try:
-                ok, detail = req.check(design)
-            except Exception as e:  # a broken requirement is itself a finding
-                ok, detail = False, f"requirement raised {type(e).__name__}: {e}"
+                n = len(inspect.signature(req.check).parameters)
+                ok, detail = req.check(design, metrics) if n >= 2 else req.check(design)
+            except Exception as e:  # a requirement that cannot be evaluated is not met
+                ok, detail = False, f"could not be evaluated: {type(e).__name__}: {e}"
             r.add("info" if ok else "error", "requirement_met" if ok else "requirement_failed",
                   f"{req.name}: {detail}", requirement=req.name)
+        r.metrics = {"met": sum(f.code == "requirement_met" for f in r.findings), "total": len(design.requirements)}
     return r
