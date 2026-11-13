@@ -123,6 +123,9 @@ def verify_ratings(design: Design) -> VerifierResult:
                 e = bom.setdefault(c.sku or c.name, {"qty": 0, "mass_kg": 0.0, "unit_cost_usd": c.meta.get("cost_usd")})
                 e["qty"] += 1
                 e["mass_kg"] = round(e["mass_kg"] + c.mass(), 4)
+        for sku, e in design.bom_extras.items():
+            b = bom.setdefault(sku, {"qty": 0, "mass_kg": 0.0, "unit_cost_usd": e["unit_cost_usd"]})
+            b["qty"] += e["qty"]
         if bom:
             r.metrics["bom"] = bom
             costs = [e["unit_cost_usd"] * e["qty"] for e in bom.values() if e["unit_cost_usd"] is not None]

@@ -95,8 +95,12 @@ def mgn12_rail(length: float) -> Stock:
     n = int((length - 20) // 25) + 1
     x0 = -(n - 1) * 25 / 2
     holes = [(x0 + i * 25, 0.0, 0.0) for i in range(n)]
+    for x, _, _ in holes:  # M3 clearance with counterbore; screw head seats at Z=3.5
+        rail -= Pos(x, 0, 4) * Cylinder(1.75, 8)
+        rail -= Pos(x, 0, 5.75) * Cylinder(3.0, 4.5)
     return Stock(rail, f"MGN12-R-{int(length)}", f"MGN12 rail, {length:.0f} mm", 0.65 * length / 1000,
-                 interfaces={"mount_holes_m3": holes, "hole_pitch": 25.0}, cost_usd=6 + 0.04 * length)
+                 interfaces={"mount_holes_m3": holes, "hole_pitch": 25.0, "screw_seat_z": 3.5},
+                 cost_usd=6 + 0.04 * length)
 
 
 @part
@@ -227,10 +231,12 @@ def tap_drill(size: str) -> float:
 
 
 def add_screw(design: Design, name: str, size: str, length: float, at, direction=(0, 0, -1),
-              body: str = "world", threads_into: str | list[str] | None = None, clamps=()) -> Component:
+              body: str = "world", threads_into: str | list[str] | None = None, clamps=(),
+              tnut: bool = False) -> Component:
     """Place a cap screw with the underside of its head at `at`, pointing along `direction`.
-    Registers it as a Fastener (tool access is checked) and allows the thread to overlap
-    the part(s) it screws into."""
+    Registers it as a Fastener (tool access is checked), allows the thread to overlap the
+    part(s) it screws into and records that it holds them. tnut=True means it threads into
+    a T-nut in that part's slot (added to the BOM)."""
     st = shcs(size, length)
     dvec = Vector(*direction).normalized()
     loc = Location(Plane(origin=at, z_dir=-dvec))
@@ -242,4 +248,29 @@ def add_screw(design: Design, name: str, size: str, length: float, at, direction
     if threads_into:
         for t in ([threads_into] if isinstance(threads_into, str) else threads_into):
             design.allow_overlap(name, t, max_volume=math.pi * (SCREW[size][0] / 2) ** 2 * length)
+            design.join(name, t, "tnut" if tnut else "thread")
+    if tnut:
+        design.bom_extra(f"TNUT-2020-{size}", 1, 0.15)
+    return c
+
+
+@part
+def corner_bracket_2020() -> Stock:
+    """Cast corner bracket for 2020 extrusion. Local frame: inside corner at origin, legs along +X and +Y, 18 mm wide centred on Z=0."""
+    from build123d import Polygon, extrude
+
+    tri = extrude(Polygon((0, 0), (20, 0), (0, 20), align=None), 9, both=True)
+    return Stock(tri, "BRKT-2020", "2020 corner bracket", 0.012, material="al6061", cost_usd=0.6)
+
+
+def add_corner_bracket(design: Design, name: str, a: str, b: str, corner, u, v, body: str = "world") -> Component:
+    """Brace two perpendicular extrusions: bracket's inside corner at `corner`, legs along
+    unit directions u (lying on part a) and v (lying on part b). Its two M5 screws and
+    T-nuts are added to the BOM and recorded as the joint."""
+    c = place(design, name, corner_bracket_2020(), Location(Plane(origin=corner, x_dir=u, z_dir=Vector(*u).cross(Vector(*v)))),
+              body=body)
+    design.join(name, a, "m5_tnut")
+    design.join(name, b, "m5_tnut")
+    design.bom_extra("SHCS-M5x8", 2, 0.08)
+    design.bom_extra("TNUT-2020-M5", 2, 0.15)
     return c

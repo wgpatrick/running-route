@@ -6,7 +6,7 @@ Bodies: world (frame, Y rails, Y motor) -> ybody (X beam and its rail, X motor)
 from build123d import Box, Cylinder, Location, Pos, Rot
 
 from mechloop import Design, Joint, LoadCase, Requirement
-from mechloop.parts import (Stock, add_screw, clearance_hole, extrusion_2020, gt2_pulley,
+from mechloop.parts import (Stock, add_corner_bracket, add_screw, clearance_hole, extrusion_2020, gt2_pulley,
                             mgn12_rail, mgn12h_carriage, nema17, place)
 
 FX, FY, FZ = 300.0, 300.0, 200.0     # frame outer X, Y and top-frame centre height
@@ -32,13 +32,29 @@ def build() -> Design:
         for sy in (-1, 1):
             place(d, f"post_{'l' if sx < 0 else 'r'}{'f' if sy < 0 else 'b'}", extrusion_2020(FZ - 30),
                   Location((sx * RAIL_X, sy * (FY / 2 - 10), (FZ + 10) / 2), (0, 90, 0)))
+    # corner brackets: post ends to the side rails, and front/back rails to the side rails
+    k = 0
+    for sx in (-1, 1):
+        side = "left" if sx < 0 else "right"
+        for sy in (-1, 1):
+            post = f"post_{'l' if sx < 0 else 'r'}{'f' if sy < 0 else 'b'}"
+            cross = "front" if sy < 0 else "back"
+            yi = sy * (FY / 2 - 20)            # inner face of the post / cross rail
+            for lvl, zc, zdir in (("top", FZ - 10, -1), ("bot", 20, 1)):
+                add_corner_bracket(d, f"bracket_{k}", f"frame_{lvl}_{side}", post,
+                                   (sx * RAIL_X, yi, zc), (0, -sy, 0), (0, 0, zdir)); k += 1
+                add_corner_bracket(d, f"bracket_{k}", f"frame_{lvl}_{cross}", f"frame_{lvl}_{side}",
+                                   (sx * (RAIL_X - 10), yi, FZ if lvl == "top" else 10), (-sx, 0, 0), (0, -sy, 0)); k += 1
     # ---- Y axis: rails on the side extrusions --------------------------
     z_rail = FZ + 10
     z_plate = z_rail + 13            # underside of the Y plates = top of the Y carriages
     T_PLATE = 6.0
     X_MOTOR_X = -(FX / 2 + 27.0)     # X motor rides outboard of the left frame rail
     for sx, n in ((-1, "left"), (1, "right")):
-        place(d, f"y_rail_{n}", mgn12_rail(300), Location((sx * RAIL_X, 0, z_rail), (0, 0, 90)))
+        yr = place(d, f"y_rail_{n}", mgn12_rail(300), Location((sx * RAIL_X, 0, z_rail), (0, 0, 90)))
+        for i, (hx, hy, hz) in enumerate(yr.meta["interfaces"]["mount_holes_m3"][::2]):
+            add_screw(d, f"y_rail_{n}_screw_{i}", "M3", 8, at=(hx, hy, hz + 3.5),
+                      threads_into=f"frame_top_{n}", tnut=True)
         place(d, f"y_carriage_{n}", mgn12h_carriage(), Location((sx * RAIL_X, 0, z_rail), (0, 0, 90)),
               body="ybody", guides="y")
         # plate: over the carriage, reaching inboard for the beam bolt; the left one also carries the X motor
@@ -63,11 +79,14 @@ def build() -> Design:
                       body="ybody", threads_into=f"y_carriage_{n}")
         # beam bolt from below into a T-nut in the beam's bottom slot
         add_screw(d, f"beam_bolt_{n}", "M5", 10, at=(x_bolt, 0, z_plate), direction=(0, 0, 1),
-                  body="ybody", threads_into="x_beam")
+                  body="ybody", threads_into="x_beam", tnut=True)
     # ---- X beam with its rail -------------------------------------------
     z_beam = z_plate + T_PLATE + 10
     place(d, "x_beam", extrusion_2020(FX), Location((0, 0, z_beam)), body="ybody")
-    place(d, "x_rail", mgn12_rail(250), Location((0, 0, z_beam + 10)), body="ybody")
+    xr = place(d, "x_rail", mgn12_rail(250), Location((0, 0, z_beam + 10)), body="ybody")
+    for i, (hx, hy, hz) in enumerate(xr.meta["interfaces"]["mount_holes_m3"][::2]):
+        add_screw(d, f"x_rail_screw_{i}", "M3", 8, at=(hx, hy, hz + 3.5), body="ybody",
+                  threads_into="x_beam", tnut=True)
     place(d, "x_carriage", mgn12h_carriage(), Location((0, 0, z_beam + 10)), body="xbody", guides="x")
     # ---- tool plate and hotend (hung close to the beam to keep it inside the frame) ---
     z_top = z_beam + 10 + 13
@@ -82,6 +101,8 @@ def build() -> Design:
     for i, (x, y) in enumerate([(-10, -10), (-10, 10), (10, -10), (10, 10)]):
         add_screw(d, f"tool_screw_{i}", "M3", 6, at=(x, y, z_top + 4), body="xbody", threads_into="x_carriage")
     place(d, "hotend", hotend(), Location((0, HOT_Y, z_top - 4)), body="xbody")
+    d.join("hotend", "tool_plate", "groove_clamp")   # clamp block not modelled yet
+    d.bom_extra("HOTEND-CLAMP", 1, 2.0)
     # ---- motors -----------------------------------------------------------
     place(d, "x_motor", nema17(40), Location((X_MOTOR_X, 0, z_plate)), body="ybody")
     place(d, "x_pulley", gt2_pulley(20), Location((X_MOTOR_X, 0, z_plate + T_PLATE + 0.5)), body="ybody")
@@ -104,7 +125,9 @@ def build() -> Design:
         add_screw(d, f"y_motor_screw_{i}", "M3", 8, at=(YM_X + x, YM_Y + y, FZ + 14), threads_into="y_motor")
     for i, x in enumerate((-20, 20)):
         add_screw(d, f"y_motor_plate_bolt_{i}", "M5", 8, at=(YM_X + x, FY / 2 - 10, FZ + 14),
-                  threads_into="frame_top_back")
+                  threads_into="frame_top_back", tnut=True)
+    d.join("x_pulley", "x_motor", "set_screw")
+    d.join("y_pulley", "y_motor", "set_screw")
     # ---- joints -------------------------------------------------------------
     # Y range is offset so the hotend (31 mm in front of the beam) stays inside the frame opening
     d.joints.append(Joint("y", "slide", "world", "ybody", (0, 1, 0), range=(-86.0, 114.0),

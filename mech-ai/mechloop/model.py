@@ -124,6 +124,10 @@ class Design:
     allowed_overlaps: dict = field(default_factory=dict)
     # Pairs that must keep a minimum gap: {frozenset({a, b}): min_gap_mm}
     min_clearances: dict = field(default_factory=dict)
+    # Non-screw joints between two parts: {frozenset({a, b}): kind} (press, bond, clamp, set_screw, tnut...)
+    joins: dict = field(default_factory=dict)
+    # Hardware bought but not modelled as geometry (T-nuts, set screws): {sku: {qty, unit_cost_usd}}
+    bom_extras: dict = field(default_factory=dict)
     envelope: Optional[tuple[float, float, float]] = None  # max overall X, Y, Z size
     max_mass_kg: Optional[float] = None
     base: Optional[str] = None  # part everything else is assembled onto (default: largest fixed part)
@@ -145,6 +149,13 @@ class Design:
 
     def allow_overlap(self, a: str, b: str, max_volume: float = 1e9) -> None:
         self.allowed_overlaps[frozenset((a, b))] = max_volume
+
+    def join(self, a: str, b: str, kind: str = "bond") -> None:
+        self.joins[frozenset((a, b))] = kind
+
+    def bom_extra(self, sku: str, qty: int = 1, unit_cost_usd: float | None = None) -> None:
+        e = self.bom_extras.setdefault(sku, {"qty": 0, "unit_cost_usd": unit_cost_usd})
+        e["qty"] += qty
 
     def require_clearance(self, a: str, b: str, gap: float) -> None:
         self.min_clearances[frozenset((a, b))] = gap
