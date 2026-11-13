@@ -112,6 +112,11 @@ def _fastening(design: Design, contacts: dict[str, set[str]], r: VerifierResult)
             for other in contacts[fn] & names:
                 adj[fn].add(other)
                 adj[other].add(fn)
+        for f in design.fasteners:  # parts a screw is declared to clamp (it may pass through clearance holes)
+            if f.name in names:
+                for other in set(f.clamps) & names:
+                    adj[f.name].add(other)
+                    adj[other].add(f.name)
         for pair in design.joins:
             if len(pair) != 2:
                 continue
@@ -178,6 +183,15 @@ def _threads(design: Design, r: VerifierResult) -> None:
                 pr = corners @ a
                 eng = max(eng, float(pr.max() - pr.min()))
             need = THREAD_FACTOR.get(comps[tgt].material, 2.0) * d
+            tsku = comps[tgt].sku or ""
+            if tsku.startswith("NUT-"):  # a standard nut is full strength once the screw passes through it
+                need = comps[tgt].meta.get("interfaces", {}).get("height", d * 0.8)
+            depth = comps[tgt].meta.get("interfaces", {}).get("thread_depth")
+            if depth is not None and eng > depth + 0.05:
+                r.add("error", "thread_bottoms_out",
+                      f"{c.name} goes {eng:.1f} mm into {tgt}, whose tapped holes are only {depth:.1f} mm deep.",
+                      screw=c.name, into=tgt, engagement_mm=round(eng, 2), depth_mm=depth,
+                      hint="Use a shorter screw or a thicker part under the head.")
             if eng < need - 0.05:
                 short += 1
                 r.add("error", "thread_engagement",

@@ -177,3 +177,35 @@ def test_include_moves_and_renames_a_subassembly():
     top.include(sub, Location((0, 0, 100), (0, 0, 90)), prefix="c_")   # 90 degrees: axis becomes +Y
     cj = next(j for j in top.joints if j.name == "c_x")
     assert abs(cj.axis[1] - 1) < 1e-9 and abs(cj.axis[0]) < 1e-9
+
+
+def test_nut_and_blind_hole_depth():
+    from mechloop.parts import add_nut
+    from mechloop.verifiers.interference import verify_interference
+
+    d = Design("nut")
+    d.add("a", Pos(0, 0, 2) * (Box(30, 30, 4) - Cylinder(1.7, 4)), material="petg")
+    d.add("b", Pos(0, 0, -2) * (Box(30, 30, 4) - Cylinder(1.7, 4)), material="petg")
+    add_screw(d, "bolt", "M3", 12, at=(0, 0, 4), clamps=("a", "b"))
+    add_nut(d, "nut", "M3", at=(0, 0, -4), direction=(0, 0, -1), screw="bolt")
+    r = verify_interference(d)
+    assert errs(r) == [], [f.message for f in r.findings]
+    d2 = Design("deep")
+    place(d2, "motor", nema17(40), Location((0, 0, 0)))
+    d2.add("plate", Pos(0, 0, 1.5) * (Box(42, 42, 3) - Cylinder(11.5, 3)
+                                        - Pos(15.5, 15.5, 0) * Cylinder(1.7, 3)), material="al6061")
+    add_screw(d2, "s", "M3", 10, at=(15.5, 15.5, 3), threads_into="motor")   # 7 mm into a 4.5 mm hole
+    assert "thread_bottoms_out" in errs(verify_interference(d2))
+
+
+def test_moment_on_side_by_side_blocks_is_not_treated_as_a_couple():
+    d = Design("z")
+    for i, x in enumerate((-90, 90)):
+        place(d, f"rail{i}", mgn12_rail(200), Location((x, 0, 0), (0, -90, 0)))
+        place(d, f"blk{i}", mgn12h_carriage(), Location((x, 0, 0), (0, -90, 0)), body="z", guides="z")
+    d.add("arm", Pos(0, 150, 0) * Box(200, 280, 6), body="z", mass_kg=40.0)   # heavy, far overhung
+    d.joints.append(Joint("z", "slide", "world", "z", (0, 0, 1), range=(-50, 50), max_effort=1000))
+    r = verify_ratings(d)
+    g = r.metrics["guide_loads"]["z"]
+    assert g["block_spacing_along_rail_mm"] < 1 and "moment_per_block_nm" in g
+    assert "guide_moment_overloaded" in errs(r)

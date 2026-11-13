@@ -15,7 +15,7 @@ you report what was verified and what was not.
    never loosen a requirement, load, range or tolerance to get a pass unless the
    brief allows it, and say so if you do.
 4. Re-run. Repeat until exit code 0. Then look at `out/<name>/views.png` (and
-   `simulation.gif` if there are joints) to confirm it is the thing you meant to build.
+   `simulation.gif` if there is a motion program, else `motion.gif`) to confirm it is the thing you meant to build.
 5. Report: iterations taken, final key metrics, and the "not checked" list below.
 
 Use `--only geometry interference --no-render` while roughing out geometry; run
@@ -41,7 +41,11 @@ everything (with renders) before you finish. `python -m mechloop history <name>`
   warning. Leave it; it is true.
 - A verifier that is `skipped: not run` is not a pass, and neither is an `--only` run.
 - Screws need real thread engagement in what they screw into: at least 1x diameter in steel,
-  1.5x in aluminium, 2x in plastic (T-nut joints exempt). Belt-driven joints need a `Belt`.
+  1.5x in aluminium, 2x in plastic (T-nut joints exempt). Engagement is measured as the length of
+  overlap, along the screw, between the screw and each `threads_into` part, so the tapped part must be
+  solid there (no clearance hole). For a through-bolt use `add_screw(..., clamps=(part_a, part_b))` plus
+  `add_nut(design, name, size, at, direction, screw=<screw name>)`. Screws must not exceed a catalog part's tapped depth (NEMA 17: 4.5 mm).
+  Belt-driven joints need a `Belt`.
 - The envelope is checked at the home pose. Collision sampling covers each joint alone over its
   travel, every corner of the joint space and random combined poses, plus the whole motion program.
 
@@ -60,7 +64,7 @@ def build():
     add_screw(d, "s0", "M3", 6, at=(10, 10, 17), body="carriage", threads_into="block")
     d.joints.append(Joint("x", "slide", "world", "carriage", (1, 0, 0), range=(-100, 100),
                           max_speed=200, max_accel=3000,
-                          drive={"motor": "motor", "kind": "belt", "pulley_teeth": 20}))
+                          drive={"motor": "motor", "kind": "belt", "pulley": "drive_pulley"}))  # + a Belt
     d.program = [{"to": {"x": 100}}, {"to": {"x": -100}}, {"to": {"x": 0}}]
     d.loadcases.append(LoadCase("payload", "plate",
         fixed=lambda f: abs(f.center().Z - 13) < 1e-6,

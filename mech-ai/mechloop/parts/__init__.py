@@ -251,6 +251,35 @@ def shcs(size: str = "M3", length: float = 10.0) -> Stock:
                  interfaces={"thread_d": d, "head_d": hd, "head_h": hh, "hex_key": key}, cost_usd=0.08)
 
 
+NUT = {"M2.5": (5.0, 2.0), "M3": (5.5, 2.4), "M4": (7.0, 3.2), "M5": (8.0, 4.7), "M6": (10.0, 5.2), "M8": (13.0, 6.8)}
+
+
+@part
+def hex_nut(size: str = "M3") -> Stock:
+    """Hex nut (ISO 4032). Local frame: axis Z, bearing face at Z=0, nut body above."""
+    from build123d import RegularPolygon, extrude
+
+    af, h = NUT[size]
+    d = SCREW[size][0]
+    body = extrude(RegularPolygon(af / 2, 6, major_radius=False), h)  # solid: the thread is the overlap with the screw
+    return Stock(body, f"NUT-{size}", f"Hex nut {size}", af * af * 0.866 * h * 7.85e-6 * 0.7,
+                 interfaces={"across_flats": af, "height": h, "thread_d": d}, cost_usd=0.03)
+
+
+def add_nut(design: Design, name: str, size: str, at, direction=(0, 0, 1), body: str = "world",
+            screw: str | None = None) -> Component:
+    """Place a hex nut with its bearing face at `at`, body extending along `direction`.
+    Pass `screw=` to record that this nut is what that screw threads into."""
+    dvec = Vector(*direction).normalized()
+    c = place(design, name, hex_nut(size), Location(Plane(origin=at, z_dir=dvec)), body=body)
+    if screw:
+        design.join(screw, name, "thread")
+        design.allow_overlap(screw, name)
+        sc = design.get(screw)
+        sc.meta.setdefault("threads_into", []).append(name)
+    return c
+
+
 def clearance_hole(size: str) -> float:
     return SCREW[size][4]
 

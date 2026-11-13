@@ -63,9 +63,11 @@ def test_missing_bracket_joint_is_unfastened(gantry):
 
 
 def test_removed_support_leaves_floating_part(gantry):
-    gantry.components = [c for c in gantry.components if c.name != "y_motor_plate"]
-    gantry.fasteners = [f for f in gantry.fasteners if not f.name.startswith("y_motor")]
-    gantry.components = [c for c in gantry.components if not c.name.startswith("y_motor_")]
+    gone = {c.name for c in gantry.components if c.name.startswith("y_motor_") or c.name.startswith("y_mount")}
+    gantry.components = [c for c in gantry.components if c.name not in gone]
+    gantry.fasteners = [f for f in gantry.fasteners if f.name not in gone]
+    gantry.joins = {k: v for k, v in gantry.joins.items() if not (set(k) & gone)}
+    gantry.allowed_overlaps = {k: v for k, v in gantry.allowed_overlaps.items() if not (set(k) & gone)}
     r = verify_interference(gantry)
     floating = [p for f in r.findings if f.code == "floating_parts" for p in f.data["parts"]]
     assert "y_motor" in floating

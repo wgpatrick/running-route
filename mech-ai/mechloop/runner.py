@@ -95,10 +95,11 @@ def run(path: str | Path, out_root: str | Path = "out", only=None, render: bool 
             from .render import render_motion, render_views
 
             rep.artifacts["views"] = str(render_views(design, out / "views.png"))
-            gif = render_motion(design, out / "motion.gif")
-            if gif:
-                rep.artifacts["motion"] = str(gif)
             sim = next((r.artifacts_sim for r in rep.results if r.artifacts_sim is not None), None)
+            if sim is None:  # no simulated program: show each joint sweeping its range instead
+                gif = render_motion(design, out / "motion.gif")
+                if gif:
+                    rep.artifacts["motion"] = str(gif)
             if sim is not None:
                 from .render import render_simulation
 

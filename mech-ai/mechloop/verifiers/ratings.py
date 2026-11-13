@@ -157,17 +157,25 @@ def verify_ratings(design: Design) -> VerifierResult:
             rated_m = blocks[0].ratings.get("static_moment_nm")
             if rated_m:
                 pos = np.array([[b.shape.center().X, b.shape.center().Y, b.shape.center().Z] for b in blocks])
-                span = float(np.max(np.linalg.norm(pos - cen, axis=1))) * 2e-3
+                # only spacing ALONG the rail turns a pitch moment into a force couple; blocks side by
+                # side on parallel rails each take their share of the moment directly (conservative)
+                ax = np.array(j.axis, dtype=float) / np.linalg.norm(j.axis)
+                along = (pos - cen) @ ax
+                span = float(along.max() - along.min()) * 1e-3
+                rails = max(1, len({round(float(x), 0) for x in np.linalg.norm((pos - cen) - np.outer(along, ax), axis=1)}))
+                loads[jn]["block_spacing_along_rail_mm"] = round(span * 1e3, 1)
                 if len(blocks) == 1 or span < 0.02:
+                    moment = moment / len(blocks)
+                    loads[jn]["moment_per_block_nm"] = round(moment, 3)
                     msf = rated_m / moment if moment > 0 else float("inf")
                     loads[jn]["moment_safety"] = round(min(msf, 9999.0), 1)
                     if msf < 3.0:
                         r.add("error", "guide_moment_overloaded",
-                              f"Joint {jn}: {moment:.2f} N*m overhung moment on a single guide block vs static "
+                              f"Joint {jn}: {moment:.2f} N*m overhung moment per guide block (no spacing along the rail) vs static "
                               f"moment rating {rated_m:.1f} N*m (safety {msf:.1f} < 3).", joint=jn,
                               hint="Add a second block spaced along the rail, or bring the load's centre of mass over the block.")
                 else:
-                    couple = moment / span
+                    couple = moment / span / max(1, len(blocks) // 2)
                     sf2 = blocks[0].ratings["static_load_n"] / (per_block + couple)
                     loads[jn]["couple_force_n"] = round(couple, 1)
                     loads[jn]["static_safety_with_moment"] = round(min(sf2, 9999.0), 1)

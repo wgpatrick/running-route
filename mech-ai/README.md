@@ -11,11 +11,12 @@ revises until everything passes: **CAD → verifiers → more CAD**.
 | Verifier | What it does | Engine |
 |---|---|---|
 | geometry | Solid validity, envelope, mass, executable requirements | OpenCASCADE |
-| interference | Exact overlap volume for every part pair, required clearances, floating parts, parts that touch but are not fastened | OpenCASCADE |
+| interference | Exact overlap volume for every part pair, required clearances, floating parts, parts that touch but are not fastened, thread engagement | OpenCASCADE |
 | ratings | Force available from the actual motor and transmission, guide block loads, bill of materials | catalog data |
-| motion | Collisions through full joint travel; force needed for the stated speed and acceleration; forward simulation of a motion program with force-limited drives | trimesh/FCL + OpenCASCADE, MuJoCo |
+| motion | Collisions through full joint travel; guide run-off; belt routing; force needed for the stated speed and acceleration; forward simulation of a motion program with force-limited drives | trimesh/FCL + OpenCASCADE, MuJoCo |
 | assemblability | Finds a straight-line assembly order by disassembly; checks driver access to every screw at the moment it is installed | trimesh/FCL + OpenCASCADE |
-| fea | Linear static stress and deflection per load case, with reaction balance, load-area and mesh-refinement checks | Gmsh + CalculiX |
+| fea | Linear static stress and deflection for parts and bonded assemblies, natural frequencies, with reaction balance, load-area and mesh-refinement checks | Gmsh + CalculiX |
+| requirements | The brief's acceptance tests, evaluated last with every metric available | |
 
 Off-the-shelf parts (steppers, MGN rails and carriages, 2020 extrusion, GT2
 pulleys, lead screws, bearings, screws, corner brackets) come from a typed
@@ -35,21 +36,26 @@ Outputs land in `out/<design>/`: `report.json`, `views.png`, `motion.gif`,
 
 `AGENT.md` is the instruction file for an agent using the loop.
 
-## Examples (each taken through the loop)
+## Designs taken through the loop
 
-- `examples/motor_bracket.py` — printed bracket holding a NEMA 17 against 80 N of belt
-  pull. Iteration 1 failed (factor of safety 1.14, 6.5 mm deflection); gussets and a
-  thicker wall passed on iteration 2 (FoS 20, 0.13 mm, 22 g).
-- `examples/gantry.py` — XY printer gantry, 85 parts, 200 × 200 mm travel. Iteration 1
-  had 35 errors (hotend crashing into the frame during travel, screws buried under the
-  beam, motor overlapping a carriage, an unsupported motor). It passed the first five
-  verifiers on iteration 3; the fastening check added afterwards then found 20 parts
-  held by nothing, fixed on iteration 4 with corner brackets and rail screws.
+| Design | Parts | Who designed it | What the verifiers caught along the way |
+|---|---|---|---|
+| `examples/motor_bracket.py` | 9 | written directly | factor of safety 1.14 and 6.5 mm deflection (fixed with gussets); later, motor screws with 1 mm of thread |
+| `examples/gantry.py` | 103 | written directly, belts added by an agent | hotend crashing into the frame, screws buried under the beam, 20 unfastened parts, nozzle stiffness 40 N/mm against a 150 N/mm target, 16 screws with too little thread |
+| `designs/z_axis.py` | 86 | agent, from `AGENT.md` | bed screws with 2 mm of thread; curved-face FEA selection (a harness bug, since fixed) |
+| `designs/pan_tilt.py` | 41 | agent, from `AGENT.md` | none in its own runs (see caveat) |
+| `designs/printer.py` | 154 | agent, not allowed to read the verifier code | tool plate too soft at the real nozzle tip; 14 short thread engagements; both axes missing belts |
+
+![printer](docs/printer_views.png)
+
+Caveat: the agents avoided most collisions by working out the layout by hand
+before the first run, and two of them read the verifier source. Most of what
+the verifiers caught, they caught after a check was added or tightened.
 
 ## How much to trust a pass
 
 `tests/test_fault_injection.py` breaks the passing gantry eleven different ways
 and requires the matching verifier to catch each one. The FEA kit is checked
-against beam theory in `tests/test_fea.py`. Known gaps are listed at the end of
-`AGENT.md`; the main ones are no contact/bolt FEA, no belts, no tolerance
-analysis, and catalog ratings that are typical class values, not vendor data.
+against beam theory in `tests/test_fea.py`. Known gaps are in `STATUS.md`; the
+main ones are no contact or bolt-preload FEA, no tolerance analysis, no closed
+kinematic loops, and catalog ratings that are typical class values, not vendor data.

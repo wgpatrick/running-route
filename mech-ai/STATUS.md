@@ -15,7 +15,7 @@ Verifiers, in the order they run:
 | Verifier | Checks |
 |---|---|
 | geometry | valid solids, envelope, mass |
-| interference | exact overlap volume per pair, required clearances, floating parts, parts that touch but are not fastened |
+| interference | exact overlap volume per pair, required clearances, floating parts, parts that touch but are not fastened, thread engagement and blind-hole depth |
 | ratings | drive force from the real motor torque curve and transmission, guide block loads and overhung moments, proxy parts flagged, BOM and cost |
 | motion | collisions over full travel of every joint; guide blocks and nuts staying on their rails/screws; belt path length, alignment, wrap and routing clearance; force needed (MuJoCo inverse dynamics, with rotor inertia) against force available; forward simulation of a motion program with force-limited drives (tracking error, collisions along the path) |
 | assemblability | an assembly order in which each part goes on in a straight line onto something already in place, parts precede the screws that hold them, and each screw has driver access when installed |
@@ -26,23 +26,22 @@ A check that could not run is reported as not run and fails the design; it never
 
 Catalog (`mechloop/parts`): NEMA 17, MGN12 rail and carriage, 2020 extrusion and
 corner bracket, linear rod, GT2 pulley and idler, T8 lead screw and nut, shaft
-coupler, ball bearings, socket head cap screws. Geometry is proxy geometry built
+coupler, ball bearings, socket head cap screws, hex nuts. Geometry is proxy geometry built
 from datasheet dimensions; ratings are typical class values.
 
 ## Evidence that the checks work
 
-- 29 tests. FEA matches beam theory for deflection, stress and first natural
+- 33 tests. FEA matches beam theory for deflection, stress and first natural
   frequency; bonded two-part FEA matches the one-piece result; MuJoCo forces match
   F = m·a and m·g.
 - Fault injection: the passing gantry is broken eleven ways and each break is
   caught by the matching verifier.
-- Designs taken through the loop:
-  - Motor bracket: failed on strength (factor of safety 1.14), passed on iteration 2.
-  - XY gantry (85 parts): 35 errors on iteration 1. Later verifiers added during the
-    night found more in the "passing" design: 20 unfastened parts, then a nozzle
-    stiffness shortfall (40 N/mm against a 150 N/mm target), fixed with ribs.
-  - Z-axis bed lift and pan-tilt camera head: designed by fresh agents from `AGENT.md`.
-    Both passed within three runs, but both agents had read the verifier source first.
+- Five designs pass the final harness (see the table in `README.md`): motor bracket,
+  103-part belted XY gantry, Z-axis bed lift, pan-tilt head, and a 154-part XYZ printer
+  built by an agent that was not allowed to read the verifier code.
+- Each time a check was added or tightened, it found real errors in designs that had
+  been passing: 20 unfastened parts, a 4x stiffness shortfall, 36 screws with too little
+  thread across four designs, and two machines whose belt drives had no belts.
 
 ## What the agent trials taught
 
@@ -53,6 +52,11 @@ from datasheet dimensions; ratings are typical class values.
    The one misleading hint (curved-face FEA selection) cost an iteration.
 3. A lenient check is worse than no check: the first assembly-order check passed
    orders that installed screws before the parts they hold.
+4. Agents with an engineering brief lay most of the geometry out correctly by hand.
+   The verifiers earn their keep on what is tedious to track by hand (thread depths,
+   fastening, sweeps of many parts) and on physics (stiffness, drive sizing).
+5. Every agent report ended with a list of things it knew were wrong and no verifier
+   checked. Those lists are the best source of the next verifier to write.
 
 ## Known gaps
 
@@ -61,7 +65,8 @@ from datasheet dimensions; ratings are typical class values.
 - Kinematic trees only: no closed loops (CoreXY belts, four-bars, parallel lead screws).
 - No over-constraint or binding detection; no axial retention check for bearings.
 - Assemblability is straight-line and home-pose only; no sub-assemblies.
-- Belt tension, tooth load and belt stretch are not modelled.
+- Belt tension, tooth load and belt stretch are not modelled; belt clearance is pass/fail with no minimum gap.
+- Single-sided Y drive racking, slot/tensioner travel and blind-hole thread run-out are not checked.
 - No thermal, fatigue or buckling checks; FEA ignores self-weight.
 - No cables, endstops or wiring.
 - No manufacturing checks (printability, machinability) and no CAM output.
@@ -76,6 +81,6 @@ from datasheet dimensions; ratings are typical class values.
 2. Trial earthtojake's `text-to-cad` in this sandbox and decide which of its pieces to
    adopt (its viewer, DFM checks and URDF export overlap little with mechloop).
 3. Bolted-joint and contact FEA for the critical joints only.
-4. Sub-assemblies and multi-pose assemblability.
+4. Sub-assemblies and multi-pose assemblability; the reported build order is valid but still not how a person would build it.
 5. Printability checks and slicer output for the printed parts.
 6. Vendor datasheet ingestion for the catalog, starting with motors and rails.
