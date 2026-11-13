@@ -94,6 +94,9 @@ def build():
   engaged, a closed loop matches `stock_length`, and no straight run passes through a part. Pulley centre
   heights are in `part.meta["interfaces"]["belt_center"]`. A belt-driven joint without a `Belt` is not
   checked for routing; add one.
+- Composing: `design.include(other_design, Location(...), prefix="z_")` brings a whole sub-assembly in
+  (parts, bodies, joints, fasteners, joins, belts), moved and renamed. Its requirements, program and (when
+  moved) load cases are not copied; restate them.
 - Orienting catalog parts: `Location((x, y, z), (rx, ry, rz))` (degrees) or
   `Location(Plane(origin=..., x_dir=..., z_dir=...))`. Each catalog function's docstring gives its
   local frame; `part.meta["interfaces"]` holds its hole positions in world coordinates after `place`.

@@ -220,6 +220,82 @@ class Design:
     def require_clearance(self, a: str, b: str, gap: float) -> None:
         self.min_clearances[frozenset((a, b))] = gap
 
+    def include(self, other: "Design", loc=None, prefix: str = "") -> None:
+        """Bring another design into this one as a sub-assembly, moved by `loc` and with
+        every name prefixed. Parts, bodies, joints, fasteners, joins, belts and BOM extras
+        come across. Load/modal/assembly cases come across only when `loc` is None (their
+        face predicates are written in the other design's coordinates); requirements and
+        the motion program are not copied."""
+        import copy
+
+        import numpy as np
+        from build123d import Location
+
+        moved = loc is not None
+        loc = loc or Location()
+        trsf = loc.wrapped.Transformation()
+        M = np.array([[trsf.Value(i, j) for j in range(1, 5)] for i in range(1, 4)])
+
+        def pt(p):
+            return tuple(float(x) for x in M[:, :3] @ np.array(p, dtype=float) + M[:, 3])
+
+        def vec(v):
+            return tuple(float(x) for x in M[:, :3] @ np.array(v, dtype=float))
+
+        def nm(n):
+            return prefix + n
+
+        def bd(b):
+            return b if b == "world" else prefix + b
+
+        for c in other.components:
+            meta = copy.deepcopy(c.meta)
+            if "interfaces" in meta:
+                meta["interfaces"] = {k: [pt(p) for p in v] if isinstance(v, list) else v
+                                      for k, v in meta["interfaces"].items()}
+            if "threads_into" in meta:
+                meta["threads_into"] = [nm(t) for t in meta["threads_into"]]
+            if "guides" in meta:
+                meta["guides"] = nm(meta["guides"])
+            self.add(nm(c.name), c.shape.moved(loc), material=c.material, body=bd(c.body), cots=c.cots,
+                     sku=c.sku, mass_kg=c.mass_kg, ratings=dict(c.ratings), meta=meta, color=c.color)
+        for j in other.joints:
+            j2 = copy.copy(j)
+            j2.name, j2.parent, j2.child = nm(j.name), bd(j.parent), bd(j.child)
+            j2.axis, j2.origin = vec(j.axis), pt(j.origin)
+            if j.drive:
+                d = dict(j.drive)
+                for k in ("motor", "pulley", "screw", "nut", "coupler"):
+                    if k in d:
+                        d[k] = [nm(x) for x in d[k]] if isinstance(d[k], (list, tuple)) else nm(d[k])
+                j2.drive = d
+            self.joints.append(j2)
+        for f in other.fasteners:
+            self.fasteners.append(Fastener(nm(f.name), vec(f.axis), pt(f.head_center), f.tool_diameter,
+                                           f.tool_length, tuple(nm(x) for x in f.clamps)))
+        for src, dst in ((other.joins, self.joins), (other.allowed_overlaps, self.allowed_overlaps),
+                         (other.min_clearances, self.min_clearances)):
+            for k, v in src.items():
+                dst[frozenset(nm(x) for x in k)] = v
+        for b in other.belts:
+            path = [(n[0], nm(n[1]), n[2]) if n[0] == "pulley" else (n[0], bd(n[1]), pt(n[2])) for n in b.path]
+            self.belts.append(Belt(nm(b.name), path, vec(b.axis), b.width, b.thickness, b.stock_length, b.adjust))
+        for sku, e in other.bom_extras.items():
+            self.bom_extra(sku, e["qty"], e["unit_cost_usd"])
+        if not moved:
+            for lst_o, lst_s in ((other.loadcases, self.loadcases), (other.modalcases, self.modalcases)):
+                for case in lst_o:
+                    c2 = copy.copy(case)
+                    c2.name, c2.component = nm(case.name), nm(case.component)
+                    lst_s.append(c2)
+            for ac in other.assemblycases:
+                a2 = copy.copy(ac)
+                a2.name = nm(ac.name)
+                a2.components = [nm(x) for x in ac.components]
+                a2.fixed = [(nm(n), p) for n, p in ac.fixed]
+                a2.loaded = (nm(ac.loaded[0]), ac.loaded[1])
+                self.assemblycases.append(a2)
+
     def bodies(self) -> dict[str, list[Component]]:
         out: dict[str, list[Component]] = {}
         for c in self.components:

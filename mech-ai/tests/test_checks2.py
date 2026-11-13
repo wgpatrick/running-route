@@ -153,3 +153,27 @@ def test_thread_engagement_and_missing_belt():
     d3.joints[0].drive = {"motor": "motor", "kind": "belt", "pulley": "pul"}
     d3.joints[0].max_speed, d3.joints[0].max_accel = 100, 1000
     assert "belt_missing" in errs(verify_motion(d3))
+
+
+def test_include_moves_and_renames_a_subassembly():
+    from mechloop.verifiers.interference import verify_interference
+
+    sub = rail_axis(60)
+    sub.add("plate", Pos(0, 0, 15) * (Box(30, 27, 4) - Pos(10, 10, 0) * Cylinder(1.7, 4)), body="car")
+    add_screw(sub, "s", "M3", 8, at=(10, 10, 17), body="car", threads_into="block")
+    top = Design("top")
+    top.add("table", Pos(0, 0, -5) * Box(600, 200, 10))
+    top.include(sub, Location((0, 50, 0), (0, 0, 0)), prefix="a_")
+    top.include(sub, Location((0, -50, 0), (0, 0, 180)), prefix="b_")
+    assert {"a_rail", "b_block", "b_s"} <= {c.name for c in top.components}
+    assert {j.name for j in top.joints} == {"a_x", "b_x"}
+    bj = next(j for j in top.joints if j.name == "b_x")
+    assert abs(bj.axis[0] + 1) < 1e-9 and bj.child == "b_car"       # axis turned with the sub-assembly
+    assert top.get("b_s").meta["threads_into"] == ["b_block"]
+    assert top.get("a_block").meta["guides"] == "a_x"
+    r = verify_interference(top)
+    assert "interference" not in errs(r) and "thread_engagement" not in errs(r)
+    assert errs(verify_motion(top)) == []
+    top.include(sub, Location((0, 0, 100), (0, 0, 90)), prefix="c_")   # 90 degrees: axis becomes +Y
+    cj = next(j for j in top.joints if j.name == "c_x")
+    assert abs(cj.axis[1] - 1) < 1e-9 and abs(cj.axis[0]) < 1e-9
