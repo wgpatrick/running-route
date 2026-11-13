@@ -190,6 +190,9 @@ class Design:
     program: list = field(default_factory=list)
     tracking_tolerance: float = 0.2  # mm (or deg) allowed between commanded and simulated position
     tool_point: Optional[tuple] = None  # (body, (x, y, z)) traced in the motion render
+    # A printer design declares how to print on it: {"bed": part, "x"/"y"/"z": joint names,
+    # "stiffness": {"x": <AssemblyCase name>, "y": ...}} so the digital twin runs as a verifier
+    printer: Optional[dict] = None
     base: Optional[str] = None  # part everything else is assembled onto (default: largest fixed part)
     gravity: tuple[float, float, float] = (0.0, 0.0, -9810.0)  # mm/s^2
 

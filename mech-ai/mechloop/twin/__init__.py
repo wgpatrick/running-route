@@ -279,6 +279,15 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
                        "rms_lag_mm": [round(float(x), 4) for x in np.sqrt((lag ** 2).mean(axis=0))],
                        "worst_motor_error_mm": [round(float(x), 4) for x in mlag.max(axis=0)],
                        "final_position_error_mm": [round(float(x), 4) for x in final_err]}
+    # vibration that shows on the part: how far the nozzle is from the commanded PATH (sideways),
+    # as opposed to merely being late along it
+    sp = np.hypot(Vc[:, 0], Vc[:, 1])
+    moving = sp > 5.0
+    if moving.any():
+        ex, ey = (Qa[:, 0] - Qc[:, 0])[moving], (Qa[:, 1] - Qc[:, 1])[moving]
+        cross = np.abs(ex * (-Vc[moving, 1] / sp[moving]) + ey * (Vc[moving, 0] / sp[moving]))
+        rep["dynamics"]["cross_track_rms_mm"] = round(float(np.sqrt((cross ** 2).mean())), 4)
+        rep["dynamics"]["cross_track_worst_mm"] = round(float(cross.max()), 4)
     for k, (j, ax) in enumerate(zip(jl, "XYZ")):
         if final_err[k] > quarter[k]:
             i_slip = int(np.argmax(mlag[:, k] > 2 * quarter[k]))
@@ -338,3 +347,23 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
         except Exception as ex:
             rep["render_error"] = f"{type(ex).__name__}: {ex}"
     return finish()
+
+
+def printer_map_for(design: Design, metrics: dict | None = None, **overrides) -> PrinterMap:
+    """PrinterMap for a design that declares `design.printer`, with the simulations coupled:
+    belt stiffness from the belts' width, frame stiffness at the nozzle from the design's own FEA."""
+    spec = design.printer or {}
+    kw = {k: spec[k] for k in ("x", "y", "z", "bed", "layer_height", "nozzle") if k in spec}
+    if design.belts:
+        w = min(b.width for b in design.belts)
+        kw["belt_ea_n"] = 15000.0 * w / 6.0  # scales with width; 6 mm ~ 15 kN (hobby measurement, +/- 30 %)
+    stiff = {}
+    fea = (metrics or {}).get("fea", {})
+    for ax, case in (spec.get("stiffness") or {}).items():
+        k = (fea.get(case) or {}).get("stiffness_n_per_mm")
+        if k:
+            stiff[ax] = float(k)
+    if stiff:
+        kw["struct_stiffness"] = stiff
+    kw.update(overrides)
+    return PrinterMap(**kw)

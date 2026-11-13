@@ -11,7 +11,7 @@ from pathlib import Path
 from .model import Design
 from .report import Report, VerifierResult
 
-ORDER = ["geometry", "interference", "ratings", "motion", "assemblability", "fea"]
+ORDER = ["geometry", "interference", "ratings", "motion", "assemblability", "fea", "printing"]
 
 
 def load_design(path: str | Path) -> Design:
@@ -36,8 +36,11 @@ def _verifiers():
     from .verifiers.motion import verify_motion
     from .verifiers.ratings import verify_ratings
 
+    from .verifiers.printing import verify_printing
+
     return {"geometry": verify_geometry, "interference": verify_interference, "ratings": verify_ratings,
-            "motion": verify_motion, "assemblability": verify_assemblability, "fea": verify_fea}
+            "motion": verify_motion, "assemblability": verify_assemblability, "fea": verify_fea,
+            "printing": verify_printing}
 
 
 def verify(design: Design, only: list[str] | None = None, stop_on_geometry_error: bool = True) -> Report:
@@ -58,7 +61,10 @@ def verify(design: Design, only: list[str] | None = None, stop_on_geometry_error
                 name, skipped="not run: parts that overlap cannot be sequenced; fix interference first"))
             continue
         try:
-            res = vs[name](design)
+            if name == "printing":  # the twin reads this run's FEA stiffness
+                res = vs[name](design, {r.verifier: r.metrics for r in rep.results})
+            else:
+                res = vs[name](design)
         except Exception as e:
             res = VerifierResult(name)
             res.add("error", "verifier_crashed", f"{name} crashed: {type(e).__name__}: {e}",

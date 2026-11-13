@@ -12,7 +12,7 @@ def main(argv=None) -> int:
     sub = p.add_subparsers(dest="cmd", required=True)
     v = sub.add_parser("verify", help="build a design script and run the verifiers")
     v.add_argument("design", help="python file defining build() -> Design")
-    v.add_argument("--only", nargs="*", help="subset of: geometry interference ratings motion assemblability fea requirements")
+    v.add_argument("--only", nargs="*", help="subset of: geometry interference ratings motion assemblability fea printing requirements")
     v.add_argument("--out", default="out")
     v.add_argument("--no-render", action="store_true")
     v.add_argument("--max-findings", type=int, default=25)
@@ -26,6 +26,9 @@ def main(argv=None) -> int:
     pr.add_argument("--layer-height", type=float, default=0.2)
     pr.add_argument("--accel-scale", type=float, default=1.0, help="what-if multiplier on XY acceleration limits")
     pr.add_argument("--no-render", action="store_true")
+    sc = sub.add_parser("score", help="scorecard for a printer design (things to improve, not just pass)")
+    sc.add_argument("design")
+    sc.add_argument("--out", default="out")
     c = sub.add_parser("catalog", help="list off-the-shelf parts")
     c.add_argument("query", nargs="?", default="")
     a = p.parse_args(argv)
@@ -52,6 +55,12 @@ def main(argv=None) -> int:
                         render=not a.no_render, accel_scale=a.accel_scale)
         print(json.dumps({k: v for k, v in rep.items() if k != "gcode"}, indent=1, default=float))
         return 0 if rep["ok"] else 1
+    if a.cmd == "score":
+        from .twin.score import score
+
+        res = score(a.design, a.out)
+        print(json.dumps(res, indent=1, default=float))
+        return 0 if res.get("static_checks_ok") and res.get("nominal_print_ok") else 1
     if a.cmd == "history":
         f = Path(a.out) / a.name / "history.jsonl"
         if not f.exists():

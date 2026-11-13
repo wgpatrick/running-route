@@ -109,13 +109,43 @@ def build():
 - `add_screw(design, name, size, length, at=<underside of head>, direction=<thread direction>,
   threads_into=..., tnut=False)` adds the screw, its driver-access check and the joint.
 
-## Printers: the digital twin
+## Printers: the digital twin and the improvement loop
 
-For a printer design, `python -m mechloop print <printer.py> <design.py>:<part>` (or an STL/STEP file)
-prints a part on it in simulation and reports reachability, step loss, collisions during the print and
-how closely each printed layer matches the part. The design needs joints named x, y, z with resolved
-drives, a `bed` component whose top is the print surface, and `design.tool_point` at the nozzle tip.
-The bed must be able to reach the nozzle (gap at the end of Z travel <= first layer height).
+A printer design declares how to print on it:
+
+```python
+d.tool_point = ("xbody", nozzle_tip_xyz)
+d.printer = {"bed": "bed", "x": "x", "y": "y", "z": "z",
+             "stiffness": {"x": "<AssemblyCase giving nozzle stiffness in X>", "y": "<... in Y>"}}
+```
+
+Then `mechloop verify` also runs the **printing** verifier: the digital twin prints a short test
+cube on the machine (real slicer G-code, firmware-style planning, stepper motors that can lose
+steps, belts that stretch, the frame flexing by the stiffness your own FEA cases report) and fails
+the design if the print is wrong, the machine collides, or the bed cannot reach the nozzle (the gap
+at the end of Z travel must be <= the first layer height).
+
+Passing is the floor. To make a design **better**, use the scorecard:
+
+    python -m mechloop score designs/<printer>.py        # about a minute; appends to out/<name>/scores.jsonl
+
+| Score | Meaning | Direction |
+|---|---|---|
+| `max_clean_accel_mm_s2`, `accel_margin` | highest acceleration (at 2x speed) that still prints cleanly; margin is relative to the joints' own `max_accel` | up |
+| `resonance_hz` | frequency the toolhead rings at on each axis | up |
+| `cross_track_rms_mm`, `cross_track_worst_mm` | how far the nozzle strays sideways from the commanded path at nominal settings (vibration that shows on the part) | down |
+| `benchmark_time_s` | time to print three benchmark parts at the design's own speed/acceleration limits | down |
+| `moving_mass_kg`, `total_mass_kg`, `bom_cost_usd` | from the CAD and BOM | down |
+| `frame_stiffness_n_per_mm` | nozzle stiffness from your AssemblyCases | up |
+
+The improvement loop: score the baseline; pick the weakest number; make ONE real design change
+(geometry, a catalog part, a transmission, a joint limit); run `mechloop verify` (everything must
+still pass) and `mechloop score`; keep the change only if the score improved and nothing you care
+about got worse; otherwise revert. Log every attempt, including the reverted ones.
+Scores near the step-loss boundary are noisy: do not count a change of one acceleration step as real.
+The twin has no thermal model, and friction, extruder lag, damping and belt stiffness are assumed
+values, so prefer changes that are robust in kind (less mass, more stiffness, more torque margin).
+`python -m mechloop print <printer.py> <design.py>:<part>` prints any part and renders the result.
 
 ## What each verifier tells you
 

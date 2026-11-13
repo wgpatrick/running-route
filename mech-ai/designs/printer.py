@@ -382,6 +382,9 @@ def build() -> Design:
                  {"to": {"z": 0.0}}]
     nozzle = (0.0, YB0 + HOT_OFF, Z_NOZZLE)
     d.tool_point = ("xbody", nozzle)
+    # how to print on this machine: the digital twin runs as a verifier, using the FEA nozzle stiffness below
+    d.printer = {"bed": "bed", "x": "x", "y": "y", "z": "z",
+                 "stiffness": {"x": "nozzle_stiffness_x", "y": "nozzle_stiffness_y"}}
 
     # ================= structure =================================================
     # nozzle-point stiffness of the whole gantry moving structure, toolhead at mid-span (worst case);
