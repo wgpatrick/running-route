@@ -1,0 +1,18 @@
+[project]
+name = "mechloop"
+version = "0.1.0"
+description = "Verification loop for AI-driven mechanical design: code-CAD in, machine-checkable findings out."
+requires-python = ">=3.11"
+dependencies = [
+  "build123d>=0.13", "bd_warehouse", "gmsh>=4.15", "mujoco>=3.2", "trimesh", "python-fcl",
+  "pyvista", "meshio", "numpy", "scipy", "imageio", "pillow",
+]
+[project.scripts]
+mechloop = "mechloop.cli:main"
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+[tool.setuptools.packages.find]
+include = ["mechloop*"]
+[tool.pytest.ini_options]
+testpaths = ["tests"]
