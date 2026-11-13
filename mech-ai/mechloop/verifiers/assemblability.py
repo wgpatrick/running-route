@@ -41,7 +41,7 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
         meshes = {n: to_trimesh(c.shape) for n, c in comps.items()}
         bounds = {n: m.bounds for n, m in meshes.items()}
         fast_axis = {f.name: tuple(float(x) for x in f.axis) for f in design.fasteners if f.name in comps}
-        base = base or max(comps, key=lambda n: comps[n].shape.volume if comps[n].body == "world" else -1)
+        base = base or design.base or max(comps, key=lambda n: comps[n].shape.volume if comps[n].body == "world" else -1)
         remaining = set(comps)
         cm = trimesh.collision.CollisionManager()
         for n in comps:
@@ -95,6 +95,15 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
                 cm.add_object(name, meshes[name])
             return blockers
 
+        tools = {f.name: f for f in design.fasteners if f.name in comps}
+        tool_block: dict[str, set[str]] = {}
+        tool_cache: dict[str, list[str]] = {}
+
+        def tool_blockers(name: str) -> list[str]:
+            if name not in tool_cache:
+                tool_cache[name] = [b[0] for b in _tool_hits(design, tools[name])]
+            return tool_cache[name]
+
         order: list[dict] = []
         progress = True
         while len(remaining) > 1 and progress:
@@ -103,13 +112,16 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
             cands = sorted(remaining - {base}, key=lambda n: (n not in fast_axis, comps[n].shape.volume))
             for name in cands:
                 dirs = dict(DIRS)
-                if name in fast_axis:
-                    dirs = {"axis": fast_axis[name], **dirs}
+                if name in fast_axis:  # a screw only comes out along its axis, with a driver on it
+                    dirs = {"axis": fast_axis[name]}
                 for dname, d in dirs.items():
                     key = (name, dname)
                     if key in blocked_by and blocked_by[key] & remaining:
                         continue
                     blockers = try_remove(name, dname, d)
+                    if not blockers and name in tools and dname == "axis":
+                        blockers = {o for o in tool_blockers(name) if o in remaining}
+                        tool_block[name] = blockers
                     blocked_by[key] = blockers
                     if not blockers:
                         order.append({"part": name, "direction": dname})
@@ -121,6 +133,18 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
                     break
         trapped = sorted(remaining - {base})
         for name in trapped:
+            if name in tools:
+                tb = sorted(tool_block.get(name, set()) & remaining)
+                ab = sorted(blocked_by.get((name, "axis"), set()) & remaining)
+                f = tools[name]
+                blk = sorted(set(tb) | set(ab))
+                r.add("error", "tool_access_blocked",
+                      f"Fastener {name} cannot be driven: the screw and a {f.tool_diameter:.0f} mm x "
+                      f"{f.tool_length:.0f} mm driver along its axis are blocked by {blk}, which must "
+                      f"already be in place when it is installed.",
+                      fastener=name, blockers=blk,
+                      hint="Add an access hole in the blocking part, flip the fastener, or move it clear.")
+                continue
             why = {dn: sorted(blocked_by.get((name, dn), set()) & remaining) for dn in DIRS}
             common = sorted(set.intersection(*[set(v) for v in why.values()])) if why else []
             r.add("error", "trapped_part",
@@ -134,7 +158,12 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
                      if len(order) <= 60 else "omitted",
                      "parts_placed": len(order) + 1, "parts_total": len(comps),
                      "complete": not trapped, "exact_overlap_checks": len(exact_cache)}
-        _tool_access(design, r)
+        if design.fasteners:
+            ok = sum(1 for f in design.fasteners if f.name in comps and f.name not in trapped)
+            r.metrics["fasteners_drivable_in_sequence"] = f"{ok}/{len(design.fasteners)}"
+        for f in design.fasteners:
+            if f.name not in comps:
+                r.add("error", "unknown_fastener", f"Fastener '{f.name}' is not a component.", fastener=f.name)
     return r
 
 
@@ -144,30 +173,17 @@ def _opp(d: str) -> str:
     return ("-" if d[0] == "+" else "+") + d[1]
 
 
-def _tool_access(design: Design, r: VerifierResult) -> None:
+def _tool_hits(design: Design, f) -> list[tuple]:
+    """Parts a driver on fastener f would pass through (in the fully assembled state)."""
     comps = {c.name: c for c in design.components}
-    n_ok = 0
-    for f in design.fasteners:
-        if f.name not in comps:
-            r.add("error", "unknown_fastener", f"Fastener '{f.name}' is not a component.", fastener=f.name)
+    a = Vector(*f.axis).normalized()
+    start = Vector(*f.head_center) + a * 0.3
+    tool = Plane(origin=start, z_dir=a) * Pos(0, 0, f.tool_length / 2) * Cylinder(f.tool_diameter / 2, f.tool_length)
+    hits = []
+    for n, c in comps.items():
+        if n == f.name or not bboxes_overlap(tool, c.shape):
             continue
-        a = Vector(*f.axis).normalized()
-        start = Vector(*f.head_center) + a * 0.3
-        tool = Plane(origin=start, z_dir=a) * Pos(0, 0, f.tool_length / 2) * Cylinder(f.tool_diameter / 2, f.tool_length)
-        blockers = []
-        for n, c in comps.items():
-            if n == f.name or not bboxes_overlap(tool, c.shape):
-                continue
-            vol, where = overlap_volume(tool, c.shape)
-            if vol > VOL_TOL:
-                blockers.append((n, round(vol, 1), where))
-        if blockers:
-            r.add("error", "tool_access_blocked",
-                  f"No driver access to fastener {f.name}: a {f.tool_diameter:.0f} mm x {f.tool_length:.0f} mm "
-                  f"tool along its axis hits {[b[0] for b in blockers]}.",
-                  fastener=f.name, blockers=[{"part": b[0], "overlap_mm3": b[1], "at": b[2]} for b in blockers],
-                  hint="Add an access hole in the blocking part, flip the fastener, or move it clear.")
-        else:
-            n_ok += 1
-    if design.fasteners:
-        r.metrics["fasteners_with_tool_access"] = f"{n_ok}/{len(design.fasteners)}"
+        vol, where = overlap_volume(tool, c.shape)
+        if vol > VOL_TOL:
+            hits.append((n, round(vol, 1), where))
+    return hits

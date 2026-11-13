@@ -126,6 +126,7 @@ class Design:
     min_clearances: dict = field(default_factory=dict)
     envelope: Optional[tuple[float, float, float]] = None  # max overall X, Y, Z size
     max_mass_kg: Optional[float] = None
+    base: Optional[str] = None  # part everything else is assembled onto (default: largest fixed part)
     gravity: tuple[float, float, float] = (0.0, 0.0, -9810.0)  # mm/s^2
 
     # -- helpers ---------------------------------------------------------

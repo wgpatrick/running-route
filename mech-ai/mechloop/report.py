@@ -27,6 +27,8 @@ class VerifierResult:
 
     @property
     def ok(self) -> bool:
+        if self.skipped.startswith("not run"):
+            return False  # unmeasured is never a pass
         return not any(f.severity == "error" for f in self.findings)
 
     def add(self, severity: str, code: str, message: str, **data) -> None:

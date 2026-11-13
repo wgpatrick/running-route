@@ -41,4 +41,5 @@ def test_tool_access():
     assert codes(verify_assemblability(d)) == []
     d.add("overhang", Pos(0, 20, 25) * Box(40, 80, 5))
     d.add("post", Pos(0, 55, 10) * Box(10, 10, 25))
+    d.base = "overhang"  # the overhang is there first, so the screw can never be driven
     assert "tool_access_blocked" in codes(verify_assemblability(d))

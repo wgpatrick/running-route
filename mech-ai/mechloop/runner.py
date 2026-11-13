@@ -52,6 +52,11 @@ def verify(design: Design, only: list[str] | None = None, stop_on_geometry_error
         if blocked:
             rep.results.append(VerifierResult(name, skipped="not run: geometry errors must be fixed first"))
             continue
+        if name == "assemblability" and any(
+                f.code == "interference" for r0 in rep.results for f in r0.findings):
+            rep.results.append(VerifierResult(
+                name, skipped="not run: parts that overlap cannot be sequenced; fix interference first"))
+            continue
         try:
             res = vs[name](design)
         except Exception as e:
