@@ -44,11 +44,11 @@ def build() -> Design:
     # motor: mounting face against the wall's -X side, shaft pointing +X through the wall
     place(d, "motor", nema17(40), Location((0, 0, cz), (0, 90, 0)))
     for i, (y, z) in enumerate([(-15.5, -15.5), (-15.5, 15.5), (15.5, -15.5), (15.5, 15.5)]):
-        add_screw(d, f"motor_screw_{i}", "M3", 6, at=(T_WALL, y, cz + z), direction=(-1, 0, 0),
+        add_screw(d, f"motor_screw_{i}", "M3", 8, at=(T_WALL, y, cz + z), direction=(-1, 0, 0),
                   threads_into="motor", clamps=("bracket", "motor"))
     for i, y in enumerate((-12, 12)):
         add_screw(d, f"base_screw_{i}", "M5", 8, at=(15, y, T_BASE), direction=(0, 0, -1),
-                  threads_into="extrusion", clamps=("bracket", "extrusion"))
+                  threads_into="extrusion", clamps=("bracket", "extrusion"), tnut=True)
     d.loadcases.append(LoadCase(
         "belt_pull", "bracket",
         fixed=lambda f: abs(f.center().Z) < 1e-6,                       # underside on the extrusion

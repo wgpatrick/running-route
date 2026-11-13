@@ -230,7 +230,11 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
             r.add("warning", "unsupported_step",
                   f"The only assembly order found installs something before the part that supports it "
                   f"(around {sorted(set(unsupported))[:6]}); it would need holding in place or a sub-assembly.",
-                  parts=sorted(set(unsupported)))
+                  parts=sorted(set(unsupported)),
+                  touching={n: sorted(touch[n])[:8] for n in sorted(set(unsupported))[:6]},
+                  hint="These parts can only come off after the parts that connect their neighbours to the base. "
+                       "Usually fine if they form a bench sub-assembly (e.g. motor on its plate); otherwise add "
+                       "a locating feature or change which part carries the screws.")
         seq = [o["part"] for o in reversed(order)]
         r.metrics = {"base": base, "assembly_sequence": [base] + seq if len(seq) <= 200 else "omitted",
                      "insert_directions": {o["part"]: _opp(o["direction"]) for o in reversed(order)}

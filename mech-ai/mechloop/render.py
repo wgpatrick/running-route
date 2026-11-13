@@ -37,6 +37,31 @@ def _polys(design: Design, pv):
     return out
 
 
+def _belt_lines(design: Design, T, pv):
+    """Polyline segments for every belt at this pose (straight runs plus pulley arcs)."""
+    if not design.belts:
+        return None
+    from .verifiers.belts import route
+
+    pts = []
+    for b in design.belts:
+        try:
+            rt = route(design, b, T)
+        except Exception:
+            continue
+        segs = rt["segments"]
+        for i, (p0, p1) in enumerate(segs):
+            pts += [p0, p1]
+            nxt = segs[(i + 1) % len(segs)] if (rt["closed"] or i + 1 < len(segs)) else None
+            if nxt is not None:
+                pts += [p1, nxt[0]]  # chord across the pulley wrap
+    if not pts:
+        return None
+    arr = np.array(pts)
+    cells = np.hstack([[2, 2 * i, 2 * i + 1] for i in range(len(arr) // 2)])
+    return pv.PolyData(arr, lines=cells)
+
+
 def _add(pl, polys, T):
     for c, pd, color in polys:
         m = pd.copy()
@@ -57,6 +82,9 @@ def render_views(design: Design, path: Path, q: dict | None = None, size=(1600, 
     for k, (title, plane) in enumerate(views):
         pl.subplot(k // 2, k % 2)
         _add(pl, polys, T)
+        bl = _belt_lines(design, T, pv)
+        if bl is not None:
+            pl.add_mesh(bl, color="#111111", line_width=4)
         pl.add_text(title, font_size=10, color="black")
         if plane is None:
             pl.view_isometric()
@@ -120,9 +148,14 @@ def render_motion(design: Design, path: Path, poses: list[dict] | None = None, s
             lo, hi = np.minimum(lo, pts.min(0)), np.maximum(hi, pts.max(0))
     pl.add_mesh(pv.Box(bounds=(lo[0], hi[0], lo[1], hi[1], lo[2], hi[2])), opacity=0.0)
     pl.view_isometric()
-    trace, trace_actor, frames = [], None, []
+    trace, trace_actor, belt_actor, frames = [], None, None, []
     for q in poses:
         T = forward_kinematics(design, q)
+        if design.belts:
+            if belt_actor is not None:
+                pl.remove_actor(belt_actor)
+            bl = _belt_lines(design, T, pv)
+            belt_actor = pl.add_mesh(bl, color="#111111", line_width=4) if bl is not None else None
         for body, a, e in actors:
             a.user_matrix = T[body]
             if e is not None:

@@ -116,7 +116,11 @@ def run(path: str | Path, out_root: str | Path = "out", only=None, render: bool 
     # loop history: one line per run, so progress across iterations is visible
     hist = out / "history.jsonl"
     n = sum(1 for _ in open(hist)) + 1 if hist.exists() else 1
-    entry = {"iteration": n, "time": time.strftime("%Y-%m-%dT%H:%M:%S"), "ok": rep.ok,
+    rep.partial = bool(only)
+    entry = {"iteration": n, "time": time.strftime("%Y-%m-%dT%H:%M:%S"),
+             "ok": rep.ok and not only, "partial": bool(only),
+             "verifiers": {r.verifier: ("not run" if r.skipped.startswith("not run") else "skipped" if r.skipped
+                                        else "pass" if r.ok else "FAIL") for r in rep.results},
              "errors": [f"{f.verifier}:{f.code}" for f in rep.errors()],
              "seconds": round(time.time() - t0, 1)}
     with open(hist, "a") as f:

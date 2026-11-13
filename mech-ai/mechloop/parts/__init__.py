@@ -269,7 +269,9 @@ def add_screw(design: Design, name: str, size: str, length: float, at, direction
     st = shcs(size, length)
     dvec = Vector(*direction).normalized()
     loc = Location(Plane(origin=at, z_dir=-dvec))
-    c = place(design, name, st, loc, body=body)
+    c = place(design, name, st, loc, body=body, thread_d=SCREW[size][0],
+              threads_into=[threads_into] if isinstance(threads_into, str) else list(threads_into or []),
+              tnut=tnut)
     head_top = Vector(*at) - dvec * st.interfaces["head_h"]
     design.fasteners.append(Fastener(name, tuple(-dvec), tuple(head_top),
                                      tool_diameter=st.interfaces["hex_key"] * 1.6, tool_length=50.0,

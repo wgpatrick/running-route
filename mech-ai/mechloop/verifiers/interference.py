@@ -82,6 +82,7 @@ def verify_interference(design: Design) -> VerifierResult:
                           body=body, parts=sorted(g),
                           hint="Parts in one rigid body must be in contact (bolted, seated or bonded). Close the gap or add the connecting part.")
         _fastening(design, contacts, r)
+        _threads(design, r)
         r.metrics = {"pairs": n_pairs, "pairs_checked_exactly": n_exact,
                      "worst_overlap_mm3": round(worst, 2),
                      "contact_pairs": sum(len(v) for v in contacts.values()) // 2}
@@ -141,3 +142,46 @@ def _fastening(design: Design, contacts: dict[str, set[str]], r: VerifierResult)
                       body=body, parts=parts, touching=touching,
                       hint="Add screws that pass through/into both parts (parts.add_screw), or declare the "
                            "real joint with design.join(a, b, kind) for a press fit, bond, clamp or set screw.")
+
+
+THREAD_FACTOR = {"steel": 1.0, "stainless304": 1.0, "brass": 1.0, "al6061": 1.5}  # x thread diameter; plastics 2.0
+
+
+def _threads(design: Design, r: VerifierResult) -> None:
+    """Each screw must engage enough thread in the part it screws into."""
+    import numpy as np
+
+    comps = {c.name: c for c in design.components}
+    axis_of = {f.name: np.array(f.axis, dtype=float) for f in design.fasteners}
+    short = 0
+    for c in design.components:
+        d = c.meta.get("thread_d")
+        if not d or c.meta.get("tnut") or c.name not in axis_of:
+            continue
+        a = axis_of[c.name] / np.linalg.norm(axis_of[c.name])
+        for tgt in c.meta.get("threads_into", []):
+            if tgt not in comps:
+                continue
+            try:
+                common = c.shape.intersect(comps[tgt].shape)
+            except Exception:
+                common = None
+            eng = 0.0
+            items = common if isinstance(common, (list, tuple)) else ([common] if common is not None else [])
+            for it in items:
+                try:
+                    bb = it.bounding_box()
+                except Exception:
+                    continue
+                corners = np.array([[x, y, z] for x in (bb.min.X, bb.max.X) for y in (bb.min.Y, bb.max.Y)
+                                    for z in (bb.min.Z, bb.max.Z)])
+                pr = corners @ a
+                eng = max(eng, float(pr.max() - pr.min()))
+            need = THREAD_FACTOR.get(comps[tgt].material, 2.0) * d
+            if eng < need - 0.05:
+                short += 1
+                r.add("error", "thread_engagement",
+                      f"{c.name} engages only {eng:.1f} mm of thread in {tgt} ({comps[tgt].material}); "
+                      f"an M{d:g} needs >= {need:.1f} mm there.",
+                      screw=c.name, into=tgt, engagement_mm=round(eng, 2), required_mm=round(need, 2),
+                      hint="Use a longer screw, thicken the tapped part, or use a nut / threaded insert.")

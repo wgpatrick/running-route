@@ -74,6 +74,16 @@ def route(design: Design, belt: Belt, T: dict) -> dict:
 
 
 def verify_belts(design: Design, r: VerifierResult, poses: list[dict]) -> None:
+    belted = {n[1] for b in design.belts for n in b.path if n[0] == "pulley"}
+    for j in design.joints:
+        if j.drive and j.drive.get("kind") == "belt":
+            pul = j.drive.get("pulley")
+            if pul is None or pul not in belted:
+                r.add("error", "belt_missing",
+                      f"Joint {j.name} is belt-driven but no Belt runs around its drive pulley"
+                      f"{'' if pul else ' (name it with drive[\'pulley\'])'}; the drive is not connected to the load.",
+                      joint=j.name,
+                      hint="Add an idler, anchors on the moving body and a Belt in design.belts.")
     if not design.belts:
         return
     comps = {c.name: c for c in design.components}
@@ -102,6 +112,38 @@ def verify_belts(design: Design, r: VerifierResult, poses: list[dict]) -> None:
                   f"it would go slack or bind.", belt=belt.name, change_mm=round(spread, 3),
                   hint="Belt runs that lengthen with travel must be parallel to the motion; put the anchors on the "
                        "tangent line between the pulleys and keep both pulleys on the same body.")
+        # a wrong wrap sense makes the belt cross itself
+        P = [(np.array([p0 @ _basis(belt.axis)[1], p0 @ _basis(belt.axis)[2]]),
+              np.array([p1 @ _basis(belt.axis)[1], p1 @ _basis(belt.axis)[2]])) for p0, p1 in home["segments"]]
+
+        def _cross(s1, s2):
+            (a0, a1), (b0, b1) = s1, s2
+            d1, d2 = a1 - a0, b1 - b0
+            den = d1[0] * d2[1] - d1[1] * d2[0]
+            if abs(den) < 1e-9:
+                return False
+            t = ((b0[0] - a0[0]) * d2[1] - (b0[1] - a0[1]) * d2[0]) / den
+            u_ = ((b0[0] - a0[0]) * d1[1] - (b0[1] - a0[1]) * d1[0]) / den
+            return 0.02 < t < 0.98 and 0.02 < u_ < 0.98
+
+        if any(_cross(P[i], P[k]) for i in range(len(P)) for k in range(i + 1, len(P))):
+            r.add("error", "belt_crossed",
+                  f"Belt {belt.name} crosses itself; a pulley's wrap sense is probably reversed.", belt=belt.name,
+                  hint="Wrap sense follows the right-hand rule about `axis`: 'ccw' is counter-clockwise when you "
+                       "look from the tip of the axis vector back toward the pulley.")
+        # belt ends must be clamped to something real
+        for node in belt.path:
+            if node[0] != "anchor":
+                continue
+            from build123d import Vertex
+
+            vtx = Vertex(*node[2])
+            near = min((c.shape.distance_to(vtx) for c in design.components if c.body == node[1]), default=1e9)
+            if near > 2.0:
+                r.add("error", "belt_anchor_in_air",
+                      f"Belt {belt.name}: anchor at {tuple(round(x, 1) for x in node[2])} is {near:.1f} mm from the "
+                      f"nearest part of body '{node[1]}'; nothing clamps the belt there.", belt=belt.name,
+                      hint="Put the anchor on a clamp feature that is part of (and fastened to) that body.")
         hs = home["heights"]
         if max(hs) - min(hs) > 0.5:
             r.add("error", "belt_misaligned",
@@ -109,8 +151,6 @@ def verify_belts(design: Design, r: VerifierResult, poses: list[dict]) -> None:
                   f"the pulley axis); the belt would track off.", belt=belt.name)
         for name, w in home["wraps_deg"].items():
             teeth = comps[name].ratings.get("teeth")
-            if teeth and "motor" in " ".join(str(v) for v in [name]) or False:
-                pass
             if teeth and w * teeth / 360.0 < 6 and any(
                     j.drive and j.drive.get("pulley") == name for j in design.joints):
                 r.add("error", "belt_low_wrap",
@@ -128,7 +168,7 @@ def verify_belts(design: Design, r: VerifierResult, poses: list[dict]) -> None:
         own = {n[1] for n in belt.path if n[0] == "pulley"}
         a, _, _ = _basis(belt.axis)
         hit: dict[str, dict] = {}
-        check = [{}] + [q for q in poses if len(q) == 1][::4] + [q for q in poses if len(q) > 1][:8]
+        check = [{}] + [q for q in poses if len(q) == 1][::2] + [q for q in poses if len(q) > 1][:40]
         for q in check:
             T = forward_kinematics(design, q)
             rt = route(design, belt, T)

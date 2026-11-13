@@ -41,6 +41,7 @@ class Report:
     design: str
     results: list[VerifierResult] = field(default_factory=list)
     artifacts: dict = field(default_factory=dict)
+    partial: bool = False  # only a subset of verifiers was requested
 
     @property
     def ok(self) -> bool:
@@ -55,6 +56,7 @@ class Report:
         return {
             "design": self.design,
             "ok": self.ok,
+            **({"partial": "only some verifiers were run; this is not a full pass"} if self.partial else {}),
             "summary": {
                 r.verifier: (
                     "skipped: " + r.skipped

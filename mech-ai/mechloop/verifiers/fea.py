@@ -400,12 +400,20 @@ def run_assembly(design: Design, ac, r: VerifierResult) -> dict:
                 cad = [f for f in comps[i].shape.faces() if pred(f)]
                 tags = []
                 for s_tag in part_faces[i]:
-                    c = gmsh.model.occ.getCenterOfMass(2, s_tag)
-                    v = Vertex(*c)
-                    if any(f.distance_to(v) < 1e-3 for f in cad):
+                    # sample the mid-point of every boundary curve: these lie on the surface even when
+                    # its centroid falls in a hole (annular faces), and only the right CAD face holds them all
+                    pts = []
+                    for _, ctag in gmsh.model.getBoundary([(2, s_tag)], oriented=False):
+                        lo_p, hi_p = gmsh.model.getParametrizationBounds(1, abs(ctag))
+                        pts.append(gmsh.model.getValue(1, abs(ctag), [(lo_p[0] + hi_p[0]) / 2]))
+                    if not pts:
+                        pts = [gmsh.model.occ.getCenterOfMass(2, s_tag)]
+                    if any(all(f.distance_to(Vertex(*pt)) < 1e-3 for pt in pts) for f in cad):
                         tags.append(s_tag)
+                select.cad_counts.append((name, len(cad)))
                 return tags, sum(f.area for f in cad)
 
+            select.cad_counts = []
             fixed_tags = []
             for sel in ac.fixed:
                 t, _ = select(sel)
@@ -413,7 +421,9 @@ def run_assembly(design: Design, ac, r: VerifierResult) -> dict:
             load_tags, load_area_cad = select(ac.loaded)
             if not fixed_tags or not load_tags:
                 r.add("error", "fea_setup", f"{ac.name}: face selection matched fixed={len(fixed_tags)} "
-                      f"loaded={len(load_tags)} mesh surfaces.", case=ac.name)
+                      f"loaded={len(load_tags)} mesh surfaces. Your predicates matched these CAD face counts: "
+                      f"{select.cad_counts}. If a count is 0 the predicate is wrong; if it is non-zero the face is "
+                      f"probably fully covered by a neighbouring part in this assembly.", case=ac.name)
                 return {}
             grounded = {i for i in range(len(comps)) if part_faces[i] & set(fixed_tags)}
             reach, stack = set(grounded), list(grounded)
@@ -524,7 +534,7 @@ def run_assembly(design: Design, ac, r: VerifierResult) -> dict:
                       f"the applied load {force.tolist()} ({imb:.1%} off); result is not trustworthy.",
                       case=ac.name, reactions=res["rf"].tolist(), nodes=len(xyz), fixed_nodes=len(fixed_nodes),
                       load_nodes=len(nodal))
-        if abs(areas.sum() - load_area_cad) / max(load_area_cad, 1e-9) > 0.05:
+        if abs(areas.sum() - load_area_cad) / max(load_area_cad, 1e-9) > 0.05 and load_area_cad > 6 * size * size:
             r.add("warning", "fea_load_area", f"{ac.name}: meshed load area {areas.sum():.0f} mm^2 differs from the "
                   f"selected CAD faces ({load_area_cad:.0f} mm^2); part of the face may be covered by another part.",
                   case=ac.name)

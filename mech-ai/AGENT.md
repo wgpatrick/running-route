@@ -39,7 +39,11 @@ everything (with renders) before you finish. `python -m mechloop history <name>`
   with `f.center(CenterOf.MASS)` (the axis point); plain `f.center()` lies on the surface.
 - Hand-made proxy parts (`Stock(...)` you build yourself) get an `uncatalogued_cots`
   warning. Leave it; it is true.
-- A verifier that is `skipped: not run` is not a pass.
+- A verifier that is `skipped: not run` is not a pass, and neither is an `--only` run.
+- Screws need real thread engagement in what they screw into: at least 1x diameter in steel,
+  1.5x in aluminium, 2x in plastic (T-nut joints exempt). Belt-driven joints need a `Belt`.
+- The envelope is checked at the home pose. Collision sampling covers each joint alone over its
+  travel, every corner of the joint space and random combined poses, plus the whole motion program.
 
 ## Building blocks
 
@@ -82,8 +86,9 @@ def build():
   `AssemblyCase(name, components, fixed=[(part, pred)], loaded=(part, pred), force, probe, max_deflection)`
   in `design.assemblycases` meshes several touching parts as one bonded body.
 - Belts: `design.belts.append(Belt(name, path, axis=(0, 0, 1), stock_length=None))`. `path` lists the route
-  in order: `("pulley", part_name, "ccw"|"cw")` for catalog `gt2_pulley`/`gt2_idler` parts (wrap sense seen
-  looking down `axis`), and `("anchor", body, (x, y, z))` where a belt end is clamped (home-pose world point
+  in order: `("pulley", part_name, "ccw"|"cw")` for catalog `gt2_pulley`/`gt2_idler` parts (wrap sense by the
+  right-hand rule about `axis`: "ccw" is counter-clockwise when you look from the tip of the axis vector
+  back at the pulley), and `("anchor", body, (x, y, z))` where a belt end is clamped (home-pose world point
   on that body). Open belt = anchor ... anchor; closed loop = pulleys only. The motion verifier checks that
   the path length stays constant over the travel, pulleys are coplanar, the drive pulley has enough teeth
   engaged, a closed loop matches `stock_length`, and no straight run passes through a part. Pulley centre

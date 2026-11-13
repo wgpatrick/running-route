@@ -100,7 +100,7 @@ def belt_axis(anchor_y=0.0, idler_x=150.0):
     d = Design("beltaxis")
     place(d, "drive", gt2_pulley(20), Location((-150, 0, 0)))
     place(d, "idler", gt2_idler(20), Location((idler_x, 0, 6.25)))
-    d.add("clamp", Pos(0, -12, 11) * Box(20, 6, 10), body="car")
+    d.add("clamp", Pos(0, -10.1, 11) * Box(20, 6, 10), body="car")
     r_p = 20 * 2 / math.pi / 2
     z = d.get("drive").meta["interfaces"]["belt_center"][0][2]
     y = -r_p + anchor_y
@@ -129,3 +129,27 @@ def test_belt_route_checks():
     d = belt_axis()
     d.add("post", Pos(60, 6.4, 11) * Box(8, 8, 30))
     assert "belt_collision" in errs(verify_motion(d))
+
+
+def test_thread_engagement_and_missing_belt():
+    from mechloop.parts import gt2_pulley
+    from mechloop.verifiers.interference import verify_interference
+
+    d = Design("thr")
+    d.add("block", Box(40, 40, 20), material="al6061")
+    d.add("cover", Pos(0, 0, 12.5) * (Box(40, 40, 5) - Cylinder(1.7, 5)))
+    add_screw(d, "short", "M3", 8, at=(0, 0, 15), threads_into="block")     # 3 mm in aluminium: needs 4.5
+    r = verify_interference(d)
+    assert "thread_engagement" in errs(r)
+    d2 = Design("thr2")
+    d2.add("block", Box(40, 40, 20), material="al6061")
+    d2.add("cover", Pos(0, 0, 12.5) * (Box(40, 40, 5) - Cylinder(1.7, 5)))
+    add_screw(d2, "long", "M3", 10, at=(0, 0, 15), threads_into="block")    # 5 mm: fine
+    assert "thread_engagement" not in errs(verify_interference(d2))
+    # a belt-driven joint with no belt is not connected to its load
+    d3 = rail_axis(50)
+    place(d3, "motor", nema17(40), Location((0, 60, 0)))
+    place(d3, "pul", gt2_pulley(20), Location((0, 60, 2.5)))
+    d3.joints[0].drive = {"motor": "motor", "kind": "belt", "pulley": "pul"}
+    d3.joints[0].max_speed, d3.joints[0].max_accel = 100, 1000
+    assert "belt_missing" in errs(verify_motion(d3))
