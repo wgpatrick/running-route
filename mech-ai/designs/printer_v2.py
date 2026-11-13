@@ -76,17 +76,31 @@ X_MOTOR_X = -(FX / 2 + 27.0)
 RIB = 8.0
 Z_NOZZLE = Z_TOP - 4 - 60      # nozzle tip (hotend proxy is 60 long, top at Z_TOP - 4)
 PR = 20 * 2.0 / math.pi / 2     # pitch radius of the 20T pulleys / idlers
+BWX, BWY = 9.0, 9.0             # GT2 belt widths (v2: 9 mm instead of 6 mm; stiffer belts)
+P_BC = lambda w: 7.0 + (w + 1) / 2      # gt2_pulley belt centre above its hub bottom
+I_H = lambda w: w + 2.5                 # gt2_idler height
+MT_Y = 4.0                     # Y motor / idler mount plate thickness
 XB = 28.0                      # X belt centre line, in front of the beam centre
 X_IDLER_X = RAIL_X - 20.0
-Z_XB = Z_PLATE + T_YP + 0.5 + 10.5      # X belt centre height
+Z_XB = Z_PLATE + T_YP + 0.5 + P_BC(BWX)      # X belt centre height
 XA_Y = YB0 - XB + PR           # near (anchored) run of the X belt
 TAB_Y0 = XA_Y + 0.7 + 0.03     # tab front face = belt tooth side
-YB_X = FX / 2 + 15.0           # Y belt plane, outboard of the right frame rail
+YB_X = FX / 2 + MT_Y + 0.5 + P_BC(BWY)           # Y belt plane, outboard of the right frame rail
 YM_Y, YI_Y = FY / 2 + 24.0, -128.0      # Y motor pulley (behind the frame) and Y idler (front)
-MT = 4.0
+MT = MT_Y
 Z_YA = Z_PLATE + T_YP + 0.7    # upper (anchored) run of the Y belt lies on the right Y plate
 Z_YC = Z_YA - PR
-Z_XI = Z_XB - 4.25              # underside of the X idler
+# v2 second (left) Y drive: belt plane outboard of the left rail, loop ABOVE the left Y plate on a
+# clamp tower, so it clears the X motor (below the plate) and the X pulley / X belt (below the loop)
+TOW_H = 20.0
+YBL_X = -(YB_X + 1.5)
+TOW_X0, TOW_X1 = YBL_X - 12.0, YBL_X + BWY / 2 + 0.3
+TOW_Y0, TOW_Y1 = YB0 - 9.0, YB0 + 13.5
+Z_TOW = Z_PLATE + T_YP + TOW_H
+Z_YAL = Z_TOW + 0.7            # lower (anchored) run of the left Y belt lies on the tower
+Z_YCL = Z_YAL + PR
+YI_YL = -156.0                 # left Y idler: in front of the sweep of the X motor pad
+Z_XI = Z_XB - I_H(BWX) / 2              # underside of the X idler
 NOZZLE_GAP = 0.1               # bed surface -> nozzle with the bed at the top: must not exceed the first layer
                                # height (the digital twin showed a 1.0 mm gap made the first layer unreachable)
 
@@ -246,7 +260,7 @@ def build() -> Design:
         place(d, f"y_carriage_{n}", mgn12h_carriage(), Location((sx * RAIL_X, YB0, Z_RAIL), (0, 0, 90)),
               body="ybody", guides="y")
         x_in = sx * (RAIL_X - 35)
-        x_out = X_MOTOR_X - 24 if sx < 0 else YB_X + 4.5     # right plate reaches out under the Y belt clamp
+        x_out = X_MOTOR_X - 24 if sx < 0 else YB_X + BWY / 2 + 1.5     # right plate reaches out under the Y belt clamp
         # rear edge trimmed to +13.5 so the tool plate passes behind it
         plate = Pos((x_in + x_out) / 2, YB0 - 5.75, Z_PLATE + T_YP / 2) * Box(abs(x_out - x_in), 38.5, T_YP)
         for x in (-10, 10):
@@ -262,6 +276,9 @@ def build() -> Design:
             for x in (-15.5, 15.5):
                 for y in (-15.5, 15.5):
                     plate -= Pos(X_MOTOR_X + x, YB0 - XB + y, Z_PLATE + T_YP / 2) * Cylinder(clearance_hole("M3") / 2, T_YP)
+            # integral clamp tower for the left Y belt
+            plate += Pos((TOW_X0 + TOW_X1) / 2, (TOW_Y0 + TOW_Y1) / 2, Z_PLATE + T_YP + TOW_H / 2) * Box(
+                TOW_X1 - TOW_X0, TOW_Y1 - TOW_Y0, TOW_H)
         else:
             # ear + integral boss carrying the X idler axle (tapped M5 through boss and plate: 11.5 mm of thread)
             plate += Pos(X_IDLER_X, YB0 - 31, Z_PLATE + T_YP / 2) * Box(24, 12, T_YP)
@@ -287,7 +304,7 @@ def build() -> Design:
     # ================= X drive ===================================================
     xclamp = Pos(0, (XC_Y0 + TAB_Y0) / 2, Z_XB + 1) * Box(40, TAB_Y0 - XC_Y0, 20)
     for sx in (-1, 1):   # pockets grip the last 14 mm of each belt end against the tab
-        xclamp -= Pos(sx * 13, TAB_Y0 - 0.75, Z_XB) * Box(14, 1.5, 7.2)
+        xclamp -= Pos(sx * 13, TAB_Y0 - 0.75, Z_XB) * Box(14, 1.5, BWX + 1.2)
     for x, z in X_CLAMP_SCREWS:
         xclamp -= Pos(x, (XC_Y0 + TAB_Y0) / 2, z) * Rot(90, 0, 0) * Cylinder(clearance_hole("M3") / 2, TAB_Y0 - XC_Y0)
     d.add("x_belt_clamp", xclamp, material="al6061", body="xbody")
@@ -295,13 +312,13 @@ def build() -> Design:
         add_screw(d, f"x_belt_clamp_screw_{i}", "M3", 10, at=(x, XC_Y0, z), direction=(0, 1, 0), body="xbody",
                   threads_into="tool_plate")
     place(d, "x_motor", nema17(40), Location((X_MOTOR_X, YB0 - XB, Z_PLATE)), body="ybody")
-    place(d, "x_pulley", gt2_pulley(20), Location((X_MOTOR_X, YB0 - XB, Z_PLATE + T_YP + 0.5)), body="ybody")
+    place(d, "x_pulley", gt2_pulley(20, belt_width=BWX), Location((X_MOTOR_X, YB0 - XB, Z_PLATE + T_YP + 0.5)), body="ybody")
     for i, (x, y) in enumerate([(-15.5, -15.5), (-15.5, 15.5), (15.5, -15.5), (15.5, 15.5)]):
         add_screw(d, f"x_motor_screw_{i}", "M3", 10, at=(X_MOTOR_X + x, YB0 - XB + y, Z_PLATE + T_YP),
                   body="ybody", threads_into="x_motor")
     d.join("x_pulley", "x_motor", "set_screw")
-    place(d, "x_idler", gt2_idler(20), Location((X_IDLER_X, YB0 - XB, Z_XI)), body="ybody")
-    add_screw(d, "x_idler_bolt", "M5", 20, at=(X_IDLER_X, YB0 - XB, Z_XI + 8.5), body="ybody", threads_into="y_plate_right")
+    place(d, "x_idler", gt2_idler(20, belt_width=BWX), Location((X_IDLER_X, YB0 - XB, Z_XI)), body="ybody")
+    add_screw(d, "x_idler_bolt", "M5", 20, at=(X_IDLER_X, YB0 - XB, Z_XI + I_H(BWX)), body="ybody", threads_into="y_plate_right")
     d.join("x_idler", "x_idler_bolt", "axle")
     # ================= Y drive: vertical belt plane outboard of the right rail =====
     xf = FX / 2
@@ -318,8 +335,8 @@ def build() -> Design:
         mm -= Pos(xf + MT / 2, y, FZ) * xcyl(clearance_hole("M5") / 2, MT)
     d.add("y_motor_mount", mm, material="al6061")
     place(d, "y_motor", nema17(48), Location(Plane(origin=(xf, YM_Y, Z_YC), x_dir=(0, 1, 0), z_dir=(1, 0, 0))))
-    place(d, "y_pulley", gt2_pulley(20),
-          Location(Plane(origin=(YB_X - 10.5, YM_Y, Z_YC), x_dir=(0, 1, 0), z_dir=(1, 0, 0))))
+    place(d, "y_pulley", gt2_pulley(20, belt_width=BWY),
+          Location(Plane(origin=(YB_X - P_BC(BWY), YM_Y, Z_YC), x_dir=(0, 1, 0), z_dir=(1, 0, 0))))
     k = 0
     for y in (-15.5, 15.5):
         for z in (-15.5, 15.5):
@@ -331,7 +348,7 @@ def build() -> Design:
     d.join("y_pulley", "y_motor", "set_screw")
     # idler mount at the front, in front of the Y carriage / Y plate sweep (reaches y = -109.75);
     # integral boss tapped M5 for the idler axle (10.75 mm of thread)
-    x_yi = YB_X - 4.25
+    x_yi = YB_X - I_H(BWY) / 2
     im = Pos(xf + MT / 2, YI_Y - 1.5, (FZ - 10 + Z_YC + 9) / 2) * Box(MT, 31, Z_YC + 9 - FZ + 10)
     im += Pos((xf + MT + x_yi) / 2, YI_Y, Z_YC) * xcyl(5.0, x_yi - xf - MT)
     for y in (YI_Y - 9.0, YI_Y + 6.0):
@@ -340,35 +357,85 @@ def build() -> Design:
     for i, y in enumerate((YI_Y - 9.0, YI_Y + 6.0)):
         add_screw(d, f"y_idler_mount_bolt_{i}", "M5", 8, at=(xf + MT, y, FZ), direction=(-1, 0, 0),
                   threads_into="frame_top_right", tnut=True)
-    place(d, "y_idler", gt2_idler(20), Location(Plane(origin=(x_yi, YI_Y, Z_YC), x_dir=(0, 1, 0), z_dir=(1, 0, 0))))
-    add_screw(d, "y_idler_bolt", "M5", 20, at=(x_yi + 8.5, YI_Y, Z_YC), direction=(-1, 0, 0), threads_into="y_idler_mount")
+    place(d, "y_idler", gt2_idler(20, belt_width=BWY), Location(Plane(origin=(x_yi, YI_Y, Z_YC), x_dir=(0, 1, 0), z_dir=(1, 0, 0))))
+    add_screw(d, "y_idler_bolt", "M5", 20, at=(x_yi + I_H(BWY), YI_Y, Z_YC), direction=(-1, 0, 0), threads_into="y_idler_mount")
     d.join("y_idler", "y_idler_bolt", "axle")
     # Y belt clamp on top of the right Y plate: grooved bar, belt ends enter from front and back
     PC = YB0 - 5.75
     YA0, YA1 = PC - 14, PC + 14
     zt = Z_PLATE + T_YP
-    yclamp = Pos((RAIL_X + 16 + YB_X + 4.5) / 2, PC, zt + 2) * Box(YB_X + 4.5 - RAIL_X - 16, YA1 - YA0, 4)
+    yclamp = Pos((RAIL_X + 16 + YB_X + BWY / 2 + 1.5) / 2, PC, zt + 2) * Box(YB_X + BWY / 2 + 1.5 - RAIL_X - 16, YA1 - YA0, 4)
     for sy in (-1, 1):
-        yclamp -= Pos(YB_X, PC + sy * 9, zt + 0.75) * Box(6.4, 10, 1.5)
+        yclamp -= Pos(YB_X, PC + sy * 9, zt + 0.75) * Box(BWY + 0.4, 10, 1.5)
     Y_CLAMP_SCREWS = [(YB_X, PC), (RAIL_X + 18.5, PC - 9), (RAIL_X + 18.5, PC + 9)]
     for x, y in Y_CLAMP_SCREWS:
         yclamp -= Pos(x, y, zt + 2) * Cylinder(clearance_hole("M3") / 2, 4)
     d.add("y_belt_clamp", yclamp, material="al6061", body="ybody")
     for i, (x, y) in enumerate(Y_CLAMP_SCREWS):
         add_screw(d, f"y_belt_clamp_screw_{i}", "M3", 10, at=(x, y, zt + 4), body="ybody", threads_into="y_plate_right")
+    # ================= second Y drive (v2): mirrored motor + belt on the left rail =====
+    mml = (Pos(-xf - MT / 2, 152.5, FZ) * Box(MT, 55, 20)
+           + Pos(-xf - MT / 2, (170 + YM_Y + 23) / 2, (FZ - 10 + Z_YCL + 23) / 2) * Box(MT, YM_Y + 23 - 170, Z_YCL + 23 - FZ + 10))
+    mml -= Pos(-xf - MT / 2, YM_Y, Z_YCL) * xcyl(11.5, MT)
+    for y in (-15.5, 15.5):
+        for z in (-15.5, 15.5):
+            mml -= Pos(-xf - MT / 2, YM_Y + y, Z_YCL + z) * xcyl(clearance_hole("M3") / 2, MT)
+    for y in Y_MOUNT_BOLTS:
+        mml -= Pos(-xf - MT / 2, y, FZ) * xcyl(clearance_hole("M5") / 2, MT)
+    d.add("y_motor_mount_l", mml, material="al6061")
+    place(d, "y_motor_l", nema17(48), Location(Plane(origin=(-xf, YM_Y, Z_YCL), x_dir=(0, 1, 0), z_dir=(-1, 0, 0))))
+    place(d, "y_pulley_l", gt2_pulley(20, belt_width=BWY),
+          Location(Plane(origin=(YBL_X + P_BC(BWY), YM_Y, Z_YCL), x_dir=(0, 1, 0), z_dir=(-1, 0, 0))))
+    k = 0
+    for y in (-15.5, 15.5):
+        for z in (-15.5, 15.5):
+            add_screw(d, f"y_motor_l_screw_{k}", "M3", 8, at=(-xf - MT, YM_Y + y, Z_YCL + z), direction=(1, 0, 0),
+                      threads_into="y_motor_l"); k += 1
+    for i, y in enumerate(Y_MOUNT_BOLTS):
+        add_screw(d, f"y_motor_mount_l_bolt_{i}", "M5", 8, at=(-xf - MT, y, FZ), direction=(1, 0, 0),
+                  threads_into="frame_top_left", tnut=True)
+    d.join("y_pulley_l", "y_motor_l", "set_screw")
+    x_yil = YBL_X + I_H(BWY) / 2
+    iml = Pos(-xf - MT / 2, YI_YL - 1.5, (FZ - 10 + Z_YCL + 9) / 2) * Box(MT, 31, Z_YCL + 9 - FZ + 10)
+    iml += Pos((-xf - MT + x_yil) / 2, YI_YL, Z_YCL) * xcyl(5.0, -xf - MT - x_yil)
+    for y in (YI_YL - 9.0, YI_YL + 6.0):
+        iml -= Pos(-xf - MT / 2, y, FZ) * xcyl(clearance_hole("M5") / 2, MT)
+    d.add("y_idler_mount_l", iml, material="al6061")
+    for i, y in enumerate((YI_YL - 9.0, YI_YL + 6.0)):
+        add_screw(d, f"y_idler_mount_l_bolt_{i}", "M5", 8, at=(-xf - MT, y, FZ), direction=(1, 0, 0),
+                  threads_into="frame_top_left", tnut=True)
+    place(d, "y_idler_l", gt2_idler(20, belt_width=BWY),
+          Location(Plane(origin=(x_yil, YI_YL, Z_YCL), x_dir=(0, 1, 0), z_dir=(-1, 0, 0))))
+    add_screw(d, "y_idler_l_bolt", "M5", 20, at=(x_yil - I_H(BWY), YI_YL, Z_YCL), direction=(1, 0, 0),
+              threads_into="y_idler_mount_l")
+    d.join("y_idler_l", "y_idler_l_bolt", "axle")
+    # clamp bar on top of the tower
+    PCL = (TOW_Y0 + TOW_Y1) / 2
+    yclamp_l = Pos((TOW_X0 + TOW_X1) / 2, PCL, Z_TOW + 2) * Box(TOW_X1 - TOW_X0, TOW_Y1 - TOW_Y0, 4)
+    for sy in (-1, 1):
+        yclamp_l -= Pos(YBL_X, PCL + sy * 7.25, Z_TOW + 0.75) * Box(BWY + 0.4, 8, 1.5)
+    YL_CLAMP_SCREWS = [(YBL_X, PCL), (TOW_X0 + 3.0, PCL - 7), (TOW_X0 + 3.0, PCL + 7)]
+    for x, y in YL_CLAMP_SCREWS:
+        yclamp_l -= Pos(x, y, Z_TOW + 2) * Cylinder(clearance_hole("M3") / 2, 4)
+    d.add("y_belt_clamp_l", yclamp_l, material="al6061", body="ybody")
+    for i, (x, y) in enumerate(YL_CLAMP_SCREWS):
+        add_screw(d, f"y_belt_clamp_l_screw_{i}", "M3", 10, at=(x, y, Z_TOW + 4), body="ybody", threads_into="y_plate_left")
     # ================= belts =====================================================
     d.belts.append(Belt("x_belt", [("anchor", "xbody", (-20.0, XA_Y, Z_XB)), ("pulley", "x_pulley", "ccw"),
                                    ("pulley", "x_idler", "ccw"), ("anchor", "xbody", (20.0, XA_Y, Z_XB))],
-                        axis=(0, 0, 1)))
+                        axis=(0, 0, 1), width=BWX))
     d.belts.append(Belt("y_belt", [("anchor", "ybody", (YB_X, YA0, Z_YA)), ("pulley", "y_idler", "ccw"),
                                    ("pulley", "y_pulley", "ccw"), ("anchor", "ybody", (YB_X, YA1, Z_YA))],
-                        axis=(1, 0, 0)))
-    d.bom_extra("GT2-BELT-6MM-OPEN-1M", 2, 3.0)
+                        axis=(1, 0, 0), width=BWY))
+    d.belts.append(Belt("y_belt_l", [("anchor", "ybody", (YBL_X, TOW_Y0, Z_YAL)), ("pulley", "y_idler_l", "cw"),
+                                     ("pulley", "y_pulley_l", "cw"), ("anchor", "ybody", (YBL_X, TOW_Y1, Z_YAL))],
+                        axis=(1, 0, 0), width=BWY))
+    d.bom_extra("GT2-BELT-9MM-OPEN-1M", 3, 4.5)   # v2: 9 mm belt (price is an estimate; pulley SKUs do not encode width)
 
     # ================= joints ====================================================
     d.joints.append(Joint("y", "slide", "world", "ybody", (0, 1, 0), range=(-TY, TY),
                           max_speed=V_XY, max_accel=A_XY, min_drive_margin=MARGIN,
-                          drive={"motor": "y_motor", "kind": "belt", "pulley": "y_pulley"}))
+                          drive={"motor": ["y_motor", "y_motor_l"], "kind": "belt", "pulley": "y_pulley"}))
     d.joints.append(Joint("x", "slide", "ybody", "xbody", (1, 0, 0), range=(-TX, TX),
                           max_speed=V_XY, max_accel=A_XY, min_drive_margin=MARGIN,
                           drive={"motor": "x_motor", "kind": "belt", "pulley": "x_pulley"}))
@@ -411,6 +478,10 @@ def build() -> Design:
     # ================= requirements ==============================================
     def jr(dd, name):
         return next(j for j in dd.joints if j.name == name)
+
+    def motors_of(dd, name):   # v2: a joint may have several motors (dual Y drive); same check on each
+        mm_ = jr(dd, name).drive["motor"]
+        return [mm_] if isinstance(mm_, str) else list(mm_)
 
     def nozzle_tip(dd):
         bb = dd.get("hotend").shape.bounding_box()
@@ -466,8 +537,8 @@ def build() -> Design:
     d.requirements.append(Requirement("Z rails end below the top back extrusion (no rubbing)", lambda dd: (
         (t := dd.get("z_rail_left").shape.bounding_box().max.Z) < FZ - 10, f"rail top {t:.1f} vs extrusion underside {FZ - 10:.1f}")))
     d.requirements.append(Requirement("all three joints driven by catalog NEMA 17 motors", lambda dd: (
-        all(dd.get(jr(dd, n).drive["motor"]).sku.startswith("NEMA17") and dd.get(jr(dd, n).drive["motor"]).meta["catalog"]
-            for n in "xyz"), str({n: dd.get(jr(dd, n).drive["motor"]).sku for n in "xyz"}))))
+        all(dd.get(mn).sku.startswith("NEMA17") and dd.get(mn).meta["catalog"] for n in "xyz" for mn in motors_of(dd, n)),
+        str({n: [dd.get(mn).sku for mn in motors_of(dd, n)] for n in "xyz"}))))
     d.requirements.append(Requirement("Z lead screw self-locking (efficiency < 0.5)", lambda dd: (
         dd.get("leadscrew").ratings["efficiency"] < 0.5, f"efficiency {dd.get('leadscrew').ratings['efficiency']}")))
     return d

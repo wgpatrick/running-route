@@ -147,6 +147,26 @@ The twin has no thermal model, and friction, extruder lag, damping and belt stif
 values, so prefer changes that are robust in kind (less mass, more stiffness, more torque margin).
 `python -m mechloop print <printer.py> <design.py>:<part>` prints any part and renders the result.
 
+## Building it: the assembly simulation
+
+    python -m mechloop assemble designs/<name>.py     # writes out/<name>/BUILD.md and build.gif
+
+simulates building the design at a bench. It finds an order in which every part has a way in
+(a straight move, or two straight moves), parts go on before their screws, and each screw can be
+reached. Then for every step it asks what a person would face: if you let go of the part, does it
+stay (or fall, tip or slide), which way does it go in, which tool. The assembly may be turned onto
+any of its six sides between steps, and the turning schedule is chosen to minimise holding.
+
+Metrics (all better lower; also in `mechloop score` under `assembly`): `estimated_time_min` (rough
+allowances, for comparing designs), `needs_holding` (parts that must be held or clamped until
+fastened), `from_below`, `times_assembly_is_turned`, `two_move_paths`, `fasteners`,
+`fastener_types`, `tool_changes`. `trapped` parts cannot be installed at all.
+
+Design levers: add a ledge, pocket, pin or tab so a part locates and rests before it is screwed;
+put fasteners on one side; reduce screw sizes to one or two; make bench sub-assemblies with
+`design.subassemblies["name"] = [part names]` (the group is built separately and installed as one
+unit); split or open up a part that traps another.
+
 ## What each verifier tells you
 
 | Verifier | Checks | Typical fix |

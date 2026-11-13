@@ -62,6 +62,7 @@ def score(design_path, out_root="out", speed: float = 2.0) -> dict:
         "bom_cost_usd": metrics.get("ratings", {}).get("bom_cost_usd_estimate"),
         "first_failure": ({"accel_mm_s2": first_fail * a_nom, "errors": sorted(set(res[f"a{first_fail:g}"]["errors"]))}
                           if first_fail else None),
+        "assembly": _assembly(design),
         "static_errors": [f"{f.verifier}:{f.code}" for f in rep.errors()],
         "seconds": round(time.time() - t0, 1),
     }
@@ -77,3 +78,15 @@ def _dyn(run_dir: Path, key: str):
         return json.loads((run_dir / "print_report.json").read_text())["dynamics"].get(key)
     except Exception:
         return None
+
+
+def _assembly(design) -> dict:
+    """How hard it is to build (from the assembly simulation). All of these are better lower."""
+    try:
+        from ..assembly.simulate import analyse
+
+        m = analyse(design)["metrics"]
+        return {k: m[k] for k in ("complete", "estimated_time_min", "needs_holding", "from_below", "times_assembly_is_turned",
+                                  "two_move_paths", "fasteners", "fastener_types", "tool_changes", "parts")}
+    except Exception as e:
+        return {"error": f"{type(e).__name__}: {e}"}

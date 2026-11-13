@@ -26,6 +26,10 @@ def main(argv=None) -> int:
     pr.add_argument("--layer-height", type=float, default=0.2)
     pr.add_argument("--accel-scale", type=float, default=1.0, help="what-if multiplier on XY acceleration limits")
     pr.add_argument("--no-render", action="store_true")
+    asm = sub.add_parser("assemble", help="simulate building the design: order, holding, tools, time, instructions")
+    asm.add_argument("design")
+    asm.add_argument("--out", default="out")
+    asm.add_argument("--no-render", action="store_true")
     sc = sub.add_parser("score", help="scorecard for a printer design (things to improve, not just pass)")
     sc.add_argument("design")
     sc.add_argument("--out", default="out")
@@ -55,6 +59,25 @@ def main(argv=None) -> int:
                         render=not a.no_render, accel_scale=a.accel_scale)
         print(json.dumps({k: v for k, v in rep.items() if k != "gcode"}, indent=1, default=float))
         return 0 if rep["ok"] else 1
+    if a.cmd == "assemble":
+        from .assembly.simulate import analyse, instructions
+        from .runner import load_design
+
+        d = load_design(a.design)
+        res = analyse(d)
+        out = Path(a.out) / d.name
+        out.mkdir(parents=True, exist_ok=True)
+        (out / "BUILD.md").write_text(instructions(d, res))
+        arts = {"instructions": str(out / "BUILD.md")}
+        if not a.no_render:
+            from .assembly.render import render_build
+
+            arts["animation"] = str(render_build(d, res, out / "build.gif"))
+        holds = [r["unit"] for r in res["rows"] if r.get("rests_stably") is False]
+        print(json.dumps({"design": d.name, "metrics": res["metrics"],
+                          "needs_holding": holds[:30], "from_below": [r["unit"] for r in res["rows"] if r.get("direction") == "from below"][:30],
+                          "trapped": res["plan"].trapped, "artifacts": arts}, indent=1, default=str))
+        return 0 if res["metrics"]["complete"] else 1
     if a.cmd == "score":
         from .twin.score import score
 
