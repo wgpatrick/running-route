@@ -9,7 +9,7 @@ from PIL import Image, ImageDraw
 from scipy import ndimage
 from scipy.signal import lfilter
 
-RES = 20  # pixels per mm
+RES = 20  # pixels per mm (default; PrinterMap.raster_px_per_mm overrides per run)
 CHUNK = 0.2  # mm of path per deposited bead segment
 
 
@@ -95,8 +95,12 @@ def _draw_layers(gx, gy, vol, layer, ext_mask, n_layers, lh, x0, y0, w, h, nozzl
     return [np.array(i) > 0 for i in imgs], total_len
 
 
-def deposit_and_compare(info, pm, moves, e, seg, frac, Qc, Qa, dt, stl, out: Path, name, r) -> dict:
+def deposit_and_compare(info, pm, moves, e, seg, frac, Qc, Qa, dt, stl, out: Path, name, r,
+                        at=(0.0, 0.0), z_datum_error: float = 0.0) -> dict:
     from . import from_joints
+
+    global RES
+    RES = int(pm.raster_px_per_mm)
 
     lh = pm.layer_height
     a_fil = math.pi * (pm.filament_diameter / 2) ** 2
@@ -116,6 +120,8 @@ def deposit_and_compare(info, pm, moves, e, seg, frac, Qc, Qa, dt, stl, out: Pat
     layer = np.round(gz_move[seg] / lh).astype(int) - 1
     cx, cy, cz = from_joints(info, Qc)
     ax, ay, az = from_joints(info, Qa)
+    cx, cy, ax, ay = cx - at[0], cy - at[1], ax - at[0], ay - at[1]   # compare in the part's own frame
+    az = az + z_datum_error                                            # where the nozzle really is
     polys, mesh = _target_layers(stl, n_layers, lh)
     lo, hi = mesh.bounds
     pad = 6.0
@@ -152,10 +158,20 @@ def deposit_and_compare(info, pm, moves, e, seg, frac, Qc, Qa, dt, stl, out: Pat
         bulge = float(ndimage.distance_transform_edt(~T)[out_px].max() * px) if out_px.any() else 0.0
         recess = float(ndimage.distance_transform_edt(T)[in_px].max() * px) if in_px.any() else 0.0
         dxs, dys = offset, bulge
-        shift_x = (xa.mean() - xt.mean()) * px
-        shift_y = (ya.mean() - yt.mean()) * px
+        # displacement of the layer as a whole: the translation that best lines its silhouette up with
+        # the target's, found from the row and column profiles (robust to thin or under-filled walls)
+        def best_shift(a_prof, t_prof):
+            a_prof = a_prof - a_prof.mean()
+            t_prof = t_prof - t_prof.mean()
+            c = np.correlate(a_prof, t_prof, mode="full")
+            return (int(c.argmax()) - (len(t_prof) - 1)) * px
+
+        shift_x = best_shift(A.sum(axis=0).astype(float), T.sum(axis=0).astype(float))
+        shift_y = best_shift(A.sum(axis=1).astype(float), T.sum(axis=1).astype(float))
         motion = (actual[L] ^ ideal[L]).sum() * px * px
+        hole_open = float((holes_T & ~actual[L]).sum() / holes_T.sum()) if holes_T.any() else None
         rows.append({"layer": L, "iou": float(iou), "dx": float(dxs), "dy": float(dys), "dev": float(dev),
+                     "hole_open": hole_open,
                      "recess": recess, "shift": float(math.hypot(shift_x, shift_y)), "motion": float(motion),
                      "cover": float((actual[L] & T).sum() / T.sum())})
     good = [x for x in rows if x["dx"] is not None]
@@ -164,7 +180,7 @@ def deposit_and_compare(info, pm, moves, e, seg, frac, Qc, Qa, dt, stl, out: Pat
     vol_mm3 = float((dE * a_fil).sum())
     top = rows[-1] if rows else None
     res = {"layers": n_layers, "layer_height_mm": lh,
-           "extruded_path_m": round(path_len / 1000, 2),
+           "extruded_path_m": round(float(path_len) / 1000, 2),
            "filament_used_mm": round(float(dE.sum()), 1), "filament_mass_g": round(vol_mm3 * 1e-3 * pm.filament_density, 2),
            "deposited_volume_cm3": round(vol_mm3 * 1e-3, 3), "solid_part_volume_cm3": round(float(mesh.volume) * 1e-3, 3),
            "outline_iou_mean": round(float(np.mean([x["iou"] for x in rows])), 4) if rows else None,
@@ -175,6 +191,8 @@ def deposit_and_compare(info, pm, moves, e, seg, frac, Qc, Qa, dt, stl, out: Pat
            "max_recess_mm": round(float(max(x["recess"] for x in good)), 3) if good else None,
            "boundary_deviation_mm": {"mean": round(float(np.mean([x["dev"] for x in good])), 3),
                                      "worst": round(float(np.max([x["dev"] for x in good])), 3)} if good else None,
+           "holes_open_fraction": (round(float(np.mean([x["hole_open"] for x in good if x.get("hole_open") is not None])), 3)
+                                   if any(x.get("hole_open") is not None for x in good) else None),
            "layer_shift_mm_worst": round(float(np.max([x["shift"] for x in good])), 3) if good else None,
            "motion_induced_area_mm2_per_layer": round(float(np.mean([x["motion"] for x in good])), 3) if good else None,
            "top_layer_coverage": round(top["cover"], 3) if top and top.get("cover") is not None else None,
@@ -201,6 +219,20 @@ def deposit_and_compare(info, pm, moves, e, seg, frac, Qc, Qa, dt, stl, out: Pat
               f"{worst_ov['span_mm']:.0f} mm gap of thin air (a bridge or overhang with no "
               f"support). The twin does not model sag, so the real result there is unknown.",
               layer=worst_ov["layer"], hint="Re-orient the part, add supports in the slicer, or redesign the feature (teardrop holes, chamfers).")
+    first = ext & (layer == 0)
+    if first.any():
+        h1 = float(np.median(az[first]))
+        res["first_layer_nozzle_height_mm"] = round(h1, 3)
+        if h1 <= 0.03:
+            r.add("error", "nozzle_in_bed",
+                  f"On the first layer the nozzle is {h1:.2f} mm above the bed (commanded {lh:.2f}): it drags on "
+                  f"the bed and cannot extrude.", height=h1,
+                  hint="Bed/nozzle datum is too low: re-level or correct the Z offset.")
+        elif abs(h1 - lh) > 0.5 * lh:
+            r.add("error", "first_layer_height",
+                  f"On the first layer the nozzle is {h1:.2f} mm above the bed where {lh:.2f} mm was commanded; "
+                  f"{'the bead is not pressed onto the bed and will not stick' if h1 > lh else 'the bead is over-squashed'}.",
+                  height=h1, hint="Correct the Z offset / bed datum.")
     empty = [x["layer"] for x in rows if x["dx"] is None]
     if empty:
         r.add("error", "layer_missing", f"Nothing was deposited on layers {empty[:8]} where the part exists.")
@@ -225,6 +257,10 @@ def deposit_and_compare(info, pm, moves, e, seg, frac, Qc, Qa, dt, stl, out: Pat
             r.add("error", "print_layer_shift",
                   f"Layer {bad['layer']} is displaced {bad['shift']:.2f} mm from where it should be.",
                   layer=bad["layer"])
+        if res["max_recess_mm"] is not None and 0.3 < res["max_recess_mm"] <= 1.0:
+            r.add("warning", "thin_feature_underfilled",
+                  f"Parts of the outline are up to {res['max_recess_mm']:.2f} mm short of material (walls thinner than "
+                  f"two beads print as one bead, or gaps were left).")
         if res["outline_iou_min"] < 0.9:
             bad = min(good, key=lambda x: x["iou"])
             r.add("error", "print_outline_poor",

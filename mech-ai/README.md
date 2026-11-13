@@ -66,9 +66,9 @@ compares each layer with the intended part.
 
 | Run (`designs/print_runs.py`) | Result |
 |---|---|
-| 20 mm cube, 0.2 mm layers | passes: 15 min print, outline 99.3% match, average outline offset 0.02 mm, worst motor lag 0.04 mm |
-| Motor bracket, 0.3 mm layers | passes: 43 min print, 15.6 g, outline 98.2% match, largest unsupported gap 3 mm |
-| What-if: 25x acceleration, motor current at 30% | fails as it should: Y axis loses steps 26 s in, layers displaced up to 8.8 mm (`docs/twin/layer_shift_printed.png`) |
+| 20 mm cube, 0.2 mm layers | passes: 15 min print, outline 98.9% match, average outline offset under 0.02 mm, nozzle lag up to 0.27 mm along the path (belt stretch) |
+| Motor bracket, 0.3 mm layers | passes: 43 min print, 15.6 g, outline 97.1% match, largest unsupported gap 3 mm |
+| What-if: 25x acceleration, motor current at 30% | fails as it should: both X and Y lose steps, layers displaced up to 16 mm (`docs/twin/layer_shift_printed.png`) |
 
 The first twin run found that the printer, which passed every static check, could
 not print at all: the bed stopped 1 mm short of the nozzle, so the first layer
@@ -78,8 +78,18 @@ Modelled: real slicer G-code, firmware-style planning, stepper torque-angle
 dynamics and step loss, gravity on the Z axis, extruder lag, bead width from
 extruded volume, machine collisions over every pose of the print, bridges over
 thin air. Not modelled: heat (melting, cooling, warping, bed adhesion, sag),
-pressure advance, stringing, belt stretch, frame flex. Rail friction, extruder
-lag and stepper damping are assumed values in `PrinterMap`.
+pressure advance, stringing, position-dependent stiffness. Belt stretch is modelled from
+an assumed belt stiffness; rail friction, extruder lag and damping are assumed values
+in `PrinterMap`.
+
+### Evaluating the printer and the twin
+
+`python designs/evaluate_printer.py` runs the whole evaluation in simulation in about
+8 minutes: a seven-part benchmark suite, a speed/acceleration envelope, bed and height
+coverage, robustness to assumed values, injected machine faults, design variants, a
+sensitivity ranking, and a reality check against documented Voron 2.4 measurements.
+Results and caveats are in [`docs/EVALUATION.md`](docs/EVALUATION.md);
+`tests/test_twin_validation.py` holds the tests of the twin itself.
 
 ## How much to trust a pass
 

@@ -39,6 +39,14 @@ class PrinterMap:
     extruder_lag_s: float = 0.03  # first-order melt-flow lag (assumed)
     damping_ratio: float = 0.25  # of the stepper's electromagnetic spring (assumed)
     filament_density: float = 1.24  # g/cm^3 (PLA)
+    compliant: bool = True  # belts stretch and the frame flexes; False = perfectly rigid machine
+    # belt tensile stiffness EA (N per unit strain) for 6 mm glass-fibre GT2. 15 kN is a hobby measurement
+    # (RepRap wiki); no manufacturer figure exists, so treat it as +/- 30 %. 9 mm belt: about 22 kN.
+    belt_ea_n: float = 15000.0
+    struct_stiffness: dict = field(default_factory=dict)  # nozzle stiffness from FEA, N/mm, e.g. {"x": 3000}
+    backlash_mm: dict = field(default_factory=dict)  # lost motion per axis (slack belt, loose pulley)
+    spring_damping_ratio: float = 0.05  # of belt/frame vibration (assumed)
+    raster_px_per_mm: int = 20
 
 
 def _axis_info(design: Design, pm: PrinterMap):
@@ -99,11 +107,16 @@ def from_joints(info: dict, q):
 
 def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, name: str = "part",
               dt: float = 0.001, render: bool = True, slicer_args: dict | None = None,
-              accel_scale: float = 1.0, torque_scale: float = 1.0) -> dict:
+              accel_scale: float = 1.0, torque_scale: float = 1.0, speed_scale: float = 1.0,
+              at: tuple = (0.0, 0.0), z_datum_error: float = 0.0, mass_extra: dict | None = None,
+              gcode_edit=None, collisions: bool = True) -> dict:
     """Print `part` (a build123d shape sitting on Z=0, centred on XY) on `design`.
     Returns a report dict and writes artefacts into `out`. accel_scale multiplies the
     joints' acceleration limits and torque_scale the motor torque (e.g. reduced driver current)
-    for what-if runs."""
+    for what-if runs. speed_scale multiplies slicer speeds and XY speed limits. `at` places the part
+    on the bed (mm from bed centre). z_datum_error is how far the real nozzle sits above (+) or below (-)
+    where the firmware believes it is. mass_extra adds kg to axes, e.g. {"x": 0.3, "y": 0.3}.
+    gcode_edit(moves) -> moves lets a test tamper with the program."""
     from build123d import export_stl
 
     from . import deposit as dep
@@ -117,8 +130,10 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
     r = VerifierResult("print")
     t0 = time.time()
     rep: dict = {"design": design.name, "part": name}
-    if accel_scale != 1.0 or torque_scale != 1.0:
-        rep["what_if"] = {"accel_scale": accel_scale, "torque_scale": torque_scale}
+    wi = {"accel_scale": accel_scale, "torque_scale": torque_scale, "speed_scale": speed_scale,
+          "z_datum_error": z_datum_error}
+    if any(v != d0 for v, d0 in zip(wi.values(), (1.0, 1.0, 1.0, 0.0))) or mass_extra:
+        rep["what_if"] = {**wi, "mass_extra": mass_extra or {}}
 
     def finish():
         rep["ok"] = r.ok
@@ -139,12 +154,22 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
     export_stl(part, str(stl), tolerance=0.01, angular_tolerance=0.1)
     jl = [joints[pm.x], joints[pm.y], joints[pm.z]]
     try:
+        sa = {"perimeter_speed": 45.0 * speed_scale, "infill_speed": 60.0 * speed_scale,
+              "travel_speed": 150.0 * speed_scale, "center": at,
+              "machine": {"accel": jl[0].max_accel * accel_scale, "speed": jl[0].max_speed * speed_scale,
+                          "z_speed": jl[2].max_speed, "z_accel": jl[2].max_accel},
+              **(slicer_args or {})}
         slice_part(stl, gpath, layer_height=pm.layer_height, nozzle=pm.nozzle,
-                   filament_diameter=pm.filament_diameter, **(slicer_args or {}))
+                   filament_diameter=pm.filament_diameter, **sa)
     except RuntimeError as e:
         r.add("error", "slicer_failed", str(e))
         return finish()
     moves, ignored = parse(gpath)
+    from .gcode import slicer_estimates
+
+    rep["slicer"] = slicer_estimates(gpath)
+    if gcode_edit is not None:
+        moves = gcode_edit(moves)
     rep["gcode"] = {"moves": len(moves), "file": str(gpath),
                     "codes_ignored": {k: v for k, v in sorted(ignored.items())}}
     if not moves:
@@ -173,7 +198,7 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
     pts = np.vstack([np.zeros((1, 3)), q])
     feeds = np.array([m.feed for m in moves])
     e = np.array([m.e for m in moves])
-    vmax = np.array([j.max_speed or 1e9 for j in jl])
+    vmax = np.array([j.max_speed or 1e9 for j in jl]) * np.array([speed_scale, speed_scale, 1.0])
     amax = np.array([(j.max_accel or 1e9) for j in jl]) * np.array([accel_scale, accel_scale, 1.0])
     dwell = np.abs(e) / np.maximum(feeds, 1e-6)
     Qc, Vc, seg, frac, seg_t = plan(pts, feeds, vmax, amax, dt, dwell=dwell)
@@ -207,7 +232,7 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
         if not dr:
             r.add("error", "twin_setup", f"Joint {j.name} has no resolved drive (motor + transmission).")
             return finish()
-        mass.append(M[dof[k], dof[k]] + j.reflected_inertia)
+        mass.append(M[dof[k], dof[k]] + j.reflected_inertia + (mass_extra or {}).get("xyz"[k], 0.0))
         bias.append(-float(data.qfrc_inverse[dof[k]]))
         tpr.append(dr["travel_per_rev"])
         rpm = np.abs(Vc[:, k]) / dr["travel_per_rev"] * 60.0
@@ -219,48 +244,75 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
     if np.abs(off).max() > 1e-6:
         r.add("warning", "axes_coupled", "Axis inertias are coupled; the twin treats them as independent.")
     fric = [pm.friction_n.get(a, 2.0) for a in "xyz"]
+    # series compliance: belt stretch (from the belt's routed length) in series with frame flex (from FEA)
+    series, motor_mass = [], []
+    for k, (j, ax) in enumerate(zip(jl, "xyz")):
+        ks = None
+        dr = j.drive_resolved
+        if pm.compliant and dr["kind"] == "belt":
+            from ..verifiers.belts import route
+
+            pul = (j.drive or {}).get("pulley")
+            belt = next((b for b in design.belts if any(n[0] == "pulley" and n[1] == pul for n in b.path)), None)
+            if belt is not None:
+                L = route(design, belt, forward_kinematics(design, {}))["length"]
+                ks = 4.0 * pm.belt_ea_n / L  # two runs in parallel, carriage at mid-travel
+        if pm.compliant and ax in pm.struct_stiffness:
+            kst = float(pm.struct_stiffness[ax])
+            ks = kst if ks is None else 1.0 / (1.0 / ks + 1.0 / kst)
+        series.append(ks)
+        motor_mass.append(j.reflected_inertia)
+    back = [pm.backlash_mm.get(a, 0.0) for a in "xyz"]
     Qa, worst, sinfo = simulate(Qc, Vc, np.array(mass), fmax, np.array(tpr), np.array(bias), np.array(fric), dt,
-                                damping_ratio=pm.damping_ratio)
+                                damping_ratio=pm.damping_ratio, motor_mass=np.array(motor_mass),
+                                series_stiffness=series, backlash=back,
+                                spring_damping_ratio=pm.spring_damping_ratio)
+    Qm = sinfo.pop("motor_positions")
     quarter = np.array(sinfo["quarter_cycle_mm"])
-    final_err = np.abs(Qa[-1] - Qc[-1])
-    lag = np.abs(Qa - Qc)
+    final_err = np.abs(Qm[-1] - Qc[-1])   # where the motor ended up vs where the firmware thinks it is
+    lag = np.abs(Qa - Qc)                 # how far the nozzle/bed is from the command at each instant
+    mlag = np.abs(Qm - Qc)
     rep["dynamics"] = {"axis_mass_kg": [round(float(x), 3) for x in mass],
                        "gravity_bias_n": [round(float(x), 2) for x in bias],
                        "friction_n_assumed": fric, **sinfo,
                        "worst_lag_mm": [round(float(x), 4) for x in lag.max(axis=0)],
                        "rms_lag_mm": [round(float(x), 4) for x in np.sqrt((lag ** 2).mean(axis=0))],
+                       "worst_motor_error_mm": [round(float(x), 4) for x in mlag.max(axis=0)],
                        "final_position_error_mm": [round(float(x), 4) for x in final_err]}
     for k, (j, ax) in enumerate(zip(jl, "XYZ")):
         if final_err[k] > quarter[k]:
-            i_slip = int(np.argmax(lag[:, k] > 2 * quarter[k]))
+            i_slip = int(np.argmax(mlag[:, k] > 2 * quarter[k]))
             gz_at = float(g[min(seg[i_slip], len(g) - 1), 2])
             r.add("error", "lost_steps",
                   f"{ax} axis lost steps: it ends {final_err[k]:.2f} mm from where the firmware thinks it is "
                   f"(a layer shift), first slipping about {i_slip * dt:.1f} s in at Z={gz_at:.2f}.",
                   axis=ax, joint=j.name, shift_mm=round(float(final_err[k]), 3), time_s=round(i_slip * dt, 2),
                   hint="Lower acceleration or speed, cut moving mass, or use a stronger motor / lower gearing.")
-        elif lag[:, k].max() > 0.6 * quarter[k]:
+        elif mlag[:, k].max() > 0.6 * quarter[k]:
             r.add("warning", "near_step_loss",
-                  f"{ax} axis lag peaks at {lag[:, k].max():.3f} mm, {lag[:, k].max() / quarter[k]:.0%} of the "
-                  f"{quarter[k]:.3f} mm at which the motor falls out of step.", axis=ax)
-    # ---- collisions of the machine itself along the print (bed rising under a sweeping gantry)
-    from ..sim import program_collisions
+                  f"{ax} motor error peaks at {mlag[:, k].max():.3f} mm, {mlag[:, k].max() / quarter[k]:.0%} of the "
+                  f"{quarter[k]:.3f} mm at which it falls out of step.", axis=ax)
+    if collisions:
+        # ---- collisions of the machine itself along the print (bed rising under a sweeping gantry)
+        from ..sim import program_collisions
 
-    # a print revisits the same poses thousands of times: check each distinct pose once
-    sub_i = np.arange(0, len(Qa), max(1, int(0.02 / dt)))
-    key = np.round(Qa[sub_i] / np.array([3.0, 3.0, 1.0])).astype(np.int64)
-    _, first = np.unique(key, axis=0, return_index=True)
-    first.sort()
-    pick = sub_i[first]
-    full = np.zeros((len(pick), len(design.joints)))
-    for k, j in enumerate(jl):
-        full[:, design.joints.index(j)] = Qa[pick, k]
-    simd = {"q": full, "names": [j.name for j in design.joints], "t": pick * dt}
-    rep["poses_checked_for_collision"] = len(pick)
-    hits = program_collisions(design, simd, every_mm=0.0)
-    for h in hits:
-        r.add("error", "print_collision",
-              f"{h['parts'][0]} hits {h['parts'][1]} {h['time_s']:.0f} s into the print, pose {h['pose']}.", **h)
+        # a print revisits the same poses thousands of times: check each distinct pose once
+        sub_i = np.arange(0, len(Qa), max(1, int(0.02 / dt)))
+        key = np.round(Qa[sub_i] / np.array([3.0, 3.0, 1.0])).astype(np.int64)
+        _, first = np.unique(key, axis=0, return_index=True)
+        first.sort()
+        pick = sub_i[first]
+        full = np.zeros((len(pick), len(design.joints)))
+        for k, j in enumerate(jl):
+            full[:, design.joints.index(j)] = Qa[pick, k]
+        simd = {"q": full, "names": [j.name for j in design.joints], "t": pick * dt}
+        rep["poses_checked_for_collision"] = len(pick)
+        hits = program_collisions(design, simd, every_mm=0.0)
+        for h in hits:
+            r.add("error", "print_collision",
+                  f"{h['parts'][0]} hits {h['parts'][1]} {h['time_s']:.0f} s into the print, pose {h['pose']}.", **h)
+    else:
+        hits = None
     # clearance between the growing part and everything on the toolhead except the nozzle itself
     tool_body = design.tool_point[0]
     noz_z = info["nozzle"][2]
@@ -270,10 +322,11 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
     rep["toolhead"] = {"lowest_part": hot,
                        "next_lowest": min(others, key=others.get) if others else None,
                        "clearance_above_nozzle_plane_mm": round(min(others.values()), 2) if others else None}
-    rep["machine_collisions"] = len(hits)
+    rep["machine_collisions"] = len(hits) if hits is not None else "not checked"
     # ---- deposition and comparison with the intended part
     try:
-        res = dep.deposit_and_compare(info, pm, moves, e, seg, frac, Qc, Qa, dt, stl, out, name, r)
+        res = dep.deposit_and_compare(info, pm, moves, e, seg, frac, Qc, Qa, dt, stl, out, name, r,
+                                      at=at, z_datum_error=z_datum_error)
         rep["print"] = res
     except Exception as ex:
         r.add("error", "deposition_failed", f"Deposition/comparison did not run: {type(ex).__name__}: {ex}")

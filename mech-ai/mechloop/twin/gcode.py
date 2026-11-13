@@ -21,7 +21,7 @@ class Move:
 def slice_part(stl: Path, out: Path, *, layer_height: float = 0.2, nozzle: float = 0.4,
                filament_diameter: float = 1.75, center=(0.0, 0.0), perimeter_speed: float = 45.0,
                infill_speed: float = 60.0, travel_speed: float = 150.0, first_layer_speed: float = 20.0,
-               fill_density: int = 20, extra: list[str] | None = None) -> Path:
+               fill_density: int = 20, extra: list[str] | None = None, machine: dict | None = None) -> Path:
     exe = shutil.which("prusa-slicer")
     if not exe:
         raise RuntimeError("prusa-slicer is not installed; the print was NOT sliced")
@@ -38,6 +38,13 @@ def slice_part(stl: Path, out: Path, *, layer_height: float = 0.2, nozzle: float
            "--retract-length", "0.8", "--retract-speed", "35", "--temperature", "215",
            "--bed-temperature", "60", "--start-gcode", "G92 E0", "--end-gcode", "M104 S0",
            "--bed-shape", "-90x-90,90x-90,90x90,-90x90", "--gcode-comments", "--layer-gcode", "G92 E0"]
+    if machine:  # let the slicer's own time estimate use this machine's limits
+        cmd += ["--machine-limits-usage", "time_estimate_only",
+                "--machine-max-acceleration-x", str(int(machine["accel"])), "--machine-max-acceleration-y", str(int(machine["accel"])),
+                "--machine-max-acceleration-extruding", str(int(machine["accel"])),
+                "--machine-max-acceleration-travel", str(int(machine["accel"])),
+                "--machine-max-feedrate-x", str(int(machine["speed"])), "--machine-max-feedrate-y", str(int(machine["speed"])),
+                "--machine-max-feedrate-z", str(int(machine["z_speed"])), "--machine-max-acceleration-z", str(int(machine["z_accel"]))]
     p = subprocess.run(cmd + (extra or []), capture_output=True, text=True, timeout=1800)
     if p.returncode != 0 or not out.exists():
         raise RuntimeError("prusa-slicer failed: " + (p.stderr or p.stdout)[-500:])
@@ -99,3 +106,23 @@ def parse(path: Path) -> tuple[list[Move], dict]:
         else:
             ignored[code] = ignored.get(code, 0) + 1
     return moves, ignored
+
+
+def slicer_estimates(path: Path) -> dict:
+    """What the slicer itself says about the job (an independent estimate to compare with)."""
+    out = {}
+    for line in open(path):
+        if not line.startswith(";"):
+            continue
+        low = line.lower()
+        if "estimated printing time (normal mode)" in low:
+            t, total = line.split("=", 1)[1].strip(), 0
+            for tok in t.split():
+                if tok[:-1].isdigit():
+                    total += int(tok[:-1]) * {"d": 86400, "h": 3600, "m": 60, "s": 1}[tok[-1]]
+            out["print_time_s"] = total
+        elif "filament used [mm]" in low:
+            out["filament_mm"] = float(line.split("=", 1)[1])
+        elif "filament used [cm3]" in low:
+            out["filament_cm3"] = float(line.split("=", 1)[1])
+    return out

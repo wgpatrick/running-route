@@ -43,13 +43,16 @@ outline error; a what-if with 25x acceleration and 30% motor current loses steps
 produces a visibly layer-shifted part. Its first run found that the printer could not
 reach its first layer (bed 1 mm short of the nozzle), which no static check had caught.
 
+The twin now models belt stretch (and frame flex when given FEA stiffness). An
+in-simulation evaluation of the printer and of the twin itself is in `docs/EVALUATION.md`.
+
 Not in the twin: any thermal behaviour (cooling, warping, adhesion, sag), pressure
-advance, belt stretch, frame flex. Friction, extruder lag and stepper damping are
+advance, position-dependent stiffness. Friction, extruder lag and stepper damping are
 assumed values, so corner bulge and lag figures are indicative, not calibrated.
 
 ## Evidence that the checks work
 
-- 36 tests. FEA matches beam theory for deflection, stress and first natural
+- 46 tests, 13 of them validating the twin itself. FEA matches beam theory for deflection, stress and first natural
   frequency; bonded two-part FEA matches the one-piece result; MuJoCo forces match
   F = m·a and m·g.
 - Fault injection: the passing gantry is broken eleven ways and each break is
