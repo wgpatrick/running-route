@@ -81,6 +81,14 @@ def build():
 - More checks: `ModalCase(name, component, fixed, min_frequency_hz)` in `design.modalcases`;
   `AssemblyCase(name, components, fixed=[(part, pred)], loaded=(part, pred), force, probe, max_deflection)`
   in `design.assemblycases` meshes several touching parts as one bonded body.
+- Belts: `design.belts.append(Belt(name, path, axis=(0, 0, 1), stock_length=None))`. `path` lists the route
+  in order: `("pulley", part_name, "ccw"|"cw")` for catalog `gt2_pulley`/`gt2_idler` parts (wrap sense seen
+  looking down `axis`), and `("anchor", body, (x, y, z))` where a belt end is clamped (home-pose world point
+  on that body). Open belt = anchor ... anchor; closed loop = pulleys only. The motion verifier checks that
+  the path length stays constant over the travel, pulleys are coplanar, the drive pulley has enough teeth
+  engaged, a closed loop matches `stock_length`, and no straight run passes through a part. Pulley centre
+  heights are in `part.meta["interfaces"]["belt_center"]`. A belt-driven joint without a `Belt` is not
+  checked for routing; add one.
 - Orienting catalog parts: `Location((x, y, z), (rx, ry, rz))` (degrees) or
   `Location(Plane(origin=..., x_dir=..., z_dir=...))`. Each catalog function's docstring gives its
   local frame; `part.meta["interfaces"]` holds its hole positions in world coordinates after `place`.
@@ -96,15 +104,15 @@ def build():
 | geometry | valid solids, envelope, mass, your `Requirement`s | repair the CAD, slim or shrink |
 | interference | overlaps, required gaps, floating parts, unfastened parts | move, pocket, add screws/joins |
 | ratings | drive force from the real motor, guide loads, BOM and cost | change motor, ratio, speed |
-| motion | collisions through full joint travel, force needed vs available, forward simulation of `program` (tracking, collisions on the path) | shorten travel, move parts, lower accel |
+| motion | collisions through full joint travel, guide run-off, belt routing, force needed vs available (with rotor inertia), forward simulation of `program` (tracking, collisions on the path) | shorten travel, move parts, lower accel |
 | assemblability | a build order exists in which each part goes on in a straight line onto something already there, parts go on before the screws that hold them, and every screw has driver access when it is installed (home pose only) | split parts, add access holes, reorder |
 | requirements | your `Requirement`s, evaluated last with all metrics | fix the design |
 | fea | factor of safety and deflection per load case, with force balance and refinement checks | ribs, fillets, thicker sections, material |
 
 ## Not checked (say this in your report)
 
-Bolt preload and contact, fatigue, buckling, vibration, thermal effects, belt/cable
-routing and tension, tolerance stack-up, over-constraint and binding, axial
+Bolt preload and contact, fatigue, buckling, thermal effects, belt tension and tooth
+load, cable routing, tolerance stack-up, over-constraint and binding, axial
 retention of bearings, closed kinematic loops, curved insertion paths, cables,
 manufacturing cost and process limits. FEA is linear static with idealised
 fixtures and no self-weight; assemblies are bonded, which overstates stiffness.

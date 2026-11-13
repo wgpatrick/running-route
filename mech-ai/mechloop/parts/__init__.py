@@ -162,7 +162,8 @@ def gt2_pulley(teeth: int = 20, bore: float = 5.0, belt_width: float = 6.0) -> S
     return Stock(shape, f"GT2-{teeth}T-B{bore:g}", f"GT2 pulley {teeth} teeth, {bore:g} mm bore", 0.008 + 0.0004 * teeth,
                  material="al6061",
                  ratings={"pitch_diameter_mm": pd, "teeth": teeth, "belt_pitch_mm": 2.0},
-                 interfaces={"bore": bore, "height": total, "belt_center_z": h_hub + h_fl + (belt_width + 1) / 2},
+                 interfaces={"bore": bore, "height": total, "belt_center_z": h_hub + h_fl + (belt_width + 1) / 2,
+                             "belt_center": [(0.0, 0.0, h_hub + h_fl + (belt_width + 1) / 2)]},
                  cost_usd=2.5)
 
 
@@ -175,7 +176,8 @@ def gt2_idler(teeth: int = 20, bore: float = 5.0, belt_width: float = 6.0) -> St
     shape = (Pos(0, 0, 0.5) * Cylinder(od / 2 + 1.5, 1) + Pos(0, 0, h / 2) * Cylinder(od / 2, h)
              + Pos(0, 0, h - 0.5) * Cylinder(od / 2 + 1.5, 1)) - Pos(0, 0, h / 2) * Cylinder(bore / 2, h)
     return Stock(shape, f"GT2-IDLER-{teeth}T-B{bore:g}", f"GT2 idler {teeth} teeth, {bore:g} mm bore", 0.007,
-                 ratings={"pitch_diameter_mm": pd}, interfaces={"bore": bore, "height": h, "belt_center_z": h / 2},
+                 ratings={"pitch_diameter_mm": pd, "teeth": teeth, "belt_pitch_mm": 2.0},
+                 interfaces={"bore": bore, "height": h, "belt_center_z": h / 2, "belt_center": [(0.0, 0.0, h / 2)]},
                  cost_usd=2.0)
 
 

@@ -124,8 +124,14 @@ def verify_motion(design: Design, per_joint: int = 9) -> VerifierResult:
                   parts=[a, b], **{k: v for k, v in w.items() if k != "first_pose"},
                   hint="Shorten the joint range, move the part out of the swept path, or add clearance.")
         _runoff(design, r)
-        r.metrics = {"joints": len(design.joints), "poses_checked": len(poses),
-                     "exact_overlap_checks": exact_checks}
+        from .belts import verify_belts
+
+        try:
+            verify_belts(design, r, poses)
+        except Exception as e:
+            r.add("error", "belt_check_failed", f"Belt checks did not run: {type(e).__name__}: {e}")
+        r.metrics.update({"joints": len(design.joints), "poses_checked": len(poses),
+                          "exact_overlap_checks": exact_checks})
         try:
             r.metrics["drives"] = _dynamics(design, r)
         except Exception as e:

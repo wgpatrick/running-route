@@ -138,6 +138,26 @@ class AssemblyCase:
 
 
 @dataclass
+class Belt:
+    """A timing belt routed around pulleys, optionally with its two ends clamped.
+
+    `path` is the route in order. Each node is either
+      ("pulley", component_name, "ccw" | "cw")   belt wraps that pulley in that sense, seen
+                                                  looking down the belt's `axis` direction
+      ("anchor", body_name, (x, y, z))            belt end clamped at a world point on that body
+    A closed loop has only pulleys; an open belt starts and ends with an anchor.
+    """
+
+    name: str
+    path: Sequence[tuple]
+    axis: tuple[float, float, float] = (0.0, 0.0, 1.0)  # pulley axis direction
+    width: float = 6.0
+    thickness: float = 1.4
+    stock_length: Optional[float] = None  # closed-loop belt length you intend to buy
+    adjust: float = 3.0  # mm of tensioner/slot adjustment available
+
+
+@dataclass
 class Requirement:
     """A named, executable acceptance test. `check` returns (ok, detail)."""
 
@@ -154,6 +174,7 @@ class Design:
     loadcases: list[LoadCase] = field(default_factory=list)
     modalcases: list[ModalCase] = field(default_factory=list)
     assemblycases: list[AssemblyCase] = field(default_factory=list)
+    belts: list[Belt] = field(default_factory=list)
     requirements: list[Requirement] = field(default_factory=list)
     # Pairs allowed to overlap (threads, press fits): {frozenset({a, b}): max_volume_mm3}
     allowed_overlaps: dict = field(default_factory=dict)

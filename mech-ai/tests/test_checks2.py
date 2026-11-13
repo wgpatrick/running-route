@@ -88,3 +88,44 @@ def test_rotor_inertia_counts_against_the_drive():
     # rotor 54 g cm^2 through a 40 mm/rev belt looks like 0.133 kg at the carriage
     assert abs(j.reflected_inertia - 5.4e-6 * (2 * 3.14159 / 0.04) ** 2) < 1e-3
     assert drv["required"] > (drv["moved_mass_kg"] + 0.12) * 20.0
+
+
+def belt_axis(anchor_y=0.0, idler_x=150.0):
+    """Motor pulley and idler fixed to the world, carriage clamped to the lower belt run."""
+    import math
+
+    from mechloop.model import Belt
+    from mechloop.parts import gt2_idler, gt2_pulley
+
+    d = Design("beltaxis")
+    place(d, "drive", gt2_pulley(20), Location((-150, 0, 0)))
+    place(d, "idler", gt2_idler(20), Location((idler_x, 0, 6.25)))
+    d.add("clamp", Pos(0, -12, 11) * Box(20, 6, 10), body="car")
+    r_p = 20 * 2 / math.pi / 2
+    z = d.get("drive").meta["interfaces"]["belt_center"][0][2]
+    y = -r_p + anchor_y
+    d.belts.append(Belt("x_belt", [("anchor", "car", (10, y, z)), ("pulley", "idler", "ccw"),
+                                   ("pulley", "drive", "ccw"), ("anchor", "car", (-10, y, z))]))
+    d.joints.append(Joint("x", "slide", "world", "car", (1, 0, 0), range=(-100, 100), max_effort=50))
+    return d
+
+
+def test_belt_route_checks():
+    import math
+
+    from mechloop.verifiers.belts import route
+    from mechloop.geom import forward_kinematics
+
+    d = belt_axis()
+    r = verify_motion(d)
+    assert errs(r) == [], [f.message for f in r.findings]
+    m = r.metrics["belts"]["x_belt"]
+    # open loop: two straight runs of 300 minus the 20 mm gap between anchors, plus two half wraps
+    expect = 2 * 300 - 20 + math.pi * (20 * 2 / math.pi)
+    assert abs(m["length_mm"] - expect) < 0.05 and m["length_change_over_travel_mm"] < 0.01
+    # anchors off the tangent line: the path length now changes as the carriage moves
+    assert "belt_length_changes" in errs(verify_motion(belt_axis(anchor_y=-8.0)))
+    # something in the way of the return run
+    d = belt_axis()
+    d.add("post", Pos(60, 6.4, 11) * Box(8, 8, 30))
+    assert "belt_collision" in errs(verify_motion(d))
