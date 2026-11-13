@@ -158,6 +158,23 @@ class Belt:
 
 
 @dataclass
+class Adjustment:
+    """A way the built machine can absorb error: a slot, a levelling screw, a firmware offset.
+
+    kind: "bed_level" (three or four screws under the bed), "z_offset" (firmware/endstop offset),
+    "belt_tension" (slot on a motor or idler), "rail_align" (rail screwed down while a gauge or the
+    carriage plate sets its position), "float" (a mount left free in one direction, e.g. a floating nut).
+    `joint` names the axis it serves where that matters. range_mm is +/- travel available.
+    """
+
+    name: str
+    kind: str
+    range_mm: float
+    joint: Optional[str] = None
+    note: str = ""
+
+
+@dataclass
 class Requirement:
     """A named, executable acceptance test. `check` returns (ok, detail)."""
 
@@ -190,6 +207,7 @@ class Design:
     program: list = field(default_factory=list)
     tracking_tolerance: float = 0.2  # mm (or deg) allowed between commanded and simulated position
     tool_point: Optional[tuple] = None  # (body, (x, y, z)) traced in the motion render
+    adjustments: list[Adjustment] = field(default_factory=list)
     # Groups built on the bench and installed as one unit: {name: [part names]}
     subassemblies: dict = field(default_factory=dict)
     # A printer design declares how to print on it: {"bed": part, "x"/"y"/"z": joint names,

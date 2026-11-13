@@ -12,7 +12,7 @@ def main(argv=None) -> int:
     sub = p.add_subparsers(dest="cmd", required=True)
     v = sub.add_parser("verify", help="build a design script and run the verifiers")
     v.add_argument("design", help="python file defining build() -> Design")
-    v.add_argument("--only", nargs="*", help="subset of: geometry interference ratings motion assemblability fea printing requirements")
+    v.add_argument("--only", nargs="*", help="subset of: geometry interference tolerance ratings motion assemblability fea printing requirements")
     v.add_argument("--out", default="out")
     v.add_argument("--no-render", action="store_true")
     v.add_argument("--max-findings", type=int, default=25)
