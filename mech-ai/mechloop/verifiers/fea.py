@@ -90,12 +90,51 @@ def _mesh(shape, fixed_pred, load_pred, size: float, workdir: Path, straight: bo
         gmsh.finalize()
 
 
+FAIL_DIR = Path("out") / "fea_failures"
+
+
+def _ccx_balanced(job: str, workdir: Path, n_nodes: int, n_el: int, force, label: str, r: VerifierResult | None):
+    """Run CalculiX and check that reactions balance the applied load. An unbalanced answer is kept as
+    evidence and the identical input is solved once more; a second failure is returned as it is."""
+    import time as _t
+
+    env = dict(os.environ, OMP_NUM_THREADS=str(os.cpu_count() or 1))
+    fmag = float(np.linalg.norm(force))
+    last = None
+    for attempt in range(2):
+        p = subprocess.run(["ccx", job], cwd=workdir, capture_output=True, text=True, env=env, timeout=3600)
+        dat = workdir / f"{job}.dat"
+        if p.returncode != 0 or not dat.exists() or dat.stat().st_size == 0:
+            return {"error": "CalculiX failed: " + (p.stdout[-400:] + p.stderr[-200:]).strip()}
+        res = _parse_dat(dat, n_nodes, n_el)
+        imb = float(np.linalg.norm(res["rf"] + force)) / max(fmag, 1e-12) if res["rf"] is not None else 1.0
+        res["imbalance"] = imb
+        res["resolved"] = attempt == 1
+        last = res
+        if imb <= 0.01:
+            if attempt == 1 and r is not None:
+                r.add("warning", "fea_resolved",
+                      f"{label}: the first solve of this model did not balance its forces; an identical second solve "
+                      f"did. The solver is unstable here; evidence kept in {FAIL_DIR}.", case=label)
+            return res
+        try:  # keep the evidence
+            dest = FAIL_DIR / f"{label}_{int(_t.time())}_{attempt}"
+            dest.mkdir(parents=True, exist_ok=True)
+            shutil.copy(workdir / f"{job}.inp", dest / f"{job}.inp")
+            shutil.copy(dat, dest / f"{job}.dat")
+            (dest / "ccx_stdout.txt").write_text(p.stdout[-20000:])
+            (dest / "note.txt").write_text(f"imbalance {imb}\nreactions {res['rf']}\napplied {list(force)}\n")
+        except Exception:
+            pass
+    return last
+
+
 def _tri_areas(xyz, tris):
     a, b, c = xyz[tris[:, 0]], xyz[tris[:, 1]], xyz[tris[:, 2]]
     return 0.5 * np.linalg.norm(np.cross(b - a, c - a), axis=1)
 
 
-def _solve(mesh, material, force, workdir: Path, tag: str):
+def _solve(mesh, material, force, workdir: Path, tag: str, label: str = "", r: VerifierResult | None = None):
     xyz, tets = mesh["xyz"], mesh["tets"]
     fixed_nodes = np.unique(mesh["fixed_tris"])
     # consistent nodal loads for uniform traction on 6-node triangles: midside nodes carry A/3 each
@@ -130,13 +169,10 @@ def _solve(mesh, material, force, workdir: Path, tag: str):
         f.write("*NODE PRINT, NSET=NALL\nU\n")
         f.write("*NODE PRINT, NSET=NFIX, TOTALS=ONLY\nRF\n")
         f.write("*EL PRINT, ELSET=EALL\nS\n*END STEP\n")
-    env = dict(os.environ, OMP_NUM_THREADS=str(os.cpu_count() or 1))
-    p = subprocess.run(["ccx", tag], cwd=workdir, capture_output=True, text=True, env=env, timeout=1800)
-    dat = workdir / f"{tag}.dat"
-    if p.returncode != 0 or not dat.exists() or dat.stat().st_size == 0:
-        return {"error": "CalculiX failed: " + (p.stdout[-400:] + p.stderr[-200:]).strip()}
-    return _parse_dat(dat, len(xyz), len(tets)) | {"load_area_mesh": float(total_area),
-                                                   "fixed_nodes": fixed_nodes}
+    res = _ccx_balanced(tag, workdir, len(xyz), len(tets), np.array(force, dtype=float), label or tag, r)
+    if "error" in res:
+        return res
+    return res | {"load_area_mesh": float(total_area), "fixed_nodes": fixed_nodes}
 
 
 def _parse_dat(dat: Path, n_nodes: int, n_el: int):
@@ -198,10 +234,10 @@ def run_loadcase(design: Design, lc: LoadCase, r: VerifierResult, keep_dir: Path
                           loadcase=lc.name)
                     return out
                 break
-            res = _solve(mesh, mat, force, workdir, f"run{attempt}")
+            res = _solve(mesh, mat, force, workdir, f"run{attempt}", lc.name, r)
             if "error" in res and "jacobian" in res["error"]:
                 mesh = _mesh(comp.shape, lc.fixed, lc.loaded, size, workdir, straight=True)
-                res = _solve(mesh, mat, force, workdir, f"run{attempt}")
+                res = _solve(mesh, mat, force, workdir, f"run{attempt}", lc.name, r)
             if "error" in res:
                 r.add("error", "fea_solver", f"{lc.name}: {res['error']}", loadcase=lc.name)
                 return out
@@ -514,13 +550,10 @@ def run_assembly(design: Design, ac, r: VerifierResult) -> dict:
             for i in range(len(comps)):
                 f.write(f"*EL PRINT, ELSET=P{i}\nS\n")
             f.write("*END STEP\n")
-        env = dict(os.environ, OMP_NUM_THREADS=str(os.cpu_count() or 1))
-        p = subprocess.run(["ccx", "asm"], cwd=workdir, capture_output=True, text=True, env=env, timeout=3600)
-        dat = workdir / "asm.dat"
-        if p.returncode != 0 or not dat.exists() or dat.stat().st_size == 0:
-            r.add("error", "fea_solver", f"{ac.name}: CalculiX failed: {p.stdout[-300:].strip()}", case=ac.name)
+        res = _ccx_balanced("asm", workdir, len(xyz), eid - 1, force, ac.name, r)
+        if "error" in res:
+            r.add("error", "fea_solver", f"{ac.name}: {res['error']}", case=ac.name)
             return {}
-        res = _parse_dat(dat, len(xyz), eid - 1)
         out: dict = {"components": list(ac.components), "nodes": len(xyz), "mesh_size": round(size, 3),
                      "bonded": True, "load_area_mm2": round(float(areas.sum()), 2)}
         fmag = float(np.linalg.norm(force))

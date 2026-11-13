@@ -21,6 +21,14 @@ Choices:
   flanges. The catalog only has cap screws, so the four heads stand 3 mm proud of the
   bed corners; a real build would countersink them and use springs/levelling nuts.
 - The 1.5 kg payload is carried as extra mass on the bed plate (mass_kg override).
+
+Changes from designs/z_axis.py for ease of assembly (assembly simulation as feedback):
+- Motor, mount plate and coupler are a bench sub-assembly ("drive").
+- Standoffs drop into 1 mm pockets in the arm flanges (bed screws M3 x 18 to keep 5 mm of thread).
+- Motor mount has a rest ledge under each rail: rail height datum and home stop for the lower carriages.
+- Top beam sits 20 mm below the upright tops with its brackets on top of it.
+- Carrier has a locating rib between each pair of carriages.
+- One cross-to-side bracket per base corner instead of two; rails screwed at 6 of 10 holes.
 """
 from build123d import Box, CenterOf, Cylinder, Location, Plane, Polygon, Pos, Rot, extrude
 
@@ -41,13 +49,16 @@ Y_FACE = UP_Y - 10    # front face of the uprights = rail base
 Y_CAR = Y_FACE - 13   # carriage top face = carrier back-plate rear face
 T_PLATE = 6.0         # carrier back plate thickness
 Y_PF = Y_CAR - T_PLATE  # carrier back-plate front face
-RAIL_L, RAIL_ZC = 250.0, 201.0
 ZC = (99.0, 153.0)    # carriage centre heights at home (two per rail, 54 mm apart)
+Z_LEDGE = ZC[0] - 22.7  # underside of the lower carriages at home = top of the rest ledges on the motor mount
+RAIL_L = 250.0
+RAIL_ZC = Z_LEDGE + RAIL_L / 2   # the rails stand on the same ledges
 ZP0, ZP1 = ZC[0] - 23, ZC[1] + 23   # back plate bottom / top
 Z_ARM = 125.0         # top of the arms
 T_WEB, T_FL = 5.0, 6.0  # arm web and flange thickness
 FL_IN = 72.0          # arm flange inner |x|
 H_STANDOFF = 8.0
+SO_POCKET = 1.0       # depth of the locating pocket each standoff drops into on the arm flange
 Z_BED = Z_ARM + H_STANDOFF          # bed underside at home
 BED_Y1 = Y_PF - 2.0                 # bed rear edge, 2 mm in front of the back plate
 BED_Y0 = BED_Y1 - BED               # bed front edge
@@ -59,7 +70,7 @@ T_MM = 5.0            # motor mount thickness
 Z_TAB = 104.0         # underside of the nut tab at home
 T_TAB = 6.0
 NUT_HOLES = [(8.0, 0.0), (-8.0, 0.0), (0.0, -8.0)]   # the +Y hole is lost to the fork slot
-Z_BEAM = 310.0        # top beam centre height
+Z_BEAM = 300.0        # top beam centre height: 20 mm below the upright tops, so its brackets sit on top of it
 T_BRG = 8.0           # bearing plate thickness
 
 
@@ -72,6 +83,11 @@ def carrier_shape(carriage_holes):
         # top flange (inboard) that the bed standoffs sit on
         x0, x1 = sorted((sx * FL_IN, sx * (UP_X + T_WEB / 2)))
         c += Pos((x0 + x1) / 2, (BED_Y0 + Y_PF) / 2, Z_ARM - T_FL / 2) * Box(x1 - x0, Y_PF - BED_Y0, T_FL)
+    # locating rib on the back of the plate in the gap between each pair of carriages: the
+    # upper carriage sits on it, which also sets the carriage spacing to the hole pattern
+    z0, z1 = ZC[0] + 22.7 + 0.2, ZC[1] - 22.7
+    for sx in (-1, 1):
+        c += Pos(sx * UP_X, Y_CAR + 2, (z0 + z1) / 2) * Box(27, 4, z1 - z0)
     # nut tab reaching back between the uprights; forked (slot open to the back) so the
     # carrier can be drawn forward off the lead screw and nut
     y1 = LS_Y + 13
@@ -84,6 +100,9 @@ def carrier_shape(carriage_holes):
         c -= Pos(hx, (Y_PF + Y_CAR) / 2, hz) * Rot(90, 0, 0) * Cylinder(clearance_hole("M3") / 2, T_PLATE)
     for x, y in BED_POINTS:                                              # tapped M3
         c -= Pos(x, y, Z_ARM - T_FL / 2) * Cylinder(tap_drill("M3") / 2, T_FL)
+        # shallow pocket: the standoff drops in from above and cannot be knocked sideways,
+        # so all four are in place before the bed is laid on them
+        c -= Pos(x, y, Z_ARM - SO_POCKET / 2) * Cylinder(4.0, SO_POCKET)   # size-for-size in the model; a slip fit when made
     return c
 
 
@@ -91,6 +110,13 @@ def motor_mount_shape():
     y_back = LS_Y + 22
     m = Pos(0, (Y_FACE - 5 + y_back) / 2, Z_MF + T_MM / 2) * Box(160, y_back - (Y_FACE - 5), T_MM)
     m += Pos(0, Y_FACE - 2.5, Z_MF + 9) * Box(200, 5, 18)        # flange up the front of both uprights
+    # rest ledges: a lug under each rail, level with the underside of the lower carriage at
+    # home. The rail stands on it (height datum) and the lower carriage sits on it (home
+    # stop), so neither has to be held up while its screws are started. The M5 bolt head
+    # sits in a counterbore through the lug.
+    for sx in (-1, 1):
+        m += Pos(sx * UP_X, Y_FACE - 6, (Z_MF + Z_LEDGE) / 2) * Box(27, 12, Z_LEDGE - Z_MF)
+        m -= Pos(sx * UP_X, Y_FACE - 8.5, Z_MF + 9) * Rot(90, 0, 0) * Cylinder(4.75, 7)
     # pilot as a U-slot open to the back so the mount can be drawn forward off the motor
     m -= Pos(0, LS_Y, Z_MF + T_MM / 2) * Cylinder(11.5, T_MM)
     m -= Pos(0, (LS_Y + y_back) / 2, Z_MF + T_MM / 2) * Box(23, y_back - LS_Y, T_MM)
@@ -121,22 +147,29 @@ def build() -> Design:
     for sx, n in ((-1, "left"), (1, "right")):
         place(d, f"base_{n}", extrusion_2020(280), Location((sx * 110, 20, 10), (0, 0, 90)))
         place(d, f"upright_{n}", extrusion_2020(Z_TOP - 20), Location((sx * UP_X, UP_Y, (Z_TOP + 20) / 2), (0, 90, 0)))
-        add_corner_bracket(d, f"brkt_cross_front_{n}", "base_cross", f"base_{n}",
-                           (sx * 100, UP_Y - 10, 10), (-sx, 0, 0), (0, -1, 0))
+        # one cross-to-side bracket per corner (behind the cross beam). The matching front
+        # bracket of the baseline is dropped: each side beam is still held at two separate
+        # points (this bracket and brkt_up_out to the upright), and is only a foot.
         add_corner_bracket(d, f"brkt_cross_back_{n}", "base_cross", f"base_{n}",
                            (sx * 100, UP_Y + 10, 10), (-sx, 0, 0), (0, 1, 0))
         add_corner_bracket(d, f"brkt_up_in_{n}", "base_cross", f"upright_{n}",
                            (sx * 80, UP_Y, 20), (-sx, 0, 0), (0, 0, 1))
         add_corner_bracket(d, f"brkt_up_out_{n}", f"base_{n}", f"upright_{n}",
                            (sx * 100, UP_Y, 20), (sx, 0, 0), (0, 0, 1))
+        # top brackets in the corner above the beam: they sit on it instead of hanging under it
         add_corner_bracket(d, f"brkt_top_{n}", "top_beam", f"upright_{n}",
-                           (sx * 80, UP_Y, Z_BEAM - 10), (-sx, 0, 0), (0, 0, -1))
+                           (sx * 80, UP_Y, Z_BEAM + 10), (-sx, 0, 0), (0, 0, 1))
     # ---- rails and carriages ------------------------------------------------
     carriage_holes = []
     for sx, n in ((-1, "left"), (1, "right")):
         rail = place(d, f"rail_{n}", mgn12_rail(RAIL_L),
                      Location(Plane(origin=(sx * UP_X, Y_FACE, RAIL_ZC), x_dir=(0, 0, 1), z_dir=(0, -1, 0))))
-        for i, (hx, hy, hz) in enumerate(rail.meta["interfaces"]["mount_holes_m3"]):   # every hole
+        # 6 of the 10 holes: both ends and at most 50 mm between screws. The rail lies flat
+        # on the extrusion face over its whole length and carries ~3 kg; every hole is only
+        # needed for the rail's catalogue load rating and straightness class.
+        for i, (hx, hy, hz) in enumerate(rail.meta["interfaces"]["mount_holes_m3"]):
+            if i not in (0, 2, 4, 5, 7, 9):
+                continue
             add_screw(d, f"rail_{n}_screw_{i}", "M3", 8, at=(hx, hy - 3.5, hz), direction=(0, 1, 0),
                       threads_into=f"upright_{n}", tnut=True)
         for k, zc in enumerate(ZC):
@@ -166,11 +199,12 @@ def build() -> Design:
     d.add("bed", bed_shape, material="al6061", body="bed", mass_kg=bed_own + PAYLOAD_KG)   # plate + 1.5 kg payload
     standoffs = []
     for i, (x, y) in enumerate(BED_POINTS):
-        so = Pos(x, y, Z_ARM + H_STANDOFF / 2) * (Cylinder(4.0, H_STANDOFF) - Cylinder(clearance_hole("M3") / 2, H_STANDOFF))
+        h_so = H_STANDOFF + SO_POCKET
+        so = Pos(x, y, Z_BED - h_so / 2) * (Cylinder(4.0, h_so) - Cylinder(clearance_hole("M3") / 2, h_so))
         d.add(f"standoff_{i}", so, material="stainless304", body="bed")
         standoffs.append(f"standoff_{i}")
-        # down through bed and standoff, 5 mm of thread in the arm flange
-        add_screw(d, f"bed_screw_{i}", "M3", 16, at=(x, y, Z_BED + T_BED), body="bed", threads_into="carrier",
+        # down through bed and standoff, 5 mm of thread in the arm flange below the pocket
+        add_screw(d, f"bed_screw_{i}", "M3", 18, at=(x, y, Z_BED + T_BED), body="bed", threads_into="carrier",
                   clamps=("bed", f"standoff_{i}", "carrier"))
         d.join(f"bed_screw_{i}", f"standoff_{i}", "clamped")
     # ---- drive ------------------------------------------------------------------
@@ -187,6 +221,8 @@ def build() -> Design:
     z_ls0 = z_tip + 0.5
     place(d, "leadscrew", leadscrew_t8(z_brg + 3.5 - z_ls0, lead=2.0), Location((0, LS_Y, z_ls0)))
     d.join("coupler", "z_motor", "clamp")
+    # bench sub-assembly: mount plate face down, motor dropped on, four screws, coupler on the shaft
+    d.subassemblies["drive"] = ["motor_mount", "z_motor", "coupler"] + [f"motor_screw_{i}" for i in range(4)]
     d.join("leadscrew", "coupler", "clamp")
     # top support: 608 bearing in a plate on the top beam
     d.add("bearing_plate", bearing_plate_shape(), material="al6061")

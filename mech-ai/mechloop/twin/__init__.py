@@ -40,9 +40,13 @@ class PrinterMap:
     damping_ratio: float = 0.25  # of the stepper's electromagnetic spring (assumed)
     filament_density: float = 1.24  # g/cm^3 (PLA)
     compliant: bool = True  # belts stretch and the frame flexes; False = perfectly rigid machine
-    # belt tensile stiffness EA (N per unit strain) for 6 mm glass-fibre GT2. 15 kN is a hobby measurement
-    # (RepRap wiki); no manufacturer figure exists, so treat it as +/- 30 %. 9 mm belt: about 22 kN.
+    # belt tensile stiffness EA (N per unit strain) per 6 mm of width, glass-fibre GT2. 15 kN is a hobby
+    # measurement (RepRap wiki); no manufacturer figure exists, so treat it as +/- 30 %. Each belt's own
+    # width scales it, and all belts on an axis act in parallel.
     belt_ea_n: float = 15000.0
+    perimeter_speed: float = 45.0  # mm/s, the design's intended print speeds (design.printer["speeds"])
+    infill_speed: float = 60.0
+    travel_speed: float = 150.0
     struct_stiffness: dict = field(default_factory=dict)  # nozzle stiffness from FEA, N/mm, e.g. {"x": 3000}
     backlash_mm: dict = field(default_factory=dict)  # lost motion per axis (slack belt, loose pulley)
     spring_damping_ratio: float = 0.05  # of belt/frame vibration (assumed)
@@ -154,8 +158,9 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
     export_stl(part, str(stl), tolerance=0.01, angular_tolerance=0.1)
     jl = [joints[pm.x], joints[pm.y], joints[pm.z]]
     try:
-        sa = {"perimeter_speed": 45.0 * speed_scale, "infill_speed": 60.0 * speed_scale,
-              "travel_speed": 150.0 * speed_scale, "center": at,
+        sa = {"perimeter_speed": pm.perimeter_speed * speed_scale, "infill_speed": pm.infill_speed * speed_scale,
+              "travel_speed": min(pm.travel_speed, jl[0].max_speed or 1e9, jl[1].max_speed or 1e9) * speed_scale,
+              "center": at,
               "machine": {"accel": jl[0].max_accel * accel_scale, "speed": jl[0].max_speed * speed_scale,
                           "z_speed": jl[2].max_speed, "z_accel": jl[2].max_accel},
               **(slicer_args or {})}
@@ -245,18 +250,31 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
         r.add("warning", "axes_coupled", "Axis inertias are coupled; the twin treats them as independent.")
     fric = [pm.friction_n.get(a, 2.0) for a in "xyz"]
     # series compliance: belt stretch (from the belt's routed length) in series with frame flex (from FEA)
-    series, motor_mass = [], []
+    series, motor_mass, belts_used = [], [], {}
     for k, (j, ax) in enumerate(zip(jl, "xyz")):
         ks = None
         dr = j.drive_resolved
         if pm.compliant and dr["kind"] == "belt":
             from ..verifiers.belts import route
 
+            # every belt that runs round one of this joint's drive pulleys pulls on the axis, in parallel
             pul = (j.drive or {}).get("pulley")
-            belt = next((b for b in design.belts if any(n[0] == "pulley" and n[1] == pul for n in b.path)), None)
-            if belt is not None:
-                L = route(design, belt, forward_kinematics(design, {}))["length"]
-                ks = 4.0 * pm.belt_ea_n / L  # two runs in parallel, carriage at mid-travel
+            pulleys = set([pul] if isinstance(pul, str) else (pul or []))
+            is_pulley = {c.name for c in design.components if "pitch_diameter_mm" in c.ratings}
+            for pair in design.joins:
+                if len(pair) == 2 and (set(pair) & set(dr["motors"])):
+                    pulleys |= set(pair) & is_pulley
+            T_home = forward_kinematics(design, {})
+            kb, used = 0.0, []
+            for b in design.belts:
+                if any(n[0] == "pulley" and n[1] in pulleys for n in b.path):
+                    L = route(design, b, T_home)["length"]
+                    ea = pm.belt_ea_n * b.width / 6.0  # stiffness scales with belt width
+                    kb += 4.0 * ea / L  # two runs in parallel, carriage at mid-travel
+                    used.append({"belt": b.name, "width_mm": b.width, "n_per_mm": round(4.0 * ea / L, 1)})
+            if kb > 0:
+                ks = kb
+                belts_used[ax] = used
         if pm.compliant and ax in pm.struct_stiffness:
             kst = float(pm.struct_stiffness[ax])
             ks = kst if ks is None else 1.0 / (1.0 / ks + 1.0 / kst)
@@ -274,7 +292,7 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
     mlag = np.abs(Qm - Qc)
     rep["dynamics"] = {"axis_mass_kg": [round(float(x), 3) for x in mass],
                        "gravity_bias_n": [round(float(x), 2) for x in bias],
-                       "friction_n_assumed": fric, **sinfo,
+                       "friction_n_assumed": fric, "belts_per_axis": belts_used, **sinfo,
                        "worst_lag_mm": [round(float(x), 4) for x in lag.max(axis=0)],
                        "rms_lag_mm": [round(float(x), 4) for x in np.sqrt((lag ** 2).mean(axis=0))],
                        "worst_motor_error_mm": [round(float(x), 4) for x in mlag.max(axis=0)],
@@ -354,9 +372,9 @@ def printer_map_for(design: Design, metrics: dict | None = None, **overrides) ->
     belt stiffness from the belts' width, frame stiffness at the nozzle from the design's own FEA."""
     spec = design.printer or {}
     kw = {k: spec[k] for k in ("x", "y", "z", "bed", "layer_height", "nozzle") if k in spec}
-    if design.belts:
-        w = min(b.width for b in design.belts)
-        kw["belt_ea_n"] = 15000.0 * w / 6.0  # scales with width; 6 mm ~ 15 kN (hobby measurement, +/- 30 %)
+    for k_, f_ in (("perimeter", "perimeter_speed"), ("infill", "infill_speed"), ("travel", "travel_speed")):
+        if k_ in (spec.get("speeds") or {}):
+            kw[f_] = float(spec["speeds"][k_])
     stiff = {}
     fea = (metrics or {}).get("fea", {})
     for ax, case in (spec.get("stiffness") or {}).items():

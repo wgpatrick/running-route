@@ -119,6 +119,7 @@ def plan(design: Design, base: str | None = None, members: list[str] | None = No
                 del units[p]
                 unit_of[p] = sname
             units[sname] = parts
+    names = sorted(names)
     base_part = base or design.base or max(names, key=lambda n: W.comps[n].shape.volume if W.comps[n].body == "world" else -1)
     if base_part not in nameset:
         base_part = max(names, key=lambda n: W.comps[n].shape.volume)
@@ -235,7 +236,7 @@ def plan(design: Design, base: str | None = None, members: list[str] | None = No
             why[dn] = (sorted(blk), reached)
         if two_step:
             # back off along one direction as far as it goes, then leave along another
-            for dn, (blk, reached) in sorted(why.items(), key=lambda kv: -kv[1][1]):
+            for dn, (blk, reached) in sorted(why.items(), key=lambda kv: (-kv[1][1], kv[0])):
                 if reached < 2.0:
                     continue
                 for back in (reached - 0.2, reached * 0.75, reached / 2):
@@ -255,8 +256,11 @@ def plan(design: Design, base: str | None = None, members: list[str] | None = No
         if not progress:
             need_support = False
         progress = False
+        # Take parts off before screws wherever possible: a part cannot come off while its screws are in,
+        # so each screw is then removed just before the part it holds, i.e. installed right after it
+        # (fasten as you go). Ties are broken by name so the plan is the same on every run.
         cands = sorted(remaining - {base_unit},
-                       key=lambda u: (kind(u) != "fastener", sum(W.comps[p].shape.volume for p in units[u])))
+                       key=lambda u: (kind(u) == "fastener", round(sum(W.comps[p].shape.volume for p in units[u]), 3), u))
         for u in cands:
             if kind(u) != "fastener" and held_by(u):
                 continue

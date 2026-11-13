@@ -29,7 +29,13 @@ def _support(design: Design, parts: list[str], onto: list[str], up=np.array([0.0
     for p in parts:
         m = to_trimesh(comps[p].shape)
         mk = comps[p].mass()
-        com += mk * m.bounds.mean(axis=0)
+        try:  # true centre of mass of the solid, not the middle of its bounding box
+            from build123d import CenterOf
+
+            cc = comps[p].shape.center(CenterOf.MASS)
+            com += mk * np.array([cc.X, cc.Y, cc.Z])
+        except Exception:
+            com += mk * m.bounds.mean(axis=0)
         mass += mk
         down = np.flatnonzero(m.face_normals @ up < -0.5)
         if len(down) > 160:
@@ -42,7 +48,7 @@ def _support(design: Design, parts: list[str], onto: list[str], up=np.array([0.0
         c0 = m.triangles_center[down]
         cen = np.vstack([c0] + [0.9 * tri[:, k] + 0.1 * c0 for k in range(3)])
         if bench is not None:
-            on_bench = np.abs(cen @ up - bench) < 0.5
+            on_bench = np.abs(cen @ up - bench) < 1.5   # a part that would drop a millimetre onto the bench rests
             if on_bench.any():
                 pts.append(cen[on_bench])
         if below is None:
@@ -150,7 +156,7 @@ def analyse(design: Design, p: Plan | None = None, _depth: int = 0, reorient: bo
                 sup = _support(design, st.parts, st.onto, up, bench)
                 # let go of it: is it blocked from falling, and from tipping?
                 down = opposite_name(un)
-                on_bench = any(abs(float(min(corners[q][0] @ up, corners[q][1] @ up)) - bench) < 0.5 for q in st.parts)
+                on_bench = any(abs(float(min(corners[q][0] @ up, corners[q][1] @ up)) - bench) < 1.5 for q in st.parts)
                 cannot_fall = blk.get(down, False) or on_bench
                 lateral = [d_ for d_ in DIRS if d_[1] != un[1]]
                 captured = any(blk.get(a_, False) and blk.get(opposite_name(a_), False) for a_ in lateral)
@@ -186,6 +192,11 @@ def analyse(design: Design, p: Plan | None = None, _depth: int = 0, reorient: bo
     counts = {"needs_holding": 0, "from_below": 0, "two_move_paths": 0, "unsupported_steps": 0}
     last_tool, tool_changes, tools, skus = None, 0, set(), set()
     subs, flips, prev_o = {}, 0, "+Z"
+    loose: set[str] = set()   # parts placed but not yet touched by an installed screw
+    if p.steps[0].kind == "subassembly" and _depth < 2:   # the starting unit is itself built first
+        inner0 = analyse(design, plan(design, members=p.steps[0].parts), _depth + 1, reorient)
+        subs[p.steps[0].unit] = inner0
+        time_s += inner0["metrics"]["estimated_time_s"]
     for i, st in enumerate(steps):
         un = names[seq[i]]
         how, sup = info[i][seq[i]]
@@ -209,11 +220,17 @@ def analyse(design: Design, p: Plan | None = None, _depth: int = 0, reorient: bo
             last_tool = row["tool"]
             tools.add(row["tool"])
             skus.add(c.sku or st.unit)
+            loose -= set(st.onto)   # everything this screw touches is now held
         else:
-            row["rests_stably"] = sup["stable"]
-            if not sup["stable"]:
-                row["hold_reason"] = sup["reason"]
+            stable, reason = sup["stable"], sup.get("reason")
+            if stable and st.onto and all(o in loose for o in st.onto):
+                stable, reason = False, "it rests only on parts that are themselves still loose"
+            row["rests_stably"] = stable
+            if not stable:
+                row["hold_reason"] = reason
                 counts["needs_holding"] += 1
+                loose |= set(st.parts)
+            sup = {"stable": stable}
             t += T_SUBASM if st.kind == "subassembly" else T_PLACE
             t += min(10.0, 3.0 * sum(comps[q].mass() for q in st.parts))
             t += (T_HOLD if not sup["stable"] else 0.0) + (T_BELOW if how == "from below" else T_SIDE if how == "from the side" else 0.0)
@@ -233,8 +250,19 @@ def analyse(design: Design, p: Plan | None = None, _depth: int = 0, reorient: bo
         time_s += t
         rows.append(row)
     n_fast = sum(1 for s_ in p.steps if s_.kind == "fastener")
-    metrics = {"complete": p.complete, "steps": len(p.steps), "parts": sum(len(s_.parts) for s_ in p.steps),
-               "fasteners": n_fast, "fastener_types": len(skus), "tools": sorted(tools), "tool_changes": tool_changes,
+    for inner in subs.values():   # what happens inside a bench sub-assembly still counts
+        im = inner["metrics"]
+        n_fast += im["fasteners"]
+        tools |= set(im["tools"])
+        skus |= set(im.get("_skus", []))
+        tool_changes += im["tool_changes"]
+        flips += im["times_assembly_is_turned"]
+        for k_ in counts:
+            counts[k_] += im[k_]
+    metrics = {"complete": p.complete and all(v["metrics"]["complete"] for v in subs.values()),
+               "steps": len(p.steps), "parts": sum(len(s_.parts) for s_ in p.steps),
+               "fasteners": n_fast, "fastener_types": len(skus), "_skus": sorted(skus),
+               "tools": sorted(tools), "tool_changes": tool_changes,
                **counts, "times_assembly_is_turned": flips,
                "subassemblies": {k: v["metrics"]["estimated_time_s"] for k, v in subs.items()},
                "estimated_time_s": round(time_s, 0), "estimated_time_min": round(time_s / 60.0, 1),

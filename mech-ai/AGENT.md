@@ -116,7 +116,8 @@ A printer design declares how to print on it:
 ```python
 d.tool_point = ("xbody", nozzle_tip_xyz)
 d.printer = {"bed": "bed", "x": "x", "y": "y", "z": "z",
-             "stiffness": {"x": "<AssemblyCase giving nozzle stiffness in X>", "y": "<... in Y>"}}
+             "stiffness": {"x": "<AssemblyCase giving nozzle stiffness in X>", "y": "<... in Y>"},
+             "speeds": {"perimeter": 45, "infill": 60, "travel": 150}}   # mm/s the machine is meant to print at
 ```
 
 Then `mechloop verify` also runs the **printing** verifier: the digital twin prints a short test
@@ -134,7 +135,7 @@ Passing is the floor. To make a design **better**, use the scorecard:
 | `max_clean_accel_mm_s2`, `accel_margin` | highest acceleration (at 2x speed) that still prints cleanly; margin is relative to the joints' own `max_accel` | up |
 | `resonance_hz` | frequency the toolhead rings at on each axis | up |
 | `cross_track_rms_mm`, `cross_track_worst_mm` | how far the nozzle strays sideways from the commanded path at nominal settings (vibration that shows on the part) | down |
-| `benchmark_time_s` | time to print three benchmark parts at the design's own speed/acceleration limits | down |
+| `benchmark_time_s` | time to print three benchmark parts at the design's own `speeds` and joint acceleration limits | down |
 | `moving_mass_kg`, `total_mass_kg`, `bom_cost_usd` | from the CAD and BOM | down |
 | `frame_stiffness_n_per_mm` | nozzle stiffness from your AssemblyCases | up |
 

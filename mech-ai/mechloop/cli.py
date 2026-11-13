@@ -33,6 +33,7 @@ def main(argv=None) -> int:
     sc = sub.add_parser("score", help="scorecard for a printer design (things to improve, not just pass)")
     sc.add_argument("design")
     sc.add_argument("--out", default="out")
+    sc.add_argument("--assembly", action="store_true", help="also run the assembly simulation (slower)")
     c = sub.add_parser("catalog", help="list off-the-shelf parts")
     c.add_argument("query", nargs="?", default="")
     a = p.parse_args(argv)
@@ -74,6 +75,7 @@ def main(argv=None) -> int:
 
             arts["animation"] = str(render_build(d, res, out / "build.gif"))
         holds = [r["unit"] for r in res["rows"] if r.get("rests_stably") is False]
+        res["metrics"].pop("_skus", None)
         print(json.dumps({"design": d.name, "metrics": res["metrics"],
                           "needs_holding": holds[:30], "from_below": [r["unit"] for r in res["rows"] if r.get("direction") == "from below"][:30],
                           "trapped": res["plan"].trapped, "artifacts": arts}, indent=1, default=str))
@@ -81,7 +83,7 @@ def main(argv=None) -> int:
     if a.cmd == "score":
         from .twin.score import score
 
-        res = score(a.design, a.out)
+        res = score(a.design, a.out, assembly=a.assembly)
         print(json.dumps(res, indent=1, default=float))
         return 0 if res.get("static_checks_ok") and res.get("nominal_print_ok") else 1
     if a.cmd == "history":

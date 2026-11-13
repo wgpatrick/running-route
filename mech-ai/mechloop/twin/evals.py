@@ -78,6 +78,8 @@ def summarise(rep: dict) -> dict:
            "rms_lag_mm": d.get("rms_lag_mm"), "worst_lag_mm": d.get("worst_lag_mm"),
            "worst_motor_error_mm": d.get("worst_motor_error_mm"),
            "resonance_hz": d.get("load_resonance_hz"), "sim_seconds": rep.get("seconds"),
+           "lost_step_axes": sorted({f["data"].get("axis") for f in rep.get("findings", []) if f["code"] == "lost_steps"}),
+           "cross_track_rms_mm": d.get("cross_track_rms_mm"), "cross_track_worst_mm": d.get("cross_track_worst_mm"),
            "machine_collisions": rep.get("machine_collisions")}
     for k in KEYS:
         v = p.get(k)
