@@ -59,7 +59,9 @@ def test_nema17_matches_stepperonline(length):
     assert st.ratings["phase_inductance_mh"] == v["phase_inductance_mh"]
     assert st.mass_kg == pytest.approx(v["mass_g"] / 1000)
     x, y, z = _size(st)
-    assert x == pytest.approx(v["frame_mm_max"]) and y == pytest.approx(v["frame_mm_max"])
+    # the connector / lead exit on +X (from the CAD model, see docs/VENDOR_CAD.md) stands 5.7 mm out of the frame
+    assert x == pytest.approx(v["frame_mm_max"] + 5.7) and y == pytest.approx(v["frame_mm_max"])
+    assert st.shape.bounding_box().min.X == pytest.approx(-v["frame_mm_max"] / 2)
     assert z == pytest.approx(length + v["shaft_length_mm"])  # body below the face, shaft above
     assert st.interfaces["shaft_dia"] == v["shaft_dia_mm"] and st.interfaces["pilot_dia"] == v["pilot_dia_mm"]
     hx = sorted({abs(h[0]) for h in st.interfaces["mount_holes_m3"]})

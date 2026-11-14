@@ -41,6 +41,11 @@ def verify_geometry(design: Design) -> VerifierResult:
             "mass_by_part_kg": {c.name: round(c.mass(), 4) for c in design.components}
             if len(design.components) <= 30 else "omitted (>30 parts)",
         }
+        if any(c.detail is not None for c in design.components):
+            # simulation solids against the vendor / community CAD behind them, and what that CAD adds
+            from ..parts.vendor_cad import verify_detail
+
+            r.metrics["vendor_cad"] = verify_detail(design, r)
         if design.envelope:
             for ax, got, lim in zip("XYZ", size, design.envelope):
                 if got > lim + 1e-6:

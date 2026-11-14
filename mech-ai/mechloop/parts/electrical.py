@@ -46,10 +46,11 @@ def skr_mini_e3_v3() -> Stock:
     holes = [(23.39, H - 3.22), (W - 18.20, H - 3.02), (5.53, 32.05), (37.34, 29.41), (W - 2.53, 2.56)]   # [BTT] SIZE drawing
     holes = [(x + ox, y + oy, 0.0) for x, y in holes]
     pcb = Pos(0, 0, T / 2) * Box(W, H, T)
-    env = Pos(0, 0, T + 6.5) * Box(W - 1.0, H - 1.0, 13.0)       # component envelope (tallest part 14.2 above the PCB top)
+    EH = 14.2                                                    # tallest part above the PCB top in the vendor STEP (was drawn 13.0)
+    env = Pos(0, 0, T + EH / 2) * Box(W - 1.0, H - 1.0, EH)      # component envelope
     for x, y, _ in holes:
         pcb -= Pos(x, y, T / 2) * Cylinder(1.55, T)
-        env -= Pos(x, y, T + 6.5) * Cylinder(4.0, 13.0)          # room for a cap head and its driver
+        env -= Pos(x, y, T + EH / 2) * Cylinder(4.0, EH)         # room for a cap head and its driver
     z = T + 8.0
 
     def v(x, y):   # vendor drawing coordinates (origin lower-left, scaled from the SIZE/PIN drawings, +/- 1 mm)
@@ -100,7 +101,11 @@ def skr_mini_e3_v3() -> Stock:
         "thermistor_pullup_ohm": "[BTT] schematic 4.7K on TH0/THB; [KLIP] default pullup 4700",
         "adc_bits": f"STM32G0B1 12-bit ADC ({TU}; Klipper sums 8 samples, not modelled)",
         "max_ambient_c": TU, "mass": TU, "cost": TU}
+    from . import details
+
+    detail, model = details.skr_mini_e3_v3()
     return Stock(pcb + env, "CTRL-SKR-MINI-E3-V3", "BIGTREETECH SKR Mini E3 V3.0 control board", 0.07, material="abs",
+                 detail=detail, model=model,
                  ratings={"electrical": {"kind": "board", "ports": ports, "ratings": ratings, "sources": sources,
                                          "product": {'product': 'BIGTREETECH SKR Mini E3 V3.0', 'vendor': 'BIGTREETECH (Shenzhen Big Tree Technology)', 'part_number': 'SKR MINI E3 V3.0', 'form': 'assembled board', 'off_the_shelf': True, 'custom_pcb': False, 'builder_work': 'mount on spacers; land ferruled wires in the screw terminals; plug JST-XH housings; flash Klipper from SD card'}, "params": {"power_port": "POWER"}}, "stepper_drivers": 4, "approximate": True},
                  interfaces={"mount_holes_m3": holes, "standoff_min": 5.0, **_ports_to_interfaces(ports)}, cost_usd=35.0)
@@ -132,7 +137,9 @@ def psu_lrs(model: str = "LRS-350-24") -> Stock:
     holes = [(x, y, 0.0) for x in (-75.0, 75.0) for y in (-25.0, 25.0)]
     xt, zt = -107.5 + 8.0, 22.0
     pitch = 9.5
-    ys = [(-4 + i) * pitch for i in range(9)]            # nine-way barrier strip
+    # nine-way barrier strip. In MEAN WELL's STEP the strip is centred 9.5 mm towards -Y (it spans Y = -53..34), not on
+    # the centre line as first read off the drawing.
+    ys = [-9.5 + (-4 + i) * pitch for i in range(9)]
     out = (-1, 0, 0.6)
     scr = dict(connector="screw-psu", max_a=20.0)
     ports = {"L": dict(kind="mains_in", at=(xt, ys[0], zt), dir=out, **scr), "N": dict(kind="mains_in", at=(xt, ys[1], zt), dir=out, **scr),
@@ -147,9 +154,14 @@ def psu_lrs(model: str = "LRS-350-24") -> Stock:
                     "dimensions": "[MW] 215*115*30 mm (L*W*H)", "mass": "[MW] packing weight",
                     "mount_holes": "[MW] mechanical drawing, case 207A: 4-M4 L=3mm in the base, 150 x 50 mm"
                                    + ("" if model == "LRS-350-24" else f" (drawing read for the LRS-350 only; LRS-200 pattern {TU})"),
-                    "terminal_positions": f"nine-way strip at one end, 9.5 mm pitch read off the drawing, +/- 2 mm ({TU})",
+                    "terminal_positions": "nine-way strip at the -X end, 9.5 mm pitch; strip position from MEAN WELL's STEP "
+                                          f"(LRS-350); which end is L is {TU}",
                     "has_fan": "[MW] LRS-350: built-in fan, on at 50 degC internal", "cost": TU})
+    from . import details
+
+    detail, cad = details.psu_lrs(model)
     return Stock(body, f"PSU-{model}", f"Mean Well {model}: 24 V {amps} A {watts:.0f} W enclosed supply", mass, material="steel",
+                 detail=detail, model=cad,
                  ratings={"electrical": {"kind": "psu", "ports": ports, "ratings": ratings, "sources": sources, "product": dict(product=f"MEAN WELL {model}", vendor="MEAN WELL", part_number=model, form="module", off_the_shelf=True, custom_pcb=False, builder_work="set the 115/230 V selector; ring or fork terminals on mains, earth and DC wires"), "params": {}},
                           "watts": watts},
                  interfaces={"mount_holes_m4": holes, "thread_depth": 3.0, **_ports_to_interfaces(ports)}, cost_usd=cost)

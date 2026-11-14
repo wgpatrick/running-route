@@ -47,6 +47,31 @@ def kind_of(c):
     return "purchased" if c.cots else "fabricated"
 
 
+_DETAIL_MESH: dict = {}
+
+
+def detail_mesh(c):
+    """Tessellation of a part's detail model, made once per catalog part in its local frame and moved to each
+    instance. Big models are tessellated more coarsely."""
+    import trimesh
+
+    from mechloop.parts import vendor_cad
+
+    key = (c.meta.get("model") or {}).get("key")
+    st = vendor_cad.STOCKS.get(key)
+    P = c.meta.get("placement")
+    if st is None or st.detail is None or P is None:
+        return to_trimesh(c.detail, 0.12, 0.45)
+    if key not in _DETAIL_MESH:
+        nf = len(st.detail.faces())
+        tol, ang = (0.08, 0.4) if nf < 200 else (0.15, 0.6) if nf < 1500 else (0.3, 0.9)
+        verts, tris = st.detail.tessellate(tol, ang)
+        _DETAIL_MESH[key] = (np.array([(p.X, p.Y, p.Z) for p in verts], dtype=float), np.array(tris, dtype=int))
+    v, t = _DETAIL_MESH[key]
+    P = np.asarray(P, dtype=float)
+    return trimesh.Trimesh(v @ P[:, :3].T + P[:, 3], t, process=False)
+
+
 def d_density(c):
     from mechloop.model import MATERIALS
     mat = MATERIALS.get(c.material)
@@ -110,7 +135,9 @@ def main():
     blob, parts = [], []
     off = 0
     for c in comps:
-        tm = to_trimesh(c.shape, 0.12, 0.45)
+        model = c.meta.get("model") or {"kind": "proxy" if c.cots else "design", "source": ""}
+        # display the detail model (vendor / community CAD) where there is one; verifiers used c.shape
+        tm = detail_mesh(c) if c.detail is not None else to_trimesh(c.shape, 0.12, 0.45)
         v = np.asarray(tm.vertices, dtype=np.float32)
         t = np.asarray(tm.faces, dtype=np.uint32)
         vb, tb = v.tobytes(), t.tobytes()
@@ -121,6 +148,10 @@ def main():
             "material": c.material, "process": c.meta.get("process") or (mfg.get(c.name) or {}).get("process"),
             "sku": c.sku, "desc": c.meta.get("description", ""), "cost": c.meta.get("cost_usd"),
             "mass": round(float(masses.get(c.name) or c.mass_kg or c.shape.volume * 1e-9 * d_density(c)), 4),
+            # what the displayed geometry is: "vendor CAD" | "community CAD" | "generated to standard" | "proxy"
+            # (catalog parts) or "design" (custom parts), where it came from, and the STEP file behind it
+            "model": model.get("kind"), "model_source": model.get("source", ""), "model_file": model.get("file"),
+            "model_note": model.get("note"),
             "vendor": bool(c.meta.get("vendor_backed")), "source": src if isinstance(src, str) else json.dumps(src)[:300] if src else "",
             "product": (c.ratings.get("electrical") or {}).get("product") if isinstance(c.ratings.get("electrical"), dict) else None,
             "bbox": [round(x, 2) for x in (bb.min.X, bb.min.Y, bb.min.Z, bb.max.X, bb.max.Y, bb.max.Z)],
@@ -172,6 +203,10 @@ def main():
     if "--no-assembly" in sys.argv and (out / "data.json").exists():
         data["build"] = json.loads((out / "data.json").read_text()).get("build")
     (out / "data.json").write_text(json.dumps(data, default=str, separators=(",", ":")))
+    kinds = {}
+    for p in parts:
+        kinds[p["model"]] = kinds.get(p["model"], 0) + 1
+    print("models:", kinds, "; meshes.txt", round((out / "meshes.txt").stat().st_size / 1e6, 2), "MB")
     print(len(parts), "parts;", round(off / 1e6, 2), "MB meshes;", round((out / "data.json").stat().st_size / 1e6, 2), "MB data;",
           sum(p["t"][1] for p in parts), "triangles")
 

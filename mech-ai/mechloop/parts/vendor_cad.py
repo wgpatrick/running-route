@@ -153,7 +153,7 @@ def frame(shape, rot=(0.0, 0.0, 0.0), pos=(0.0, 0.0, 0.0), pre=(0.0, 0.0, 0.0)):
     from build123d import Location, Pos, Rot
 
     loc = Pos(*pos) * Rot(0, 0, rot[2]) * Rot(0, rot[1], 0) * Rot(rot[0], 0, 0) * Pos(*pre)
-    return bake(shape.moved(Location(loc.wrapped if hasattr(loc, "wrapped") else loc)))
+    return bake(shape.moved(loc))
 
 
 def bake(shape):
@@ -164,7 +164,7 @@ def bake(shape):
     trsf = shape.wrapped.Location().Transformation()
     bare = shape.wrapped.Located(TopLoc_Location())
     out = BRepBuilderAPI_Transform(bare, trsf, True).Shape()
-    return shape.__class__.cast(out) if hasattr(shape.__class__, "cast") else _cast(out)
+    return _cast(out)
 
 
 def _cast(wrapped):
@@ -265,8 +265,8 @@ def stretch(shape, axis: str, at: float, delta: float):
         hi_part = shape & half(at, b[i + 3] + 10)
         thin = shape & half(at - 0.01, at + 0.01)
         # the section at the cut, swept over the gap
-        faces = [f for f in thin.faces() if abs(abs(f.normal_at().to_tuple()[i]) - 1) < 1e-6
-                 and abs(f.center().to_tuple()[i] - (at + 0.01)) < 1e-6]
+        faces = [f for f in thin.faces() if abs(abs(tuple(f.normal_at())[i]) - 1) < 1e-6
+                 and abs(tuple(f.center())[i] - (at + 0.01)) < 1e-6]
         v = [0.0, 0.0, 0.0]
         v[i] = 1.0
         fill = None
@@ -408,7 +408,7 @@ def check_stock(stock) -> tuple[list[dict], dict]:
                     "message": f"volume: simulation solid {vp:.0f} mm^3 is {vp / vd:.2f} x the detail model's {vd:.0f} mm^3 "
                                f"(allowed {lo} to {hi})"})
     mat = MATERIALS.get(stock.material)
-    if mat is not None and stock.mass_kg:
+    if mat is not None and stock.mass_kg and not model.get("assembly"):
         meas["mass_catalog_kg"] = round(stock.mass_kg, 4)
         meas["mass_of_cad_as_solid_kg"] = round(vd * 1e-9 * mat.density, 4)   # as if solid `material`: an upper bound
         mlo, mhi = tol.get("mass_ratio", (0.2, 3.0))
@@ -528,3 +528,145 @@ def sources_table() -> dict:
             continue
         rows[cells[0].strip("`")] = dict(zip(head, cells))
     return rows
+
+
+# ------------------------------------------------------------------ the two checks, on a whole design
+def _world(P, pts: np.ndarray) -> np.ndarray:
+    P = np.asarray(P, dtype=float)
+    return pts @ P[:, :3].T + P[:, 3]
+
+
+def verify_detail(design, r, envelope: bool = True) -> dict:
+    """Run `proxy_matches_cad` and (optionally) `detail_clash` on a design; findings go into VerifierResult `r`.
+    Returns the metrics block."""
+    import time
+
+    t0 = time.time()
+    by_key: dict = {}
+    kinds: dict = {}
+    for c in design.components:
+        m = c.meta.get("model") or {}
+        if c.cots:
+            kinds[m.get("kind", "proxy")] = kinds.get(m.get("kind", "proxy"), 0) + 1
+        if c.detail is not None and m.get("key") in STOCKS:
+            by_key.setdefault(m["key"], []).append(c)
+    out = {"parts_by_model_kind": kinds, "part_types_with_cad": len(by_key), "checked": {}}
+    for key, comps in sorted(by_key.items()):
+        st = STOCKS[key]
+        bad, meas = check_stock(st)
+        out["checked"][st.sku] = {"model": st.model.get("kind"), "source": st.model.get("source"), "instances": len(comps),
+                                  "mismatches": len(bad),
+                                  **{k: meas[k] for k in ("bbox_proxy", "bbox_cad", "volume_proxy_mm3", "volume_cad_mm3") if k in meas},
+                                  **({"notes": st.model["notes"]} if st.model.get("notes") else {})}
+        if bad:
+            r.add("error", "proxy_mismatch",
+                  f"{st.sku} ({len(comps)} placed, e.g. {comps[0].name}): its simulation solid does not match its "
+                  f"{st.model.get('kind')}: " + "; ".join(b["message"] for b in bad[:6]) + (" ..." if len(bad) > 6 else ""),
+                  part=comps[0].name, sku=st.sku, key=key, mismatches=bad,
+                  hint="Correct the catalog part's simulation solid or interfaces (or the vendor JSON), or fix the model's "
+                       "alignment; if the CAD and the data sheet disagree, record it in the part's model notes.")
+    out["proxy_match_seconds"] = round(time.time() - t0, 2)
+    if not envelope or getattr(design, "detail_envelope", True) is False:
+        return out
+    t1 = time.time()
+    import trimesh
+    from scipy.spatial import ConvexHull
+
+    from ..geom import to_trimesh
+
+    comps = list(design.components)
+    boxes = np.array([bbox6(c.shape) for c in comps])
+    managers: dict = {}
+    clashes = []
+    tested = exact = 0
+
+    def touches(j, w):
+        """Cheap test first: does the convex hull (world vertices w) cut or contain neighbour j's simulation solid?"""
+        o = comps[j]
+        try:
+            hull = ConvexHull(w)
+        except Exception:
+            return True
+        A, b = hull.equations[:, :3], hull.equations[:, 3]
+        tm = to_trimesh(o.shape)
+        V = np.asarray(tm.vertices)
+        if ((V @ A.T + b) < -0.05).all(1).any():       # a vertex of the neighbour is inside the hull
+            return True
+        if j not in managers:
+            mg = trimesh.collision.CollisionManager()
+            mg.add_object("o", tm)
+            managers[j] = mg
+        hm = trimesh.Trimesh(w, hull.simplices, process=False)
+        if managers[j].in_collision_single(hm):
+            return True
+        from OCP.BRepClass3d import BRepClass3d_SolidClassifier
+        from OCP.gp import gp_Pnt
+        from OCP.TopAbs import TopAbs_IN
+
+        ctr = gp_Pnt(*map(float, w.mean(0)))            # the hull wholly inside the neighbour
+        return any(BRepClass3d_SolidClassifier(so.wrapped, ctr, 1e-6).State() == TopAbs_IN for so in o.shape.solids())
+
+    for key, group in by_key.items():
+        st = STOCKS[key]
+        hulls = excess_hulls(st, key)
+        if not hulls:
+            continue
+        mates = tuple(st.model.get("mates_with", ()))
+        for c in group:
+            P = c.meta.get("placement")
+            if P is None:
+                continue
+            det_solids = None
+            hit: dict = {}
+            for h in hulls:
+                w = _world(P, h)
+                lo, hi = w.min(0), w.max(0)
+                near = np.where((boxes[:, :3] < hi).all(1) & (boxes[:, 3:] > lo).all(1))[0]
+                for j in near:
+                    o = comps[j]
+                    if o is c or frozenset((c.name, o.name)) in design.allowed_overlaps or \
+                            (mates and (o.sku or "").startswith(mates)):
+                        continue
+                    tested += 1
+                    if not touches(j, w):
+                        continue
+                    exact += 1
+                    if det_solids is None:
+                        det_solids = [(s, bbox6(s)) for s in c.detail.solids()]
+                    # against the neighbour's own detail model where it has one (a carriage's lips sit in the
+                    # rail's grooves, which the rail's plain simulation solid does not have)
+                    other = o.detail if o.detail is not None else o.shape
+                    vol, how = 0.0, "exact"
+                    try:
+                        for s, sb in det_solids:
+                            if (sb[:3] < hi + 0.5).all() and (sb[3:] > lo - 0.5).all() and \
+                                    (sb[:3] < boxes[j, 3:]).all() and (sb[3:] > boxes[j, :3]).all():
+                                for os_ in other.solids():
+                                    ob = bbox6(os_)
+                                    if not ((sb[:3] < ob[3:]).all() and (sb[3:] > ob[:3]).all()):
+                                        continue
+                                    common = s & os_
+                                    if common is None or not common.solids():
+                                        continue
+                                    extra = common - c.shape
+                                    vol += sum(q.volume for q in extra.solids()) if extra is not None else 0.0
+                    except Exception:
+                        how, vol = "convex hull (the exact boolean failed)", 1.0
+                    if vol > 0.5:
+                        e = hit.setdefault(o.name, {"volume": 0.0, "lo": lo, "hi": hi, "how": how})
+                        e["volume"] = max(e["volume"], vol)
+                        e["lo"], e["hi"] = np.minimum(e["lo"], lo), np.maximum(e["hi"], hi)
+            for other_name, e in hit.items():
+                clashes.append((c.name, other_name))
+                ctr = ((e["lo"] + e["hi"]) / 2).round(1).tolist()
+                r.add("error", "detail_clash",
+                      f"{c.name} ({st.sku}): a feature of its {st.model.get('kind')} model that the simulation solid lacks "
+                      f"(around {ctr}, {np.round(e['hi'] - e['lo'], 1).tolist()} mm) runs into {other_name} by "
+                      f"{e['volume']:.1f} mm^3.",
+                      part=c.name, other=other_name, at=ctr, size=np.round(e["hi"] - e["lo"], 2).tolist(),
+                      volume=round(e["volume"], 2), test=e["how"],
+                      hint="Look at the detail model there (connector, lever, terminals, pins, cable exit): move or turn the "
+                           "part, or cut a relief in the neighbour.")
+    out["envelope"] = {"pairs_tested": tested, "exact_booleans": exact, "clashes": len(clashes), "seconds": round(time.time() - t1, 2),
+                       "pose": "home pose only"}
+    return out

@@ -28,7 +28,8 @@ def _polys(design: Design, pv):
     out = []
     i = 0
     for c in design.components:
-        tm = to_trimesh(c.shape)
+        # pictures show the detailed (vendor) CAD where a part has it; coarser tessellation keeps them quick
+        tm = to_trimesh(c.detail, 0.15, 0.6) if getattr(c, "detail", None) is not None else to_trimesh(c.shape)
         faces = np.hstack([np.full((len(tm.faces), 1), 3), tm.faces]).astype(np.int64)
         color = c.color or (COTS_COLOR if c.cots else PALETTE[i % len(PALETTE)])
         if not c.cots and not c.color:

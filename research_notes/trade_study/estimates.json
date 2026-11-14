@@ -1,0 +1,167 @@
+{
+ "bed_support": {
+  "ours: 1 MGN12H per rail, 2 rails (as designed)": {
+   "pitch_stiffness_nm_per_rad": 6998,
+   "edge_sag_blocks_mm": 0.0382,
+   "edge_sag_arms_mm": 0.0,
+   "edge_sag_total_mm": 0.0382,
+   "band_mm": [
+    0.0191,
+    0.0764
+   ],
+   "edge_rock_from_clearance_mm": 0.0353
+  },
+  "ours + carrier bending from our FEA (0.0325 mm at 3 kg -> 0.011 mm at 1 kg)": {
+   "edge_sag_total_mm": 0.049
+  },
+  "ours with 2 MGN12H per rail, 50 mm pitch (fits a 250 mm rail)": {
+   "pitch_stiffness_nm_per_rad": 113997,
+   "edge_sag_blocks_mm": 0.0023,
+   "edge_sag_arms_mm": 0.0,
+   "edge_sag_total_mm": 0.0023,
+   "band_mm": [
+    0.0012,
+    0.0047
+   ],
+   "edge_rock_from_clearance_mm": 0.0229
+  },
+  "ours with 2 MGN12H per rail, 60 mm pitch": {
+   "pitch_stiffness_nm_per_rad": 157997,
+   "edge_sag_blocks_mm": 0.0017,
+   "edge_sag_arms_mm": 0.0,
+   "edge_sag_total_mm": 0.0017,
+   "band_mm": [
+    0.0008,
+    0.0034
+   ],
+   "edge_rock_from_clearance_mm": 0.0191
+  },
+  "ours with 2 MGN12H per rail, 100 mm pitch": {
+   "pitch_stiffness_nm_per_rad": 413997,
+   "edge_sag_blocks_mm": 0.0006,
+   "edge_sag_arms_mm": 0.0,
+   "edge_sag_total_mm": 0.0006,
+   "band_mm": [
+    0.0003,
+    0.0013
+   ],
+   "edge_rock_from_clearance_mm": 0.0115
+  },
+  "Voron 0.2: 1 MGN7H per rail, 2 rails, 1515 arms (scaled to its own 120 mm bed)": {
+   "pitch_stiffness_nm_per_rad": 1145,
+   "edge_sag_blocks_mm": 0.0911,
+   "edge_sag_arms_mm": 0.0101,
+   "edge_sag_total_mm": 0.1012,
+   "band_mm": [
+    0.0557,
+    0.1924
+   ],
+   "edge_rock_from_clearance_mm": 0.0321
+  },
+  "ours with the carrier replaced by two 2020 arms (Trident / V0 style), arms only": {
+   "edge_sag_arms_mm": 0.0128
+  },
+  "3-point bed, 220 x 220 x 6 mm plate (our plate on three screws)": {
+   "centre_sag_mm": 0.0042
+  },
+  "3-point bed, 5 mm cast plate 229 x 229 (V-Core 3.1 200 plate)": {
+   "centre_sag_mm": 0.008
+  },
+  "note": "1 kg at the bed centre. Cantilever numbers scale linearly with the ASSUMED block stiffness (band = x0.5 .. x2). A print's weight builds up slowly and is mostly taken out by the first layer being laid on the already-loaded bed, so the static number matters less than the pitch stiffness, which sets how much the bed nods when the Z axis hops or the nozzle drags.",
+  "ours bed nodding frequency, as designed": {
+   "f_hz": 62.8
+  },
+  "ours bed nodding frequency, 2 blocks per rail, 50 mm pitch": {
+   "f_hz": 253.4
+  },
+  "ours bed nodding frequency, 2 blocks per rail, 100 mm pitch": {
+   "f_hz": 482.9
+  }
+ },
+ "gantry_beam": {
+  "ours: 2020 + MGN12 rail, span 320 mm, 0.60 kg toolhead": {
+   "k_n_per_mm": 749.9,
+   "f_hz": 156.2
+  },
+  "Voron 2.4 250: 2020 + MGN12, span 390 mm, 0.466 kg toolhead": {
+   "k_n_per_mm": 414.2,
+   "f_hz": 123.9
+  },
+  "Voron Trident: 2020 + MGN12, span 390 mm, 0.393 kg toolhead": {
+   "k_n_per_mm": 414.2,
+   "f_hz": 131.0
+  },
+  "note": "beam bending is not what limits any of these machines; compare with the belt numbers below"
+ },
+ "belt_stiffness_n_per_mm": {
+  "6 mm x 500 mm": 120.0,
+  "6 mm x 700 mm": 85.7,
+  "6 mm x 1000 mm": 60.0,
+  "6 mm x 1500 mm": 40.0,
+  "6 mm x 2000 mm": 30.0,
+  "9 mm x 500 mm": 180.0,
+  "9 mm x 700 mm": 128.6,
+  "9 mm x 1000 mm": 90.0,
+  "9 mm x 1500 mm": 60.0,
+  "9 mm x 2000 mm": 45.0,
+  "12 mm x 500 mm": 240.0,
+  "12 mm x 700 mm": 171.4,
+  "12 mm x 1000 mm": 120.0,
+  "12 mm x 1500 mm": 80.0,
+  "12 mm x 2000 mm": 60.0
+ },
+ "belt_comparison": {
+  "ours X: 12 mm x 674 mm, 0.60 kg": {
+   "k": 178.0,
+   "f_hz": 86.9,
+   "twin_hz": 62.6
+  },
+  "ours Y: 2 x 12 mm (676 + 738 mm), 1.49 kg": {
+   "k": 340.2,
+   "f_hz": 76.0,
+   "twin_hz": 52.7
+  },
+  "ours X with 9 mm belt": {
+   "k": 133.5,
+   "f_hz": 75.3
+  },
+  "ours X with 6 mm belt": {
+   "k": 89.0,
+   "f_hz": 61.5
+  },
+  "Voron 0.2: 6.0 mm x 1004 mm": {
+   "k": 59.8,
+   "x_mass_kg": 0.247,
+   "f_hz": 78.3
+  },
+  "Voron 2.4 250: 6.0 mm x 1554 mm": {
+   "k": 38.6,
+   "x_mass_kg": 0.466,
+   "f_hz": 45.8
+  },
+  "Voron Trident: 6.0 mm x 1650 mm": {
+   "k": 36.4,
+   "x_mass_kg": 0.393,
+   "f_hz": 48.4
+  },
+  "Annex K3: 9.0 mm x 622 mm": {
+   "k": 289.4,
+   "x_mass_kg": 0.411,
+   "f_hz": 133.6
+  },
+  "Ender 3 X: 6.0 mm x 830 mm": {
+   "k": 72.3,
+   "x_mass_kg": 0.266,
+   "f_hz": 83.0
+  }
+ },
+ "moving_motor": {
+  "x_motor_and_pulley_on_y_kg": 0.246,
+  "y_mass_now_kg": 1.49,
+  "y_mass_without_kg": 1.244,
+  "y_resonance_now_hz": 52.7,
+  "y_resonance_without_hz": 57.7,
+  "accel_gain_same_force": "20 %",
+  "note": "frequency scales with 1/sqrt(mass); acceleration at the same belt force with 1/mass. A CoreXY conversion also changes belt length (longer, so softer), which can cancel this gain: see belt table."
+ }
+}

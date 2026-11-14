@@ -188,8 +188,13 @@ Z_TAB = ZC - 6.0                                  # underside of the nut tab at 
 # Z endstop: switch on a 4 mm bracket hanging from the top back rail; struck from below by the jack screw
 ZS_X, ZB_T = 8.0, 4.0
 ZS_Y = Y_FACE - ZB_T - 5.0                        # switch trigger point is 5 mm in front of its mount face
-ZS_TIP = Z_TAB - 4.0 + 35.0                       # tip of the M3x35 jack screw at home
-ZS_Z0 = ZS_TIP + PRINT_Z + 5.5                    # switch origin: trigger point is 5.5 below it
+JACK_L = 30.0                                     # jack screw M3x30 (was x35): the lever switch triggers 5.1 mm further
+#                                                   from its origin, and its screws must stay below the top rail
+ZS_TIP = Z_TAB - 4.0 + JACK_L                     # tip of the jack screw at home
+# Lever switch (vendor-CAD pass): the trigger is the lever's operating position at its tip, 10.6 from the switch
+# origin along the stroke (was 5.5) and 9 to one side (was on the centre line).
+ES_TRIG, ES_SIDE, ES_PIN_D = 10.6, 9.0, 2.5       # ES_PIN_D: clearance drill for the switch terminals under the board
+ZS_Z0 = ZS_TIP + PRINT_Z + ES_TRIG                # switch origin: trigger point is ES_TRIG below it
 ZB_Z0 = ZS_Z0 - 7.5                               # bottom of the bracket
 
 
@@ -302,8 +307,8 @@ def z_motor_mount_shape():
 
 TAB_Z0 = Z_PLATE + T_YP + 1.5
 # X endstop: flat on the left Y plate, pressed in -X by the left end of the belt clamp bar at x = -TX
-X_ES_X0 = -TX - 20.0 - 5.5       # switch origin X (trigger point is 5.5 further in +X)
-X_ES_Y0 = TAB_Y0 - 1.5           # on the clamp bar's end face
+X_ES_X0 = -TX - 20.0 - ES_TRIG   # switch origin X (trigger point is ES_TRIG further in +X)
+X_ES_Y0 = TAB_Y0 - 1.5 - ES_SIDE # lever tip (ES_SIDE towards +Y) on the clamp bar's end face
 PAD_FRONT = YB0 - XB - 24.0      # front edge of the X motor pad: it presses the Y endstop at y = -TY
 XC_Y0 = TAB_Y0 - 5.0             # front face of the X belt clamp bar (5 mm stock)
 XC_Z1 = Z_XB + 13.5              # top of the clamp bar; it runs down to TAB_Z0 so its end face strikes the X endstop
@@ -533,16 +538,19 @@ def build() -> Design:
         d.join(f"bed_column_{i}", "carrier", "clamp")
     d.bom_extra("WASHER-M3", 4, 0.02)
     # Z offset: jack screw in the tab (tapped M3, lock nut on top); its tip presses the Z endstop at the top of travel
-    add_screw(d, "z_stop_screw", "M3", 35, at=(ZS_X, ZS_Y, Z_TAB - 4.0), direction=(0, 0, 1), body="zbody", threads_into="carrier")
+    add_screw(d, "z_stop_screw", "M3", JACK_L, at=(ZS_X, ZS_Y, Z_TAB - 4.0), direction=(0, 0, 1), body="zbody", threads_into="carrier")
     add_nut(d, "z_stop_locknut", "M3", at=(ZS_X, ZS_Y, Z_TAB + T_TAB), direction=(0, 0, 1), body="zbody", screw="z_stop_screw")
     ZB_BOLTS = (ZS_X + 20, ZS_X + 38)     # to one side, so a driver from the front passes beside the hotend
-    zb = Pos(ZS_X + 17, Y_FACE - ZB_T / 2, (ZB_Z0 + FZ + 8) / 2) * Box(58, ZB_T, FZ + 8 - ZB_Z0)
+    # (widened 9 mm to the left: the switch moved over so that its lever tip is on the jack screw)
+    zb = Pos(ZS_X + 12.5, Y_FACE - ZB_T / 2, (ZB_Z0 + FZ + 8) / 2) * Box(67, ZB_T, FZ + 8 - ZB_Z0)
     for x in ZB_BOLTS:
         zb -= Pos(x, Y_FACE - ZB_T / 2, FZ) * Rot(90, 0, 0) * Cylinder(clearance_hole("M5") / 2, ZB_T)
     zsw = place(d, "z_endstop", endstop_switch(),
-                Location(Plane(origin=(ZS_X, Y_FACE - ZB_T, ZS_Z0), x_dir=(-1, 0, 0), z_dir=(0, -1, 0))))
+                Location(Plane(origin=(ZS_X - ES_SIDE, Y_FACE - ZB_T, ZS_Z0), x_dir=(-1, 0, 0), z_dir=(0, -1, 0))))
     for hx, hy, hz in zsw.meta["interfaces"]["mount_holes_m3"]:
         zb -= Pos(hx, Y_FACE - ZB_T / 2, hz) * Rot(90, 0, 0) * Cylinder(clearance_hole("M3") / 2, ZB_T)
+    for hx, hy, hz in zsw.meta["interfaces"]["pin_holes"]:      # the switch terminals stand 2.6 mm out of the board
+        zb -= Pos(hx, Y_FACE - ZB_T / 2, hz) * Rot(90, 0, 0) * Cylinder(ES_PIN_D / 2, ZB_T)
     d.add("z_endstop_bracket", zb, material="al6061")
     for i, x in enumerate(ZB_BOLTS):
         add_screw(d, f"z_endstop_bracket_bolt_{i}", "M5", 8, at=(x, Y_FACE - ZB_T, FZ), direction=(0, 1, 0),
@@ -592,7 +600,12 @@ def build() -> Design:
                 for y in (-15.5, 15.5):
                     plate -= Pos(X_MOTOR_X + x, YB0 - XB + y, Z_PLATE + T_YP / 2) * Cylinder(clearance_hole("M3") / 2, T_YP)
             # land for the X endstop in front of the beam (switch screws tap into the plate)
-            plate += Pos(X_ES_X0, YB0 - 25 - 4.5, Z_PLATE + T_YP / 2) * Box(15, 9, T_YP)
+            # (longer since the vendor-CAD pass: the switch sits ES_SIDE further forward, lever tip on the clamp bar)
+            land_y0 = X_ES_Y0 - 10.5
+            plate += Pos(X_ES_X0, (land_y0 + YB0 - 25) / 2, Z_PLATE + T_YP / 2) * Box(15, YB0 - 25 - land_y0, T_YP)
+            e = endstop_switch().interfaces
+            for px, py, _ in e["pin_holes"]:      # clearance for the switch terminals (part frame x -> -Y, y -> +X)
+                plate -= Pos(X_ES_X0 + py, X_ES_Y0 - px, Z_PLATE + T_YP / 2) * Cylinder(ES_PIN_D / 2, T_YP)
             plate += fillet_z(X_ES_X0 - 7.5, YB0 - 25, -1, -1, 2.0, zp0, zp1)
             for x, y in TOW_SCREWS:   # the Y belt tower is a separate block screwed on from below
                 plate -= Pos(x, y, Z_PLATE + T_YP / 2) * Cylinder(clearance_hole("M3") / 2, T_YP)
@@ -765,9 +778,12 @@ def build() -> Design:
     for y in (YI_YL - 9.0, YI_YL + 6.0):
         iml -= Pos(-xf - MT / 2, y, FZ) * xcyl(clearance_hole("M5") / 2, MT)
     ysw = place(d, "y_endstop", endstop_switch(),
-                Location(Plane(origin=(-xf - MT, PAD_FRONT - TY - 5.5, Z_PLATE + T_YP / 2), x_dir=(0, 0, 1), z_dir=(-1, 0, 0))))
+                Location(Plane(origin=(-xf - MT, PAD_FRONT - TY - ES_TRIG, Z_PLATE + T_YP / 2 + ES_SIDE),
+                               x_dir=(0, 0, 1), z_dir=(-1, 0, 0))))
     for hx, hy, hz in ysw.meta["interfaces"]["mount_holes_m3"]:
         iml -= Pos(-xf - MT / 2, hy, hz) * xcyl(clearance_hole("M3") / 2, MT)
+    for hx, hy, hz in ysw.meta["interfaces"]["pin_holes"]:
+        iml -= Pos(-xf - MT / 2, hy, hz) * xcyl(ES_PIN_D / 2, MT)
     d.add("y_idler_mount_l", iml, material="al6061")
     for i, (hx, hy, hz) in enumerate(ysw.meta["interfaces"]["mount_holes_m3"]):
         add_screw(d, f"y_endstop_screw_{i}", "M3", 8, at=(hx - 1.6, hy, hz), direction=(1, 0, 0),

@@ -156,6 +156,6 @@ def run(path: str | Path, out_root: str | Path = "out", only=None, render: bool 
 def _labelled(c):
     import copy
 
-    s = copy.copy(c.shape)
+    s = copy.copy(c.detail if getattr(c, "detail", None) is not None else c.shape)   # the detailed (vendor) CAD where there is one
     s.label = c.name
     return s

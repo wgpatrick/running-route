@@ -27,8 +27,9 @@ A check that could not run is reported as not run and fails the design; it never
 
 Catalog (`mechloop/parts`): NEMA 17, MGN12 rail and carriage, 2020 extrusion and
 corner bracket, linear rod, GT2 pulley and idler, T8 lead screw and nut, shaft
-coupler, ball bearings, socket head cap screws, hex nuts. Geometry is proxy geometry built
-from datasheet dimensions; ratings are typical class values.
+coupler, ball bearings, socket head cap screws, hex nuts. Each part has a simple simulation solid built
+from datasheet dimensions and, for most, a detailed CAD model checked against it (`docs/VENDOR_CAD.md`);
+ratings are vendor data where `docs/VENDOR_DATA.md` says so, typical class values otherwise.
 
 ## Digital twin (`mechloop/twin`)
 
@@ -113,6 +114,20 @@ solves (about 1 wrong run in 48); the solver now runs single-threaded (200 of 20
   (`tools/export_viewer.py`).
 
 134 tests pass.
+
+## Vendor CAD (added 2026-11-14)
+
+- Catalog parts have two representations: the simulation solid and a detail model in the same frame (vendor STEP for
+  the Mean Well supply and the SKR board, community STEP for motors, MGN12, 2020 extrusion and bracket, idler, T8 nut,
+  fans and the endstop's lever switch, ISO-generated screws and nuts). STEP export, renders and the viewer show the
+  detail; verifiers use the solid. `docs/VENDOR_CAD.md`, `vendor_cad/SOURCES.md`.
+- Two new checks in the geometry verifier: `proxy_mismatch` (solid against its CAD: box, volume, holes, shafts) and
+  `detail_clash` (what only the CAD has, against the neighbours). Seven catalog solids were corrected; in
+  `designs/printer_v4.py` the checks found the endstop terminals shorting on three mounts and all three strikers
+  missing the real lever position; v4 was fixed and passes all 12 verifiers.
+- Not yet vendor CAD: motors, coupler, rails, extrusion (login or blocked hosts), pulleys, extruder, hotend, Pi,
+  relay, inlet, MOSFET module. `vendor_cad/inbox/README.md` is the hand-download list; a file dropped there is
+  picked up with no code change.
 
 ## Known gaps
 

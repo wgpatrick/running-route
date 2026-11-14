@@ -1,0 +1,2932 @@
+{
+ "voron0": {
+  "leaf_solids_in_step": {
+   "value": 1683,
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "part_instances_counted": {
+   "value": 916,
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "fasteners": {
+   "value": 634,
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "fastener_types": {
+   "value": 25,
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "printed_part_instances": {
+   "value": 123,
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "printed_volume_cm3": {
+   "value": 783,
+   "method": "cad-est",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "frame_outer_mm": {
+   "value": {
+    "x": 230.0,
+    "y": 230.0,
+    "z": 248.0
+   },
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "frame_extrusions": {
+   "value": {
+    "15x15 L200": 19,
+    "15x15 L80": 4
+   },
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "frame_extrusion_count": {
+   "value": 23,
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "frame_extrusion_total_length_mm": {
+   "value": 4120,
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "rails": {
+   "value": [
+    {
+     "part": "MGN7 Rail/SOLID",
+     "length": 150.0,
+     "section": [
+      4.8,
+      7.0
+     ],
+     "direction": "horizontal",
+     "long_axis_index": 1,
+     "centre": [
+      -97.6,
+      -13.0,
+      241.7
+     ]
+    },
+    {
+     "part": "MGN7 Rail (1)/SOLID",
+     "length": 150.0,
+     "section": [
+      4.8,
+      7.0
+     ],
+     "direction": "horizontal",
+     "long_axis_index": 1,
+     "centre": [
+      97.6,
+      -13.0,
+      241.7
+     ]
+    },
+    {
+     "part": "MGN7 Rail (2)/SOLID",
+     "length": 150.0,
+     "section": [
+      4.8,
+      7.0
+     ],
+     "direction": "vertical (Z)",
+     "long_axis_index": 2,
+     "centre": [
+      -34.5,
+      45.6,
+      141.2
+     ]
+    },
+    {
+     "part": "MGN7 Rail (3)/SOLID",
+     "length": 150.0,
+     "section": [
+      4.8,
+      7.0
+     ],
+     "direction": "vertical (Z)",
+     "long_axis_index": 2,
+     "centre": [
+      34.5,
+      45.6,
+      141.2
+     ]
+    },
+    {
+     "part": "MGN7 Rail (4)/SOLID",
+     "length": 150.0,
+     "section": [
+      4.8,
+      7.0
+     ],
+     "direction": "horizontal",
+     "long_axis_index": 0,
+     "centre": [
+      0.0,
+      2.8,
+      273.6
+     ]
+    }
+   ],
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "carriages": {
+   "value": 5,
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "x_beam_span_mm": {
+   "value": 195.2,
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "bed_plate_mm": {
+   "value": {
+    "a": 120.0,
+    "b": 120.0,
+    "t": 6.1
+   },
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "bed_centre": {
+   "value": [
+    0.0,
+    -31.8,
+    213.4
+   ],
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "z_drives": {
+   "value": 1,
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "z_drive_note": {
+   "value": "1 NEMA17 with integrated T8x8 lead screw",
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "z_drive_positions_rel_bed_centre_mm": {
+   "value": [
+    [
+     0.0,
+     84.6
+    ]
+   ],
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "z_rail_positions_rel_bed_centre_mm": {
+   "value": [
+    [
+     -34.5,
+     77.4
+    ],
+    [
+     34.5,
+     77.4
+    ]
+   ],
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "z_rail_spacing_mm": {
+   "value": 69.0,
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "bed_centre_to_z_rail_plane_mm": {
+   "value": 77.4,
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "bed_front_edge_to_z_rail_plane_mm": {
+   "value": 137.4,
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "belt_width_mm": {
+   "value": 6.0,
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "belts": {
+   "value": [
+    {
+     "part": "B Belt",
+     "bbox": [
+      227.8,
+      227.7,
+      6.0
+     ],
+     "vol_cm3": 6.15,
+     "length_from_bbox_perimeter_mm": 911,
+     "length_from_area_volume_mm": 1098,
+     "modelled_thickness_mm": 0.93,
+     "length_best_mm": 1004,
+     "length_range_mm": [
+      911,
+      1098
+     ],
+     "method": "cad-est: solved from the belt solid's surface area and volume (ribbon model); bbox perimeter as a cross-check"
+    },
+    {
+     "part": "A Belt",
+     "bbox": [
+      227.8,
+      227.7,
+      6.0
+     ],
+     "vol_cm3": 6.15,
+     "length_from_bbox_perimeter_mm": 911,
+     "length_from_area_volume_mm": 1098,
+     "modelled_thickness_mm": 0.93,
+     "length_best_mm": 1004,
+     "length_range_mm": [
+      911,
+      1098
+     ],
+     "method": "cad-est: solved from the belt solid's surface area and volume (ribbon model); bbox perimeter as a cross-check"
+    }
+   ],
+   "method": "cad-est",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "toolhead_envelope_mm": {
+   "value": {
+    "x": 58.1,
+    "y": 81.0,
+    "z": 105.2
+   },
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "toolhead_mass_kg": {
+   "value": {
+    "value": 0.247,
+    "by_class": {
+     "printed": 0.072,
+     "motor": 0.096,
+     "steel": 0.065,
+     "plastic": 0.014
+    },
+    "method": "cad-est: solid volume x assumed densities (asm.RHO)"
+   },
+   "method": "cad-est",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "nozzle_to_x_rail_mm": {
+   "value": {
+    "horizontal": 23.9,
+    "below": 50.5
+   },
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "x_rail_length_mm": {
+   "value": 150.0,
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "y_moving_mass_kg": {
+   "value": {
+    "value": 0.432,
+    "by_class": {
+     "printed": 0.092,
+     "steel": 0.169,
+     "aluminium": 0.061,
+     "motor": 0.096,
+     "plastic": 0.014
+    },
+    "method": "cad-est",
+    "note": "X beam / joints / toolhead (or the bed for a bed-slinger); belts and chains excluded"
+   },
+   "method": "cad-est",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "z_moving_mass_kg": {
+   "value": {
+    "value": 0.719,
+    "by_class": {
+     "aluminium": 0.329,
+     "printed": 0.064,
+     "steel": 0.326
+    },
+    "method": "cad-est"
+   },
+   "method": "cad-est",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "xy_motors": {
+   "value": 2,
+   "method": "cad",
+   "source": "VoronDesign/Voron-0: CAD/V0.2R1_Master_Assembly_STEP.zip -> 'V0.2R1 Master Assembly v63.step'"
+  },
+  "label": "Voron 0.2r1",
+  "build_volume_mm": {
+   "value": [
+    120,
+    120,
+    120
+   ],
+   "method": "config",
+   "source": "VoronDesign/Voron-0: Firmware/bigtreetech-skr-mini-e3-v3.0.cfg (position_max) and README.md"
+  },
+  "stock_max_accel_mm_s2": {
+   "value": 2000,
+   "method": "config",
+   "source": "VoronDesign/Voron-0: Firmware/bigtreetech-skr-mini-e3-v3.0.cfg"
+  },
+  "stock_max_velocity_mm_s": {
+   "value": 200,
+   "method": "config",
+   "source": "VoronDesign/Voron-0: Firmware/bigtreetech-skr-mini-e3-v3.0.cfg"
+  },
+  "z_screw": {
+   "value": "T8x8 integrated lead screw, rotation_distance 8",
+   "method": "config",
+   "source": "VoronDesign/Voron-0: Firmware/bigtreetech-skr-mini-e3-v3.0.cfg"
+  },
+  "bed_heater": {
+   "value": "24 V DC silicone pad 100 x 100 mm, 60 W (config comment: 'max_power 0.6 only needed for 100w pads')",
+   "method": "config+recalled",
+   "source": "VoronDesign/Voron-0: Firmware/bigtreetech-skr-mini-e3-v3.0.cfg"
+  },
+  "cost_usd": {
+   "value": "400 - 600",
+   "method": "docs",
+   "source": "https://docs.vorondesign.com/hardware.html"
+  },
+  "scaling_remark": {
+   "value": "'The bed is also cantilevered, which restricts scaling further.'",
+   "method": "docs",
+   "source": "https://docs.vorondesign.com/hardware.html"
+  },
+  "printed_stl_files": {
+   "value": 134,
+   "method": "bom",
+   "source": "VoronDesign/Voron-0 repository listing (*.stl)"
+  },
+  "board": {
+   "value": "BTT SKR Mini E3 V3 (one of the stock configs; the CAD shows an SKR Pico), TMC2209, Mean Well LRS-150-24",
+   "method": "config+cad",
+   "source": "VoronDesign/Voron-0: Firmware/bigtreetech-skr-mini-e3-v3.0.cfg"
+  }
+ },
+ "trident": {
+  "leaf_solids_in_step": {
+   "value": 1414,
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "part_instances_counted": {
+   "value": 1388,
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "fasteners": {
+   "value": 831,
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "fastener_types": {
+   "value": 35,
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "printed_part_instances": {
+   "value": 92,
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "printed_volume_cm3": {
+   "value": 1241,
+   "method": "cad-est",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "frame_outer_mm": {
+   "value": {
+    "x": 410.0,
+    "y": 410.0,
+    "z": 500.0
+   },
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "frame_extrusions": {
+   "value": {
+    "20x20 L500": 4,
+    "20x20 L370": 9,
+    "20x20 L330": 1,
+    "20x20 L232": 1
+   },
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "frame_extrusion_count": {
+   "value": 15,
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "frame_extrusion_total_length_mm": {
+   "value": 5892,
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "rails": {
+   "value": [
+    {
+     "part": "MGN12 rail/SOLID",
+     "length": 300.0,
+     "section": [
+      8.0,
+      12.0
+     ],
+     "direction": "horizontal",
+     "long_axis_index": 0,
+     "centre": [
+      -195.0,
+      197.0,
+      -160.0
+     ]
+    },
+    {
+     "part": "MGN9 - 300mm/SOLID",
+     "length": 300.0,
+     "section": [
+      6.5,
+      9.0
+     ],
+     "direction": "horizontal",
+     "long_axis_index": 1,
+     "centre": [
+      0.0,
+      195.5,
+      -173.2
+     ]
+    },
+    {
+     "part": "MGN9 - 300mm/SOLID",
+     "length": 300.0,
+     "section": [
+      6.5,
+      9.0
+     ],
+     "direction": "horizontal",
+     "long_axis_index": 1,
+     "centre": [
+      -390.0,
+      195.5,
+      -173.2
+     ]
+    },
+    {
+     "part": "MGN9 - 300mm/SOLID",
+     "length": 300.0,
+     "section": [
+      6.5,
+      9.0
+     ],
+     "direction": "vertical (Z)",
+     "long_axis_index": 2,
+     "centre": [
+      -390.0,
+      13.2,
+      -345.0
+     ]
+    },
+    {
+     "part": "MGN9 - 300mm/SOLID",
+     "length": 300.0,
+     "section": [
+      6.5,
+      9.0
+     ],
+     "direction": "vertical (Z)",
+     "long_axis_index": 2,
+     "centre": [
+      0.0,
+      13.2,
+      -345.0
+     ]
+    },
+    {
+     "part": "MGN9 - 300mm/SOLID",
+     "length": 300.0,
+     "section": [
+      6.5,
+      9.0
+     ],
+     "direction": "vertical (Z)",
+     "long_axis_index": 2,
+     "centre": [
+      -208.2,
+      390.0,
+      -345.0
+     ]
+    }
+   ],
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "carriages": {
+   "value": 18,
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "x_beam_span_mm": {
+   "value": 390.0,
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "bed_plate_mm": {
+   "value": {
+    "a": 254.0,
+    "b": 254.0,
+    "t": 6.3
+   },
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "bed_centre": {
+   "value": [
+    -195.0,
+    155.8,
+    -222.2
+   ],
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "z_drives": {
+   "value": 3,
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "z_drive_note": {
+   "value": "3 NEMA17 with integrated T8 lead screws",
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "z_drive_positions_rel_bed_centre_mm": {
+   "value": [
+    [
+     -163.0,
+     -119.8
+    ],
+    [
+     163.0,
+     -119.8
+    ],
+    [
+     -0.2,
+     202.2
+    ]
+   ],
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "z_rail_positions_rel_bed_centre_mm": {
+   "value": [
+    [
+     -195.0,
+     -142.6
+    ],
+    [
+     195.0,
+     -142.6
+    ],
+    [
+     -13.2,
+     234.2
+    ]
+   ],
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "belt_width_mm": {
+   "value": 6.0,
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "belts": {
+   "value": [
+    {
+     "part": "A_Belt",
+     "bbox": [
+      367.8,
+      383.5,
+      6.0
+     ],
+     "vol_cm3": 8.63,
+     "length_from_bbox_perimeter_mm": 1503,
+     "length_from_area_volume_mm": 1798,
+     "modelled_thickness_mm": 0.8,
+     "length_best_mm": 1650,
+     "length_range_mm": [
+      1503,
+      1798
+     ],
+     "method": "cad-est: solved from the belt solid's surface area and volume (ribbon model); bbox perimeter as a cross-check"
+    },
+    {
+     "part": "B_Belt",
+     "bbox": [
+      367.8,
+      383.5,
+      6.0
+     ],
+     "vol_cm3": 8.63,
+     "length_from_bbox_perimeter_mm": 1503,
+     "length_from_area_volume_mm": 1798,
+     "modelled_thickness_mm": 0.8,
+     "length_best_mm": 1650,
+     "length_range_mm": [
+      1503,
+      1798
+     ],
+     "method": "cad-est: solved from the belt solid's surface area and volume (ribbon model); bbox perimeter as a cross-check"
+    }
+   ],
+   "method": "cad-est",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "toolhead_envelope_mm": {
+   "value": {
+    "x": 76.1,
+    "y": 99.0,
+    "z": 132.0
+   },
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "toolhead_mass_kg": {
+   "value": {
+    "value": 0.393,
+    "by_class": {
+     "steel": 0.1,
+     "printed": 0.169,
+     "plastic": 0.019,
+     "aluminium": 0.007,
+     "motor": 0.097
+    },
+    "method": "cad-est: solid volume x assumed densities (asm.RHO)"
+   },
+   "method": "cad-est",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "nozzle_to_x_rail_mm": {
+   "value": {
+    "horizontal": 37.2,
+    "below": 51.0
+   },
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "x_rail_length_mm": {
+   "value": 300.0,
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "y_moving_mass_kg": {
+   "value": {
+    "value": 1.153,
+    "by_class": {
+     "steel": 0.544,
+     "printed": 0.271,
+     "plastic": 0.062,
+     "aluminium": 0.179,
+     "motor": 0.097
+    },
+    "method": "cad-est",
+    "note": "X beam / joints / toolhead (or the bed for a bed-slinger); belts and chains excluded"
+   },
+   "method": "cad-est",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "z_moving_mass_kg": {
+   "value": {
+    "value": 2.905,
+    "by_class": {
+     "printed": 0.151,
+     "steel": 1.348,
+     "aluminium": 1.406
+    },
+    "method": "cad-est"
+   },
+   "method": "cad-est",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "xy_motors": {
+   "value": 2,
+   "method": "cad",
+   "source": "VoronDesign/Voron-Trident: CAD/trident_assembly.step.zip -> trident_assembly.step"
+  },
+  "label": "Voron Trident 250",
+  "build_volume_mm": {
+   "value": [
+    250,
+    250,
+    250
+   ],
+   "method": "config",
+   "source": "VoronDesign/Voron-Trident: Firmware/Octopus/Trident_Octopus_Config.cfg (position_max 250) ; CAD is the 250 size"
+  },
+  "stock_max_accel_mm_s2": {
+   "value": 3000,
+   "method": "config",
+   "source": "VoronDesign/Voron-Trident: Firmware/Octopus/Trident_Octopus_Config.cfg (comment: Max 4000)"
+  },
+  "stock_max_velocity_mm_s": {
+   "value": 300,
+   "method": "config",
+   "source": "VoronDesign/Voron-Trident: Firmware/Octopus/Trident_Octopus_Config.cfg"
+  },
+  "z_tilt": {
+   "value": "[z_tilt] with three independent Z steppers",
+   "method": "config",
+   "source": "VoronDesign/Voron-Trident: Firmware/Octopus/Trident_Octopus_Config.cfg"
+  },
+  "bed_heater": {
+   "value": "mains silicone pad through an SSR; heater_bed max_power 0.6",
+   "method": "config",
+   "source": "VoronDesign/Voron-Trident: Firmware/Octopus/Trident_Octopus_Config.cfg"
+  },
+  "cost_usd": {
+   "value": "1000 - 1300",
+   "method": "docs",
+   "source": "https://docs.vorondesign.com/hardware.html"
+  },
+  "printed_stl_files": {
+   "value": 145,
+   "method": "bom",
+   "source": "VoronDesign/Voron-Trident repository listing (*.stl)"
+  },
+  "board": {
+   "value": "BTT Octopus (8 drivers), TMC2209, 24 V LRS-200 + mains bed via SSR (SSR and LRS-200-24 are in the CAD)",
+   "method": "config+cad",
+   "source": "VoronDesign/Voron-Trident: Firmware/Octopus/Trident_Octopus_Config.cfg"
+  }
+ },
+ "voron24": {
+  "leaf_solids_in_step": {
+   "value": 1428,
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "part_instances_counted": {
+   "value": 1374,
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "fasteners": {
+   "value": 862,
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "fastener_types": {
+   "value": 36,
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "printed_part_instances": {
+   "value": 47,
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "printed_volume_cm3": {
+   "value": 908,
+   "method": "cad-est",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "frame_outer_mm": {
+   "value": {
+    "x": 410.0,
+    "y": 410.0,
+    "z": 430.0
+   },
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "frame_extrusions": {
+   "value": {
+    "20x20 L370": 10,
+    "20x20 L430": 4
+   },
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "frame_extrusion_count": {
+   "value": 14,
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "frame_extrusion_total_length_mm": {
+   "value": 5420,
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "rails": {
+   "value": [
+    {
+     "part": "MGN12 rail (1)/SOLID",
+     "length": 300.0,
+     "section": [
+      8.0,
+      12.0
+     ],
+     "direction": "horizontal",
+     "long_axis_index": 0,
+     "centre": [
+      127.0,
+      169.0,
+      77.9
+     ]
+    },
+    {
+     "part": "MGN9 - 300mm (7)/SOLID",
+     "length": 300.0,
+     "section": [
+      6.5,
+      9.0
+     ],
+     "direction": "horizontal",
+     "long_axis_index": 1,
+     "centre": [
+      322.0,
+      167.0,
+      64.7
+     ]
+    },
+    {
+     "part": "MGN9 - 300mm (6)/SOLID",
+     "length": 300.0,
+     "section": [
+      6.5,
+      9.0
+     ],
+     "direction": "horizontal",
+     "long_axis_index": 1,
+     "centre": [
+      -68.0,
+      167.0,
+      64.7
+     ]
+    },
+    {
+     "part": "MGN9 - 300mm/SOLID",
+     "length": 300.0,
+     "section": [
+      6.5,
+      9.0
+     ],
+     "direction": "vertical (Z)",
+     "long_axis_index": 2,
+     "centre": [
+      322.0,
+      348.8,
+      114.5
+     ]
+    },
+    {
+     "part": "MGN9 - 300mm (1)/SOLID",
+     "length": 300.0,
+     "section": [
+      6.5,
+      9.0
+     ],
+     "direction": "vertical (Z)",
+     "long_axis_index": 2,
+     "centre": [
+      322.0,
+      -14.8,
+      114.5
+     ]
+    },
+    {
+     "part": "MGN9 - 300mm (1)/SOLID",
+     "length": 300.0,
+     "section": [
+      6.5,
+      9.0
+     ],
+     "direction": "vertical (Z)",
+     "long_axis_index": 2,
+     "centre": [
+      -68.0,
+      348.8,
+      114.5
+     ]
+    },
+    {
+     "part": "MGN9 - 300mm/SOLID",
+     "length": 300.0,
+     "section": [
+      6.5,
+      9.0
+     ],
+     "direction": "vertical (Z)",
+     "long_axis_index": 2,
+     "centre": [
+      -68.0,
+      -14.8,
+      114.5
+     ]
+    }
+   ],
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "carriages": {
+   "value": 13,
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "x_beam_span_mm": {
+   "value": 390.0,
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "bed_plate_mm": {
+   "value": {
+    "a": 254.0,
+    "b": 254.0,
+    "t": 7.8
+   },
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "bed_centre": {
+   "value": [
+    127.0,
+    127.0,
+    -6.2
+   ],
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "z_drives": {
+   "value": 4,
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "z_drive_note": {
+   "value": "4 NEMA17, each through a 16:80 closed belt reduction to a 9 mm open belt that lifts one gantry corner",
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "z_drive_positions_rel_bed_centre_mm": {
+   "value": [
+    [
+     -188.2,
+     -121.1
+    ],
+    [
+     -188.2,
+     201.1
+    ],
+    [
+     188.2,
+     -121.1
+    ],
+    [
+     188.2,
+     200.9
+    ]
+   ],
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "z_rail_positions_rel_bed_centre_mm": {
+   "value": [
+    [
+     195.0,
+     221.8
+    ],
+    [
+     195.0,
+     -141.8
+    ],
+    [
+     -195.0,
+     221.8
+    ],
+    [
+     -195.0,
+     -141.8
+    ]
+   ],
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "belt_width_mm": {
+   "value": 6.0,
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "belts": {
+   "value": [
+    {
+     "part": "A Belt",
+     "bbox": [
+      368.1,
+      385.8,
+      6.0
+     ],
+     "vol_cm3": 12.86,
+     "length_from_bbox_perimeter_mm": 1508,
+     "length_from_area_volume_mm": 1554,
+     "modelled_thickness_mm": 1.38,
+     "length_best_mm": 1554,
+     "length_range_mm": [
+      1507,
+      1601
+     ],
+     "method": "cad-est: solved from the belt solid's surface area and volume (ribbon model); bbox perimeter as a cross-check"
+    },
+    {
+     "part": "B Belt",
+     "bbox": [
+      368.1,
+      385.8,
+      6.0
+     ],
+     "vol_cm3": 12.86,
+     "length_from_bbox_perimeter_mm": 1508,
+     "length_from_area_volume_mm": 1554,
+     "modelled_thickness_mm": 1.38,
+     "length_best_mm": 1554,
+     "length_range_mm": [
+      1507,
+      1601
+     ],
+     "method": "cad-est: solved from the belt solid's surface area and volume (ribbon model); bbox perimeter as a cross-check"
+    }
+   ],
+   "method": "cad-est",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "toolhead_envelope_mm": {
+   "value": {
+    "x": 76.1,
+    "y": 99.0,
+    "z": 132.0
+   },
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "toolhead_mass_kg": {
+   "value": {
+    "value": 0.466,
+    "by_class": {
+     "steel": 0.174,
+     "printed": 0.169,
+     "aluminium": 0.007,
+     "plastic": 0.019,
+     "motor": 0.097
+    },
+    "method": "cad-est: solid volume x assumed densities (asm.RHO)"
+   },
+   "method": "cad-est",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "nozzle_to_x_rail_mm": {
+   "value": {
+    "horizontal": 37.2,
+    "below": 51.0
+   },
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "x_rail_length_mm": {
+   "value": 300.0,
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "x_beam_mm": {
+   "value": {
+    "length": 330.0,
+    "section": [
+     20.0,
+     20.0
+    ]
+   },
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "y_moving_mass_kg": {
+   "value": {
+    "value": 1.224,
+    "by_class": {
+     "steel": 0.608,
+     "printed": 0.266,
+     "aluminium": 0.173,
+     "plastic": 0.08,
+     "motor": 0.097
+    },
+    "method": "cad-est",
+    "note": "X beam / joints / toolhead (or the bed for a bed-slinger); belts and chains excluded"
+   },
+   "method": "cad-est",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "z_moving_mass_kg": {
+   "value": {
+    "value": 3.134,
+    "by_class": {
+     "printed": 0.413,
+     "motor": 0.493,
+     "steel": 1.352,
+     "plastic": 0.077,
+     "aluminium": 0.769,
+     "belt": 0.031
+    },
+    "method": "cad-est"
+   },
+   "method": "cad-est",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "xy_motors": {
+   "value": 2,
+   "method": "cad",
+   "source": "VoronDesign/Voron-2: CAD/Voron_2.4r2_Assembly_STEP.zip -> Voron_2.4r2_Assembly.step"
+  },
+  "label": "Voron 2.4r2 250",
+  "build_volume_mm": {
+   "value": [
+    250,
+    250,
+    230
+   ],
+   "method": "config+recalled",
+   "source": "VoronDesign/Voron-2: firmware/klipper_configurations/Octopus/Voron2_Octopus_Config.cfg ; Z height of the 250 build recalled"
+  },
+  "stock_max_accel_mm_s2": {
+   "value": 3000,
+   "method": "config",
+   "source": "VoronDesign/Voron-2: firmware/klipper_configurations/Octopus/Voron2_Octopus_Config.cfg (comment: Max 4000)"
+  },
+  "stock_max_velocity_mm_s": {
+   "value": 300,
+   "method": "config",
+   "source": "VoronDesign/Voron-2: firmware/klipper_configurations/Octopus/Voron2_Octopus_Config.cfg"
+  },
+  "z_reduction": {
+   "value": "gear_ratio 80:16 on each of 4 Z steppers; [quad_gantry_level]",
+   "method": "config",
+   "source": "VoronDesign/Voron-2: firmware/klipper_configurations/Octopus/Voron2_Octopus_Config.cfg"
+  },
+  "bed_heater": {
+   "value": "mains silicone pad through an SSR (config comment names an Omron G3NA SSR)",
+   "method": "config",
+   "source": "VoronDesign/Voron-2: firmware/klipper_configurations/Octopus/Voron2_Octopus_Config.cfg"
+  },
+  "cost_usd": {
+   "value": "1500 - 1900",
+   "method": "docs",
+   "source": "https://docs.vorondesign.com/hardware.html"
+  },
+  "printed_stl_files": {
+   "value": 155,
+   "method": "bom",
+   "source": "VoronDesign/Voron-2 repository listing (*.stl)"
+  },
+  "measured_resonance_hz": {
+   "value": {
+    "x": "54 - 62",
+    "y": "39 - 50"
+   },
+   "method": "docs",
+   "source": "research_notes/Voron reference data for twin validation.md section 5 (350 mm machines, user configs)"
+  },
+  "board": {
+   "value": "BTT Octopus, 7 drivers used (A, B, 4 x Z, E)",
+   "method": "config",
+   "source": "VoronDesign/Voron-2: firmware/klipper_configurations/Octopus/Voron2_Octopus_Config.cfg"
+  }
+ },
+ "k3": {
+  "leaf_solids_in_step": {
+   "value": 1789,
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "part_instances_counted": {
+   "value": 1789,
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "fasteners": {
+   "value": 463,
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "fastener_types": {
+   "value": 50,
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "printed_part_instances": {
+   "value": 0,
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "printed_volume_cm3": {
+   "value": 0,
+   "method": "cad-est",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "frame_outer_mm": {
+   "value": {
+    "x": 320.0,
+    "y": 320.0,
+    "z": 383.0
+   },
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "frame_extrusions": {
+   "value": {
+    "20x20 L383": 4,
+    "20x20 L280": 10,
+    "20x20 L250": 1
+   },
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "frame_extrusion_count": {
+   "value": 15,
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "frame_extrusion_total_length_mm": {
+   "value": 4582,
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "rails": {
+   "value": [
+    {
+     "part": "MGN9C + Rail [Cross].step/MGN9 Cross Rail.step",
+     "length": 300.0,
+     "section": [
+      6.5,
+      9.0
+     ],
+     "direction": "horizontal",
+     "long_axis_index": 2,
+     "centre": [
+      124.9,
+      336.8,
+      -150.0
+     ]
+    },
+    {
+     "part": "MGN9C + Rail [Gantry].step/MGN9 Gantry Rail.step",
+     "length": 250.0,
+     "section": [
+      6.5,
+      9.0
+     ],
+     "direction": "horizontal",
+     "long_axis_index": 0,
+     "centre": [
+      150.0,
+      359.8,
+      0.0
+     ]
+    },
+    {
+     "part": "MGN9C + Rail [Gantry]_1.step/MGN9 Gantry Rail.step",
+     "length": 250.0,
+     "section": [
+      6.5,
+      9.0
+     ],
+     "direction": "horizontal",
+     "long_axis_index": 0,
+     "centre": [
+      150.0,
+      359.8,
+      -300.0
+     ]
+    },
+    {
+     "part": "MGN9C + Rail [Cross]_1.step/MGN9 Cross Rail.step",
+     "length": 300.0,
+     "section": [
+      6.5,
+      9.0
+     ],
+     "direction": "horizontal",
+     "long_axis_index": 0,
+     "centre": [
+      150.0,
+      316.8,
+      -154.0
+     ]
+    },
+    {
+     "part": "MGN9C + Rail [Gantry]_2.step/MGN9 Gantry Rail.step",
+     "length": 250.0,
+     "section": [
+      6.5,
+      9.0
+     ],
+     "direction": "horizontal",
+     "long_axis_index": 2,
+     "centre": [
+      0.0,
+      359.8,
+      -150.0
+     ]
+    },
+    {
+     "part": "MGN9C + Rail [Gantry]_3.step/MGN9 Gantry Rail.step",
+     "length": 250.0,
+     "section": [
+      6.5,
+      9.0
+     ],
+     "direction": "horizontal",
+     "long_axis_index": 2,
+     "centre": [
+      300.0,
+      359.8,
+      -150.0
+     ]
+    },
+    {
+     "part": "MGN9C + Rail [Z].step/MGN9 Z Rail.step",
+     "length": 250.0,
+     "section": [
+      6.5,
+      9.0
+     ],
+     "direction": "vertical (Z)",
+     "long_axis_index": 1,
+     "centre": [
+      0.0,
+      165.0,
+      -13.3
+     ]
+    },
+    {
+     "part": "MGN9C + Rail [Z]_1.step/MGN9 Z Rail.step",
+     "length": 250.0,
+     "section": [
+      6.5,
+      9.0
+     ],
+     "direction": "vertical (Z)",
+     "long_axis_index": 1,
+     "centre": [
+      300.0,
+      165.0,
+      -13.3
+     ]
+    },
+    {
+     "part": "MGN9C + Rail [Z]_2.step/MGN9 Z Rail.step",
+     "length": 250.0,
+     "section": [
+      6.5,
+      9.0
+     ],
+     "direction": "vertical (Z)",
+     "long_axis_index": 1,
+     "centre": [
+      150.0,
+      165.0,
+      -286.7
+     ]
+    }
+   ],
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "carriages": {
+   "value": 9,
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "bed_plate_mm": {
+   "value": {
+    "a": 180.0,
+    "b": 180.0,
+    "t": 6.0
+   },
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "bed_centre": {
+   "value": [
+    164.0,
+    174.0,
+    -141.0
+   ],
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "z_drives": {
+   "value": 3,
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "z_drive_note": {
+   "value": "3 NEMA17, each through a closed 200 mm belt and 80-tooth pulley to an open belt; bed frame rests on three Maxwell rods (z_drives counts those rods)",
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "z_drive_positions_rel_bed_centre_mm": {
+   "value": [
+    [
+     122.7,
+     102.0
+    ],
+    [
+     -14.0,
+     -113.0
+    ],
+    [
+     -150.7,
+     102.0
+    ]
+   ],
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "z_rail_positions_rel_bed_centre_mm": {
+   "value": [
+    [
+     -164.0,
+     127.7
+    ],
+    [
+     136.0,
+     127.7
+    ],
+    [
+     -14.0,
+     -145.7
+    ]
+   ],
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "belt_width_mm": {
+   "value": 9.0,
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "belts": {
+   "value": [
+    {
+     "part": "X-Belt^K3 - Final Beta v30.step",
+     "bbox": [
+      274.5,
+      9.0,
+      36.6
+     ],
+     "vol_cm3": 3.45,
+     "length_from_bbox_perimeter_mm": 622,
+     "length_best_mm": 622,
+     "length_range_mm": [
+      560,
+      684
+     ],
+     "method": "cad-est: solved from the belt solid's surface area and volume (ribbon model); bbox perimeter as a cross-check"
+    },
+    {
+     "part": "X-Belt^K3 - Final Beta v30.step",
+     "bbox": [
+      274.5,
+      9.0,
+      36.6
+     ],
+     "vol_cm3": 3.45,
+     "length_from_bbox_perimeter_mm": 622,
+     "length_best_mm": 622,
+     "length_range_mm": [
+      560,
+      684
+     ],
+     "method": "cad-est: solved from the belt solid's surface area and volume (ribbon model); bbox perimeter as a cross-check"
+    },
+    {
+     "part": "Y-Belt^K3 - Final Beta v30.step",
+     "bbox": [
+      36.6,
+      9.0,
+      274.5
+     ],
+     "vol_cm3": 3.45,
+     "length_from_bbox_perimeter_mm": 622,
+     "length_best_mm": 622,
+     "length_range_mm": [
+      560,
+      684
+     ],
+     "method": "cad-est: solved from the belt solid's surface area and volume (ribbon model); bbox perimeter as a cross-check"
+    },
+    {
+     "part": "Y-Belt^K3 - Final Beta v30.step",
+     "bbox": [
+      36.6,
+      9.0,
+      274.5
+     ],
+     "vol_cm3": 3.45,
+     "length_from_bbox_perimeter_mm": 622,
+     "length_best_mm": 622,
+     "length_range_mm": [
+      560,
+      684
+     ],
+     "method": "cad-est: solved from the belt solid's surface area and volume (ribbon model); bbox perimeter as a cross-check"
+    }
+   ],
+   "method": "cad-est",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "toolhead_envelope_mm": {
+   "value": {
+    "x": 59.0,
+    "y": 107.3,
+    "z": 112.5
+   },
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "toolhead_mass_kg": {
+   "value": {
+    "value": 0.296,
+    "by_class": {
+     "plastic": 0.002,
+     "steel": 0.133,
+     "printed": 0.069,
+     "aluminium": 0.007,
+     "motor": 0.085
+    },
+    "method": "cad-est: solid volume x assumed densities (asm.RHO)"
+   },
+   "method": "cad-est",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "nozzle_to_x_rail_mm": {
+   "value": {
+    "horizontal": 27.5,
+    "below": 60.3
+   },
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "x_rail_length_mm": {
+   "value": 300.0,
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "y_moving_mass_kg": {
+   "value": {
+    "value": 0.411,
+    "by_class": {
+     "steel": 0.248,
+     "plastic": 0.002,
+     "printed": 0.069,
+     "aluminium": 0.007,
+     "motor": 0.085
+    },
+    "method": "cad-est",
+    "note": "X beam / joints / toolhead (or the bed for a bed-slinger); belts and chains excluded"
+   },
+   "method": "cad-est",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "z_moving_mass_kg": {
+   "value": {
+    "value": 1.03,
+    "by_class": {
+     "printed": 0.008,
+     "belt": 0.42,
+     "steel": 0.602
+    },
+    "method": "cad-est"
+   },
+   "method": "cad-est",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "xy_motors": {
+   "value": 4,
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP'"
+  },
+  "label": "Annex K3 (Gasherbrum) R1.1",
+  "architecture": {
+   "value": "cross gantry (X and Y beams cross at the toolhead), 4 XY motors on the frame (2 per axis); bed moves in Z on three belts with a three-point Maxwell kinematic mount",
+   "method": "bom+cad-structure",
+   "source": "Annex-Engineering/Gasherbrum-K3: README.md; Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP' (product structure read at text level with step_product_tree.py: names and instance counts, no geometry)"
+  },
+  "build_volume_mm": {
+   "value": [
+    180,
+    180,
+    180
+   ],
+   "method": "bom",
+   "source": "Annex-Engineering/Gasherbrum-K3: README.md ('Build Volume of ~180^3 mm')"
+  },
+  "frame_footprint_from_panel_dxf_mm": {
+   "value": [
+    320.0,
+    320.0
+   ],
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: Release_1_1/DXFs/Bottom_Panel_180mm_x_180mm_x1_Rev1.DXF (ezdxf extents)"
+  },
+  "side_panel_mm": {
+   "value": [
+    320.0,
+    483.0
+   ],
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: Release_1_1/DXFs/Side_Panel_180mm_x_180mm_x2_Rev2.DXF"
+  },
+  "frame_members": {
+   "value": {
+    "Frame Horizontal": 10,
+    "Frame Corner": 4,
+    "section": "2020 (README)"
+   },
+   "method": "cad-structure",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP' (product structure read at text level with step_product_tree.py: names and instance counts, no geometry)"
+  },
+  "bed_plate_drawing_mm": {
+   "value": [
+    180,
+    180,
+    6.35
+   ],
+   "method": "bom",
+   "source": "Annex-Engineering/Gasherbrum-K3: Release_1_1/PDFs/ANNEX_Engineering_K3_180mm_x_180mm_Bed_Drawing.PDF (MIC6/ATP5, three mounting points)"
+  },
+  "bed_heater": {
+   "value": "mains silicone pad 170 x 170 mm, 110/220 V, 'ideal wattage 300 W', through a 30 A SSR (the SSR is in the CAD)",
+   "method": "bom+cad-structure",
+   "source": "Annex-Engineering/Gasherbrum-K3: Release_1_1/PDFs/ANNEX_Engineering_Custom_Silicone_Heaters_180mm_x_180mm.pdf"
+  },
+  "rail_counts": {
+   "value": {
+    "MGN9 gantry rails": 4,
+    "MGN9 cross rails": 2,
+    "MGN9 Z rails": 3,
+    "MGN9C carriages": 9
+   },
+   "method": "cad-structure",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP' (product structure read at text level with step_product_tree.py: names and instance counts, no geometry)"
+  },
+  "nema17_motors": {
+   "value": 7,
+   "method": "cad-structure",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP' (product structure read at text level with step_product_tree.py: names and instance counts, no geometry) ; README: 2 per X, 2 per Y, plus 3 Z"
+  },
+  "z_drive_evidence": {
+   "value": 3,
+   "method": "cad-structure",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP' (product structure read at text level with step_product_tree.py: names and instance counts, no geometry) ('Frame Bed Front/Rear [3 Point]', 3 x 'Maxwell, 8mm Rod', 3 Z belts, 'Z Drive, Closed Loop 200mm Belt' x 3, 'Pulley, 80t')"
+  },
+  "belt_counts": {
+   "value": {
+    "X": 2,
+    "Y": 2,
+    "Z": 3,
+    "width": "9 mm on XYZ (README)",
+    "belt tensioners": 7
+   },
+   "method": "cad-structure+bom",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP' (product structure read at text level with step_product_tree.py: names and instance counts, no geometry)"
+  },
+  "part_instances": {
+   "value": 1789,
+   "method": "cad-structure",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP' (product structure read at text level with step_product_tree.py: names and instance counts, no geometry)"
+  },
+  "unique_parts": {
+   "value": 466,
+   "method": "cad-structure",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP' (product structure read at text level with step_product_tree.py: names and instance counts, no geometry)"
+  },
+  "fasteners_incl_inserts_and_washers": {
+   "value": 767,
+   "method": "cad-structure",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP' (product structure read at text level with step_product_tree.py: names and instance counts, no geometry) ; names matched as screws, washers, nuts, heat-set inserts (incl. McMaster part numbers); approximate"
+  },
+  "belts_in_parallel": {
+   "value": 2,
+   "method": "cad",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP' (two X belts and two Y belts, one at each end of the cross rail)"
+  },
+  "printed_stl_files": {
+   "value": 492,
+   "method": "bom",
+   "source": "Annex-Engineering/Gasherbrum-K3 repository listing (*.stl, all options and releases)"
+  },
+  "board": {
+   "value": "Fysetc Spider (8 drivers; 7 motors + extruder), 30 A SSR, 24 V standard / 48 V optional",
+   "method": "cad-structure+bom",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP' (product structure read at text level with step_product_tree.py: names and instance counts, no geometry); README.md"
+  },
+  "probe": {
+   "value": "dockable microswitch probe ('QuickDraw V2', 'Probe_holder_d2f')",
+   "method": "cad-structure",
+   "source": "Annex-Engineering/Gasherbrum-K3: 'Release_1_1/CAD/K3 - R1.1 - 2022-11-24 - STEP.rar' -> 'K3 - R1.1 - 2022-11-24.STEP' (product structure read at text level with step_product_tree.py: names and instance counts, no geometry)"
+  },
+  "stock_max_accel_mm_s2": {
+   "value": null,
+   "method": "not obtained",
+   "source": "no stock configuration file was reachable"
+  }
+ },
+ "ender3": {
+  "leaf_solids_in_step": {
+   "value": 300,
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "part_instances_counted": {
+   "value": 292,
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "fasteners": {
+   "value": 146,
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "fastener_types": {
+   "value": 30,
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "printed_part_instances": {
+   "value": 0,
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "printed_volume_cm3": {
+   "value": 0,
+   "method": "cad-est",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "frame_outer_mm": {
+   "value": {
+    "x": 330.0,
+    "y": 290.0,
+    "z": 460.0
+   },
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "frame_extrusions": {
+   "value": {
+    "40x40 L290": 2,
+    "40x40 L250": 1,
+    "20x20 L330": 1,
+    "20x40 L400": 2
+   },
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "frame_extrusion_count": {
+   "value": 6,
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "frame_extrusion_total_length_mm": {
+   "value": 1960,
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "rails": {
+   "value": [
+    {
+     "part": "ASM Frame/2040-3R profile",
+     "length": 400.0,
+     "section": [
+      20.0,
+      40.0
+     ],
+     "direction": "vertical (Z)",
+     "long_axis_index": 1,
+     "centre": [
+      145.0,
+      240.0,
+      10.0
+     ]
+    },
+    {
+     "part": "ASM Frame/2040-3L profile",
+     "length": 400.0,
+     "section": [
+      20.0,
+      40.0
+     ],
+     "direction": "vertical (Z)",
+     "long_axis_index": 1,
+     "centre": [
+      -145.0,
+      240.0,
+      10.0
+     ]
+    },
+    {
+     "part": "ASM X-Axis/2020 profile",
+     "length": 345.0,
+     "section": [
+      20.0,
+      20.0
+     ],
+     "direction": "horizontal",
+     "long_axis_index": 0,
+     "centre": [
+      8.8,
+      189.3,
+      36.9
+     ]
+    },
+    {
+     "part": "ASM Y-Axis/2040-2 profile",
+     "length": 330.0,
+     "section": [
+      20.0,
+      40.0
+     ],
+     "direction": "horizontal",
+     "long_axis_index": 2,
+     "centre": [
+      0.0,
+      53.0,
+      55.0
+     ]
+    }
+   ],
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "carriages": {
+   "value": 13,
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "bed_plate_mm": {
+   "value": {
+    "a": 235.0,
+    "b": 235.0,
+    "t": 3.0
+   },
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "bed_centre": {
+   "value": [
+    0.0,
+    99.5,
+    63.7
+   ],
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "z_drives": {
+   "value": 1,
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "z_drive_note": {
+   "value": "1 NEMA17 + T8 lead screw on the left; right side of the X beam is not driven",
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "z_drive_positions_rel_bed_centre_mm": {
+   "value": [
+    [
+     -145.0,
+     -84.7
+    ]
+   ],
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "z_rail_positions_rel_bed_centre_mm": {
+   "value": [
+    [
+     145.0,
+     -53.7
+    ],
+    [
+     -145.0,
+     -53.7
+    ]
+   ],
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "z_rail_spacing_mm": {
+   "value": 290.0,
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "bed_centre_to_z_rail_plane_mm": {
+   "value": 53.7,
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "bed_front_edge_to_z_rail_plane_mm": {
+   "value": 171.2,
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "belt_width_mm": {
+   "value": 6.0,
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "belts": {
+   "value": [
+    {
+     "part": "X belt",
+     "bbox": [
+      401.8,
+      31.1,
+      6.0
+     ],
+     "vol_cm3": 4.75,
+     "length_from_bbox_perimeter_mm": 866,
+     "length_from_area_volume_mm": 794,
+     "modelled_thickness_mm": 1.0,
+     "length_best_mm": 830,
+     "length_range_mm": [
+      794,
+      866
+     ],
+     "method": "cad-est: solved from the belt solid's surface area and volume (ribbon model); bbox perimeter as a cross-check"
+    },
+    {
+     "part": "Y belt",
+     "bbox": [
+      6.0,
+      33.8,
+      391.9
+     ],
+     "vol_cm3": 4.44,
+     "length_from_bbox_perimeter_mm": 851,
+     "length_from_area_volume_mm": 741,
+     "modelled_thickness_mm": 1.0,
+     "length_best_mm": 796,
+     "length_range_mm": [
+      741,
+      851
+     ],
+     "method": "cad-est: solved from the belt solid's surface area and volume (ribbon model); bbox perimeter as a cross-check"
+    }
+   ],
+   "method": "cad-est",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "toolhead_envelope_mm": {
+   "value": {
+    "x": 73.9,
+    "y": 72.2,
+    "z": 66.4
+   },
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "toolhead_mass_kg": {
+   "value": {
+    "value": 0.266,
+    "by_class": {
+     "other": 0.017,
+     "plastic": 0.015,
+     "steel": 0.226,
+     "aluminium": 0.008
+    },
+    "method": "cad-est: solid volume x assumed densities (asm.RHO)"
+   },
+   "method": "cad-est",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "nozzle_to_x_rail_mm": {
+   "value": {
+    "horizontal": 26.8,
+    "below": 34.2
+   },
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "x_rail_length_mm": {
+   "value": 345.0,
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "x_beam_mm": {
+   "value": {
+    "length": 345.0,
+    "section": [
+     20.0,
+     20.0
+    ]
+   },
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "y_moving_mass_kg": {
+   "value": {
+    "value": 0.973,
+    "by_class": {
+     "aluminium": 0.698,
+     "steel": 0.174,
+     "other": 0.101
+    },
+    "method": "cad-est",
+    "note": "X beam / joints / toolhead (or the bed for a bed-slinger); belts and chains excluded"
+   },
+   "method": "cad-est",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "z_moving_mass_kg": {
+   "value": {
+    "value": 1.53,
+    "by_class": {
+     "aluminium": 0.376,
+     "motor": 0.552,
+     "other": 0.034,
+     "belt": 0.009,
+     "plastic": 0.015,
+     "steel": 0.544
+    },
+    "method": "cad-est"
+   },
+   "method": "cad-est",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "xy_motors": {
+   "value": 2,
+   "method": "cad",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "label": "Creality Ender 3",
+  "build_volume_mm": {
+   "value": [
+    220,
+    220,
+    250
+   ],
+   "method": "config+recalled",
+   "source": "Klipper3d/klipper: config/printer-creality-ender3-2018.cfg (position_max 235/235/250; printable 220 x 220)"
+  },
+  "stock_max_accel_mm_s2": {
+   "value": 3000,
+   "method": "config",
+   "source": "Klipper3d/klipper: config/printer-creality-ender3-2018.cfg (Klipper example; Creality's own Marlin default is 500)"
+  },
+  "stock_max_velocity_mm_s": {
+   "value": 300,
+   "method": "config",
+   "source": "Klipper3d/klipper: config/printer-creality-ender3-2018.cfg"
+  },
+  "z_screw": {
+   "value": "T8x8, rotation_distance 8, max_z_velocity 5",
+   "method": "config",
+   "source": "Klipper3d/klipper: config/printer-creality-ender3-2018.cfg"
+  },
+  "bed_heater": {
+   "value": "24 V DC, PCB-on-aluminium bed 235 x 235 x 3 mm; ~220 W",
+   "method": "cad+recalled",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  },
+  "cost_usd": {
+   "value": "~170 - 200 retail (complete machine)",
+   "method": "recalled",
+   "source": "street price, not re-checked"
+  },
+  "board": {
+   "value": "Creality 1.1.x 8-bit board, 4 x A4988, Mean Well style 24 V 15 A supply (the supply is in the CAD: '24V15A power supply')",
+   "method": "cad+recalled",
+   "source": "Creality3DPrinting/Ender-3: 'Ender-3 Mechanical/STP/01 MAIN ASM Ender_3.STEP'"
+  }
+ },
+ "prusa_mini": {
+  "label": "Prusa MINI+",
+  "architecture": {
+   "value": "cantilevered X arm on one Z column; bed slides in Y",
+   "method": "bom",
+   "source": "prusa3d/Original-Prusa-MINI: BOM/*.md"
+  },
+  "build_volume_mm": {
+   "value": [
+    180,
+    180,
+    180
+   ],
+   "method": "config",
+   "source": "Klipper3d/klipper: config/printer-prusa-mini-plus-2020.cfg (position_max 180.4/180/185)"
+  },
+  "y_carriage_plate_mm": {
+   "value": [
+    180.0,
+    180.0,
+    5.0
+   ],
+   "method": "cad",
+   "source": "prusa3d/Original-Prusa-MINI: STEP/MECHANICAL PARTS/MINI-y-carriage.stp"
+  },
+  "steel_sheet_mm": {
+   "value": [
+    190.0,
+    200.0,
+    1.4
+   ],
+   "method": "cad",
+   "source": "prusa3d/Original-Prusa-MINI: STEP/MECHANICAL PARTS/MINI-steel-sheet.stp"
+  },
+  "rods": {
+   "value": {
+    "X": "2 x 8 mm x 279",
+    "Y": "2 x 8 mm x 279",
+    "Z": "2 x 10 mm x 341"
+   },
+   "method": "bom",
+   "source": "prusa3d/Original-Prusa-MINI: DOCUMENTATION/MECHANICAL PARTS/mini-[xyz]-rod.pdf"
+  },
+  "extrusions": {
+   "value": {
+    "Y": "2 x 262 mm (30 mm wide custom profile)",
+    "Z": "1 x 289 mm"
+   },
+   "method": "bom",
+   "source": "prusa3d/Original-Prusa-MINI: DOCUMENTATION/MECHANICAL PARTS/mini-[yz]-extrusion.pdf"
+  },
+  "bearings": {
+   "value": {
+    "X": "2 x LM8UU (plus 2 x LM10LUU listed in the X-axis BOM, which ride the Z rods)",
+    "Y": "3 x LM8UU"
+   },
+   "method": "bom",
+   "source": "prusa3d/Original-Prusa-MINI: BOM/X-AXIS.md, Y-AXIS.md"
+  },
+  "belts": {
+   "value": {
+    "X": "GT2 6 mm, 561 mm",
+    "Y": "GT2 6 mm, 496 mm",
+    "pulley": "GT2-16"
+   },
+   "method": "bom",
+   "source": "prusa3d/Original-Prusa-MINI: BOM/X-AXIS.md, Y-AXIS.md"
+  },
+  "z_drives": {
+   "value": 1,
+   "method": "bom",
+   "source": "prusa3d/Original-Prusa-MINI: BOM/Z-AXIS.md"
+  },
+  "printed_parts": {
+   "value": 32,
+   "method": "bom",
+   "source": "prusa3d/Original-Prusa-MINI: BOM/*.md"
+  },
+  "printed_parts_volume_cm3": {
+   "value": 682,
+   "method": "cad",
+   "source": "prusa3d/Original-Prusa-MINI: STEP/PRINTED PARTS/*.stp (28 files)"
+  },
+  "fasteners": {
+   "value": 185,
+   "method": "bom",
+   "source": "prusa3d/Original-Prusa-MINI: BOM/*.md"
+  },
+  "fastener_types": {
+   "value": 17,
+   "method": "bom",
+   "source": "prusa3d/Original-Prusa-MINI: BOM/*.md"
+  },
+  "stock_max_accel_mm_s2": {
+   "value": 1250,
+   "method": "config",
+   "source": "Klipper3d/klipper: config/printer-prusa-mini-plus-2020.cfg"
+  },
+  "stock_max_velocity_mm_s": {
+   "value": 180,
+   "method": "config",
+   "source": "same"
+  },
+  "motor_current_a": {
+   "value": 0.35,
+   "method": "config",
+   "source": "same (run_current, X/Y/Z)"
+  },
+  "bed_heater": {
+   "value": "24 V DC PCB heatbed (prusa3d/Heatbed-Mini-PCB)",
+   "method": "bom",
+   "source": "prusa3d/Original-Prusa-MINI: BOM/Y-AXIS.md"
+  },
+  "board": {
+   "value": "Prusa Buddy board, TMC2209, 24 V external brick",
+   "method": "bom+recalled",
+   "source": "prusa3d/Original-Prusa-MINI: README.md"
+  }
+ },
+ "prusa_mk3s": {
+  "label": "Prusa i3 MK3S+",
+  "architecture": {
+   "value": "bed slides in Y; X beam (two rods) lifts in Z on two lead screws; X motor rides on the Z-moving X end",
+   "method": "cad",
+   "source": "prusa3d/Original-Prusa-i3 (branch MK3S): Printed-Parts/STL/x-end-motor.stl, z-axis-bottom.stl"
+  },
+  "build_volume_mm": {
+   "value": [
+    250,
+    210,
+    210
+   ],
+   "method": "config",
+   "source": "prusa3d/Prusa-Firmware: Firmware/variants/MK3S.h (X_MAX_POS 255, Y_MAX_POS 212.5, Z_MAX_POS 210)"
+  },
+  "frame_plate_outline_mm": {
+   "value": [
+    370.0,
+    370.3
+   ],
+   "method": "cad",
+   "source": "prusa3d/Original-Prusa-i3 (branch MK3S): Frame/MK3v8b.dxf (layer 0, ezdxf extents)"
+  },
+  "frame_extrusions": {
+   "value": "3030: 2 x 205 mm + 2 x 120 mm, M5 tapped ends (blind joints into the plates)",
+   "method": "bom",
+   "source": "prusa3d/Original-Prusa-i3 (branch MK3S): Frame/Extrusions.pdf"
+  },
+  "printed_part_files": {
+   "value": 45,
+   "method": "cad",
+   "source": "prusa3d/Original-Prusa-i3 (branch MK3S): Printed-Parts/STL/*.stl"
+  },
+  "printed_parts_volume_cm3": {
+   "value": 669,
+   "method": "cad",
+   "source": "prusa3d/Original-Prusa-i3 (branch MK3S): Printed-Parts/STL/*.stl (trimesh)"
+  },
+  "z_drives": {
+   "value": 2,
+   "method": "recalled",
+   "source": "two Z motors with integrated lead screws (the two z-axis-bottom / z-axis-top printed mounts are in the STL set)"
+  },
+  "guides": {
+   "value": "8 mm rods and LM8UU bearings on all axes",
+   "method": "recalled",
+   "source": "Prusa assembly manual; rods are not in the repository"
+  },
+  "steps_per_mm": {
+   "value": [
+    100,
+    100,
+    400
+   ],
+   "method": "config",
+   "source": "MK3S.h DEFAULT_AXIS_STEPS_PER_UNIT -> GT2 16-tooth pulleys, Tr8x8 screws at 16 microsteps"
+  },
+  "stock_max_accel_mm_s2": {
+   "value": {
+    "default print": 1250,
+    "max normal mode": 2500,
+    "max per axis default": 1000
+   },
+   "method": "config",
+   "source": "MK3S.h DEFAULT_ACCELERATION, NORMAL_MAX_ACCEL_XY, DEFAULT_MAX_ACCELERATION"
+  },
+  "stock_max_velocity_mm_s": {
+   "value": 200,
+   "method": "config",
+   "source": "MK3S.h NORMAL_MAX_FEEDRATE_XY"
+  },
+  "bed_heater": {
+   "value": "24 V DC PCB heatbed with magnets (MK52)",
+   "method": "recalled",
+   "source": "Prusa product documentation"
+  },
+  "board": {
+   "value": "Einsy Rambo, TMC2130, 24 V 240 W supply",
+   "method": "recalled",
+   "source": "Prusa product documentation"
+  }
+ },
+ "ratrig_vcore31_200": {
+  "label": "Rat Rig V-Core 3.1 (200 mm)",
+  "architecture": {
+   "value": "CoreXY; bed moves in Z on three lead screws with a ball-and-pin kinematic mount",
+   "method": "bom",
+   "source": "Rat-Rig/V-Core-3: docs/src/bom/vcore31_bom.csv"
+  },
+  "build_volume_mm": {
+   "value": [
+    200,
+    200,
+    200
+   ],
+   "method": "bom",
+   "source": "Rat-Rig/V-Core-3: kit name 'V-Core 3.1 - 200mm'"
+  },
+  "frame_extrusions": {
+   "value": [
+    [
+     1,
+     "T-SLOT 3030",
+     "320"
+    ],
+    [
+     6,
+     "T-SLOT 3030",
+     "340"
+    ],
+    [
+     2,
+     "T-SLOT 3030",
+     "350"
+    ],
+    [
+     4,
+     "T-SLOT 3030",
+     "405"
+    ],
+    [
+     4,
+     "T-SLOT 3030",
+     "410"
+    ],
+    [
+     1,
+     "V-SLOT 2020",
+     "322"
+    ]
+   ],
+   "method": "bom",
+   "source": "Rat-Rig/V-Core-3: docs/src/bom/vcore31_bom.csv (3030 T-slot, 18 pieces; 2020 V-slot X beam 322 mm)"
+  },
+  "frame_joints": {
+   "value": "20 joining plates + 12 cast corner brackets, M6 into drop-in T-nuts (176 x M6x12, 195 x M6 T-nuts)",
+   "method": "bom",
+   "source": "Rat-Rig/V-Core-3: vcore31_bom.csv"
+  },
+  "rails": {
+   "value": [
+    [
+     4,
+     "Linear Rail - MGN12 300mm + MGN12C carriage"
+    ],
+    [
+     2,
+     "Linear Rail - MGN12 250mm + MGN12C carriage"
+    ]
+   ],
+   "method": "bom",
+   "source": "Rat-Rig/V-Core-3: vcore31_bom.csv (6 x MGN12 with MGN12C carriages: 4 x 300, 2 x 250)"
+  },
+  "lead_screws": {
+   "value": [
+    [
+     3,
+     "Lead Screw - TR8*4 Metric Acme Lead Screw - 280mm"
+    ]
+   ],
+   "method": "bom",
+   "source": "Rat-Rig/V-Core-3: vcore31_bom.csv (3 x TR8x4, 280 mm)"
+  },
+  "kinematic_mount": {
+   "value": "3 x steel ball 12 mm (M5), 6 x dowel pin 3 x 35 mm, 3 x magnet 20 x 10 x 5, 3 x 'bi-material lead screw decoupler', 3 x thrust bearing F8-16M",
+   "method": "bom",
+   "source": "Rat-Rig/V-Core-3: vcore31_bom.csv"
+  },
+  "bed_plate_mm": {
+   "value": [
+    229,
+    229,
+    5
+   ],
+   "method": "bom",
+   "source": "Rat-Rig/V-Core-3: vcore31_bom.csv ('Bed Plate - Cast tooling plate - Pre-Machined - 229*229*5mm')"
+  },
+  "belts": {
+   "value": "GT2 9 mm, 5.8 m supplied for both loops (all sizes); 20T 9 mm pulleys",
+   "method": "bom",
+   "source": "Rat-Rig/V-Core-3: vcore31_bom.csv"
+  },
+  "bed_arm_printed_mm": {
+   "value": {
+    "bed_arm_back_3.1.step": [
+     34.5,
+     84.0,
+     35.0
+    ],
+    "bed_arm_left_3.1.step": [
+     112.86,
+     52.2,
+     35.0
+    ],
+    "bed_arm_right_3.1.step": [
+     112.86,
+     52.2,
+     35.0
+    ]
+   },
+   "method": "cad",
+   "source": "Rat-Rig/V-Core-3: cad/printed_parts/step/core/bed_arm_*.step"
+  },
+  "printed_parts": {
+   "value": {
+    "core": 31,
+    "toolhead (EVA 3)": 13
+   },
+   "method": "bom",
+   "source": "Rat-Rig/V-Core-3: docs/src/bom/printed_parts_core.csv, printed_parts_eva3_0_2.csv"
+  },
+  "printed_core_volume_cm3": {
+   "value": 845,
+   "method": "cad",
+   "source": "Rat-Rig/V-Core-3: cad/printed_parts/step/core/*.step (27 files)"
+  },
+  "machined_or_sheet_parts": {
+   "value": [
+    [
+     2,
+     "V-Core 3.0 - IDLER_PLATE_V1.0"
+    ],
+    [
+     2,
+     "V-Core 3.0 - MOTOR_PLATE_V1.0"
+    ],
+    [
+     2,
+     "V-Core 3.1 - XY_JOINER_PLATE_V1.1"
+    ],
+    [
+     1,
+     "Bed Plate - Cast tooling plate - Pre-Machined - 229*229*5mm"
+    ]
+   ],
+   "method": "bom",
+   "source": "Rat-Rig/V-Core-3: vcore31_bom.csv (laser-cut / machined plates)"
+  },
+  "fasteners": {
+   "value": 1083,
+   "method": "bom",
+   "source": "Rat-Rig/V-Core-3: vcore31_bom.csv, 200 mm mechanical kit incl. T-nuts, washers, shims"
+  },
+  "fastener_types": {
+   "value": 32,
+   "method": "bom",
+   "source": "Rat-Rig/V-Core-3: vcore31_bom.csv"
+  },
+  "stock_max_accel_mm_s2": {
+   "value": 1500,
+   "method": "config",
+   "source": "Rat-OS/RatOS-configuration v2.1.x: printers/v-core-3/v-core-3.cfg ('only safeguards for first time users')"
+  },
+  "stock_max_velocity_mm_s": {
+   "value": 300,
+   "method": "config",
+   "source": "same"
+  },
+  "bed_heater": {
+   "value": "mains silicone pad through an SSR (config sets pwm_cycle_time for '50hz european AC')",
+   "method": "config",
+   "source": "Rat-OS/RatOS-configuration v2.1.x: printers/v-core-3/v-core-3.cfg"
+  },
+  "board": {
+   "value": "BTT Octopus v1.1 preferred (6 drivers needed: A, B, 3 x Z, E)",
+   "method": "bom",
+   "source": "Rat-Rig/V-Core-3: docs/src/electronics.md"
+  }
+ },
+ "ratrig_vminion": {
+  "label": "Rat Rig V-Minion",
+  "architecture": {
+   "value": "cantilevered X arm on one Z column (3060 extrusion); bed slides in Y on two MGN15 rails",
+   "method": "bom",
+   "source": "Rat-Rig/V-Minion: docs/src/bom/vminion_20042023_1212.csv"
+  },
+  "build_volume_mm": {
+   "value": [
+    180,
+    180,
+    180
+   ],
+   "method": "config",
+   "source": "Klipper3d/klipper: config/printer-ratrig-v-minion-2021.cfg (position_max 180)"
+  },
+  "frame_extrusions": {
+   "value": [
+    [
+     1,
+     "T-SLOT 3060",
+     "115"
+    ],
+    [
+     1,
+     "T-SLOT 3060",
+     "270"
+    ],
+    [
+     1,
+     "T-SLOT 3060",
+     "345"
+    ],
+    [
+     1,
+     "T-SLOT 3030",
+     "120"
+    ],
+    [
+     1,
+     "V-SLOT 2020",
+     "362"
+    ]
+   ],
+   "method": "bom",
+   "source": "Rat-Rig/V-Minion: vminion BOM (3060: 345, 270, 115 mm; 3030: 120 mm; 2020 X beam 362 mm)"
+  },
+  "rails": {
+   "value": [
+    [
+     1,
+     "Linear Rail - MGN12 250mm + MGN12C carriage"
+    ],
+    [
+     2,
+     "Linear Rail - MGN15 250mm + MGN15H carriage"
+    ]
+   ],
+   "method": "bom",
+   "source": "Rat-Rig/V-Minion: vminion BOM (X: 1 x MGN12 250; Y or Z: 2 x MGN15 250 with MGN15H)"
+  },
+  "lead_screws": {
+   "value": [
+    [
+     1,
+     "Lead Screw - TR8*4 Metric Acme Lead Screw - 250mm"
+    ]
+   ],
+   "method": "bom",
+   "source": "Rat-Rig/V-Minion: vminion BOM (1 x TR8x4 250 mm, anti-backlash nut block)"
+  },
+  "belts": {
+   "value": [
+    [
+     1,
+     "Timing Belt  - 2GT 6mm (By the meter)",
+     "650"
+    ],
+    [
+     1,
+     "Timing Belt  - 2GT 9mm (By the meter)",
+     "700"
+    ]
+   ],
+   "method": "bom",
+   "source": "Rat-Rig/V-Minion: vminion BOM (6 mm x 650 mm and 9 mm x 700 mm)"
+  },
+  "bed_plate": {
+   "value": "5 mm cast tooling plate + 4 mm sub-plate",
+   "method": "bom",
+   "source": "Rat-Rig/V-Minion: vminion BOM"
+  },
+  "fasteners": {
+   "value": 337,
+   "method": "bom",
+   "source": "Rat-Rig/V-Minion: vminion BOM mechanical kit"
+  },
+  "fastener_types": {
+   "value": 39,
+   "method": "bom",
+   "source": "Rat-Rig/V-Minion: vminion BOM"
+  },
+  "printed_part_step_files": {
+   "value": 31,
+   "method": "cad",
+   "source": "Rat-Rig/V-Minion: cad/printed_parts/machine/step/*.step"
+  },
+  "printed_parts_volume_cm3": {
+   "value": 638,
+   "method": "cad",
+   "source": "Rat-Rig/V-Minion: cad/printed_parts/machine/step/*.step"
+  },
+  "stock_max_accel_mm_s2": {
+   "value": 20000,
+   "method": "config",
+   "source": "Klipper3d/klipper: config/printer-ratrig-v-minion-2021.cfg"
+  },
+  "stock_max_velocity_mm_s": {
+   "value": 500,
+   "method": "config",
+   "source": "same"
+  },
+  "motor_current_a": {
+   "value": 0.8,
+   "method": "config",
+   "source": "same"
+  }
+ },
+ "bambu_x1_p1": {
+  "label": "Bambu Lab X1 / P1 (no open CAD)",
+  "architecture": {
+   "value": "CoreXY; bed moves in Z on three lead screws turned by ONE motor through a belt (not independently levelled); fixed-height gantry on carbon or steel rods",
+   "method": "recalled",
+   "source": "manufacturer's published specification, recalled from memory; vendor sites are not reachable from this network and no CAD was opened"
+  },
+  "build_volume_mm": {
+   "value": [
+    256,
+    256,
+    256
+   ],
+   "method": "recalled",
+   "source": "manufacturer's published specification, recalled from memory; vendor sites are not reachable from this network and no CAD was opened"
+  },
+  "published_max_accel_mm_s2": {
+   "value": 20000,
+   "method": "recalled",
+   "source": "manufacturer's published specification, recalled from memory; vendor sites are not reachable from this network and no CAD was opened"
+  },
+  "published_max_speed_mm_s": {
+   "value": 500,
+   "method": "recalled",
+   "source": "manufacturer's published specification, recalled from memory; vendor sites are not reachable from this network and no CAD was opened"
+  }
+ },
+ "prusa_core_one": {
+  "label": "Prusa CORE One (no open CAD opened here)",
+  "architecture": {
+   "value": "CoreXY in a steel sheet exoskeleton; bed moves in Z",
+   "method": "recalled",
+   "source": "manufacturer's published specification, recalled from memory; vendor sites are not reachable from this network and no CAD was opened"
+  },
+  "build_volume_mm": {
+   "value": [
+    250,
+    220,
+    270
+   ],
+   "method": "recalled",
+   "source": "manufacturer's published specification, recalled from memory; vendor sites are not reachable from this network and no CAD was opened"
+  }
+ },
+ "ours": {
+  "label": "Ours: printer_v4",
+  "architecture": {
+   "value": "cartesian: toolhead on X beam, X beam on two Y rails (X motor rides the beam, two Y motors on one driver); bed cantilevered, moves in Z on two rails and one lead screw",
+   "method": "ours",
+   "source": "mech-ai/designs/printer_v4.py docstring"
+  },
+  "build_volume_mm": {
+   "value": [
+    180,
+    180,
+    150
+   ],
+   "method": "ours",
+   "source": "mech-ai/designs/printer_v4.py PRINT_X/Y/Z"
+  },
+  "frame_outer_mm": {
+   "value": {
+    "x": 340,
+    "y": 360,
+    "z": 324
+   },
+   "method": "ours",
+   "source": "printer_v4.py FX, FY, FZ + 10"
+  },
+  "envelope_mm": {
+   "value": [
+    419.0,
+    407.0,
+    418.0
+   ],
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json bbox"
+  },
+  "parts": {
+   "value": 292,
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json"
+  },
+  "part_kinds": {
+   "value": {
+    "purchased": 66,
+    "fastener": 173,
+    "machined": 35,
+    "electrical": 16,
+    "sheet": 2
+   },
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json parts[].kind/process"
+  },
+  "custom_parts": {
+   "value": {
+    "machined": 35,
+    "sheet": 2
+   },
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json manufacture"
+  },
+  "machining_cost_estimate_usd_qty1": {
+   "value": 2376.0,
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json manufacture"
+  },
+  "machining_setups_total": {
+   "value": 43,
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json"
+  },
+  "fasteners": {
+   "value": 141,
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json"
+  },
+  "fastener_types": {
+   "value": 15,
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json"
+  },
+  "assembly_time_min": {
+   "value": 58.6,
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json"
+  },
+  "total_mass_kg": {
+   "value": 10.017,
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json"
+  },
+  "bom_cost_usd": {
+   "value": 598.39,
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json"
+  },
+  "moving_mass_kg": {
+   "value": {
+    "x": 0.597,
+    "y": 1.49,
+    "z": 2.472
+   },
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json"
+  },
+  "resonance_hz": {
+   "value": {
+    "x": 62.6,
+    "y": 52.7
+   },
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json"
+  },
+  "nozzle_stiffness_n_per_mm": {
+   "value": {
+    "x": 1931.8,
+    "y": 1282.1
+   },
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json"
+  },
+  "max_clean_accel_mm_s2": {
+   "value": 6000.0,
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json (twin, no input shaping)"
+  },
+  "design_accel_mm_s2": {
+   "value": 4000,
+   "method": "ours",
+   "source": "printer_v4.py A_XY"
+  },
+  "design_speed_mm_s": {
+   "value": 250,
+   "method": "ours",
+   "source": "printer_v4.py V_XY"
+  },
+  "belts": {
+   "value": {
+    "x": [
+     {
+      "belt": "x_belt",
+      "width_mm": 12.0,
+      "n_per_mm": 178.0
+     }
+    ],
+    "y": [
+     {
+      "belt": "y_belt",
+      "width_mm": 12.0,
+      "n_per_mm": 177.5
+     },
+     {
+      "belt": "y_belt_l",
+      "width_mm": 12.0,
+      "n_per_mm": 162.7
+     }
+    ]
+   },
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json printing.belts_per_axis (12 mm GT2; X 674 mm, Y 676 and 738 mm)"
+  },
+  "bed_plate_mm": {
+   "value": [
+    220.0,
+    220.0,
+    6.0
+   ],
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json parts[bed].bbox"
+  },
+  "bed_mass_kg": {
+   "value": 1.7841,
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json"
+  },
+  "carrier_mass_kg": {
+   "value": 0.4394,
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json"
+  },
+  "carrier_bbox_mm": {
+   "value": [
+    208,
+    268,
+    54
+   ],
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json"
+  },
+  "z_rail_spacing_mm": {
+   "value": 180.0,
+   "method": "ours",
+   "source": "printer_v4.py UP_X = 90"
+  },
+  "z_carriages": {
+   "value": 2,
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json (one MGN12H per Z rail)"
+  },
+  "bed_centre_to_z_rail_plane_mm": {
+   "value": 119.0,
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json bboxes of bed and z_rail_left"
+  },
+  "bed_front_edge_to_z_rail_plane_mm": {
+   "value": 229.0,
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json"
+  },
+  "leadscrew_behind_bed_centre_mm": {
+   "value": 143.0,
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json"
+  },
+  "carrier_fea_edge_deflection_mm_at_3kg": {
+   "value": 0.0325,
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json fea.payload_x3_on_bed (carrier alone, clamped at the carriages)"
+  },
+  "bed_heater": {
+   "value": "24 V DC silicone pad 140 x 200 mm, 200 W, external MOSFET, 133 C thermal cut-off",
+   "method": "ours",
+   "source": "mech-ai/docs/ELECTRICAL.md"
+  },
+  "board": {
+   "value": "BTT SKR Mini E3 V3 (4 x TMC2209 for 5 motors), Raspberry Pi Zero 2 W, Mean Well LRS-350-24",
+   "method": "ours",
+   "source": "mech-ai/docs/ELECTRICAL.md"
+  },
+  "nozzle_to_x_rail_mm": {
+   "value": {
+    "horizontal": 32.5,
+    "below": 51.0
+   },
+   "method": "ours",
+   "source": "printer_v4.py HOT_OFF; Z of x_rail centre minus Z_NOZZLE"
+  },
+  "tolerance": {
+   "value": {
+    "gap_error_mm_99": 0.65,
+    "bed_out_of_level_mm_99": 1.17,
+    "z_offset_available_mm": 3.0,
+    "levelling_available_mm": 1.5
+   },
+   "method": "ours",
+   "source": "mech-ai/viewer/data.json tolerance.printer"
+  }
+ }
+}

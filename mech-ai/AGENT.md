@@ -31,6 +31,11 @@ everything (with renders) before you finish. `python -m mechloop history <name>`
   Never invent a part number or a rating. If the catalog lacks a part, say so; you may
   add a proxy with `Stock(...)` built from datasheet dimensions and flag it as unverified.
 - Never modify catalog geometry. Make the custom parts fit the catalog parts.
+- Catalog parts carry a detailed CAD model (`component.detail`, kind in `component.meta["model"]`: vendor CAD,
+  community CAD, generated to standard, or proxy) next to the simple solid the verifiers use. The geometry verifier
+  reports `proxy_mismatch` (a catalog solid disagrees with its CAD: fix the catalog, not the design) and
+  `detail_clash` (a connector, lever, terminal or pin that only the CAD has runs into one of your parts: move or
+  turn the part, or cut a relief). See `docs/VENDOR_CAD.md`; missing models are listed in `vendor_cad/inbox/README.md`.
 - Declare intent, do not rely on luck: threads/press fits via `add_screw(threads_into=...)`
   or `design.allow_overlap`; non-screw joints via `design.join(a, b, kind)`.
 - Every part must be held: screws (`add_screw`) or a declared join. Touching is not fastening.
@@ -241,7 +246,9 @@ their sources are in `mechloop/verifiers/dfm_rules.py` and `docs/DFM.md`. Every 
 
 - Homing: `d.endstops.append({"joint": "x", "switch": "<endstop part>", "at": "min"})` with a catalog
   `endstop_switch()`; something on the other body must reach the switch's trigger point at that end of
-  travel (`part.meta["interfaces"]["trigger"]`). Or `{"joint": "x", "sensorless": True}`.
+  travel (`part.meta["interfaces"]["trigger"]`: the lever's operating position at its tip, 9 mm to one side of
+  the switch centre). The seat needs a clearance hole at each of `interfaces["pin_holes"]` (the terminals stand
+  2.6 mm out of the board). Or `{"joint": "x", "sensorless": True}`.
 - Cables: `d.cables.append(Cable("toolhead loom", ("xbody", clamp_xyz), ("world", clamp_xyz), length=450))`.
   Every moving body that carries something electrical needs one; its length is checked over the travel.
 - A printer also needs an extruder (`extruder_direct()` on the toolhead, or
@@ -299,7 +306,7 @@ el.sync_cables(d); add_electrical_bom(el, d)                      # flexing span
 
 | Verifier | Checks | Typical fix |
 |---|---|---|
-| geometry | valid solids, envelope, mass, your `Requirement`s | repair the CAD, slim or shrink |
+| geometry | valid solids, envelope, mass, your `Requirement`s; catalog solids against their vendor CAD, and what that CAD adds (connectors, levers, pins) against your parts | repair the CAD, slim or shrink; move, turn or relieve around the vendor part |
 | interference | overlaps, required gaps, floating parts, unfastened parts | move, pocket, add screws/joins |
 | ratings | drive force from the real motor, guide loads, BOM and cost | change motor, ratio, speed |
 | motion | collisions through full joint travel, guide run-off, belt routing, force needed vs available (with rotor inertia), forward simulation of `program` (tracking, collisions on the path) | shorten travel, move parts, lower accel |

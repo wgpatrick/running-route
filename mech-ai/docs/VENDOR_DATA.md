@@ -1,5 +1,9 @@
 # Vendor data behind the parts catalog
 
+Geometry: the catalog parts now also carry vendor / community CAD (STEP) as a `detail` model, and the simulation
+solids were checked against it and corrected: see `docs/VENDOR_CAD.md` (NEMA 17 connector, idler flange 18 mm,
+T8 nut stub, bracket width 17, SKR component height 14.2, LRS terminal strip 9.5 mm off centre, lever endstop).
+
 Retrieved 2026-11-14. Recorded values live in `mechloop/parts/vendor/*.json` (one file per
 part family; every value has a `source_url`, document title and page/table reference).
 Small source documents are stored in `vendor_docs/`. `tests/test_vendor.py` checks that the
@@ -52,7 +56,9 @@ Notes on the motor data:
 
 Still assumed on vendor-backed parts (listed in each part's `source["unverified_fields"]`):
 
-- Control board: mass 0.11 kg, 18 mm height envelope, hole diameter, heater/bed/fan channel current limits.
+- Control board: mass 0.11 kg, hole diameter, heater/bed/fan channel current limits. Height is now 15.8 mm from the
+  vendor STEP (was an 18 mm allowance); the vendor STEP does not show the SIZE drawing's five mounting holes
+  (`docs/VENDOR_CAD.md`).
 - PSU: mass is the per-unit weight from the PACKING row. For LRS-150 the drawing does not say which
   long edge the 32 mm hole offset is measured from in the catalog's frame; the edge at the bottom of
   the datasheet top view was taken as −Y.
@@ -94,7 +100,8 @@ Recorded for the electrical work only (not used by the catalog functions here):
 | SKR Mini E3 V3 heater/bed/fan current limits, mass, height | vendor documents give MOSFET part numbers only | recorded as `null` |
 | ISO 898-1 proof loads, ISO 273 clearance holes | no table on a reachable host | previous values kept; typical, unverified |
 | LRS-250 | MEAN WELL makes no such model | `psu_24v(250)` (used by printer v3) stays the 159×97×30 proxy |
-| Bearings, endstop, fan, linear rod, corner bracket, couplers with other bores | not attempted or nothing found | unchanged; typical, unverified |
+| Bearings, linear rod, couplers with other bores | not attempted or nothing found | unchanged; typical, unverified |
+| Endstop, fans, corner bracket | community CAD only (`docs/VENDOR_CAD.md`); no vendor document | geometry checked against community CAD; ratings typical, unverified |
 
 ## Effect on the existing designs
 

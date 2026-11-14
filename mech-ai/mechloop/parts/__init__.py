@@ -1,9 +1,11 @@
 """Off-the-shelf parts as typed components.
 
-Each catalog function returns a `Stock` part: simplified proxy geometry built
-from published datasheet dimensions (no vendor CAD is redistributed), plus the
-engineering data verifiers need: mass, ratings and named interfaces (mounting
-hole patterns, shaft axes) in the part's local frame.
+Each catalog function returns a `Stock` part: a simple simulation solid (`shape`)
+built from published datasheet dimensions, a detailed model (`detail`: vendor or
+community STEP from vendor_cad/, or generated to a standard) in the same frame
+where there is one, plus the engineering data verifiers need: mass, ratings and
+named interfaces (mounting hole patterns, shaft axes) in the part's local frame.
+See docs/VENDOR_CAD.md.
 
 Where a vendor document could be fetched, dimensions and ratings come from the
 files in `mechloop/parts/vendor/` (one JSON per part family, each value with its
@@ -24,6 +26,7 @@ from build123d import (Align, Axis, Box, Cylinder, Location, Part, Plane, Pos, R
                        Vector)
 
 from ..model import Component, Design, Fastener
+from . import details
 
 _REGISTRY: dict[str, Callable] = {}
 VENDOR_DIR = Path(__file__).parent / "vendor"
@@ -157,13 +160,18 @@ def nema17(length: int = 40) -> Stock:
     body = Pos(0, 0, -length / 2) * Box(v["frame_mm_max"], v["frame_mm_max"], length)  # `length` is the maximum body length
     boss = Pos(0, 0, v["pilot_height_mm"] / 2) * Cylinder(v["pilot_dia_mm"] / 2, v["pilot_height_mm"])
     shaft = Pos(0, 0, shaft_len / 2) * Cylinder(v["shaft_dia_mm"] / 2, shaft_len)
+    # connector / lead exit on the +X side near the rear, as in the detail model (it was missing from the solid)
+    cn = details.NEMA17_CONNECTOR
+    conn = Pos((cn["x0"] + cn["x1"]) / 2 - 0.5, 0, -length + sum(cn["z_from_rear"]) / 2) * Box(
+        cn["x1"] - cn["x0"] + 1.0, 2 * cn["half_y"], cn["z_from_rear"][1] - cn["z_from_rear"][0])
+    detail, model = details.nema17(length, v, rec["part_number"])
     h = v["hole_square_mm"] / 2
     holes = [(x, y, 0.0) for x in (-h, h) for y in (-h, h)]
     # published 24 V pull-out torque curve, as a fraction of holding torque. Below the first published speed the
     # first point is used, above the last one the last point; max_rpm is where the published curve ends.
     pts = rec["pull_out_torque_curve"]["points_rpm_nmm"]
     curve = [(float(rpm), round(nmm / torque, 4)) for rpm, nmm in pts]
-    return Stock(body + boss + shaft, f"NEMA17-{length}",
+    return Stock(body + boss + shaft + conn, f"NEMA17-{length}",
                  f"NEMA 17 stepper, {length} mm body (StepperOnline {rec['part_number']})", v["mass_g"] / 1000.0,
                  ratings={"holding_torque_nmm": torque, "rotor_inertia_gcm2": v["rotor_inertia_gcm2"],
                           "torque_curve_rpm_frac": curve, "max_rpm": float(pts[-1][0]),
@@ -173,8 +181,8 @@ def nema17(length: int = 40) -> Stock:
                           "phase_inductance_mh": v["phase_inductance_mh"], "vendor_part": rec["part_number"]},
                  interfaces={"mount_holes_m3": holes, "shaft_dia": v["shaft_dia_mm"], "pilot_dia": v["pilot_dia_mm"],
                              "hole_square": v["hole_square_mm"], "thread_depth": v["thread_depth_min_mm"],
-                             "shaft_length": shaft_len},
-                 cost_usd=14.0,
+                             "shaft_length": shaft_len, "connector_side": "+X"},
+                 cost_usd=14.0, detail=detail, model=model,
                  source=_source("stepperonline_nema17", "vendor", rec["part_number"], rec["datasheet"]["source_url"],
                                 note="torque curve points read by eye from the published graph"))
 
@@ -197,7 +205,9 @@ def mgn12_rail(length: float) -> Stock:
     for x, _, _ in holes:  # M3 clearance with counterbore; screw head seats at Z = HR - h
         rail -= Pos(x, 0, hr / 2) * Cylinder(v["bolt_hole_d_mm"] / 2, hr)
         rail -= Pos(x, 0, hr - cb_depth / 2) * Cylinder(v["counterbore_D_mm"] / 2, cb_depth)
+    detail, model = details.mgn12_rail(length, v, holes)
     return Stock(rail, f"MGN12-R-{int(length)}", f"MGN12 rail, {length:.0f} mm", v["mass_kg_per_m"] * length / 1000,
+                 detail=detail, model=model,
                  interfaces={"mount_holes_m3": holes, "hole_pitch": pitch, "screw_seat_z": hr - cb_depth},
                  cost_usd=6 + 0.04 * length,
                  source=_source("hiwin_mgn12", "secondary", "MGNR12", note=_MGN12_NOTE))
@@ -215,7 +225,8 @@ def mgn12h_carriage() -> Stock:
     holes = [(x, y, H) for x in (-v["hole_spacing_C_mm"] / 2, v["hole_spacing_C_mm"] / 2)
              for y in (-v["hole_spacing_B_mm"] / 2, v["hole_spacing_B_mm"] / 2)]
     moments = {k: v[f"static_moment_{k}_Nm"] for k in ("MR", "MP", "MY")}
-    return Stock(block, "MGN12H", "MGN12H carriage block", v["mass_kg"],
+    detail, model = details.mgn12h(v)
+    return Stock(block, "MGN12H", "MGN12H carriage block", v["mass_kg"], detail=detail, model=model,
                  ratings={"dynamic_load_n": v["dynamic_load_C_kN"] * 1000.0, "static_load_n": v["static_load_C0_kN"] * 1000.0,
                           "static_moment_nm": min(moments.values()), "static_moment_mr_nm": moments["MR"],
                           "static_moment_mp_nm": moments["MP"], "static_moment_my_nm": moments["MY"],
@@ -234,8 +245,9 @@ def extrusion_2020(length: float) -> Stock:
     for rot in (0, 90, 180, 270):
         bar -= Rot(rot, 0, 0) * Pos(0, 0, 7.5) * Box(length, 6.2, 5.0)
     bar -= Rot(0, 90, 0) * Cylinder(2.1, length)
+    detail, model = details.extrusion_2020(length)
     return Stock(bar, f"EXT2020-{int(length)}", f"2020 T-slot extrusion, {length:.0f} mm", 0.45 * length / 1000,
-                 material="al6061",
+                 material="al6061", detail=detail, model=model,
                  ratings={"Ixx_mm4": 6900.0, "E_mpa": 68900.0, "approximate": True},
                  interfaces={"slot_width": 6.2, "end_tap": "M5"}, cost_usd=2 + 0.012 * length,
                  source=_source("misumi_hfs5_2020", "proxy", "HFS5-2020",
@@ -279,11 +291,15 @@ def gt2_idler(teeth: int = 20, bore: float = 5.0, belt_width: float = 6.0) -> St
     pd = teeth * 2.0 / math.pi
     od = pd - 0.76
     h = belt_width + 2.5
-    shape = (Pos(0, 0, 0.5) * Cylinder(od / 2 + 1.5, 1) + Pos(0, 0, h / 2) * Cylinder(od / 2, h)
-             + Pos(0, 0, h - 0.5) * Cylinder(od / 2 + 1.5, 1)) - Pos(0, 0, h / 2) * Cylinder(bore / 2, h)
+    fl = od / 2 + 3.0     # flange radius: 18 mm diameter on a 20-tooth idler (was od + 3; corrected to the CAD model)
+    shape = (Pos(0, 0, 0.5) * Cylinder(fl, 1) + Pos(0, 0, h / 2) * Cylinder(od / 2, h)
+             + Pos(0, 0, h - 0.5) * Cylinder(fl, 1)) - Pos(0, 0, h / 2) * Cylinder(bore / 2, h)
+    detail, model = details.gt2_idler(teeth, bore, belt_width)
     return Stock(shape, f"GT2-IDLER-{teeth}T-B{bore:g}", f"GT2 idler {teeth} teeth, {bore:g} mm bore", 0.007,
+                 detail=detail, model=model,
                  ratings={"pitch_diameter_mm": pd, "teeth": teeth, "belt_pitch_mm": 2.0},
-                 interfaces={"bore": bore, "height": h, "belt_center_z": h / 2, "belt_center": [(0.0, 0.0, h / 2)]},
+                 interfaces={"bore": bore, "height": h, "belt_center_z": h / 2, "belt_center": [(0.0, 0.0, h / 2)],
+                             "flange_dia": 2 * fl},
                  cost_usd=2.0)
 
 
@@ -303,12 +319,15 @@ def leadscrew_t8(length: float, lead: float = 8.0) -> Stock:
 
 @part
 def leadscrew_nut_t8() -> Stock:
-    """T8 brass flanged nut. Local frame: axis along Z, flange bottom at Z=0, barrel above."""
-    nut = (Pos(0, 0, 1.75) * Cylinder(11, 3.5) + Pos(0, 0, 3.5 + 5.75) * Cylinder(5.1, 11.5)) \
-        - Pos(0, 0, 7.5) * Cylinder(4.0, 15)
+    """T8 brass flanged nut. Local frame: axis along Z, flange bottom at Z=0, barrel above to Z=13.5; the barrel also
+    stands 1.5 mm proud below the flange (Z=-1.5), so the seat needs a 10.2 mm bore or counterbore."""
+    nut = (Pos(0, 0, 1.75) * Cylinder(11, 3.5) + Pos(0, 0, 6.0) * Cylinder(5.1, 15.0)) \
+        - Pos(0, 0, 6.0) * Cylinder(4.0, 15)
+    detail, model = details.t8_nut()
     holes = [(8 * math.cos(a), 8 * math.sin(a), 0.0) for a in (0, math.pi / 2, math.pi, 3 * math.pi / 2)]
-    return Stock(nut, "T8-NUT", "T8 flanged brass nut", 0.012, material="brass",
-                 interfaces={"mount_holes_m3": holes, "barrel_dia": 10.2, "flange_dia": 22.0}, cost_usd=1.5)
+    return Stock(nut, "T8-NUT", "T8 flanged brass nut", 0.012, material="brass", detail=detail, model=model,
+                 interfaces={"mount_holes_m3": holes, "barrel_dia": 10.2, "flange_dia": 22.0, "stub_below_flange": 1.5},
+                 cost_usd=1.5)
 
 
 @part
@@ -356,15 +375,28 @@ def belt_length(teeth_a: int, teeth_b: int, center: float, pitch: float = 2.0) -
 # ----------------------------------------------------- electrics and printer subsystems
 @part
 def endstop_switch() -> Stock:
-    """Microswitch endstop on a small board. Local frame: board on Z=0 (mount face), 20 wide, from Y=-7.5 to Y=5,
-    switch body above; it is pressed at the point (0, 5.5, 5), pushing in -Y. Two M3 holes at Y=-4.2."""
-    board = Pos(0, -1.25, 0.8) * Box(20, 12.5, 1.6)
-    body = Pos(0, 1.5, 4.6) * Box(12.8, 5.8, 6.0)
-    for x in (-7.5, 7.5):   # M3 mounting holes, far enough from the switch body for a cap head to seat on the board
-        board -= Pos(x, -4.2, 0.8) * Cylinder(1.6, 1.6)
-    return Stock(board + body, "ENDSTOP-MICRO", "Microswitch endstop board", 0.004, material="abs",
-                 interfaces={"trigger": [(0.0, 5.5, 5.0)], "mount_holes_m3": [(-7.5, -4.2, 0.0), (7.5, -4.2, 0.0)]},
-                 ratings={"electrical": True}, cost_usd=1.5)
+    """Lever-microswitch endstop on a small board (D2F-size hinge-lever switch soldered to a 20 x 12.5 mm board).
+    Local frame: board on Z=0 (mount face), 20 wide, from Y=-7.5 to Y=5, switch body above; the lever is pressed in -Y.
+    Two M3 holes at Y=-4.2. `trigger` is the lever's operating position at its tip, (-9.0, 10.6, 4.5): the striker must
+    reach it. The lever tip rests at Y=11.6 (`lever_free`) and bottoms on the case at Y=6.65 (`overtravel` = 3.95 mm
+    past the trigger). Three terminals come 2.6 mm out of the underside at `pin_holes` (X = -5.08, 0, 5.08, Y = -0.8):
+    the seat needs a clearance hole at each (2.5 mm drill) and must not touch them."""
+    e = details.ENDSTOP
+    w, dpt, t = e["pcb"]
+    board = Pos(0, (e["pcb_y"][0] + e["pcb_y"][1]) / 2, t / 2) * Box(w, dpt, t)
+    bx, by, bz = e["body_x"], e["body_y"], e["body_z"]
+    body = Pos(0, (by[0] + by[1]) / 2, (bz[0] + bz[1]) / 2) * Box(bx[1] - bx[0], by[1] - by[0], bz[1] - bz[0])
+    holes = [(x, y, 0.0) for x, y in e["holes"]]
+    for x, y, _ in holes:   # M3 mounting holes, far enough from the switch body for a cap head to seat on the board
+        board -= Pos(x, y, t / 2) * Cylinder(e["hole_d"] / 2, t)
+    trig = (-9.0, e["operate_y"], 4.5)
+    detail, model = details.endstop()
+    return Stock(board + body, "ENDSTOP-MICRO", "Microswitch endstop board (lever switch)", 0.004, material="abs",
+                 interfaces={"trigger": [trig], "mount_holes_m3": holes, "lever_free": [e["lever_tip_free"]],
+                             "overtravel": round(e["operate_y"] - by[1], 2),
+                             "pretravel": round(e["lever_tip_free"][1] - e["operate_y"], 2),
+                             "pin_holes": [(x, y, 0.0) for x, y in e["pins"]], "pin_length_below": -e["pins_z"]},
+                 ratings={"electrical": True}, cost_usd=1.5, detail=detail, model=model)
 
 
 @part
@@ -388,7 +420,9 @@ def fan(size: int = 40) -> Stock:
     holes = [(x, y, -5.0) for x in (-pitch / 2, pitch / 2) for y in (-pitch / 2, pitch / 2)]
     for x, y, _ in holes:
         body -= Pos(x, y, 0) * Cylinder(1.6, 10)
+    detail, model = details.fan(size)
     return Stock(body, f"FAN-{size}10", f"{size} mm axial fan", {30: 0.008, 40: 0.016}[size], material="abs",
+                 detail=detail, model=model,
                  interfaces={"mount_holes_m3": holes}, ratings={"electrical": True}, cost_usd=3.0)
 
 
@@ -400,10 +434,11 @@ def control_board() -> Stock:
     d = vendor_data("bigtreetech_skr_mini_e3_v3")
     v = d["values"]
     w, dp = v["board_size_mm"]
-    board = Pos(0, 0, 9) * Box(w, dp, 18)
+    board = Pos(0, 0, 7.9) * Box(w, dp, 15.8)       # 1.6 mm PCB + 14.2 mm tallest component (vendor STEP); was 18
+    detail, model = details.skr_mini_e3_v3()
     holes = [(round(x - w / 2, 3), round(y - dp / 2, 3), 0.0) for x, y in v["mount_holes_xy_mm"]]
     return Stock(board, "CTRL-BOARD", "32-bit printer control board with stepper drivers (BTT SKR Mini E3 V3.0)", 0.11,
-                 material="abs",
+                 material="abs", detail=detail, model=model,
                  interfaces={"mount_holes_m3": holes, "size": (w, dp)},
                  ratings={"electrical": True, "stepper_drivers": v["stepper_drivers"],
                           "motor_connectors": len(v["motor_connectors"]), "sense_resistor_ohm": v["driver_sense_resistor_ohm"],
@@ -433,8 +468,9 @@ def psu_24v(watts: int = 150) -> Stock:
     body = Pos(0, 0, H / 2) * Box(L, W, H)
     bm = v["bottom_mount"]
     holes = [(x - L / 2, y - W / 2, 0.0) for x, y in bm["holes_xy_mm"]]
+    detail, model = details.psu_lrs(rec["model"])
     return Stock(body, f"PSU-24V-{watts}", f"24 V {watts} W enclosed power supply (MEAN WELL {rec['model']})", v["mass_kg"],
-                 material="steel",
+                 material="steel", detail=detail, model=model,
                  interfaces={"mount_holes_m4": holes, f"mount_holes_{bm['thread'].lower()}": holes, "mount_thread": bm["thread"],
                              "mount_screw_max_depth": bm["max_screw_penetration_mm"], "size": (L, W, H)},
                  ratings={"electrical": True, "watts": watts, "rated_power_w": v["rated_power_w"],
@@ -461,7 +497,9 @@ def shcs(size: str = "M3", length: float = 10.0) -> Stock:
     d, hd, hh, key, *_ = SCREW[size]
     shape = Pos(0, 0, -length / 2) * Cylinder(d / 2, length) + Pos(0, 0, hh / 2) * Cylinder(hd / 2, hh)
     mass = (math.pi * (d / 2) ** 2 * length + math.pi * (hd / 2) ** 2 * hh) * 7.85e-6
+    detail, model = details.shcs(size, length)
     return Stock(shape, f"SHCS-{size}x{length:g}", f"Socket head cap screw {size} x {length:g}", mass,
+                 detail=detail, model=model,
                  ratings={"proof_load_n": SCREW[size][6]},
                  interfaces={"thread_d": d, "head_d": hd, "head_h": hh, "hex_key": key}, cost_usd=0.08,
                  source=_source("iso_fasteners", "standard", f"ISO 4762 {size}", unverified=("proof_load_n",)))
@@ -478,7 +516,8 @@ def hex_nut(size: str = "M3") -> Stock:
     af, h = NUT[size]
     d = SCREW[size][0]
     body = extrude(RegularPolygon(af / 2, 6, major_radius=False), h)  # solid: the thread is the overlap with the screw
-    return Stock(body, f"NUT-{size}", f"Hex nut {size}", af * af * 0.866 * h * 7.85e-6 * 0.7,
+    detail, model = details.hex_nut(size)
+    return Stock(body, f"NUT-{size}", f"Hex nut {size}", af * af * 0.866 * h * 7.85e-6 * 0.7, detail=detail, model=model,
                  interfaces={"across_flats": af, "height": h, "thread_d": d}, cost_usd=0.03,
                  source=_source("iso_fasteners", "standard", f"ISO 4032 {size}",
                                 vendor_data("iso_fasteners")["sources"][1]["source_url"]))
@@ -534,11 +573,13 @@ def add_screw(design: Design, name: str, size: str, length: float, at, direction
 
 @part
 def corner_bracket_2020() -> Stock:
-    """Cast corner bracket for 2020 extrusion. Local frame: inside corner at origin, legs along +X and +Y, 18 mm wide centred on Z=0."""
+    """Cast corner bracket for 2020 extrusion. Local frame: inside corner at origin, legs along +X and +Y, 17 mm wide
+    centred on Z=0 (was drawn 18 wide; the CAD model and the usual part are 17)."""
     from build123d import Polygon, extrude
 
-    tri = extrude(Polygon((0, 0), (20, 0), (0, 20), align=None), 9, both=True)
-    return Stock(tri, "BRKT-2020", "2020 corner bracket", 0.012, material="al6061", cost_usd=0.6)
+    tri = extrude(Polygon((0, 0), (20, 0), (0, 20), align=None), 8.5, both=True)
+    detail, model = details.corner_bracket_2020()
+    return Stock(tri, "BRKT-2020", "2020 corner bracket", 0.012, material="al6061", cost_usd=0.6, detail=detail, model=model)
 
 
 def add_corner_bracket(design: Design, name: str, a: str, b: str, corner, u, v, body: str = "world") -> Component:
