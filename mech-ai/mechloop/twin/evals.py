@@ -152,16 +152,16 @@ SCENARIOS = {
     "motor torque -30%": ({}, {"torque_scale": 0.7}),
     "toolhead +300 g": ({}, {"mass_extra": {"x": 0.3, "y": 0.3}}),
     "extruder lag x2": ({"extruder_lag_s": 0.06}, {}),
-    "belts half as stiff": ({"belt_ea_n": 7500.0}, {}),
+    "belts half as stiff": ({"belt_ea_n": 11000.0}, {}),
     "less damping": ({"damping_ratio": 0.1, "spring_damping_ratio": 0.02}, {}),
-    "all of the above": ({"friction_n": {"x": 4.0, "y": 6.0, "z": 10.0}, "extruder_lag_s": 0.06, "belt_ea_n": 7500.0,
+    "all of the above": ({"friction_n": {"x": 4.0, "y": 6.0, "z": 10.0}, "extruder_lag_s": 0.06, "belt_ea_n": 11000.0,
                           "damping_ratio": 0.1, "spring_damping_ratio": 0.02},
                          {"torque_scale": 0.7, "mass_extra": {"x": 0.3, "y": 0.3}}),
 }
 
 FAULTS = {  # name -> (PrinterMap overrides, run overrides, what should happen)
     "none": ({}, {}, "pass"),
-    "slack X belt (30% stiffness, 0.3 mm lost motion)": ({"belt_ea_n": 4500.0, "backlash_mm": {"x": 0.3}}, {}, "degrade"),
+    "slack X belt (30% stiffness, 0.3 mm lost motion)": ({"belt_ea_n": 6600.0, "backlash_mm": {"x": 0.3}}, {}, "degrade"),
     "0.5 mm lost motion on Y": ({"backlash_mm": {"y": 0.5}}, {}, "degrade"),
     "motor current 40%": ({}, {"torque_scale": 0.4}, "degrade or pass"),
     "motor current 10%": ({}, {"torque_scale": 0.1}, "fail"),
@@ -176,9 +176,9 @@ VARIANTS = {
     "baseline": ({}, {}),
     "direct-drive extruder (+350 g on the toolhead)": ({}, {"mass_extra": {"x": 0.35, "y": 0.35}}),
     "short motors (65% torque)": ({}, {"torque_scale": 0.65}),
-    "9 mm belts (1.5x stiffness)": ({"belt_ea_n": 22000.0}, {}),
+    "9 mm belts (1.5x stiffness)": ({"belt_ea_n": 33000.0}, {}),
     "light toolhead (-100 g)": ({}, {"mass_extra": {"x": -0.1, "y": -0.1}}),
-    "stiff + light (9 mm belts, -100 g)": ({"belt_ea_n": 22000.0}, {"mass_extra": {"x": -0.1, "y": -0.1}}),
+    "stiff + light (9 mm belts, -100 g)": ({"belt_ea_n": 33000.0}, {"mass_extra": {"x": -0.1, "y": -0.1}}),
 }
 
 
@@ -217,7 +217,7 @@ SENS = {  # parameter -> (low, high) as (PrinterMap overrides, run overrides)
     "extruder lag": (({"extruder_lag_s": 0.015}, {}), ({"extruder_lag_s": 0.045}, {})),
     "stepper damping": (({"damping_ratio": 0.125}, {}), ({"damping_ratio": 0.375}, {})),
     "belt/frame damping": (({"spring_damping_ratio": 0.025}, {}), ({"spring_damping_ratio": 0.075}, {})),
-    "belt stiffness": (({"belt_ea_n": 7500.0}, {}), ({"belt_ea_n": 22500.0}, {})),
+    "belt stiffness": (({"belt_ea_n": 11000.0}, {}), ({"belt_ea_n": 33000.0}, {})),
     "motor torque": (({}, {"torque_scale": 0.5}), ({}, {"torque_scale": 1.5})),
     "toolhead mass": (({}, {"mass_extra": {"x": -0.1, "y": -0.1}}), ({}, {"mass_extra": {"x": 0.2, "y": 0.2}})),
 }

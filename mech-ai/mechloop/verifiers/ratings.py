@@ -10,6 +10,9 @@ from ..model import Design
 from ..report import VerifierResult, timed
 
 
+BLOCK_K = 40e6   # N/m radial stiffness of a small recirculating-ball block: assumed, no vendor rigidity data yet
+
+
 def _torque_at(ratings: dict, rpm: float) -> float:
     hold = ratings["holding_torque_nmm"]
     curve = ratings.get("torque_curve_rpm_frac")
@@ -189,6 +192,30 @@ def verify_ratings(design: Design) -> VerifierResult:
                         r.add("error", "guide_overloaded",
                               f"Joint {jn}: with the {moment:.2f} N*m overhung moment each block sees "
                               f"{per_block + couple:.0f} N (safety {sf2:.1f} < 3).", joint=jn)
+            # Tilt of the carried body on the compliance of the guide blocks themselves (the FEA clamps parts at the
+            # blocks, so it cannot see this). Each block is a spring of BLOCK_K along the load line; a block alone resists
+            # tilting only over its own ball-track length, blocks spaced along the rail resist it as a couple.
+            arm_len = float(np.linalg.norm(arm - (arm @ gdir) * gdir))        # horizontal overhang of the mass, m
+            if rated_m and arm_len > 0.02 and abs(float(np.array(j.axis, dtype=float) @ gdir)) > 0.5:
+                k = float(blocks[0].ratings.get("radial_stiffness_n_per_m", BLOCK_K))
+                track = float(blocks[0].ratings.get("ball_track_length_m", 0.030))
+                pos_ = np.array([[b.shape.center().X, b.shape.center().Y, b.shape.center().Z] for b in blocks]) * 1e-3
+                ax_ = np.array(j.axis, dtype=float) / np.linalg.norm(j.axis)
+                al = (pos_ - pos_.mean(axis=0)) @ ax_
+                k_tilt = float((k * al ** 2).sum() + len(blocks) * k * track ** 2 / 12.0)      # N*m/rad
+                sag = 9.81 * arm_len / k_tilt * arm_len * 1e3                                # mm at the mass centre, per kg there
+                f_tilt = float(np.sqrt(k_tilt / max(m * arm_len ** 2, 1e-9)) / (2 * np.pi))
+                loads[jn].update({"tilt_stiffness_nm_per_rad": round(k_tilt), "sag_at_mass_centre_mm_per_kg": round(sag, 4),
+                                  "tilt_mode_hz": round(f_tilt, 1), "block_stiffness_assumed_n_per_um": round(k * 1e-6, 1),
+                                  "block_stiffness_source": blocks[0].ratings.get("radial_stiffness_source",
+                                                                                 "assumed: no vendor rigidity data")})
+                if f_tilt < 100.0:
+                    r.add("warning", "cantilever_on_guide_blocks",
+                          f"Joint {jn}: the {m:.2f} kg it carries hangs {arm_len * 1e3:.0f} mm from its {len(blocks)} guide blocks, which "
+                          f"have {float(al.max() - al.min()) * 1e3:.0f} mm of spacing along the rail. On the blocks' own give it nods at about "
+                          f"{f_tilt:.0f} Hz and sags {sag:.3f} mm per kg (estimate: block stiffness {k * 1e-6:.0f} N/um is assumed).",
+                          joint=jn, tilt_mode_hz=round(f_tilt, 1),
+                          hint="Put two blocks on each rail, spaced along it, or support the body on a third point.")
             if sf < 3.0:
                 r.add("error", "guide_overloaded",
                       f"Joint {jn}: {per_block:.0f} N per guide block vs static rating "

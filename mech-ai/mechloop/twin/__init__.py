@@ -43,7 +43,9 @@ class PrinterMap:
     # belt tensile stiffness EA (N per unit strain) per 6 mm of width, glass-fibre GT2. 15 kN is a hobby
     # measurement (RepRap wiki); no manufacturer figure exists, so treat it as +/- 30 %. Each belt's own
     # width scales it, and all belts on an axis act in parallel.
-    belt_ea_n: float = 15000.0
+    # 6 mm GT2 belt, N per unit strain. 22 kN is the middle of the range that reproduces measured Voron 2.4
+    # resonances with their 6 mm belts (reference.py); the earlier 15 kN sat at the bottom of it. No Gates data yet.
+    belt_ea_n: float = 22000.0
     perimeter_speed: float = 45.0  # mm/s, the design's intended print speeds (design.printer["speeds"])
     infill_speed: float = 60.0
     travel_speed: float = 150.0

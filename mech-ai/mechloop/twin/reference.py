@@ -34,7 +34,7 @@ OBSERVED = {
 }
 RANGES = {  # uncertain inputs: (low, high)
     "x_mass_kg": (0.45, 0.60), "y_mass_kg": (1.30, 1.60),       # inferred brackets from community weights (low confidence)
-    "belt_ea_n": (15400.0, 28600.0),                             # 9 mm GT2: 22 kN +/- 30 % (hobby measurement, low confidence)
+    "belt_ea_n": (15400.0, 28600.0),                             # 6 mm GT2 (the A/B belts in the Voron CAD are 6 mm, not 9): 22 kN +/- 30 % (hobby measurement, low confidence)
     "belt_length_mm": (1450.0, 1900.0),                          # each CoreXY belt on a 350 (not sourced: estimated)
 }
 
