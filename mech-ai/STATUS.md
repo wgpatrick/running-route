@@ -79,30 +79,37 @@ assumed values, so corner bulge and lag figures are indicative, not calibrated.
 5. Every agent report ended with a list of things it knew were wrong and no verifier
    checked. Those lists are the best source of the next verifier to write.
 
+## Buildability checks (added 2026-11-14)
+
+Tolerance and fit, adjustment, binding, manufacturability, screw-only joint stiffness,
+subsystems and thermal growth are now verifiers. `designs/printer_v2.py`, which passed
+everything before, has 20 errors under them; `designs/printer_v3.py` was redesigned to pass
+all 11 verifiers. Results, the cost in performance, and what is still not covered are in
+`docs/BUILDABILITY.md`.
+
+The intermittent wrong FEA answer was traced to multi-threaded CalculiX under concurrent
+solves (about 1 wrong run in 48); the solver now runs single-threaded (200 of 200 correct).
+
+63 tests pass.
+
 ## Known gaps
 
-- No bolt preload or contact FEA; assemblies are bonded, which overstates stiffness.
-- No tolerance stack-up, no fits (ISO 286), no thread engagement check.
+- No bolt preload or contact FEA; joint stiffness is a bonded/screw-only range.
+- Tolerances are typical values per process; ISO 286 fit classes are not used.
+- Declared adjustments are not checked against the geometry that should provide them.
 - Kinematic trees only: no closed loops (CoreXY belts, four-bars, parallel lead screws).
-- No over-constraint or binding detection; no axial retention check for bearings.
-- Assemblability is straight-line and home-pose only; no sub-assemblies.
-- Belt tension, tooth load and belt stretch are not modelled; belt clearance is pass/fail with no minimum gap.
-- Single-sided Y drive racking, slot/tensioner travel and blind-hole thread run-out are not checked.
-- No thermal, fatigue or buckling checks; FEA ignores self-weight.
-- No cables, endstops or wiring.
-- No manufacturing checks (printability, machinability) and no CAM output.
+- No axial retention check for bearings.
+- Belt tension and tooth load are not modelled.
+- No fatigue or buckling checks; FEA ignores self-weight. Print warping is a rule of thumb.
+- Wiring is cable lengths only: no connectors, routing or strain relief.
+- No CAM output.
 - Catalog is small and its ratings are not vendor data.
-- One force-balance failure in the assembly FEA appeared once and did not recur in
-  eight reruns; diagnostics were added to catch it if it returns.
 
 ## Suggested next steps
 
-1. Run the published CAD-plus-FEA benchmark (Hephaestus-CCX) through this harness to
-   get an outside measure.
-2. Trial earthtojake's `text-to-cad` in this sandbox and decide which of its pieces to
-   adopt (its viewer, DFM checks and URDF export overlap little with mechloop).
-3. Bolted-joint and contact FEA for the critical joints only.
-4. Sub-assemblies and multi-pose assemblability; the reported build order is valid but still not how a person would build it.
-5. Extend the twin: frame and belt compliance from the FEA stiffness results, a thermal model for warping
-   and cooling, input shaping, and running the twin as a verifier inside the design loop for printers.
-6. Vendor datasheet ingestion for the catalog, starting with motors and rails.
+1. Check declared adjustments against geometry (slot length, screw travel).
+2. Vendor datasheet ingestion for the catalog, starting with motors and rails (needs network access to vendor sites).
+3. Run the published CAD-plus-FEA benchmark (Hephaestus-CCX) through this harness to get an outside measure.
+4. Trial earthtojake's `text-to-cad` in this sandbox (its telemetry is on by default).
+5. Contact and preload FEA for the few joints that set nozzle stiffness.
+6. Thermal model of the print itself (warping, cooling) in the twin.

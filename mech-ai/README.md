@@ -16,6 +16,9 @@ revises until everything passes: **CAD → verifiers → more CAD**.
 | motion | Collisions through full joint travel; guide run-off; belt routing; force needed for the stated speed and acceleration; forward simulation of a motion program with force-limited drives | trimesh/FCL + OpenCASCADE, MuJoCo |
 | assemblability | Finds a straight-line assembly order by disassembly; checks driver access to every screw at the moment it is installed | trimesh/FCL + OpenCASCADE |
 | fea | Linear static stress and deflection for parts and bonded assemblies, natural frequencies, with reaction balance, load-area and mesh-refinement checks | Gmsh + CalculiX |
+| tolerance | 3,000 simulated builds with process tolerances: screw patterns, fits, nozzle gap and bed level against declared adjustment, rail parallelism and lead-screw binding | NumPy least squares |
+| manufacture | Stock thickness, set-ups and sharp inside corners for each custom part | OpenCASCADE |
+| subsystems | Endstops struck at end of travel, cable lengths over travel, extruder, fan and electronics present | |
 | requirements | The brief's acceptance tests, evaluated last with every metric available | |
 
 Off-the-shelf parts (steppers, MGN rails and carriages, 2020 extrusion, GT2
@@ -45,6 +48,7 @@ Outputs land in `out/<design>/`: `report.json`, `views.png`, `motion.gif`,
 | `designs/z_axis.py` | 86 | agent, from `AGENT.md` | bed screws with 2 mm of thread; curved-face FEA selection (a harness bug, since fixed) |
 | `designs/pan_tilt.py` | 41 | agent, from `AGENT.md` | none in its own runs (see caveat) |
 | `designs/printer.py` | 154 | agent, not allowed to read the verifier code | tool plate too soft at the real nozzle tip; 14 short thread engagements; both axes missing belts |
+| `designs/printer_v3.py` | 225 | agent, redesigned for buildability | 20 errors in v2 under the tolerance, adjustment, binding, manufacture and subsystem checks; see `docs/BUILDABILITY.md` |
 
 ![printer](docs/printer_views.png)
 
