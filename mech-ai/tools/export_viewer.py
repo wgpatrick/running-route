@@ -2,7 +2,7 @@
 
     python tools/export_viewer.py designs/printer_v4.py [--no-assembly]
 
-Writes viewer/meshes.bin (float32 positions, uint32 triangles) and viewer/data.json.
+Writes viewer/meshes.txt (base64 of float32 positions and uint32 triangles) and viewer/data.json.
 Run `python -m mechloop verify <design>` first: the report in out/<name>/report.json is read, not recomputed.
 """
 import json
@@ -94,7 +94,10 @@ def main():
         })
         blob += [vb, tb]
         off += len(vb) + len(tb)
-    (out / "meshes.bin").write_bytes(b"".join(blob))
+    # base64 text: the page host serves text and JSON but not raw binary
+    import base64
+
+    (out / "meshes.txt").write_text(base64.b64encode(b"".join(blob)).decode())
     joints = [{"name": j.name, "parent": j.parent, "child": j.child, "axis": list(j.axis),
                "range": list(j.range) if j.range else [0, 0]} for j in d.joints]
     build = None

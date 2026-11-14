@@ -152,7 +152,7 @@ const GCOL=['#c2553d','#3d7fc2','#2f9a6b','#b78a1e','#8a5fc2','#3aa3a8','#c24f8e
 let D,P=[],scene,camera,renderer,controls,bodies={},centre=new THREE.Vector3(),clip=new THREE.Plane(new THREE.Vector3(0,-1,0),1e9);
 const S={tab:'asm',iso:null,sel:null,ghost:true,nofast:false,colour:'kind',step:0,open:{}};
 
-Promise.all([fetch('data.json').then(r=>r.json()),fetch('meshes.bin').then(r=>r.arrayBuffer())]).then(([d,buf])=>{D=d;init(buf);report();$('load').remove();}).catch(e=>{$('load').textContent='Could not load the model: '+e.message;});
+Promise.all([fetch('data.json').then(r=>r.json()),fetch('meshes.txt').then(r=>r.text()).then(t=>Uint8Array.from(atob(t),c=>c.charCodeAt(0)).buffer)]).then(([d,buf])=>{D=d;init(buf);report();$('load').remove();}).catch(e=>{$('load').textContent='Could not load the model: '+e.message;});
 
 function init(buf){
   renderer=new THREE.WebGLRenderer({canvas:$('gl'),antialias:true,alpha:true});
