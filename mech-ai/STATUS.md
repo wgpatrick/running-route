@@ -91,7 +91,25 @@ all 11 verifiers. Results, the cost in performance, and what is still not covere
 The intermittent wrong FEA answer was traced to multi-threaded CalculiX under concurrent
 solves (about 1 wrong run in 48); the solver now runs single-threaded (200 of 200 correct).
 
-63 tests pass.
+
+## Vendor data, manufacturability rules and electronics (added 2026-11-14)
+
+- Catalog motors, power supplies, control board, coupler and fastener dimensions now come from
+  vendor documents (`docs/VENDOR_DATA.md`). Hiwin, Gates, Misumi and the TMC2209 chip data sheet
+  could not be fetched and stay marked unverified.
+- The manufacture verifier checks sheet-cut, FDM and CNC parts against 63 cited rules
+  (`docs/DFM.md`), learned from text-to-cad and fabricators' guidelines.
+- A new `electrical` verifier covers wiring completeness, power budget, wire and connector
+  currents, stepper drive, heaters by simulation with fault injection, and off-the-shelf status
+  (`docs/ELECTRICAL.md`). The generated Klipper config and wiring table for the printer are in
+  `docs/electrical/`.
+- `designs/printer_v4.py` (292 parts, all electronics off the shelf, no custom PCB) passes all
+  12 verifiers. `designs/printer_v3.py` no longer passes: the real control board has 4 drivers
+  for its 5 motors, and one belt clamp has a 0.1 mm wall. v4 fixes both.
+- Not done: running the real firmware (Klipper) against the twin. The generated config has only
+  been parsed, not executed.
+
+134 tests pass.
 
 ## Known gaps
 

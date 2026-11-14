@@ -1,0 +1,135 @@
+[
+ {
+  "board": "control_board",
+  "port": "POWER",
+  "kind": "power_in",
+  "pins": "",
+  "connected_to": "psu.V+1"
+ },
+ {
+  "board": "control_board",
+  "port": "HB",
+  "kind": "heater_out",
+  "pins": "PC9",
+  "connected_to": "bed_mosfet.ctrl"
+ },
+ {
+  "board": "control_board",
+  "port": "E0",
+  "kind": "heater_out",
+  "pins": "PC8",
+  "connected_to": "hotend_heater.in"
+ },
+ {
+  "board": "control_board",
+  "port": "FAN2",
+  "kind": "fan_out",
+  "pins": "PB15",
+  "connected_to": "-"
+ },
+ {
+  "board": "control_board",
+  "port": "FAN0",
+  "kind": "fan_out",
+  "pins": "PC6",
+  "connected_to": "part_fan.in"
+ },
+ {
+  "board": "control_board",
+  "port": "FAN1",
+  "kind": "fan_out",
+  "pins": "PC7",
+  "connected_to": "hotend_fan.in"
+ },
+ {
+  "board": "control_board",
+  "port": "X-STOP",
+  "kind": "endstop_in",
+  "pins": "PC0",
+  "connected_to": "x_endstop.out"
+ },
+ {
+  "board": "control_board",
+  "port": "Y-STOP",
+  "kind": "endstop_in",
+  "pins": "PC1",
+  "connected_to": "y_endstop.out"
+ },
+ {
+  "board": "control_board",
+  "port": "Z-STOP",
+  "kind": "endstop_in",
+  "pins": "PC2",
+  "connected_to": "z_endstop.out"
+ },
+ {
+  "board": "control_board",
+  "port": "E0-STOP",
+  "kind": "endstop_in",
+  "pins": "PC15",
+  "connected_to": "-"
+ },
+ {
+  "board": "control_board",
+  "port": "THB",
+  "kind": "thermistor_in",
+  "pins": "PC4",
+  "connected_to": "bed_ntc.out"
+ },
+ {
+  "board": "control_board",
+  "port": "TH0",
+  "kind": "thermistor_in",
+  "pins": "PA0",
+  "connected_to": "hotend_thermistor.out"
+ },
+ {
+  "board": "control_board",
+  "port": "XM",
+  "kind": "stepper_out",
+  "pins": "step=PB13, dir=!PB12, enable=PB14, uart=PC11, tx=PC10, uart_address=0",
+  "connected_to": "x_motor.coils"
+ },
+ {
+  "board": "control_board",
+  "port": "YM",
+  "kind": "stepper_out",
+  "pins": "step=PB10, dir=!PB2, enable=PB11, uart=PC11, tx=PC10, uart_address=2",
+  "connected_to": "z_motor.coils"
+ },
+ {
+  "board": "control_board",
+  "port": "ZAM",
+  "kind": "stepper_out",
+  "pins": "step=PB0, dir=PC5, enable=PB1, uart=PC11, tx=PC10, uart_address=1",
+  "connected_to": "y_motor.coils"
+ },
+ {
+  "board": "control_board",
+  "port": "ZBM",
+  "kind": "stepper_out",
+  "pins": "step=PB0, dir=PC5, enable=PB1, uart=PC11, tx=PC10, uart_address=1",
+  "connected_to": "y_motor_l.coils"
+ },
+ {
+  "board": "control_board",
+  "port": "EM",
+  "kind": "stepper_out",
+  "pins": "step=PB3, dir=!PB4, enable=PD1, uart=PC11, tx=PC10, uart_address=3",
+  "connected_to": "extruder.coils"
+ },
+ {
+  "board": "control_board",
+  "port": "PS-ON",
+  "kind": "signal_out",
+  "pins": "PC13",
+  "connected_to": "psu_relay.ctrl"
+ },
+ {
+  "board": "control_board",
+  "port": "TFT",
+  "kind": "host",
+  "pins": "USART2 PA2/PA3",
+  "connected_to": "host.GPIO"
+ }
+]
