@@ -24,6 +24,25 @@ ALPHA = {"al6061": 23.6e-6, "steel": 12e-6, "stainless304": 17.3e-6, "pla": 68e-
          "nylon_pa12": 100e-6, "brass": 19e-6, "rubber_gt2": 100e-6}
 
 
+def _gmsh_start():
+    """Start Gmsh single-threaded and with a fixed random seed, so the same part always gets the same mesh.
+    (Multi-threaded meshing is not repeatable from run to run.)"""
+    import gmsh
+
+    gmsh.initialize()
+    gmsh.option.setNumber("General.Terminal", 0)
+    for opt in ("General.NumThreads", "Mesh.MaxNumThreads1D", "Mesh.MaxNumThreads2D", "Mesh.MaxNumThreads3D"):
+        try:
+            gmsh.option.setNumber(opt, 1)
+        except Exception:
+            pass
+    try:
+        gmsh.option.setNumber("Mesh.RandomSeed", 1)
+    except Exception:
+        pass
+    return gmsh
+
+
 def _mesh(shape, fixed_pred, load_pred, size: float, workdir: Path, straight: bool = False):
     import gmsh
     from build123d import CenterOf, export_brep
@@ -35,9 +54,8 @@ def _mesh(shape, fixed_pred, load_pred, size: float, workdir: Path, straight: bo
         return {"error": f"face selection matched fixed={len(fixed)} loaded={len(loaded)} faces"}
     brep = workdir / "part.brep"
     export_brep(shape, str(brep))
-    gmsh.initialize()
+    _gmsh_start()
     try:
-        gmsh.option.setNumber("General.Terminal", 0)
         gmsh.model.occ.importShapes(str(brep))
         gmsh.model.occ.synchronize()
         surfs = [t for _, t in gmsh.model.getEntities(2)]
@@ -405,9 +423,8 @@ def _asm_mesh(design: Design, names, selections: dict, size: float | None, workd
     lo = np.min([[c.shape.bounding_box().min.X, c.shape.bounding_box().min.Y, c.shape.bounding_box().min.Z] for c in comps], axis=0)
     hi = np.max([[c.shape.bounding_box().max.X, c.shape.bounding_box().max.Y, c.shape.bounding_box().max.Z] for c in comps], axis=0)
     size = size or max(float(np.linalg.norm(hi - lo)) / 60.0, 0.6)
-    gmsh.initialize()
+    _gmsh_start()
     try:
-        gmsh.option.setNumber("General.Terminal", 0)
         vols = []
         for i, c in enumerate(comps):
             f = workdir / f"p{i}.brep"
