@@ -26,6 +26,8 @@ def main(argv=None) -> int:
     pr.add_argument("--layer-height", type=float, default=0.2)
     pr.add_argument("--accel-scale", type=float, default=1.0, help="what-if multiplier on XY acceleration limits")
     pr.add_argument("--no-render", action="store_true")
+    pr.add_argument("--firmware", choices=["klipper"], help="plan the motion with the real firmware (tools/setup_klipper.sh)")
+    pr.add_argument("--trajectory", action="store_true", help="save the simulated nozzle path for replay in the viewer")
     asm = sub.add_parser("assemble", help="simulate building the design: order, holding, tools, time, instructions")
     asm.add_argument("design")
     asm.add_argument("--out", default="out")
@@ -62,8 +64,15 @@ def main(argv=None) -> int:
 
             shape = import_step(a.part) if a.part.lower().endswith((".step", ".stp")) else import_stl(a.part)
             name = Path(a.part).stem
-        rep = run_print(printer, shape, Path(a.out) / name, PrinterMap(layer_height=a.layer_height), name=name,
-                        render=not a.no_render, accel_scale=a.accel_scale)
+        pm = PrinterMap(layer_height=a.layer_height)
+        if printer.printer:
+            from .twin import printer_map_for
+
+            prev = Path("out") / printer.name / "report.json"   # belt and frame stiffness from the last verify, if any
+            pm = printer_map_for(printer, json.loads(prev.read_text())["metrics"] if prev.exists() else None,
+                                 layer_height=a.layer_height)
+        rep = run_print(printer, shape, Path(a.out) / name, pm, name=name, render=not a.no_render,
+                        accel_scale=a.accel_scale, firmware=a.firmware, trajectory=a.trajectory)
         print(json.dumps({k: v for k, v in rep.items() if k != "gcode"}, indent=1, default=float))
         return 0 if rep["ok"] else 1
     if a.cmd == "assemble":

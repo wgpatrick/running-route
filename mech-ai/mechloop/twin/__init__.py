@@ -113,14 +113,17 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
               dt: float = 0.001, render: bool = True, slicer_args: dict | None = None,
               accel_scale: float = 1.0, torque_scale: float = 1.0, speed_scale: float = 1.0,
               at: tuple = (0.0, 0.0), z_datum_error: float = 0.0, mass_extra: dict | None = None,
-              gcode_edit=None, collisions: bool = True) -> dict:
+              gcode_edit=None, collisions: bool = True, firmware: str | None = None, trajectory: bool = False) -> dict:
     """Print `part` (a build123d shape sitting on Z=0, centred on XY) on `design`.
     Returns a report dict and writes artefacts into `out`. accel_scale multiplies the
     joints' acceleration limits and torque_scale the motor torque (e.g. reduced driver current)
     for what-if runs. speed_scale multiplies slicer speeds and XY speed limits. `at` places the part
     on the bed (mm from bed centre). z_datum_error is how far the real nozzle sits above (+) or below (-)
     where the firmware believes it is. mass_extra adds kg to axes, e.g. {"x": 0.3, "y": 0.3}.
-    gcode_edit(moves) -> moves lets a test tamper with the program."""
+    gcode_edit(moves) -> moves lets a test tamper with the program.
+    firmware="klipper" has the real Klipper host software plan the motion from the design's generated printer.cfg
+    (see firmware.py) in place of the twin's own planner; if Klipper is not installed the print is an error, not a pass.
+    trajectory=True saves the simulated nozzle path to <name>_trajectory.npz for replay."""
     from build123d import export_stl
 
     from . import deposit as dep
@@ -206,7 +209,29 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
     vmax = np.array([j.max_speed or 1e9 for j in jl]) * np.array([speed_scale, speed_scale, 1.0])
     amax = np.array([(j.max_accel or 1e9) for j in jl]) * np.array([accel_scale, accel_scale, 1.0])
     dwell = np.abs(e) / np.maximum(feeds, 1e-6)
-    Qc, Vc, seg, frac, seg_t = plan(pts, feeds, vmax, amax, dt, dwell=dwell)
+    if firmware:
+        from . import firmware as fw
+
+        try:
+            if gcode_edit is not None:
+                raise fw.FirmwareError("gcode_edit cannot be combined with firmware in the loop")
+            res_fw = fw.commanded(design, info, gpath, pts, dt, out / "firmware")
+        except (fw.FirmwareNotAvailable, fw.FirmwareError) as ex:
+            r.add("error", "firmware_not_run" if isinstance(ex, fw.FirmwareNotAvailable) else "firmware_error", str(ex),
+                  hint="tools/setup_klipper.sh installs Klipper for these runs." if isinstance(ex, fw.FirmwareNotAvailable) else "")
+            return finish()
+        Qc, Vc, seg, frac, seg_t = (res_fw[k] for k in ("Qc", "Vc", "seg", "frac", "seg_t"))
+        rep["firmware"] = res_fw["report"]
+        for msg, n in res_fw["report"]["klipper_messages"].items():
+            r.add("error", "firmware_rejected_move", f"Klipper: {msg} ({n} times)")
+        lim = res_fw["report"]["mcu_step_rate_limit_hz"]
+        for ax, hz in res_fw["report"]["peak_step_rate_hz"].items():
+            if lim and hz > lim:
+                r.add("error", "step_rate_over_mcu_limit", f"{ax} peaks at {hz:.0f} steps/s; the board manages about {lim:.0f}.")
+        if not r.ok:
+            return finish()
+    else:
+        Qc, Vc, seg, frac, seg_t = plan(pts, feeds, vmax, amax, dt, dwell=dwell)
     n_settle = int(0.3 / dt)
     Qc = np.vstack([Qc, np.repeat(Qc[-1:], n_settle, 0)])
     Vc = np.vstack([Vc, np.zeros((n_settle, 3))])
@@ -298,6 +323,12 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
                                 series_stiffness=series, backlash=back,
                                 spring_damping_ratio=pm.spring_damping_ratio)
     Qm = sinfo.pop("motor_positions")
+    if trajectory:
+        every = max(1, int(round(0.02 / dt)))
+        ext = (np.array(e)[seg] > 0) & (np.linalg.norm(pts[seg + 1] - pts[seg], axis=1) > 1e-9)
+        np.savez_compressed(out / f"{name}_trajectory.npz", dt=dt * every, q=Qa[::every].astype(np.float32),
+                            qc=Qc[::every].astype(np.float32), extruding=ext[::every], nozzle=info["nozzle"],
+                            bed_top=info["bed_top"])
     quarter = np.array(sinfo["quarter_cycle_mm"])
     final_err = np.abs(Qm[-1] - Qc[-1])   # where the motor ended up vs where the firmware thinks it is
     lag = np.abs(Qa - Qc)                 # how far the nozzle/bed is from the command at each instant

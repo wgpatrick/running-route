@@ -106,8 +106,11 @@ solves (about 1 wrong run in 48); the solver now runs single-threaded (200 of 20
 - `designs/printer_v4.py` (292 parts, all electronics off the shelf, no custom PCB) passes all
   12 verifiers. `designs/printer_v3.py` no longer passes: the real control board has 4 drivers
   for its 5 motors, and one belt clamp has a 0.1 mm wall. v4 fixes both.
-- Not done: running the real firmware (Klipper) against the twin. The generated config has only
-  been parsed, not executed.
+- Firmware in the loop: real Klipper plans prints from the generated config and its step commands
+  drive the twin (`docs/FIRMWARE_IN_THE_LOOP.md`). Heater control is still a port of Klipper's
+  control law, not Klipper's code.
+- `viewer/` is an interactive page for the whole design, with a replay of a simulated print
+  (`tools/export_viewer.py`).
 
 134 tests pass.
 

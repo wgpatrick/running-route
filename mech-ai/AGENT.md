@@ -320,3 +320,11 @@ retention of bearings, closed kinematic loops, curved insertion paths, cables,
 real manufacturing cost (the estimate is rough) and tolerances a process can hold on a feature. FEA is linear static with idealised
 fixtures and no self-weight; assemblies are bonded, which overstates stiffness.
 Guide moments are estimates. Catalog ratings are typical values.
+
+## Firmware in the loop
+
+`python -m mechloop print <printer.py> <design.py>:<part> --firmware klipper` plans the print with real Klipper
+from the design's generated printer.cfg (needs `tools/setup_klipper.sh` once). Treat anything Klipper refuses
+(`firmware_rejected_move`, `firmware_error`) as a design or configuration error. Add `--trajectory` to save the
+nozzle path, then `python tools/export_viewer.py <printer.py> --no-assembly --print <print folder>` to replay it
+in `viewer/`. See `docs/FIRMWARE_IN_THE_LOOP.md` for what is and is not real.

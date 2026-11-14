@@ -88,7 +88,7 @@ pre{margin:0;padding:12px;background:var(--panel);border:1px solid var(--line);o
   <header>
     <div>
       <h1>Printer v4 <span id="verdict"></span></h1>
-      <p class="muted">Everything on this page comes from simulation. Nothing has been built, and the firmware configuration has been checked but not run.</p>
+      <p class="muted">Everything on this page comes from simulation. Nothing has been built. The firmware has been run offline against the simulated machine, never on real hardware.</p>
     </div>
     <div class="facts" id="facts"></div>
   </header>
@@ -99,11 +99,21 @@ pre{margin:0;padding:12px;background:var(--panel);border:1px solid var(--line);o
         <button role="tab" data-tab="asm" aria-selected="true">Assemblies</button>
         <button role="tab" data-tab="fab" aria-selected="false">Fabricated</button>
         <button role="tab" data-tab="build" aria-selected="false">Build order</button>
+        <button role="tab" data-tab="print" aria-selected="false">Print</button>
       </div>
       <div class="step" id="buildctl" hidden>
         <div><b id="stepn"></b> <span class="muted" id="stept"></span></div>
         <input type="range" id="stepr" min="0" value="0" aria-label="Build step">
         <div class="muted" id="stepd"></div>
+      </div>
+      <div class="step" id="printctl" hidden>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <button class="b on" id="play">Play</button>
+          <label class="muted">Speed <select class="b" id="speed"><option value="10">10×</option><option value="60" selected>60×</option><option value="200">200×</option><option value="600">600×</option></select></label>
+          <button class="b" id="partonly">Part and bed only</button>
+        </div>
+        <input type="range" id="scrub" min="0" max="1000" value="0" aria-label="Position in the print">
+        <div class="mono" id="clock"></div>
       </div>
       <div class="list" id="list"></div>
     </div>
@@ -138,7 +148,7 @@ pre{margin:0;padding:12px;background:var(--panel);border:1px solid var(--line);o
   <section><h2>Fit and adjustment</h2><p class="muted" id="tolp"></p><div class="tw" id="tol"></div></section>
   <section><h2>Performance in the digital twin</h2><div class="tw" id="perf"></div></section>
   <section><h2>Bill of materials</h2><div class="tw" id="bom"></div></section>
-  <section><h2>Generated firmware configuration</h2><p class="muted">Klipper <span class="mono">printer.cfg</span> generated from the design. Parsed and pin-checked only; it has not been run.</p><pre id="cfg"></pre></section>
+  <section><h2>Generated firmware configuration</h2><p class="muted">Klipper <span class="mono">printer.cfg</span> generated from the design. Real Klipper accepts it and plans prints with it offline; it has not been flashed to a board.</p><pre id="cfg"></pre></section>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -150,7 +160,8 @@ const f=(x,d=1)=>x==null||isNaN(x)?'–':Number(x).toFixed(d);
 const KIND={fabricated:['--fab','Fabricated'],purchased:['--buy','Purchased'],fastener:['--fast','Fastener'],electrical:['--elec','Electrical']};
 const GCOL=['#c2553d','#3d7fc2','#2f9a6b','#b78a1e','#8a5fc2','#3aa3a8','#c24f8e'];
 let D,P=[],scene,camera,renderer,controls,bodies={},centre=new THREE.Vector3(),clip=new THREE.Plane(new THREE.Vector3(0,-1,0),1e9);
-const S={tab:'asm',iso:null,sel:null,ghost:true,nofast:false,colour:'kind',step:0,open:{}};
+let PR=null,playing=false,lastFrame=0;
+const S={tab:'asm',partOnly:false,iso:null,sel:null,ghost:true,nofast:false,colour:'kind',step:0,open:{}};
 
 Promise.all([fetch('data.json').then(r=>r.json()),fetch('meshes.txt').then(r=>r.text()).then(t=>Uint8Array.from(atob(t),c=>c.charCodeAt(0)).buffer)]).then(([d,buf])=>{D=d;init(buf);report();$('load').remove();}).catch(e=>{$('load').textContent='Could not load the model: '+e.message;});
 
@@ -185,7 +196,7 @@ function init(buf){
   new ResizeObserver(size).observe(el.parentElement); size();
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{apply()});
   new MutationObserver(()=>apply()).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
-  document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;S.iso=null;document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));$('buildctl').hidden=S.tab!=='build';list();apply();fit();});
+  document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;S.iso=null;$('printctl').hidden=S.tab!=='print';if(PR)PR.line.visible=S.tab==='print';if(S.tab!=='print'){stop();pose();}else frame(PR?PR.T:0);document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));$('buildctl').hidden=S.tab!=='build';list();apply();fit();});
   $('all').onclick=()=>{S.iso=null;S.sel=null;list();apply();fit();sheet();};
   $('fit').onclick=fit;
   $('ghost').onclick=e=>{S.ghost=!S.ghost;e.target.classList.toggle('on',S.ghost);apply();};
@@ -193,11 +204,36 @@ function init(buf){
   $('colour').onchange=e=>{S.colour=e.target.value;apply();legend();};
   $('explode').oninput=pose; $('cut').oninput=pose; ['jx','jy','jz'].forEach(i=>$(i).oninput=pose);
   $('stepr').oninput=e=>{S.step=+e.target.value;list();apply();};
+  $('play').onclick=()=>playing?stop():play();
+  $('scrub').oninput=e=>{ if(PR){stop();frame(e.target.value/1000*PR.end);} };
+  $('partonly').onclick=e=>{S.partOnly=!S.partOnly;e.target.classList.toggle('on',S.partOnly);apply();fit();};
+  loadPrint();
   legend(); list(); pose(); apply(); fit(); sheet();
 }
+function loadPrint(){ if(!D.print)return; fetch('print.txt').then(r=>r.text()).then(t=>{
+  const u=Uint8Array.from(atob(t),c=>c.charCodeAt(0)), n=D.print.n, a=new Float32Array(u.buffer.slice(0,n*16)), ext=u.subarray(n*16,n*17), nz=D.print.nozzle;
+  const pos=new Float32Array((n-1)*6), col=new Float32Array((n-1)*6), cnt=new Uint32Array(n); let m=0, z0=1e9, z1=-1e9;
+  for(let i=0;i<n;i++){ if(ext[i]){const z=nz[2]-a[i*4+3]; if(z<z0)z0=z; if(z>z1)z1=z;} }
+  const ca=new THREE.Color(css('--accent')), cb=new THREE.Color(css('--fab')), c=new THREE.Color();
+  for(let i=1;i<n;i++){ if(ext[i-1]){ for(let k=0;k<2;k++){const j=(i-1+k)*4, o=m*6+k*3, z=nz[2]-a[j+3]; pos[o]=nz[0]+a[j+1]; pos[o+1]=nz[1]+a[j+2]; pos[o+2]=z; c.copy(ca).lerp(cb,(z-z0)/Math.max(z1-z0,1e-6)); col[o]=c.r; col[o+1]=c.g; col[o+2]=c.b;} m++; } cnt[i]=m; }
+  const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(pos.subarray(0,m*6),3)); g.setAttribute('color',new THREE.BufferAttribute(col.subarray(0,m*6),3));
+  const line=new THREE.LineSegments(g,new THREE.LineBasicMaterial({vertexColors:true})); line.frustumCulled=false; line.visible=S.tab==='print';
+  const zj=D.joints.find(j=>j.name==='z'); (bodies[zj?zj.child:'world']||bodies.world).add(line);
+  PR={a,n,cnt,line,end:a[(n-1)*4],T:a[(n-1)*4],z0,nz}; if(S.tab==='print')frame(PR.T); list();
+}).catch(()=>{}); }
+function setJoints(q){ D.joints.forEach(j=>{const t=q[j.name]; if(t!=null)bodies[j.child].position.set(j.axis[0]*t,j.axis[1]*t,j.axis[2]*t);}); }
+function frame(T){ if(!PR)return; T=Math.max(0,Math.min(PR.end,T)); PR.T=T; const a=PR.a; let lo=0,hi=PR.n-1; while(hi-lo>1){const mid=(lo+hi)>>1; if(a[mid*4]<=T)lo=mid; else hi=mid;}
+  const f=(T-a[lo*4])/Math.max(a[hi*4]-a[lo*4],1e-6), L=k=>a[lo*4+k]+(a[hi*4+k]-a[lo*4+k])*f;
+  P.forEach(p=>p.mesh.position.set(0,0,0)); setJoints({x:L(1),y:L(2),z:L(3)}); PR.line.geometry.setDrawRange(0,PR.cnt[lo]*2);
+  $('scrub').value=Math.round(T/PR.end*1000); const h=PR.nz[2]-L(3)-PR.z0+(D.print.layer_height||0), mm=x=>String(Math.floor(x/60)).padStart(2,'0')+':'+String(Math.floor(x%60)).padStart(2,'0');
+  $('clock').textContent=`${mm(T)} / ${mm(PR.end)}  ·  height ${Math.max(0,h).toFixed(1)} mm  ·  ${Math.round(T/PR.end*100)}%`; draw(); }
+function play(){ if(!PR)return; if(PR.T>=PR.end)PR.T=0; playing=true; $('play').textContent='Pause'; lastFrame=performance.now(); requestAnimationFrame(tick); }
+function stop(){ playing=false; $('play').textContent='Play'; }
+function tick(now){ if(!playing)return; const dt=Math.min(.1,(now-lastFrame)/1000); lastFrame=now; frame(PR.T+dt*(+$('speed').value)); if(PR.T>=PR.end){stop();return;} requestAnimationFrame(tick); }
 function size(){const w=$('gl').parentElement.clientWidth,h=$('gl').parentElement.clientHeight; if(!w||!h)return; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); draw();}
 function draw(){renderer&&renderer.render(scene,camera);}
 function pose(){
+  if(S.tab==='print'&&PR){ const c=$('cut').value/100; clip.constant=c===0?1e9:(260-c*520); frame(PR.T); return; }
   const k=$('explode').value/100*1.1;
   P.forEach(p=>{p.mesh.position.copy(p.c).sub(centre).multiplyScalar(k);});
   const v={x:$('jx').value/100,y:$('jy').value/100,z:$('jz').value/100};
@@ -205,18 +241,18 @@ function pose(){
   const c=$('cut').value/100; clip.constant=c===0?1e9:(260-c*520);
   draw();
 }
-function shown(p){ if(S.nofast&&p.kind==='fastener')return false; if(S.tab==='build'&&p.at>S.step)return false; return !S.iso||S.iso.has(p.name); }
+function shown(p){ if(S.tab==='print'&&S.partOnly)return p.name===(D.bed||'bed'); if(S.nofast&&p.kind==='fastener')return false; if(S.tab==='build'&&p.at>S.step)return false; return !S.iso||S.iso.has(p.name); }
 function apply(){
   const edge=new THREE.Color(css('--ink'));
   P.forEach(p=>{ const on=shown(p), hiddenByBuild=S.tab==='build'&&p.at>S.step, m=p.mesh.material;
-    p.solid=on; p.mesh.visible=on||(S.ghost&&!hiddenByBuild&&!(S.nofast&&p.kind==='fastener'));
+    p.solid=on; p.mesh.visible=on||(S.ghost&&!hiddenByBuild&&!(S.nofast&&p.kind==='fastener')&&!(S.tab==='print'&&S.partOnly));
     const col=S.colour==='group'?GCOL[p.gi%GCOL.length]:css(KIND[p.kind][0]); m.color.set(col);
     m.transparent=!on; m.opacity=on?1:.07; m.depthWrite=on; p.edges.visible=on; p.edges.material.color.copy(edge);
     const cur=S.tab==='build'&&p.at===S.step, sel=S.sel===p.mesh.userData.i;
     m.emissive.set(sel?css('--accent'):cur?css('--fab'):'#000'); m.emissiveIntensity=sel?.55:cur?.45:0; });
   draw();
 }
-function fit(){ const b=new THREE.Box3(); scene.updateMatrixWorld(true); P.filter(p=>p.solid).forEach(p=>b.expandByObject(p.mesh)); if(b.isEmpty())return;
+function fit(){ const b=new THREE.Box3(); scene.updateMatrixWorld(true); if(S.tab==='print'&&S.partOnly&&PR){PR.line.geometry.computeBoundingBox(); b.copy(PR.line.geometry.boundingBox).applyMatrix4(PR.line.matrixWorld).expandByScalar(18);} else P.filter(p=>p.solid).forEach(p=>b.expandByObject(p.mesh)); if(b.isEmpty())return;
   const c=b.getCenter(new THREE.Vector3()), r=b.getSize(new THREE.Vector3()).length()/2, dir=camera.position.clone().sub(controls.target).normalize();
   controls.target.copy(c); camera.position.copy(c).add(dir.multiplyScalar(Math.max(r,20)/Math.sin(camera.fov*Math.PI/360)*1.05)); controls.update(); draw(); }
 function legend(){ $('legend').innerHTML=S.colour==='kind'?Object.values(KIND).map(([v,n])=>`<span><i class="dot" style="background:var(${v})"></i>${n}</span>`).join(''):D.groups.map((g,i)=>`<span><i class="dot" style="background:${GCOL[i%GCOL.length]}"></i>${esc(g.split(' (')[0])}</span>`).join(''); }
@@ -231,6 +267,11 @@ function list(){
       if(S.open[g]) ps.filter(p=>p.kind!=='fastener').forEach(p=>{h+=prow(p,'sub');}); });
   } else if(S.tab==='fab'){
     const seen=new Set(); P.filter(p=>p.kind==='fabricated').forEach(p=>{ if(seen.has(p.base))return; seen.add(p.base); const n=P.filter(q=>q.base===p.base&&q.kind==='fabricated').length; h+=prow(p,'',n); });
+  } else if(S.tab==='print'){
+    const p=D.print; if(!p){h='<div class="row">No print was exported.</div>';}
+    else { const fw=p.firmware, rows=[['Part',`${esc(p.part)}, ${(p.size||[]).join(' × ')} mm`],['Result',p.ok?'printed within tolerance':'failed'],['Motion planned by',fw?`${fw.firmware} ${String(fw.commit).slice(0,7)} (real firmware, run offline)`:'the twin\'s own planner'],['Print time',`${f(p.time_s/60,1)} min`+(p.heatup_s?` + ${f(p.heatup_s/60,1)} min heat-up`:'')],['Layers',`${p.layers} × ${p.layer_height} mm`],['Filament',`${f(p.filament_g,1)} g`],['Outline match',`${f(p.outline_match*100,1)}%`],['Path error, RMS',`${f(p.cross_track_rms,3)} mm`],['Path error, worst',`${f(p.cross_track_worst,2)} mm`]];
+      if(fw){rows.push(['Steps sent',Object.entries(fw.steps||{}).map(([k,v])=>k+' '+(v/1e6).toFixed(2)+'M').join(', ')],['Peak step rate',`${Math.max(...Object.values(fw.peak_step_rate_hz||{0:0}))} /s of ${fw.mcu_step_rate_limit_hz} /s the board manages`]);}
+      h=rows.map(r=>`<div class="row" style="cursor:default"><span class="n" style="width:104px">${r[0]}</span><span style="flex:1;min-width:0">${r[1]}</span></div>`).join('')+(p.findings||[]).map(x=>`<div class="row" style="cursor:default;align-items:flex-start"><span class="chip ${x.severity==='error'?'bad':'warn'}">${x.severity}</span><span style="flex:1;min-width:0;font-size:12.5px">${esc(x.message)}</span></div>`).join('')+`<div class="row" style="cursor:default"><span class="muted" style="font-size:12.5px">Lines show where the simulated nozzle laid material, coloured by height. Belt stretch, frame flex and motor lag are in the path; cooling, warping and adhesion are not simulated.</span></div>`; }
   } else if(D.build){
     const st=D.build.steps, s=st[S.step]; $('stepn').textContent=`Step ${S.step+1} of ${st.length}`; $('stept').textContent=s.unit;
     $('stepd').textContent=[s.kind,s.direction,s.rests_stably===false?'must be held in place':'',s.tool].filter(Boolean).join(' · ');

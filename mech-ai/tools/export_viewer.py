@@ -1,6 +1,9 @@
 """Export a design and its verification report for the browser viewer (viewer/index.html).
 
-    python tools/export_viewer.py designs/printer_v4.py [--no-assembly]
+    python tools/export_viewer.py designs/printer_v4.py [--no-assembly] [--print out/<name>/fil/<part>]
+
+--print takes the folder of a `mechloop print ... --trajectory` run and adds its nozzle path for replay
+(viewer/print.txt). Without it an existing viewer/print.txt and the print block in data.json are kept.
 
 Writes viewer/meshes.txt (base64 of float32 positions and uint32 triangles) and viewer/data.json.
 Run `python -m mechloop verify <design>` first: the report in out/<name>/report.json is read, not recomputed.
@@ -48,6 +51,38 @@ def d_density(c):
     from mechloop.model import MATERIALS
     mat = MATERIALS.get(c.material)
     return getattr(mat, "density", 2700.0) if mat else 2700.0
+
+
+def export_print(folder: Path, out: Path):
+    """Simulated nozzle path, thinned to the points where it turns, for replay in the viewer."""
+    import base64
+
+    rep = json.loads((folder / "print_report.json").read_text())
+    z = np.load(folder / f"{rep['part']}_trajectory.npz")
+    q, ext, dt = z["q"].astype(np.float64), z["extruding"], float(z["dt"])
+    keep = [0]
+    last_dir = np.zeros(3)
+    for i in range(1, len(q) - 1):
+        v = q[i + 1] - q[i]
+        n = np.linalg.norm(v)
+        d = v / n if n > 1e-6 else np.zeros(3)
+        if ext[i] != ext[i - 1] or np.abs(d - last_dir).max() > 0.03 or (i - keep[-1]) * dt > 1.0:
+            keep.append(i)
+            last_dir = d
+    keep.append(len(q) - 1)
+    k = np.array(keep)
+    arr = np.column_stack([k * dt, q[k]]).astype(np.float32)
+    (out / "print.txt").write_text(base64.b64encode(arr.tobytes() + ext[k].astype(np.uint8).tobytes()).decode())
+    pr, dy, fw = rep.get("print", {}), rep.get("dynamics", {}), rep.get("firmware")
+    return {"part": rep["part"], "n": len(k), "nozzle": [float(x) for x in z["nozzle"]], "ok": rep["ok"],
+            "size": rep.get("part_size_mm"), "time_s": (fw or rep["plan"])["print_time_s"], "heatup_s": rep["plan"].get("heatup_s"),
+            "firmware": fw and {a: fw.get(a) for a in ("firmware", "commit", "mcu", "steps", "peak_step_rate_hz",
+                                                         "mcu_step_rate_limit_hz", "peak_speed_mm_s", "max_distance_from_gcode_path_mm")},
+            "layers": pr.get("layers"), "layer_height": pr.get("layer_height_mm"), "filament_g": pr.get("filament_mass_g"),
+            "outline_match": pr.get("outline_iou_mean"), "outline_offset": (pr.get("outline_offset_mm") or {}).get("mean"),
+            "cross_track_rms": dy.get("cross_track_rms_mm"), "cross_track_worst": dy.get("cross_track_worst_mm"),
+            "worst_lag": dy.get("worst_lag_mm"),
+            "findings": [{"severity": f["severity"], "code": f["code"], "message": f["message"]} for f in rep["findings"]]}
 
 
 def main():
@@ -130,6 +165,12 @@ def main():
         "fea": m.get("fea"), "printing": m.get("printing"), "requirements": [f for f in rep["findings"] if f["verifier"] == "requirements"],
         "printer_cfg": cfg.read_text() if cfg.exists() else "",
     }
+    if "--print" in sys.argv:
+        data["print"] = export_print(Path(sys.argv[sys.argv.index("--print") + 1]), out)
+    elif (out / "data.json").exists():
+        data["print"] = json.loads((out / "data.json").read_text()).get("print")
+    if "--no-assembly" in sys.argv and (out / "data.json").exists():
+        data["build"] = json.loads((out / "data.json").read_text()).get("build")
     (out / "data.json").write_text(json.dumps(data, default=str, separators=(",", ":")))
     print(len(parts), "parts;", round(off / 1e6, 2), "MB meshes;", round((out / "data.json").stat().st_size / 1e6, 2), "MB data;",
           sum(p["t"][1] for p in parts), "triangles")
