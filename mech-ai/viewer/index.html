@@ -1,0 +1,297 @@
+<title>Printer v4 Inspector</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@600&display=swap">
+<style>
+/* Layout: an inspection bench. Top: parts list | 3D view | part sheet. Below: the full report as a readable document. */
+:root{
+  --bg:#f3f5f7; --panel:#ffffff; --ink:#18212b; --muted:#5d6b7a; --line:#d5dbe2; --view:#e6eaef;
+  --accent:#1f5fbf; --accent-ink:#ffffff; --sel:#e8f0fc;
+  --fab:#d9711a; --buy:#6f8296; --fast:#9aa3ad; --elec:#2f9a6b;
+  --ok:#1f8a55; --warn:#b26a00; --bad:#c23b32; --okbg:#e3f4ea; --warnbg:#fbefd6; --badbg:#fbe3e0;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --cond:"IBM Plex Sans Condensed","IBM Plex Sans",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#12171d; --panel:#1a212a; --ink:#e6ebf1; --muted:#93a1b0; --line:#2c3642; --view:#0e1318;
+  --accent:#6aa3f5; --accent-ink:#0c1420; --sel:#1f2f47;
+  --fab:#f0914a; --buy:#8497ab; --fast:#5f6a76; --elec:#4fc08d;
+  --ok:#55c48a; --warn:#e5a84a; --bad:#f0776d; --okbg:#173326; --warnbg:#3a2c12; --badbg:#3d1d1a; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#12171d; --panel:#1a212a; --ink:#e6ebf1; --muted:#93a1b0; --line:#2c3642; --view:#0e1318;
+  --accent:#6aa3f5; --accent-ink:#0c1420; --sel:#1f2f47;
+  --fab:#f0914a; --buy:#8497ab; --fast:#5f6a76; --elec:#4fc08d;
+  --ok:#55c48a; --warn:#e5a84a; --bad:#f0776d; --okbg:#173326; --warnbg:#3a2c12; --badbg:#3d1d1a; color-scheme:dark }
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.45}
+.wrap{max-width:1500px;margin:0 auto;padding-block:18px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:18px}
+h1{font-family:var(--cond);font-size:26px;margin:0;letter-spacing:.01em}
+h2{font-family:var(--cond);font-size:20px;margin:0 0 4px;text-wrap:balance}
+h3{font-size:13px;margin:0;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+p{margin:0;max-width:72ch}
+.muted{color:var(--muted)} .mono{font-family:var(--mono);font-size:12.5px}
+header{display:flex;flex-wrap:wrap;gap:10px 24px;align-items:baseline;justify-content:space-between}
+.facts{display:flex;flex-wrap:wrap;gap:6px 22px;font-variant-numeric:tabular-nums}
+.facts div{display:flex;flex-direction:column} .facts b{font-family:var(--mono);font-weight:500;font-size:15px} .facts span{font-size:11.5px;color:var(--muted)}
+.chip{display:inline-block;padding:1px 8px;border-radius:10px;font-size:11.5px;font-weight:600;white-space:nowrap}
+.chip.ok{background:var(--okbg);color:var(--ok)} .chip.warn{background:var(--warnbg);color:var(--warn)} .chip.bad{background:var(--badbg);color:var(--bad)}
+.chip.k{background:transparent;border:1px solid var(--line);color:var(--muted);font-weight:500}
+.dot{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;flex:none}
+.bench{display:grid;grid-template-columns:300px minmax(0,1fr) 320px;gap:0;border:1px solid var(--line);background:var(--panel);height:min(78vh,820px);min-height:520px}
+.side{display:flex;flex-direction:column;min-width:0;min-height:0;border-right:1px solid var(--line)}
+.sheet{border-right:0;border-left:1px solid var(--line);overflow:auto;padding:14px;gap:12px}
+.tabs{display:flex;border-bottom:1px solid var(--line)}
+.tabs button{flex:1;padding:9px 4px;border:0;background:none;color:var(--muted);font:600 12.5px var(--sans);cursor:pointer;border-bottom:2px solid transparent}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.list{overflow:auto;flex:1;min-height:0}
+.row{display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid var(--line);cursor:pointer;min-width:0}
+.row:hover{background:var(--sel)} .row.on{background:var(--sel);box-shadow:inset 3px 0 0 var(--accent)}
+.row .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .n{font-family:var(--mono);font-size:11.5px;color:var(--muted);flex:none}
+.row.sub{padding-left:26px;font-size:13px}
+.grp{font-weight:600}
+.view{position:relative;min-width:0;min-height:0;background:var(--view)}
+#gl{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.bar{position:absolute;left:8px;right:8px;display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;padding:6px 8px;background:color-mix(in srgb,var(--panel) 88%,transparent);border:1px solid var(--line);font-size:12px}
+.bar.top{top:8px} .bar.bot{bottom:8px}
+.bar label{display:flex;align-items:center;gap:5px;color:var(--muted)} .bar input[type=range]{width:86px;accent-color:var(--accent)}
+button.b,select.b{font:500 12px var(--sans);padding:4px 9px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;border-radius:3px}
+button.b:hover{border-color:var(--accent)} button.b.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11.5px;color:var(--muted);margin-left:auto}
+.legend span{display:flex;align-items:center}
+dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 12px;margin:0;font-size:13px}
+dt{color:var(--muted)} dd{margin:0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.find{border-left:3px solid var(--warn);padding:4px 0 4px 9px;font-size:12.5px;display:flex;flex-direction:column;gap:3px}
+.find.error{border-color:var(--bad)} .find.info{border-color:var(--line)} .find .hint{color:var(--muted)}
+.step{padding:10px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+.step input{width:100%;accent-color:var(--accent)}
+section{display:flex;flex-direction:column;gap:10px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
+.cols>*{min-width:0}
+.tw{overflow-x:auto;border:1px solid var(--line);background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:12.5px;font-variant-numeric:tabular-nums}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+th,td{padding:6px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0} td.r,th.r{text-align:right;font-family:var(--mono)} tr.click{cursor:pointer} tr.click:hover{background:var(--sel)}
+pre{margin:0;padding:12px;background:var(--panel);border:1px solid var(--line);overflow:auto;max-height:420px;font:12px/1.5 var(--mono)}
+.note{border:1px solid var(--line);background:var(--panel);padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.barrow{display:grid;grid-template-columns:130px minmax(0,1fr) 60px;gap:8px;align-items:center;font-size:12.5px}
+.barrow i{display:block;height:9px;background:var(--accent);min-width:1px}
+#load{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted)}
+@media (max-width:1080px){ .bench{grid-template-columns:260px minmax(0,1fr);height:auto} .view{height:62vh;min-height:380px} .sheet{grid-column:1/-1;border-left:0;border-top:1px solid var(--line);max-height:none} .side:first-child{max-height:62vh} }
+@media (max-width:700px){ .bench{grid-template-columns:minmax(0,1fr)} .view{order:-1;height:56vh} .side:first-child{border-right:0;border-top:1px solid var(--line);max-height:46vh} .legend{margin-left:0} }
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Printer v4 <span id="verdict"></span></h1>
+      <p class="muted">Everything on this page comes from simulation. Nothing has been built, and the firmware configuration has been checked but not run.</p>
+    </div>
+    <div class="facts" id="facts"></div>
+  </header>
+
+  <div class="bench">
+    <div class="side">
+      <div class="tabs" role="tablist">
+        <button role="tab" data-tab="asm" aria-selected="true">Assemblies</button>
+        <button role="tab" data-tab="fab" aria-selected="false">Fabricated</button>
+        <button role="tab" data-tab="build" aria-selected="false">Build order</button>
+      </div>
+      <div class="step" id="buildctl" hidden>
+        <div><b id="stepn"></b> <span class="muted" id="stept"></span></div>
+        <input type="range" id="stepr" min="0" value="0" aria-label="Build step">
+        <div class="muted" id="stepd"></div>
+      </div>
+      <div class="list" id="list"></div>
+    </div>
+    <div class="view">
+      <canvas id="gl"></canvas>
+      <div id="load">Loading 292 parts…</div>
+      <div class="bar top">
+        <button class="b" id="all">Show all</button>
+        <button class="b" id="fit">Fit view</button>
+        <button class="b on" id="ghost" title="Show hidden parts faintly for context">Context</button>
+        <button class="b" id="nofast">Hide fasteners</button>
+        <label>Colour <select class="b" id="colour"><option value="kind">by type</option><option value="group">by sub-assembly</option></select></label>
+        <div class="legend" id="legend"></div>
+      </div>
+      <div class="bar bot">
+        <label>Explode <input type="range" id="explode" min="0" max="100" value="0"></label>
+        <label>Cut <input type="range" id="cut" min="0" max="100" value="0"></label>
+        <label>X <input type="range" id="jx" min="0" max="100" value="50"></label>
+        <label>Y <input type="range" id="jy" min="0" max="100" value="50"></label>
+        <label>Bed Z <input type="range" id="jz" min="0" max="100" value="2"></label>
+      </div>
+    </div>
+    <div class="side sheet" id="sheet"></div>
+  </div>
+
+  <section><h2>Check results</h2><div class="cols"><div class="tw" id="checks"></div><div id="warns" style="display:flex;flex-direction:column;gap:8px"></div></div></section>
+  <section><h2>Fabricated parts</h2><p class="muted">Parts that have to be made. Select a row to see the part on its own in the viewer. Cost figures are rough estimates for comparing options, not quotes.</p><div class="tw" id="fabtable"></div></section>
+  <section><h2>Electronics</h2><div class="note" id="pcb"></div><div class="tw" id="ots"></div>
+    <div class="cols"><div><h3>Worst-case power</h3><div class="note" id="power"></div></div><div><h3>Heaters, simulated</h3><div class="tw" id="heat"></div></div></div>
+    <h3>Injected faults</h3><div class="tw" id="faults"></div>
+    <h3>Wiring</h3><div class="tw" id="wires"></div></section>
+  <section><h2>Fit and adjustment</h2><p class="muted" id="tolp"></p><div class="tw" id="tol"></div></section>
+  <section><h2>Performance in the digital twin</h2><div class="tw" id="perf"></div></section>
+  <section><h2>Bill of materials</h2><div class="tw" id="bom"></div></section>
+  <section><h2>Generated firmware configuration</h2><p class="muted">Klipper <span class="mono">printer.cfg</span> generated from the design. Parsed and pin-checked only; it has not been run.</p><pre id="cfg"></pre></section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const $=id=>document.getElementById(id), esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const f=(x,d=1)=>x==null||isNaN(x)?'–':Number(x).toFixed(d);
+const KIND={fabricated:['--fab','Fabricated'],purchased:['--buy','Purchased'],fastener:['--fast','Fastener'],electrical:['--elec','Electrical']};
+const GCOL=['#c2553d','#3d7fc2','#2f9a6b','#b78a1e','#8a5fc2','#3aa3a8','#c24f8e'];
+let D,P=[],scene,camera,renderer,controls,bodies={},centre=new THREE.Vector3(),clip=new THREE.Plane(new THREE.Vector3(0,-1,0),1e9);
+const S={tab:'asm',iso:null,sel:null,ghost:true,nofast:false,colour:'kind',step:0,open:{}};
+
+Promise.all([fetch('data.json').then(r=>r.json()),fetch('meshes.bin').then(r=>r.arrayBuffer())]).then(([d,buf])=>{D=d;init(buf);report();$('load').remove();}).catch(e=>{$('load').textContent='Could not load the model: '+e.message;});
+
+function init(buf){
+  renderer=new THREE.WebGLRenderer({canvas:$('gl'),antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio,2)); renderer.clippingPlanes=[clip];
+  scene=new THREE.Scene(); camera=new THREE.PerspectiveCamera(32,1,2,20000); camera.up.set(0,0,1); camera.position.set(700,-900,620);
+  controls=new THREE.OrbitControls(camera,renderer.domElement); controls.addEventListener('change',draw);
+  scene.add(new THREE.HemisphereLight(0xffffff,0x556070,.85)); const dl=new THREE.DirectionalLight(0xffffff,.55); camera.add(dl); dl.position.set(1,1,2); scene.add(camera);
+  bodies.world=new THREE.Group(); scene.add(bodies.world);
+  D.joints.forEach(j=>{bodies[j.child]=new THREE.Group()}); D.joints.forEach(j=>{(bodies[j.parent]||bodies.world).add(bodies[j.child])});
+  const groups=[...new Set(D.parts.map(p=>p.group))];
+  const box=new THREE.Box3();
+  D.parts.forEach((p,i)=>{
+    const g=new THREE.BufferGeometry();
+    g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(buf.slice(p.v[0],p.v[0]+p.v[1]*12)),3));
+    g.setIndex(new THREE.BufferAttribute(new Uint32Array(buf.slice(p.t[0],p.t[0]+p.t[1]*12)),1));
+    g.computeVertexNormals(); g.computeBoundingBox();
+    const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({flatShading:true,metalness:.15,roughness:.7,side:THREE.DoubleSide}));
+    const e=new THREE.LineSegments(new THREE.EdgesGeometry(g,28),new THREE.LineBasicMaterial({transparent:true,opacity:.35})); m.add(e);
+    m.userData.i=i; p.mesh=m; p.edges=e; p.c=g.boundingBox.getCenter(new THREE.Vector3()); p.gi=groups.indexOf(p.group);
+    p.base=p.name.replace(/_\d+$/,''); (bodies[p.body]||bodies.world).add(m); box.union(g.boundingBox); P.push(p);
+  });
+  box.getCenter(centre); D.groups=groups;
+  // build order: the step at which each part goes on
+  if(D.build){ D.build.steps.forEach((s,k)=>{(s.parts||[s.unit]).forEach(n=>{const p=P.find(q=>q.name===n); if(p&&p.at==null)p.at=k;});}); P.forEach(p=>{if(p.at==null)p.at=0}); $('stepr').max=D.build.steps.length-1; S.step=D.build.steps.length-1; $('stepr').value=S.step; }
+  const el=$('gl'); let down=null;
+  el.addEventListener('pointerdown',e=>down=[e.clientX,e.clientY]);
+  el.addEventListener('pointerup',e=>{ if(!down||Math.hypot(e.clientX-down[0],e.clientY-down[1])>5)return; const r=el.getBoundingClientRect(); const ray=new THREE.Raycaster();
+    ray.setFromCamera({x:(e.clientX-r.left)/r.width*2-1,y:-(e.clientY-r.top)/r.height*2+1},camera);
+    const hit=ray.intersectObjects(P.filter(p=>p.solid).map(p=>p.mesh),false).find(h=>clip.distanceToPoint(h.point)>=0); select(hit?hit.object.userData.i:null); });
+  new ResizeObserver(size).observe(el.parentElement); size();
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{apply()});
+  new MutationObserver(()=>apply()).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;S.iso=null;document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));$('buildctl').hidden=S.tab!=='build';list();apply();fit();});
+  $('all').onclick=()=>{S.iso=null;S.sel=null;list();apply();fit();sheet();};
+  $('fit').onclick=fit;
+  $('ghost').onclick=e=>{S.ghost=!S.ghost;e.target.classList.toggle('on',S.ghost);apply();};
+  $('nofast').onclick=e=>{S.nofast=!S.nofast;e.target.classList.toggle('on',S.nofast);apply();};
+  $('colour').onchange=e=>{S.colour=e.target.value;apply();legend();};
+  $('explode').oninput=pose; $('cut').oninput=pose; ['jx','jy','jz'].forEach(i=>$(i).oninput=pose);
+  $('stepr').oninput=e=>{S.step=+e.target.value;list();apply();};
+  legend(); list(); pose(); apply(); fit(); sheet();
+}
+function size(){const w=$('gl').parentElement.clientWidth,h=$('gl').parentElement.clientHeight; if(!w||!h)return; renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix(); draw();}
+function draw(){renderer&&renderer.render(scene,camera);}
+function pose(){
+  const k=$('explode').value/100*1.1;
+  P.forEach(p=>{p.mesh.position.copy(p.c).sub(centre).multiplyScalar(k);});
+  const v={x:$('jx').value/100,y:$('jy').value/100,z:$('jz').value/100};
+  D.joints.forEach(j=>{const t=j.range[0]+(j.range[1]-j.range[0])*(v[j.name]??.5); bodies[j.child].position.set(j.axis[0]*t,j.axis[1]*t,j.axis[2]*t);});
+  const c=$('cut').value/100; clip.constant=c===0?1e9:(260-c*520);
+  draw();
+}
+function shown(p){ if(S.nofast&&p.kind==='fastener')return false; if(S.tab==='build'&&p.at>S.step)return false; return !S.iso||S.iso.has(p.name); }
+function apply(){
+  const edge=new THREE.Color(css('--ink'));
+  P.forEach(p=>{ const on=shown(p), hiddenByBuild=S.tab==='build'&&p.at>S.step, m=p.mesh.material;
+    p.solid=on; p.mesh.visible=on||(S.ghost&&!hiddenByBuild&&!(S.nofast&&p.kind==='fastener'));
+    const col=S.colour==='group'?GCOL[p.gi%GCOL.length]:css(KIND[p.kind][0]); m.color.set(col);
+    m.transparent=!on; m.opacity=on?1:.07; m.depthWrite=on; p.edges.visible=on; p.edges.material.color.copy(edge);
+    const cur=S.tab==='build'&&p.at===S.step, sel=S.sel===p.mesh.userData.i;
+    m.emissive.set(sel?css('--accent'):cur?css('--fab'):'#000'); m.emissiveIntensity=sel?.55:cur?.45:0; });
+  draw();
+}
+function fit(){ const b=new THREE.Box3(); scene.updateMatrixWorld(true); P.filter(p=>p.solid).forEach(p=>b.expandByObject(p.mesh)); if(b.isEmpty())return;
+  const c=b.getCenter(new THREE.Vector3()), r=b.getSize(new THREE.Vector3()).length()/2, dir=camera.position.clone().sub(controls.target).normalize();
+  controls.target.copy(c); camera.position.copy(c).add(dir.multiplyScalar(Math.max(r,20)/Math.sin(camera.fov*Math.PI/360)*1.05)); controls.update(); draw(); }
+function legend(){ $('legend').innerHTML=S.colour==='kind'?Object.values(KIND).map(([v,n])=>`<span><i class="dot" style="background:var(${v})"></i>${n}</span>`).join(''):D.groups.map((g,i)=>`<span><i class="dot" style="background:${GCOL[i%GCOL.length]}"></i>${esc(g.split(' (')[0])}</span>`).join(''); }
+function isolate(names,key){ S.iso=new Set(names); S.isoKey=key; list(); apply(); fit(); }
+function select(i){ S.sel=i; apply(); sheet(); list(); }
+function worst(fs){return fs.some(x=>x.severity==='error')?'bad':fs.some(x=>x.severity==='warning')?'warn':null;}
+function list(){
+  const L=$('list'); let h='';
+  if(S.tab==='asm'){
+    D.groups.forEach((g,gi)=>{ const ps=P.filter(p=>p.group===g), mass=ps.reduce((a,p)=>a+p.mass,0), key='g:'+g;
+      h+=`<div class="row grp ${S.isoKey===key&&S.iso?'on':''}" data-g="${gi}"><i class="dot" style="background:${GCOL[gi%GCOL.length]}"></i><span class="nm">${esc(g)}</span><span class="n">${ps.length} · ${f(mass,2)} kg</span></div>`;
+      if(S.open[g]) ps.filter(p=>p.kind!=='fastener').forEach(p=>{h+=prow(p,'sub');}); });
+  } else if(S.tab==='fab'){
+    const seen=new Set(); P.filter(p=>p.kind==='fabricated').forEach(p=>{ if(seen.has(p.base))return; seen.add(p.base); const n=P.filter(q=>q.base===p.base&&q.kind==='fabricated').length; h+=prow(p,'',n); });
+  } else if(D.build){
+    const st=D.build.steps, s=st[S.step]; $('stepn').textContent=`Step ${S.step+1} of ${st.length}`; $('stept').textContent=s.unit;
+    $('stepd').textContent=[s.kind,s.direction,s.rests_stably===false?'must be held in place':'',s.tool].filter(Boolean).join(' · ');
+    const a=Math.max(0,S.step-40); for(let k=S.step;k>=a;k--){const q=st[k]; h+=`<div class="row ${k===S.step?'on':''}" data-step="${k}"><span class="n">${k+1}</span><span class="nm">${esc(q.unit)}</span>${q.rests_stably===false?'<span class="chip warn">hold</span>':''}<span class="n">${esc(q.direction||'')}</span></div>`;}
+  } else h='<div class="row">No build simulation in this export.</div>';
+  L.innerHTML=h;
+  L.querySelectorAll('[data-g]').forEach(r=>r.onclick=()=>{const g=D.groups[+r.dataset.g]; S.open[g]=!(S.open[g]&&S.isoKey==='g:'+g); isolate(P.filter(p=>p.group===g).map(p=>p.name),'g:'+g);});
+  L.querySelectorAll('[data-p]').forEach(r=>r.onclick=()=>{const p=P[+r.dataset.p]; if(S.tab==='fab')isolate(P.filter(q=>q.base===p.base).map(q=>q.name),'p:'+p.base); select(+r.dataset.p);});
+  L.querySelectorAll('[data-step]').forEach(r=>r.onclick=()=>{S.step=+r.dataset.step;$('stepr').value=S.step;list();apply();});
+}
+function prow(p,cls,n){ const w=worst(p.findings), i=p.mesh.userData.i;
+  return `<div class="row ${cls} ${S.sel===i?'on':''}" data-p="${i}"><i class="dot" style="background:var(${KIND[p.kind][0]})"></i><span class="nm">${esc(n>1?p.base:p.name)}</span>${n>1?`<span class="n">×${n}</span>`:''}${p.process&&S.tab==='fab'?`<span class="chip k">${esc(p.process)}</span>`:''}${w?`<span class="chip ${w}">${p.findings.length}</span>`:''}</div>`; }
+function sheet(){
+  const el=$('sheet'), p=S.sel==null?null:P[S.sel];
+  if(!p){ el.innerHTML=`<h3>Part sheet</h3><p class="muted">Select a part in the 3D view or the list to see what it is, how it is made and what the checks say about it.</p>
+    <h3>How to look around</h3><p class="muted">Drag to orbit, scroll or pinch to zoom, right-drag or two fingers to pan. Pick a sub-assembly to see it alone. <b>Explode</b> pulls parts apart, <b>Cut</b> slices the machine front to back, and X, Y and Bed Z move the axes through their travel.</p>`; return; }
+  const b=p.bbox, m=p.mfg, e=m&&m.estimate;
+  let h=`<div><h2>${esc(p.name)}</h2><span class="chip k"><i class="dot" style="background:var(${KIND[p.kind][0]})"></i>${KIND[p.kind][1]}</span> <span class="chip k">${esc(p.group)}</span></div><dl>
+    ${p.desc?`<dt>What</dt><dd>${esc(p.desc)}</dd>`:''}${p.product&&p.product.product?`<dt>Product</dt><dd>${esc(p.product.product)}${p.product.part_number?' · '+esc(p.product.part_number):''}</dd>`:''}
+    ${p.sku?`<dt>Part no.</dt><dd class="mono">${esc(p.sku)}</dd>`:''}<dt>Material</dt><dd>${esc(p.material)}</dd>${p.process?`<dt>Process</dt><dd>${esc(p.process)}</dd>`:''}
+    <dt>Size</dt><dd class="mono">${f(b[3]-b[0])} × ${f(b[4]-b[1])} × ${f(b[5]-b[2])} mm</dd><dt>Mass</dt><dd class="mono">${p.mass>=.1?f(p.mass,2)+' kg':f(p.mass*1000,1)+' g'}</dd>
+    ${p.cost!=null?`<dt>Cost</dt><dd class="mono">$${f(p.cost,2)}</dd>`:''}<dt>Moves with</dt><dd>${p.body==='world'?'fixed frame':p.body.replace('body',' axis')}</dd>
+    ${p.kind!=='fabricated'?`<dt>Data</dt><dd>${p.vendor?'vendor document':'typical values, unverified'}</dd>`:''}</dl>`;
+  if(m){ h+=`<h3>Manufacture</h3><dl>${m.form?`<dt>Form</dt><dd>${esc(m.form)}</dd>`:''}${m.stock?`<dt>Stock</dt><dd>${esc(m.stock)}</dd>`:''}${m.thickness_mm?`<dt>Thickness</dt><dd class="mono">${f(m.thickness_mm)} mm</dd>`:''}
+    ${m.setups_estimate?`<dt>Set-ups</dt><dd>${m.setups_estimate}${m.cut_from?' ('+m.cut_from.join(', ')+')':''}</dd>`:''}${m.material_removed_fraction!=null?`<dt>Removed</dt><dd>${f(m.material_removed_fraction*100,0)}% of stock</dd>`:''}
+    ${m.min_wall_mm!=null?`<dt>Thinnest wall</dt><dd class="mono">${f(m.min_wall_mm,2)} mm</dd>`:''}${m.min_tool_mm!=null?`<dt>Smallest tool</dt><dd class="mono">${f(m.min_tool_mm)} mm</dd>`:''}${m.holes!=null?`<dt>Holes</dt><dd>${m.holes}${m.tapped_holes?' ('+m.tapped_holes+' tapped)':''}</dd>`:''}
+    ${e&&e.cost_usd_each_qty1?`<dt>Est. cost</dt><dd class="mono">$${f(e.cost_usd_each_qty1,0)} each (1 off)${e.cost_usd_each_qty10?', $'+f(e.cost_usd_each_qty10,0)+' (10 off)':''}</dd>`:''}
+    ${p.dxf?`<dt>Cut file</dt><dd>DXF profile generated</dd>`:''}</dl>${m.cost_drivers&&m.cost_drivers.length?`<p class="muted">Cost drivers: ${esc(m.cost_drivers.join('; '))}</p>`:''}`; }
+  h+=`<h3>What the checks say</h3>`+(p.findings.length?p.findings.map(x=>`<div class="find ${x.severity}"><div><span class="chip ${x.severity==='error'?'bad':x.severity==='warning'?'warn':'k'}">${x.severity}</span> <span class="mono">${esc(x.verifier)} · ${esc(x.code)}</span></div><div>${esc(x.message)}</div>${x.hint?`<div class="hint">${esc(x.hint)}</div>`:''}</div>`).join(''):'<p class="muted">No findings name this part.</p>');
+  h+=`<div><button class="b" id="only">Show only this part</button></div>`;
+  el.innerHTML=h; $('only').onclick=()=>isolate([p.name],'p:'+p.name);
+}
+function tbl(head,rows){return `<table><thead><tr>${head.map(h=>`<th class="${h[0]==='>'?'r':''}">${esc(h.replace(/^>/,''))}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table>`;}
+function report(){
+  const errs=D.findings.filter(x=>x.severity==='error').length, warns=D.findings.filter(x=>x.severity==='warning');
+  $('verdict').innerHTML=`<span class="chip ${D.ok?'ok':'bad'}">${D.ok?'passes all '+Object.keys(D.summary).length+' checks':errs+' errors'}</span>`;
+  const s=D.score||{}, bx=D.bbox||[];
+  $('facts').innerHTML=[[P.length,'parts'],[f(D.mass,2)+' kg','mass'],['$'+f(s.bom_cost_usd??D.bom_cost,0),'parts cost'],[bx.length?bx.map(x=>f(x,0)).join(' × ')+' mm':'–','envelope'],[D.build?f(D.build.metrics.estimated_time_min,0)+' min':'–','assembly estimate'],[warns.length,'warnings']].map(([b,l])=>`<div><b>${b}</b><span>${l}</span></div>`).join('');
+  $('checks').innerHTML=tbl(['Check','Result','>Errors','>Warnings'],Object.entries(D.summary).map(([k,v])=>{const m=String(v).match(/(\d+) errors, (\d+) warnings/)||[0,'–','–'];const ok=/^pass/.test(v);return `<tr><td>${esc(k)}</td><td><span class="chip ${ok?(+m[2]?'warn':'ok'):'bad'}">${ok?'pass':'fail'}</span></td><td class="r">${m[1]}</td><td class="r">${m[2]}</td></tr>`;}));
+  $('warns').innerHTML=`<h3>Open warnings</h3>`+warns.map(x=>`<div class="find ${x.severity}"><div class="mono">${esc(x.verifier)} · ${esc(x.code)}</div><div>${esc(x.message)}</div></div>`).join('');
+  const seen=new Set();
+  $('fabtable').innerHTML=tbl(['Part','>Qty','Process','Material','Stock or form','>Set-ups','>Est. cost each','Findings'],P.filter(p=>p.kind==='fabricated').map(p=>{ if(seen.has(p.base))return''; seen.add(p.base); const n=P.filter(q=>q.base===p.base&&q.kind==='fabricated').length,m=p.mfg||{},e=m.estimate||{},w=worst(p.findings);
+    return `<tr class="click" data-p="${p.mesh.userData.i}"><td>${esc(n>1?p.base:p.name)}</td><td class="r">${n}</td><td>${esc(p.process||m.process||'')}</td><td>${esc(p.material)}</td><td>${esc(m.stock||m.form||'')}${p.dxf?' · DXF':''}</td><td class="r">${m.setups_estimate??'–'}</td><td class="r">${e.cost_usd_each_qty1?'$'+f(e.cost_usd_each_qty1,0):'–'}</td><td>${w?`<span class="chip ${w}">${p.findings.map(x=>x.code).join(', ')}</span>`:'<span class="muted">none</span>'}</td></tr>`;}));
+  $('fabtable').querySelectorAll('tr.click').forEach(r=>r.onclick=()=>{const p=P[+r.dataset.p]; document.querySelector('[data-tab=fab]').click(); isolate(P.filter(q=>q.base===p.base).map(q=>q.name),'p:'+p.base); select(+r.dataset.p); document.querySelector('.bench').scrollIntoView({behavior:'smooth'});});
+  const E=D.electrical||{}, o=E.off_the_shelf||{};
+  $('pcb').innerHTML=`<div><span class="chip ${o.custom_pcbs_needed?'bad':'ok'}">${o.custom_pcbs_needed||0} custom PCBs</span></div><p>${esc(o.statement||'')}</p>${(o.commodity_without_part_number||[]).length?`<p class="muted">Generic parts with no specific vendor part number chosen yet: ${esc(o.commodity_without_part_number.join(', '))}.</p>`:''}`;
+  $('ots').innerHTML=tbl(['Element','Product','Part no.','Form','What the builder does'],(o.table||[]).map(r=>`<tr><td>${esc(r.element)}</td><td>${esc(r.product||'')}</td><td class="mono">${esc(r.part_number||'')}</td><td>${esc(r.form||'')}</td><td>${esc(r.builder_work||'')}</td></tr>`));
+  const pb=E.power_budget||{}, loads=Object.entries(pb.loads_w||{}).sort((a,b)=>b[1]-a[1]), mx=loads.length?loads[0][1]:1;
+  $('power').innerHTML=loads.map(([k,v])=>`<div class="barrow"><span>${esc(k)}</span><i style="width:${v/mx*100}%"></i><span class="mono">${f(v,1)} W</span></div>`).join('')+`<p><b>${f(pb.worst_case_dc_load_w,0)} W</b> worst case on a ${f(pb.psu_rated_w,0)} W supply: ${f(pb.psu_load_frac*100,0)}% against a ${f(pb.psu_load_limit_frac*100,0)}% limit. Mains draw ${f((pb.mains_current_a||{})['115'],1)} A at 115 V, ${f((pb.mains_current_a||{})['230'],1)} A at 230 V.</p>`;
+  const H=E.heaters||{};
+  $('heat').innerHTML=tbl(['Heater','>Power','Heat-up from 25 °C','>Max at full power','Steady duty'],Object.entries(H).map(([k,h])=>`<tr><td>${esc(k)}</td><td class="r">${f(h.power_w,0)} W</td><td>${Object.entries(h.heatup_s||{}).map(([t,s])=>`${f(s,0)} s to ${f(t,0)} °C`).join(', ')}</td><td class="r">${f(h.max_temp_at_full_duty_c,0)} °C</td><td>${Object.entries(h.steady_duty||{}).map(([t,s])=>`${f(s*100,0)}% at ${f(t,0)} °C`).join(', ')}</td></tr>`));
+  $('faults').innerHTML=tbl(['Heater','Fault','Caught','>After','>Peak','How'],Object.entries(H).flatMap(([k,h])=>Object.entries(h.faults||{}).map(([n,x])=>`<tr><td>${esc(k)}</td><td>${esc(n)}</td><td><span class="chip ${x.detected&&!x.still_heating_at_end?'ok':'bad'}">${x.detected&&!x.still_heating_at_end?'yes':'no'}</span></td><td class="r">${x.detected_after_s!=null?f(x.detected_after_s,1)+' s':'–'}</td><td class="r">${f(x.peak_c,0)} °C</td><td>${esc(x.detected_by||(x.still_heating_at_end?'still powered at the end':''))}</td></tr>`)));
+  $('wires').innerHTML=tbl(['Wire','>AWG','>Length','>Current','>Of capacity','>Wire temp','>Drop'],Object.entries(E.wire_table||{}).map(([k,w])=>`<tr><td>${esc(k)}</td><td class="r">${w.awg}</td><td class="r">${f(w.length_mm,0)} mm</td><td class="r">${f(w.current_a,2)} A</td><td class="r">${w.ampacity_a?f(w.current_a/w.ampacity_a*100,0)+'%':'–'}</td><td class="r">${f(w.conductor_temp_c,0)} °C</td><td class="r">${f(w.drop_v,3)} V</td></tr>`));
+  const T=D.tolerance||{}, tp=T.printer||{}, adj=T.adjustments_declared||[], need={z_offset:tp.z_offset_needed_mm_99,bed_level:tp.levelling_needed_mm_99};
+  Object.entries(T.paired_rails||{}).forEach(([j,r])=>need['rail_align:'+j]=r.parallelism_error_over_travel_mm_99); Object.entries(T.lead_screws||{}).forEach(([j,r])=>need['float:'+j]=r.nut_misalignment_mm_99);
+  $('tolp').textContent=`${T.builds_simulated||''} builds simulated with typical manufacturing tolerances. As built, before any adjustment, ${f((tp.p_first_layer_reachable_as_built||0)*100,0)}% reach the first layer and ${f((tp.p_bed_level_within_half_a_layer_as_built||0)*100,0)}% are level within half a layer, so every machine relies on these adjustments. The check trusts a declared adjustment; it does not confirm the slot or screw has that much travel.`;
+  $('tol').innerHTML=tbl(['Adjustment','Kind','>Needed (99% of builds)','>Provided'],adj.map(a=>{const n=need[a.kind]??need[a.kind+':'+a.joint];return `<tr><td>${esc(a.name)}</td><td>${esc(a.kind.replace('_',' '))}</td><td class="r">${f(n,2)} mm</td><td class="r">± ${f(a.range_mm,1)} mm</td></tr>`;}));
+  const pr=D.printing||{};
+  $('perf').innerHTML=tbl(['Measure','>Value','Note'],[['Lowest resonance, X / Y',s.resonance_hz?f(s.resonance_hz.x,0)+' / '+f(s.resonance_hz.y,0)+' Hz':'–',''],['Cross-track error, RMS',f(s.cross_track_rms_mm,3)+' mm','distance of the nozzle from the intended path'],['Highest clean acceleration',f(s.max_clean_accel_mm_s2,0)+' mm/s²',s.accel_margin?f(s.accel_margin,1)+'× the design value; above this steps are lost':''],['Benchmark print time',f(s.benchmark_time_with_heatup_s/60,0)+' min','three test parts including heat-up'],['Nozzle stiffness, X / Y',s.frame_stiffness_n_per_mm?f(s.frame_stiffness_n_per_mm.x,0)+' / '+f(s.frame_stiffness_n_per_mm.y,0)+' N/mm':'–','joints held only around their screws (lower bound)'],['Moving mass, X / Y / Z',s.moving_mass_kg?['x','y','z'].map(a=>f(s.moving_mass_kg[a],2)).join(' / ')+' kg':'–','']].map(r=>`<tr><td>${r[0]}</td><td class="r">${r[1]}</td><td class="muted">${r[2]}</td></tr>`));
+  const bom=Object.entries(D.bom||{}).sort((a,b)=>b[1].qty*(b[1].unit_cost_usd||0)-a[1].qty*(a[1].unit_cost_usd||0));
+  $('bom').innerHTML=tbl(['Part no.','>Qty','>Unit','>Total'],bom.map(([k,v])=>`<tr><td class="mono">${esc(k)}</td><td class="r">${v.qty}</td><td class="r">${v.unit_cost_usd!=null?'$'+f(v.unit_cost_usd,2):'–'}</td><td class="r">${v.unit_cost_usd!=null?'$'+f(v.qty*v.unit_cost_usd,2):'–'}</td></tr>`));
+  $('cfg').textContent=D.printer_cfg||'Not generated.';
+}
+</script>
