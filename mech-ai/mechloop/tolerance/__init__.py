@@ -173,9 +173,19 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
             side = k_side * err
             drag = MU_NUT * side
             avail = j.max_effort or 0.0
-            screws_m[jn] = {"nut_misalignment_mm_99": round(_rng99(err), 2), "screw_side_stiffness_n_per_mm": round(k_side, 1),
+            screws_m[jn] = {"nut_misalignment_mm_99": round(_rng99(err), 2), "offset_at_nut_mm_99": round(_rng99(e0), 2),
+                            "drift_over_travel_mm_99": round(_rng99(run), 2), "screw_side_stiffness_n_per_mm": round(k_side, 1),
                             "nut_closest_to_fixed_end_mm": round(a_min, 0), "side_force_n_99": round(_rng99(side), 0),
                             "added_drag_n_99": round(_rng99(drag), 1), "drive_force_n": avail, "nut_floats": bool(adj)}
+            if adj:
+                screws_m[jn]["float_available_mm"] = adj.range_mm
+            if adj and _rng99(err) > adj.range_mm:
+                r.add("error", "adjustment_too_small",
+                      f"Axis {jn}: the nut is up to {_rng99(err):.2f} mm off the screw's axis as built, but '{adj.name}' lets it "
+                      f"move only +/-{adj.range_mm} mm. Past that the nut is forced sideways and the screw binds.",
+                      joint=jn, needed=round(_rng99(err), 2),
+                      hint="Give the nut more sideways room, shorten the tolerance chain between screw and rails, "
+                           "or locate the screw's bearing and the rails from one part.")
             if not adj and avail and _rng99(drag) > 0.3 * avail:
                 r.add("error", "leadscrew_binding",
                       f"Axis {jn}: the nut is up to {_rng99(err):.2f} mm off the screw's axis as built, and the screw is "

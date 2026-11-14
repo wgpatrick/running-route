@@ -149,7 +149,8 @@ def run(path: str | Path, out_root: str | Path = "out", only=None, render: bool 
         f.write(json.dumps(entry) + "\n")
     rep.artifacts["iteration"] = n
     rep.artifacts["seconds"] = {"verify": round(t_ver - t0, 1), "render_and_export": round(time.time() - t_ver, 1)}
-    (out / "report.json").write_text(rep.to_json(max_findings=500))
+    # a partial run must not replace the last full report: the twin and the viewer read their figures from it
+    (out / ("report_partial.json" if only else "report.json")).write_text(rep.to_json(max_findings=500))
     return rep
 
 
