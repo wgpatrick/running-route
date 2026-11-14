@@ -110,6 +110,16 @@ solves (about 1 wrong run in 48); the solver now runs single-threaded (200 of 20
 - Firmware in the loop: real Klipper plans prints from the generated config and its step commands
   drive the twin (`docs/FIRMWARE_IN_THE_LOOP.md`). Heater control is still a port of Klipper's
   control law, not Klipper's code.
+- `designs/printer_v5.py` applies the printer trade study (`../reports/Printer trade study.md`) to v4:
+  4 machined, 8 sheet-cut and 12 printed parts in place of 35 machined (fabrication estimate $2,386
+  to $375); a bed carrier built from a sheet plate and two 2020 arms; two guide blocks per Z rail
+  (bed tilt mode 76 to 562 Hz, the `cantilever_on_guide_blocks` warning cleared); X and Y belt
+  tensioners; an inductive bed probe in place of the Z switch; the extruder moved to the frame
+  (Bowden), toolhead 0.60 to 0.36 kg. It passes all 12 verifiers and a firmware-in-the-loop print.
+  Scored the same day as v4: resonance 68.5 / 57.2 to 88.6 / 62.2 Hz, cross-track RMS 0.015 to
+  0.011 mm. It has 55 more parts, 11 minutes more assembly and a $52 dearer bill of materials.
+  `docs/PRINTER_V5.md` has the evidence, what got worse and seven checker behaviours to look at.
+  `viewer/` now shows v5; the v4 export is kept in `viewer_v4/`.
 - `viewer/` is an interactive page for the whole design, with a replay of a simulated print
   (`tools/export_viewer.py`).
 

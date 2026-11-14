@@ -50,6 +50,7 @@ Outputs land in `out/<design>/`: `report.json`, `views.png`, `motion.gif`,
 | `designs/pan_tilt.py` | 41 | agent, from `AGENT.md` | none in its own runs (see caveat) |
 | `designs/printer.py` | 154 | agent, not allowed to read the verifier code | tool plate too soft at the real nozzle tip; 14 short thread engagements; both axes missing belts |
 | `designs/printer_v3.py` | 225 | agent, redesigned for buildability | 20 errors in v2 under the tolerance, adjustment, binding, manufacture and subsystem checks; see `docs/BUILDABILITY.md` |
+| `designs/printer_v5.py` | 347 | agent, from a trade study against eleven reference printers, not allowed to read the verifier code | v4's 35 machined parts became 4 machined, 8 sheet and 12 printed; found on the way: a cast bracket's locating rib running into a plate, printed screw patterns that start in 24% of builds, fan screws with 2 mm in their nuts, an unbalanced FEA case, a tool plate too soft in Y; see `docs/PRINTER_V5.md` |
 
 ![printer](docs/printer_views.png)
 
