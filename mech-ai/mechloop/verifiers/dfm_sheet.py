@@ -439,21 +439,30 @@ def _long(poly) -> float:
 
 
 # -------------------------------------------------------------------------------------- bent sheet
-def bent_sheet(shape, sm: G.Sampled, cyls: list) -> dict | None:
-    """Recognise a bent sheet part: an inside and an outside cylinder about one axis whose radii differ
-    by the thickness the flat faces are apart. Returns thickness and bends, or None."""
+def modal_thickness(sm: G.Sampled) -> tuple[float, float] | None:
+    """The wall thickness most of the surface has, and the share of the surface that has it."""
     wt = G.wall_thickness(sm)
     ok = np.isfinite(wt)
     if not ok.any():
         return None
     bins = np.round(wt[ok] / 0.02).astype(int)
     vals, inv = np.unique(bins, return_inverse=True)
-    weight = np.bincount(inv, weights=sm.w[ok])
+    weight = np.bincount(inv.reshape(-1), weights=sm.w[ok])
     t = float(vals[int(np.argmax(weight))] * 0.02)
     share = float(weight.max() / sm.w.sum())
     if t <= 0 or share < 0.45:
         return None
-    t = float(np.average(wt[ok][np.abs(wt[ok] - t) < 0.03], weights=sm.w[ok][np.abs(wt[ok] - t) < 0.03]))
+    sel = np.abs(wt[ok] - t) < 0.03
+    return float(np.average(wt[ok][sel], weights=sm.w[ok][sel])), share
+
+
+def bent_sheet(shape, sm: G.Sampled, cyls: list) -> dict | None:
+    """Recognise a bent sheet part: an inside and an outside cylinder about one axis whose radii differ
+    by the thickness the flat faces are apart. Returns thickness and bends, or None."""
+    mt = modal_thickness(sm)
+    if mt is None:
+        return None
+    t, share = mt
     bends = []
     for ci in cyls:
         if not ci.concave or ci.angle > 200:
@@ -520,7 +529,7 @@ def check_bent(r, c, shape, bent: dict, sm, holes: list, lim: Limits) -> dict:
     for b in bent["bends"]:
         a, o, rin = b["axis"], b["origin"], b["radius"]
         mid = o + a * 0.5 * (b["inside"].lo + b["inside"].hi)
-        if rin < lim("sheet.bend_radius_t_ratio") * t - 1e-6:
+        if rin < lim("sheet.bend_radius_t_ratio") * t - 1e-6 and not (shop_row and abs(rin - shop_row[0]) <= 0.15):
             tight.append((rin, G.xyz(b["inside"].mid)))
         if rin > lim("sheet.bend_radius_max_t_ratio") * t:
             wide.append((rin, G.xyz(b["inside"].mid)))
@@ -646,6 +655,8 @@ def export_flat_patterns(design, out_dir) -> dict:
             plate = plate_of(c.shape, G.part_frame(c.shape), sm)
             if plate is None or plate["steps"] or plate["countersinks"]:
                 continue
+            if proc == "machined" and G.turned_axis(c.shape) is not None:
+                continue                                  # a round spacer is a lathe part, not a profile
             p = out_dir / f"{c.name}.dxf"
             if write_dxf(plate, p):
                 done[c.name] = str(p)

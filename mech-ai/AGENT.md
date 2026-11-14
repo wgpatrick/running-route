@@ -201,12 +201,41 @@ verifier reports how much adjustment each one needs (`*_needed_mm_99`) against w
 
 ## Can each part be made? (the manufacture verifier)
 
-Printed parts: best orientation, support needed, fits the print volume, tall-and-thin, thin walls,
-and a rule-of-thumb warp warning. Machined parts: plate from stock thickness
-(1.5, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25 mm), sharp inside corners a round cutter cannot make
-(give them a radius of at least 1.5 mm or relieve them), deep narrow holes, and how many set-ups
-(directions the cutter must come from). Prefer flat plates from stock; a block needing four or more
-set-ups is usually better as two or three plates bolted together.
+Every custom part is checked against the process that makes it. Say how each part is made:
+
+```python
+d.add("tray", shape, material="al5052", process="sheet")       # laser / waterjet cut, optionally bent
+d.add("mount", shape, material="al6061", process="machined")   # 3-axis CNC (round parts: lathe)
+d.add("duct", shape, material="petg", process="printed",       # FDM
+      meta={"print_up": "+Z"})                                 # pin the print orientation (else the best of six is chosen)
+d.manufacturing = {"shop": "sendcutsend",                      # that shop's stock, sizes and bend tooling ("generic" by default)
+                   "sheet": {"method": "laser"},               # or "waterjet", "router"
+                   "printer": {"build_volume": (256, 256, 256), "nozzle": 0.4},
+                   "limits": {"fdm.bridge_max_mm": 60}}        # your own machine's or shop's number for any rule id
+```
+
+Left unsaid, plastics (pla, petg, abs, nylon_pa12) are printed and everything else is machined. One part can
+override with `meta={"dfm": {"limits": {...}, "method": "waterjet", "shop": "sendcutsend"}}`. Rule ids, limits and
+their sources are in `mechloop/verifiers/dfm_rules.py` and `docs/DFM.md`. Every finding carries `part`, `at` (x, y, z),
+`value`, `limit`, `rule`, `source` and a `hint`. Errors cannot be made as drawn; warnings can, for money or at a risk.
+
+- **sheet** (2D cut): one thickness cut straight through (a pocket, counterbore or step is an error), stocked thickness,
+  hole size against thickness and cutter, material between holes and to the edge, thin tabs and narrow slots, inside
+  corners against the cutter (a laser's are practically sharp; a router leaves 1.6 mm), part size, grilles more than half
+  cut away, countersinks and tapped holes as second operations. Bent parts: model each bend with an inside radius r and
+  an outside radius r + t (two boxes meeting sharp is an error); flange length, bend radius and hole-to-bend distance are
+  checked; use al5052 or steel (6061 cracks). A full run writes each flat profile to `out/<name>/dxf/<part>.dxf`.
+- **printed**: orientation (reported with all six scored), overhang area past 45 degrees less what bridges or sits in a
+  small horizontal hole, long bridges, horizontal holes over 10 mm, walls under two beads, small holes and pins, first-layer
+  contact and tall-thin parts, build volume, plastic around threads (heat-set insert guidance), a load case pulling
+  along the build direction, and a rule-of-thumb warp warning.
+- **machined**: plate (stock thickness), block or turned; sharp inside corners no cutter can reach (error) or only from the
+  side (warning); corner radius against depth; deep or narrow slots; thin walls and floors; hole depth and non-standard
+  drill sizes; the threads your screws need (depth, blind run-out); surface no straight cutter reaches from six sides
+  (undercuts, error); set-ups; stock size, share machined away, and a rough time and cost (an estimate, for comparing
+  alternatives). Prefer flat plates from stock; a block needing four or more set-ups, or mostly machined away, is usually
+  better as two or three plates bolted together. Give pocket corners a radius of at least 1.5 mm, a third of the depth if
+  you can.
 
 ## Everything else a machine needs (the subsystems verifier)
 
@@ -239,7 +268,7 @@ set-ups is usually better as two or three plates bolted together.
 | motion | collisions through full joint travel, guide run-off, belt routing, force needed vs available (with rotor inertia), forward simulation of `program` (tracking, collisions on the path) | shorten travel, move parts, lower accel |
 | assemblability | a build order exists in which each part goes on in a straight line onto something already there, parts go on before the screws that hold them, and every screw has driver access when it is installed (home pose only) | split parts, add access holes, reorder |
 | tolerance | fits, stack-ups and binding over thousands of imperfect builds; adjustment needed against adjustment provided | open clearances, add adjustment, locate from one part |
-| manufacture | each custom part against its process | radius corners, stock thickness, split blocks, re-orient prints |
+| manufacture | each custom part against its process (sheet, printed, machined), with the limit and its source on every finding | radius corners, stock thickness, move holes off edges and bends, split blocks, re-orient prints |
 | subsystems | homing, cables, extruder, cooling, electronics | add the parts and declare them |
 | requirements | your `Requirement`s, evaluated last with all metrics | fix the design |
 | fea | factor of safety and deflection per load case, with force balance and refinement checks | ribs, fillets, thicker sections, material |
@@ -250,6 +279,6 @@ Bolt preload and contact (stiffness is bracketed, not predicted), fatigue, buckl
 thermal behaviour of a part while it prints (warping is a rule of thumb only), belt tension
 and tooth load, cable paths (only lengths), tolerance stack-up, over-constraint and binding, axial
 retention of bearings, closed kinematic loops, curved insertion paths, cables,
-manufacturing cost and process limits. FEA is linear static with idealised
+real manufacturing cost (the estimate is rough) and tolerances a process can hold on a feature. FEA is linear static with idealised
 fixtures and no self-weight; assemblies are bonded, which overstates stiffness.
 Guide moments are estimates. Catalog ratings are typical values.

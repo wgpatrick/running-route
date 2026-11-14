@@ -40,8 +40,9 @@ SOURCES = {
                    "typical, unverified",
     "motor_h": "stepper case to still air 12 W/m^2K over the motor's own surface, mounting plate ignored: ASSUMED "
                "(typical, unverified; it gives about the vendor's 80 K rise at rated current)",
-    "usable_torque": "usable dynamic torque taken as 0.9 x the electrical pull-out limit: ASSUMED, the same factor the "
-                     "catalog's class curve used at standstill",
+    "stepper_model": "pull-out torque from the phasor model (V, R, L, back-EMF). Checked against StepperOnline's published "
+                     "24 V pull-out curve for the 17HS13-0404S at 0.35 A rms: within 10 % from 120 to 900 rpm "
+                     "(tests/test_electrical.py). No extra derating is applied; mid-band resonance is not modelled.",
 }
 
 KELVIN = 273.15
@@ -123,6 +124,9 @@ class Device:
     ratings: dict = field(default_factory=dict)
     sources: dict = field(default_factory=dict)   # rating name -> where the number comes from
     params: dict = field(default_factory=dict)
+    # what it physically is: {"product", "vendor", "part_number" (None = commodity part, any vendor), "form":
+    # "assembled board" | "module" | "component" | "hardware", "off_the_shelf": bool, "custom_pcb": bool, "builder_work": str}
+    product: dict = field(default_factory=dict)
 
     def port(self, name: str) -> Port:
         return self.ports[name]
@@ -1041,7 +1045,7 @@ def motor_curves(el: Electrical, design) -> dict:
             i_m = run / n if conn == "parallel" else run
             v_m = v_bus / n if conn == "series" else v_bus
             t = stepper_torque_curve(hold * 1e-3, m.ratings["rated_current_a"], m.ratings["phase_resistance_ohm"],
-                                     m.ratings["phase_inductance_mh"] * 1e-3, i_m, v_m, CURVE_RPM) * 1e3 * 0.9
+                                     m.ratings["phase_inductance_mh"] * 1e-3, i_m, v_m, CURVE_RPM) * 1e3
             out[m.name] = {"component": m.component, "axis": key, "driver": f"{bname}.{grp}", "connection": conn,
                            "motor_current_a": round(i_m, 3), "bus_v": round(v_m, 2), "holding_torque_nmm": hold,
                            "rpm": list(CURVE_RPM), "torque_nmm": [round(float(x), 1) for x in t],
@@ -1065,7 +1069,7 @@ def apply_motor_curves(design) -> dict:
             c.ratings["torque_curve_class"] = c.ratings.get("torque_curve_rpm_frac")
         c.ratings["torque_curve_rpm_frac"] = list(zip(cv["rpm"], cv["frac_of_holding"]))
         c.ratings["torque_curve_source"] = (f"electrical model: {cv['motor_current_a']} A rms per motor on {cv['bus_v']} V "
-                                            f"({cv['connection']}), x0.9 usable")
+                                            f"({cv['connection']})")
     return curves
 
 

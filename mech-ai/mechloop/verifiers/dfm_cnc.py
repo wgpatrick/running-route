@@ -79,7 +79,7 @@ def check_machined(r, design, c, sm: G.Sampled, frame: np.ndarray, cyls: list, h
         if abs(near - t) > 0.05:
             up = next((s_ for s_ in stock if s_ >= t), None)
             add("warning", "non_stock_thickness",
-                f"{t:.2f} mm thick; plate comes in {near:g} mm, so both faces would need machining"
+                f"{t:.2f} mm thick is not a stock plate thickness (nearest {near:g} mm), so both faces would need machining"
                 + (f" down from {up:g} mm." if up else "."), part_thickness=round(t, 3), value=round(t, 3), limit=near,
                 source=lim.rule("cnc.setups_max").source_text, hint=f"Use {near:g} mm if the design allows.")
             st = up or math.ceil(t + 1)
@@ -220,7 +220,15 @@ def check_machined(r, design, c, sm: G.Sampled, frame: np.ndarray, cyls: list, h
             + ("it tears or folds under the cutter." if bad else "it rings and deflects under the cutter, so it is slow to cut and inaccurate."),
             rule=rid, value=float(vals.min()), at=[G.xyz(pts[i]) for i in sel],
             hint=f"Thicken to {w_rec:g} mm or more, or move the feature that thins it.")
-    gp = G.gap_width(sm)
+    hole_mask = np.zeros(len(sm.pts), dtype=bool)
+    for h in holes:
+        rel = sm.pts - h.origin
+        ax = rel @ h.axis
+        rad = np.linalg.norm(rel - np.outer(ax, h.axis), axis=1)
+        hole_mask |= (np.abs(rad - h.diameter / 2) < 0.06) & (np.abs(ax) <= h.depth / 2 + 0.05)
+        for dd, dp in h.steps:
+            hole_mask |= (np.abs(rad - dd / 2) < 0.06)
+    gp = np.where(hole_mask, np.inf, G.gap_width(sm))      # holes are judged as holes, not as slots
     cand = np.nonzero(np.isfinite(gp) & (gp < 60.0))[0]
     slot_ratio = np.zeros(len(cand))
     for nm, d in axes.items():
@@ -264,19 +272,11 @@ def check_machined(r, design, c, sm: G.Sampled, frame: np.ndarray, cyls: list, h
 
     # ------------------------------------------------------------------ reach: set-ups and undercuts
     if not turned:
-        hole_mask = np.zeros(len(sm.pts), dtype=bool)
-        for h in holes:
-            rel = sm.pts - h.origin
-            ax = rel @ h.axis
-            rad = np.linalg.norm(rel - np.outer(ax, h.axis), axis=1)
-            hole_mask |= (np.abs(rad - h.diameter / 2) < 0.06) & (np.abs(ax) <= h.depth / 2 + 0.05)
-            for dd, dp in h.steps:
-                hole_mask |= (np.abs(rad - dd / 2) < 0.06)
         # faces that are the outside of the stock need no cutter of their own
         pf = sm.pts @ frame.T
         nf = sm.nrm @ frame.T
         skin = np.zeros(len(sm.pts), dtype=bool)
-        for k in range(3):
+        for k in ([plate["k"]] if plate else range(3)):     # plate stock gives two finished faces, a sawn block six
             skin |= (nf[:, k] > 0.98) & (np.abs(pf[:, k] - hi[k]) < 0.05)
             skin |= (nf[:, k] < -0.98) & (np.abs(pf[:, k] - lo[k]) < 0.05)
         feat = ~hole_mask & ~skin

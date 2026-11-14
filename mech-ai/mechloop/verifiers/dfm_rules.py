@@ -289,14 +289,14 @@ class Limits:
         man = getattr(design, "manufacturing", None) or {}
         self.shop_name = (component.meta.get("dfm", {}).get("shop") if component is not None else None) or man.get("shop") or "generic"
         if self.shop_name not in SHOPS:
-            raise KeyError(f"unknown shop {self.shop_name!r}; known: {sorted(SHOPS)}")
+            raise ValueError(f"unknown shop {self.shop_name!r}; known: {sorted(SHOPS)}")
         self.shop = SHOPS[self.shop_name]
         self.over: dict = dict(man.get("limits") or {})
         if component is not None:
             self.over.update(component.meta.get("dfm", {}).get("limits") or {})
         unknown = [k for k in self.over if k not in RULES]
         if unknown:
-            raise KeyError(f"unknown DFM rule id(s) in limits override: {unknown}")
+            raise ValueError(f"unknown DFM rule id(s) in limits override: {unknown}")
         self.man = man
         self.part = (component.meta.get("dfm") or {}) if component is not None else {}
 

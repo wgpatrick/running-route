@@ -32,7 +32,7 @@ def verify_electrical(design: Design) -> VerifierResult:
         m: dict = {}
         ctx: dict = {"design": design, "el": el}
         E.axis_motors(el, design)
-        for name, fn in (("completeness", _completeness), ("circuit", _circuit), ("wires", _wires), ("mains", _mains),
+        for name, fn in (("completeness", _completeness), ("off_the_shelf", _off_the_shelf), ("circuit", _circuit), ("wires", _wires), ("mains", _mains),
                          ("steppers", _steppers), ("heaters", _heaters), ("physical", _physical), ("thermal", _bay_and_motors),
                          ("artifacts", _artifacts)):
             try:
@@ -175,6 +175,55 @@ def _completeness(ctx, r, m):
                   hint="Add a host (raspberry_pi_zero2w) and wire it to the board's serial header, or choose firmware that runs on the board alone.")
     m["devices"] = {k: sum(1 for d in el.devices.values() if d.kind == k) for k in sorted({d.kind for d in el.devices.values()})}
     m["wires"] = len(el.wires)
+
+
+# ====================================================================== off the shelf: no custom PCBs
+def off_the_shelf_table(el) -> list:
+    """One row per electrical element: what it physically is and what the builder still does by hand."""
+    rows = []
+    for d in el.devices.values():
+        p = d.product or {}
+        rows.append({"element": d.name, "kind": d.kind, "cad_part": d.component, "product": p.get("product"), "vendor": p.get("vendor"),
+                     "part_number": p.get("part_number"), "form": p.get("form"), "off_the_shelf": p.get("off_the_shelf"),
+                     "custom_pcb": p.get("custom_pcb"), "builder_work": p.get("builder_work")})
+    rows.append({"element": "wiring", "kind": "cable", "cad_part": None,
+                 "product": "hook-up wire by the metre (gauges and insulation in the BOM), JST-XH housings and crimps, ferrules, "
+                            "ring and faston terminals, braided sleeve, cable ties", "vendor": "commodity", "part_number": None,
+                 "form": "cable", "off_the_shelf": True, "custom_pcb": False,
+                 "builder_work": "cut each wire to the length in wiring.csv, strip, crimp the connector named for each end, sleeve and tie the looms"})
+    return rows
+
+
+def _off_the_shelf(ctx, r, m):
+    el = ctx["el"]
+    rows = off_the_shelf_table(el)
+    custom, unknown, generic = [], [], []
+    for row in rows:
+        if not row["product"] or row["off_the_shelf"] is None or row["custom_pcb"] is None:
+            unknown.append(row["element"])
+            r.add("error", "product_not_identified",
+                  f"Electrical element '{row['element']}' ({row['kind']}) does not say what purchasable product it is.", device=row["element"],
+                  hint="Give the device a product record: Device(..., product={'product', 'vendor', 'part_number', 'form', "
+                       "'off_the_shelf', 'custom_pcb', 'builder_work'}); catalog parts carry one.")
+        elif row["custom_pcb"] or not row["off_the_shelf"]:
+            custom.append(row["element"])
+            r.add("error", "custom_electronics_required",
+                  f"Electrical element '{row['element']}' is not an off-the-shelf product"
+                  + (" and needs a custom PCB" if row["custom_pcb"] else "") + f": {row['product']}.", device=row["element"],
+                  hint="Replace it with a stock board or module (e.g. an external MOSFET module or SSR for a load the "
+                       "control board cannot carry).")
+        elif row["part_number"] is None and row["kind"] != "cable":
+            generic.append(row["element"])
+    if generic:
+        r.add("info", "commodity_parts_without_part_number",
+              f"{len(generic)} elements are commodity parts with no single vendor part number fixed: {generic}. "
+              "Their ratings are class values (see sources); fix a vendor part before purchase.")
+    m["off_the_shelf"] = {"custom_pcbs_needed": sum(1 for row in rows if row["custom_pcb"]), "not_off_the_shelf": custom,
+                          "not_identified": unknown, "commodity_without_part_number": generic,
+                          "statement": ("No custom PCB is needed: every electrical element is a purchasable board, module or "
+                                        "component; the builder cuts and terminates wire." if not custom and not unknown else
+                                        "NOT all off the shelf: see not_off_the_shelf / not_identified."),
+                          "table": rows}
 
 
 # ====================================================================== power budget

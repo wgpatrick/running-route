@@ -235,7 +235,7 @@ def wall_thickness(sm: Sampled) -> np.ndarray:
         facing = np.zeros(len(d), dtype=bool)
         # the far face must face away from this one (its outward normal along the ray), near enough
         facing[ok] = np.einsum("ij,ij->i", sm.tri_n[h[ok]], -sm.nrm[ok]) > 0.85
-        sm._acc[key] = np.where(facing, d, np.inf)
+        sm._acc[key] = np.where(facing, d + 1e-4, np.inf)
     return sm._acc[key]
 
 
@@ -248,7 +248,7 @@ def gap_width(sm: Sampled) -> np.ndarray:
         ok = h >= 0
         facing = np.zeros(len(d), dtype=bool)
         facing[ok] = np.einsum("ij,ij->i", sm.tri_n[h[ok]], sm.nrm[ok]) < -0.85
-        sm._acc[key] = np.where(facing, d, np.inf)
+        sm._acc[key] = np.where(facing, d + 1e-4, np.inf)
     return sm._acc[key]
 
 
@@ -610,6 +610,10 @@ def tapped_holes(design, c, sm: Sampled) -> list[dict]:
         if not inside.any():
             continue
         entry = head + dvec * float(ss[inside][0])
+        if not inside[0]:                                # the exact face the screw enters through
+            d0, _ = ray_hits(sm.tris, head[None], dvec[None])
+            if np.isfinite(d0[0]) and d0[0] <= float(ss[inside][0]) + 1e-6:
+                entry = head + dvec * float(d0[0])
         tip = head + dvec * tip_s
         if inside[-1]:
             dist, _ = ray_hits(sm.tris, tip[None], dvec[None])

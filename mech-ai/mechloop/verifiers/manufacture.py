@@ -49,7 +49,15 @@ def check_part(r: VerifierResult, design: Design, c) -> dict:
     else:
         plate = dfm_sheet.plate_of(c.shape, frame, sm)
         tapped = G.tapped_holes(design, c, sm)
-        if plate is not None:
+        mt = dfm_sheet.modal_thickness(sm) if plate is not None and plate["steps"] else None
+        if mt is not None and mt[0] < 0.6 * plate["thickness"] and not any(cy.concave and cy.angle < 200 for cy in cyls):
+            row.update({"form": "bent, corners sharp", "thickness_mm": round(mt[0], 2)})
+            r.add("error", "sharp_bend", f"{c.name}: looks like {mt[0]:g} mm sheet folded with dead-sharp corners (no bend radius). Sheet cannot be "
+                  f"bent sharp; the bend has an inside radius of about the thickness and an outside radius one thickness larger.",
+                  part=c.name, value=0.0, limit=round(mt[0], 2), rule="sheet.bend_radius_t_ratio", source=lim.source("sheet.bend_radius_t_ratio"),
+                  hint=f"Fillet the inside edge of each bend to r >= {mt[0]:g} mm and the outside edge to r + {mt[0]:g} mm; "
+                       "flange lengths and hole-to-bend distances are checked once the bends are modelled.")
+        elif plate is not None:
             row.update(dfm_sheet.check_flat(r, c, plate, sm, holes, lim, tapped, proc))
             P = row.pop("_profile", None)
             if P is not None:
@@ -83,21 +91,23 @@ def verify_manufacture(design: Design) -> VerifierResult:
         for c in custom:
             try:
                 parts[c.name] = check_part(r, design, c)
-            except (KeyError, ValueError) as e:
-                if type(e) is KeyError and "DFM rule" not in str(e) and "shop" not in str(e):
-                    raise
+            except ValueError as e:     # an unknown process, shop, rule id or orientation: the declaration is wrong, not the part
                 r.add("error", "bad_manufacturing_declaration", f"{c.name}: {e}", part=c.name)
                 parts[c.name] = {"process": "?", "checked": False}
             except Exception as e:      # one unreadable part must not hide the findings on the others; unmeasured is not a pass
                 r.add("error", "part_not_checked", f"{c.name}: the manufacturability check failed on this part ({type(e).__name__}: {e}); "
                       f"it has not been judged.", part=c.name, trace=traceback.format_exc()[-500:])
-                parts[c.name] = {"process": process_of(c) if not isinstance(e, ValueError) else "?", "checked": False}
+                parts[c.name] = {"process": process_of(c), "checked": False}
         procs = sorted({v["process"] for v in parts.values()})
         setups = sum(v.get("setups_estimate", 0) for v in parts.values())
         cost = sum((v.get("estimate") or {}).get("cost_usd_each_qty1", 0) or 0 for v in parts.values())
-        lim = Limits(design)
+        try:
+            lim = Limits(design)
+            shop, over = lim.shop_name, sorted(lim.over) or None
+        except ValueError:
+            shop, over = "?", None
         r.metrics = {"custom_parts": len(custom), "by_process": {p: sum(1 for v in parts.values() if v["process"] == p) for p in procs},
-                     "shop": lim.shop_name, "limits_overridden": sorted(lim.over) or None,
+                     "shop": shop, "limits_overridden": over,
                      "machining_setups_total": setups or None,
                      "machining_cost_estimate_usd_qty1": round(cost, 0) or None,
                      "parts": parts if len(parts) <= 40 else {k: {kk: vv for kk, vv in v.items() if kk in ("process", "form", "setups_estimate", "up")}

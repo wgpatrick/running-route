@@ -126,6 +126,15 @@ def run(path: str | Path, out_root: str | Path = "out", only=None, render: bool 
         rep.artifacts["step"] = str(out / f"{design.name}.step")
     except Exception as e:
         rep.artifacts["step_error"] = f"{type(e).__name__}: {e}"
+    if not only or "manufacture" in only:  # flat profiles of the cut parts, as a laser shop wants them
+        try:
+            from .verifiers.manufacture import export_flat_patterns
+
+            dxf = export_flat_patterns(design, out / "dxf")
+            if dxf:
+                rep.artifacts["dxf"] = dxf
+        except Exception as e:
+            rep.artifacts["dxf_error"] = f"{type(e).__name__}: {e}"
     # loop history: one line per run, so progress across iterations is visible
     hist = out / "history.jsonl"
     n = sum(1 for _ in open(hist)) + 1 if hist.exists() else 1

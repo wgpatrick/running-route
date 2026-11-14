@@ -102,7 +102,7 @@ def skr_mini_e3_v3() -> Stock:
         "max_ambient_c": TU, "mass": TU, "cost": TU}
     return Stock(pcb + env, "CTRL-SKR-MINI-E3-V3", "BIGTREETECH SKR Mini E3 V3.0 control board", 0.07, material="abs",
                  ratings={"electrical": {"kind": "board", "ports": ports, "ratings": ratings, "sources": sources,
-                                         "params": {"power_port": "POWER"}}, "stepper_drivers": 4, "approximate": True},
+                                         "product": {'product': 'BIGTREETECH SKR Mini E3 V3.0', 'vendor': 'BIGTREETECH (Shenzhen Big Tree Technology)', 'part_number': 'SKR MINI E3 V3.0', 'form': 'assembled board', 'off_the_shelf': True, 'custom_pcb': False, 'builder_work': 'mount on spacers; land ferruled wires in the screw terminals; plug JST-XH housings; flash Klipper from SD card'}, "params": {"power_port": "POWER"}}, "stepper_drivers": 4, "approximate": True},
                  interfaces={"mount_holes_m3": holes, "standoff_min": 5.0, **_ports_to_interfaces(ports)}, cost_usd=35.0)
 
 
@@ -150,7 +150,7 @@ def psu_lrs(model: str = "LRS-350-24") -> Stock:
                     "terminal_positions": f"nine-way strip at one end, 9.5 mm pitch read off the drawing, +/- 2 mm ({TU})",
                     "has_fan": "[MW] LRS-350: built-in fan, on at 50 degC internal", "cost": TU})
     return Stock(body, f"PSU-{model}", f"Mean Well {model}: 24 V {amps} A {watts:.0f} W enclosed supply", mass, material="steel",
-                 ratings={"electrical": {"kind": "psu", "ports": ports, "ratings": ratings, "sources": sources, "params": {}},
+                 ratings={"electrical": {"kind": "psu", "ports": ports, "ratings": ratings, "sources": sources, "product": dict(product=f"MEAN WELL {model}", vendor="MEAN WELL", part_number=model, form="module", off_the_shelf=True, custom_pcb=False, builder_work="set the 115/230 V selector; ring or fork terminals on mains, earth and DC wires"), "params": {}},
                           "watts": watts},
                  interfaces={"mount_holes_m4": holes, "thread_depth": 3.0, **_ports_to_interfaces(ports)}, cost_usd=cost)
 
@@ -175,7 +175,7 @@ def iec_inlet_c14(fuse_a: float = 6.3) -> Stock:
     sources = {"amps": "[IEC] C14: 10 A 250 V", "fuse_a": "chosen by the design from the standard 5x20 values",
                "geometry": TU, "mass": TU, "cost": TU}
     return Stock(flange + body, f"INLET-C14-SW-FUSE-T{fuse_a:g}A", f"IEC C14 inlet with switch and T{fuse_a:g}A fuse", 0.035, material="abs",
-                 ratings={"electrical": {"kind": "inlet", "ports": ports, "ratings": ratings, "sources": sources, "params": {}},
+                 ratings={"electrical": {"kind": "inlet", "ports": ports, "ratings": ratings, "sources": sources, "product": {'product': 'IEC 60320 C14 inlet module with rocker switch and 5x20 mm fuse drawer, 10 A 250 V', 'vendor': 'commodity (several makers)', 'part_number': None, 'form': 'module', 'off_the_shelf': True, 'custom_pcb': False, 'builder_work': 'cut the panel opening; crimp 6.3 mm faston receptacles; fit the T fuse'}, "params": {}},
                           "approximate": True},
                  interfaces={"mount_holes_m3": holes, "cutout": (28.0, 48.0), **_ports_to_interfaces(ports)}, cost_usd=4.0)
 
@@ -199,7 +199,7 @@ def relay_btt_v12() -> Stock:
                "contact_a": f"relay contact rating not in the manual ({TU})", "height": TU, "supply_w": TU, "mass": TU, "cost": TU}
     return Stock(pcb + env, "RELAY-BTT-V1.2", "BIGTREETECH Relay V1.2 mains relay module", 0.03, material="abs",
                  ratings={"electrical": {"kind": "relay", "ports": ports, "ratings": ratings, "sources": sources,
-                                         "params": {"through": {"LIN": "LOT", "LOT": "LIN"}, "cuts": "psu"}}, "approximate": True},
+                                         "product": {'product': 'BIGTREETECH Relay V1.2', 'vendor': 'BIGTREETECH', 'part_number': 'Relay V1.2', 'form': 'assembled board', 'off_the_shelf': True, 'custom_pcb': False, 'builder_work': 'mount on spacers; ferrules on the mains wires; 3-wire JST-XH lead to PS-ON'}, "params": {"through": {"LIN": "LOT", "LOT": "LIN"}, "cuts": "psu"}}, "approximate": True},
                  interfaces={"mount_holes_m3": holes, "standoff_min": 4.0, **_ports_to_interfaces(ports)}, cost_usd=9.0)
 
 
@@ -220,7 +220,7 @@ def raspberry_pi_zero2w() -> Stock:
                "supply_w": f"about 0.6 A at 5 V under load ({TU})", "cost": TU}
     return Stock(pcb + env, "HOST-RPI-ZERO-2W", "Raspberry Pi Zero 2 W (Klipper host, UART to the board's TFT header)", 0.011,
                  material="abs",
-                 ratings={"electrical": {"kind": "host", "ports": ports, "ratings": ratings, "sources": sources, "params": {}},
+                 ratings={"electrical": {"kind": "host", "ports": ports, "ratings": ratings, "sources": sources, "product": {'product': 'Raspberry Pi Zero 2 W', 'vendor': 'Raspberry Pi Ltd', 'part_number': 'Raspberry Pi Zero 2 W', 'form': 'assembled board', 'off_the_shelf': True, 'custom_pcb': False, 'builder_work': 'solder or buy with the 40-pin header; 4-wire dupont lead to the TFT header; install Klipper on the SD card'}, "params": {}},
                           "approximate": True},
                  interfaces={"mount_holes_m2.5": holes, "standoff_min": 3.0, **_ports_to_interfaces(ports)}, cost_usd=15.0)
 
@@ -248,7 +248,7 @@ def heater_cartridge(watts: float = 40.0, volts: float = 24.0) -> Stock:
               "emissivity": 0.3, "heatbreak_w_k": 0.025, "cartridge_contact_w_k": 2.0}
     return Stock(Rot(0, 90, 0) * Cylinder(3.0, 20.0), f"HEATER-CART-{volts:g}V-{watts:g}W", f"Heater cartridge 6x20 mm, {volts:g} V {watts:g} W",
                  0.005, material="stainless304",
-                 ratings={"electrical": {"kind": "heater", "ports": ports, "ratings": ratings, "sources": sources, "params": params},
+                 ratings={"electrical": {"kind": "heater", "ports": ports, "ratings": ratings, "sources": sources, "product": dict(product=f"E3D V6 heater cartridge {volts:g} V {watts:g} W (6 x 20 mm)", vendor="E3D-Online", part_number=None, form="component", off_the_shelf=True, custom_pcb=False, builder_work="clamp in the heater block; ferrules on the leads or butt-splice to the loom"), "params": params},
                           "approximate": True},
                  interfaces=_ports_to_interfaces(ports), cost_usd=6.0)
 
@@ -262,7 +262,7 @@ def thermistor_cartridge(sensor_type: str = "ATC Semitec 104NT-4-R025H42G") -> S
     return Stock(Rot(0, 90, 0) * Cylinder(1.5, 15.0), "THERMISTOR-CART-104NT", f"Thermistor cartridge 3x15 mm ({sensor_type})", 0.002,
                  material="stainless304",
                  ratings={"electrical": {"kind": "thermistor", "ports": ports, "ratings": {"max_temp_c": 300.0}, "sources": sources,
-                                         "params": {"sensor_type": sensor_type, "points": THERMISTORS[sensor_type], "tau_s": 4.5,
+                                         "product": {'product': 'E3D V6 thermistor cartridge (Semitec 104NT-4-R025H42G)', 'vendor': 'E3D-Online', 'part_number': None, 'form': 'component', 'off_the_shelf': True, 'custom_pcb': False, 'builder_work': 'plugs into its extension lead; crimp JST-XH at the board end'}, "params": {"sensor_type": sensor_type, "points": THERMISTORS[sensor_type], "tau_s": 4.5,
                                                     "node": "block"}}, "approximate": True},
                  interfaces=_ports_to_interfaces(ports), cost_usd=5.0)
 
@@ -281,7 +281,7 @@ def bed_heater_pad(size_x: float = 200.0, size_y: float = 200.0, watts: float = 
     return Stock(Pos(0, 0, -0.75) * Box(size_x, size_y, 1.5), f"HEATER-SIL-{size_x:g}x{size_y:g}-{volts:g}V-{watts:g}W",
                  f"Silicone bed heater pad {size_x:g} x {size_y:g} mm, {volts:g} V {watts:g} W, with 100k NTC", 0.04 + size_x * size_y * 2.0e-6,
                  material="rubber_gt2",
-                 ratings={"electrical": {"kind": "heater", "ports": ports, "ratings": ratings, "sources": sources, "params": params},
+                 ratings={"electrical": {"kind": "heater", "ports": ports, "ratings": ratings, "sources": sources, "product": dict(product=f"Silicone heater pad {size_x:g} x {size_y:g} mm, {volts:g} V {watts:g} W, adhesive backed, 100k NTC 3950 embedded", vendor="commodity (e.g. Keenovo)", part_number=None, form="component", off_the_shelf=True, custom_pcb=False, builder_work="stick to the degreased plate; ferrules on the power leads; JST-XH on the NTC leads"), "params": params},
                           "watts": watts, "approximate": True},
                  interfaces=_ports_to_interfaces(ports), cost_usd=18.0)
 
@@ -298,7 +298,7 @@ def thermal_fuse(trip_c: float = 133.0, hold_c: float = 109.0, amps: float = 10.
     return Stock(Rot(0, 90, 0) * Cylinder(2.0, 11.0), f"TCO-{trip_c:g}C-{amps:g}A", f"Thermal cut-off {trip_c:g} degC {amps:g} A", 0.001,
                  material="brass",
                  ratings={"electrical": {"kind": "thermal_fuse", "ports": ports, "ratings": ratings, "sources": sources,
-                                         "params": {"through": {"a": "b", "b": "a"}, "node": "plate"}}, "approximate": True},
+                                         "product": dict(product=f"Axial thermal cut-off, Tf {trip_c:g} degC, {amps:g} A (SEFUSE SF-E class)", vendor="commodity (Schott/NEC SEFUSE or equivalent)", part_number=None, form="component", off_the_shelf=True, custom_pcb=False, builder_work="crimp (never solder) in series with the heater lead; tape against the plate with polyimide tape"), "params": {"through": {"a": "b", "b": "a"}, "node": "plate"}}, "approximate": True},
                  interfaces=_ports_to_interfaces(ports), cost_usd=1.0)
 
 
@@ -320,7 +320,7 @@ def mosfet_module(amps: float = 25.0) -> Stock:
     sources = {"amps": f"generic 'heat bed power module', sold as {amps:g} A ({TU})", "resistance_ohm": TU, "geometry": TU, "cost": TU}
     return Stock(pcb + env, f"MOSFET-BED-{amps:g}A", f"Heated-bed MOSFET module, {amps:g} A", 0.04, material="abs",
                  ratings={"electrical": {"kind": "mosfet", "ports": ports, "ratings": ratings, "sources": sources,
-                                         "params": {"through": {"out": "ctrl"}, "feed": "pwr"}}, "approximate": True},
+                                         "product": dict(product=f"Heated-bed MOSFET module {amps:g} A", vendor="commodity", part_number=None, form="assembled board", off_the_shelf=True, custom_pcb=False, builder_work="mount on spacers; ferruled wires in the screw terminals"), "params": {"through": {"out": "ctrl"}, "feed": "pwr"}}, "approximate": True},
                  interfaces={"mount_holes_m3": holes, "standoff_min": 4.0, **_ports_to_interfaces(ports)}, cost_usd=6.0)
 
 
@@ -340,6 +340,10 @@ _ALIASES = {"rated_current_a": ("rated_current_a", "rated_current", "current_a")
             "phase_inductance_mh": ("phase_inductance_mh", "inductance_mh", "phase_inductance")}
 
 
+def _ots(product, vendor, part_number, form, work) -> dict:
+    return dict(product=product, vendor=vendor, part_number=part_number, form=form, off_the_shelf=True, custom_pcb=False, builder_work=work)
+
+
 def _template_for(c) -> dict | None:
     sku = c.sku or ""
     one = lambda kind, conn, n=2, max_a=3.0: {"x": dict(kind=kind, connector=conn, max_a=max_a, conductors=n)}
@@ -354,21 +358,28 @@ def _template_for(c) -> dict | None:
                     break
         base.setdefault("insulation_class_c", 130.0)
         src["insulation_class_c"] = "[SO] class B 130 degC"
+        pn = c.ratings.get("vendor_part") or base.get("model")
         return {"kind": "stepper", "ports": {"coils": dict(kind="stepper", connector="JST-XH", max_a=3.0, conductors=4)},
-                "ratings": base, "sources": src, "params": {}}
+                "ratings": base, "sources": src, "params": {},
+                "product": _ots(f"NEMA 17 stepper motor {pn}", "STEPPERONLINE", pn, "component", "crimp a 4-way JST-XH on the motor lead (or buy the lead)")}
     if sku.startswith("EXTRUDER"):
         return {"kind": "stepper", "ports": {"coils": dict(kind="stepper", connector="JST-XH", max_a=3.0, conductors=4)},
                 "ratings": {"rated_current_a": 1.0, "phase_resistance_ohm": 3.5, "phase_inductance_mh": 4.5, "holding_torque_nmm": 160.0,
                             "insulation_class_c": 130.0},
                 "sources": {k: f"pancake NEMA 17 (about 20 mm body) winding, {TU}" for k in
-                            ("rated_current_a", "phase_resistance_ohm", "phase_inductance_mh", "holding_torque_nmm")}, "params": {}}
+                            ("rated_current_a", "phase_resistance_ohm", "phase_inductance_mh", "holding_torque_nmm")}, "params": {},
+                "product": _ots("Direct-drive extruder with pancake NEMA 17 (complete unit)", "commodity", None, "component",
+                                "crimp a 4-way JST-XH on the motor lead")}
     if sku.startswith("FAN"):
         amps = {"FAN-3010": 0.05, "FAN-4010": 0.07}.get(sku, 0.1)
         return {"kind": "fan", "ports": {"in": dict(kind="fan", connector="JST-XH", max_a=3.0)},
-                "ratings": {"current_a": amps, "volts": 24.0}, "sources": {"current_a": f"24 V axial fan of this size ({TU})"}, "params": {}}
+                "ratings": {"current_a": amps, "volts": 24.0}, "sources": {"current_a": f"24 V axial fan of this size ({TU})"}, "params": {},
+                "product": _ots(f"24 V axial fan {sku[4:6]} x {sku[4:6]} x 10 mm, 2-wire", "commodity", None, "component", "crimp a 2-way JST-XH")}
     if sku.startswith("ENDSTOP"):
         return {"kind": "endstop", "ports": {"out": dict(kind="endstop", connector="JST-XH", max_a=1.0, conductors=3)},
-                "ratings": {}, "sources": {}, "params": {}}
+                "ratings": {}, "sources": {}, "params": {},
+                "product": _ots("Mechanical endstop module (microswitch on a small PCB, 3-pin)", "commodity", None, "assembled board",
+                                "crimp a 3-way JST-XH on its lead")}
     return None
 
 
@@ -392,7 +403,7 @@ def device_from(el: Electrical, design, component: str, name: str | None = None,
                          p.get("group"), p.get("multi", False),
                          {"body": c.body, **{k: v for k, v in p.items() if k in ("pullup_ohm", "adc_bits")}})
     dev = Device(name or component, tpl["kind"], component, ports, dict(tpl.get("ratings", {})), dict(tpl.get("sources", {})),
-                 {**tpl.get("params", {}), **params})
+                 {**tpl.get("params", {}), **params}, dict(tpl.get("product", {})))
     return el.add(dev)
 
 
@@ -408,7 +419,9 @@ def embedded_device(el: Electrical, design, component: str, name: str, kind: str
         del src.ports[port]
     dev = Device(name, kind, component, {"out": Port("out", port_kind, p0.connector if p0 else "JST-XH", 1.0, None, 2, pos,
                                                        p0.direction if p0 else None, extra={"body": c.body})},
-                 dict(ratings or {}), dict(sources or {}), params)
+                 dict(ratings or {}), dict(sources or {}), params,
+                 {**(src.product if src else {}), "product": f"part of: {(src.product.get('product') if src else component)}",
+                  "builder_work": "none (moulded into the part)"})
     return el.add(dev)
 
 
