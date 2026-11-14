@@ -215,6 +215,18 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
     rep["plan"] = {"print_time_s": round(float(seg_t.sum()), 1), "samples": len(Qc),
                    "peak_speed_mm_s": [round(float(x), 1) for x in np.abs(Vc).max(axis=0)],
                    "accel_limits_mm_s2": amax.tolist()}
+    if getattr(design, "electrical", None) is not None:
+        # heat-up before the first move, from the electrical model's heater simulation (bed and hotend heat together)
+        try:
+            from ..verifiers.electrical import heatup_for_print
+
+            hu = heatup_for_print(design)
+            if hu and hu["heatup_s"] is not None:
+                rep["plan"]["heatup_s"] = hu["heatup_s"]
+                rep["plan"]["job_time_s"] = round(rep["plan"]["print_time_s"] + hu["heatup_s"], 1)
+                rep["plan"]["heatup"] = hu["heaters"]
+        except Exception as ex:
+            rep["plan"]["heatup_error"] = f"{type(ex).__name__}: {ex}"
     # ---- machine dynamics
     import mujoco
 

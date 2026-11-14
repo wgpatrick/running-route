@@ -57,6 +57,9 @@ def score(design_path, out_root="out", speed: float = 2.0, assembly: bool = Fals
         "cross_track_rms_mm": _dyn(out / "nominal", "cross_track_rms_mm"),
         "cross_track_worst_mm": _dyn(out / "nominal", "cross_track_worst_mm"),
         "benchmark_time_s": round(sum(b["print_time_s"] for b in bench.values()), 1),
+        # with the electrical model: each benchmark part starts from a cold machine (heat-up from the heater simulation)
+        "benchmark_time_with_heatup_s": (round(sum(b["print_time_s"] + b["heatup_s"] for b in bench.values()), 1)
+                                         if all(b.get("heatup_s") is not None for b in bench.values()) else None),
         "moving_mass_kg": moving,
         "total_mass_kg": round(design.total_mass(), 3),
         "bom_cost_usd": metrics.get("ratings", {}).get("bom_cost_usd_estimate"),

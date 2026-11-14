@@ -1,0 +1,45 @@
+{
+ "retrieved": "2026-11-14",
+ "family": "TMC2209 stepper driver (as BIGTREETECH TMC2209 V1.2 module)",
+ "vendor": "Trinamic / Analog Devices (IC); Shenzhen Biqu Technology (module manual)",
+ "source_level": "module vendor manual, not the IC datasheet",
+ "source_url": "https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-TMC2209-V1.2/master/manual/TMC2209-V1.2-manual.pdf",
+ "title": "BIGTREETECH TMC2209-V1.2 manual",
+ "local_copy": "vendor_docs/BTT_TMC2209-V1.2-manual.pdf",
+ "ref": "p.2 Product Introduction, p.3 Product Parameters, p.6 Drive Current Formula",
+ "values": {
+  "continuous_current_a_rms": 2.0,
+  "peak_current_a": 2.8,
+  "supply_voltage_v": [
+   4.75,
+   28.0
+  ],
+  "max_microsteps_interpolated": 256,
+  "microstep_pins": [
+   2,
+   4,
+   8,
+   16
+  ],
+  "modes": [
+   "STEP/DIR",
+   "UART"
+  ],
+  "module_size_mm": [
+   15.24,
+   20.32
+  ],
+  "module_vref_range_v": [
+   0.2,
+   2.2
+  ],
+  "module_default_vref_v": 1.2,
+  "module_default_current_a": 0.9
+ },
+ "not_obtained": [
+  "RDSon (high side / low side)",
+  "absolute maximum ratings table",
+  "thermal resistance"
+ ],
+ "why": "www.analog.com and www.trinamic.com close the connection on automated PDF requests; the GitHub mirrors of TMC2209_datasheet_rev1.06/1.09 found are Git-LFS pointers whose objects could not be downloaded."
+}

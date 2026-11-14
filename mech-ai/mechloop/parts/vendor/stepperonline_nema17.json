@@ -1,0 +1,575 @@
+{
+ "retrieved": "2026-11-14",
+ "family": "NEMA 17 hybrid stepper motors (StepperOnline 17HS series)",
+ "vendor": "STEPPERONLINE (OMC Corporation Limited)",
+ "source_url": "https://www.omc-stepperonline.com/download/17HS19-2004S1.pdf",
+ "note": "One specific motor per body length offered by mechloop.parts.nema17(). Datasheets are image-only PDFs; values were read from the rendered page.",
+ "parts": {
+  "34": {
+   "part_number": "17HS13-0404S",
+   "catalog_length_mm": 34,
+   "datasheet": {
+    "title": "STEPPERONLINE Stepper Motor 17HS13-0404S (drawing sheet dated 10.30.2020)",
+    "source_url": "https://www.omc-stepperonline.com/download/17HS13-0404S.pdf",
+    "local_copy": "vendor_docs/17HS13-0404S.pdf",
+    "ref": "single page: dimension drawing + SPECIFICATION table"
+   },
+   "product_page": {
+    "title": "Nema 17 Bipolar 1.8deg 26Ncm 0.4A 12V 42x42x34mm 4 Wires (17HS13-0404S1)",
+    "source_url": "https://www.omc-stepperonline.com/nema-17-bipolar-1-8deg-26ncm-36-8oz-in-0-4a-12v-42x42x34mm-4-wires-17hs13-0404s",
+    "ref": "'Electrical Specification' / 'Physical Specification' lists"
+   },
+   "values": {
+    "holding_torque_nm": 0.26,
+    "rated_current_a": 0.4,
+    "phase_resistance_ohm": 30.0,
+    "phase_inductance_mh": 37.0,
+    "rotor_inertia_gcm2": 35.0,
+    "step_angle_deg": 1.8,
+    "mass_g": 230,
+    "frame_mm_max": 42.3,
+    "body_length_mm": {
+     "max": 34
+    },
+    "hole_square_mm": 31.0,
+    "hole_square_tol_mm": 0.2,
+    "mount_thread": "M3",
+    "thread_depth_min_mm": 4.5,
+    "pilot_dia_mm": 22.0,
+    "pilot_dia_tol_mm": [
+     -0.05,
+     0.0
+    ],
+    "pilot_height_mm": 2.0,
+    "shaft_dia_mm": 5.0,
+    "shaft_dia_tol_mm": [
+     -0.012,
+     0.0
+    ],
+    "shaft_length_mm": 20.0,
+    "shaft_length_tol_mm": 1.0,
+    "d_cut_length_mm": 15.0,
+    "d_cut_flat_height_mm": 4.5
+   },
+   "value_origin": {
+    "mass_g": "product page (datasheet WEIGHT cell is blank)",
+    "everything else": "datasheet drawing/table unless listed in page_vs_datasheet"
+   },
+   "page_vs_datasheet": {
+    "note": "page lists the part as 17HS13-0404S1 with 1000 mm leads; drawing 17HS13-0404S shows 300 mm leads. Electrical values agree."
+   },
+   "pull_out_torque_curve": {
+    "title": "PULL OUT TORQUE CURVE OF 17HS13-0404S (Driver DM320T, 24 V, microstep 1600, RMS 0.35 A)",
+    "source_url": "https://www.omc-stepperonline.com/download/17HS13-0404S_Torque_Curve.pdf",
+    "local_copy": "vendor_docs/17HS13-0404S_Torque_Curve.pdf",
+    "how_read": "points read by eye from the plotted markers of the published graph; about +/-0.5 of the torque unit, speed exact (markers sit on gridlines)",
+    "unit": "N.cm",
+    "points_rpm_torque": [
+     [
+      30,
+      25
+     ],
+     [
+      60,
+      23
+     ],
+     [
+      120,
+      22
+     ],
+     [
+      210,
+      16
+     ],
+     [
+      300,
+      12.4
+     ],
+     [
+      420,
+      9.2
+     ],
+     [
+      540,
+      7.0
+     ],
+     [
+      660,
+      5.8
+     ],
+     [
+      780,
+      4.4
+     ],
+     [
+      900,
+      4.0
+     ],
+     [
+      1110,
+      2.6
+     ],
+     [
+      1320,
+      2.6
+     ]
+    ],
+    "points_rpm_nmm": [
+     [
+      30,
+      250.0
+     ],
+     [
+      60,
+      230.0
+     ],
+     [
+      120,
+      220.0
+     ],
+     [
+      210,
+      160.0
+     ],
+     [
+      300,
+      124.0
+     ],
+     [
+      420,
+      92.0
+     ],
+     [
+      540,
+      70.0
+     ],
+     [
+      660,
+      58.0
+     ],
+     [
+      780,
+      44.0
+     ],
+     [
+      900,
+      40.0
+     ],
+     [
+      1110,
+      26.0
+     ],
+     [
+      1320,
+      26.0
+     ]
+    ]
+   }
+  },
+  "40": {
+   "part_number": "17HS16-2004S1",
+   "catalog_length_mm": 40,
+   "datasheet": {
+    "title": "STEPPERONLINE Stepper Motor 17HS16-2004S1 (drawing sheet dated 10.30.2020)",
+    "source_url": "https://www.omc-stepperonline.com/download/17HS16-2004S1.pdf",
+    "local_copy": "vendor_docs/17HS16-2004S1.pdf",
+    "ref": "single page: dimension drawing + SPECIFICATION table"
+   },
+   "product_page": {
+    "title": "Nema 17 Bipolar 45Ncm 2A 42x42x40mm 4 Wires w/ 1m Cable & Connector",
+    "source_url": "https://www.omc-stepperonline.com/nema-17-bipolar-45ncm-64oz-in-2a-42x42x40mm-4-wires-w-1m-cable-connector-17hs16-2004s1",
+    "ref": "'Electrical Specification' / 'Physical Specification' lists"
+   },
+   "values": {
+    "holding_torque_nm": 0.45,
+    "rated_current_a": 2.0,
+    "phase_resistance_ohm": 1.3,
+    "phase_inductance_mh": 2.6,
+    "rotor_inertia_gcm2": 54.0,
+    "step_angle_deg": 1.8,
+    "mass_g": 310,
+    "frame_mm_max": 42.3,
+    "body_length_mm": {
+     "nominal": 39,
+     "tol": 1.0
+    },
+    "hole_square_mm": 31.0,
+    "hole_square_tol_mm": 0.2,
+    "mount_thread": "M3",
+    "thread_depth_min_mm": 4.5,
+    "pilot_dia_mm": 22.0,
+    "pilot_dia_tol_mm": [
+     -0.05,
+     0.0
+    ],
+    "pilot_height_mm": 2.0,
+    "shaft_dia_mm": 5.0,
+    "shaft_dia_tol_mm": [
+     -0.012,
+     0.0
+    ],
+    "shaft_length_mm": 23.0,
+    "shaft_length_tol_mm": 1.0,
+    "d_cut_length_mm": null,
+    "d_cut_flat_height_mm": 4.5
+   },
+   "value_origin": {
+    "mass_g": "product page (datasheet WEIGHT cell is blank)",
+    "everything else": "datasheet drawing/table unless listed in page_vs_datasheet"
+   },
+   "page_vs_datasheet": {
+    "body_length_mm": "page 40, drawing 39+/-1",
+    "d_cut_length_mm": "page 21; the drawing shows no D-cut length dimension"
+   },
+   "pull_out_torque_curve": {
+    "title": "17HS16-2004S1 PULL OUT TORQUE (2A, 24V HALF STEP)",
+    "source_url": "https://www.omc-stepperonline.com/download/17HS16-2004S1_Torque_Curve.pdf",
+    "local_copy": "vendor_docs/17HS16-2004S1_Torque_Curve.pdf",
+    "how_read": "points read by eye from the plotted markers of the published graph; about +/-0.5 of the torque unit, speed exact (markers sit on gridlines)",
+    "unit": "N.cm",
+    "points_rpm_torque": [
+     [
+      60,
+      22
+     ],
+     [
+      90,
+      34
+     ],
+     [
+      120,
+      33
+     ],
+     [
+      150,
+      32
+     ],
+     [
+      225,
+      31.5
+     ],
+     [
+      300,
+      31
+     ],
+     [
+      375,
+      30
+     ],
+     [
+      450,
+      29
+     ],
+     [
+      525,
+      28
+     ]
+    ],
+    "points_rpm_nmm": [
+     [
+      60,
+      220.0
+     ],
+     [
+      90,
+      340.0
+     ],
+     [
+      120,
+      330.0
+     ],
+     [
+      150,
+      320.0
+     ],
+     [
+      225,
+      315.0
+     ],
+     [
+      300,
+      310.0
+     ],
+     [
+      375,
+      300.0
+     ],
+     [
+      450,
+      290.0
+     ],
+     [
+      525,
+      280.0
+     ]
+    ]
+   }
+  },
+  "48": {
+   "part_number": "17HS19-2004S1",
+   "catalog_length_mm": 48,
+   "datasheet": {
+    "title": "STEPPERONLINE Stepper Motor 17HS19-2004S1 (drawing sheet dated 10.30.2020)",
+    "source_url": "https://www.omc-stepperonline.com/download/17HS19-2004S1.pdf",
+    "local_copy": "vendor_docs/17HS19-2004S1.pdf",
+    "ref": "single page: dimension drawing + SPECIFICATION table"
+   },
+   "product_page": {
+    "title": "Nema 17 Bipolar 59Ncm 2A 42x48mm 4 Wires w/ 1m Cable & Connector",
+    "source_url": "https://www.omc-stepperonline.com/nema-17-bipolar-59ncm-84oz-in-2a-42x48mm-4-wires-w-1m-cable-connector-17hs19-2004s1",
+    "ref": "'Electrical Specification' / 'Physical Specification' lists"
+   },
+   "values": {
+    "holding_torque_nm": 0.59,
+    "rated_current_a": 2.0,
+    "phase_resistance_ohm": 1.4,
+    "phase_inductance_mh": 3.0,
+    "rotor_inertia_gcm2": 82.0,
+    "step_angle_deg": 1.8,
+    "mass_g": 390,
+    "frame_mm_max": 42.3,
+    "body_length_mm": {
+     "max": 48
+    },
+    "hole_square_mm": 31.0,
+    "hole_square_tol_mm": 0.2,
+    "mount_thread": "M3",
+    "thread_depth_min_mm": 4.5,
+    "pilot_dia_mm": 22.0,
+    "pilot_dia_tol_mm": [
+     -0.05,
+     0.0
+    ],
+    "pilot_height_mm": 2.0,
+    "shaft_dia_mm": 5.0,
+    "shaft_dia_tol_mm": [
+     -0.012,
+     0.0
+    ],
+    "shaft_length_mm": 24.0,
+    "shaft_length_tol_mm": 1.0,
+    "d_cut_length_mm": 15.0,
+    "d_cut_flat_height_mm": 4.5
+   },
+   "value_origin": {
+    "mass_g": "product page (datasheet WEIGHT cell is blank)",
+    "everything else": "datasheet drawing/table unless listed in page_vs_datasheet"
+   },
+   "page_vs_datasheet": {
+    "phase_resistance_ohm": "page 1.6, drawing 1.40+/-10% (drawing value used)"
+   },
+   "pull_out_torque_curve": {
+    "title": "17HS19-2004S1 PULL OUT TORQUE (2A, 24V HALF STEP)",
+    "source_url": "https://www.omc-stepperonline.com/download/17HS19-2004S1_Torque_Curve.pdf",
+    "local_copy": "vendor_docs/17HS19-2004S1_Torque_Curve.pdf",
+    "how_read": "points read by eye from the plotted markers of the published graph; about +/-0.5 of the torque unit, speed exact (markers sit on gridlines)",
+    "unit": "N.cm",
+    "points_rpm_torque": [
+     [
+      60,
+      30
+     ],
+     [
+      90,
+      43
+     ],
+     [
+      120,
+      43
+     ],
+     [
+      150,
+      42
+     ],
+     [
+      180,
+      42
+     ],
+     [
+      300,
+      42
+     ],
+     [
+      375,
+      40
+     ],
+     [
+      450,
+      39
+     ],
+     [
+      600,
+      33
+     ],
+     [
+      750,
+      23
+     ]
+    ],
+    "points_rpm_nmm": [
+     [
+      60,
+      300.0
+     ],
+     [
+      90,
+      430.0
+     ],
+     [
+      120,
+      430.0
+     ],
+     [
+      150,
+      420.0
+     ],
+     [
+      180,
+      420.0
+     ],
+     [
+      300,
+      420.0
+     ],
+     [
+      375,
+      400.0
+     ],
+     [
+      450,
+      390.0
+     ],
+     [
+      600,
+      330.0
+     ],
+     [
+      750,
+      230.0
+     ]
+    ]
+   }
+  },
+  "60": {
+   "part_number": "17HS24-2104S",
+   "catalog_length_mm": 60,
+   "datasheet": {
+    "title": "STEPPERONLINE Stepper Motor 17HS24-2104S (drawing sheet dated 10.30.2020)",
+    "source_url": "https://www.omc-stepperonline.com/download/17HS24-2104S.pdf",
+    "local_copy": "vendor_docs/17HS24-2104S.pdf",
+    "ref": "single page: dimension drawing + SPECIFICATION table"
+   },
+   "product_page": {
+    "title": "Nema 17 Bipolar 1.8deg 65Ncm 2.1A 3.36V 42x42x60mm 4 Wires",
+    "source_url": "https://www.omc-stepperonline.com/nema-17-bipolar-1-8deg-65ncm-92oz-in-2-1a-3-36v-42x42x60mm-4-wires-17hs24-2104s",
+    "ref": "'Electrical Specification' / 'Physical Specification' lists"
+   },
+   "values": {
+    "holding_torque_nm": 0.65,
+    "rated_current_a": 2.1,
+    "phase_resistance_ohm": 1.6,
+    "phase_inductance_mh": 3.0,
+    "rotor_inertia_gcm2": 148.0,
+    "step_angle_deg": 1.8,
+    "mass_g": 500,
+    "frame_mm_max": 42.3,
+    "body_length_mm": {
+     "max": 60
+    },
+    "hole_square_mm": 31.0,
+    "hole_square_tol_mm": 0.2,
+    "mount_thread": "M3",
+    "thread_depth_min_mm": 4.5,
+    "pilot_dia_mm": 22.0,
+    "pilot_dia_tol_mm": [
+     -0.05,
+     0.0
+    ],
+    "pilot_height_mm": 2.0,
+    "shaft_dia_mm": 5.0,
+    "shaft_dia_tol_mm": [
+     -0.012,
+     0.0
+    ],
+    "shaft_length_mm": 24.0,
+    "shaft_length_tol_mm": 1.0,
+    "d_cut_length_mm": 15.0,
+    "d_cut_flat_height_mm": 4.5
+   },
+   "value_origin": {
+    "mass_g": "product page (datasheet WEIGHT cell is blank)",
+    "everything else": "datasheet drawing/table unless listed in page_vs_datasheet"
+   },
+   "page_vs_datasheet": {
+    "holding_torque_nm": "page text 76 Ncm, page title and drawing 65 Ncm / 0.65 Nm (drawing value used)"
+   },
+   "pull_out_torque_curve": {
+    "title": "17HS24-2104S PULL OUT TORQUE (2.1A/PHASE 24V CONSTANT CURRENT HALF STEP)",
+    "source_url": "https://www.omc-stepperonline.com/download/17HS24-2104S_Torque_Curve.pdf",
+    "local_copy": "vendor_docs/17HS24-2104S_Torque_Curve.pdf",
+    "how_read": "points read by eye from the plotted markers of the published graph; about +/-0.5 of the torque unit, speed exact (markers sit on gridlines)",
+    "unit": "gf.cm",
+    "points_rpm_torque": [
+     [
+      75,
+      5000
+     ],
+     [
+      150,
+      5200
+     ],
+     [
+      225,
+      5100
+     ],
+     [
+      300,
+      4800
+     ],
+     [
+      375,
+      4400
+     ],
+     [
+      450,
+      3800
+     ],
+     [
+      525,
+      3500
+     ]
+    ],
+    "points_rpm_nmm": [
+     [
+      75,
+      490.3
+     ],
+     [
+      150,
+      509.9
+     ],
+     [
+      225,
+      500.1
+     ],
+     [
+      300,
+      470.7
+     ],
+     [
+      375,
+      431.5
+     ],
+     [
+      450,
+      372.7
+     ],
+     [
+      525,
+      343.2
+     ]
+    ]
+   }
+  }
+ }
+}

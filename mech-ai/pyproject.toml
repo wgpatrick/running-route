@@ -16,3 +16,6 @@ build-backend = "setuptools.build_meta"
 include = ["mechloop*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.setuptools.package-data]
+mechloop = ["parts/vendor/*.json"]

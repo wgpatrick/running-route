@@ -187,6 +187,8 @@ def _threads(design: Design, r: VerifierResult) -> None:
             if tsku.startswith("NUT-"):  # a standard nut is full strength once the screw passes through it
                 need = comps[tgt].meta.get("interfaces", {}).get("height", d * 0.8)
             depth = comps[tgt].meta.get("interfaces", {}).get("thread_depth")
+            if depth is not None:  # a catalog part's own tapped hole: using its full depth is what the vendor intends
+                need = min(need, depth - 0.3)
             if depth is not None and eng > depth + 0.05:
                 r.add("error", "thread_bottoms_out",
                       f"{c.name} goes {eng:.1f} mm into {tgt}, whose tapped holes are only {depth:.1f} mm deep.",

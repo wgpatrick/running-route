@@ -1,0 +1,28 @@
+{
+ "retrieved": "2026-11-14",
+ "family": "20 x 20 T-slot aluminium extrusion, slot 6 (Misumi HFS5-2020 profile)",
+ "vendor": "MISUMI (profile); values below are NOT from a Misumi document",
+ "source_level": "derived",
+ "source_url": "https://raw.githubusercontent.com/oysteinkrog/thing_libutils/master/data/misumi-extrusion/hfs5-2020-profile.dxf",
+ "title": "hfs5-2020-profile.dxf (community copy of the Misumi HFS5-2020 section, thing_libutils repository)",
+ "local_copy": "vendor_docs/hfs5-2020-profile.dxf",
+ "how": "The closed outer loop (78 lines + 12 arcs) and the centre circle of the DXF were integrated numerically (Green's theorem, arcs in 24 chords).",
+ "values": {
+  "width_mm": 20.0,
+  "slot_opening_mm": 6.0,
+  "centre_hole_dia_mm": 4.2,
+  "area_mm2": 181.98,
+  "Ixx_mm4": 7419.0,
+  "Iyy_mm4": 7419.0,
+  "mass_kg_per_m_at_2700kgm3": 0.491,
+  "density_assumed": "2700 kg/m3 (6000-series aluminium; assumption, not read)"
+ },
+ "not_obtained": [
+  "Misumi catalogue section properties (Ix, Iy, area, kg/m)",
+  "length tolerance",
+  "alloy/temper",
+  "slot inner dimensions tolerance"
+ ],
+ "why": "us.misumi-ec.com is refused by the network proxy",
+ "used_by_catalog": false
+}

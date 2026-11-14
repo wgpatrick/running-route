@@ -74,6 +74,7 @@ def summarise(rep: dict) -> dict:
            "errors": [f["code"] for f in rep.get("findings", []) if f["severity"] == "error"],
            "warnings": [f["code"] for f in rep.get("findings", []) if f["severity"] == "warning"],
            "print_time_s": rep.get("plan", {}).get("print_time_s"),
+           "heatup_s": rep.get("plan", {}).get("heatup_s"),
            "slicer_time_s": rep.get("slicer", {}).get("print_time_s"),
            "rms_lag_mm": d.get("rms_lag_mm"), "worst_lag_mm": d.get("worst_lag_mm"),
            "worst_motor_error_mm": d.get("worst_motor_error_mm"),

@@ -26,6 +26,7 @@ MATERIALS = {
         Material("al6061", 2700, 68900, 0.33, 276),
         Material("steel", 7850, 200000, 0.29, 250),
         Material("stainless304", 8000, 193000, 0.29, 215),
+        Material("al5052", 2680, 70300, 0.33, 193),  # H32: the aluminium sheet that bends (6061-T6 cracks)
         Material("pla", 1240, 3500, 0.36, 50),
         Material("petg", 1270, 2100, 0.38, 45),
         Material("abs", 1040, 2200, 0.35, 40),
@@ -50,6 +51,15 @@ class Component:
     ratings: dict = field(default_factory=dict)  # e.g. {"holding_torque_nmm": 450}
     meta: dict = field(default_factory=dict)
     color: Optional[str] = None
+    # How the part is made: "printed" (FDM), "machined" (CNC), "sheet" (laser / waterjet cut, optionally bent),
+    # "extrusion", "purchased". None: chosen from the material (see tolerance/process.py). Kept in meta["process"].
+    process: Optional[str] = None
+
+    def __post_init__(self):
+        if self.process:
+            self.meta["process"] = self.process
+        elif self.meta.get("process"):
+            self.process = self.meta["process"]
 
     def mass(self) -> float:
         if self.mass_kg is not None:
@@ -252,7 +262,14 @@ class Design:
     # "stiffness": {"x": <AssemblyCase name>, "y": ...}} so the digital twin runs as a verifier
     printer: Optional[dict] = None
     base: Optional[str] = None  # part everything else is assembled onto (default: largest fixed part)
+    # How custom parts are made, for the manufacture verifier: {"shop": "generic" | "sendcutsend",
+    # "limits": {rule id: value}, "printer": {"build_volume": (x, y, z), "nozzle": 0.4, "layer": 0.2},
+    # "cnc": {"tools": [3, 6, 10]}, "sheet": {"method": "laser" | "waterjet" | "router"}}
+    manufacturing: dict = field(default_factory=dict)
     gravity: tuple[float, float, float] = (0.0, 0.0, -9810.0)  # mm/s^2
+    # Electrical system (mechloop.electrical.Electrical): devices, wires, looms, firmware settings. Checked by the
+    # electrical verifier; its motor data replaces the catalog's class torque curve (see ratings.resolve_drives).
+    electrical: Optional[object] = None
 
     # -- helpers ---------------------------------------------------------
     def add(self, name: str, shape: Shape, **kw) -> Component:

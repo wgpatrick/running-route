@@ -16,9 +16,20 @@ PROCESS = {
 PLASTICS = {"pla", "petg", "abs", "nylon_pa12"}
 
 
+# other names a designer may reasonably write for the five processes
+ALIASES = {"fdm": "printed", "3d_printed": "printed", "print": "printed", "cnc": "machined", "milled": "machined",
+           "turned": "machined", "laser": "sheet", "laser_cut": "sheet", "waterjet": "sheet", "cut": "sheet",
+           "sheet_metal": "sheet", "bent": "sheet", "cots": "purchased", "bought": "purchased"}
+
+
 def process_of(c: Component) -> str:
-    if c.meta.get("process"):
-        return c.meta["process"]
+    """The part's process: stated on the part (`process=` or `meta["process"]`), else from what it is."""
+    stated = getattr(c, "process", None) or c.meta.get("process")
+    if stated:
+        stated = ALIASES.get(str(stated).lower(), str(stated).lower())
+        if stated not in PROCESS:
+            raise ValueError(f"{c.name}: unknown process {stated!r}; use one of {sorted(PROCESS)} (or {sorted(ALIASES)})")
+        return stated
     if c.cots:
         return "extrusion" if (c.sku or "").startswith("EXT20") else "purchased"   # T-slot extrusion, not "EXTRUDER"
     return "printed" if c.material in PLASTICS else "machined"

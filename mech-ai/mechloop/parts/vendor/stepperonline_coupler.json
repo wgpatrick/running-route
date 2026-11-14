@@ -1,0 +1,41 @@
+{
+ "retrieved": "2026-11-14",
+ "family": "Flexible jaw coupling MH2025 (20 x 25 mm)",
+ "vendor": "STEPPERONLINE",
+ "source_url": "https://www.omc-stepperonline.com/5mm-8mm-flexible-jaw-coupling-20x25mm-cnc-stepper-motor-shaft-coupler-mh2025-5-8",
+ "title": "5mm - 8mm Flexible Jaw Coupling 20x25mm CNC Stepper Motor Shaft Coupler MH2025-5-8 (product page)",
+ "ref": "Specification list",
+ "parts": {
+  "MH2025-5-8": {
+   "values": {
+    "type": "jaw",
+    "bore_a_mm": 5.0,
+    "bore_b_mm": 8.0,
+    "outside_diameter_mm": 20.0,
+    "length_mm": 25.0,
+    "rated_torque_nm": 2.8,
+    "max_torque_nm": 5.6,
+    "max_speed_rpm": 17000,
+    "moment_of_inertia_kgm2": 6.7e-06,
+    "torsional_stiffness_nm_per_rad": 55.0,
+    "material": "aluminium",
+    "mass_g": 17
+   }
+  }
+ },
+ "also_seen": {
+  "ST-FC04": {
+   "source_url": "https://www.omc-stepperonline.com/5mm-8mm-flexible-coupling-18x25mm-cnc-stepper-motor-shaft-coupler-st-fc04",
+   "values": {
+    "type": "beam",
+    "outside_diameter_mm": 18.0,
+    "length_mm": 25.0,
+    "bores_mm": [
+     5.0,
+     8.0
+    ]
+   },
+   "note": "no torque rating on the page"
+  }
+ }
+}

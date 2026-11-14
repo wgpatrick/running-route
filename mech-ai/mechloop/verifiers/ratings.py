@@ -24,6 +24,11 @@ def resolve_drives(design: Design, r: VerifierResult | None = None) -> dict:
     available at the joint at its stated speed. Fills joint.max_effort."""
     comps = {c.name: c for c in design.components}
     out = {}
+    if getattr(design, "electrical", None) is not None:
+        # one answer for torque at speed: the curve the motor's winding, driver current and supply voltage give
+        from ..electrical import apply_motor_curves
+
+        apply_motor_curves(design)
     for j in design.joints:
         drv = getattr(j, "drive", None)
         if not drv:
@@ -212,7 +217,17 @@ def verify_ratings(design: Design) -> VerifierResult:
             r.metrics["bom_cost_usd_estimate"] = round(sum(costs), 2)
         custom = [c.name for c in design.components if not c.cots]
         r.metrics["custom_parts"] = custom if len(custom) <= 40 else len(custom)
-        if any(c.ratings.get("approximate") for c in design.components):
+        # which off-the-shelf parts rest on vendor documents and which are still typical class values
+        backed = sorted({c.sku or c.name for c in design.components if c.cots and c.meta.get("vendor_backed")})
+        proxy = sorted({c.sku or c.name for c in design.components
+                        if not c.meta.get("vendor_backed") and (c.ratings.get("approximate") or (c.cots and c.meta.get("catalog")))})
+        if backed or proxy:
+            r.metrics["vendor_backed_parts"] = backed
+            r.metrics["unverified_parts"] = proxy
+        if proxy:
+            shown = ", ".join(proxy[:12]) + (f" and {len(proxy) - 12} more" if len(proxy) > 12 else "")
             r.add("info", "approximate_ratings",
-                  "Some part ratings are typical class values; confirm against the chosen vendor's datasheet.")
+                  f"{len(proxy)} off-the-shelf part type(s) still use typical class values, not vendor data: {shown}. "
+                  f"Confirm against the chosen vendor's datasheet ({len(backed)} part type(s) are vendor-backed; "
+                  f"see docs/VENDOR_DATA.md).", parts=proxy)
     return r

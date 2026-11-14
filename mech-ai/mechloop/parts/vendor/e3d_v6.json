@@ -1,0 +1,36 @@
+{
+ "retrieved": "2026-11-14",
+ "family": "E3D V6 all-metal hotend",
+ "vendor": "E3D-Online Ltd.",
+ "source_url": "https://e3d-online.com/products/v6-all-metal-hotend",
+ "title": "V6 1.75mm All-Metal HotEnd (product page)",
+ "ref": "product description and 'In the box' lists",
+ "values": {
+  "max_temperature_c": 300,
+  "max_temperature_note": "'can comfortably reach 300 C with the supplied thermistor'; up to 500 C needs a plated copper block and PT100/PT1000",
+  "supply_voltage_options_v": [
+   12,
+   24
+  ],
+  "heater_cartridge_w": 30,
+  "heater_cartridge_note": "'1 x 30w heater cartridge 12V / 24V' in the kit list",
+  "temperature_sensor": "thermistor cartridge (type/part number not stated on the page)",
+  "heatsink_fan_mm": [
+   30,
+   30,
+   10
+  ],
+  "filament_mm": [
+   1.75,
+   2.85
+  ],
+  "nozzle_supplied": "0.4 mm brass"
+ },
+ "not_obtained": [
+  "dimensions (heatsink diameter, overall length, groove-mount geometry)",
+  "mass",
+  "thermistor part number / beta"
+ ],
+ "why": "the product page carries no dimension table; E3D's engineering drawings are hosted off the reachable hosts",
+ "used_by_catalog": false
+}

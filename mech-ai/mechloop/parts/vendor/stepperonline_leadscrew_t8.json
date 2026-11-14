@@ -1,0 +1,45 @@
+{
+ "retrieved": "2026-11-14",
+ "family": "Tr8x8 trapezoidal lead screw and nut",
+ "vendor": "STEPPERONLINE",
+ "source_url": "https://www.omc-stepperonline.com/320mm-8mm-diameter-8mm-pitch-trapezoidal-lead-screw-nut-lsn-s-mb-320",
+ "parts": {
+  "LSN-S-MB-320": {
+   "title": "320mm 8mm Diameter 8mm Pitch Trapezoidal Lead Screw & Nut (product page)",
+   "source_url": "https://www.omc-stepperonline.com/320mm-8mm-diameter-8mm-pitch-trapezoidal-lead-screw-nut-lsn-s-mb-320",
+   "ref": "Specification list",
+   "values": {
+    "material": "stainless steel",
+    "screw_diameter_mm": 8.0,
+    "lead_mm": 8.0,
+    "length_mm": 320.0
+   }
+  },
+  "17E19S1684MB4-300RS": {
+   "title": "Nema 17 External Trapezoidal Linear Stepper Motor 1.68A 48mm stack, lead 8 mm, 300 mm screw (product page)",
+   "source_url": "https://www.omc-stepperonline.com/nema-17-external-trapezoidal-linear-stepper-motor-1-68a-48mm-stack-screw-lead-8mm-0-31496-lead-length-300mm-17e19s1684mb4-300rs",
+   "ref": "Physical Specification",
+   "values": {
+    "lead_screw_diameter_mm": 8.0,
+    "lead_per_rev_mm": 8.0,
+    "lead_per_full_step_mm": 0.04
+   }
+  },
+  "SN-B-MB": {
+   "title": "Brass Screw Nut for Tr8x8mm Threaded Rod (product page)",
+   "source_url": "https://www.omc-stepperonline.com/used-brass-screw-nut-for-tr8x8mm-threaded-rod-sn-b-mb-used",
+   "values": {
+    "material": "brass",
+    "fits": "Tr8x8"
+   },
+   "note": "the page gives no dimensions; its datasheet PDF is on files.omc-stepperonline.com, which is not reachable"
+  }
+ },
+ "not_obtained": [
+  "efficiency / friction coefficient",
+  "nut flange and barrel dimensions, hole circle",
+  "axial load rating",
+  "lead accuracy",
+  "anything for lead 2 mm (Tr8x2)"
+ ]
+}

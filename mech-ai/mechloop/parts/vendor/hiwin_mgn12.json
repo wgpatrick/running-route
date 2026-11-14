@@ -1,0 +1,73 @@
+{
+ "retrieved": "2026-11-14",
+ "family": "Hiwin MGN12 miniature linear guideway (rail MGNR12, block MGN12H)",
+ "vendor": "HIWIN Technologies Corp.",
+ "source_level": "secondary",
+ "source_url": "https://raw.githubusercontent.com/JamelHammoud/basecase/main/src/data/motionTables.ts",
+ "sources": [
+  {
+   "title": "basecase: src/data/motionTables.ts (MGN_RAILS / MGN block table, a transcription of the Hiwin MG series tables)",
+   "source_url": "https://raw.githubusercontent.com/JamelHammoud/basecase/main/src/data/motionTables.ts",
+   "ref": "objects MGN12 (rail) and MGN12H (block)"
+  },
+  {
+   "title": "open-dolly: docs/research/linear-guide-system/background.md (quotes a distributor page for HIWIN MGN12H)",
+   "source_url": "https://raw.githubusercontent.com/CarsonDavis/open-dolly/main/docs/research/linear-guide-system/background.md",
+   "ref": "section 'MGN12H carriage specifications'",
+   "agrees_on": [
+    "C",
+    "C0",
+    "MR",
+    "MP",
+    "MY",
+    "block W x L",
+    "rail 12 x 8",
+    "0.65 kg/m",
+    "54 g"
+   ]
+  }
+ ],
+ "not_primary": "The Hiwin Linear Guideway Technical Information catalogue could not be fetched (www.hiwin.tw no longer serves /download/tech_doc/lg/Linear_Guideway-(E).pdf and its product pages carry no tables; www.hiwin.com answers 403 to automated requests; hiwinsupport.com is not reachable from this network). Every value below is from two independent third-party transcriptions that agree with each other, NOT read from a Hiwin document. Confirm against the Hiwin catalogue (MG series dimension table) before purchase.",
+ "parts": {
+  "MGNR12_rail": {
+   "values": {
+    "width_WR_mm": 12.0,
+    "height_HR_mm": 8.0,
+    "hole_pitch_P_mm": 25.0,
+    "end_distance_E_mm": 10.0,
+    "bolt_hole_d_mm": 3.5,
+    "counterbore_D_mm": 6.0,
+    "counterbore_depth_h_mm": 4.5,
+    "bolt": "M3x8",
+    "mass_kg_per_m": 0.65
+   }
+  },
+  "MGN12H_block": {
+   "values": {
+    "assembly_height_H_mm": 13.0,
+    "clearance_H1_mm": 3.0,
+    "N_mm": 7.5,
+    "width_W_mm": 27.0,
+    "hole_spacing_B_mm": 20.0,
+    "B1_mm": 3.5,
+    "hole_spacing_C_mm": 20.0,
+    "L1_mm": 32.4,
+    "length_L_mm": 45.4,
+    "mount_thread": "M3",
+    "thread_depth_mm": 3.5,
+    "mass_kg": 0.054,
+    "dynamic_load_C_kN": 3.72,
+    "static_load_C0_kN": 5.88,
+    "static_moment_MR_Nm": 38.22,
+    "static_moment_MP_Nm": 36.26,
+    "static_moment_MY_Nm": 36.26
+   }
+  }
+ },
+ "not_obtained": [
+  "accuracy classes C/H/P: running parallelism versus rail length",
+  "mounting-surface allowable parallelism error e1 for two rails",
+  "preload classes (ZF/Z0/Z1) clearance values",
+  "dimensional tolerances of H and N"
+ ]
+}

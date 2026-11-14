@@ -1,0 +1,98 @@
+{
+ "retrieved": "2026-11-14",
+ "family": "ISO 4762 socket head cap screws and ISO 4032 hex nuts",
+ "vendor": "standard (ISO)",
+ "source_level": "standard table (third-party transcription)",
+ "source_url": "https://raw.githubusercontent.com/shaise/FreeCAD_FastenersWB/master/FsData/iso4762def.csv",
+ "sources": [
+  {
+   "title": "FreeCAD Fasteners Workbench, FsData/iso4762def.csv (ISO 4762 dimension table)",
+   "source_url": "https://raw.githubusercontent.com/shaise/FreeCAD_FastenersWB/master/FsData/iso4762def.csv",
+   "local_copy": "vendor_docs/FastenersWB_iso4762def.csv",
+   "ref": "columns dk_max (head diameter), k (head height), s_mean (hex socket), P (pitch)"
+  },
+  {
+   "title": "FreeCAD Fasteners Workbench, FsData/iso4032def.csv (ISO 4032 dimension table)",
+   "source_url": "https://raw.githubusercontent.com/shaise/FreeCAD_FastenersWB/master/FsData/iso4032def.csv",
+   "local_copy": "vendor_docs/FastenersWB_iso4032def.csv",
+   "ref": "columns s_nom (across flats), m (height), e (across corners)"
+  }
+ ],
+ "iso4762": {
+  "M2.5": {
+   "pitch": 0.45,
+   "head_d_max": 4.5,
+   "head_h": 2.5,
+   "hex_key": 2.0,
+   "s_mean": 2.06
+  },
+  "M3": {
+   "pitch": 0.5,
+   "head_d_max": 5.5,
+   "head_h": 3.0,
+   "hex_key": 2.5,
+   "s_mean": 2.56
+  },
+  "M4": {
+   "pitch": 0.7,
+   "head_d_max": 7.0,
+   "head_h": 4.0,
+   "hex_key": 3.0,
+   "s_mean": 3.06
+  },
+  "M5": {
+   "pitch": 0.8,
+   "head_d_max": 8.5,
+   "head_h": 5.0,
+   "hex_key": 4.0,
+   "s_mean": 4.06
+  },
+  "M6": {
+   "pitch": 1.0,
+   "head_d_max": 10.0,
+   "head_h": 6.0,
+   "hex_key": 5.0,
+   "s_mean": 5.06
+  },
+  "M8": {
+   "pitch": 1.25,
+   "head_d_max": 13.0,
+   "head_h": 8.0,
+   "hex_key": 6.0,
+   "s_mean": 6.06
+  }
+ },
+ "iso4762_note": "hex_key is the nominal socket size: the table's s_mean (mean of the socket tolerance band) rounded down to the nominal.",
+ "iso4032": {
+  "M2.5": {
+   "across_flats": 5.0,
+   "height": 2.0
+  },
+  "M3": {
+   "across_flats": 5.5,
+   "height": 2.4
+  },
+  "M4": {
+   "across_flats": 7.0,
+   "height": 3.2
+  },
+  "M5": {
+   "across_flats": 8.0,
+   "height": 4.7
+  },
+  "M6": {
+   "across_flats": 10.0,
+   "height": 5.2
+  },
+  "M8": {
+   "across_flats": 13.0,
+   "height": 6.8
+  }
+ },
+ "not_obtained": [
+  "ISO 898-1 proof loads for property classes 12.9 and 8.8",
+  "ISO 273 clearance hole series",
+  "tap drill sizes"
+ ],
+ "why": "no table of ISO 898-1 or ISO 273 was found on a reachable host; the catalog keeps its previous numbers for these, marked typical, unverified"
+}

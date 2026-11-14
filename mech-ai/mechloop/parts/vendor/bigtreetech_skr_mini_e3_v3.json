@@ -1,0 +1,242 @@
+{
+ "retrieved": "2026-11-14",
+ "family": "BIGTREETECH SKR Mini E3 V3.0 control board",
+ "vendor": "Shenzhen Big Tree Technology Co., Ltd.",
+ "source_url": "https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-SKR-mini-E3/master/hardware/BTT%20SKR%20MINI%20E3%20V3.0/Hardware/BTT%20E3%20SKR%20MINI%20V3.0_SIZE_20220301.pdf",
+ "sources": [
+  {
+   "id": "size",
+   "title": "BTT SKR MINI E3 V3.0 SIZE (dimension drawing, 2022-03-01)",
+   "source_url": "https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-SKR-mini-E3/master/hardware/BTT%20SKR%20MINI%20E3%20V3.0/Hardware/BTT%20E3%20SKR%20MINI%20V3.0_SIZE_20220301.pdf",
+   "local_copy": "vendor_docs/BTT_SKR_MINI_E3_V3.0_SIZE_20220301.pdf"
+  },
+  {
+   "id": "pin",
+   "title": "BTT SKR MINI E3 V3.0 PIN (pinout drawing)",
+   "source_url": "https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-SKR-mini-E3/master/hardware/BTT%20SKR%20MINI%20E3%20V3.0/Hardware/BTT%20E3%20SKR%20MINI%20V3.0_PIN.pdf",
+   "local_copy": "vendor_docs/BTT_SKR_MINI_E3_V3.0_PIN.pdf"
+  },
+  {
+   "id": "sch",
+   "title": "BTT SKR MINI E3 V3.0 schematic",
+   "source_url": "https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-SKR-mini-E3/master/hardware/BTT%20SKR%20MINI%20E3%20V3.0/Hardware/BTT%20E3%20SKR%20MINI%20V3.0_SCH.pdf",
+   "local_copy": "vendor_docs/BTT_SKR_MINI_E3_V3.0_SCH.pdf",
+   "ref": "sheet 'BTT SKR MINI E3 _Power_V3.0' and the four TMC2209 sheets"
+  },
+  {
+   "id": "manual",
+   "title": "BIGTREETECH SKR MINI E3 V3.0 User Manual",
+   "source_url": "https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-SKR-mini-E3/master/hardware/BTT%20SKR%20MINI%20E3%20V3.0/Hardware/BTT%20SKR%20MINI%20E3%20V3.0%20user%20manual.pdf",
+   "local_copy": null,
+   "ref": "p.3 Parameters (6.3 MB, not stored)"
+  }
+ ],
+ "values": {
+  "board_size_mm": [
+   103.75,
+   70.25
+  ],
+  "board_size_origin": "size drawing and manual p.3",
+  "mount_holes_xy_mm": [
+   [
+    23.39,
+    67.03
+   ],
+   [
+    85.55,
+    67.23
+   ],
+   [
+    5.53,
+    32.05
+   ],
+   [
+    37.34,
+    29.41
+   ],
+   [
+    101.22,
+    2.56
+   ]
+  ],
+  "mount_holes_origin": "size drawing; x from the left edge, y from the bottom edge (POWER/HB/E0 terminals along the bottom). Derived from the drawn dimensions 23.39 & 3.22 (top-left), 18.20 & 3.02 (top-right), 5.53 & 32.05 (left), 37.34 & 29.41 (middle), 2.53 & 2.56 (bottom-right); checked against the drawing scale.",
+  "mount_hole_diameter_mm": null,
+  "board_height_mm": null,
+  "mass_kg": null,
+  "mcu": "STM32G0B1RET6 (ARM Cortex-M0+)",
+  "pcb_layers": 4,
+  "power_input_v": [
+   12,
+   24
+  ],
+  "logic_voltage_v": 3.3,
+  "motor_driver": "4 x on-board TMC2209, UART mode",
+  "stepper_drivers": 4,
+  "motor_connectors": [
+   "XM",
+   "YM",
+   "ZAM",
+   "ZBM",
+   "EM"
+  ],
+  "motor_connector_note": "ZAM and ZBM are two connectors on the single Z driver (schematic shows four TMC2209: X, Y, Z, E)",
+  "driver_sense_resistor_ohm": 0.11,
+  "driver_sense_resistor_origin": "schematic: 0R11 on each TMC2209 BRA/BRB",
+  "fuses": {
+   "F1": {
+    "rating_a": 20,
+    "voltage_v": 32,
+    "as_marked": "20 (20A)/32V",
+    "role": "main input (per power sheet; exact net not traced)"
+   },
+   "F2": {
+    "rating_a": 1.1,
+    "voltage_v": 16,
+    "as_marked": "T110 (1.1A)/16V",
+    "role": "+5V rail (per power sheet)"
+   }
+  },
+  "mosfets": {
+   "HB": {
+    "part": "WSK220N04",
+    "role": "heated bed"
+   },
+   "E0": {
+    "part": "WSF3085",
+    "role": "hotend heater (Q1; assignment read from the text layer of the schematic, moderately certain)"
+   },
+   "FAN0/FAN1/FAN2": {
+    "part": "PL4009",
+    "role": "fan outputs (Q2, Q4, Q5)"
+   }
+  },
+  "mosfet_current_limits": null,
+  "thermistor_inputs": [
+   "TH0",
+   "THB"
+  ],
+  "thermistor_note": "2-way 100K NTC; inputs protected from short circuit to Vin (manual p.2-3)",
+  "fan_outputs": [
+   "FAN0",
+   "FAN1",
+   "FAN2"
+  ],
+  "fan_voltage": "same as the input supply (manual p.7)",
+  "usb": "Micro-B",
+  "connectors": [
+   "POWER (12/24V, GND)",
+   "HB",
+   "E0",
+   "FAN0",
+   "FAN1",
+   "FAN2",
+   "X-STOP",
+   "Y-STOP",
+   "Z-STOP",
+   "E0-STOP",
+   "THB",
+   "TH0",
+   "PS-ON",
+   "PWR-DET",
+   "Z-PROBE",
+   "Neopixel1",
+   "TFT",
+   "EXP1",
+   "SPI1",
+   "SWD",
+   "I/O",
+   "XM",
+   "YM",
+   "ZAM",
+   "ZBM",
+   "EM",
+   "X-DIAG",
+   "Y-DIAG",
+   "Z-DIAG",
+   "E0-DIAG",
+   "USB",
+   "microSD"
+  ],
+  "pins": {
+   "X": {
+    "EN": "PB14",
+    "STEP": "PB13",
+    "DIR": "PB12"
+   },
+   "Y": {
+    "EN": "PB11",
+    "STEP": "PB10",
+    "DIR": "PB2"
+   },
+   "Z": {
+    "EN": "PB1",
+    "STEP": "PB0",
+    "DIR": "PC5"
+   },
+   "E": {
+    "EN": "PD1",
+    "STEP": "PB3",
+    "DIR": "PB4"
+   },
+   "motor_uart": {
+    "TX": "PC10",
+    "RX": "PC11"
+   },
+   "HB": "PC9",
+   "E0": "PC8",
+   "FAN0": "PC6",
+   "FAN1": "PC7",
+   "FAN2": "PB15",
+   "X-STOP": "PC0",
+   "Y-STOP": "PC1",
+   "Z-STOP": "PC2",
+   "E0-STOP": "PC15",
+   "THB": "PC4",
+   "TH0": "PA0",
+   "PS-ON": "PC13",
+   "PWR-DET": "PC12",
+   "Z-PROBE": {
+    "servo": "PA1",
+    "probe": "PC14"
+   },
+   "Neopixel1": "PA8",
+   "SPI1": {
+    "NSS": "PA4",
+    "MOSI": "PA7",
+    "CLK": "PA5",
+    "MISO": "PA6"
+   },
+   "SD_DET": "PC3",
+   "USB": {
+    "D+": "PA12",
+    "D-": "PA11"
+   },
+   "I/O": [
+    "PD0",
+    "PD2",
+    "PD3",
+    "PD4",
+    "PD5"
+   ],
+   "EXP1": [
+    "PB5",
+    "PA15",
+    "TX1",
+    "RST",
+    "RX1",
+    "PB9",
+    "PB8",
+    "PD6",
+    "GND",
+    "+5V"
+   ]
+  },
+  "pins_origin": "pin drawing"
+ },
+ "not_obtained": [
+  "continuous current limits of the HB / E0 / fan channels (the vendor documents give MOSFET part numbers only; their datasheets were not fetched)",
+  "board mass",
+  "component height",
+  "mounting hole diameter"
+ ]
+}

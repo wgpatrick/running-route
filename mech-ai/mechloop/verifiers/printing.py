@@ -27,6 +27,7 @@ def verify_printing(design: Design, metrics: dict) -> VerifierResult:
                   **({"hint": f["data"]["hint"]} if "hint" in f.get("data", {}) else {}))
         d, p = rep.get("dynamics", {}), rep.get("print", {})
         r.metrics = {"test_part": "20 x 20 x 4 mm cube", "print_time_s": rep.get("plan", {}).get("print_time_s"),
+                     "heatup_s": rep.get("plan", {}).get("heatup_s"), "job_time_s": rep.get("plan", {}).get("job_time_s"),
                      "load_resonance_hz": d.get("load_resonance_hz"),
                      "series_stiffness_n_per_mm": d.get("series_stiffness_n_per_mm"),
                      "frame_stiffness_from_fea_n_per_mm": pm.struct_stiffness or "not coupled",

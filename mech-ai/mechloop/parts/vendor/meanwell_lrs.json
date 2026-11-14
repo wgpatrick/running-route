@@ -1,0 +1,239 @@
+{
+ "retrieved": "2026-11-14",
+ "family": "MEAN WELL LRS enclosed 24 V power supplies",
+ "vendor": "MEAN WELL Enterprises Co., Ltd.",
+ "source_url": "https://www.meanwell.com/Upload/PDF/LRS-350/LRS-350-SPEC.PDF",
+ "note": "Hole positions are in mm from the terminal-block end (x, along the length) and from the long edge drawn at the bottom of the datasheet top view (y). mass_kg is the per-unit weight in the PACKING row.",
+ "parts": {
+  "150": {
+   "model": "LRS-150-24",
+   "datasheet": {
+    "title": "MEAN WELL LRS-150 series specification, file LRS-150-SPEC 2025-04-07",
+    "source_url": "https://www.meanwell.com/Upload/PDF/LRS-150/LRS-150-SPEC.PDF",
+    "local_copy": "vendor_docs/LRS-150-SPEC.PDF",
+    "ref": "p.2 SPECIFICATION table (24 V column); p.4 Mechanical Specification"
+   },
+   "values": {
+    "dc_voltage_v": 24.0,
+    "rated_current_a": 6.5,
+    "rated_power_w": 156.0,
+    "efficiency_typ": 0.89,
+    "ac_current_typ_a": {
+     "115": 3.0,
+     "230": 1.7
+    },
+    "inrush_current_typ_a": {
+     "230": 60
+    },
+    "ac_input_range": "85~132 VAC / 170~264 VAC by switch",
+    "working_temp_c": [
+     -30,
+     70
+    ],
+    "case_no": "241A",
+    "length_mm": 159,
+    "width_mm": 97,
+    "height_mm": 30,
+    "dimension_tolerance_mm": 1.0,
+    "mass_kg": 0.42,
+    "voltage_adj_range_v": [
+     21.6,
+     28.8
+    ],
+    "bottom_mount": {
+     "thread": "M3",
+     "count": 2,
+     "max_screw_penetration_mm": 3.0,
+     "holes_xy_mm": [
+      [
+       24.0,
+       32.0
+      ],
+      [
+       102.0,
+       32.0
+      ]
+     ],
+     "as_drawn": "2-M3 L=3.0; 24, 78; 32"
+    },
+    "side_mount": {
+     "thread": "M3",
+     "count": 3,
+     "max_screw_penetration_mm": 5.0,
+     "as_drawn": "3-M3 L=5; x 22 and 22+117; heights 15, 6 and 18 (which height belongs to which hole was not resolved from the drawing)"
+    },
+    "terminals": {
+     "1": "AC/L",
+     "2": "AC/N",
+     "3": "FG",
+     "4,5": "DC OUTPUT -V",
+     "6,7": "DC OUTPUT +V",
+     "pitch_mm": 9.5
+    }
+   }
+  },
+  "200": {
+   "model": "LRS-200-24",
+   "datasheet": {
+    "title": "MEAN WELL LRS-200 series specification, file LRS-200-SPEC 2025-09-12",
+    "source_url": "https://www.meanwell.com/Upload/PDF/LRS-200/LRS-200-SPEC.PDF",
+    "local_copy": "vendor_docs/LRS-200-SPEC.PDF",
+    "ref": "p.2 SPECIFICATION table (24 V column); p.4 Mechanical Specification"
+   },
+   "values": {
+    "dc_voltage_v": 24.0,
+    "rated_current_a": 8.8,
+    "rated_power_w": 211.2,
+    "efficiency_typ": 0.895,
+    "ac_current_typ_a": {
+     "115": 4.0,
+     "230": 2.2
+    },
+    "inrush_current_typ_a": {
+     "115": 60,
+     "230": 60
+    },
+    "ac_input_range": "90~132 VAC / 180~264 VAC by switch",
+    "working_temp_c": [
+     -25,
+     70
+    ],
+    "case_no": "207",
+    "length_mm": 215,
+    "width_mm": 115,
+    "height_mm": 30,
+    "dimension_tolerance_mm": 1.0,
+    "mass_kg": 0.66,
+    "voltage_adj_range_v": [
+     21.6,
+     28.8
+    ],
+    "bottom_mount": {
+     "thread": "M4",
+     "count": 4,
+     "max_screw_penetration_mm": 3.0,
+     "holes_xy_mm": [
+      [
+       32.5,
+       32.5
+      ],
+      [
+       182.5,
+       32.5
+      ],
+      [
+       32.5,
+       82.5
+      ],
+      [
+       182.5,
+       82.5
+      ]
+     ],
+     "as_drawn": "4-M4 L=3mm; 32.5, 150; 32.5, 50 (numbers taken from the page text; drawing shares the LRS-350 layout)"
+    },
+    "side_mount": {
+     "thread": "M4",
+     "count": 4,
+     "max_screw_penetration_mm": 5.0,
+     "as_drawn": "4-M4 (Both Sides) L=5mm; x 32.5 and 32.5+150"
+    },
+    "terminals": {
+     "1": "AC/L",
+     "2": "AC/N",
+     "3": "FG",
+     "4~6": "DC OUTPUT -V",
+     "7~9": "DC OUTPUT +V",
+     "pitch_mm": 9.5
+    }
+   }
+  },
+  "350": {
+   "model": "LRS-350-24",
+   "datasheet": {
+    "title": "MEAN WELL LRS-350 series specification, file LRS-350-SPEC 2025-09-12",
+    "source_url": "https://www.meanwell.com/Upload/PDF/LRS-350/LRS-350-SPEC.PDF",
+    "local_copy": "vendor_docs/LRS-350-SPEC.PDF",
+    "ref": "p.2 SPECIFICATION table (24 V column); p.4 Mechanical Specification"
+   },
+   "values": {
+    "dc_voltage_v": 24.0,
+    "rated_current_a": 14.6,
+    "rated_power_w": 350.4,
+    "efficiency_typ": 0.88,
+    "ac_current_typ_a": {
+     "115": 6.8,
+     "230": 3.4
+    },
+    "inrush_current_typ_a": {
+     "115": 60,
+     "230": 60
+    },
+    "ac_input_range": "90~132 VAC / 180~264 VAC by switch",
+    "working_temp_c": [
+     -25,
+     70
+    ],
+    "case_no": "207A",
+    "length_mm": 215,
+    "width_mm": 115,
+    "height_mm": 30,
+    "dimension_tolerance_mm": 1.0,
+    "mass_kg": 0.76,
+    "voltage_adj_range_v": [
+     21.6,
+     28.8
+    ],
+    "bottom_mount": {
+     "thread": "M4",
+     "count": 4,
+     "max_screw_penetration_mm": 3.0,
+     "holes_xy_mm": [
+      [
+       32.5,
+       32.5
+      ],
+      [
+       182.5,
+       32.5
+      ],
+      [
+       32.5,
+       82.5
+      ],
+      [
+       182.5,
+       82.5
+      ]
+     ],
+     "as_drawn": "4-M4 L=3mm; 32.5, 150; 32.5, 50"
+    },
+    "side_mount": {
+     "thread": "M4",
+     "count": 4,
+     "max_screw_penetration_mm": 5.0,
+     "as_drawn": "4-M4 (Both Sides) L=5mm; x 32.5 and 32.5+150; 12.5 above the base"
+    },
+    "terminals": {
+     "1": "AC/L",
+     "2": "AC/N",
+     "3": "FG",
+     "4~6": "DC OUTPUT -V",
+     "7~9": "DC OUTPUT +V",
+     "pitch_mm": 9.5
+    }
+   }
+  }
+ },
+ "extra": {
+  "LRS-350": {
+   "fan": "built-in, on at RTH3 >= 50 C, off <= 40 C",
+   "peak_load": "150% for up to 1 s (12~48 V models), Note 7",
+   "overload": "110~140% rated power, hiccup",
+   "hold_up_ms": {
+    "230": 16,
+    "115": 12
+   }
+  }
+ }
+}
