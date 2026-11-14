@@ -173,10 +173,18 @@ def test_fasteners_match_iso_tables():
         assert parts.hex_nut(size).verified
     # the recorded values are the ones in the stored copies of the tables
     import csv
-    rows = {r[0]: r for r in csv.reader(open(ROOT / d["sources"][0]["local_copy"])) if r and r[0].startswith("M")}
+
+    def table(path):  # first table in the file only: later sections reuse the size names
+        rows = {}
+        for r in csv.reader(open(path)):
+            if r and r[0].startswith("M") and len(r) > 8:
+                rows.setdefault(r[0], r)
+        return rows
+
+    rows = table(ROOT / d["sources"][0]["local_copy"])
     for size, row in d["iso4762"].items():
         assert (float(rows[size][3]), float(rows[size][8])) == (row["head_d_max"], row["head_h"])
-    rows = {r[0]: r for r in csv.reader(open(ROOT / d["sources"][1]["local_copy"])) if r and r[0].startswith("M")}
+    rows = table(ROOT / d["sources"][1]["local_copy"])
     for size, row in d["iso4032"].items():
         assert (float(rows[size][8]), float(rows[size][6])) == (row["across_flats"], row["height"])
 

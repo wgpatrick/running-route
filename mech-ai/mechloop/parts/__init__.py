@@ -190,7 +190,10 @@ def mgn12h_carriage() -> Stock:
                           "static_moment_nm": min(moments.values()), "static_moment_mr_nm": moments["MR"],
                           "static_moment_mp_nm": moments["MP"], "static_moment_my_nm": moments["MY"],
                           "approximate": True},
-                 interfaces={"mount_holes_m3": holes, "top_z": H, "thread_depth": v["thread_depth_mm"]}, cost_usd=9.0,
+                 # the M3 x 3.5 thread depth is from the secondary table only, so it is exposed under its own key and does not
+                 # yet drive the interference verifier's thread_bottoms_out check (which reads "thread_depth")
+                 interfaces={"mount_holes_m3": holes, "top_z": H, "thread_depth_unverified": v["thread_depth_mm"]},
+                 cost_usd=9.0,
                  source=_source("hiwin_mgn12", "secondary", "MGN12H", note=_MGN12_NOTE))
 
 
