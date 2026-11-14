@@ -248,6 +248,43 @@ their sources are in `mechloop/verifiers/dfm_rules.py` and `docs/DFM.md`. Every 
   `design.printer["extruder"] = "bowden"`), a `fan(30)` on the toolhead, a `control_board()` and a
   `psu_24v()` on the frame, and enough stepper drivers for its motors.
 
+## Electrical (the electrical verifier; details in docs/ELECTRICAL.md)
+
+Declare the electrical system in `design.electrical` (see `build_electrical` in `designs/printer_v4.py`):
+
+```python
+from mechloop.electrical import Bay, Electrical, Waypoint
+from mechloop.parts.electrical import device_from, add_electrical_bom, skr_mini_e3_v3, psu_lrs   # python -m mechloop catalog
+
+place(d, "control_board", skr_mini_e3_v3(), Location(...))        # electrical catalog parts are placed like any other
+el = d.electrical = Electrical(supply_v=24.0, mains_v=(115.0, 230.0))
+device_from(el, d, "control_board")                               # one Device per placed part: ports, ratings, sources, product
+device_from(el, d, "y_motor_l", connection="parallel")            # motors sharing a driver say how they are joined
+el.loom("toolhead", [Waypoint("xbody", xyz, clamp="extruder"),    # waypoints ride on bodies; a change of body is a flexing
+                     Waypoint("world", xyz, clamp="frame_top_back"), ("world", xyz)], flex_length={0: 420.0})   # span
+el.wire("hotend heater", "control_board.E0", "hotend_heater.in", 20, insulation="silicone",
+        via=["tray", "drop", "toolhead"], pigtail=(150.0, "fiberglass"))     # from port, to port, AWG, looms in order
+el.firmware = {"kind": "klipper", "steppers": {"x": {"run_current": 0.28}, ...},
+               "heaters": {"extruder": {"heater": "hotend_heater", "sensor": "hotend_thermistor", "max_temp": 280,
+                                        "targets": [250.0], "verify_heater": {}}, ...}, "fans": {...}}
+el.hot_parts = {"bed": 100.0}; el.bay = Bay(devices=[...], enclosed=False, vent_area_m2=0.02, height_m=0.05)
+el.sync_cables(d); add_electrical_bom(el, d)                      # flexing spans -> the cable check; wire -> the BOM
+```
+
+- Use only electrical catalog parts (stock boards, modules, components). A device whose `product` record says
+  `custom_pcb` or not `off_the_shelf` is an error; if the board cannot carry a load, add a stock module
+  (`mosfet_module`, `relay_btt_v12`), never a custom board.
+- Every heater needs a thermistor, a firmware entry and an independent cut-off (thermal fuse in series, and/or a
+  relay ahead of the supply). Every motor needs a `run_current`. Mains needs an inlet with fuse, and earth wires to
+  the supply and to an `earth_point` on the frame.
+- Limits live in `mechloop.electrical.DEFAULT_REQUIREMENTS`; override one in `el.requirements` only if the brief
+  allows, and say so.
+- The motor torque curve used by ratings, motion and the twin comes from the electrical model once
+  `design.electrical` exists (winding R and L, driver current, supply voltage). Lowering a run current lowers force.
+- Outputs: `out/<name>/electrical/printer.cfg`, `wiring.csv`, `wiring.md`, `pin_map.json`.
+- Not checked: EMC, firmware bugs, crimp quality, the short stubs between loom ends and connectors (length only),
+  I2t of fuses, the real heater's tolerance and the real PID tune.
+
 ## Heat and real joints (in the fea verifier)
 
 - `ThermalCase(name, components, fixed=[(part, pred)], temps={"bed": 60.0}, probes={"nozzle": xyz, "bed": xyz},
@@ -270,6 +307,7 @@ their sources are in `mechloop/verifiers/dfm_rules.py` and `docs/DFM.md`. Every 
 | tolerance | fits, stack-ups and binding over thousands of imperfect builds; adjustment needed against adjustment provided | open clearances, add adjustment, locate from one part |
 | manufacture | each custom part against its process (sheet, printed, machined), with the limit and its source on every finding | radius corners, stock thickness, move holes off edges and bends, split blocks, re-orient prints |
 | subsystems | homing, cables, extruder, cooling, electronics | add the parts and declare them |
+| electrical | devices wired and off the shelf, power budget, wires and connectors, stepper torque at speed, heaters and their faults by simulation, mains safety, looms in the CAD | bigger supply or gauge, external MOSFET module, lower run current, thermal fuse / relay, re-route |
 | requirements | your `Requirement`s, evaluated last with all metrics | fix the design |
 | fea | factor of safety and deflection per load case, with force balance and refinement checks | ribs, fillets, thicker sections, material |
 

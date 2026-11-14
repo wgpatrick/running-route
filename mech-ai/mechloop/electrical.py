@@ -41,7 +41,7 @@ SOURCES = {
     "motor_h": "stepper case to still air 12 W/m^2K over the motor's own surface, mounting plate ignored: ASSUMED "
                "(typical, unverified; it gives about the vendor's 80 K rise at rated current)",
     "stepper_model": "pull-out torque from the phasor model (V, R, L, back-EMF). Checked against StepperOnline's published "
-                     "24 V pull-out curve for the 17HS13-0404S at 0.35 A rms: within 10 % from 120 to 900 rpm "
+                     "24 V pull-out curve for the 17HS13-0404S at 0.35 A rms: within 13 % from 120 to 900 rpm "
                      "(tests/test_electrical.py). No extra derating is applied; mid-band resonance is not modelled.",
 }
 
@@ -91,6 +91,7 @@ DEFAULT_REQUIREMENTS = {
     "hotend_heatup_max_s": 240.0, "bed_heatup_max_s": {60.0: 600.0, 100.0: 1500.0},
     "max_reach_margin_c": 20.0,      # a heater must be able to reach target + this at 100 % duty
     "overshoot_max_c": {"hotend": 10.0, "bed": 5.0}, "ripple_max_c": {"hotend": 2.0, "bed": 2.0},
+    "steady_error_max_c": {"hotend": 2.0, "bed": 5.0},   # surface vs set point (the sensor is not at the surface)
     "fault_peak_limit_c": {"hotend": 300.0, "bed": 150.0},   # see docs/ELECTRICAL.md for what these protect
     "fault_trip_max_s": {"hotend": 60.0, "bed": 180.0},
     "bay_max_c": 50.0,               # Mean Well LRS full-load ambient limit
@@ -757,21 +758,25 @@ def heater_characteristics(plant: HeaterPlant, targets, t_max: float) -> dict:
 
 
 def closed_loop_metrics(r: dict, target: float) -> dict:
+    """Overshoot, settling and ripple of the temperature that matters (block, plate surface). The firmware regulates
+    the SENSOR; a sensor that sits nearer the heater than the surface leaves a steady offset, reported as
+    steady_error_c. Overshoot and settling are measured against the level the surface finally holds."""
     T, t = r["T"], r["t"]
-    reached = T >= target - 1.0
-    if not reached.any():
-        return {"reached": False}
-    i0 = int(np.argmax(reached))
-    over = float(T[i0:].max() - target)
-    band = np.abs(T - target) <= 1.0
-    outside = np.where(~band)[0]
+    n_tail = int(30.0 / PWM_CYCLE)
+    tail = T[-n_tail:]
+    final = float(tail.mean())
+    held = abs(float(r["sensor"][-n_tail:].mean()) - target) < 2.0 and float(r["duty"][-n_tail:].mean()) < 0.98
+    if not held:
+        return {"reached": False, "final_c": round(final, 2)}
+    i0 = int(np.argmax(T >= final - 1.0))
+    over = float(T[i0:].max() - final)
+    outside = np.where(np.abs(T - final) > 1.0)[0]
     i_settle = int(outside[-1]) + 1 if len(outside) else 0
     settled = i_settle < len(T) - int(20.0 / PWM_CYCLE)
-    tail = T[-int(30.0 / PWM_CYCLE):]
     return {"reached": True, "time_to_target_s": float(t[i0]), "overshoot_c": round(over, 2),
             "settled": bool(settled), "settling_time_s": float(t[min(i_settle, len(t) - 1)]) if settled else None,
-            "ripple_c": round(float(tail.max() - tail.min()), 3), "steady_error_c": round(float(tail.mean() - target), 3),
-            "steady_duty": round(float(r["duty"][-int(30.0 / PWM_CYCLE):].mean()), 3)}
+            "ripple_c": round(float(tail.max() - tail.min()), 3), "steady_error_c": round(final - target, 3),
+            "steady_duty": round(float(r["duty"][-n_tail:].mean()), 3)}
 
 
 # ============================================================ steppers
@@ -1385,3 +1390,26 @@ def check_klipper_config(text: str, board_pins: set, sensor_types: set) -> list:
                 problems.append(f"[{sec}] {opt}: pin {pin} already used by [{used[pin]}]")
             used[pin] = sec
     return problems
+
+
+# ============================================================ entry points for other tools (firmware-in-the-loop etc.)
+def electrical_loads(design) -> dict:
+    """Worst-case electrical load model of a design: solve_circuit() on design.electrical.
+    Returns {"wire_current": {wire: A}, "heaters": {device: {current_a, volts_at_heater, power_w, ...}},
+    "loads_w": {...}, "dc_load_w", "board_current": {...}, "psu": {...}, "mains_current_a": {...}, "motors": {...}}."""
+    el = design.electrical
+    axis_motors(el, design)
+    return solve_circuit(el, design)
+
+
+def thermal_plants(design, circuit: dict | None = None) -> dict:
+    """{firmware heater name ("extruder", "heater_bed"): HeaterPlant} for a design. A HeaterPlant holds the lumped
+    ThermalNet (plant.net.step(T, power_vector, dt) advances it), the node the power enters, the node the sensor
+    reads, the delivered power at 100 % duty, the Thermistor (adc <-> temperature) and the independent cut-offs.
+    simulate_heater(plant, cfg, target, t_end, fault=...) runs it under Klipper's control laws."""
+    return build_plants(design.electrical, design, circuit or electrical_loads(design))
+
+
+def klipper_config_path(design, out_root: str = "out") -> str:
+    """Where the electrical verifier writes the generated printer.cfg for a design (stable path)."""
+    return f"{out_root}/{design.name}/electrical/printer.cfg"

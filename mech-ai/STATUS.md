@@ -20,6 +20,7 @@ Verifiers, in the order they run:
 | motion | collisions over full travel of every joint; guide blocks and nuts staying on their rails/screws; belt path length, alignment, wrap and routing clearance; force needed (MuJoCo inverse dynamics, with rotor inertia) against force available; forward simulation of a motion program with force-limited drives (tracking error, collisions along the path) |
 | assemblability | an assembly order in which each part goes on in a straight line onto something already in place, parts precede the screws that hold them, and each screw has driver access when installed |
 | fea | linear static stress and deflection (Gmsh + CalculiX) for single parts and bonded assemblies; natural frequencies; each run checked for force balance, load area and mesh refinement |
+| electrical | wiring completeness, off-the-shelf check, power budget, per-wire current and voltage drop, stepper drive, heater simulation and fault injection, mains safety, loom routing; generates wiring table and Klipper config (`docs/ELECTRICAL.md`) |
 | requirements | the brief's acceptance tests, evaluated last with access to every metric |
 
 A check that could not run is reported as not run and fails the design; it never counts as a pass.

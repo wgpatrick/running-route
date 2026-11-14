@@ -19,6 +19,7 @@ revises until everything passes: **CAD → verifiers → more CAD**.
 | tolerance | 3,000 simulated builds with process tolerances: screw patterns, fits, nozzle gap and bed level against declared adjustment, rail parallelism and lead-screw binding | NumPy least squares |
 | manufacture | Stock thickness, set-ups and sharp inside corners for each custom part | OpenCASCADE |
 | subsystems | Endstops struck at end of travel, cable lengths over travel, extruder, fan and electronics present | |
+| electrical | Everything wired to a compatible port, off-the-shelf parts only (no custom PCB), power budget, wire ampacity and voltage drop, stepper torque at speed from V, R, L and back-EMF, heaters by thermal simulation with Klipper's control laws and injected faults, mains fuse and earth, looms against the CAD over the travel; writes the wiring table and `printer.cfg` (see `docs/ELECTRICAL.md`) | NumPy lumped models |
 | requirements | The brief's acceptance tests, evaluated last with every metric available | |
 
 Off-the-shelf parts (steppers, MGN rails and carriages, 2020 extrusion, GT2

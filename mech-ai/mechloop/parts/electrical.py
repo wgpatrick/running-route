@@ -160,9 +160,9 @@ def psu_lrs(model: str = "LRS-350-24") -> Stock:
 def iec_inlet_c14(fuse_a: float = 6.3) -> Stock:
     """IEC 60320 C14 appliance inlet with rocker switch and 5 x 20 mm fuse drawer (screw flange). Local frame: flange
     rear face on Z=0 (it sits against the outside of a panel), body through the panel along -Z, flange 60 x 50 x 3 on +Z;
-    two M3 holes 40 mm apart on X. Panel cut-out 48 x 28. Geometry is typical, unverified."""
+    two M3 holes 50 mm apart on Y. Panel cut-out 28 x 43. Geometry is typical, unverified."""
     flange = Pos(0, 0, 1.5) * Box(50, 60, 3)
-    body = Pos(0, 0, -15) * Box(27, 47, 30)
+    body = Pos(0, 0, -15) * Box(27, 42, 30)
     holes = [(0.0, -25.0, 0.0), (0.0, 25.0, 0.0)]
     for x, y, _ in holes:
         flange -= Pos(x, y, 1.5) * Cylinder(1.7, 3)
@@ -177,7 +177,7 @@ def iec_inlet_c14(fuse_a: float = 6.3) -> Stock:
     return Stock(flange + body, f"INLET-C14-SW-FUSE-T{fuse_a:g}A", f"IEC C14 inlet with switch and T{fuse_a:g}A fuse", 0.035, material="abs",
                  ratings={"electrical": {"kind": "inlet", "ports": ports, "ratings": ratings, "sources": sources, "product": {'product': 'IEC 60320 C14 inlet module with rocker switch and 5x20 mm fuse drawer, 10 A 250 V', 'vendor': 'commodity (several makers)', 'part_number': None, 'form': 'module', 'off_the_shelf': True, 'custom_pcb': False, 'builder_work': 'cut the panel opening; crimp 6.3 mm faston receptacles; fit the T fuse'}, "params": {}},
                           "approximate": True},
-                 interfaces={"mount_holes_m3": holes, "cutout": (28.0, 48.0), **_ports_to_interfaces(ports)}, cost_usd=4.0)
+                 interfaces={"mount_holes_m3": holes, "cutout": (28.0, 43.0), **_ports_to_interfaces(ports)}, cost_usd=4.0)
 
 
 @part
@@ -237,7 +237,7 @@ THERMISTORS = {   # Klipper sensor_type -> R-T points [KLIP] temperature_sensors
 @part
 def heater_cartridge(watts: float = 40.0, volts: float = 24.0) -> Stock:
     """Hotend heater cartridge, 6 mm x 20 mm. Local frame: axis along X, centred."""
-    ports = {"in": dict(kind="heater", connector="ferrule", max_a=5.0, at=(10.0, 0.0, 0.0), dir=(1, 0, 0))}
+    ports = {"in": dict(flying=True, kind="heater", connector="ferrule", max_a=5.0, at=(10.0, 0.0, 0.0), dir=(1, 0, 0))}
     ratings = {"watts": watts, "volts": volts, "max_temp_c": 500.0}
     sources = {"watts": f"E3D-style 6 x 20 mm cartridge, {watts:g} W at {volts:g} V nominal ({TU}; +/-10 % is usual)",
                "thermal": "[MARLIN] MPC example hotend (16.7 J/K, 0.068 W/K) used as the cross-check; block capacity from the "
@@ -256,7 +256,7 @@ def heater_cartridge(watts: float = 40.0, volts: float = 24.0) -> Stock:
 @part
 def thermistor_cartridge(sensor_type: str = "ATC Semitec 104NT-4-R025H42G") -> Stock:
     """Hotend thermistor cartridge, 3 mm x 15 mm (glass NTC in a metal sleeve). Local frame: axis along X, centred."""
-    ports = {"out": dict(kind="thermistor", connector="molex-microfit", max_a=1.0, at=(7.5, 0.0, 0.0), dir=(1, 0, 0))}
+    ports = {"out": dict(flying=True, kind="thermistor", connector="molex-microfit", max_a=1.0, at=(7.5, 0.0, 0.0), dir=(1, 0, 0))}
     sources = {"points": "[KLIP] temperature_sensors.cfg", "tau_s": "[MARLIN] MPC_SENSOR_RESPONSIVENESS 0.22 1/s -> 4.5 s",
                "max_temp_c": f"glass bead 300 degC ({TU})", "cost": TU}
     return Stock(Rot(0, 90, 0) * Cylinder(1.5, 15.0), "THERMISTOR-CART-104NT", f"Thermistor cartridge 3x15 mm ({sensor_type})", 0.002,
@@ -271,8 +271,8 @@ def thermistor_cartridge(sensor_type: str = "ATC Semitec 104NT-4-R025H42G") -> S
 def bed_heater_pad(size_x: float = 200.0, size_y: float = 200.0, watts: float = 200.0, volts: float = 24.0) -> Stock:
     """Silicone heater pad with adhesive face and an embedded 100 k NTC (beta 3950), 1.5 mm thick. Local frame: centred,
     adhesive (top) face on Z=0; leads leave from the middle of the -Y edge."""
-    ports = {"in": dict(kind="heater", connector="ferrule", max_a=15.0, at=(-8.0, -size_y / 2, -0.75), dir=(0, -1, 0)),
-             "ntc": dict(kind="thermistor", connector="JST-XH", max_a=1.0, at=(8.0, -size_y / 2, -0.75), dir=(0, -1, 0))}
+    ports = {"in": dict(flying=True, kind="heater", connector="ferrule", max_a=15.0, at=(-8.0, -size_y / 2, -0.75), dir=(0, -1, 0)),
+             "ntc": dict(flying=True, kind="thermistor", connector="JST-XH", max_a=1.0, at=(8.0, -size_y / 2, -0.75), dir=(0, -1, 0))}
     ratings = {"watts": watts, "volts": volts, "max_temp_c": 180.0}
     sources = {"watts": f"silicone pad class, {watts:g} W at {volts:g} V ({TU}; makers quote +/-10 %)",
                "max_temp_c": f"silicone pad continuous limit about 180 degC; acrylic adhesive about 150 degC ({TU})",
@@ -290,8 +290,8 @@ def bed_heater_pad(size_x: float = 200.0, size_y: float = 200.0, watts: float = 
 def thermal_fuse(trip_c: float = 133.0, hold_c: float = 109.0, amps: float = 10.0) -> Stock:
     """Axial one-shot thermal cut-off, 4 mm x 11 mm, taped against the part it protects and wired in series with the
     heater. Local frame: axis along X, centred."""
-    ports = {"a": dict(kind="series", connector="ferrule", max_a=amps, at=(-5.5, 0, 0), dir=(-1, 0, 0)),
-             "b": dict(kind="series", connector="ferrule", max_a=amps, at=(5.5, 0, 0), dir=(1, 0, 0))}
+    ports = {"a": dict(flying=True, kind="series", connector="ferrule", max_a=amps, at=(-5.5, 0, 0), dir=(-1, 0, 0)),
+             "b": dict(flying=True, kind="series", connector="ferrule", max_a=amps, at=(5.5, 0, 0), dir=(1, 0, 0))}
     ratings = {"trip_c": trip_c, "hold_c": hold_c, "amps": amps, "resistance_ohm": 0.002}
     sources = {"trip_c": f"SEFUSE SF-E class: Tf {trip_c:g} degC, holding {hold_c:g} degC, {amps:g} A 250 V AC: recalled ({TU}). "
                          "DC interrupting capacity at 24 V is not stated by the makers.", "cost": TU}
@@ -399,6 +399,8 @@ def device_from(el: Electrical, design, component: str, name: str | None = None,
         pts = c.meta.get("interfaces", {}).get(f"port:{pn}")
         at = tuple(pts[0]) if pts else ctr
         d = tuple(b - a for a, b in zip(pts[0], pts[1])) if pts else None
+        if p.get("flying"):      # a lead moulded or soldered into the part: nothing is plugged in here
+            d = None
         ports[pn] = Port(pn, p["kind"], p.get("connector", ""), p.get("max_a"), p.get("pin"), p.get("conductors", 2), at, d,
                          p.get("group"), p.get("multi", False),
                          {"body": c.body, **{k: v for k, v in p.items() if k in ("pullup_ohm", "adc_bits")}})

@@ -653,8 +653,14 @@ def _heaters(ctx, r, m):
                       heater=hn, target_c=tg, hint="The heater is too weak for verify_heater's heating_gain/check_gain_time; add power or widen them knowingly.")
                 continue
             if not cm.get("reached"):
-                r.add("error", "target_not_reached_closed_loop", f"Heater '{hn}' did not reach {tg:g} degC under closed-loop control.", heater=hn)
+                r.add("error", "target_not_reached_closed_loop", f"Heater '{hn}' did not hold {tg:g} degC under closed-loop control "
+                      f"(ended at {cm.get('final_c')} degC).", heater=hn)
                 continue
+            elim = el.req("steady_error_max_c")[kind]
+            if abs(cm["steady_error_c"]) > elim:
+                r.add("error", "heater_steady_offset", f"Heater '{hn}': with the sensor reading {tg:g} degC the {kind} itself sits at "
+                      f"{tg + cm['steady_error_c']:.1f} degC (offset limit {elim:g} K): the sensor is too far from the surface it stands for.",
+                      heater=hn, offset_c=cm["steady_error_c"])
             if cm["overshoot_c"] > olim:
                 r.add("error", "heater_overshoot", f"Heater '{hn}' overshoots {tg:g} degC by {cm['overshoot_c']:.1f} K (limit {olim:g}) with "
                       f"{h.get('pid_source', 'the configured control')}.", heater=hn, overshoot_c=cm["overshoot_c"], limit_c=olim,
@@ -677,8 +683,12 @@ def _heaters(ctx, r, m):
                 if bare:
                     continue
                 hard = [cu for cu in h["cutoffs"] if cu["kind"] == "thermal_fuse"]
-                if f["still_heating_at_end"] or f["peak_c"] > plim:
-                    settle = h["faults"]["mosfet_short with no independent cut-off"]["settles_at_c"]
+                settle = h["faults"]["mosfet_short with no independent cut-off"]["settles_at_c"]
+                if f["still_heating_at_end"] and settle <= plim:
+                    r.add("warning", "no_independent_cutoff_but_self_limiting",
+                          f"Heater '{hn}': nothing removes power if its MOSFET fails shorted, but at 100 % duty the {kind} "
+                          f"levels off at {settle:.0f} degC, under the {plim:g} degC limit.", heater=hn, settles_at_c=settle)
+                elif f["still_heating_at_end"] or f["peak_c"] > plim:
                     r.add("error", "no_independent_cutoff",
                           f"Heater '{hn}': with its MOSFET failed shorted the firmware cannot remove power. "
                           + (f"Nothing else does either: the {kind} settles at {settle:.0f} degC" if f["still_heating_at_end"]

@@ -157,7 +157,15 @@ def verify_subsystems(design: Design) -> VerifierResult:
                      [c for c in design.components if (c.sku or "").startswith("EXTRUDER")]
             drivers = max([c.ratings.get("stepper_drivers", 0) for c in design.components] or [0])
             m["motors"], m["stepper_drivers"] = len(motors), drivers
-            if have["control_board"] and len(motors) > drivers:
+            shared = 0
+            if getattr(design, "electrical", None) is not None:
+                # motors wired together to one driver (declared in the electrical model, where the current each one
+                # then gets and its torque at speed are checked) need one driver between them
+                from ..electrical import motor_groups
+
+                shared = sum(len(g["motors"]) - 1 for g in motor_groups(design.electrical).values())
+                m["motors_sharing_a_driver"] = shared
+            if have["control_board"] and len(motors) - shared > drivers:
                 r.add("error", "not_enough_drivers", f"{len(motors)} motors (including the extruder) but the control board drives {drivers}.",
                       hint="Wire two motors of one axis to one driver (note it), or use a board with more drivers.")
         r.metrics = m
