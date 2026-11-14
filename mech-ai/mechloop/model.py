@@ -54,6 +54,9 @@ class Component:
     # How the part is made: "printed" (FDM), "machined" (CNC), "sheet" (laser / waterjet cut, optionally bent),
     # "extrusion", "purchased". None: chosen from the material (see tolerance/process.py). Kept in meta["process"].
     process: Optional[str] = None
+    # Detailed geometry of the same part in the same place (vendor STEP for catalog parts), for display and export.
+    # Verifiers work on `shape`; the geometry verifier checks `shape` against `detail` (see parts/vendor_cad.py).
+    detail: Optional[Shape] = None
 
     def __post_init__(self):
         if self.process:
@@ -335,8 +338,12 @@ class Design:
                 meta["threads_into"] = [nm(t) for t in meta["threads_into"]]
             if "guides" in meta:
                 meta["guides"] = nm(meta["guides"])
+            if "placement" in meta:
+                P = np.vstack([np.array(meta["placement"], dtype=float), [0, 0, 0, 1]])
+                meta["placement"] = (np.vstack([M, [0, 0, 0, 1]]) @ P)[:3].tolist()
             self.add(nm(c.name), c.shape.moved(loc), material=c.material, body=bd(c.body), cots=c.cots,
-                     sku=c.sku, mass_kg=c.mass_kg, ratings=dict(c.ratings), meta=meta, color=c.color)
+                     sku=c.sku, mass_kg=c.mass_kg, ratings=dict(c.ratings), meta=meta, color=c.color,
+                     detail=c.detail.moved(loc) if c.detail is not None else None)
         for j in other.joints:
             j2 = copy.copy(j)
             j2.name, j2.parent, j2.child = nm(j.name), bd(j.parent), bd(j.child)

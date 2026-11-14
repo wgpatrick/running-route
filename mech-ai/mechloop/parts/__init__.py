@@ -59,6 +59,12 @@ class Stock:
     catalog: bool = False  # set only by catalog functions; hand-made proxies stay False
     verified: bool = False  # dimensions and ratings were read from a vendor document or a standard table
     source: dict = field(default_factory=dict)  # provenance: see _source(); empty means proxy / typical class values
+    # `shape` is the simulation solid (simple and clean: every verifier works on it). `detail` is the detailed model
+    # (vendor STEP where there is one) in the same local frame, for display and export, and the reference `shape` is
+    # checked against. `model` says what it is: kind ("vendor CAD" | "community CAD" | "generated to standard" |
+    # "proxy"), source, file, and what the proxy-match check should find. See mechloop/parts/vendor_cad.py.
+    detail: Shape | None = None
+    model: dict = field(default_factory=dict)
 
 
 def part(fn):
@@ -78,10 +84,28 @@ def part(fn):
             st.ratings["source"] = f"{lvl}, unverified: {st.source['url']}"
         else:
             st.ratings["source"] = "typical, unverified"
+        _attach_model(fn.__name__, a, k, st)
         return st
 
     _REGISTRY[fn.__name__] = wrapped
     return wrapped
+
+
+def _attach_model(fn_name: str, a: tuple, k: dict, st: Stock) -> None:
+    """Finish a catalog part's CAD record: a hand-downloaded STEP named after the SKU (or one of model["inbox"]) in
+    vendor_cad/inbox/ replaces the detail model; a part without one is marked "proxy"."""
+    from . import vendor_cad
+
+    args = ", ".join([repr(x) for x in a] + [f"{n}={v!r}" for n, v in sorted(k.items())])
+    names = [st.sku] + list(st.model.get("inbox", []))
+    ov = vendor_cad.inbox_override(names, st.detail if st.detail is not None else st.shape)
+    if ov is not None:
+        st.detail = ov[0]
+        st.model = {**st.model, **ov[1], "replaced": st.model.get("kind", "proxy")}
+    if st.detail is None:
+        st.model = {**st.model, "kind": "proxy", "source": st.model.get("source", "simulation solid only (no CAD model)")}
+    st.model["key"] = f"{fn_name}({args})"
+    vendor_cad.STOCKS[st.model["key"]] = st
 
 
 def catalog(query: str = "") -> list[dict]:
@@ -98,10 +122,16 @@ def catalog(query: str = "") -> list[dict]:
 def place(design: Design, name: str, stock: Stock, loc: Location = Location(), body: str = "world",
           **meta) -> Component:
     """Add a catalog part to the design at `loc`. Geometry is never modified."""
+    trsf = loc.wrapped.Transformation()
     c = design.add(name, stock.shape.moved(loc), material=stock.material, body=body, cots=True,
                    sku=stock.sku, mass_kg=stock.mass_kg, ratings=dict(stock.ratings),
+                   detail=stock.detail.moved(loc) if stock.detail is not None else None,
                    meta={"catalog": stock.catalog, "description": stock.description, "cost_usd": stock.cost_usd,
                          "vendor_backed": stock.verified, "source": dict(stock.source),
+                         # what the displayed / exported geometry is, and where this instance sits (local -> world)
+                         "model": {x: stock.model[x] for x in ("kind", "source", "file", "note", "key", "replaced")
+                                   if x in stock.model} or {"kind": "proxy", "source": "hand-made simulation solid"},
+                         "placement": [[trsf.Value(i, j) for j in range(1, 5)] for i in range(1, 4)],
                          "interfaces": {k: [tuple(round(x, 4) for x in tuple((loc * Pos(*p)).position))
                                             for p in v] if isinstance(v, list) else v
                                         for k, v in stock.interfaces.items()}, **meta})
