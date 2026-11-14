@@ -233,6 +233,59 @@ def belt_length(teeth_a: int, teeth_b: int, center: float, pitch: float = 2.0) -
     return 2 * center + math.pi * (da + db) / 2 + (da - db) ** 2 / (4 * center)
 
 
+# ----------------------------------------------------- electrics and printer subsystems
+@part
+def endstop_switch() -> Stock:
+    """Microswitch endstop on a small board. Local frame: board on Z=0 (mount face), 20 x 10, switch body above;
+    it is pressed at the point (0, 5.5, 5), pushing in -Y."""
+    board = Pos(0, 0, 0.8) * Box(20, 10, 1.6)
+    body = Pos(0, 1.5, 4.6) * Box(12.8, 5.8, 6.0)
+    return Stock(board + body, "ENDSTOP-MICRO", "Microswitch endstop board", 0.004, material="abs",
+                 interfaces={"trigger": [(0.0, 5.5, 5.0)], "mount_holes_m3": [(-7.5, -2.5, 0.0), (7.5, -2.5, 0.0)]},
+                 ratings={"electrical": True}, cost_usd=1.5)
+
+
+@part
+def extruder_direct() -> Stock:
+    """Direct-drive extruder with its own small motor. Local frame: mounting face on Z=0, 44 x 44 x 36 body above,
+    filament path along -Z through the centre."""
+    body = Pos(0, 0, 18) * Box(44, 44, 36)
+    holes = [(x, y, 0.0) for x in (-15.5, 15.5) for y in (-15.5, 15.5)]
+    return Stock(body, "EXTRUDER-DD", "Direct-drive extruder with pancake stepper", 0.24, material="al6061",
+                 interfaces={"mount_holes_m3": holes, "filament_exit": [(0.0, 0.0, 0.0)]},
+                 ratings={"electrical": True, "approximate": True}, cost_usd=45.0)
+
+
+@part
+def fan(size: int = 40) -> Stock:
+    """Axial fan, 30 or 40 mm square, 10 mm thick. Local frame: centred, air along Z."""
+    if size not in (30, 40):
+        raise ValueError("fan size must be 30 or 40")
+    body = Box(size, size, 10) - Cylinder(size / 2 - 1.5, 10)
+    pitch = {30: 24.0, 40: 32.0}[size]
+    holes = [(x, y, -5.0) for x in (-pitch / 2, pitch / 2) for y in (-pitch / 2, pitch / 2)]
+    return Stock(body, f"FAN-{size}10", f"{size} mm axial fan", {30: 0.008, 40: 0.016}[size], material="abs",
+                 interfaces={"mount_holes_m3": holes}, ratings={"electrical": True}, cost_usd=3.0)
+
+
+@part
+def control_board() -> Stock:
+    """Printer control board (110 x 85 mm). Local frame: underside on Z=0, centred, 4 mounting holes."""
+    board = Pos(0, 0, 9) * Box(110, 85, 18)
+    holes = [(x, y, 0.0) for x in (-51, 51) for y in (-38.5, 38.5)]
+    return Stock(board, "CTRL-BOARD", "32-bit printer control board with stepper drivers", 0.11, material="abs",
+                 interfaces={"mount_holes_m3": holes}, ratings={"electrical": True, "stepper_drivers": 5}, cost_usd=45.0)
+
+
+@part
+def psu_24v(watts: int = 150) -> Stock:
+    """Enclosed 24 V power supply (159 x 97 x 30 mm). Local frame: underside on Z=0, centred."""
+    body = Pos(0, 0, 15) * Box(159, 97, 30)
+    return Stock(body, f"PSU-24V-{watts}", f"24 V {watts} W enclosed power supply", 0.48, material="steel",
+                 interfaces={"mount_holes_m4": [(-60, -32.5, 0.0), (60, -32.5, 0.0)]},
+                 ratings={"electrical": True, "watts": watts}, cost_usd=22.0)
+
+
 # --------------------------------------------------------------- fasteners
 SCREW = {  # size: (thread d, head d, head h, hex key, close clearance hole, tap drill, proof load N class 12.9)
     "M2.5": (2.5, 4.5, 2.5, 2.0, 2.7, 2.05, 3290), "M3": (3.0, 5.5, 3.0, 2.5, 3.4, 2.5, 4880),

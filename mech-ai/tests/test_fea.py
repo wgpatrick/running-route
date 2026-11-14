@@ -67,3 +67,47 @@ def test_bonded_assembly_matches_single_beam():
     d.add("c", Pos(300, 0, 0) * Box(10, 10, 10))
     d.assemblycases[0].components = ["a", "b", "c"]
     assert "fea_unconnected" in [f.code for f in verify_fea(d).findings]
+
+
+def test_thermal_growth_matches_alpha_L_dT_and_a_clamped_plate_bows():
+    from mechloop.model import ThermalCase
+
+    # a free aluminium bar fixed at one end grows alpha * L * dT
+    d = Design("bar")
+    d.add("bar", Pos(100, 0, 0) * Box(200, 10, 10), material="al6061")
+    d.thermalcases.append(ThermalCase("heat", ["bar"], fixed=[("bar", lambda f: abs(f.center().X) < 1e-6)],
+                                      temps={"bar": 50.0}, probes={"tip": (200, 0, 0), "root": (50, 0, 0)},
+                                      gaps={"length": ("tip", "root", "x", None)}, mesh_size=4.0))
+    r = verify_fea(d)
+    grow = r.metrics["heat"]["gap_change_mm"]["length"]
+    # measured between two points clear of the clamped end (the clamp itself distorts locally)
+    assert abs(grow - 23.6e-6 * 150 * 50) / (23.6e-6 * 150 * 50) < 0.02, grow       # 0.177 mm
+    # a hot plate pinned at its four corners to a cold frame cannot grow freely, so it bows
+    d2 = Design("bed")
+    d2.add("frame", Pos(0, 0, -15) * Box(200, 200, 10), material="steel")
+    names = ["frame", "plate"]
+    for i, (x, y) in enumerate([(-90, -90), (90, -90), (-90, 90), (90, 90)]):
+        d2.add(f"post{i}", Pos(x, y, -5) * Box(12, 12, 10), material="steel")
+        names.append(f"post{i}")
+    d2.add("plate", Pos(0, 0, 1.5) * Box(200, 200, 3), material="al6061")
+    d2.thermalcases.append(ThermalCase("hot_bed", names,
+                                       fixed=[("frame", lambda f: abs(f.center().Z + 20) < 1e-6)],
+                                       temps={"plate": 60.0}, flatness=("plate", "z", 0.02), mesh_size=8.0))
+    r2 = verify_fea(d2)
+    assert r2.metrics["hot_bed"]["bow_mm"]["plate"] > 0.05, r2.metrics
+    assert "thermal_bow" in [f.code for f in r2.findings]
+
+
+def test_screw_only_joint_is_softer_than_bonded():
+    from mechloop.model import AssemblyCase
+    from mechloop.parts import add_screw
+
+    d = Design("lap")
+    d.add("a", Pos(50, 0, 0) * Box(100, 30, 6), material="al6061")
+    d.add("b", Pos(120, 0, 6) * Box(100, 30, 6), material="al6061")          # overlaps a by 30 mm, sits on top
+    add_screw(d, "s", "M5", 10, at=(85, 0, 9), threads_into="a", clamps=("b",))
+    d.assemblycases.append(AssemblyCase("tip", ["a", "b"], fixed=[("a", lambda f: abs(f.center().X) < 1e-6)],
+                                        loaded=("b", lambda f: abs(f.center().X - 170) < 1e-6), force=(0, 0, -20),
+                                        mesh_size=3.0))
+    m = verify_fea(d).metrics["tip"]
+    assert m["stiffness_low_n_per_mm"] < 0.97 * m["stiffness_n_per_mm"], m

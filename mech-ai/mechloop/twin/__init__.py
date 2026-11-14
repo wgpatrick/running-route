@@ -378,7 +378,8 @@ def printer_map_for(design: Design, metrics: dict | None = None, **overrides) ->
     stiff = {}
     fea = (metrics or {}).get("fea", {})
     for ax, case in (spec.get("stiffness") or {}).items():
-        k = (fea.get(case) or {}).get("stiffness_n_per_mm")
+        # be conservative: use the lower bound (joints held only around their screws) when there is one
+        k = (fea.get(case) or {}).get("stiffness_low_n_per_mm") or (fea.get(case) or {}).get("stiffness_n_per_mm")
         if k:
             stiff[ax] = float(k)
     if stiff:

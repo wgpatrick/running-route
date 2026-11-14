@@ -168,6 +168,67 @@ put fasteners on one side; reduce screw sizes to one or two; make bench sub-asse
 `design.subassemblies["name"] = [part names]` (the group is built separately and installed as one
 unit); split or open up a part that traps another.
 
+## Will it fit when it is really made? Tolerances, adjustment, binding
+
+The **tolerance** verifier builds the machine thousands of times with every part made only as
+accurately as its process allows, and every joint seated with the play its screws allow.
+Processes are assigned automatically (catalog parts: purchased; 2020 extrusion: saw-cut; plastics:
+printed; other custom parts: machined) or set with `component.meta["process"]` =
+"printed" | "machined" | "sheet" | "extrusion" | "purchased".
+
+It checks: every screw pattern can be started at once (printed holes come out about 0.15 mm
+small); every shaft has real clearance or real interference in its bore (a shaft drawn at its bore
+size fits half the time; say which you mean with `design.join(a, b, "press")`, otherwise it is
+taken as a sliding fit); belts stay in plane; two rails guiding one axis stay parallel; a lead
+screw stays in line with its rails (or it side-loads the nut); and, for a printer, the nozzle
+still meets the bed and the bed is level under it.
+
+Real machines absorb error with adjustment. Declare what the design provides:
+
+```python
+from mechloop import Adjustment
+d.adjustments += [
+    Adjustment("z endstop screw", "z_offset", range_mm=3.0),          # sets the nozzle-to-bed gap
+    Adjustment("bed levelling screws", "bed_level", range_mm=2.0),    # +/- travel at each corner
+    Adjustment("y rail set to the plate", "rail_align", range_mm=0.3, joint="y"),
+    Adjustment("floating nut", "float", range_mm=0.5, joint="z"),
+]
+```
+
+An adjustment must be real: model the slot, spring, jack screw or oversize hole that provides the
+range (the Z axis also needs that much extra travel), and say in a comment how it is set. The
+verifier reports how much adjustment each one needs (`*_needed_mm_99`) against what you declared.
+
+## Can each part be made? (the manufacture verifier)
+
+Printed parts: best orientation, support needed, fits the print volume, tall-and-thin, thin walls,
+and a rule-of-thumb warp warning. Machined parts: plate from stock thickness
+(1.5, 2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 25 mm), sharp inside corners a round cutter cannot make
+(give them a radius of at least 1.5 mm or relieve them), deep narrow holes, and how many set-ups
+(directions the cutter must come from). Prefer flat plates from stock; a block needing four or more
+set-ups is usually better as two or three plates bolted together.
+
+## Everything else a machine needs (the subsystems verifier)
+
+- Homing: `d.endstops.append({"joint": "x", "switch": "<endstop part>", "at": "min"})` with a catalog
+  `endstop_switch()`; something on the other body must reach the switch's trigger point at that end of
+  travel (`part.meta["interfaces"]["trigger"]`). Or `{"joint": "x", "sensorless": True}`.
+- Cables: `d.cables.append(Cable("toolhead loom", ("xbody", clamp_xyz), ("world", clamp_xyz), length=450))`.
+  Every moving body that carries something electrical needs one; its length is checked over the travel.
+- A printer also needs an extruder (`extruder_direct()` on the toolhead, or
+  `design.printer["extruder"] = "bowden"`), a `fan(30)` on the toolhead, a `control_board()` and a
+  `psu_24v()` on the frame, and enough stepper drivers for its motors.
+
+## Heat and real joints (in the fea verifier)
+
+- `ThermalCase(name, components, fixed=[(part, pred)], temps={"bed": 60.0}, probes={"nozzle": xyz, "bed": xyz},
+  gaps={"nozzle gap": ("nozzle", "bed", "z", 0.05)}, flatness=("bed", "z", 0.1))` in `design.thermalcases`
+  heats parts by the given rise in kelvin and reports how probe points move, how gaps change and how
+  much a part bows. A heated bed should be fixed at one point and free to grow at the others.
+- Every `AssemblyCase` is solved twice: every touching face bonded (`stiffness_n_per_mm`, the upper
+  bound) and screwed joints held only around their screws (`stiffness_low_n_per_mm`, the lower bound).
+  Deflection limits are judged on the lower bound, and the digital twin uses it.
+
 ## What each verifier tells you
 
 | Verifier | Checks | Typical fix |
@@ -177,13 +238,17 @@ unit); split or open up a part that traps another.
 | ratings | drive force from the real motor, guide loads, BOM and cost | change motor, ratio, speed |
 | motion | collisions through full joint travel, guide run-off, belt routing, force needed vs available (with rotor inertia), forward simulation of `program` (tracking, collisions on the path) | shorten travel, move parts, lower accel |
 | assemblability | a build order exists in which each part goes on in a straight line onto something already there, parts go on before the screws that hold them, and every screw has driver access when it is installed (home pose only) | split parts, add access holes, reorder |
+| tolerance | fits, stack-ups and binding over thousands of imperfect builds; adjustment needed against adjustment provided | open clearances, add adjustment, locate from one part |
+| manufacture | each custom part against its process | radius corners, stock thickness, split blocks, re-orient prints |
+| subsystems | homing, cables, extruder, cooling, electronics | add the parts and declare them |
 | requirements | your `Requirement`s, evaluated last with all metrics | fix the design |
 | fea | factor of safety and deflection per load case, with force balance and refinement checks | ribs, fillets, thicker sections, material |
 
 ## Not checked (say this in your report)
 
-Bolt preload and contact, fatigue, buckling, thermal effects, belt tension and tooth
-load, cable routing, tolerance stack-up, over-constraint and binding, axial
+Bolt preload and contact (stiffness is bracketed, not predicted), fatigue, buckling, the
+thermal behaviour of a part while it prints (warping is a rule of thumb only), belt tension
+and tooth load, cable paths (only lengths), tolerance stack-up, over-constraint and binding, axial
 retention of bearings, closed kinematic loops, curved insertion paths, cables,
 manufacturing cost and process limits. FEA is linear static with idealised
 fixtures and no self-weight; assemblies are bonded, which overstates stiffness.

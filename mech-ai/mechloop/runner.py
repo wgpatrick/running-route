@@ -11,7 +11,7 @@ from pathlib import Path
 from .model import Design
 from .report import Report, VerifierResult
 
-ORDER = ["geometry", "interference", "tolerance", "ratings", "motion", "assemblability", "fea", "printing"]
+ORDER = ["geometry", "interference", "tolerance", "manufacture", "ratings", "motion", "subsystems", "assemblability", "fea", "printing"]
 
 
 def load_design(path: str | Path) -> Design:
@@ -39,10 +39,12 @@ def _verifiers():
     from .verifiers.printing import verify_printing
 
     from .tolerance import verify_tolerance
+    from .verifiers.manufacture import verify_manufacture
+    from .verifiers.subsystems import verify_subsystems
 
     return {"geometry": verify_geometry, "interference": verify_interference, "tolerance": verify_tolerance,
-            "ratings": verify_ratings,
-            "motion": verify_motion, "assemblability": verify_assemblability, "fea": verify_fea,
+            "manufacture": verify_manufacture, "ratings": verify_ratings,
+            "motion": verify_motion, "subsystems": verify_subsystems, "assemblability": verify_assemblability, "fea": verify_fea,
             "printing": verify_printing}
 
 

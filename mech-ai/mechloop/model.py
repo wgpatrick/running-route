@@ -158,6 +158,40 @@ class Belt:
 
 
 @dataclass
+class ThermalCase:
+    """Thermal growth of several parts meshed together.
+
+    temps: {part name: temperature rise in K}; "*" sets the default for parts not named.
+    probes: {label: (x, y, z)} points whose movement is reported.
+    gaps: {name: (probe_a, probe_b, "x"|"y"|"z", limit_mm or None)} change in (a - b) along an axis.
+    flatness: (part, "x"|"y"|"z", limit_mm or None) bow of that part's top face along the axis.
+    """
+
+    name: str
+    components: Sequence[str]
+    fixed: Sequence[tuple]
+    temps: dict
+    probes: dict = field(default_factory=dict)
+    gaps: dict = field(default_factory=dict)
+    flatness: Optional[tuple] = None
+    mesh_size: Optional[float] = None
+
+
+@dataclass
+class Cable:
+    """A cable or hose between two points, usually one on a moving body.
+
+    a, b: (body name, (x, y, z)) at the home pose. length is the cable length between the two clamps.
+    """
+
+    name: str
+    a: tuple
+    b: tuple
+    length: float
+    min_bend_radius: float = 15.0
+
+
+@dataclass
 class Adjustment:
     """A way the built machine can absorb error: a slot, a levelling screw, a firmware offset.
 
@@ -191,6 +225,7 @@ class Design:
     loadcases: list[LoadCase] = field(default_factory=list)
     modalcases: list[ModalCase] = field(default_factory=list)
     assemblycases: list[AssemblyCase] = field(default_factory=list)
+    thermalcases: list[ThermalCase] = field(default_factory=list)
     belts: list[Belt] = field(default_factory=list)
     requirements: list[Requirement] = field(default_factory=list)
     # Pairs allowed to overlap (threads, press fits): {frozenset({a, b}): max_volume_mm3}
@@ -208,6 +243,9 @@ class Design:
     tracking_tolerance: float = 0.2  # mm (or deg) allowed between commanded and simulated position
     tool_point: Optional[tuple] = None  # (body, (x, y, z)) traced in the motion render
     adjustments: list[Adjustment] = field(default_factory=list)
+    cables: list[Cable] = field(default_factory=list)
+    # homing: [{"joint": name, "switch": part, "at": "min"|"max"}] or {"joint": name, "sensorless": True}
+    endstops: list = field(default_factory=list)
     # Groups built on the bench and installed as one unit: {name: [part names]}
     subassemblies: dict = field(default_factory=dict)
     # A printer design declares how to print on it: {"bed": part, "x"/"y"/"z": joint names,
