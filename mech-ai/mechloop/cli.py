@@ -12,7 +12,7 @@ def main(argv=None) -> int:
     sub = p.add_subparsers(dest="cmd", required=True)
     v = sub.add_parser("verify", help="build a design script and run the verifiers")
     v.add_argument("design", help="python file defining build() -> Design")
-    v.add_argument("--only", nargs="*", help="subset of: geometry interference tolerance manufacture ratings motion assemblability fea printing requirements")
+    v.add_argument("--only", nargs="*", help="subset of: geometry interference tolerance manufacture ratings motion subsystems assemblability fea printing requirements")
     v.add_argument("--out", default="out")
     v.add_argument("--no-render", action="store_true")
     v.add_argument("--max-findings", type=int, default=25)
@@ -40,7 +40,13 @@ def main(argv=None) -> int:
     if a.cmd == "verify":
         from .runner import run
 
-        rep = run(a.design, a.out, a.only, render=not a.no_render)
+        from .runner import ORDER
+        only = [n for item in (a.only or []) for n in item.split(",") if n] or None
+        known = [o if isinstance(o, str) else o[0] for o in ORDER] + ["requirements"]
+        bad = [n for n in (only or []) if n not in known]
+        if bad:
+            sys.exit(f"unknown verifier(s) {bad}; choose from: {' '.join(known)}")
+        rep = run(a.design, a.out, only, render=not a.no_render)
         print(rep.to_json(max_findings=a.max_findings))
         return 0 if rep.ok else 1
     if a.cmd == "print":

@@ -114,12 +114,19 @@ def _mesh(shape, fixed_pred, load_pred, size: float, workdir: Path, straight: bo
 FAIL_DIR = Path("out") / "fea_failures"
 
 
+def _ccx_env() -> dict:
+    """CalculiX run single-threaded.  With several threads it occasionally returned a wrong answer for an identical
+    input when other solves were running at the same time (reproduced: 1 run in 48 with four processes)."""
+    n = os.environ.get("MECHLOOP_CCX_THREADS", "1")
+    return dict(os.environ, OMP_NUM_THREADS=n, CCX_NPROC_EQUATION_SOLVER=n, CCX_NPROC_RESULTS=n, CCX_NPROC_STIFFNESS=n)
+
+
 def _ccx_balanced(job: str, workdir: Path, n_nodes: int, n_el: int, force, label: str, r: VerifierResult | None):
     """Run CalculiX and check that reactions balance the applied load. An unbalanced answer is kept as
     evidence and the identical input is solved once more; a second failure is returned as it is."""
     import time as _t
 
-    env = dict(os.environ, OMP_NUM_THREADS=str(os.cpu_count() or 1))
+    env = _ccx_env()
     fmag = float(np.linalg.norm(force))
     last = None
     for attempt in range(2):
@@ -381,7 +388,7 @@ def run_modal(design: Design, mc, r: VerifierResult) -> dict:
             f.write(f"*MATERIAL, NAME=M\n*ELASTIC\n{mat.E},{mat.nu}\n*DENSITY\n{density:.6g}\n")
             f.write("*SOLID SECTION, ELSET=EALL, MATERIAL=M\n*BOUNDARY\nNFIX,1,3\n")
             f.write("*STEP\n*FREQUENCY\n3\n*END STEP\n")
-        env = dict(os.environ, OMP_NUM_THREADS=str(os.cpu_count() or 1))
+        env = _ccx_env()
         p = subprocess.run(["ccx", "modal"], cwd=workdir, capture_output=True, text=True, env=env, timeout=1800)
         freqs = []
         dat = workdir / "modal.dat"
@@ -801,8 +808,13 @@ def run_thermal(design: Design, tc, r: VerifierResult) -> dict:
                "max_growth_mm": round(float(np.linalg.norm(U, axis=1).max()), 4), "joints": "bonded where parts touch"}
         moved = {}
         for label, pt in (tc.probes or {}).items():
-            n_ = int(np.linalg.norm(xyz - np.array(pt), axis=1).argmin())
+            dist = np.linalg.norm(xyz - np.array(pt), axis=1)
+            n_ = int(dist.argmin())
             moved[label] = U[n_].round(4).tolist()
+            if dist[n_] > 3.0:
+                r.add("warning", "probe_not_on_a_part",
+                      f"{tc.name}: probe '{label}' is {dist[n_]:.0f} mm from the nearest meshed part, so it reports that part's "
+                      f"movement, not the point you meant. Put it on a part that is in `components`.", case=tc.name, probe=label)
         out["probe_movement_mm"] = moved
         for name, (a, b, axis, limit) in (tc.gaps or {}).items():
             k = "xyz".index(axis)
@@ -850,7 +862,10 @@ def verify_fea(design: Design, keep_dir: Path | None = None) -> VerifierResult:
             try:
                 r.metrics[ac.name] = run_assembly(design, ac, r)
             except Exception as e:
-                r.add("error", "fea_crashed", f"{ac.name}: {type(e).__name__}: {e}", case=ac.name)
+                hint = ("Two of these parts are separated by a very thin gap, which the mesher cannot fill. Leave one of the "
+                        "two out of `components`, or make them touch or stand clearly apart in this case."
+                        if "PLC" in str(e) or "facet" in str(e) else "")
+                r.add("error", "fea_crashed", f"{ac.name}: {type(e).__name__}: {e}", case=ac.name, **({"hint": hint} if hint else {}))
         for tc in design.thermalcases:
             try:
                 r.metrics[tc.name] = run_thermal(design, tc, r)

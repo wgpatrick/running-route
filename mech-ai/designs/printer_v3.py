@@ -34,7 +34,8 @@ v3 "buildable" changes (tolerance / manufacture / subsystems / heat):
   slot stops it turning, 1.3 mm of radial room around the barrel.
 - Rails: both rails of the Y and Z pairs screw into T-nuts that slide +/-1.5 mm across the 6.2 mm slot; one rail is
   set to a straight edge, the other is tightened while the axis is run end to end.
-- Hotend: slip-fit bore (+0.1 mm) with a positive seat on its top face and an M3 set screw.
+- Hotend: no fitted bore any more; it seats on its top face in a square pocket and two set screws push it into
+  one corner (two flat walls), so there is no fit to tolerance.
 - Toolhead: direct-drive extruder above the hotend, 30 mm heat-sink fan behind it, X endstop on the left Y plate.
 - Every custom part is a flat plate of stock thickness (or a two-sided block); bosses became loose spacers on
   through-bolts; inside corners have a 2-3 mm radius.
@@ -178,23 +179,6 @@ def bed_heater() -> Stock:
                  ratings={"electrical": True, "watts": 150}, cost_usd=14.0)
 
 
-def drilled(stock: Stock, dia: float, depth: float, axis_rot=(0, 0, 0)) -> Stock:
-    """PROXY of a catalog part with its own listed mounting holes actually drilled.  The catalog shapes of the
-    endstop switch and the fan are solid where their datasheets (and their own `mount_holes_m3` interface) have
-    holes, so a screw through them reads as a -1.35 mm clearance.  Same SKU, mass, ratings and interfaces; only the
-    holes are added.  Not a catalog part any more, so it carries an uncatalogued_cots warning."""
-    shape = stock.shape
-    for hx, hy, hz in stock.interfaces["mount_holes_m3"]:
-        shape -= Pos(hx, hy, hz) * Rot(*axis_rot) * Cylinder(dia / 2, 2 * depth)
-    return Stock(shape, stock.sku, "catalog part with mounting holes drawn: " + stock.description, stock.mass_kg,
-                 material=stock.material, ratings=dict(stock.ratings), interfaces=dict(stock.interfaces),
-                 cost_usd=stock.cost_usd)
-
-
-def switch() -> Stock:
-    return drilled(endstop_switch(), 3.2, 1.6)      # board holes are 3.2 on the real part
-
-
 def fillet_z(x, y, sx, sy, r, z0, z1):
     """Material that rounds a vertical inside corner at (x, y); the open quadrant is towards (sx, sy)."""
     return (Pos(x + sx * r / 2, y + sy * r / 2, (z0 + z1) / 2) * Box(r, r, z1 - z0)
@@ -280,13 +264,20 @@ EXT_SCREWS = [(x, HOT_OFF + y) for x in (-15.5, 15.5) for y in (-15.5, 15.5)]
 
 def tool_plate_shape():
     """6 mm plate over the carriage carrying the extruder on top; belt tab in front; behind the carriage it is
-    18 mm deep and holds the hotend: slip-fit bore from below, the hotend's top face seats on the plate, an M3 set
-    screw through the right-hand wall locks it.  Machined from the top and from below."""
+    18 mm deep and holds the hotend in a square pocket cut from below: the hotend's top face seats on the plate and
+    two M3 set screws push it into one corner.  Machined from the top and from below."""
     tp = Pos(0, (TAB_Y0 + YB0 + TP_REAR) / 2, Z_TOP + T_TP / 2) * Box(46, YB0 + TP_REAR - TAB_Y0, T_TP)
     # belt tab: drops in front of the carriage and beam to the X belt line; clears the Y plates below
     tp += Pos(0, (TAB_Y0 + YB0 - 14) / 2, (TAB_Z0 + Z_TOP) / 2) * Box(40, YB0 - 14 - TAB_Y0, Z_TOP - TAB_Z0)
     tp += Pos(0, YB0 + (COL_Y0 + TP_REAR) / 2, Z_TOP - T_COL / 2) * Box(46, TP_REAR - COL_Y0, T_COL)
-    tp -= Pos(0, YB0 + HOT_OFF, Z_TOP - T_COL / 2) * Cylinder(11.05, T_COL)      # 22.1 bore: +0.1 slip fit on the 22.0 hotend
+    # hotend seat: a 24 x 24 pocket (3 mm corner radii), not a fitted bore. Two M3 set screws (from the right and
+    # from the rear) push the 22 mm heat-sink neck into the pocket's front-left corner, where it bears on two flat
+    # walls: located the same way in every build, whatever the pocket's size comes out as.
+    pk = Box(18, 24, T_COL) + Box(24, 18, T_COL)
+    for cx in (-9, 9):
+        for cy in (-9, 9):
+            pk += Pos(cx, cy, 0) * Cylinder(3.0, T_COL)
+    tp -= Pos(1.0, YB0 + HOT_OFF + 1.0, Z_TOP - T_COL / 2) * pk
     tp -= Pos(0, YB0 + HOT_OFF, Z_TOP + T_TP / 2) * Cylinder(2.1, T_TP)          # filament / PTFE liner
     for x in (-10, 10):
         for y in (-10, 10):   # carriage screws, heads counterbored flush so the extruder sits over them
@@ -374,15 +365,16 @@ def build() -> Design:
     # Z offset: jack screw in the tab (tapped M3, lock nut on top); its tip presses the Z endstop at the top of travel
     add_screw(d, "z_stop_screw", "M3", 35, at=(ZS_X, ZS_Y, Z_TAB - 4.0), direction=(0, 0, 1), body="zbody", threads_into="carrier")
     add_nut(d, "z_stop_locknut", "M3", at=(ZS_X, ZS_Y, Z_TAB + T_TAB), direction=(0, 0, 1), body="zbody", screw="z_stop_screw")
-    zb = Pos(ZS_X + 8, Y_FACE - ZB_T / 2, (ZB_Z0 + FZ + 8) / 2) * Box(50, ZB_T, FZ + 8 - ZB_Z0)
-    for x in (ZS_X - 10, ZS_X + 26):
+    ZB_BOLTS = (ZS_X + 20, ZS_X + 38)     # to one side, so a driver from the front passes beside the hotend
+    zb = Pos(ZS_X + 17, Y_FACE - ZB_T / 2, (ZB_Z0 + FZ + 8) / 2) * Box(58, ZB_T, FZ + 8 - ZB_Z0)
+    for x in ZB_BOLTS:
         zb -= Pos(x, Y_FACE - ZB_T / 2, FZ) * Rot(90, 0, 0) * Cylinder(clearance_hole("M5") / 2, ZB_T)
-    zsw = place(d, "z_endstop", switch(),
+    zsw = place(d, "z_endstop", endstop_switch(),
                 Location(Plane(origin=(ZS_X, Y_FACE - ZB_T, ZS_Z0), x_dir=(-1, 0, 0), z_dir=(0, -1, 0))))
     for hx, hy, hz in zsw.meta["interfaces"]["mount_holes_m3"]:
         zb -= Pos(hx, Y_FACE - ZB_T / 2, hz) * Rot(90, 0, 0) * Cylinder(clearance_hole("M3") / 2, ZB_T)
     d.add("z_endstop_bracket", zb, material="al6061")
-    for i, x in enumerate((ZS_X - 10, ZS_X + 26)):
+    for i, x in enumerate(ZB_BOLTS):
         add_screw(d, f"z_endstop_bracket_bolt_{i}", "M5", 8, at=(x, Y_FACE - ZB_T, FZ), direction=(0, 1, 0),
                   threads_into="frame_top_back", tnut=True)
     for i, (hx, hy, hz) in enumerate(zsw.meta["interfaces"]["mount_holes_m3"]):
@@ -457,8 +449,8 @@ def build() -> Design:
     for i, (x, y) in enumerate([(-10, -10), (-10, 10), (10, -10), (10, 10)]):
         add_screw(d, f"tool_screw_{i}", "M3", 6, at=(x, YB0 + y, Z_TOP + T_TP - 3.2), body="xbody", threads_into="x_carriage")
     place(d, "hotend", hotend(), Location((0, YB0 + HOT_OFF, Z_TOP)), body="xbody")
-    d.join("hotend", "tool_plate", "set_screw")     # M3 set screw through the collar wall onto the heat-sink neck
-    d.bom_extra("SETSCREW-M3x10", 1, 0.05)
+    d.join("hotend", "tool_plate", "set_screw")     # two M3 set screws through the collar walls onto the heat-sink neck
+    d.bom_extra("SETSCREW-M3x10", 2, 0.05)
     # ================= X drive ===================================================
     xclamp = Pos(0, (XC_Y0 + TAB_Y0) / 2, (TAB_Z0 + XC_Z1) / 2) * Box(40, TAB_Y0 - XC_Y0, XC_Z1 - TAB_Z0)
     xclamp -= Pos(0, TAB_Y0 - 0.75, Z_XB) * Box(40, 1.5, BWX + 1.2)   # one straight belt groove (no inside corners)
@@ -483,7 +475,7 @@ def build() -> Design:
     d.join("x_idler", "x_idler_bolt", "axle")
     d.join("x_idler_spacer", "y_plate_right", "clamp")
     # X endstop on the left Y plate
-    xsw = place(d, "x_endstop", switch(),
+    xsw = place(d, "x_endstop", endstop_switch(),
                 Location(Plane(origin=(X_ES_X0, X_ES_Y0, Z_PLATE + T_YP), x_dir=(0, -1, 0), z_dir=(0, 0, 1))), body="ybody")
     for i, (hx, hy, hz) in enumerate(xsw.meta["interfaces"]["mount_holes_m3"]):
         add_screw(d, f"x_endstop_screw_{i}", "M3", 8, at=(hx, hy, hz + 1.6), body="ybody", threads_into="y_plate_left",
@@ -495,7 +487,7 @@ def build() -> Design:
         add_screw(d, f"extruder_screw_{i}", "M3", 8, at=(x, YB0 + y, Z_TOP + 3.2), direction=(0, 0, 1), body="xbody",
                   threads_into="extruder")
     FAN_Z = Z_TOP - 15.0
-    fan_ = place(d, "hotend_fan", drilled(fan(30), 3.4, 10.0), Location(Plane(origin=(0, YB0 + TP_REAR + 5, FAN_Z), x_dir=(1, 0, 0), z_dir=(0, 1, 0))),
+    fan_ = place(d, "hotend_fan", fan(30), Location(Plane(origin=(0, YB0 + TP_REAR + 5, FAN_Z), x_dir=(1, 0, 0), z_dir=(0, 1, 0))),
                  body="xbody")
     for i, x in enumerate((-12.0, 12.0)):   # the fan hangs from its two upper holes on the rear face of the collar
         add_screw(d, f"fan_screw_{i}", "M3", 16, at=(x, YB0 + TP_REAR + 10, FAN_Z + 12), direction=(0, -1, 0), body="xbody",
@@ -588,7 +580,7 @@ def build() -> Design:
     iml -= Pos(-xf - MT / 2, YI_YL, Z_YCL) * xcyl(clearance_hole("M5") / 2, MT)
     for y in (YI_YL - 9.0, YI_YL + 6.0):
         iml -= Pos(-xf - MT / 2, y, FZ) * xcyl(clearance_hole("M5") / 2, MT)
-    ysw = place(d, "y_endstop", switch(),
+    ysw = place(d, "y_endstop", endstop_switch(),
                 Location(Plane(origin=(-xf - MT, PAD_FRONT - TY - 5.5, Z_PLATE + T_YP / 2), x_dir=(0, 0, 1), z_dir=(-1, 0, 0))))
     for hx, hy, hz in ysw.meta["interfaces"]["mount_holes_m3"]:
         iml -= Pos(-xf - MT / 2, hy, hz) * xcyl(clearance_hole("M3") / 2, MT)
@@ -626,11 +618,12 @@ def build() -> Design:
     for i, (x, y) in enumerate(YL_CLAMP_SCREWS):
         add_screw(d, f"y_belt_clamp_l_screw_{i}", "M3", 10, at=(x, y, Z_TOW + 4), body="ybody", threads_into="y_belt_tower_l")
     # ================= electronics: tray across the bottom rails ==================
-    TRAY_T, TRAY_Y = 3.0, 60.0
-    tray = Pos(0, 0, 20 + TRAY_T / 2) * Box(FX, 2 * TRAY_Y, TRAY_T)
-    psu = place(d, "psu", psu_24v(250), Location((-65.0, 0, 20 + TRAY_T)))
-    board = place(d, "control_board", control_board(), Location((85.0, 0, 20 + TRAY_T)))
-    tray_bolts = [(sx * RAIL_X, sy * 45.0) for sx in (-1, 1) for sy in (-1, 1)]
+    # towards the front, clear of everything that is screwed on from underneath further back (beam bolts, extruder)
+    TRAY_T, TRAY_Y, TRAY_CY = 3.0, 60.0, -75.0
+    tray = Pos(0, TRAY_CY, 20 + TRAY_T / 2) * Box(FX, 2 * TRAY_Y, TRAY_T)
+    psu = place(d, "psu", psu_24v(250), Location((-65.0, TRAY_CY, 20 + TRAY_T)))
+    board = place(d, "control_board", control_board(), Location((85.0, TRAY_CY, 20 + TRAY_T)))
+    tray_bolts = [(sx * RAIL_X, TRAY_CY + sy * 45.0) for sx in (-1, 1) for sy in (-1, 1)]
     for x, y in tray_bolts:
         tray -= Pos(x, y, 20 + TRAY_T / 2) * Cylinder(clearance_hole("M5") / 2, TRAY_T)
     for hx, hy, hz in psu.meta["interfaces"]["mount_holes_m4"]:
@@ -738,7 +731,9 @@ def build() -> Design:
         "bed_heated_60K", ["bed", *cols, "carrier", "z_carriage_left", "z_carriage_right"],
         fixed=[("z_carriage_left", on_rail), ("z_carriage_right", on_rail)],
         temps={"bed": 60.0, **{c: 30.0 for c in cols}, "*": 0.0},
-        probes={"nozzle": (0.0, YB0 + HOT_OFF, Z_NOZZLE), "bed": (0.0, YB0 + HOT_OFF, Z_BED + T_BED)},
+        # a probe snaps to the nearest meshed point, and the nozzle is not in this model (it is 150 mm above the bed
+        # at home), so the "nozzle" reference is put on the held rail face: it must report zero movement
+        probes={"nozzle": (-UP_X, Y_FACE - 8.0, ZC), "bed": (0.0, YB0 + HOT_OFF, Z_BED + T_BED)},
         gaps={"nozzle gap": ("nozzle", "bed", "z", 0.1)}, flatness=("bed", "z", 0.1)))
 
     # ================= requirements ==============================================

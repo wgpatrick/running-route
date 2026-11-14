@@ -236,12 +236,14 @@ def belt_length(teeth_a: int, teeth_b: int, center: float, pitch: float = 2.0) -
 # ----------------------------------------------------- electrics and printer subsystems
 @part
 def endstop_switch() -> Stock:
-    """Microswitch endstop on a small board. Local frame: board on Z=0 (mount face), 20 x 10, switch body above;
-    it is pressed at the point (0, 5.5, 5), pushing in -Y."""
-    board = Pos(0, 0, 0.8) * Box(20, 10, 1.6)
+    """Microswitch endstop on a small board. Local frame: board on Z=0 (mount face), 20 wide, from Y=-7.5 to Y=5,
+    switch body above; it is pressed at the point (0, 5.5, 5), pushing in -Y. Two M3 holes at Y=-4.2."""
+    board = Pos(0, -1.25, 0.8) * Box(20, 12.5, 1.6)
     body = Pos(0, 1.5, 4.6) * Box(12.8, 5.8, 6.0)
+    for x in (-7.5, 7.5):   # M3 mounting holes, far enough from the switch body for a cap head to seat on the board
+        board -= Pos(x, -4.2, 0.8) * Cylinder(1.6, 1.6)
     return Stock(board + body, "ENDSTOP-MICRO", "Microswitch endstop board", 0.004, material="abs",
-                 interfaces={"trigger": [(0.0, 5.5, 5.0)], "mount_holes_m3": [(-7.5, -2.5, 0.0), (7.5, -2.5, 0.0)]},
+                 interfaces={"trigger": [(0.0, 5.5, 5.0)], "mount_holes_m3": [(-7.5, -4.2, 0.0), (7.5, -4.2, 0.0)]},
                  ratings={"electrical": True}, cost_usd=1.5)
 
 
@@ -264,6 +266,8 @@ def fan(size: int = 40) -> Stock:
     body = Box(size, size, 10) - Cylinder(size / 2 - 1.5, 10)
     pitch = {30: 24.0, 40: 32.0}[size]
     holes = [(x, y, -5.0) for x in (-pitch / 2, pitch / 2) for y in (-pitch / 2, pitch / 2)]
+    for x, y, _ in holes:
+        body -= Pos(x, y, 0) * Cylinder(1.6, 10)
     return Stock(body, f"FAN-{size}10", f"{size} mm axial fan", {30: 0.008, 40: 0.016}[size], material="abs",
                  interfaces={"mount_holes_m3": holes}, ratings={"electrical": True}, cost_usd=3.0)
 

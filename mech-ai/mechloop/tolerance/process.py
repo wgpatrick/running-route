@@ -20,7 +20,7 @@ def process_of(c: Component) -> str:
     if c.meta.get("process"):
         return c.meta["process"]
     if c.cots:
-        return "extrusion" if (c.sku or "").startswith("EXT") else "purchased"
+        return "extrusion" if (c.sku or "").startswith("EXT20") else "purchased"   # T-slot extrusion, not "EXTRUDER"
     return "printed" if c.material in PLASTICS else "machined"
 
 

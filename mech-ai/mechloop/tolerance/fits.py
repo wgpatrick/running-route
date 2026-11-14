@@ -97,7 +97,8 @@ def screw_patterns(design: Design, r: VerifierResult, n: int = 4000, seed: int =
         # a real screw's thread is made slightly under its nominal diameter (about 0.1 mm for M3-M5)
         screw_r = np.array([i["d"] for i in items])[None, :] / 2 - 0.05
         ok = (need <= (hole_r - screw_r)).all(axis=1)
-        p_fit = float(ok.mean())
+        # screws into T-nuts always start: each nut slides along its slot and has play across it
+        p_fit = 1.0 if all_tnut else float(ok.mean())
         nominal_clear = float(min(i["hole_r"] - i["d"] / 2 + 0.05 for i in items))
         out[f"{pa} -> {pb}"] = {"screws": k, "p_all_start": round(p_fit, 4), "nominal_radial_clearance_mm": round(nominal_clear, 3),
                                 "process": [process_of(comps[pa]), process_of(comps[pb])]}
@@ -133,7 +134,9 @@ def _cylinders(shape):
             continue
         bb = f.bounding_box()
         length = float(abs(np.array([bb.size.X, bb.size.Y, bb.size.Z]) @ np.abs(axd)))
-        out.append({"r": cyl.Radius(), "p": ax0, "d": axd, "shaft": outward, "len": length, "area": f.area})
+        mid = float((pc - ax0) @ axd)
+        out.append({"r": cyl.Radius(), "p": ax0, "d": axd, "shaft": outward, "len": length, "area": f.area,
+                    "span": (mid - length / 2, mid + length / 2)})
     return out
 
 
@@ -166,6 +169,12 @@ def bores_and_shafts(design: Design, r: VerifierResult, n: int = 4000, seed: int
                             continue
                         off = (B["p"] - S["p"]) - ((B["p"] - S["p"]) @ S["d"]) * S["d"]
                         if np.linalg.norm(off) > 0.05:
+                            continue
+                        # the shaft must actually be inside the bore along the axis, not merely in line with it
+                        shift = float((B["p"] - S["p"]) @ S["d"]) * (1.0 if S["d"] @ B["d"] > 0 else 1.0)
+                        b0, b1 = sorted(((B["span"][0] if S["d"] @ B["d"] > 0 else -B["span"][1]) + shift,
+                                         (B["span"][1] if S["d"] @ B["d"] > 0 else -B["span"][0]) + shift))
+                        if min(S["span"][1], b1) - max(S["span"][0], b0) < 1.0:
                             continue
                         kind = design.joins.get(frozenset((na, nb)), "")
                         intent = "press" if any(w in str(kind) for w in ("press", "interference")) else "slide"
