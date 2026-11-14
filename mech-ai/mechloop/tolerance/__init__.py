@@ -164,8 +164,16 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
                 a_min = max(min(abs(npos + q * float(np.sign(ax @ np.abs(ax))) - s_lo) for q in j.range), 15.0)
             else:
                 e0, a_min = np.zeros(n), 30.0
-            run = np.linalg.norm((ds - dr) - ((ds - dr) @ ax)[:, None] * ax[None, :], axis=1) * travel
-            err = e0 + run
+            perp = (ds - dr) - ((ds - dr) @ ax)[:, None] * ax[None, :]
+            ang = np.degrees(np.linalg.norm(perp, axis=1))
+            run = np.linalg.norm(perp, axis=1) * travel
+            # A flexible coupler lets a screw with a free far end swing to follow the nut. The swing it needs is never more
+            # than the angle between screw and rails, so a coupler rated for that angle takes the drift over the travel;
+            # only the offset where the nut sits when it is nearest the motor is left for the nut mount to absorb.
+            cpl = comps.get(drv.get("coupler")) if drv.get("coupler") else None
+            cpl_deg = (cpl.ratings.get("angular_misalignment_deg") if cpl else None)
+            follows = bool(cpl_deg) and _rng99(ang) <= cpl_deg
+            err = e0 if follows else e0 + run
             d_root = 0.78 * (2 * float(np.max((hi - lo)[np.abs(ax) < 0.5])) / 2)
             I = math.pi * d_root ** 4 / 64
             k_side = 3 * 193000.0 * I / a_min ** 3
@@ -174,9 +182,20 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
             drag = MU_NUT * side
             avail = j.max_effort or 0.0
             screws_m[jn] = {"nut_misalignment_mm_99": round(_rng99(err), 2), "offset_at_nut_mm_99": round(_rng99(e0), 2),
-                            "drift_over_travel_mm_99": round(_rng99(run), 2), "screw_side_stiffness_n_per_mm": round(k_side, 1),
+                            "drift_over_travel_mm_99": round(_rng99(run), 2), "screw_to_rail_angle_deg_99": round(_rng99(ang), 2),
+                            "coupler_angle_rating_deg": cpl_deg, "drift_taken_by_coupler": follows,
+                            "nut_in_stackup": bool(nut),
+                            "screw_side_stiffness_n_per_mm": round(k_side, 1),
                             "nut_closest_to_fixed_end_mm": round(a_min, 0), "side_force_n_99": round(_rng99(side), 0),
                             "added_drag_n_99": round(_rng99(drag), 1), "drive_force_n": avail, "nut_floats": bool(adj)}
+            if cpl_deg and not follows:
+                r.add("warning", "coupler_angle_exceeded",
+                      f"Axis {jn}: screw and rails are up to {_rng99(ang):.2f} deg out of parallel as built, more than the "
+                      f"coupler's {cpl_deg} deg. The drift over the travel then has to be taken at the nut.", joint=jn)
+            if not nut:
+                r.add("warning", "nut_not_in_stackup",
+                      f"Axis {jn}: the drive names no nut, so the offset between the nut's seat and the screw is not checked.",
+                      joint=jn, hint="Name the nut in the joint's drive (drive={..., 'nut': '<part>'}).")
             if adj:
                 screws_m[jn]["float_available_mm"] = adj.range_mm
             if adj and _rng99(err) > adj.range_mm:
@@ -185,7 +204,8 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
                       f"move only +/-{adj.range_mm} mm. Past that the nut is forced sideways and the screw binds.",
                       joint=jn, needed=round(_rng99(err), 2),
                       hint="Give the nut more sideways room, shorten the tolerance chain between screw and rails, "
-                           "or locate the screw's bearing and the rails from one part.")
+                           "couple the screw through a flexible coupler rated for the angle, or locate the screw's "
+                           "bearing and the rails from one part.")
             if not adj and avail and _rng99(drag) > 0.3 * avail:
                 r.add("error", "leadscrew_binding",
                       f"Axis {jn}: the nut is up to {_rng99(err):.2f} mm off the screw's axis as built, and the screw is "

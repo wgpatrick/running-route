@@ -362,7 +362,8 @@ def shaft_coupler(bore_a: float = 5.0, bore_b: float = 8.0) -> Stock:
     body = Pos(0, 0, length / 2) * Cylinder(od / 2, length) - Pos(0, 0, length / 4) * Cylinder(bore_a / 2, length / 2) \
         - Pos(0, 0, 3 * length / 4) * Cylinder(bore_b / 2, length / 2)
     return Stock(body, f"COUPLER-{bore_a:g}x{bore_b:g}", f"Flexible coupler {bore_a:g} to {bore_b:g} mm", mass,
-                 material="al6061", ratings={"rated_torque_nmm": torque, **extra},
+                 material="al6061", ratings={"rated_torque_nmm": torque, "angular_misalignment_deg": 1.0,   # typical for jaw couplings; not on the vendor page
+                          "angular_misalignment_assumed": True, **extra},
                  interfaces={"bore_a": bore_a, "bore_b": bore_b, "length": length, "od": od}, cost_usd=3.0, source=src)
 
 

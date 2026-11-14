@@ -1088,7 +1088,7 @@ def build() -> Design:
                           drive={"motor": "x_motor", "kind": "belt", "pulley": "x_pulley"}))
     d.joints.append(Joint("z", "slide", "world", "zbody", (0, 0, 1), range=(-Z_OVER, PRINT_Z),
                           max_speed=V_Z, max_accel=A_Z, min_drive_margin=MARGIN,
-                          drive={"motor": "z_motor", "kind": "leadscrew", "screw": "leadscrew"}))
+                          drive={"motor": "z_motor", "kind": "leadscrew", "screw": "leadscrew", "nut": "z_nut", "coupler": "z_coupler"}))
     # raise the bed, trace a 150 mm square with the nozzle, lower the bed
     d.program = [{"to": {"z": PRINT_Z}},
                  {"to": {"x": -75, "y": -75}}, {"to": {"x": 75, "y": -75}}, {"to": {"x": 75, "y": 75}},

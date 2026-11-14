@@ -331,6 +331,12 @@ The lowest thing on the toolhead after the nozzle is the probe, 3.1 mm above the
    `lead_screws.z.nut_misalignment_mm_99` = 2.29 mm, v4 = 1.88 mm, declared float ±1.3 mm,
    `nut_floats: true`, no finding. Either the metric is not the quantity compared or the comparison
    is missing.
+   **Fixed afterwards.** The drive did not name the nut, so the nut-seat offset was never measured, and the
+   declared float was never compared with anything. The check now measures the offset between the nut's seat
+   and the screw where the nut is nearest the motor, compares it with the float (`adjustment_too_small`),
+   and lets a flexible coupler take the screw-to-rail angle up to its rating (`coupler_angle_exceeded`
+   otherwise). v5: offset 0.16 mm against ±1.3 mm of float; angle 0.86° against a coupler rating of 1.0°
+   that is a typical figure for jaw couplings, not a vendor value. That margin is thin.
 4. **No probe in the model.** There is no probe device kind. The proxy was given the endstop template
    and a `trigger` interface, and subsystems accepted it as the Z-max switch (gap 0.0 mm at the end
    of travel). That check therefore rests on a point the designer wrote. The generated `printer.cfg`
@@ -342,7 +348,8 @@ The lowest thing on the toolhead after the nozzle is the probe, 3.1 mm above the
 6. **The bed's machining estimate.** $177 and 104 minutes for a 220 x 220 x 6 mm plate with four
    counterbored holes. It is now half of v5's whole machining estimate.
 7. **Partial runs overwrite `out/<name>/report.json`.** A `--only` run on v4 replaced its full report;
-   v4 was verified again in full afterwards.
+   v4 was verified again in full afterwards. **Fixed afterwards:** a partial run now writes
+   `report_partial.json`.
 
 ## Still unverified
 
