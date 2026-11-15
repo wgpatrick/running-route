@@ -23,11 +23,19 @@ def plate_on_block(hole_d, process="printed", n_screws=4):
 
 
 def test_tight_printed_holes_fail_and_opened_ones_pass():
+    # 2026-11-15: the bad case is holes drawn at the screw's own 3.0 mm (they print at 2.85). 3.2 mm, the bad case
+    # until then, starts in about 96 % of builds once hole-to-hole error within one pattern is the process's "pattern"
+    # figure and a screw may cut 0.15 mm into plastic (tolerance/process.py; the real kits in docs/REFERENCE_MACHINE.md):
+    # still reported, as a warning, and its share of free starts is low.
     r = VerifierResult("t")
-    tight = screw_patterns(plate_on_block(3.2), r)["plate -> block"]["p_all_start"]
+    tight = screw_patterns(plate_on_block(3.0), r)["plate -> block"]["p_all_start"]
     easy = screw_patterns(plate_on_block(3.8), VerifierResult("t"))["plate -> block"]["p_all_start"]
     assert tight < 0.6 and easy > 0.95
-    assert "screws_may_not_align" in [f.code for f in r.findings]
+    assert [f.severity for f in r.findings if f.code == "screws_may_not_align"] == ["error"]
+    r32 = VerifierResult("t")
+    v32 = screw_patterns(plate_on_block(3.2), r32)["plate -> block"]
+    assert 0.9 <= v32["p_all_start"] < 0.99 and v32["p_all_start_freely"] < 0.3
+    assert [f.severity for f in r32.findings if f.code == "screws_may_not_align"] == ["warning"]
     # the same tight hole is fine when machined, and a single screw always finds its hole
     assert screw_patterns(plate_on_block(3.4, "machined"), VerifierResult("t"))["plate -> block"]["p_all_start"] > 0.97
 

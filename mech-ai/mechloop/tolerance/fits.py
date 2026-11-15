@@ -12,7 +12,7 @@ from OCP.BRepExtrema import BRepExtrema_DistShapeShape
 from ..geom import bboxes_overlap
 from ..model import Design
 from ..report import VerifierResult
-from .process import process_of, tol
+from .process import PLASTIC_HOLE_YIELD_MM, PLASTICS, process_of, tol
 
 
 def _hole_radius(part, a0, a1) -> float | None:
@@ -115,8 +115,9 @@ def screw_patterns(design: Design, r: VerifierResult, n: int = 4000, seed: int =
         # a T-nut slides along its slot, so the threaded side has no position error along the slot;
         # treat it as free in both lateral directions only when every screw in the group uses one
         all_tnut = all(i["tnut"] for i in items)
-        sb = 0.0 if all_tnut else tb["pos"]
-        ea = rng.normal(0, ta["pos"], (n, k, 2))
+        # hole to hole within one pattern: the process's "pattern" figure, not its feature-to-datum "pos" (process.py)
+        sb = 0.0 if all_tnut else tb.get("pattern", tb["pos"])
+        ea = rng.normal(0, ta.get("pattern", ta["pos"]), (n, k, 2))
         eb = rng.normal(0, sb, (n, k, 2))
         # size error stretches the pattern
         P = np.array([[i["pos"] @ e1, i["pos"] @ e2] for i in items])
@@ -128,15 +129,29 @@ def screw_patterns(design: Design, r: VerifierResult, n: int = 4000, seed: int =
         hole_r = np.array([i["hole_r"] for i in items])[None, :] + 0.5 * (ta["hole_bias"] + rng.normal(0, ta["hole_sd"], (n, k)))
         # a real screw's thread is made slightly under its nominal diameter (about 0.1 mm for M3-M5)
         screw_r = np.array([i["d"] for i in items])[None, :] / 2 - 0.05
-        ok = (need <= (hole_r - screw_r)).all(axis=1)
+        free = (need <= (hole_r - screw_r)).all(axis=1)
+        # a screw cuts its way through a plastic clearance hole that is a little tight on one side (process.py)
+        give = PLASTIC_HOLE_YIELD_MM if comps[pa].material in PLASTICS else 0.0
+        ok = (need <= (hole_r - screw_r) + give).all(axis=1)
         # screws into T-nuts always start: each nut slides along its slot and has play across it
         p_fit = 1.0 if all_tnut else float(ok.mean())
+        p_free = 1.0 if all_tnut else float(free.mean())
         nominal_clear = float(min(i["hole_r"] - i["d"] / 2 + 0.05 for i in items))
         out[f"{pa} -> {pb}"] = {"screws": k, "p_all_start": round(p_fit, 4),
-                                "p_all_start_standard_error": round(float(np.sqrt(max(p_fit * (1 - p_fit), 0.0) / n)), 4), "nominal_radial_clearance_mm": round(nominal_clear, 3),
+                                "p_all_start_standard_error": round(float(np.sqrt(max(p_fit * (1 - p_fit), 0.0) / n)), 4),
+                                "p_all_start_freely": round(p_free, 4),
+                                **({"plastic_hole_yield_mm": give} if give else {}),
+                                "nominal_radial_clearance_mm": round(nominal_clear, 3),
                                 "process": [process_of(comps[pa]), process_of(comps[pb])]}
         if p_fit < 0.99:
             worst.append((p_fit, pa, pb, k, nominal_clear))
+    forced = sorted(k_ for k_, v in out.items() if v.get("plastic_hole_yield_mm") and v["p_all_start"] >= 0.99 and v["p_all_start_freely"] < 0.9)
+    if forced:
+        r.add("info", "screws_cut_into_printed_holes",
+              f"{len(forced)} screw pattern(s) in printed parts start in at least 99 % of builds only because a screw cuts its "
+              f"way through a plastic hole that is up to {PLASTIC_HOLE_YIELD_MM} mm tight on one side (they start freely in under "
+              f"90 %): {', '.join(forced[:6])}. Usual for printed parts; open the holes by 0.2 mm if the screws should drop in.",
+              patterns=forced)
     for p_fit, pa, pb, k, clr in sorted(worst)[:12]:
         sev = "error" if p_fit < 0.9 else "warning"
         r.add(sev, "screws_may_not_align",
@@ -173,25 +188,55 @@ def _cylinders(shape):
     return out
 
 
+AXLE_KINDS = ("axle", "shaft", "pivot", "pin")      # join kinds that make a screw's shank a shaft for what turns on it
+SHAFT_TOL_KEYS = ("shaft_dia_tol_mm", "bore_dia_tol_mm")
+
+
 def bores_and_shafts(design: Design, r: VerifierResult, n: int = 4000, seed: int = 1) -> dict:
     """A shaft drawn the same size as its bore fits half the time. Find those pairs and say how often
-    they would bind (if meant to slide) or be loose (if meant to be pressed)."""
+    they would bind (if meant to slide) or be loose (if meant to be pressed).
+
+    Which pairs (2026-11-15: before, any pair of two catalogue parts and anything on a screw's shank was left out
+    without a word, so a machine with a dozen shafts reported two):
+      * a made part with a purchased or made part: simulated from the two processes, as before;
+      * two purchased catalogue parts (motor shaft in pulley or coupler, lead screw in coupler and nut, idler on its
+        spacer): their makers hold the fit, the simulation's generic "purchased" figures would only pretend to know it.
+        Each is LISTED as class "catalogue fit, trusted" with its drawn clearance and whatever tolerance the catalogue
+        does record (a NEMA 17's shaft is 5 +0 / -0.012 on StepperOnline's drawing), and one info finding counts them.
+        A catalogue pair drawn with the shaft larger than the bore is an error all the same (`catalogue_fit_mismatch`);
+      * a screw's shank as a shaft, only where it is one by declaration (design.join(part, screw, "axle")) or where a
+        purchased part with a bore rides on it (idler, bearing, spacer): a screw in a made part's clearance hole is the
+        screw-pattern check's business, not a fit."""
     rng = np.random.default_rng(seed)
     comps = {c.name: c for c in design.components}
     cyl = {}
     fast = {f.name for f in design.fasteners}
-    names = [c.name for c in design.components if c.name not in fast]
-    out, flagged = {}, []
+    names = [c.name for c in design.components]
+    out, flagged, trusted, mismatch = {}, [], [], []
+
+    def axle(screw, other):
+        kind = str(design.joins.get(frozenset((screw, other)), ""))
+        if any(w in kind for w in AXLE_KINDS):
+            return True
+        oc = comps[other]
+        return bool(oc.cots and not oc.meta.get("thread_d") and "bore" in (oc.meta.get("interfaces") or {})
+                    and frozenset((screw, other)) not in design.allowed_overlaps)
+
     for i, a in enumerate(names):
         for b in names[i + 1:]:
+            if a in fast and b in fast:
+                continue
+            if (a in fast and not axle(a, b)) or (b in fast and not axle(b, a)):
+                continue
             if not bboxes_overlap(comps[a].shape, comps[b].shape, 0.05):
                 continue
-            if comps[a].meta.get("catalog") and comps[b].meta.get("catalog"):
-                continue  # two catalog parts made to go together (pulley on its shaft) are toleranced by their makers
+            both_bought = all(comps[x].cots and (comps[x].meta.get("catalog") or x in fast) for x in (a, b))
             for n_ in (a, b):
                 if n_ not in cyl:
                     cyl[n_] = _cylinders(comps[n_].shape)
             for sa, sb, na, nb in ((cyl[a], cyl[b], a, b), (cyl[b], cyl[a], b, a)):
+                if nb in fast:
+                    continue            # a screw is never the bore
                 for S in sa:
                     if not S["shaft"] or S["len"] < 1.5:
                         continue
@@ -211,24 +256,54 @@ def bores_and_shafts(design: Design, r: VerifierResult, n: int = 4000, seed: int
                             continue
                         kind = design.joins.get(frozenset((na, nb)), "")
                         intent = "press" if any(w in str(kind) for w in ("press", "interference")) else "slide"
+                        nominal = 2 * (B["r"] - S["r"])
+                        key = f"{na} in {nb} (dia {2 * S['r']:.2f})"
+                        if both_bought:
+                            if key in out:
+                                continue
+                            rec = {"intent": intent, "nominal_clearance_mm": round(nominal, 3), "p_bad": None,
+                                   "class": "catalogue fit, trusted", "process": [process_of(comps[na]), process_of(comps[nb])],
+                                   **({"held_by": str(kind)} if kind else {}),
+                                   "basis": "two purchased catalogue parts sold to go together: the fit is their makers', not simulated"}
+                            tols = {x: comps[x].ratings.get(k_) or (comps[x].meta.get("interfaces") or {}).get(k_)
+                                    for x, k_ in ((na, "shaft_dia_tol_mm"), (nb, "bore_dia_tol_mm"))}
+                            if any(tols.values()):
+                                rec["catalogue_tolerances_mm"] = {x: v for x, v in tols.items() if v}
+                            if na in fast:
+                                rec["basis"] = ("a purchased part with a bore on a screw's shank (the shank is made 0.03 to 0.2 mm "
+                                                "under its nominal diameter): trusted, not simulated")
+                            out[key] = rec
+                            trusted.append(key)
+                            if intent == "slide" and nominal < -0.011:
+                                mismatch.append((na, nb, 2 * S["r"], 2 * B["r"]))
+                            continue
                         ts, tb_ = tol(comps[na]), tol(comps[nb])
-                        ds = 2 * S["r"] + rng.normal(0, ts["hole_sd"], n)
+                        ds = 2 * S["r"] + rng.normal(0, ts["hole_sd"], n) - (0.1 if na in fast else 0.0)   # a thread is made under size
                         db = 2 * B["r"] + tb_["hole_bias"] + rng.normal(0, tb_["hole_sd"], n)
                         clr = db - ds
-                        nominal = 2 * (B["r"] - S["r"])
                         if intent == "slide":
                             p_bad = float((clr < 0.0).mean())
                             what = "would not go in"
                         else:
                             p_bad = float((clr > -0.005).mean())
                             what = "would be loose instead of pressed"
-                        key = f"{na} in {nb} (dia {2 * S['r']:.2f})"
-                        if key in out and out[key]["p_bad"] >= p_bad:
+                        if key in out and (out[key]["p_bad"] or 0.0) >= p_bad:
                             continue
                         out[key] = {"intent": intent, "nominal_clearance_mm": round(nominal, 3), "p_bad": round(p_bad, 3),
-                                    "process": [process_of(comps[na]), process_of(comps[nb])]}
+                                    "class": "simulated", "process": [process_of(comps[na]), process_of(comps[nb])]}
                         if p_bad > 0.02:
                             flagged.append((p_bad, na, nb, 2 * S["r"], nominal, intent, what))
+    for na, nb, ds_, db_ in mismatch:
+        r.add("error", "catalogue_fit_mismatch",
+              f"{na} (dia {ds_:.2f}) in {nb} (bore {db_:.2f}): two purchased parts drawn with the shaft larger than the bore. "
+              f"They are not made for each other.", parts=[na, nb], shaft_dia=round(ds_, 3), bore_dia=round(db_, 3),
+              hint="Choose the bore size that matches the shaft (see the parts' interfaces['bore']).")
+    if trusted:
+        r.add("info", "catalogue_fits_trusted",
+              f"{len(trusted)} shaft-in-bore pair(s) are between two purchased catalogue parts (or a purchased part on a screw's "
+              f"shank) and were not simulated: their makers hold those fits. Listed in the metrics "
+              f"(tolerance.shaft_bore_pairs.catalogue_fits): {', '.join(trusted[:8])}" + (" ..." if len(trusted) > 8 else "") + ".",
+              pairs=trusted)
     seen = set()
     for p_bad, na, nb, dia, nominal, intent, what in sorted(flagged, reverse=True):
         if (na, nb, round(dia, 1)) in seen:

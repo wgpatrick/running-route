@@ -169,6 +169,13 @@ def guide_partners(design: Design) -> set:
                 best, bd = c, dd
         if best is not None:
             out.add(frozenset((blk.name, best.name)))
+    for j in design.joints:
+        drv = j.drive or {}
+        nuts = drv.get("nut")
+        screws = drv.get("screw")
+        for nut in ([nuts] if isinstance(nuts, str) else list(nuts or [])):
+            for scr in ([screws] if isinstance(screws, str) else list(screws or [])):
+                out.add(frozenset((nut, scr)))
     return out
 
 
@@ -179,7 +186,8 @@ def rails_of_joints(design: Design) -> dict:
     for pair in sorted(guide_partners(design), key=sorted):
         a, b = sorted(pair)
         blk, rail = (a, b) if comps[a].meta.get("guides") else (b, a)
-        out.setdefault(comps[blk].meta["guides"], rail)
+        if comps[blk].meta.get("guides") and "static_load_n" in comps[blk].ratings:
+            out.setdefault(comps[blk].meta["guides"], rail)
     return out
 
 
@@ -559,6 +567,21 @@ def clearance_check(design: Design, B: Build, r: VerifierResult, shaft_pairs=())
 
     bed = pr.get("bed")
     toolhead_vs_bed: list = []
+    # what is let into or stuck onto the bed plate: its screws (heads in counterbores), heater pad, sensors
+    bed_stack = set()
+    if bed in comps:
+        bed_stack = {s for s, held in stacks.items() if bed in held} | {x for k in design.joins if bed in k for x in k if x != bed}
+    striker_pairs = set()
+    for e in design.endstops:
+        sw = comps.get(e.get("switch"))
+        if sw is None:
+            continue
+        j = next((x for x in design.joints if x.name == e.get("joint")), None)
+        if j is None:
+            continue
+        for c in design.components:      # whatever on the other side of that joint comes to the switch
+            if under(c.body, j.child) != under(sw.body, j.child):
+                striker_pairs.add(frozenset((sw.name, c.name)))
 
     def skip(a, b):
         key = frozenset((a, b))
@@ -571,6 +594,14 @@ def clearance_check(design: Design, B: Build, r: VerifierResult, shaft_pairs=())
                 return "a screw and a part of its stack"
         if key in guides:
             return "a guide and what it runs on"
+        for s, o in ((a, b), (b, a)):
+            # a screw in a guide block or nut is located on the rail or screw by that guide, not by the stack-up
+            if s in fast and any(frozenset((t, o)) in guides for t in (comps[s].meta.get("threads_into") or [])):
+                return "a screw in a guide, against what the guide runs on"
+        if key in striker_pairs:
+            return "an endstop switch and its striker (endstop window, subsystems verifier)"
+        if noz in (a, b) and bed_stack and (a in bed_stack or b in bed_stack):
+            return "the nozzle over a screw or pad recessed in the bed (the nozzle meets the bed surface first)"
         if key in shaft:
             return "a shaft in its bore (fit check)"
         if tool_body is not None and bed in (a, b) and tool_body in (comps[a].body, comps[b].body) \

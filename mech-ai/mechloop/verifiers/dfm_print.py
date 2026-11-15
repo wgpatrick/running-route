@@ -90,6 +90,9 @@ def evaluate(sm: G.Sampled, name: str, up: np.ndarray, frame: np.ndarray, holes:
             "_need": need, "_idx": idx, "_span": span, "_bridged": bridged, "_droop": droop, "_h": h, "_zmin": zmin, "_on_bed": on_bed}
 
 
+SLIVER_MM2 = 5.0      # thin surface under this area is a sliver (an edge, a run-out), not a wall
+
+
 def check_printed(r, design, c, sm: G.Sampled, frame: np.ndarray, cyls: list, holes: list, lim: Limits) -> dict:
     name = c.name
     man = lim.man.get("printer") or {}
@@ -195,17 +198,42 @@ def check_printed(r, design, c, sm: G.Sampled, frame: np.ndarray, cyls: list, ho
     # ---- walls
     wall_lim = max(lim("fdm.wall_min_mm"), lim("fdm.wall_beads") * nozzle) if "fdm.wall_min_mm" not in lim.over else lim("fdm.wall_min_mm")
     wt = G.wall_thickness(sm)
-    thin = wt < wall_lim - 1e-6
     out["min_wall_mm"] = round(float(wt[np.isfinite(wt)].min()), 2) if np.isfinite(wt).any() else None
     out["typical_wall_mm"] = round(2 * c.shape.volume / max(float(sm.mesh.area), 1e-9), 2)
-    if thin.sum() >= 2:
-        pts, vals = sm.pts[thin], wt[thin]
+    # What cannot be printed, and what merely prints thin (2026-11-15; before, any two samples under two beads were an
+    # error, which failed 13 of Rat Rig's 31 published, widely printed V-Minion parts: docs/REFERENCE_MACHINE.md):
+    #   * a WALL is two near-parallel faces (within 14 degrees). The tip of a knife edge, a lead-in or a fillet
+    #     run-out is thin too, but the slicer simply ends it a bead short: not a wall, not judged;
+    #   * across the layers a feature needs one bead: under the nozzle diameter the slicer drops it (error). Between one
+    #     and two beads it prints as a single bead, which works and is fragile (warning). A limit the design states
+    #     itself (limits["fdm.wall_min_mm"]) is kept as the error line;
+    #   * a face lying IN the layers (a floor, a built-in sacrificial bridge skin) needs one layer, not one bead;
+    #   * slivers under SLIVER_MM2 of surface are not walls.
+    wp = G.wall_thickness(sm, parallel=0.97)
+    flat = np.abs(sm.nrm @ np.asarray(up, dtype=float)) > 0.7
+    layer = float(((lim.man or {}).get("printer") or {}).get("layer", 0.2))
+    hard_lim = lim("fdm.wall_min_mm") if "fdm.wall_min_mm" in lim.over else nozzle
+    hard = ((wp < hard_lim - 1e-6) & ~flat) | ((wp < layer - 1e-6) & flat)
+    soft = (wp < wall_lim - 1e-6) & ~flat & ~hard
+    out["thin_wall_mm2"] = {"under_one_bead": round(float(sm.w[hard].sum()), 1), "one_to_two_beads": round(float(sm.w[soft].sum()), 1)}
+    if hard.sum() >= 2 and sm.w[hard].sum() >= SLIVER_MM2:
+        pts, vals = sm.pts[hard], wp[hard]
         sel = G.spread(pts, vals, k=6, min_sep=4.0)
         add("error", "wall_too_thin_to_print",
-            f"wall as thin as {vals.min():.2f} mm at {G.xyz(pts[sel[0]])} (about {sm.w[thin].sum():.0f} mm² of surface under {wall_lim:g} mm, "
-            f"two beads of a {nozzle:g} mm nozzle): the slicer drops it or prints one fragile bead.",
-            rule="fdm.wall_min_mm", value=float(vals.min()), limit_mm=wall_lim, at=[G.xyz(pts[i]) for i in sel],
-            hint=f"Thicken to at least {wall_lim:g} mm (three beads, {1.5 * wall_lim:g} mm, for anything that carries load).")
+            f"wall as thin as {vals.min():.2f} mm at {G.xyz(pts[sel[0]])} (about {sm.w[hard].sum():.0f} mm² of surface under {hard_lim:g} mm, "
+            f"one bead of a {nozzle:g} mm nozzle, or under one {layer:g} mm layer where it lies flat): the slicer drops it.",
+            rule="fdm.wall_min_mm", value=float(vals.min()), limit_mm=hard_lim, at=[G.xyz(pts[i]) for i in sel],
+            hint=f"Thicken to at least {wall_lim:g} mm (two beads; three, {1.5 * wall_lim:g} mm, for anything that carries load), or "
+                 f"print it lying flat if it is meant as a one-layer skin.")
+    elif soft.sum() >= 2 and sm.w[soft].sum() >= SLIVER_MM2:
+        pts, vals = sm.pts[soft], wp[soft]
+        sel = G.spread(pts, vals, k=6, min_sep=4.0)
+        add("warning", "wall_single_bead",
+            f"wall as thin as {vals.min():.2f} mm at {G.xyz(pts[sel[0]])} (about {sm.w[soft].sum():.0f} mm² of surface between one and two "
+            f"beads of a {nozzle:g} mm nozzle, under {wall_lim:g} mm): it prints as a single bead, which is fragile and needs the "
+            f"slicer's thin-wall setting.", rule="fdm.wall_min_mm", value=float(vals.min()), limit_mm=wall_lim,
+            at=[G.xyz(pts[i]) for i in sel],
+            hint=f"Thicken to {wall_lim:g} mm where it carries load; leave it if it is a skin, a fin or a lead-in.")
     elif out["typical_wall_mm"] < wall_lim:
         add("error", "wall_too_thin_to_print", f"typical wall about {out['typical_wall_mm']:.2f} mm, under {wall_lim:g} mm.",
             rule="fdm.wall_min_mm", value=out["typical_wall_mm"])

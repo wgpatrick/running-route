@@ -266,8 +266,24 @@ def test_print_horizontal_holes_droop_when_large():
 
 def test_print_thin_walls_small_holes_and_pins():
     base = Pos(0, 0, 2) * Box(40, 40, 4)
-    assert sev(check(base + Pos(0, 0, 14) * Box(30, 0.5, 20), material="pla")[1], "wall_too_thin_to_print") == "error"
+    # 2026-11-15: under one bead (0.4 mm nozzle) cannot be printed: error. Between one and two beads (0.5 mm here, the
+    # error case until then) prints as a single fragile bead: warning. Real, widely printed parts have such walls
+    # (docs/REFERENCE_MACHINE.md, section 7).
+    assert sev(check(base + Pos(0, 0, 14) * Box(30, 0.3, 20), material="pla")[1], "wall_too_thin_to_print") == "error"
+    half = check(base + Pos(0, 0, 14) * Box(30, 0.5, 20), material="pla")[1]
+    assert sev(half, "wall_single_bead") == "warning" and "wall_too_thin_to_print" not in half
     assert "wall_too_thin_to_print" not in check(base + Pos(0, 0, 14) * Box(30, 1.6, 20), material="pla")[1]
+    assert "wall_single_bead" not in check(base + Pos(0, 0, 14) * Box(30, 1.6, 20), material="pla")[1]
+    # a 0.3 mm skin lying in the layers (a built-in sacrificial bridge over a counterbore) is one and a half layers, not a wall
+    skin = Pos(0, 0, 5) * Box(40, 40, 10) - Pos(0, 0, 2.5) * Cylinder(6, 5) - Pos(0, 0, 7.65) * Cylinder(3, 4.7)
+    assert "wall_too_thin_to_print" not in check(skin, material="pla", meta={"print_up": "+Z"})[1]
+    # the same skin standing on edge is a wall under one bead
+    assert sev(check(skin, material="pla", meta={"print_up": "+X"})[1], "wall_too_thin_to_print") == "error"
+    # a knife edge (a 20 degree wedge) is thin at its tip but is not a wall
+    from build123d import Polygon, extrude
+    wedge = base + Pos(-15, -5, 4) * extrude(Polygon((0, 0), (30, 0), (30, 10.9), align=None), 20)
+    w = check(wedge, material="pla")[1]
+    assert "wall_too_thin_to_print" not in w and "wall_single_bead" not in w
     # a finer nozzle prints a thinner wall
     assert "wall_too_thin_to_print" not in check(base + Pos(0, 0, 14) * Box(30, 0.5, 20), material="pla",
                                                  man={"printer": {"nozzle": 0.25}, "limits": {"fdm.wall_min_mm": 0.5}})[1]

@@ -16,6 +16,10 @@ MU_BALL, MU_NUT = 0.005, 0.2          # rolling guide, sliding bronze/steel nut 
 K_GUIDE = 15000.0                      # N/mm lateral stiffness of a small recirculating guide block (assumed)
 
 
+class _SkipPrinter(Exception):
+    pass
+
+
 def _adj(design: Design, kind: str, joint: str | None = None):
     for a in design.adjustments:
         if a.kind == kind and (joint is None or a.joint in (None, joint)):
@@ -55,12 +59,33 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
         sp = screw_patterns(design, r, n)
         m["screw_patterns"] = {"groups": len(sp), "worst": dict(sorted(sp.items(), key=lambda kv: kv[1]["p_all_start"])[:5])}
         bs = bores_and_shafts(design, r, n)
-        m["shaft_bore_pairs"] = {"found": len(bs), "worst": dict(sorted(bs.items(), key=lambda kv: -kv[1]["p_bad"])[:5])}
+        sim = {k: v for k, v in bs.items() if v.get("class") != "catalogue fit, trusted"}
+        cat = {k: v for k, v in bs.items() if v.get("class") == "catalogue fit, trusted"}
+        m["shaft_bore_pairs"] = {"found": len(bs), "simulated": len(sim), "catalogue_fits_trusted": len(cat),
+                                 "worst": dict(sorted(sim.items(), key=lambda kv: -kv[1]["p_bad"])[:5]),
+                                 "catalogue_fits": cat}
         play = {}
         for key, v in sp.items():
             a, b = key.split(" -> ")
             play[frozenset((a, b))] = max(v["nominal_radial_clearance_mm"], 0.0)
         B = Build(design, n, screw_play=play)
+        from .stackup import remember
+
+        remember(design, B)      # the subsystems verifier's endstop and probe windows reuse these builds
+        if B.bends or B.bends_not_recognised:
+            from .bends import bend_tolerance
+
+            m["bent_sheet_parts"] = {"tolerance": bend_tolerance(design), "parts": {k: v.summary() for k, v in sorted(B.bends.items())},
+                                     "how": "each bend: angle and bend-line error; a feature on a flange moves by the angle "
+                                            "error times its distance from the bend line, plus the line error"}
+            if B.bends_not_recognised:
+                m["bent_sheet_parts"]["bends_not_recognised"] = B.bends_not_recognised
+                r.add("warning", "sheet_bends_not_recognised",
+                      f"{len(B.bends_not_recognised)} sheet part(s) are not flat plates but no bend (inside radius r, outside "
+                      f"radius r + t about one axis) could be separated in them: {', '.join(B.bends_not_recognised[:6])}. They are "
+                      f"toleranced as flat parts, without bend angle or bend-line scatter, which is optimistic.",
+                      parts=B.bends_not_recognised,
+                      hint="Model each bend with its inside and outside radius (see 'Can each part be made?').")
         if B.unplaced:
             m["not_in_stackup"] = B.unplaced[:20]
         if B.clashes:
@@ -179,13 +204,12 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
             m["paired_rails"] = rails_m
         # ---- lead screws: screw and rail must be parallel or the nut is forced sideways
         screws_m = {}
-        for jn, j in joints.items():
-            drv = j.drive or {}
-            if drv.get("kind") != "leadscrew" or drv.get("screw") not in B.A or not rail_of_joint.get(jn):
-                continue
+        def _one_screw(jn0, jn, j, drv):
+            if drv.get("screw") not in B.A or not rail_of_joint.get(jn0):
+                return
             ax = np.array(j.axis, dtype=float); ax /= np.linalg.norm(ax)
             scr = comps[drv["screw"]]
-            ds, dr = B.direction(scr.name, ax), B.direction(rail_of_joint[jn][0], ax)
+            ds, dr = B.direction(scr.name, ax), B.direction(rail_of_joint[jn0][0], ax)
             travel = abs(j.range[1] - j.range[0])
             nut = drv.get("nut") if drv.get("nut") in B.A else None
             lo, hi = _bb(scr.shape)
@@ -213,7 +237,7 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
             d_root = 0.78 * (2 * float(np.max((hi - lo)[np.abs(ax) < 0.5])) / 2)
             I = math.pi * d_root ** 4 / 64
             k_side = 3 * 193000.0 * I / a_min ** 3
-            adj = _adj(design, "float", jn)
+            adj = _adj(design, "float", jn0)
             side = k_side * err
             drag = MU_NUT * side
             avail = j.max_effort or 0.0
@@ -253,88 +277,145 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
                 r.add("warning", "leadscrew_side_load",
                       f"Axis {jn}: nut misalignment adds up to {_rng99(drag):.0f} N of drag ({_rng99(drag) / avail:.0%} of the drive force).",
                       joint=jn)
+
+        for jn0, j in joints.items():
+            drv0 = j.drive or {}
+            if drv0.get("kind") != "leadscrew":
+                continue
+            # one screw, or several (drive={"screw": [..], "nut": [..], "coupler": [..]}): each screw against the rails
+            as_list = lambda v: [v] if isinstance(v, str) else list(v or [])
+            scr_l, nut_l, cpl_l = as_list(drv0.get("screw")), as_list(drv0.get("nut")), as_list(drv0.get("coupler"))
+            for i_s, scr_n in enumerate(scr_l):
+                drv = {"kind": "leadscrew", "screw": scr_n, "nut": nut_l[i_s] if i_s < len(nut_l) else None,
+                       "coupler": cpl_l[i_s] if i_s < len(cpl_l) else None}
+                jn = jn0 if len(scr_l) == 1 else f"{jn0}:{scr_n}"
+                _one_screw(jn0, jn, j, drv)
         if screws_m:
             m["lead_screws"] = screws_m
         # ---- printers: does the nozzle meet the bed, and is the bed level under it?
-        if design.printer and design.tool_point and design.printer.get("bed") in B.A:
-            spec = design.printer
-            body, p = design.tool_point
-            noz_part = B.nearest_part(body, p)
-            jz, jx, jy = joints[spec["z"]], joints[spec["x"]], joints[spec["y"]]
-            bed = spec["bed"]
-            blo, bhi = _bb(comps[bed].shape)
-            top = bhi[2]
-            zdir = np.array(jz.axis, dtype=float)
-            zr, xr, yr = (rail_of_joint.get(spec[k], [None])[0] for k in ("z", "x", "y"))
-            z_travel = max(jz.range, key=abs)
-            dz = B.direction(zr, zdir) if zr else np.tile(zdir, (n, 1))
-            dx = B.direction(xr, np.array(jx.axis, dtype=float)) if xr else np.tile(np.array(jx.axis, dtype=float), (n, 1))
-            dy = B.direction(yr, np.array(jy.axis, dtype=float)) if yr else np.tile(np.array(jy.axis, dtype=float), (n, 1))
-            pn = np.array(p, dtype=float)
-            fx, fy = 0.8 * (bhi[0] - blo[0]) / 2, 0.8 * (bhi[1] - blo[1]) / 2
-            cx, cy = (blo[0] + bhi[0]) / 2, (blo[1] + bhi[1]) / 2
-            pts = [(cx, cy), (cx - fx, cy - fy), (cx + fx, cy - fy), (cx - fx, cy + fy), (cx + fx, cy + fy)]
-            gaps = []
-            for (bx, by) in pts:
-                qx = (bx - pn[0]) * np.sign(jx.axis[0] or 1.0)
-                qy = (by - pn[1]) * np.sign(jy.axis[1] or 1.0)
-                nz = (B.at(noz_part, pn) + qx * dx + qy * dy)[:, 2]
-                bz = (B.at(bed, (bx, by, top)) + z_travel * dz)[:, 2]
-                gaps.append(nz - bz)
-            G = np.stack(gaps, axis=1)
-            nominal = float(pn[2] - (top + z_travel * zdir[2]))
-            offset = G[:, 0] - nominal
-            tilt = G[:, 1:].max(axis=1) - G[:, 1:].min(axis=1)
-            lh = float(spec.get("layer_height", 0.2))
-            a_z, a_lvl = _adj(design, "z_offset"), _adj(design, "bed_level")
-            pm = {"nominal_gap_mm": round(nominal, 3), "gap_error_mm_99": round(_rng99(offset), 2),
-                  "bed_out_of_level_mm_99": round(_rng99(tilt), 2),
-                  "largest_contributors_to_gap": B.blame(offset), "largest_contributors_to_level": B.blame(tilt)}
-            p_gap = float(((G[:, 0] >= 0) & (G[:, 0] <= lh)).mean())
-            p_lvl = float((tilt <= lh / 2).mean())
-            pm["p_first_layer_reachable_as_built"] = round(p_gap, 3)
-            pm["p_bed_level_within_half_a_layer_as_built"] = round(p_lvl, 3)
-            pm["p_first_layer_reachable_standard_error"] = share(p_gap, None if a_z else 0.95, "first layer reachable as built")["standard_error"]
-            pm["p_bed_level_standard_error"] = share(p_lvl, None if a_lvl else 0.95, "bed level within half a layer as built")["standard_error"]
-            # declared over-travel past the working range (Joint.overtravel): a bed built low can still be brought up
-            ot_z = abs(jz.mechanical_range[1] - jz.range[1]) if z_travel == jz.range[1] else abs(jz.range[0] - jz.mechanical_range[0])
-            if ot_z > 0:
-                p_ot = float((G[:, 0] <= lh + ot_z).mean())
-                pm["z_overtravel_mm"] = round(ot_z, 3)
-                pm["p_bed_reaches_nozzle_with_overtravel"] = round(p_ot, 3)
-                pm["p_bed_reaches_nozzle_with_overtravel_standard_error"] = round(std_error(p_ot, n), 4)
-            if a_z:
-                pm["z_offset_needed_mm_99"], pm["z_offset_available_mm"] = round(_rng99(offset), 2), a_z.range_mm
-                if _rng99(offset) > a_z.range_mm:
-                    r.add("error", "adjustment_too_small",
-                          f"The nozzle-to-bed gap is off by up to {_rng99(offset):.2f} mm as built, but '{a_z.name}' only "
-                          f"adjusts {a_z.range_mm} mm.", needed=round(_rng99(offset), 2))
-            elif p_gap < 0.95:
-                r.add("error", "nozzle_gap_not_adjustable",
-                      f"The nozzle-to-bed gap is drawn at {nominal:.2f} mm and must land between 0 and {lh} mm, but it varies "
-                      f"by up to +/-{_rng99(offset):.2f} mm from build to build: only {p_gap:.0%} of machines could print their "
-                      f"first layer. There is no adjustment for it.", p_ok=round(p_gap, 3),
-                      hint="Add a Z offset adjustment (Adjustment kind='z_offset': an adjustable endstop or probe) with a few mm of "
-                           "range, and give the Z axis that much extra travel.")
-            if a_lvl:
-                pm["levelling_needed_mm_99"], pm["levelling_available_mm"] = round(_rng99(tilt) / 2, 2), a_lvl.range_mm
-                if _rng99(tilt) / 2 > a_lvl.range_mm:
-                    r.add("error", "adjustment_too_small",
-                          f"The bed is up to {_rng99(tilt):.2f} mm out of level under the nozzle as built, but '{a_lvl.name}' only "
-                          f"adjusts +/-{a_lvl.range_mm} mm.", needed=round(_rng99(tilt) / 2, 2))
-            elif p_lvl < 0.95:
-                r.add("error", "bed_not_levelable",
-                      f"The bed ends up to {_rng99(tilt):.2f} mm out of level relative to the nozzle's travel (limit {lh / 2:.2f} mm, "
-                      f"half a layer): only {p_lvl:.0%} of machines would lay a good first layer. There is no bed levelling.",
-                      p_ok=round(p_lvl, 3),
-                      hint="Add bed levelling (Adjustment kind='bed_level': three sprung screws or a probe with mesh compensation).")
-            from .process import stock_plate_flatness
+        try:
+          if design.printer and design.tool_point and design.printer.get("bed") in B.A:
+              spec = design.printer
+              body, p = design.tool_point
+              noz_part = B.nearest_part(body, p)
+              jz, jx, jy = joints[spec["z"]], joints[spec["x"]], joints[spec["y"]]
+              bed = spec["bed"]
+              blo, bhi = _bb(comps[bed].shape)
+              top = bhi[2]
+              zdir = np.array(jz.axis, dtype=float)
+              zr, xr, yr = (rail_of_joint.get(spec[k], [None])[0] for k in ("z", "x", "y"))
+              # Which of the two rides the Z joint? Either arrangement is a printer: a bed that rises to a fixed gantry, or
+              # a gantry / arm that comes down to a fixed bed (a bed-slinger's Z, a cantilever machine). The end of the Z
+              # working range at which nozzle and bed meet is found from the drawing, not assumed.
+              from ..verifiers.motion import _under_body
 
-            spf = stock_plate_flatness(comps[bed].material, float(min(bhi - blo)))
-            if spf:      # reference only: the bed-level figures above are about tilt, not the plate's own bow
-                pm["bed_plate_stock_flatness"] = {**spf, "note": "maker's guarantee for the plate as supplied; a reference value, "
-                                                  "not applied to the stack-up. A probed bed mesh is what takes it up"}
-            m["printer"] = pm
+              def rides(body, j):
+                  return _under_body(design, body, j.child)
+
+              bed_body = comps[bed].body
+              noz_z, bed_z = rides(body, jz), rides(bed_body, jz)
+              pn = np.array(p, dtype=float)
+              if noz_z == bed_z:
+                  r.add("error", "printer_z_arrangement",
+                        f"Joint '{jz.name}' is declared as the printer's Z, but "
+                        + ("both the nozzle's body and the bed ride on it" if noz_z else "neither the nozzle's body nor the bed rides on it")
+                        + ": it cannot change the nozzle-to-bed gap. The nozzle-to-bed checks were NOT run.", joint=jz.name,
+                        hint="design.printer['z'] must name the joint that moves the bed towards the nozzle or the nozzle "
+                             "towards the bed.")
+                  raise _SkipPrinter()
+
+              def drawn_gap(q):
+                  return float(pn[2] + (q * zdir[2] if noz_z else 0.0) - (top + (q * zdir[2] if bed_z else 0.0)))
+
+              z_travel = min(jz.range, key=lambda q: abs(drawn_gap(q)))
+              dz = B.direction(zr, zdir) if zr else np.tile(zdir, (n, 1))
+              dx = B.direction(xr, np.array(jx.axis, dtype=float)) if xr else np.tile(np.array(jx.axis, dtype=float), (n, 1))
+              dy = B.direction(yr, np.array(jy.axis, dtype=float)) if yr else np.tile(np.array(jy.axis, dtype=float), (n, 1))
+              fx, fy = 0.8 * (bhi[0] - blo[0]) / 2, 0.8 * (bhi[1] - blo[1]) / 2
+              cx, cy = (blo[0] + bhi[0]) / 2, (blo[1] + bhi[1]) / 2
+              pts = [(cx, cy), (cx - fx, cy - fy), (cx + fx, cy - fy), (cx - fx, cy + fy), (cx + fx, cy + fy)]
+              gaps = []
+              for (bx, by) in pts:
+                  qx = (bx - pn[0]) * np.sign(jx.axis[0] or 1.0)
+                  qy = (by - pn[1]) * np.sign(jy.axis[1] or 1.0)
+                  # the travel that brings this bed point under the nozzle is the nozzle's on the joints its body rides
+                  # and the bed's (the other way) on the joints the bed rides
+                  noz_move = sum(q_ * d_ for q_, d_, j_ in ((qx, dx, jx), (qy, dy, jy)) if not rides(bed_body, j_))
+                  bed_move = sum(-q_ * d_ for q_, d_, j_ in ((qx, dx, jx), (qy, dy, jy)) if rides(bed_body, j_))
+                  nz = (B.at(noz_part, pn) + noz_move + (z_travel * dz if noz_z else 0.0))[:, 2]
+                  bz = (B.at(bed, (bx, by, top)) + bed_move + (z_travel * dz if bed_z else 0.0))[:, 2]
+                  gaps.append(nz - bz)
+              G = np.stack(gaps, axis=1)
+              nominal = drawn_gap(z_travel)
+              offset = G[:, 0] - nominal
+              tilt = G[:, 1:].max(axis=1) - G[:, 1:].min(axis=1)
+              lh = float(spec.get("layer_height", 0.2))
+              a_z, a_lvl = _adj(design, "z_offset"), _adj(design, "bed_level")
+              pm = {"z_arrangement": "the bed rides Z" if bed_z else "the nozzle rides Z", "nozzle_meets_bed_at": {jz.name: z_travel},
+                    "nominal_gap_mm": round(nominal, 3), "gap_error_mm_99": round(_rng99(offset), 2),
+                    "bed_out_of_level_mm_99": round(_rng99(tilt), 2),
+                    "largest_contributors_to_gap": B.blame(offset), "largest_contributors_to_level": B.blame(tilt)}
+              p_gap = float(((G[:, 0] >= 0) & (G[:, 0] <= lh)).mean())
+              p_lvl = float((tilt <= lh / 2).mean())
+              pm["p_first_layer_reachable_as_built"] = round(p_gap, 3)
+              pm["p_bed_level_within_half_a_layer_as_built"] = round(p_lvl, 3)
+              pm["p_first_layer_reachable_standard_error"] = share(p_gap, None if a_z else 0.95, "first layer reachable as built")["standard_error"]
+              pm["p_bed_level_standard_error"] = share(p_lvl, None if a_lvl else 0.95, "bed level within half a layer as built")["standard_error"]
+              # declared over-travel past the working range (Joint.overtravel): a bed built low can still be brought up
+              ot_z = abs(jz.mechanical_range[1] - jz.range[1]) if z_travel == jz.range[1] else abs(jz.range[0] - jz.mechanical_range[0])
+              if ot_z > 0:
+                  p_ot = float((G[:, 0] <= lh + ot_z).mean())
+                  pm["z_overtravel_mm"] = round(ot_z, 3)
+                  pm["p_bed_reaches_nozzle_with_overtravel"] = round(p_ot, 3)
+                  pm["p_bed_reaches_nozzle_with_overtravel_standard_error"] = round(std_error(p_ot, n), 4)
+              if a_z:
+                  pm["z_offset_needed_mm_99"], pm["z_offset_available_mm"] = round(_rng99(offset), 2), a_z.range_mm
+                  if _rng99(offset) > a_z.range_mm:
+                      r.add("error", "adjustment_too_small",
+                            f"The nozzle-to-bed gap is off by up to {_rng99(offset):.2f} mm as built, but '{a_z.name}' only "
+                            f"adjusts {a_z.range_mm} mm.", needed=round(_rng99(offset), 2))
+              elif p_gap < 0.95:
+                  r.add("error", "nozzle_gap_not_adjustable",
+                        f"The nozzle-to-bed gap is drawn at {nominal:.2f} mm and must land between 0 and {lh} mm, but it varies "
+                        f"by up to +/-{_rng99(offset):.2f} mm from build to build: only {p_gap:.0%} of machines could print their "
+                        f"first layer. There is no adjustment for it.", p_ok=round(p_gap, 3),
+                        hint="Add a Z offset adjustment (Adjustment kind='z_offset': an adjustable endstop or probe) with a few mm of "
+                             "range, and give the Z axis that much extra travel.")
+              if a_lvl:
+                  pm["levelling_needed_mm_99"], pm["levelling_available_mm"] = round(_rng99(tilt) / 2, 2), a_lvl.range_mm
+                  if _rng99(tilt) / 2 > a_lvl.range_mm:
+                      r.add("error", "adjustment_too_small",
+                            f"The bed is up to {_rng99(tilt):.2f} mm out of level under the nozzle as built, but '{a_lvl.name}' only "
+                            f"adjusts +/-{a_lvl.range_mm} mm.", needed=round(_rng99(tilt) / 2, 2))
+              elif p_lvl < 0.95:
+                  r.add("error", "bed_not_levelable",
+                        f"The bed ends up to {_rng99(tilt):.2f} mm out of level relative to the nozzle's travel (limit {lh / 2:.2f} mm, "
+                        f"half a layer): only {p_lvl:.0%} of machines would lay a good first layer. There is no bed levelling.",
+                        p_ok=round(p_lvl, 3),
+                        hint="Add bed levelling (Adjustment kind='bed_level': three sprung screws or a probe with mesh compensation).")
+              from .process import stock_plate_flatness
+
+              spf = stock_plate_flatness(comps[bed].material, float(min(bhi - blo)))
+              if spf:      # reference only: the bed-level figures above are about tilt, not the plate's own bow
+                  pm["bed_plate_stock_flatness"] = {**spf, "note": "maker's guarantee for the plate as supplied; a reference value, "
+                                                    "not applied to the stack-up. A probed bed mesh is what takes it up"}
+              m["printer"] = pm
+        except _SkipPrinter:
+            pass
+        # ---- clearances: gaps that are drawn open, across the same builds
+        try:
+            from .clearance import clearance_check
+
+            pairs_bs = []
+            for key in bs:
+                na, rest = key.split(" in ", 1)
+                pairs_bs.append((na, rest.rsplit(" (dia", 1)[0]))
+            m["clearances"] = clearance_check(design, B, r, shaft_pairs=pairs_bs)
+        except Exception as e:      # not evaluated must never read as a pass
+            import traceback
+
+            r.add("error", "clearance_check_failed", f"The clearance-under-tolerance check did not run: {type(e).__name__}: {e}",
+                  trace=traceback.format_exc()[-600:])
         if noise:
             m["within_sampling_error_of_a_limit"] = noise
             r.add("info", "within_sampling_error_of_the_limit",

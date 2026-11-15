@@ -1476,12 +1476,20 @@ def _artifacts(ctx, r, m):
 
                 if OUT_ROOT not in TU_.TUNING_ROOTS:
                     TU_.TUNING_ROOTS.insert(0, OUT_ROOT)
-                pm, src = TU_.pm_for(design, OUT_ROOT)
+                # A verify is a function of the design alone: no figure here may come from an earlier run's report.json
+                # (it used to, and the input-shaper prediction then differed between a first and a second run of the same
+                # design). The FEA frame stiffness of THIS run does not exist yet (the fea verifier runs later), so the
+                # prediction written into printer.cfg rests on belt stiffness only and says so; `mechloop tune`, which is
+                # asked for explicitly and names the report it reads, gives the figure with the frame in it.
+                from ..twin import printer_map_for as _pm_for_design
+
+                pm, src = _pm_for_design(design), None
                 tuning = TU_.firmware_tuning(design, pm, {"bed_mesh": False}, strict=False)
                 for ng in tuning.get("not_generated") or []:      # an explicit skip: said in the file and here, not a pass
                     r.add("warning", "firmware_tuning_part_not_generated", f"printer.cfg was written without {ng}",
                           hint="tools/setup_klipper.sh installs Klipper; its own code chooses the input shaper.")
-                tuning_note = {"frame_stiffness_from": src or "none: belt stiffness only", "not_generated": tuning.get("not_generated"),
+                tuning_note = {"frame_stiffness_from": src or "none: belt stiffness only (a verify never reads an earlier run's "
+                                                               "report; `mechloop tune` adds the FEA frame stiffness)", "not_generated": tuning.get("not_generated"),
                                "input_shaper": {ax: {k: v for k, v in tuning["input_shaper"][ax].items() if k != "candidates"}
                                                 for ax in ("x", "y")} if tuning.get("input_shaper") else None,
                                "selected_by": (tuning.get("input_shaper") or {}).get("selected_by"),
@@ -1493,6 +1501,16 @@ def _artifacts(ctx, r, m):
                 r.add("error", "firmware_tuning_not_generated",
                       f"Input shaper / pressure advance / probe settings could not be generated ({tuning['error']}); the printer.cfg "
                       "was written without them.")
+        zj_ = next((x for x in design.joints if x.name == (design.printer or {}).get("z")), None)
+        if design.printer and zj_ is not None:
+            zs_ = E.z_sense(design, zj_)
+            m["z_axis"] = {k: v for k, v in zs_.items() if v is not None}
+            if zs_["error"]:
+                r.add("error", "printer_z_arrangement",
+                      f"The Z axis cannot be configured: {zs_['error']}. The firmware's Z is the nozzle's height above the bed, so "
+                      f"the joint named in design.printer['z'] must move the bed towards the nozzle or the nozzle towards the "
+                      f"bed, along a vertical axis; which of the two, and which way its value counts, is worked out from the "
+                      f"design.", joint=zj_.name)
         cfg = E.klipper_config(el, design, sim, tuning=tuning)
         m["firmware_tuning"] = tuning_note
         (out / "printer.cfg").write_text(cfg + "\n")

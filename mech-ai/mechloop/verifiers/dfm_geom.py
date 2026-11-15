@@ -224,17 +224,19 @@ def _hits_brute(tris, origins, dirs):
     return dist, hit
 
 
-def wall_thickness(sm: Sampled) -> np.ndarray:
+def wall_thickness(sm: Sampled, parallel: float = 0.85) -> np.ndarray:
     """Per sample: how far into the material, straight in, until the opposite surface, where that surface
     faces back the other way (a wall or a floor). inf where the far side is not a wall's other face
-    (a sharp edge's wedge, a chamfer)."""
-    key = "wall"
+    (a sharp edge's wedge, a chamfer). `parallel`: cosine of the largest angle between the two faces that still
+    counts as a wall; 0.85 (32 degrees) lets tapering walls in, 0.97 (14 degrees) keeps only near-parallel faces
+    and so leaves out the tip of a knife edge, which is thin but is not a wall."""
+    key = ("wall", parallel)
     if key not in sm._acc:
         d, h = ray_hits(sm.tris, sm.pts - sm.nrm * 1e-4, -sm.nrm)
         ok = h >= 0
         facing = np.zeros(len(d), dtype=bool)
         # the far face must face away from this one (its outward normal along the ray), near enough
-        facing[ok] = np.einsum("ij,ij->i", sm.tri_n[h[ok]], -sm.nrm[ok]) > 0.85
+        facing[ok] = np.einsum("ij,ij->i", sm.tri_n[h[ok]], -sm.nrm[ok]) > parallel
         sm._acc[key] = np.where(facing, d + 1e-4, np.inf)
     return sm._acc[key]
 

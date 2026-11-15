@@ -538,9 +538,12 @@ def _asm_mesh(design: Design, names, selections: dict, size: float | None, workd
 
 
 def _asm_solve(workdir: Path, job: str, xyz, part_tets, comps, fixed_nodes, nodal: dict, traction, force, label, r,
-               temps: dict | None = None):
+               temps: dict | None = None, bc: list | None = None):
     """Write and run one linear static step. nodal: {node: weight}, load = traction * weight.
-    temps: {part index: temperature rise in K} adds thermal expansion."""
+    temps: {part index: temperature rise in K} adds thermal expansion.
+    bc: [(nodes, dof 1..3), ...] holds each set in one direction only (a guide block across its rail, a nut seat along
+    its screw) instead of fixing `fixed_nodes` in all three; `fixed_nodes` must then be the union of the sets (the
+    reactions are summed over it)."""
     ccx_order = [0, 1, 2, 3, 4, 5, 6, 7, 9, 8]
     with open(workdir / f"{job}.inp", "w") as f:
         f.write("*NODE, NSET=NALL\n")
@@ -570,7 +573,17 @@ def _asm_solve(workdir: Path, job: str, xyz, part_tets, comps, fixed_nodes, noda
             f.write(f"*SOLID SECTION, ELSET=P{i}, MATERIAL=M{i}\n")
         if temps is not None:
             f.write("*INITIAL CONDITIONS, TYPE=TEMPERATURE\nNALL,0.\n")
-        f.write("*BOUNDARY\nNFIX,1,3\n*STEP\n*STATIC\n")
+        if bc:
+            for bi, (bn, _dof) in enumerate(bc):
+                f.write(f"*NSET, NSET=NBC{bi}\n")
+                for n in bn:
+                    f.write(f"{int(n) + 1},\n")
+            f.write("*BOUNDARY\n")
+            for bi, (_bn, dof) in enumerate(bc):
+                f.write(f"NBC{bi},{int(dof)},{int(dof)}\n")
+            f.write("*STEP\n*STATIC\n")
+        else:
+            f.write("*BOUNDARY\nNFIX,1,3\n*STEP\n*STATIC\n")
         if temps is not None:
             f.write("*TEMPERATURE\n")
             # a node shared by two parts takes the hotter part's temperature
@@ -905,7 +918,10 @@ def run_thermal(design: Design, tc, r: VerifierResult) -> dict:
 
 def verify_fea(design: Design, keep_dir: Path | None = None) -> VerifierResult:
     r = VerifierResult("fea")
-    if not design.loadcases and not design.modalcases and not design.assemblycases and not design.thermalcases:
+    from .bed_support import layout as _bed_layout
+
+    has_bed = _bed_layout(design) is not None
+    if not design.loadcases and not design.modalcases and not design.assemblycases and not design.thermalcases and not has_bed:
         r.skipped = "design has no load cases"
         return r
     if not shutil.which("ccx"):

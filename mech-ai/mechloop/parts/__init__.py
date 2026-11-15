@@ -182,6 +182,7 @@ def nema17(length: int = 40) -> Stock:
                  f"NEMA 17 stepper, {length} mm body (StepperOnline {rec['part_number']})", v["mass_g"] / 1000.0,
                  ratings={"holding_torque_nmm": torque, "rotor_inertia_gcm2": v["rotor_inertia_gcm2"],
                           "torque_curve_rpm_frac": curve, "max_rpm": float(pts[-1][0]),
+                          **({"shaft_dia_tol_mm": list(v["shaft_dia_tol_mm"])} if v.get("shaft_dia_tol_mm") else {}),
                           "max_rpm_basis": "last speed of the published pull-out torque curve",
                           "torque_curve_conditions": rec["pull_out_torque_curve"]["title"],
                           "rated_current_a": v["rated_current_a"], "phase_resistance_ohm": v["phase_resistance_ohm"],

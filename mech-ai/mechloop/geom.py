@@ -17,10 +17,49 @@ _MESH_CACHE: dict[int, tuple] = {}
 def to_trimesh(shape: Shape, tol: float = 0.05, ang: float = 0.3) -> trimesh.Trimesh:
     key = id(shape.wrapped)
     if key not in _MESH_CACHE:
-        verts, tris = shape.tessellate(tol, ang)
-        v = np.array([(p.X, p.Y, p.Z) for p in verts], dtype=float)
-        _MESH_CACHE[key] = (shape.wrapped, trimesh.Trimesh(v, np.array(tris, dtype=int), process=False))
+        skipped = 0
+        try:
+            verts, tris = shape.tessellate(tol, ang)
+            v = np.array([(p.X, p.Y, p.Z) for p in verts], dtype=float)
+            f = np.array(tris, dtype=int)
+        except AttributeError:
+            # the CAD kernel returned no triangulation for some face (seen on imported STEP files with degenerate
+            # faces): mesh face by face and leave those out, counted, instead of losing the whole part
+            v, f, skipped = _tessellate_face_by_face(shape, tol, ang)
+        m = trimesh.Trimesh(v, f, process=False)
+        if skipped:
+            m.metadata["faces_not_meshed"] = skipped
+        _MESH_CACHE[key] = (shape.wrapped, m)
     return _MESH_CACHE[key][1]
+
+
+def _tessellate_face_by_face(shape, tol: float, ang: float):
+    from OCP.BRep import BRep_Tool
+    from OCP.BRepMesh import BRepMesh_IncrementalMesh
+    from OCP.TopAbs import TopAbs_REVERSED
+    from OCP.TopLoc import TopLoc_Location
+
+    BRepMesh_IncrementalMesh(shape.wrapped, tol, False, ang, True)
+    vs, fs, skipped, off = [], [], 0, 0
+    for face in shape.faces():
+        loc = TopLoc_Location()
+        poly = BRep_Tool.Triangulation_s(face.wrapped, loc)
+        if poly is None:
+            skipped += 1
+            continue
+        trsf = loc.Transformation()
+        n = poly.NbNodes()
+        for i in range(1, n + 1):
+            p = poly.Node(i).Transformed(trsf)
+            vs.append((p.X(), p.Y(), p.Z()))
+        rev = face.wrapped.Orientation() == TopAbs_REVERSED
+        for t in poly.Triangles():
+            a, b, c = t.Value(1), t.Value(2), t.Value(3)
+            fs.append((off + a - 1, off + c - 1, off + b - 1) if rev else (off + a - 1, off + b - 1, off + c - 1))
+        off += n
+    if not fs:
+        raise ValueError("the CAD kernel could not mesh any face of this part")
+    return np.array(vs, dtype=float), np.array(fs, dtype=int), skipped
 
 
 def translation(v) -> np.ndarray:

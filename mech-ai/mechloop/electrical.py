@@ -1721,6 +1721,54 @@ def extruder_gearing_lines(el: Electrical, ex: dict) -> list:
 SENSORLESS_SGTHRS_START = 100      # StallGuard threshold written for a sensorless axis: a starting point, not a prediction
 
 
+def z_sense(design, j) -> dict:
+    """How a printer's Z joint relates to the nozzle-to-bed gap: {"rides": "bed" | "nozzle" | None,
+    "closes_with_joint": +1 when the gap closes as the joint's value rises, -1 when it opens, "error": text or None}.
+    Either the bed or the nozzle's body must ride the joint (not both, not neither), and its axis must have a vertical
+    component."""
+    pr = design.printer or {}
+    parent = {x.child: x.parent for x in design.joints}
+
+    def under(body):
+        seen = set()
+        while body not in seen:
+            if body == j.child:
+                return True
+            seen.add(body)
+            if body not in parent:
+                return False
+            body = parent[body]
+        return False
+
+    try:
+        bed_body = design.get(pr["bed"]).body
+    except Exception:
+        return {"rides": None, "closes_with_joint": 1, "error": "no bed part declared (design.printer['bed'])"}
+    if design.tool_point is None:
+        return {"rides": None, "closes_with_joint": 1, "error": "no tool point declared (design.tool_point)"}
+    bed_r, noz_r = under(bed_body), under(design.tool_point[0])
+    az = float(j.axis[2]) / (sum(float(x) ** 2 for x in j.axis) ** 0.5 or 1.0)
+    if bed_r == noz_r:
+        return {"rides": None, "closes_with_joint": 1,
+                "error": f"joint '{j.name}' is declared as Z but " + ("both the bed and the nozzle ride on it" if bed_r else
+                                                                      "neither the bed nor the nozzle rides on it")}
+    if abs(az) < 0.5:
+        return {"rides": "bed" if bed_r else "nozzle", "closes_with_joint": 1,
+                "error": f"joint '{j.name}' is declared as Z but its axis {tuple(j.axis)} is not vertical"}
+    # the bed rising (+Z) closes the gap; the nozzle rising opens it
+    return {"rides": "bed" if bed_r else "nozzle", "closes_with_joint": 1 if (az > 0) == bed_r else -1, "error": None}
+
+
+def _mirrored(j):
+    """The same joint with its value's sign turned (range and over-travel swapped), for the firmware's Z arithmetic."""
+    import copy
+
+    m = copy.copy(j)
+    m.range = (-j.range[1], -j.range[0])
+    m.overtravel = tuple(reversed((tuple(j.overtravel) + (0.0, 0.0))[:2]))
+    return m
+
+
 def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict | None = None) -> str:
     """printer.cfg from the pin map, the design's transmissions and joints, the heater simulation and the twin's
     tuning (mechloop.twin.tuning.firmware_tuning: input shaper, pressure advance, probe and bed mesh). With
@@ -1788,12 +1836,23 @@ def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict
         else:
             ep = _board_port_of(el, sw_dev[e["switch"]].name) if e.get("switch") in sw_dev else None
             L += [f"endstop_pin: ^{ep.pin}" if ep else "# endstop_pin: NOT WIRED"]
-        if ax == "z":   # the bed moves; firmware Z is the nozzle's height above it
+        if ax == "z":   # firmware Z is the nozzle's height above the bed
             gap = None
             if design.tool_point and pr.get("bed"):
                 bb = design.get(pr["bed"]).shape.bounding_box()
                 gap = design.tool_point[1][2] - bb.max.Z
             at_max = e.get("at", "min") == "max"
+            # Z sign convention. The lines below are written for a joint whose value RISES as nozzle and bed come
+            # together (a bed that rises on +Z, or a nozzle that descends on an axis of (0, 0, -1)). A joint drawn the
+            # other way (value rising as they part) is the same machine with the joint's sign turned: mirror it.
+            zs = z_sense(design, j)
+            if zs["error"]:
+                L += [f"# Z AXIS NOT CONFIGURED: {zs['error']}"]
+                lo, hi = j.range
+            elif zs["closes_with_joint"] < 0:
+                lo, hi = -j.range[1], -j.range[0]
+                at_max = not at_max
+                j = _mirrored(j)
             z_end = (gap - hi) if (gap is not None and at_max) else 0.0
             zmax = (gap - lo) if gap is not None else hi - lo
             ot_lo, ot_hi = j.mechanical_range[0] - lo, j.mechanical_range[1] - hi     # declared over-travel (<= 0, >= 0)
@@ -1819,6 +1878,33 @@ def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict
         L += ["", f"[tmc2209 stepper_{ax}]", f"uart_pin: {pins['uart']}", f"tx_pin: {pins['tx']}", f"uart_address: {pins['uart_address']}",
               f"run_current: {st['run_current']:.3f}", f"sense_resistor: {board.ratings.get('sense_resistor_ohm', 0.11):.3f}",
               "stealthchop_threshold: 0"]
+        # further motors of this axis on their OWN drivers (a Z on two or three screws, each with a motor): Klipper's
+        # [stepper_z1], [stepper_z2] ... Motors that share the first motor's driver need no section.
+        # (two connectors of one driver, like a board's doubled Z socket, are one driver: the step pin tells)
+        extra_ports, seen_ports = [], {str(pins.get("step"))}
+        for mn in st["motors"][1:]:
+            p2 = _board_port_of(el, mn)
+            if p2 is not None and isinstance(p2.pin, dict) and str(p2.pin.get("step")) not in seen_ports:
+                seen_ports.add(str(p2.pin.get("step")))
+                extra_ports.append(p2)
+        for k2, p2 in enumerate(extra_ports, 1):
+            q2 = p2.pin
+            L += ["", f"[stepper_{ax}{k2}]", f"step_pin: {q2['step']}", f"dir_pin: {q2['dir']}", f"enable_pin: !{q2['enable']}",
+                  f"microsteps: {st.get('microsteps', 16)}", f"rotation_distance: {dr.get('travel_per_rev', 40):g}",
+                  "", f"[tmc2209 stepper_{ax}{k2}]", f"uart_pin: {q2['uart']}", f"tx_pin: {q2['tx']}", f"uart_address: {q2['uart_address']}",
+                  f"run_current: {st['run_current']:.3f}", f"sense_resistor: {board.ratings.get('sense_resistor_ohm', 0.11):.3f}",
+                  "stealthchop_threshold: 0"]
+        if ax == "z" and extra_ports:
+            zt = fw.get("z_tilt")
+            if zt and zt.get("z_positions") and zt.get("points"):
+                L += ["", "[z_tilt]", "z_positions:"] + [f"    {x:g}, {y:g}" for x, y in zt["z_positions"]] + \
+                     ["points:"] + [f"    {x:g}, {y:g}" for x, y in zt["points"]] + \
+                     [f"speed: {zt.get('speed', 100):g}", f"horizontal_move_z: {zt.get('horizontal_move_z', 5):g}",
+                      f"retries: {zt.get('retries', 5)}", f"retry_tolerance: {zt.get('retry_tolerance', 0.01):g}"]
+            else:
+                L += ["", f"# NO [z_tilt]: {1 + len(extra_ports)} Z motors on their own drivers but el.firmware['z_tilt'] = "
+                          "{'z_positions': [(x, y), ...], 'points': [(x, y), ...]} is not declared;",
+                      "# the screws are then never levelled against each other by the firmware."]
         if sensorless:
             sg = int((fw.get("sensorless") or {}).get(jn, {}).get("sgthrs", SENSORLESS_SGTHRS_START))
             if pins.get("diag"):

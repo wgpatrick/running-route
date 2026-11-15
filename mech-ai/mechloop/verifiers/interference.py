@@ -75,6 +75,7 @@ def verify_interference(design: Design) -> VerifierResult:
                 left -= g
             if len(groups) > 1:
                 groups.sort(key=len, reverse=True)
+                groups = groups[:1] + _not_free_standing(design, body, groups, r, "floating_parts")
                 for g in groups[1:]:
                     r.add("error", "floating_parts",
                           f"In body '{body}', {sorted(g)} do not touch the rest of the body "
@@ -88,6 +89,39 @@ def verify_interference(design: Design) -> VerifierResult:
                      "worst_overlap_mm3": round(worst, 2),
                      "contact_pairs": sum(len(v) for v in contacts.values()) // 2}
     return r
+
+
+def _not_free_standing(design: Design, body: str, groups: list, r, what: str) -> list:
+    """Of the connected groups of a body (largest first), those that are still a fault once declared free-standing
+    units (design.free_standing) are taken out. A unit is accepted only on the fixed world, only as ONE connected
+    group (a unit whose own parts fall apart is still reported), and only if every part of the group other than
+    screws and nuts is listed in it. The reference group (groups[0]) may itself be a unit; it is never returned."""
+    units = {k: set(v) for k, v in (getattr(design, "free_standing", None) or {}).items()}
+    if not units:
+        return groups[1:]
+    hardware = {f.name for f in design.fasteners} | {c.name for c in design.components if (c.sku or "").startswith(("SHCS", "NUT"))}
+    known = {c.name for c in design.components}
+    if r is not None:
+        for k, v in units.items():
+            for n in sorted(v - known):
+                r.add("error", "unknown_part_reference", f"Free-standing unit '{k}' lists '{n}', which is not a part.", name=n)
+    used = set()
+
+    def unit_of(g):
+        core = g - hardware
+        return next((k for k, v in units.items() if core and core <= v), None)
+
+    u0 = unit_of(groups[0])
+    if u0:
+        used.add(u0)
+    bad = []
+    for g in groups[1:]:
+        u = unit_of(g)
+        if body == "world" and u is not None and u not in used:
+            used.add(u)
+            continue
+        bad.append(g)
+    return bad
 
 
 def _fastening(design: Design, contacts: dict[str, set[str]], r: VerifierResult) -> None:
@@ -139,6 +173,7 @@ def _fastening(design: Design, contacts: dict[str, set[str]], r: VerifierResult)
         groups = [g for g in groups if g - fasteners]
         if len(groups) > 1:
             groups.sort(key=lambda g: -sum(design.get(n).mass() for n in g))
+            groups = groups[:1] + _not_free_standing(design, body, groups, None, "unfastened")
             for g in groups[1:]:
                 parts = sorted(g - fasteners)
                 touching = sorted({t for n in parts for t in contacts[n] & names} - g)
@@ -149,6 +184,8 @@ def _fastening(design: Design, contacts: dict[str, set[str]], r: VerifierResult)
                       hint="Add screws that pass through/into both parts (parts.add_screw), or declare the "
                            "real joint with design.join(a, b, kind) for a press fit, bond, clamp or set screw.")
 
+
+STANDARD_LENGTHS_MM = (3, 4, 5, 6, 8, 10, 12, 16, 20, 25, 30, 35, 40, 45, 50, 55, 60)      # ISO 4762 preferred lengths
 
 THREAD_FACTOR = {"steel": 1.0, "stainless304": 1.0, "brass": 1.0, "al6061": 1.5,  # x thread diameter; plastics 2.0
                  # cast tooling plate yields at 105 / 124 MPa against 276 for 6061-T6: kept at the soft-material 2.0
@@ -190,8 +227,20 @@ def _threads(design: Design, r: VerifierResult) -> None:
             if tsku.startswith("NUT-"):  # a standard nut is full strength once the screw passes through it
                 need = comps[tgt].meta.get("interfaces", {}).get("height", d * 0.8)
             depth = comps[tgt].meta.get("interfaces", {}).get("thread_depth")
+            fits = None
             if depth is not None:  # a catalog part's own tapped hole: using its full depth is what the vendor intends
                 need = min(need, depth - 0.3)
+                # The vendor's depth is a MAXIMUM penetration, not a requirement. Screws come in standard lengths, so
+                # through a given stack only some engagements exist. If no standard length reaches `need` without
+                # bottoming out, the longest one that stays inside the hole is what the vendor's own screw does
+                # (Mean Well "4-M4 L=3mm" through a 4 mm panel: M4 x 6 gives 2.0 mm, M4 x 8 would give 4.0): accept
+                # it, down to half a diameter of thread (2 to 3 turns), below which the stack must change.
+                sb_ = c.shape.bounding_box()
+                length = float(abs(np.array([sb_.size.X, sb_.size.Y, sb_.size.Z]) @ np.abs(a))) - float(c.meta.get("interfaces", {}).get("head_h", 0.0))
+                grip = length - eng                      # what the screw passes through before the thread starts
+                fits = [L - grip for L in STANDARD_LENGTHS_MM if 0.0 < L - grip <= depth + 0.05]
+                if fits and max(fits) < need - 0.05:
+                    need = max(max(fits), 0.5 * d)
             if depth is not None and eng > depth + 0.05:
                 r.add("error", "thread_bottoms_out",
                       f"{c.name} goes {eng:.1f} mm into {tgt}, whose tapped holes are only {depth:.1f} mm deep.",

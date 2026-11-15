@@ -89,8 +89,10 @@ def resolve_drives(design: Design, r: VerifierResult | None = None) -> dict:
             continue
         kind = drv["kind"]
         # transmission parts named in the drive must exist; their ratings fill in the numbers
-        refs = {k: drv[k] for k in ("pulley", "screw", "nut", "coupler") if k in drv}
-        bad = [v for v in refs.values() if v not in comps]
+        # a Z axis on several lead screws names them as lists: {"screw": [..], "nut": [..], "coupler": [..]}
+        refs_all = {k: ([drv[k]] if isinstance(drv[k], str) else list(drv[k])) for k in ("pulley", "screw", "nut", "coupler") if k in drv}
+        refs = {k: v[0] for k, v in refs_all.items() if v}
+        bad = [x for v in refs_all.values() for x in v if x not in comps]
         if bad:
             if r:
                 r.add("error", "drive_part_missing", f"Joint {j.name}: drive refers to {bad}, not in the design.",
@@ -135,7 +137,13 @@ def resolve_drives(design: Design, r: VerifierResult | None = None) -> dict:
             j.reflected_inertia = Jr * (2 * math.pi / (travel_per_rev * 1e-3)) ** 2
         else:
             j.reflected_inertia = Jr * drv.get("ratio", 1.0) ** 2 * 1e6
-        out[j.name] = {"motors": motors, "kind": kind, **({"parts": refs} if refs else {}),
+        if kind == "leadscrew" and len(refs_all.get("screw", [])) > 1:
+            leads = {comps[x].ratings.get("lead_mm") for x in refs_all["screw"]}
+            if len(leads) > 1 and r:
+                r.add("error", "drive_screws_differ", f"Joint {j.name}: its lead screws have different leads {sorted(map(str, leads))}; "
+                      f"they cannot move one body together.", joint=j.name)
+            j.drive_resolved["screws"] = list(refs_all["screw"])
+        out[j.name] = {"motors": motors, "kind": kind, **({"parts": {k: (v if len(v) > 1 else v[0]) for k, v in refs_all.items()}} if refs_all else {}),
                        "reflected_rotor_inertia": round(j.reflected_inertia, 4), "motor_rpm_at_max_speed": round(rpm, 1),
                        "motor_torque_nmm_at_speed": round(torque, 1), "available_effort": j.max_effort,
                        "unit": "N" if j.kind == "slide" else "N*mm",

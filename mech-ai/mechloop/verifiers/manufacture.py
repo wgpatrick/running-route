@@ -39,6 +39,12 @@ def check_part(r: VerifierResult, design: Design, c) -> dict:
         return row
     lim = Limits(design, c)
     sm = G.sample_surface(c.shape)
+    lost = getattr(sm.mesh, "metadata", {}).get("faces_not_meshed")
+    if lost:      # checked on what could be meshed: say so, a part that is partly unseen has not passed
+        row["faces_not_meshed"] = lost
+        r.add("warning", "part_partly_checked", f"{c.name}: the CAD kernel could not mesh {lost} of its faces; the checks below ran on "
+              f"the rest of the surface and may miss what is on those faces.", part=c.name, faces_not_meshed=lost,
+              hint="Usually a degenerate face in an imported STEP file: re-export or heal the part.")
     frame = G.part_frame(c.shape)
     cyls = G.cylinders(c.shape)
     holes = G.holes(c.shape, sm, cyls)

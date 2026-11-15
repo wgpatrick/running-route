@@ -7,12 +7,31 @@ from ..model import Component
 
 PROCESS = {
     #            feature position   size, fraction   hole diameter: bias, sigma   flatness of a mating face
-    "purchased": {"pos": 0.02, "scale": 0.0001, "hole_bias": 0.00, "hole_sd": 0.01, "flat": 0.01},
-    "machined":  {"pos": 0.04, "scale": 0.0002, "hole_bias": 0.00, "hole_sd": 0.02, "flat": 0.02},
-    "sheet":     {"pos": 0.08, "scale": 0.0005, "hole_bias": 0.00, "hole_sd": 0.04, "flat": 0.10},
-    "extrusion": {"pos": 0.15, "scale": 0.0010, "hole_bias": 0.00, "hole_sd": 0.03, "flat": 0.05},  # saw-cut to length
-    "printed":   {"pos": 0.12, "scale": 0.0015, "hole_bias": -0.15, "hole_sd": 0.07, "flat": 0.10},  # holes print small
+    #            "pos": a feature against the part's own datum faces. "pattern": one feature against a neighbouring
+    #            feature made in the same set-up (hole to hole within one screw pattern), see PATTERN_NOTE.
+    "purchased": {"pos": 0.02, "pattern": 0.02, "scale": 0.0001, "hole_bias": 0.00, "hole_sd": 0.01, "flat": 0.01},
+    "machined":  {"pos": 0.04, "pattern": 0.02, "scale": 0.0002, "hole_bias": 0.00, "hole_sd": 0.02, "flat": 0.02},
+    "sheet":     {"pos": 0.08, "pattern": 0.04, "scale": 0.0005, "hole_bias": 0.00, "hole_sd": 0.04, "flat": 0.10},
+    "extrusion": {"pos": 0.15, "pattern": 0.10, "scale": 0.0010, "hole_bias": 0.00, "hole_sd": 0.03, "flat": 0.05},  # saw-cut to length
+    "printed":   {"pos": 0.12, "pattern": 0.05, "scale": 0.0015, "hole_bias": -0.15, "hole_sd": 0.07, "flat": 0.10},  # holes print small
 }
+# PATTERN_NOTE (2026-11-15). Until then the screw-pattern check gave every hole of a pattern its own independent "pos"
+# error. That is the error of a hole against a far datum face, and most of it is common to the holes of one pattern:
+# an edge that came out fat or thin (first-layer squash, over-extrusion, a kerf) moves the datum, not the holes against
+# each other, and a size error is carried separately as "scale". Hole to hole within a pattern a process is much
+# better: an FDM printer positions on the same belts and steps for every hole of a layer. Evidence that the old figure
+# was wrong: Rat Rig's V-Minion motor cages have four 3.3 mm printed holes on the NEMA 17's 31 mm square and are
+# assembled by the thousand, where the old model said 9 % would start (docs/REFERENCE_MACHINE.md, A1).
+# The "pattern" values are RECALLED CLASS VALUES (no document fetched): FDM hole pitch about +/-0.1 mm (two standard
+# deviations 0.05), laser +/-0.08, CNC +/-0.04 in one set-up.
+#
+# A screw in a clearance hole in PLASTIC does not need geometric clearance to start: it cuts its way. Printed parts are
+# routinely made with M3 screws threading themselves into 2.5 to 2.8 mm holes (0.1 to 0.25 mm of interference all round);
+# an interference on one side of a clearance hole is far less. PLASTIC_HOLE_YIELD_MM is the radial interference a
+# screw is taken to overcome in a plastic through-hole (recalled practice, no document). The share of builds in which
+# every screw starts FREELY is still reported (`p_all_start_freely`), and patterns that rely on the plastic yielding
+# are counted in an info finding, so the reliance is visible.
+PLASTIC_HOLE_YIELD_MM = 0.15
 PLASTICS = {"pla", "petg", "abs", "nylon_pa12"}
 
 

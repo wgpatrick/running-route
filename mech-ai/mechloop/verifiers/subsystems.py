@@ -222,10 +222,13 @@ def _switch_checks(design: Design, e: dict, sw, j, r: VerifierResult) -> dict:
         press = P[:3, :3] @ np.array(itf["press_direction"], dtype=float)
         press /= np.linalg.norm(press)
 
+    nearest: dict = {}
+
     def gap(q, point):
         T = forward_kinematics(design, {jn: float(q)})
         p = (T[sw.body] @ np.array([*point, 1.0]))[:3]
         best = 1e9
+        nearest.clear()
         for c in design.components:
             moves_with_switch = (c.body == sw.body) or (_under(design, c.body, j.child) == _under(design, sw.body, j.child))
             if c.name == sw.name or moves_with_switch:
@@ -235,7 +238,10 @@ def _switch_checks(design: Design, e: dict, sw, j, r: VerifierResult) -> dict:
             lo, hi = np.array([bb.min.X, bb.min.Y, bb.min.Z]), np.array([bb.max.X, bb.max.Y, bb.max.Z])
             if float(np.linalg.norm(np.maximum(np.maximum(lo - local, local - hi), 0.0))) >= best:
                 continue
-            best = min(best, surface_distance(c.shape, local))       # 0 once the striker has passed the point
+            dd = surface_distance(c.shape, local)                    # 0 once the striker has passed the point
+            if dd < best:
+                best = dd
+                nearest.update(part=c.name, local=local)
         return best
 
     out = {"switch": sw.name, "at": at, "gap_at_end_mm": round(gap(q_end, trig), 2)}
@@ -288,6 +294,16 @@ def _switch_checks(design: Design, e: dict, sw, j, r: VerifierResult) -> dict:
                   f"the switch case ({itf.get('overtravel_to_case')} mm below the latest operating position): the switch is "
                   f"crushed.", joint=jn, hint="Move the switch away from its striker: the striker must end between "
                                              "interfaces['trigger_latest'] and interfaces['case_limit'].")
+    if g_late <= REACH_TOL and case is not None and "clear_of_case_limit_mm" in out:
+        try:
+            out["window_under_tolerance"] = _endstop_window_scatter(design, e, sw, j, r, gap, nearest, latest, press, q_end,
+                                                                     g_late, out["clear_of_case_limit_mm"],
+                                                                     float(np.linalg.norm(case - latest)))
+        except Exception as ex:      # not evaluated is not a pass
+            out["window_under_tolerance"] = {"evaluated": False, "why": f"{type(ex).__name__}: {ex}"}
+            r.add("warning", "endstop_window_not_evaluated",
+                  f"Endstop {sw.name} on joint {jn}: its trigger window could not be put through the tolerance stack-up "
+                  f"({type(ex).__name__}: {ex}); it was judged on drawn positions only.", joint=jn)
     # release: after the firmware's retract move a unit at the EARLY end of the spread must have let go again
     back = q_end + (RETRACT_MM if at == "min" else -RETRACT_MM)
     g_rel = gap(back, earliest - md * press)
@@ -297,6 +313,75 @@ def _switch_checks(design: Design, e: dict, sw, j, r: VerifierResult) -> dict:
               f"Endstop {sw.name} on joint {jn}: {RETRACT_MM:g} mm back from the end of travel the striker still holds the "
               f"lever at or below the release point of a switch at the early end of the spread (operating position +{tol:g} mm, "
               f"plus the {md:g} mm movement differential).", joint=jn)
+    return out
+
+
+WINDOW_P_ERROR = 0.01      # share of builds outside a functional window above which it is an error (as for clearances)
+
+
+def _endstop_window_scatter(design, e, sw, j, r, gap, nearest, latest, press, q_end, g_late, g_case, width) -> dict:
+    """The endstop's trigger window with the machine as built. On the drawing the striker ends, at the end of the
+    mechanical travel, between the switch's latest operating position and the point where the lever lies on the case
+    (`width` apart: 0.25 mm on the OMRON D2F). As built, striker and switch are each where their own chain of parts and
+    joints puts them: the stack-up's relative error along the lever's travel is added to the drawn position and the
+    share of builds that end outside the window is reported (short: a late unit never switches; long: the lever is on
+    the case). A switch whose position is SET at assembly (a slotted mount) takes that error out: declare
+    Adjustment(name, "endstop", range_mm, joint=<joint>); the range must cover the error (99.7 %)."""
+    from ..tolerance.clearance import Scatter
+    from ..tolerance.stackup import build_for, std_error
+
+    jn = j.name
+    gap(q_end, latest)                       # who is the striker: the part nearest the point to be reached
+    striker, local = nearest.get("part"), nearest.get("local")
+    if striker is None:
+        raise ValueError("no striker found")
+    B = build_for(design)
+    S = Scatter(design, B)
+    comps = {c.name: c for c in design.components}
+    T = forward_kinematics(design, {jn: float(q_end)})
+    # the striker's point at the HOME pose of its own body; the switch's point is given at home already
+    q = {jn: float(q_end)}
+    # which side moves: displacement() adds the joint's travel for parts under the joint's child
+    press_w = press / np.linalg.norm(press)
+    da, db = S.displacement(sw.name, latest, q), S.displacement(striker, local, q)
+    if da is None or db is None:
+        raise ValueError(f"'{sw.name if da is None else striker}' is not tied to the stack-up")
+    delta = (db - da) @ press_w + S.rng.normal(0.0, S.local_sd(sw.name, striker), B.n)
+    s0 = -g_late if g_late > 1e-9 else width - g_case       # drawn position past the latest operating position
+    pos = s0 + delta
+    p_short = float((pos < -REACH_TOL).mean())
+    p_long = float((pos > width - 0.02).mean())
+    p_out = p_short + p_long
+    need = float(np.percentile(np.abs(delta), 99.7))
+    adj = next((a for a in design.adjustments if a.kind == "endstop" and a.joint in (None, jn)), None)
+    out = {"evaluated": True, "striker": striker, "window_mm": [round(-REACH_TOL, 3), round(width - 0.02, 3)],
+           "drawn_position_in_window_mm": round(s0, 3), "relative_error_sd_mm": round(float(delta.std()), 3),
+           "relative_error_mm_99": round(need, 3), "p_outside_window": round(p_out, 4),
+           "p_outside_window_standard_error": round(std_error(p_out, B.n), 4), "limit": WINDOW_P_ERROR,
+           "p_late_unit_never_switches": round(p_short, 4), "p_lever_on_case": round(p_long, 4), "builds": B.n,
+           "processes": S.chain_note(sw.name, striker, q)["processes"],
+           "basis": "stack-up between switch and striker along the lever's travel, at the declared end of mechanical travel"}
+    if adj is not None:
+        out.update({"set_at_assembly": adj.name, "adjustment_needed_mm_99": round(need, 2), "adjustment_available_mm": adj.range_mm})
+        if need > adj.range_mm:
+            r.add("error", "adjustment_too_small",
+                  f"Endstop {sw.name} on joint {jn}: setting the switch against its striker needs up to {need:.2f} mm, but "
+                  f"'{adj.name}' gives {adj.range_mm} mm.", joint=jn, needed=round(need, 2))
+        return out
+    if p_out > 0.0:
+        sev = "error" if p_out > WINDOW_P_ERROR else "warning"
+        r.add(sev, "endstop_window_under_tolerance",
+              f"Endstop {sw.name} on joint {jn}: on the drawing {striker} ends {s0:+.2f} mm past the switch's latest operating "
+              f"position, inside a window of {-REACH_TOL:g} to {width - 0.02:g} mm before the lever lies on the case. Built from "
+              f"real parts the two are {delta.std():.2f} mm (one standard deviation) from where they are drawn relative to each "
+              f"other: {p_out:.0%} of {B.n} simulated builds end outside the window (standard error "
+              f"{std_error(p_out, B.n):.1%}, limit {WINDOW_P_ERROR:.0%}): in {p_short:.0%} a switch at the late end of its "
+              f"spread never operates, in {p_long:.0%} the lever is pressed onto the case.",
+              joint=jn, **{k: v for k, v in out.items() if k != "basis"},
+              hint=f"A {width:g} mm window cannot be held by part accuracy. Mount the switch on a slot and set it against the "
+                   f"striker at assembly (declare Adjustment(name, 'endstop', range_mm >= {need:.1f}, joint='{jn}')), or let "
+                   f"the striker pass alongside the lever (a ramp) so that over-travel cannot crush the switch, or use "
+                   f"sensorless homing.")
     return out
 
 
@@ -425,6 +510,13 @@ def _probe_mount_checks(design: Design, name: str, r: VerifierResult) -> dict | 
             hits.append({"part": c.name, "material": c.material, "volume_mm3": round(vol, 1),
                          "nearest_to_face_mm": round(max(min(zs), 0.0), 2), "nearest_to_axis_mm": round(min(rs), 2)})
         out["metal_in_zone"] = hits
+        try:
+            out["metal_near_zone_under_tolerance"] = _zone_scatter(design, pc, zone, bed, name, {h["part"] for h in hits}, r, mt)
+        except Exception as ex:
+            out["metal_near_zone_under_tolerance"] = {"evaluated": False, "why": f"{type(ex).__name__}: {ex}"}
+            r.add("warning", "probe_zone_not_evaluated",
+                  f"Bed probe '{name}': its metal-free zone could not be put through the tolerance stack-up "
+                  f"({type(ex).__name__}: {ex}); it was judged on drawn positions only.", part=name)
         if hits:
             worst = min(hits, key=lambda h: h["nearest_to_face_mm"])
             r.add("error", "probe_metal_in_clear_zone",
@@ -437,6 +529,55 @@ def _probe_mount_checks(design: Design, name: str, r: VerifierResult) -> dict | 
                        f"other metal {d / 2:g} mm from its axis there, carry it on a plastic bracket, or use a shielded type "
                        "(flush-mountable, shorter range).")
     return out
+
+
+def _zone_scatter(design, pc, zone, bed, name, already: set, r, mt) -> dict:
+    """Metal parts drawn just OUTSIDE an unshielded sensor's metal-free zone: with the toolhead as built, in what share
+    of builds are they inside it? The zone rides on the sensor; the gap between it and each metal part of the same body
+    closer than the clearance check's threshold is put through the stack-up (relative error of sensor and part along
+    the gap), exactly as a gap between two parts is."""
+    from ..tolerance.clearance import THRESHOLD_MM, Scatter, _exact, severity_of, share_closed
+    from ..tolerance.stackup import build_for
+
+    near = []
+    S = None
+    for c in design.components:
+        if c is pc or c.name == bed or c.material not in METALS or c.meta.get("probe_nut_of") == name or c.body != pc.body:
+            continue
+        if c.name in already:
+            continue
+        zb, cb = zone.bounding_box(), c.shape.bounding_box()
+        if (cb.min.X - zb.max.X > THRESHOLD_MM or zb.min.X - cb.max.X > THRESHOLD_MM or cb.min.Y - zb.max.Y > THRESHOLD_MM
+                or zb.min.Y - cb.max.Y > THRESHOLD_MM or cb.min.Z - zb.max.Z > THRESHOLD_MM or zb.min.Z - cb.max.Z > THRESHOLD_MM):
+            continue
+        ex = _exact(zone, c.shape)
+        if ex is None or ex[0] >= THRESHOLD_MM or ex[0] <= 1e-9:
+            continue
+        g, p_zone, p_part = ex
+        if S is None:
+            S = Scatter(design, build_for(design))
+        rel = S.relative(pc.name, p_zone, c.name, p_part, {}, p_part - p_zone)
+        if rel is None:
+            near.append({"part": c.name, "gap_mm": round(g, 3), "evaluated": False})
+            continue
+        sh = share_closed(g, rel, WINDOW_P_ERROR)
+        near.append({"part": c.name, "material": c.material, "gap_mm": round(g, 3), **sh, "severity": severity_of(sh)})
+    for h in near:
+        if not h.get("evaluated", True):
+            r.add("warning", "probe_zone_not_evaluated", f"Bed probe '{name}': {h['part']} is {h['gap_mm']} mm outside its metal-free "
+                  f"zone but is not tied to the stack-up, so whether it ends up inside was not evaluated.", part=name)
+        elif h["severity"]:
+            share = (f"in {h['p_closed']:.1%} of {h['builds']} simulated builds (standard error {h['p_closed_standard_error']:.1%}; "
+                     f"limit {h['limit']:.0%})" if h["p_closed"] > 0 else
+                     f"in none of {h['builds']} simulated builds, but by the spread in about {h['p_closed_normal_estimate']:.1g} of builds")
+            r.add(h["severity"], "probe_metal_zone_under_tolerance",
+                  f"Bed probe '{name}': {h['part']} ({h['material']}) is drawn {h['gap_mm']:.2f} mm outside the sensor's metal-free zone "
+                  f"({mt['metal_free_dia_d']:g} mm diameter, {mt['head_proud_of_metal_l']:g} mm behind the face). As built the gap is "
+                  f"{h['gap_mm']:.2f} +/-{h['gap_sd_mm']:.2f} mm (one standard deviation): the part is inside the zone {share}.",
+                  part=name, metal_part=h["part"], **{k: v for k, v in h.items() if k not in ("part", "severity")},
+                  hint=f"Keep metal at least {max(3.3 * h['gap_sd_mm'], 0.5):.1f} mm outside the zone, or mount the sensor and that "
+                       f"part on one part.")
+    return {"evaluated": True, "parts_within_mm": THRESHOLD_MM, "near": near}
 
 
 def bboxes_overlap_shapes(a, b) -> bool:
@@ -521,6 +662,8 @@ def _probe_checks(design: Design, e: dict, r: VerifierResult) -> dict:
             "face_above_nozzle_mm": pg["face_above_nozzle_mm"], "face_clear_by_mm": round(pg["face_above_nozzle_mm"] - M, 3),
             "shortest_trigger_above_bed_mm": z_lo, "trigger_clear_by_mm": round(z_lo - M, 3),
             "face_window_mm": [M, round(pg["face_above_nozzle_mm"] + z_lo - M, 3)],
+            "tolerance_aware": "yes: the margin on both sides is the toolhead's own stack-up between sensing face and "
+                               "nozzle tip (99.7th percentile of the simulated builds) plus the bed's flatness",
             "note": "face_window_mm: sensing-face heights above the nozzle tip that keep the margin on both sides (empty when "
                     "the second is below the first). Declared Z over-travel does not enter: it is common to nozzle and probe."}
         if pg["face_above_nozzle_mm"] < M:

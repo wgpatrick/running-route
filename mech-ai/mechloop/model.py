@@ -240,7 +240,8 @@ class Adjustment:
 
     kind: "bed_level" (three or four screws under the bed), "z_offset" (firmware/endstop offset),
     "belt_tension" (slot on a motor or idler), "rail_align" (rail screwed down while a gauge or the
-    carriage plate sets its position), "float" (a mount left free in one direction, e.g. a floating nut).
+    carriage plate sets its position), "float" (a mount left free in one direction, e.g. a floating nut),
+    "endstop" (a switch on a slot, set against its striker at assembly: takes the stack-up out of the endstop window).
     `joint` names the axis it serves where that matters. range_mm is +/- travel available.
     """
 
@@ -293,6 +294,10 @@ class Design:
     endstops: list = field(default_factory=list)
     # Groups built on the bench and installed as one unit: {name: [part names]}
     subassemblies: dict = field(default_factory=dict)
+    # Separate free-standing units of the fixed world (an electronics box on the bench, joined to the machine only by
+    # cables): {name: [part names]}. Such a unit need not touch or be fastened to the rest; its own parts must still
+    # hold together (interference verifier). Screws and nuts of the unit need not be listed.
+    free_standing: dict = field(default_factory=dict)
     # A printer design declares how to print on it: {"bed": part, "x"/"y"/"z": joint names,
     # "stiffness": {"x": <AssemblyCase name>, "y": ...}} so the digital twin runs as a verifier
     printer: Optional[dict] = None

@@ -43,6 +43,10 @@ everything (with renders) before you finish. `python -m mechloop history <name>`
 - Declare intent, do not rely on luck: threads/press fits via `add_screw(threads_into=...)`
   or `design.allow_overlap`; non-screw joints via `design.join(a, b, kind)`.
 - Every part must be held: screws (`add_screw`) or a declared join. Touching is not fastening.
+- A separate free-standing unit of the fixed world (an electronics box on the bench, joined to the machine only by
+  cables) is declared: `design.free_standing = {"electronics box": ["case", "lid", "psu", ...]}` (screws and nuts of the
+  unit need not be listed). It may then stand apart from the rest. Its own parts must still touch and be fastened to
+  each other, and anything apart that is not declared is `floating_parts` / `unfastened` as before.
 - Select FEA faces by geometry in a lambda; check `load_area_mm2` in the metrics matches
   the face you meant. For curved faces (holes, bores) use `f.geom_type.name == "CYLINDER"`
   with `f.center(CenterOf.MASS)` (the axis point); plain `f.center()` lies on the surface.
@@ -50,7 +54,9 @@ everything (with renders) before you finish. `python -m mechloop history <name>`
   warning. Leave it; it is true.
 - A verifier that is `skipped: not run` is not a pass, and neither is an `--only` run.
 - Screws need real thread engagement in what they screw into: at least 1x diameter in steel,
-  1.5x in aluminium, 2x in plastic (T-nut joints exempt). Engagement is measured as the length of
+  1.5x in aluminium, 2x in plastic (T-nut joints exempt). A catalogue part's own tapped hole states a MAXIMUM depth
+  (Mean Well "M4 L=3mm"): deeper is `thread_bottoms_out`; if no standard screw length reaches the usual engagement
+  without bottoming out, the longest standard screw that stays inside is accepted, down to half a diameter of thread. Engagement is measured as the length of
   overlap, along the screw, between the screw and each `threads_into` part, so the tapped part must be
   solid there (no clearance hole). For a through-bolt use `add_screw(..., clamps=(part_a, part_b))` plus
   `add_nut(design, name, size, at, direction, screw=<screw name>)`. Screws must not exceed a catalog part's tapped depth (NEMA 17: 4.5 mm).
@@ -144,6 +150,24 @@ def build():
   it over the bed, is a `motion_collision` naming the margin. Typical margins: 0.3 to 0.6 mm for a machined or bought
   part bolted straight to the hotend's carrier, 0.8 to 1.1 mm for something on a printed arm 30 to 40 mm away.
   Z over-travel no longer has to stay below a probe's face height.
+- Z arrangement and sign. `design.printer["z"]` names the joint that changes the nozzle-to-bed gap: either the bed
+  rides it (a bed that rises to a fixed gantry) or the nozzle's body does (an arm or gantry that comes down to a fixed
+  bed); not both, not neither (`printer_z_arrangement`, an error in the tolerance and electrical verifiers), and its
+  axis must be vertical. Which of the two it is, and at which end of the working range nozzle and bed meet, is worked
+  out from the design (`tolerance.printer.z_arrangement`, `nozzle_meets_bed_at`; `electrical.z_axis`). The firmware's Z
+  is the nozzle's height above the bed whichever way the joint is drawn: a joint whose value rises as the two part
+  (nozzle rides, axis (0, 0, 1)) is mirrored when printer.cfg is written. Home pose is joint value 0; with a
+  moving-nozzle Z drawn (0, 0, -1) and range (0, travel), home is the top of travel and every home-pose check
+  (envelope, FEA cases, assembly) is made there.
+- A Z axis on several lead screws: `drive={"motor": [m1, m2], "kind": "leadscrew", "screw": [s1, s2], "nut": [n1, n2],
+  "coupler": [c1, c2], "sync": "independent"}` ("independent": one motor per screw; "belt": one motor turning all
+  screws through a closed belt; left out it follows from the number of motors). Lists are in screw order. Ratings add
+  the motors' torque, the tolerance verifier checks every screw against the rails (`lead_screws` gets one entry per
+  screw, "z:<screw>"), the bed-support measures treat each nut as a support. Firmware: each Z motor wired to its own
+  driver gets `[stepper_z1]`, `[stepper_z2]`...; `[z_tilt]` is written only from `el.firmware["z_tilt"] =
+  {"z_positions": [(x, y), ...], "points": [(x, y), ...]}` (bed coordinates, yours to state), and without it the
+  config carries a "NO [z_tilt]" comment and `z_screws_not_levelled` says the screws are never levelled against each
+  other. Not supported yet: see "Not checked".
 - Composing: `design.include(other_design, Location(...), prefix="z_")` brings a whole sub-assembly in
   (parts, bodies, joints, fasteners, joins, belts), moved and renamed. Its requirements, program and (when
   moved) load cases are not copied; restate them.
@@ -263,11 +287,60 @@ printed; other custom parts: machined) or set with `component.meta["process"]` =
 "printed" | "machined" | "sheet" | "extrusion" | "purchased".
 
 It checks: every screw pattern can be started at once (printed holes come out about 0.15 mm
-small); every shaft has real clearance or real interference in its bore (a shaft drawn at its bore
+small; hole to hole WITHIN one pattern a part is held to its process's "pattern" figure, 0.05 mm printed, not to
+its feature-to-datum figure, and a screw is taken to cut up to 0.15 mm into a tight plastic hole: `p_all_start` is
+with that, `p_all_start_freely` without, and an info finding counts the patterns that rely on it); every shaft has real clearance or real interference in its bore (a shaft drawn at its bore
 size fits half the time; say which you mean with `design.join(a, b, "press")`, otherwise it is
 taken as a sliding fit); belts stay in plane; two rails guiding one axis stay parallel; a lead
 screw stays in line with its rails (or it side-loads the nut); and, for a printer, the nozzle
 still meets the bed and the bed is level under it.
+
+**Clearance under tolerance** (`tolerance.clearances`). The interference verifier passes a gap of 0.05 mm exactly as
+it passes 5 mm. This check takes every pair of parts that is not a designed contact and is drawn less than 1.5 mm
+apart (anywhere in the joints' mechanical travel for a pair across a joint: closest approach and the travel's ends)
+and puts the gap through the simulated builds: process class of both parts, every joint of the chain between them,
+the as-built direction of the rails over the travel, bend scatter of bent parts.
+
+- `clearance_closes_under_tolerance`: the gap has closed in more than 1 % of builds: error. In fewer, or in none of
+  the builds but by its spread in at least one of that many: warning. The finding gives the gap as drawn, its
+  standard deviation, the share with its standard error, the pose and the processes. Fix: open the gap to about 3.3
+  standard deviations, locate both parts from one part, or shorten the chain.
+- `clearance_below_minimum` (warning, a design rule): a designed clearance between two non-mating parts below the
+  larger of the two parts' process minimum: printed 0.5 mm, saw-cut extrusion 0.5, sheet 0.3, machined 0.2, purchased
+  0.2 (about four standard deviations of the process's own accuracy). Override with
+  `d.manufacturing["min_clearance_mm"] = 0.4` or `{"printed": 0.6}`; `d.manufacturing["clearance_check_mm"]` changes
+  the 1.5 mm search distance; `d.require_clearance(a, b, gap)` states the gap you want for one pair.
+- NOT reported, because it is a designed contact: parts that touch or have a declared `join` / `allow_overlap`; a
+  screw against what it clamps, threads into or passes through; a guide block or nut against its rail or screw (name
+  the nut in the drive); a shaft in its bore (the fit check); an endstop switch against its striker (the endstop
+  window, below); a toolhead part over the bed (the toolhead margin). So if two parts are MEANT to touch or locate each
+  other, declare it; an undeclared near-contact is treated as a clearance.
+- `clearance_not_evaluated` (warning): a pair drawn close in which one part is not tied to the stack-up. Not a pass.
+
+**Functional windows use the stack-up too** (subsystems verifier): the endstop window
+(`endstop_window_under_tolerance`: at the end of travel the striker must end between the switch's latest operating
+position and its case, 0.25 mm on the OMRON D2F; as built, striker and switch are a few tenths from where they are
+drawn, so the share of builds outside the window is reported, error above 1 %); the probe's metal-free zone
+(`probe_metal_zone_under_tolerance`: metal drawn just outside the zone, same judgement); the probe's face window
+(already built on the toolhead's stack-up). A 0.25 mm window cannot be held by part accuracy: put the switch on a
+slot and set it against its striker at assembly, and declare that with
+`Adjustment("x switch on a slot", "endstop", range_mm=1.5, joint="x")` (the range must cover the stack-up, 99.7 %), let
+the striker pass alongside the lever, or home sensorless.
+
+**Bent sheet parts.** Draw a bent part as it is made (inside radius r, outside radius r + t: see "Can each part be
+made?"); the tolerance verifier finds the bends from that geometry, no declaration is needed. Each bend gets an angle
+error (0.5 degree, one standard deviation) and a bend-line error (0.19 mm): a hole on a flange moves by the angle
+error times its distance from the bend line, plus the line error, and so does everything mounted on that flange.
+The values are recalled press-brake class values (+/-1 degree, +/-0.38 mm as two standard deviations; no document
+fetched); give the shop's own with `d.manufacturing["bend_tolerance"] = {"angle_deg": 0.3, "line_mm": 0.1}`. A
+`process="sheet"` part that is not flat and has no recognisable bend is `sheet_bends_not_recognised` (warning): it
+was toleranced as a flat part. Keep what must be accurate on one flange, or close to the bend.
+
+**Shafts in bores** (`tolerance.shaft_bore_pairs`): a made part's bore on a shaft is simulated (`fit_not_toleranced`).
+Two purchased catalogue parts (pulley or coupler on a motor shaft, lead screw in coupler and nut, an idler or spacer
+on a screw's shank) are listed as `catalogue fit, trusted` with whatever tolerance the catalogue records, not
+simulated; drawn with the shaft larger than the bore they are `catalogue_fit_mismatch`. A made part that turns on a
+screw's shank is found only if you say so: `d.join(part, screw, "axle")`.
 
 Real machines absorb error with adjustment. Declare what the design provides:
 
@@ -321,7 +394,9 @@ their sources are in `mechloop/verifiers/dfm_rules.py` and `docs/DFM.md`. Every 
   an outside radius r + t (two boxes meeting sharp is an error); flange length, bend radius and hole-to-bend distance are
   checked; use al5052 or steel (6061 cracks). A full run writes each flat profile to `out/<name>/dxf/<part>.dxf`.
 - **printed**: orientation (reported with all six scored), overhang area past 45 degrees less what bridges or sits in a
-  small horizontal hole, long bridges, horizontal holes over 10 mm, walls under two beads, small holes and pins, first-layer
+  small horizontal hole, long bridges, horizontal holes over 10 mm, walls (two near-parallel faces: under one bead is
+  `wall_too_thin_to_print`, an error; between one and two beads `wall_single_bead`, a warning; a skin lying in the
+  layers needs one layer; the tip of a knife edge and slivers under 5 mm2 are not walls), small holes and pins, first-layer
   contact and tall-thin parts, build volume, plastic around threads (heat-set insert guidance), a load case pulling
   along the build direction, and a rule-of-thumb warp warning.
 - **machined**: plate (stock thickness), block or turned; sharp inside corners no cutter can reach (error) or only from the
@@ -503,6 +578,34 @@ el.sync_cables(d); add_electrical_bom(el, d)                      # flexing span
 - Not checked: EMC, firmware bugs, crimp quality, the short stubs between loom ends and connectors (length only),
   I2t of fuses, the real heater's tolerance and the real PID tune.
 
+## How the bed is held (bed-support measures, in the fea verifier: `fea.bed_support`)
+
+For a printer whose bed rides a Z joint driven by one or more lead screws (name the nut: `drive={..., "nut": ...}`;
+tag the guide blocks `guides="z"`). These are the figures to compare a cantilevered bed with a two-screw or
+three-point one:
+
+- `hand_load` (20 N at the worst corner of the print area) and `print_weight` (1 kg there): deflection at the print
+  surface in mm and as tilt across the print area, split into `support_compliance` (the body as a rigid body on its
+  guide blocks' rigidity, Hiwin's table where the block has it, and on the nut's axial stiffness, assumed) and
+  `flexure` of arms and plate by FEA, held across the rail at the blocks and along the screw at the nut seat, with
+  both joint bounds (`bonded`, `screwed`). `bed_sags_under_print_weight` (warning): more than a tenth of a layer
+  (0.02 mm) on the screw-only bound; the bed is levelled and meshed empty, so no adjustment sees it.
+  `bed_moves_under_hand_load` (warning): more than a layer.
+- FEA parts: `d.printer["bed_support"] = {"parts": [...]}`, else those of your AssemblyCase that contains the bed and
+  its guide blocks, plus what the nut sits in. Without either, `bed_flexure_not_evaluated` (warning) and the figures
+  are the supports' only.
+- `moving_mass_on_guides`: distance between the screw's line of action and the moving mass centre, the moment the
+  guides carry, each block's force and moment against its static ratings (`guide_overloaded_by_screw_offset`), the
+  friction that adds (`z_guide_friction_from_screw_offset`; `z_guides_bind` when it reaches the weight, which plain
+  bushings on a long overhang do).
+- `level_over_travel`: compliance does not tilt the bed as it moves (same blocks, same moment); the rails' running
+  accuracy over the block spacing does (`bed_level_changes_over_travel`).
+- several screws: `constraint` says how many screws are redundant; `screw_synchronisation` gives the height error of
+  the declared arrangement (independent motors: 2 full steps at power-up; belt: 0.02 mm assumed) as bed tilt and as
+  force on a guide block, and whether the firmware can re-level (`z_screws_not_levelled`, `z_over_constrained`).
+- `bed_not_held` (error): the declared supports leave the bed free in some direction (three screws and no guides).
+  `bed_support_not_evaluated`: no named nut, or the nozzle rides Z. Not evaluated is not a pass.
+
 ## Heat and real joints (in the fea verifier)
 
 - `ThermalCase(name, components, fixed=[(part, pred)], temps={"bed": 60.0}, probes={"nozzle": xyz, "bed": xyz},
@@ -522,23 +625,38 @@ el.sync_cables(d); add_electrical_bom(el, d)                      # flexing span
 | ratings | drive force from the real motor, guide loads, BOM and cost | change motor, ratio, speed |
 | motion | collisions through full joint travel, guide run-off, belt routing, force needed vs available (with rotor inertia), forward simulation of `program` (tracking, collisions on the path) | shorten travel, move parts, lower accel |
 | assemblability | a build order exists in which each part (or declared bench sub-assembly) goes on in a straight line onto something already there, parts go on before the screws that hold them, and every screw has driver access when it is installed (home pose only) | split parts, add access holes, reorder, declare a sub-assembly |
-| tolerance | fits, stack-ups and binding over thousands of imperfect builds; adjustment needed against adjustment provided | open clearances, add adjustment, locate from one part |
+| tolerance | fits, stack-ups and binding over thousands of imperfect builds; adjustment needed against adjustment provided; gaps that close under tolerance and clearances below the process minimum; bend scatter of bent sheet parts | open clearances, add adjustment, locate from one part, declare real contacts |
 | manufacture | each custom part against its process (sheet, printed, machined), with the limit and its source on every finding | radius corners, stock thickness, move holes off edges and bends, split blocks, re-orient prints |
 | subsystems | homing, cables, extruder, cooling, electronics | add the parts and declare them |
 | electrical | devices wired and off the shelf, power budget, wires and connectors, stepper torque at speed, heaters and their faults by simulation, mains safety, looms in the CAD | bigger supply or gauge, external MOSFET module, lower run current, thermal fuse / relay, re-route |
 | requirements | your `Requirement`s, evaluated last with all metrics | fix the design |
-| fea | factor of safety and deflection per load case, with force balance and refinement checks | ribs, fillets, thicker sections, material |
+| fea | factor of safety and deflection per load case, with force balance and refinement checks; for a printer, how the bed is held (deflection at the print surface under a hand load and a print's weight, screw offset against the guides, several screws) | ribs, fillets, thicker sections, material; shorter overhang, wider block spacing, a second or third support |
 
 ## Not checked (say this in your report)
 
 Bolt preload and contact (stiffness is bracketed, not predicted), fatigue, buckling, the
 thermal behaviour of a part while it prints (warping is a rule of thumb only), belt tooth load and what belt
 tension does to belt stiffness (only the pull on a motor shaft is checked), stall detection in sensorless homing,
-cable paths (only lengths), tolerance stack-up, over-constraint and binding, axial
+cable paths (only lengths), axial
 retention of bearings, closed kinematic loops, curved insertion paths, cables,
 real manufacturing cost (the estimate is rough) and tolerances a process can hold on a feature. FEA is linear static with idealised
 fixtures and no self-weight; assemblies are bonded, which overstates stiffness.
 Guide moments are estimates. Catalog ratings are typical values.
+
+Clearance under tolerance: gaps drawn wider than 1.5 mm are not examined (a finding says when a chain scatters more
+than that); the gap is judged along its drawn direction only (an edge sliding past a corner is not); adjustments are
+not credited (the share is as built, before anything is set), except Z homing on the bed. Bent parts: springback
+along a bend and twist are not modelled. Bed support: nut axial stiffness and backlash, block stiffness sideways and
+about the rail, belt synchronisation error and the rail accuracy class are assumed and said so in the metrics; the
+straightness of the extrusion a rail is screwed to is not catalogued and not included; the silicone bed columns are
+meshed with the catalogue's stand-in rubber (real silicone is softer).
+Several lead screws on one Z are NOT supported by: the digital twin (it models one Z drive: travel per turn and
+summed motor torque, no tilt between screws); the motion verifier's dynamics (one joint, one effort); a generated
+`[z_tilt]` from geometry (you state z_positions and points); `quad_gantry_level`; and the catalogue has no board with
+more than four drivers (SKR Mini E3 V3.0: X, Y, Z, E), so independent Z motors beyond the one driver cannot be wired
+from catalogue parts, and no integrated lead-screw motor (the one vendor record, StepperOnline 17E19S1684MB4-300RS,
+holds only screw diameter and lead: holding torque, current, resistance, inductance, rotor inertia, mass, body and
+nut dimensions and thrust rating are missing).
 
 ## Firmware in the loop
 
