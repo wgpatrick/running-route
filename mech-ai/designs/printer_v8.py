@@ -117,14 +117,15 @@ POST_NUT = 4.7         # ISO 4032 M5 nut
 POST_FREE = 60.0       # free length of each post between the jam nut under the plate and the jam nut on the arm
 H_COL = POST_FREE + 2 * POST_NUT      # bed underside above the arms
 BED_MOUNTS = [(-ARM_X, BED_Y1 - 18.0), (ARM_X, BED_Y1 - 18.0), (-ARM_X, BED_Y1 - 187.0), (ARM_X, BED_Y1 - 187.0)]
-POST_CB = 5.4          # counterbore for the M5 heads in the 8 mm plate (2.6 mm of plate under the head, as v7)
+POST_CB = 6.0          # counterbore for the M5 heads in the 8 mm plate: heads 1 mm under the magnetic sheet, 2 mm of plate under each
+TIE_CB = 4.0           # same for the tie's M3 heads
 TIE_Y = BED_Y1 - 30.0  # bed-side screws of the tie
 TIE_T = 1.0            # tie: 1 mm steel sheet, bent once
 T_FP = 3.0             # front plate: 3 mm steel sheet across the arms' front ends; carries the two front nut blocks
 FS_X = FX / 2 - 10     # front lead screws stand over the bottom side rails (x = +/-160)
 FS_OFF = 20.0          # ... their axis this far in front of the front plate
 NUT_PIN = (0.0, 8.0)   # the one flange hole of the T8 nut that carries the anti-rotation pin
-NUT_FLOAT = 1.5        # radial room around the nut barrel and along the pin slot
+NUT_FLOAT = 2.4        # radial room around the nut barrel and along the pin slot (v7: 1.5; the front screws stand on printed pedestals)
 Z_DN = 3.0             # mechanical Z travel below the home position (bed at the bottom)
 Z_UP = 1.65            # v7: declared over-travel of the Z joint past the nominal nozzle plane (probe offset, mesh, a bed built low)
 Z_SPACING = 59.0       # two blocks per rail, centre to centre
@@ -410,7 +411,7 @@ def bed_shape_():
         b -= Pos(x, y, Z_BED + T_BED - POST_CB / 2) * Cylinder(4.75, POST_CB)
     for x in TIE_X:           # tie screws: M3, heads counterbored like v7's bed screws
         b -= Pos(x, TIE_Y, Z_BED + T_BED / 2) * Cylinder(clearance_hole("M3") / 2, T_BED)
-        b -= Pos(x, TIE_Y, Z_BED + T_BED - 1.7) * Cylinder(3.25, 3.4)
+        b -= Pos(x, TIE_Y, Z_BED + T_BED - TIE_CB / 2) * Cylinder(3.25, TIE_CB)
     return b
 
 
@@ -435,6 +436,7 @@ def bed_tie_shape():
     return s
 
 
+BRG_R = 11.15         # printed seat for a 608 (22 OD): drawn 22.3, prints about 22.15: a sliding fit, the load seats it
 PED_T = 16.0          # pedestal tower: half width (608 bearing 22 OD + 5 mm wall)
 PED_EAR = 23.0        # its two M5 bolts, +/- along the rail from the screw axis
 
@@ -448,8 +450,8 @@ def z_pedestal_shape(sx):
     t = bx(x - PED_T, x + PED_T, y - PED_T, y + PED_T, Z_TRAY, Z_BT)
     t += bx(x - 10.0, x + 10.0, y - PED_EAR - 9.0, y + PED_EAR + 9.0, Z_TRAY, Z_TRAY + 8.0)
     t -= Pos(x, y, (Z_TRAY + Z_BT) / 2) * Cylinder(9.0, Z_BT - Z_TRAY)                    # clear of the screw and the inner rings
-    t -= Pos(x, y, Z_BT - 3.5) * Cylinder(11.0, 7.0)                                      # upper bearing seat
-    t -= Pos(x, y, Z_TRAY + 3.5) * Cylinder(11.0, 7.0)                                    # lower bearing seat (open to the tray)
+    t -= Pos(x, y, Z_BT - 3.5) * Cylinder(BRG_R, 7.0)                                     # upper bearing seat
+    t -= Pos(x, y, Z_TRAY + 3.5) * Cylinder(BRG_R, 7.0)                                    # lower bearing seat (open to the tray)
     for dy in (-PED_EAR, PED_EAR):
         t -= Pos(x, y + dy, Z_TRAY + 4.0) * Cylinder(PH5 / 2, 8.0)
     return t
@@ -479,8 +481,8 @@ def z_drive_mount_shape():
     m += bx(DM_COL, ZT_XY[0] + 12.0, LS_Y - 23.0, DM_Y0, zs0, zs1)
     # rear screw: bore, two bearing seats
     m -= Pos(0, LS_Y, (20.0 + zs1) / 2) * Cylinder(9.0, zs1 - 20.0)
-    m -= Pos(0, LS_Y, zs1 - (zs1 - Z_BT + 7.0) / 2) * Cylinder(11.0, zs1 - Z_BT + 7.0)
-    m -= Pos(0, LS_Y, 23.5) * Cylinder(11.0, 7.0)
+    m -= Pos(0, LS_Y, zs1 - (zs1 - Z_BT + 7.0) / 2) * Cylinder(BRG_R, zs1 - Z_BT + 7.0)
+    m -= Pos(0, LS_Y, 23.5) * Cylinder(BRG_R, 7.0)
     # motor: pilot hole (the pulley hub sinks 0.25 mm into it) and four M3
     m -= Pos(ZM_X, LS_Y, (zs0 + zs1) / 2) * Cylinder(11.5, T_MM)
     for x in (-15.5, 15.5):
@@ -680,7 +682,7 @@ def build_electrical(d: Design) -> Electrical:
     el.loom("bed", [Waypoint("zbody", (0.0, Y_PF - 3.0, Z_TAB + 19.0), clamp="back_plate"),
                     Waypoint("zbody", (0.0, Y_PF - 3.0, Z_TAB - 4.0), clamp="back_plate"),
                     Waypoint("world", (0.0, TRAY_Y1 - 4.0, Z_TRAY + 3.0), clamp="electronics_tray")], flex_length={1: 330.0})
-    el.loom("mains", [("world", (-112.0, 66.0, zt)), ("world", (-90.0, 82.0, zt)), ("world", (-60.0, 82.0, zt))])
+    el.loom("mains", [("world", (-122.0, 6.0, zt)), ("world", (-96.0, 14.0, zt)), ("world", (-96.0, 76.0, zt)), ("world", (-78.0, 82.0, zt))])
     tool, left = ["tray_right", "drop_right", "toolhead"], ["front", "drop_left"]
     # ---- mains and protective earth (AWG 18 = 0.82 mm^2, 105 degC PVC)
     mk = dict(conductors=1, insulation="pvc105")
@@ -876,8 +878,8 @@ def build() -> Design:
     # levelling adjustment (set once at assembly, +/-2 mm of thread to spare); the free length bends as the hot plate grows.
     for i, (x, y) in enumerate(BED_MOUNTS):
         arm = f"bed_arm_{'left' if x < 0 else 'right'}"
-        add_screw(d, f"bed_post_{i}", "M5", 80, at=(x, y, Z_BED + T_BED - POST_CB), body="zbody", threads_into=arm, tnut=True,
-                  clamps=("bed_plate",))
+        add_screw(d, f"bed_post_{i}", "M5", 80, at=(x, y, Z_BED + T_BED - POST_CB), body="zbody", clamps=("bed_plate",))
+        d.bom_extra("TNUT-2020-M5", 1, 0.15)
         add_nut(d, f"bed_post_{i}_nut_top", "M5", at=(x, y, Z_BED), direction=(0, 0, -1), body="zbody", screw=f"bed_post_{i}")
         add_nut(d, f"bed_post_{i}_nut_arm", "M5", at=(x, y, Z_FL), direction=(0, 0, 1), body="zbody", screw=f"bed_post_{i}")
         d.join(f"bed_post_{i}_nut_arm", arm, "clamp")
@@ -885,7 +887,7 @@ def build() -> Design:
     # bed tie: locates the plate at the rear centre
     d.add("bed_tie", bed_tie_shape(), material="steel", body="zbody", process="sheet")
     for i, x in enumerate(TIE_X):
-        add_screw(d, f"bed_tie_screw_{i}", "M3", 12, at=(x, TIE_Y, Z_BED + T_BED - 3.4), body="zbody", clamps=("bed_plate", "bed_tie"))
+        add_screw(d, f"bed_tie_screw_{i}", "M3", 10, at=(x, TIE_Y, Z_BED + T_BED - TIE_CB), body="zbody", clamps=("bed_plate", "bed_tie"))
         add_nut(d, f"bed_tie_nut_{i}", "M3", at=(x, TIE_Y, Z_BED - TIE_T), direction=(0, 0, -1), body="zbody", screw=f"bed_tie_screw_{i}")
         add_screw(d, f"bed_tie_bscrew_{i}", "M3", 12, at=(x, Y_PF - TIE_T, TIE_Z), direction=(0, 1, 0), body="zbody",
                   clamps=("bed_tie", "back_plate"))
@@ -919,7 +921,7 @@ def build() -> Design:
         place(d, f"z_bearing{tag}_hi", bearing("608"), Location((x, y, Z_BT - 3.5)))
         place(d, f"z_pulley{tag}", gt2_pulley(20, bore=8.0, belt_width=6.0), Location((x, y, Z_BT)))
         for lv in ("lo", "hi"):
-            d.join(f"z_bearing{tag}_{lv}", seat, "press")
+            d.join(f"z_bearing{tag}_{lv}", seat, "seated in its pocket")
             d.join(f"leadscrew{tag}", f"z_bearing{tag}_{lv}", "clamp")
         d.join(f"z_pulley{tag}", f"leadscrew{tag}", "set_screw")
     # tensioner: a toothed idler on the belt's back between the right front screw and the motor, on an M5 bolt in a
@@ -1227,7 +1229,7 @@ def build() -> Design:
     # the board is held by four of its five holes (not the one in the middle), the Pi by two opposite corners
     pcbs = [(board, "mount_holes_m3", "M3", 16, 6.0, (0, 1, 2, 4)), (host, "mount_holes_m2.5", "M2.5", 12, 4.0, (0, 3))]
     if USE_CUTOFFS:
-        relay = place(d, "psu_relay", relay_btt_v12(), Location((-122.0, 20.0, Z_TRAY + 6.0), (0, 0, 90)))
+        relay = place(d, "psu_relay", relay_btt_v12(), Location((-122.0, -36.0, Z_TRAY + 6.0), (0, 0, 90)))
         pcbs.append((relay, "mount_holes_m3", "M3", 16, 6.0, (0, 1, 2)))     # v7: three of its four holes
     if USE_MOSFET:
         mos = place(d, "bed_mosfet", mosfet_module(25.0), Location((100.0, 26.0, Z_TRAY + 6.0), (0, 0, 90)))

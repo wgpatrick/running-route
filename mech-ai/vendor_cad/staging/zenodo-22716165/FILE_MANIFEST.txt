@@ -1,0 +1,83 @@
+Zenodo record 22716165 - file manifest
+Source: https://zenodo.org/records/22716165
+Licence: Creative Commons Attribution 4.0 International (CC BY 4.0)
+Checked: 2026-11-14
+
+benchy_10_temp_230_08_02_15_17_06.parquet | 39.3 MB | md5:f7221414fd7e9794e072acbe05cbda17
+https://zenodo.org/records/22716165/files/benchy_10_temp_230_08_02_15_17_06.parquet?download=1
+
+benchy_11_12_temp_230_08_02_16_48_42.parquet | 83.6 MB | md5:b091cb2558c2e360780029d88c25b080
+https://zenodo.org/records/22716165/files/benchy_11_12_temp_230_08_02_16_48_42.parquet?download=1
+
+benchy_13_healthy_08_03_00_16_47.parquet | 40.9 MB | md5:b7d79b5ab8a0108a5bcee775ac316819
+https://zenodo.org/records/22716165/files/benchy_13_healthy_08_03_00_16_47.parquet?download=1
+
+benchy_14_temp_220_08_03_01_58_26.parquet | 41.1 MB | md5:eb85f2d5f1d5a6d63647be137b781341
+https://zenodo.org/records/22716165/files/benchy_14_temp_220_08_03_01_58_26.parquet?download=1
+
+benchy_15_loose_head_08_03_03_56_32.parquet | 40.7 MB | md5:cf6edf30181433ecfbf2d96e5619f04f
+https://zenodo.org/records/22716165/files/benchy_15_loose_head_08_03_03_56_32.parquet?download=1
+
+benchy_16_loose_head_08_03_05_39_13.parquet | 42.5 MB | md5:5f5a86b1e5962e72d599117b7fec6caa
+https://zenodo.org/records/22716165/files/benchy_16_loose_head_08_03_05_39_13.parquet?download=1
+
+benchy_17_temp_220_08_03_13_29_07.parquet | 40.7 MB | md5:b12e55357d31b7ce411e9621a688b069
+https://zenodo.org/records/22716165/files/benchy_17_temp_220_08_03_13_29_07.parquet?download=1
+
+benchy_18_loose_head_08_03_17_57_01.parquet | 41.7 MB | md5:96098abd520399d9471db764e0894eae
+https://zenodo.org/records/22716165/files/benchy_18_loose_head_08_03_17_57_01.parquet?download=1
+
+benchy_19_loose_head_08_03_20_10_49.parquet | 42.9 MB | md5:4795c1772e95dcae36a06ba508e49f8d
+https://zenodo.org/records/22716165/files/benchy_19_loose_head_08_03_20_10_49.parquet?download=1
+
+benchy_1_healthy_08_01_13_38_00.parquet | 38.3 MB | md5:57811ebdadf9378d5971952c4d807390
+https://zenodo.org/records/22716165/files/benchy_1_healthy_08_01_13_38_00.parquet?download=1
+
+benchy_20_loose_head_08_03_23_25_40.parquet | 43.1 MB | md5:ae6870d3ec206d5a47fa37bdfd6786f8
+https://zenodo.org/records/22716165/files/benchy_20_loose_head_08_03_23_25_40.parquet?download=1
+
+benchy_21_nozzle_03_08_04_15_03_11.parquet | 38.3 MB | md5:a740b0fcc8ee494b0f004288e3fc408b
+https://zenodo.org/records/22716165/files/benchy_21_nozzle_03_08_04_15_03_11.parquet?download=1
+
+benchy_22_healthy_08_04_16_44_53.parquet | 38.6 MB | md5:97c7f87a44c3a9545884dad3b4cbfd78
+https://zenodo.org/records/22716165/files/benchy_22_healthy_08_04_16_44_53.parquet?download=1
+
+benchy_23_nozzle_02_08_04_23_59_56.parquet | 41.3 MB | md5:e6fc68e7465f9b7a76b31993227d36ae
+https://zenodo.org/records/22716165/files/benchy_23_nozzle_02_08_04_23_59_56.parquet?download=1
+
+benchy_24_nozzle_02_08_05_02_18_40.parquet | 39.0 MB | md5:d81ce83890ac5df29536821412b6b18f
+https://zenodo.org/records/22716165/files/benchy_24_nozzle_02_08_05_02_18_40.parquet?download=1
+
+benchy_25_nozzle_03_08_05_03_59_15.parquet | 38.9 MB | md5:be9ff6e86e1ac4bcf7f2bb6ba5387a01
+https://zenodo.org/records/22716165/files/benchy_25_nozzle_03_08_05_03_59_15.parquet?download=1
+
+benchy_26_temp_230_08_05_23_52_38.parquet | 44.8 MB | md5:a8442fbfbdf3709a6c34db678fe39d68
+https://zenodo.org/records/22716165/files/benchy_26_temp_230_08_05_23_52_38.parquet?download=1
+
+benchy_27_nozzle_02_08_06_11_20_00.parquet | 42.1 MB | md5:8f289824c8d62176dc1bc985c6eecd42
+https://zenodo.org/records/22716165/files/benchy_27_nozzle_02_08_06_11_20_00.parquet?download=1
+
+benchy_2_healthy_08_01_16_23_39.parquet | 39.1 MB | md5:172781d03cde3ebeb144ceaeb6d304ae
+https://zenodo.org/records/22716165/files/benchy_2_healthy_08_01_16_23_39.parquet?download=1
+
+benchy_3_healthy_08_01_19_47_47.parquet | 37.6 MB | md5:a17717f8681e86880ae5dd725df9e694
+https://zenodo.org/records/22716165/files/benchy_3_healthy_08_01_19_47_47.parquet?download=1
+
+benchy_4_temp_220_08_01_21_29_52.parquet | 37.9 MB | md5:e04ff8fd852fc8c87dcb719e0de26c29
+https://zenodo.org/records/22716165/files/benchy_4_temp_220_08_01_21_29_52.parquet?download=1
+
+benchy_5_temp_230_08_01_23_10_19.parquet | 38.8 MB | md5:2e344064f0ae51b0ae79e2a9c6627b73
+https://zenodo.org/records/22716165/files/benchy_5_temp_230_08_01_23_10_19.parquet?download=1
+
+benchy_6_temp_230_08_02_01_27_55.parquet | 22.2 MB | md5:79ca81f01c9f1ef15119abce84eb70ea
+https://zenodo.org/records/22716165/files/benchy_6_temp_230_08_02_01_27_55.parquet?download=1
+
+benchy_7_temp_220_08_02_08_38_51.parquet | 43.5 MB | md5:b19415fd1dae5347850137875ca49335
+https://zenodo.org/records/22716165/files/benchy_7_temp_220_08_02_08_38_51.parquet?download=1
+
+benchy_8_healthy_08_02_10_54_12.parquet | 43.6 MB | md5:f3f1ad22c01d0f6d4dfb8b6410089688
+https://zenodo.org/records/22716165/files/benchy_8_healthy_08_02_10_54_12.parquet?download=1
+
+benchy_9_temp_220_08_02_13_27_21.parquet | 40.1 MB | md5:982799583b5b00895b5637b1142e4c47
+https://zenodo.org/records/22716165/files/benchy_9_temp_220_08_02_13_27_21.parquet?download=1
+

@@ -1,0 +1,17 @@
+Zenodo record 22770610 - file manifest
+Source: https://zenodo.org/records/22770610
+Licence: Creative Commons Attribution 4.0 International (CC BY 4.0)
+Checked: 2026-11-14
+
+calibration.zip | 2.4 MB | md5:a8277ac4dcb82d5945b9565435872754
+https://zenodo.org/records/22770610/files/calibration.zip?download=1
+
+measured_signals.zip | 6.6 MB | md5:ff14891f76dfb49150e7775a71f462fe
+https://zenodo.org/records/22770610/files/measured_signals.zip?download=1
+
+mraw_plate_random.zip | 9.3 GB | md5:092f9fd3462f7eb296482201f8a41e78
+https://zenodo.org/records/22770610/files/mraw_plate_random.zip?download=1
+
+mraw_plate_sweep.zip | 8.5 GB | md5:4bfdf017ef1ceff24e5d18d6709a6c22
+https://zenodo.org/records/22770610/files/mraw_plate_sweep.zip?download=1
+

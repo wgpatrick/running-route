@@ -1,4 +1,4 @@
-SOURCES - V6 Toolhead CAD and Datasheets (as of 2026-11-14 19:52 PT)
+SOURCES - V6 Toolhead CAD and Datasheets (as of 2026-11-14 22:15 PT)
 One line per file: filename | page URL | licence/terms stated there
 
 E3D_Roto_reference.step | https://www.printables.com/model/655950-e3d-roto-reference-cad | CC BY-NC-ND 4.0 (stated on model page)
@@ -23,9 +23,6 @@ ENDSTOP-MICRO_datasheet.pdf | https://omronfs.omron.com/en_US/ecb/products/pdf/e
 SKR_Mini_E3_V3_drawing.pdf | https://github.com/bigtreetech/BIGTREETECH-SKR-mini-E3 (hardware/BTT SKR MINI E3 V3.0/Hardware/BTT E3 SKR MINI V3.0_SIZE_20220301.pdf) | not stated
 HOST-RPI-ZERO-2W_datasheet.pdf | https://pip-assets.raspberrypi.com/categories/584-raspberry-pi-zero-2-w/documents/RP-008359-DS-1-raspberry-pi-zero-2-w-product-brief.pdf | not stated (official product brief; includes mechanical drawing)
 LRS-350-24_datasheet.pdf | https://www.meanwell.com/Upload/PDF/LRS-350/LRS-350-SPEC.PDF | not stated (official LRS-350 series spec)
-zenodo-5747732/* | https://zenodo.org/records/5747732 | licence stated on record page; Raw Acceleration Data.zip mirrored separately or user-provided
-zenodo-22770610/* | https://zenodo.org/records/22770610 | licence stated on record page; mraw camera zips mirrored separately or user-provided
-zenodo-22716165/README.txt | https://zenodo.org/records/22716165 | licence stated on record page; parquets mirrored separately or user-provided
 MGN12-R-215.step / MGN12-R-250.step / MGN12-R-300.step | USER-PROVIDED - Will has his own generated rails following the catalogue dims (per his message 20:38 PT); not in this folder. Official Hiwin CAD hunt dropped per his decision.
 
 --- update 2026-11-14 20:41 PT ---
@@ -56,3 +53,15 @@ LRS-350-24.step | https://www.meanwell.com/webapp/product/search.aspx?prod=LRS-3
 INLET-C14-SW-FUSE-T8A_datasheet.pdf | https://www.schurter.com/en/datasheet/typ_dd11.pdf (official Schurter DD11) | not stated
 FAN-3010_datasheet.pdf | https://www.sunon.com/PROSEARCH_FILES/(D03033610G-01)-1.pdf (official Sunon MF30101V2-1000U-A99, 30x30x10, 24V) | not stated
 BED-COLUMN-SIL-16x18_dims.txt | https://tronic.lk/product/silicone-spacer-column-heat-resistant-for-3d-printer-be (measured dims fallback per spec; no STEP exists) | not stated
+zenodo-5747732/Dataset Descriptions.pdf | https://zenodo.org/records/5747732 | CC BY 4.0 (record licence; README/manifest are accompanying delivery notes)
+zenodo-5747732/RMS Acceleration by Layer.zip | https://zenodo.org/records/5747732 | CC BY 4.0 (record licence; README/manifest are accompanying delivery notes)
+zenodo-5747732/Figures.zip | https://zenodo.org/records/5747732 | CC BY 4.0 (record licence; README/manifest are accompanying delivery notes)
+zenodo-5747732/GCode.zip | https://zenodo.org/records/5747732 | CC BY 4.0 (record licence; README/manifest are accompanying delivery notes)
+zenodo-5747732/README.txt | https://zenodo.org/records/5747732 | CC BY 4.0 (record licence; README/manifest are accompanying delivery notes)
+zenodo-22770610/measured_signals.zip | https://zenodo.org/records/22770610 | CC BY 4.0 (record licence; README/manifest are accompanying delivery notes)
+zenodo-22770610/calibration.zip | https://zenodo.org/records/22770610 | CC BY 4.0 (record licence; README/manifest are accompanying delivery notes)
+zenodo-22770610/README.txt | https://zenodo.org/records/22770610 | CC BY 4.0 (record licence; README/manifest are accompanying delivery notes)
+zenodo-22770610/FILE_MANIFEST.txt | https://zenodo.org/records/22770610 | CC BY 4.0 (record licence; README/manifest are accompanying delivery notes)
+zenodo-22716165/README.txt | https://zenodo.org/records/22716165 | CC BY 4.0 (record licence; README/manifest are accompanying delivery notes)
+zenodo-22716165/FILE_MANIFEST.txt | https://zenodo.org/records/22716165 | CC BY 4.0 (record licence; README/manifest are accompanying delivery notes)
+zenodo-22716165/benchy_6_temp_230_08_02_01_27_55.parquet | https://zenodo.org/records/22716165 | CC BY 4.0; MD5 79ca81f01c9f1ef15119abce84eb70ea verified

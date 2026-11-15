@@ -105,3 +105,29 @@ Observations (content not modified):
 ### Batch 4 failures
 
 None.
+
+## Batch 5 (fifth sweep, recursive, 2026-11-15; Drive changes 06:16Z-06:17Z)
+
+Listing now: 45 files in the root, zenodo-22716165: 3, zenodo-22770610: 4, zenodo-5747732: 5 = 57 files. No nested subfolders. No new files in the root. Two files are new and staged, five were edited in place on Drive (same file ids, new size and modified time) and re-downloaded over the earlier copies, and one new file could not be downloaded. Everything else is unchanged on Drive (same id, size and modified time as recorded above). `SHCS-M3x6.step` is NOT corrected: same id, size and modified time, still the 91290A500 (M3x12) model. Re-listing after the downloads showed no further additions or changes.
+
+| Batch | Title | Drive file id | Drive modified | Drive size | Local size | Verified | sha256 | Type |
+|---|---|---|---|---|---|---|---|---|
+| 5 | SOURCES.txt (changed, was 6443) | 1EFyXKqnaWQfNG9-lNeOiPDEpMAxuu2rN | 06:17:40Z | 7785 | 7785 | yes | e67e178ebccfbe05ed41653b0315906b6ad6d207275b4462df135b413f9ed825 | text |
+| 5 | MISSING.txt (changed, was 4340) | 1gy1TUFXZAGar4ftPYUVva6sLPh5dHaxx | 06:17:39Z | 3816 | 3816 | yes | a538d5e34577527f3a1923b6415e6bd6e6789ed41d28f97d81ea7344ddf02679 | text |
+| 5 | zenodo-22716165/README.txt (changed, was 456) | 1b9aTvL-_ANKTdBi8fwkWxG-cl4aS7D_Q | 06:17:38Z | 702 | 702 | yes | 622c431dcf571c3201030b45658548791755879dfd20dd06785fb47a768f56ef | text |
+| 5 | zenodo-22716165/FILE_MANIFEST.txt (new) | 1c1zWiTBinYUbNckDY4W65g5tQ3PVh0Fh | 06:16:04Z | 5040 | 5040 | yes | 288cfd71fac86eac459e928a37f155fcd8f7527598d41eb504b0eb3a500f7c53 | text |
+| 5 | zenodo-22770610/FILE_MANIFEST.txt (new) | 1n7K9qp2ryPY2MoTHO52iNIK_urjP0qxQ | 06:16:03Z | 740 | 740 | yes | cb32fa0dc58b5be15aae55ff69d54aa2d759dfa8d65f65d49d166d60bee0db75 | text |
+| 5 | zenodo-22770610/README.txt (changed, was 601) | 1ZjDwcgDcatRpsRHSgQl0tYfRiiPY_7G9 | 06:16:02Z | 685 | 685 | yes | fe27f96bf0997ed8e333f7b2106038b3ec6bc890d96bde0a824c07ed77ef0249 | text |
+| 5 | zenodo-5747732/README.txt (changed, was 531) | 1rhqq1v_2XGBIzbrv7audau8493XEv0i6 | 06:16:01Z | 899 | 899 | yes | 68fc7321d534be9bb8fe12ddd5a40fe7fa100e941a6ec1cfdaa50828c82722b5 | text |
+| 5 | zenodo-22716165/benchy_6_temp_230_08_02_01_27_55.parquet (new) | 14j4xhB1cZgeRboTIAMHu7LNOr460zQ01 | 06:17:12Z | 22198183 | not downloaded | no | - (README gives MD5 79ca81f01c9f1ef15119abce84eb70ea) | parquet |
+
+### Batch 5 failures
+
+- `zenodo-22716165/benchy_6_temp_230_08_02_01_27_55.parquet` (22,198,183 bytes): one attempt, connector error, exact text: `File too large for download, over limit of 10 MB. For downloading larger files, use the standard Google Drive API. See https://developers.google.com/workspace/drive/api/guides/manage-downloads#curl`. Not retried, no other route used. (Earlier files up to 8.9 MB downloaded fine.)
+
+### Batch 5 observations
+
+- Local staging no longer holds `17HS13-0404S1.step`, `17HS19-2004S1.step` and `COUPLER-5x8.step`: they were moved to `vendor_cad/` in the repo (present there at the Drive sizes); unchanged on Drive, not re-fetched.
+- Duplicates by sha256 across staging and `vendor_cad/`: `SHCS-M3x6.step` == `SHCS-M3x12.step` (01badadf...7412); `LRS-350-24.step` == `vendor_cad/meanwell_LRS-350.stp` (b1879fd8...1e42). No other duplicates, no zero-byte files.
+- `FAN-3010_datasheet.pdf` (Sunon MF30101V2-1000U-A99) states RATED VOLTAGE 12 VDC, 32 mA, 0.39 W, 8600 RPM, 4.6 CFM; its model-code key gives voltage digit 1 = 12 VDC, 2 = 24 VDC. SOURCES.txt and MISSING.txt describe this file as 24 V. It is a 12 V fan datasheet.
+- No new archives in this sweep; the five batch 2 zip files remain saved and not unpacked.
