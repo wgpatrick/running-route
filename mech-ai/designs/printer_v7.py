@@ -1,6 +1,6 @@
-"""printer_v6: printer_v5 with a direct-drive toolhead bolted straight to the X guide block.
+"""printer_v7: printer_v6 corrected against the vendor data sheets that arrived after v6 was designed.
 
-STATED TARGET (docs/PRINTER_V6.md says which lines are met):
+STATED TARGET (unchanged from v6; docs/PRINTER_V7.md says which lines are met):
   A 180 x 180 x 180 mm open-frame demonstration printer whose every purchased part is off the shelf and every
   fabricated part is printed, laser-cut or a single-set-up plate.
     - parts cost + fabrication estimate <= $900
@@ -9,40 +9,36 @@ STATED TARGET (docs/PRINTER_V6.md says which lines are met):
     - direct-drive toolhead, <= 0.40 kg moving mass in X
     - both Y belts within 1 mm of plane in >= 98 % of builds
     - a bed probe that works across the whole print area
-    - no stand-in ("proxy" / uncatalogued) purchased part where the catalogue now has a real one
+    - no stand-in ("proxy" / uncatalogued) purchased part
 
-Same machine in kind as v5 (cartesian, bed moves in Z on two rails with two blocks each and an extrusion-arm
-carrier, 2020 frame, 24 V, SKR Mini E3 V3 + Pi Zero 2 W, belt tensioners, no custom PCB). What changed:
+Same machine as v6 (cartesian, E3D Roto + Revo on the X guide block, X rail on the beam's rear face, bed on two Z
+rails, 2020 frame, 24 V, SKR Mini E3 V3 + Pi Zero 2 W). What changed, each tied to a vendor document:
 
-1. Direct drive. E3D Roto extruder + Revo hot side (catalogue parts, vendor data) replace the Bowden extruder on the
-   frame and the proxy hotend. The Roto's heat-sink fan is 5 V: it runs from the control board's always-on 5 V pins.
-2. Toolhead on the rail. The X rail moved from the top of the beam to its REAR face, so the guide block's mounting
-   face is vertical and the Roto (which bolts sideways through its body) sits flat on one 8 mm plate that sits flat
-   on the block. No printed part and no cantilevered plate between block and nozzle. Nozzle: 28 mm behind and
-   34 mm below the block centre (v5: 33 mm and 55 mm).
-3. X drive. The X belt runs in a vertical loop over the top of the beam; motor and idler stand on two laser-cut
-   plates on the beam's front face (one part, the beam, locates both), inboard of the Y carriages: the belt is 20 %
-   shorter and the X motor no longer hangs outside the frame, so the left Y drive is now the mirror image of the
-   right one (no belt tower). The belt ends are held in the printed belt block without a clamp bar.
-4. Bed probe. Same class of inductive sensor (still a hand-made part with recalled data: the catalogue has none),
-   mounted directly on the tool plate with its face 2.0 mm above the nozzle: it switches 0.9 .. 1.5 mm before the
-   nozzle touches over its +/-10 % spread. BAT85 diode in the signal lead.
-5. 180 mm of Z: frame 10 mm taller, 250 mm lead screw, Z blocks 55 mm apart on the same 300 mm rails.
-6. Real catalogue parts: Pololu / OpenBuilds round spacers, 16 x 18 silicone bed columns, MIC-6 bed plate, a 9 mm X
-   belt with 9 mm pulley and idler (the two Y belts stay 12 mm).
-7. Y plates are laser-cut 3 mm steel: the beam ends inboard of the Y guide blocks and hangs under the plates on one
-   M5 from above each side, so the block screws need no counterbore and no screw is driven from below. Each Y belt end is tied through two slots in its Y plate (no
-   clamp part between the belt and the plate: the belt-plane scatter target).
-8. Hotend safety: PSU relay and bed thermal fuse kept; the Revo heater is self-limiting (PTC). No hardware cut-off
-   for the hotend exists in the catalogue; the electrical verifier's warning stays open.
-9. Consolidation: Bowden parts, belt tower, three belt clamps, X idler slider, hotend mount and tray driver holes gone;
-   13 fastener sizes (v5: 18).
+1. Endstops (OMRON D2F sheet: operating position 6.8 +/-1.5 mm, not 9.0). Both lever switches moved 2.3 mm towards
+   their strikers: the nominal operating position is at the end of the working range and X and Y have 1.5 mm of
+   declared over-travel at both ends, so the latest unit still switches (0.1 mm in hand) and the lever stops 0.15 mm
+   short of the switch case. Switches kept on X and Y (no sensorless homing: see the doc); buy the D2F-01L type.
+2. Coupler (MH2025-5-8 vendor CAD: 8 mm bore 8.6 mm deep, 7.5 mm clamped). The lead screw sits 8.0 mm in its bore;
+   the coupler sits 3 mm lower on the motor shaft (11.5 mm in the 5 mm bore, 12.05 allowed), so the screw top is
+   2.5 mm under the top back rail.
+3. Y belts 9 mm (v6: 12 mm) and the Y pulleys turned hub-outboard: 28.4 N on each Y motor shaft 11.75 mm from the
+   face against 35.7 N allowed there (v6: 37.4 N at 16.25 mm against 25.8 N). 9 mm is a Gates stock width, 12 mm is not.
+4. Z over-travel declared: 1.65 mm past the nominal nozzle plane (probe offset, mesh, a bed built low);
+   design.printer["print_area"] = 180 x 180.
+5. Bed probe: OMRON E2E-X10ME1 (catalogue part: M18, unshielded, about 3.0 mm on aluminium, NPN three-wire) in a
+   printed arm, clamped by its own nuts, its metal-free zone kept. Bed limited to 85 degC (the sensor's rating).
+6. Relay: the neutral runs through the relay's N terminal.
+7. Part fan: the catalogue's 24 V 30 mm fan on the board's 24 V fan output (the Sunon sheet in hand is the 12 V
+   member of the family; the catalogue has no 24 -> 12 V regulator). The part-cooling duct is drawn.
+8. Mains inlet: SCHURTER DD11 pattern on the inlet panel.
+9. X rail datum (two laser-cut stops under the Y plates), two M5 per side under each Y plate, bed heater 180 W on
+   the board's own output (no MOSFET module).
 
 Layout (X = width, Y = depth with the front at -Y, Z = up) is v4's; see designs/printer_v4.py for the history.
 
-Proxies / not modelled (flagged): the bed probe is a hand-made proxy (uncatalogued_cots is true); the Roto's solid is
-E3D's drawing envelope (+/-1 mm) in solid aluminium; tapped holes, T-nuts, the part-cooling duct's air channel, the
-BAT85 diode and the Revo's spring clip are BOM lines or notes, not geometry; payload is extra mass on the bed.
+Not modelled (flagged): the Roto's solid is E3D's reference CAD envelope in solid aluminium; tapped holes, T-nuts,
+the BAT85 diode and the Revo's spring clip are BOM lines or notes, not geometry; payload is extra mass on the bed;
+no airflow model for the duct.
 """
 import math
 
@@ -59,6 +55,7 @@ from mechloop.parts import (Stock, add_corner_bracket, add_nut, add_screw, clear
                             leadscrew_nut_t8, leadscrew_t8, mgn12_rail, mgn12h_carriage, nema17, place,
                             shaft_coupler)
 from mechloop.parts.hardware import bed_column_silicone, spacer_round
+from mechloop.parts.probes import probe_omron_e2e
 from mechloop.parts.toolhead import extruder_roto, hotend_revo
 
 # ---- brief ------------------------------------------------------------------------
@@ -72,7 +69,9 @@ ENVELOPE = (420.0, 420.0, 480.0)
 MAX_PARTS, MAX_TOOLHEAD_KG, MAX_COST_USD, MIN_BELT_IN_PLANE = 320, 0.40, 900.0, 0.98
 
 # ---- electrical choices -----------------------------------------------------------
-BED_W = 200.0
+BED_W = 180.0          # v7: 180 W pad (v6: 200 W). 7.5 A, inside the board's own bed output (8 A allowed), so no MOSFET module
+BED_MAX_C = 85.0       # v7: highest bed temperature the firmware is given. The probe (OMRON E2E-X10ME1) rides 1.7 mm above the
+                       # bed and is rated for 85 degC ambient; v6 allowed 100 degC over a 70 degC stand-in
 PSU_MODEL = "LRS-350-24"
 BED_AWG, BED_INS = 16, "silicone"
 # A rms at the driver. Extruder: E3D allows 0.318 .. 0.424 A rms for the Roto's motor
@@ -104,18 +103,19 @@ LS_Y = UP_Y + 10       # lead screw / motor axis Y
 MOTOR_L = 34
 Z_MF = 22.0 + MOTOR_L  # Z motor mounting face
 T_MM = 5.0             # printed motor bridge: top plate thickness (M3x8 leaves 3 mm in the motor's 4.5 mm threads)
-BED_Y1 = Y_PF - 6.0    # v6: the bed ends 6 mm in front of the back plate (11 mm further forward than v5: room behind the toolhead)
+BED_Y1 = Y_PF - 9.0    # v7: the bed ends 9 mm in front of the back plate (v6: 6): the part fan, now a duct depth further back,
+                       # stays 2.7 mm clear of the Z uprights at the rear end of the Y over-travel
 BED_Y0 = BED_Y1 - BED
 BED_CY = (BED_Y0 + BED_Y1) / 2
 ARM_X = 65.0           # 2020 arms: inboard of the uprights so their end screws can be driven from behind
-ARM_L = 210.0
+ARM_L = 213.0
 H_COL = 16.0           # installed height of the silicone levelling columns (catalogue part: 18 free, 2 mm pre-compression)
 # bed mounts stand on the arms; the pad (200 wide, 140 deep) lies between the front and the rear pair
 BED_MOUNTS = [(-ARM_X, BED_Y1 - 25.0), (ARM_X, BED_Y1 - 25.0), (-ARM_X, BED_Y1 - 195.0), (ARM_X, BED_Y1 - 195.0)]
 NUT_PIN = (0.0, 8.0)   # the one flange hole of the T8 nut that carries the anti-rotation pin
 NUT_FLOAT = 1.5        # radial room around the nut barrel and along the pin slot
 Z_DN = 3.0             # mechanical Z travel below the home position (bed at the bottom)
-Z_UP = 1.5             # v7: declared over-travel of the Z joint past the nominal nozzle plane (probe offset, mesh, a bed built low)
+Z_UP = 1.65            # v7: declared over-travel of the Z joint past the nominal nozzle plane (probe offset, mesh, a bed built low)
 CPL_Z = 8.5            # coupler bottom above the motor face (v6: 11.5; lowered so the screw, now only LS_IN in its bore, still ends under the top rail)
 LS_IN = 8.0            # lead screw in the coupler's 8 mm bore: the hub clamps 7.5 mm, the spider is 8.6 mm in (MH2025-5-8 vendor CAD)
 Z_SPACING = 55.0       # two blocks per rail, centre to centre (v5: 80 with 150 mm of travel)
@@ -129,7 +129,7 @@ T_YP = 3.0                     # Y plates: 3 mm laser-cut steel sheet, like the 
 Z_BEAM = Z_PLATE - 10.0        # v6: the beam hangs UNDER the Y plates, between the Y guide blocks. Its centre line = X rail
                                # centre line = X guide block centre (rail on the beam's rear face)
 PR = 20 * 2.0 / math.pi / 2    # pitch radius of the 20T pulleys / idlers
-BWX, BWY = 9.0, 9.0            # GT2 belt widths: v7 9 mm on all three (Gates stock width; 12 mm is not, and overloads the Y motor shafts)
+BWX, BWY = 9.0, 9.0           # GT2 belt widths: v7 9 mm on all three (Gates stock width; 12 mm is not, and overloads the Y motor shafts)
 P_BC = lambda w: 7.0 + (w + 1) / 2      # gt2_pulley belt centre above its hub bottom
 I_H = lambda w: w + 2.5                 # gt2_idler height
 MT_Y = 3.0                     # motor / idler mounts: 3 mm steel sheet
@@ -161,7 +161,7 @@ BLK_Z1 = Z_BEAM + 32.5         # its top (the belt's upper run passes 6 mm above
 Y_SP = 3.0                     # Y idler spacers (bought, aluminium, the shortest stock length). v7: the Y pulleys are turned hub-outboard,
                                # so the belt plane is 11.75 mm from the motor face (v6: 16.25) and the hub no longer decides this
 YB_X = FX / 2 + MT_Y + Y_SP + I_H(BWY) / 2       # Y belt plane (+/-)
-YM_Y, YI_Y = FY / 2 + 24.0, -161.0      # Y motor pulley (behind the frame) and Y idler (front, beyond the Y rails' ends)
+YM_Y, YI_Y = FY / 2 + 24.0, -164.5      # Y motor pulley (behind the frame) and Y idler (front, beyond the Y rails' ends)
 Z_YA = Z_PLATE + T_YP + 0.7    # upper (anchored) run of each Y belt lies on its Y plate
 Z_YC = Z_YA - PR
 BELT_ADJ = 3.0                 # +/- travel of each belt tensioner
@@ -196,54 +196,48 @@ LAND_X, LAND_Y1 = (-134.0, -115.5), 34.0          # left Y plate: land behind th
 ES_OT = 1.5                                       # homing over-travel on X and Y, both ends (see the endstop notes in build())
 ES_SP = 4.0                                       # bought spacers under the switch boards (their terminals stand 2.6 mm out)
 ES_SP_X = 8.0                                     # X switch: 8 mm spacers, so its M3x16 screws and nuts end above the X rail and its stop
-import os
-EXP = set(os.environ.get("V7_EXP", "").split(","))    # scratch experiments only; empty in the delivered design
-RAIL_STOPS = "nostop" not in EXP
-RAIL_SCREW_STEP = 2 if "rail5" in EXP else 1
-BEAM_BOLT_X = (RAIL_X - 31.5,) if "bolt1" in EXP else (RAIL_X - 31.5, RAIL_X - 20.5)   # from the machine centre
+RAIL_STOPS = True
+X_JACK = True
+RAIL_SCREW_STEP = 2                               # every second hole of the X rail, as in v6
+BEAM_BOLT_X = (RAIL_X - 33.0, RAIL_X - 21.0)      # v7: two M5 per side hold the beam under each Y plate (v6: one), |x|
 STOP_X = (116.5, 126.0, 131.0, 143.0)             # rail stop plate: finger tip, body, notch, outer edge (|x|)
 X_ES_Y = 29.6                                     # where the X switch's lever meets the left edge of the tool plate
-# bed probe: inductive, sensing face PRB_H above the nozzle tip. With 3.2 mm on aluminium +/-10 % it switches with
-# the nozzle 0.88 .. 1.52 mm above the bed.
-PRB_SN = 3.2                                      # 8 mm on steel x 0.4 for aluminium: recalled class value, unverified
-PRB_H = 2.0
-PRB_X = -32.0                                     # probe axis, left of the nozzle (6.8 mm from the Roto's fan screws)
-PRB_Y = R_TPR + 9.0                               # ... and behind the tool plate, which it is screwed to
+# bed probe (v7): OMRON E2E-X10ME1, M18 unshielded, 10 mm on iron, about 3.0 mm on aluminium (2.4 .. 3.63 mm over
+# +/-10 % unit spread and +/-10 % with temperature). Sensing face PRB_H above the nozzle tip: it switches with the
+# nozzle 0.7 .. 1.9 mm above the bed. Unshielded: no metal within 27.5 mm of its axis in the 22 mm above the face, so
+# it stands left of the Roto's heat sink and behind the tool plate, in a printed (ABS) arm.
+PRB_MODEL = "E2E-X10ME1"
+PRB_H = 1.8
+PRB_X = -36.5                                     # probe axis: 28.75 mm from the Roto's heat sink, 30.4 from the HeaterCore
+PRB_Y = R_TPR + 28.2                              # ... and 28.2 mm behind the tool plate's rear face
 Z_PRB = Z_NOZZLE + PRB_H                          # sensing face
-PRB_SCREW_Z = [Z_PRB + 8.0, Z_PRB + 28.0]
+PRB_TURN = 22.5         # the (round) sensor turned about its own axis: see docs/PRINTER_V7.md, checker notes
+PRB_CLAMP = (16.0, 22.0)                          # the arm's slab, above the sensing face (between the sensor's two nuts)
+ARM_Z0, ARM_Z1 = Z_PRB + PRB_CLAMP[0] - Z_BEAM, Z_PRB + PRB_CLAMP[1] - Z_BEAM     # slab, from Z_BEAM: -15.85 .. -9.85
+ARM_FL = 8.0                                      # arm flange thickness (M3x16 from the rear into the tab, tapped through)
+ARM_SCREWS = [(-34.5, -4.0), (-26.5, -4.0)]       # arm -> left tab (x, z): above the sensor's metal-free zone
 # tool plate outline, from the nozzle axis (x) and the beam centre (z)
 TPX = 23.0                                        # half width over the guide block
 TP_Z0, TP_Z1 = -14.0, 35.0
-TAB_L = (-38.2, -23.0, -28.0, 0.5)                # left tab (x0, x1, z0, z1): bed probe (it overhangs the tab by 2.8 mm)
-TAB_R = (13.0, 46.0, -27.0, -14.0)                # right tab under the Roto's motor: part-fan carrier
-# part-cooling fan carrier (printed): flange on the right tab, spine under the motor, fan behind the Roto
+TAB_L = (-38.0, -23.0, -14.0, 5.5)                # left tab (x0, x1, z0, z1): the probe arm's seat (under the X switch's screws)
+TAB_R = (13.0, 36.0, -27.0, -14.0)                # right tab under the Roto's motor: part-cooling duct
+# part-cooling duct (printed): flange on the right tab, closed channel under the Roto's motor, plenum behind the Roto
+# that the fan bolts to, outlet in the channel's left wall beside the nozzle
 FC_X0, FC_X1 = TAB_R[0], TAB_R[1]
 FC_FL = 6.0                                       # flange thickness
-FC_Z0, FC_ZF = TAB_R[2], -12.2                    # underside; flange top (0.75 under the Roto's body)
-FC_ZS = -23.5                                     # spine top
-FC_LUG_Y = R_TPR + ROTO_W + 0.5                   # lug front face: 0.5 behind the Roto
+FC_Z0, FC_ZF = TAB_R[2], -12.3                    # flange underside; top of flange and channel (0.55 under the Roto's body)
+DUCT_Z0 = -31.0                                   # channel underside: 2.55 mm above the nozzle plane
+DUCT_W = 1.6                                      # duct walls (four 0.4 mm beads); floor 2.0
+FC_LUG_Y = R_TPR + ROTO_W + 0.5                   # plenum front face: 0.5 behind the Roto
+PLEN = 6.0                                        # plenum depth
+PFAN = (19.5, FC_LUG_Y + PLEN + 5.0, -16.0)       # part fan centre (x, y from YB0, z from Z_BEAM): its right edge clears the rear corner bracket
+PLEN_X0, PLEN_X1 = PFAN[0] - 16.5, PFAN[0] + 16.5
 FAN_LUG = 3.5                                     # printed wall between the fan and its captive nuts (M3x16 = fan 10 + 3.5 + nut 2.4)
-PFAN = ((FC_X0 + FC_X1) / 2, FC_LUG_Y + FAN_LUG + 5.0, -12.0)    # part fan centre (x, y from YB0, z from Z_BEAM)
-FC_SCREWS = [(20.5, -20.5), (39.0, -20.5)]        # carrier -> tab (x, z)
+FC_SCREWS = [(18.5, -20.5), (30.5, -20.5)]        # duct flange -> tab (x, z)
+DUCT_OUT = (40.0, 52.0, -29.0, -23.0)             # outlet window in the left wall (y0, y1 from YB0; z0, z1 from Z_BEAM)
 BLK_SCREWS = [(-9.5, 19.0), (9.5, 19.0)]          # tool plate -> belt block (x, z from Z_BEAM)
 BLK_Y0 = XB_Y - YB0 - BWX / 2 - 2.25              # belt block front face, from YB0 (the belt slots are open to it)
 BLK_NUT_Y = 17.5                                  # the block's captive nuts bear on this face, from YB0
-
-
-def bed_probe() -> Stock:
-    """PROXY (not in the catalog): rectangular inductive proximity sensor of the PL-08N class (NPN, normally open,
-    8 mm nominal on steel), 18 x 18 x 36 mm, two M3 through holes across it. Local frame: sensing face on Z=0, body
-    above, holes along X at Z = 8 and 28. `trigger` is where a flat aluminium target switches it. Dimensions, mass and
-    switching distance are recalled class values, not read from a data sheet."""
-    body = Pos(0, 0, 18.0) * Box(18.0, 18.0, 36.0)
-    holes = [(0.0, 0.0, 8.0), (0.0, 0.0, 28.0)]
-    for _, _, z in holes:
-        body -= Pos(0, 0, z) * Rot(0, 90, 0) * Cylinder(clearance_hole("M3") / 2, 18.0)
-    # electrical model of kind 'probe' (supply range, NPN open-collector output, switching distances and their spread)
-    tpl = inductive_probe_template(sn_steel_mm=8.0, sn_aluminium_mm=PRB_SN, output="npn_no")
-    return Stock(body, "PROBE-INDUCTIVE-8MM", "UNVERIFIED proxy: inductive bed probe 18 x 18 x 36, 8 mm NPN NO", 0.02,
-                 material="abs", cost_usd=6.0, ratings={"electrical": tpl},
-                 interfaces={"trigger": [(0.0, 0.0, -PRB_SN)], "sensing_face": [(0.0, 0.0, 0.0)], "mount_holes_m3": holes})
 
 
 def mount_pcb(d, name, comp, holes_key, size, screw_len, sp_len, group, use=None):
@@ -395,7 +389,6 @@ def tool_plate_shape():
     tp = box(-TPX, TPX, TP_Z0, TP_Z1) + box(*TAB_L) + box(*TAB_R)
     r = 3.0     # inside corners: a 6 mm cutter, 8 mm deep
     tp += fillet_y(-TPX, Z_BEAM + TAB_L[3], -1, 1, r, y0, y1)        # left tab top / plate edge
-    tp += fillet_y(-TPX, Z_BEAM + TP_Z0, 1, -1, r, y0, y1)           # plate underside / left tab
     tp += fillet_y(TAB_R[0], Z_BEAM + TP_Z0, -1, -1, r, y0, y1)      # plate underside / right tab
     tp += fillet_y(TPX, Z_BEAM + TP_Z0, 1, 1, r, y0, y1)             # plate edge / right tab top
     for x in (-10, 10):
@@ -406,8 +399,11 @@ def tool_plate_shape():
         tp -= Pos(x, yc, Z_BEAM + z) * ycyl(clearance_hole("M3") / 2, T_TP)
     # the four tapped holes (Roto, probe) are drilled and tapped right through: tap-drill holes
     for x, z in ([(h[0], h[2] - Z_BEAM) for h in (ROTO_O, (ROTO_O[0] + ROTO_H2[0], 0.0, ROTO_O[2] + ROTO_H2[2]))]
-                 + [(PRB_X, z - Z_BEAM) for z in PRB_SCREW_Z]):
+                 + ARM_SCREWS):
         tp -= Pos(x, yc, Z_BEAM + z) * ycyl(2.5 / 2, T_TP)
+    # v7: two lightening windows (same set-up): between the guide block's screws and above the belt block's
+    for xc, zc, wx, wz in ((0.0, 0.0, 10.0, 10.0), (-6.0, 28.0, 22.0, 8.0)):
+        tp -= Pos(xc, yc, Z_BEAM + zc) * Rot(90, 0, 0) * extrude(RectangleRounded(wx, wz, 3.0), T_TP / 2, both=True)
     for x, z in BLK_SCREWS:      # belt block screws: from the rear too, heads sunk under the Roto's side face
         tp -= Pos(x, yc, Z_BEAM + z) * ycyl(clearance_hole("M3") / 2, T_TP)
         tp -= Pos(x, y1 - CB / 2, Z_BEAM + z) * ycyl(3.0, CB)
@@ -431,33 +427,66 @@ def belt_block_shape():
     return b
 
 
-def fan_carrier_shape():
-    """Printed ABS carrier for the part-cooling fan: a flange on the tool plate's right tab (two M3x16 from the front
-    into captive nuts in slots open to the underside), a 45-degree gusset, a spine under the Roto's motor and a lug behind the Roto that the fan hangs
-    on by its two lower holes (captive nuts in slots open to the underside). Its floor and lug are the spine of the
-    air duct; the duct's thin walls and outlet are not modelled. Printed lug-down: no overhang past 45 degrees."""
-    yf, yl = YB0 + R_TPR, YB0 + FC_LUG_Y
-    z0, zf, zs = Z_BEAM + FC_Z0, Z_BEAM + FC_ZF, Z_BEAM + FC_ZS
+def part_duct_shape():
+    """Printed ABS part-cooling duct (v7; v6 had only a carrier and left the duct undrawn). From the rear: a plenum
+    the fan bolts to (two M3x16 through the fan's lower holes into captive nuts, slots open to the underside), which
+    turns the fan's air down into a closed 20.8 x 15.1 mm channel under the Roto's motor; the channel ends at a
+    flange on the tool plate's right tab (two M3x16 from the front into captive nuts) and blows out sideways through
+    a 12 x 6 mm window in its left wall, 13 mm from the nozzle axis and 4.5 .. 10.5 mm above the nozzle plane.
+    Printed rear face down: every wall is vertical, the plenum's front wall is a 30 mm bridge."""
+    yf, yl, yr = YB0 + R_TPR, YB0 + FC_LUG_Y, YB0 + FC_LUG_Y + PLEN
+    z0, zf, zd = Z_BEAM + FC_Z0, Z_BEAM + FC_ZF, Z_BEAM + DUCT_Z0
+    zt = Z_BEAM + PFAN[2] + 15.0                                               # plenum top = fan top
+    w = DUCT_W
     c = bx(FC_X0, FC_X1, yf, yf + FC_FL, z0, zf)                               # flange
-    g = zf - zs
-    gus = bx(FC_X0, FC_X1, yf + FC_FL, yf + FC_FL + g, zs, zf)
-    gus -= Pos((FC_X0 + FC_X1) / 2, yf + FC_FL + g, zf) * Rot(45, 0, 0) * Box(FC_X1 - FC_X0 + 1, g * math.sqrt(2), g * math.sqrt(2))
-    c += gus                                                                   # gusset
-    c += bx(FC_X0, FC_X1, yf + FC_FL, yl, z0, zs)                              # spine
+    c += bx(FC_X0, FC_X1, yf + FC_FL, yl, zd, zf)                              # channel
+    c += bx(PLEN_X0, PLEN_X1, yl, yr, zd, zt)                                  # plenum
+    c -= bx(FC_X0 + w, FC_X1 - w, yf + FC_FL + w, yr, zd + 2.0, zf - w)        # channel bore, open to the plenum
+    c -= bx(PLEN_X0 + w, PLEN_X1 - w, yl + w, yr, zd + 2.0, zt - w)            # plenum bore, open to the fan
     zb = Z_BEAM + PFAN[2] - 12.0                                               # lower fan holes
-    c += bx(FC_X0, FC_X1, yl - 8.0, yl, z0, zb + 6.5)                          # boss the nut slots are cut in
-    c += bx(FC_X0, FC_X1, yl, yl + FAN_LUG, z0, Z_BEAM + PFAN[2] + 15.0)       # lug
-    c -= Pos(PFAN[0], yl + FAN_LUG / 2, Z_BEAM + PFAN[2]) * ycyl(13.5, FAN_LUG)
-    for sx in (-12.0, 12.0):
-        c -= Pos(PFAN[0] + sx, yl + FAN_LUG / 2, zb) * ycyl(PH3 / 2, FAN_LUG)
-        c -= bx(PFAN[0] + sx - 2.9, PFAN[0] + sx + 2.9, yl - NUT_SLOT, yl, z0, zb + 3.35)
-    for x, z in FC_SCREWS:      # screw hole (it runs on 4 mm into the gusset for the screw's tip) and a nut slot open to the underside
-        c -= Pos(x, yf + (FC_FL + 4.0) / 2, Z_BEAM + z) * ycyl(PH3 / 2, FC_FL + 4.0)
+    for sx in (-12.0, 12.0):                                                   # bosses in the two lower corners for the fan's nuts
+        xb = PFAN[0] + sx
+        c += bx(xb - 4.5, xb + 4.5, yl, yr, zd, zb + 5.0)
+        c -= Pos(xb, yr - FAN_LUG / 2, zb) * ycyl(PH3 / 2, FAN_LUG)
+        c -= bx(xb - 2.9, xb + 2.9, yr - FAN_LUG - NUT_SLOT, yr - FAN_LUG, zd, zb + 3.35)
+    # the Roto's lower M3x45 has its head on the Roto's rear face, in the plenum's top left corner: solid corner, pocket for the head
+    hx, hz = ROTO_O[0], ROTO_O[2]
+    c += bx(PLEN_X0, hx + 4.5, yl, yr, hz - 6.5, zt)
+    c -= bx(hx - 3.3, hx + 3.3, yl, yl + 4.0, hz - 3.3, zt)
+    y0, y1, oz0, oz1 = DUCT_OUT
+    c -= bx(FC_X0 - 0.1, FC_X0 + w + 0.1, YB0 + y0, YB0 + y1, Z_BEAM + oz0, Z_BEAM + oz1)      # outlet towards the nozzle
+    for x, z in FC_SCREWS:      # screw hole through the flange and a nut slot open to the underside
+        c -= Pos(x, yf + (FC_FL + w) / 2, Z_BEAM + z) * ycyl(PH3 / 2, FC_FL + w)
         c -= bx(x - 2.9, x + 2.9, yf + FC_FL - NUT_SLOT, yf + FC_FL, z0, Z_BEAM + z + 3.35)
     return c
 
 
-USE_CUTOFFS = USE_MOSFET = True
+def probe_arm_shape():
+    """Printed ABS arm for the M18 bed probe: an 8 mm flange on the rear face of the tool plate's left tab (two
+    M3x16 from the rear into the tab's tapped holes) standing on a 6 mm slab that runs back under the Roto's fan to
+    the 18.5 mm hole the sensor is clamped in by its own two nuts. Plastic, because the unshielded sensor allows no
+    metal within 27.5 mm of its head. Printed slab down."""
+    yf = YB0 + R_TPR
+    a = bx(TAB_L[0], -23.5, yf, yf + ARM_FL, Z_BEAM + ARM_Z0, Z_BEAM + TAB_L[3])               # flange
+    a += bx(PRB_X - 15.0, -21.0, yf, YB0 + PRB_Y + 16.5, Z_BEAM + ARM_Z0, Z_BEAM + ARM_Z1)     # slab
+    a -= Pos(PRB_X, YB0 + PRB_Y, Z_BEAM + (ARM_Z0 + ARM_Z1) / 2) * Cylinder(18.5 / 2, ARM_Z1 - ARM_Z0)
+    # the hole is open to the rear (a fork): the sensor, with both nuts already on its thread, slides in from behind
+    a -= bx(PRB_X - 9.25, PRB_X + 9.25, YB0 + PRB_Y, YB0 + PRB_Y + 17.0, Z_BEAM + ARM_Z0, Z_BEAM + ARM_Z1)
+    for x, z in ARM_SCREWS:
+        a -= Pos(x, yf + ARM_FL / 2, Z_BEAM + z) * ycyl(PH3 / 2, ARM_FL)
+    return a
+
+
+def probe_key_shape():
+    """Printed key that closes the mouth of the arm's fork behind the sensor, so the two nuts clamp on a full ring.
+    It slides in from behind after the sensor; the nuts overlap it by 2.7 mm and hold it."""
+    k = bx(PRB_X - 9.05, PRB_X + 9.05, YB0 + PRB_Y + 6.5, YB0 + PRB_Y + 16.5, Z_BEAM + ARM_Z0, Z_BEAM + ARM_Z1)
+    k -= Pos(PRB_X, YB0 + PRB_Y, Z_BEAM + (ARM_Z0 + ARM_Z1) / 2) * Cylinder(18.5 / 2, ARM_Z1 - ARM_Z0)
+    return k
+
+
+USE_CUTOFFS = True
+USE_MOSFET = False     # v7: see BED_W
 
 
 def build_electrical(d: Design) -> Electrical:
@@ -487,7 +516,8 @@ def build_electrical(d: Design) -> Electrical:
     add_board_5v_port(el, "control_board")
     device_from(el, d, "bed_tco")
     device_from(el, d, "psu_relay")
-    device_from(el, d, "bed_mosfet")
+    if USE_MOSFET:
+        device_from(el, d, "bed_mosfet")
     el.add(Device("frame_earth", "earth_point", "earth_stud",
                   {"pe": Port("pe", "pe", "ring-M4", 20.0, at=(-FX / 2 - 6.0, 80.0, 10.0), multi=True, extra={"body": "world"})},
                   params={"bonds": "frame_bot_left"},
@@ -516,7 +546,7 @@ def build_electrical(d: Design) -> Electrical:
     # the loop trails forward from there to the rail's inner face (the frame clamp is level with the plate's front
     # edge at y = -TY, so the loop never has to pass back under the guide block)
     el.loom("gantry", [Waypoint("ybody", (-150.0, YB0 + PL_Y0 - 2.5, Z_PLATE + T_YP / 2), clamp="y_plate_left"),
-                       Waypoint("world", (XL - 0.8, -134.0, ZL), clamp="frame_top_left")], flex_length={0: 240.0})
+                       Waypoint("world", (XL - 0.8, -134.4, ZL), clamp="frame_top_left")], flex_length={0: 240.0})
     el.loom("top_left", [("world", (XL, -20.0, ZL)), ("world", (XL, 136.0, ZL))])
     el.loom("drop_left", [("world", (XL, -27.0, ZL)), ("world", (XL, -120.0, ZL)),
                           ("world", (-143.0, -150.0, FZ - 24.0)), ("world", (-143.0, -170.0, FZ - 64.0)),
@@ -533,14 +563,19 @@ def build_electrical(d: Design) -> Electrical:
     el.wire("mains L inlet-relay", "inlet.L", "psu_relay.LIN", 18, **mk)
     el.wire("mains L relay-supply", "psu_relay.LOT", "psu.L", 18, via=["mains"], **mk)
     el.wire("relay control", "control_board.PS-ON", "psu_relay.ctrl", 26, conductors=3)
-    el.wire("mains N", "inlet.N", "psu.N", 18, via=["mains"], **mk)
+    # v7: the relay module powers itself from the mains, so the neutral runs through its N terminal (twin ferrule)
+    el.wire("mains N inlet-relay", "inlet.N", "psu_relay.N", 18, **mk)
+    el.wire("mains N relay-supply", "psu_relay.N", "psu.N", 18, via=["mains"], **mk)
     el.wire("earth to supply", "inlet.PE", "psu.FG", 18, via=["mains"], **mk)
     el.wire("earth to frame", "inlet.PE", "frame_earth.pe", 18, connector_b="ring-M4", **mk)
     # ---- 24 V distribution
     el.wire("24 V to board", "psu.V+1", "control_board.POWER", 16, insulation="silicone")
-    el.wire("24 V to bed module", "psu.V+2", "bed_mosfet.pwr", 14, insulation="silicone")
-    el.wire("bed control", "control_board.HB", "bed_mosfet.ctrl", 24)
-    el.wire("bed heater", "bed_mosfet.out", "bed_tco.a", BED_AWG, insulation=BED_INS, via=["bed"])
+    if USE_MOSFET:
+        el.wire("24 V to bed module", "psu.V+2", "bed_mosfet.pwr", 14, insulation="silicone")
+        el.wire("bed control", "control_board.HB", "bed_mosfet.ctrl", 24)
+        el.wire("bed heater", "bed_mosfet.out", "bed_tco.a", BED_AWG, insulation=BED_INS, via=["bed"])
+    else:   # v7: a 180 W pad for an 85 degC bed is inside the board's own bed output (7.5 A of 8 A allowed)
+        el.wire("bed heater", "control_board.HB", "bed_tco.a", BED_AWG, insulation=BED_INS, via=["bed"])
     el.wire("bed heater tail", "bed_tco.b", "bed_heater.in", BED_AWG, insulation=BED_INS, length=90.0)
     el.wire("bed thermistor", "control_board.THB", "bed_ntc.out", 26, insulation="silicone", via=["bed"])
     # ---- toolhead: heater, thermistor, two fans, probe, extruder motor
@@ -579,14 +614,14 @@ def build_electrical(d: Design) -> Electrical:
         "heaters": {"extruder": {"heater": "hotend", "sensor": "hotend_thermistor", "control": "pid", "min_temp": 0,
                                  "max_temp": 280, "targets": [250.0], "verify_heater": {}},
                     "heater_bed": {"heater": "bed_heater", "sensor": "bed_ntc", "control": "pid", "min_temp": 0,
-                                   "max_temp": 120, "targets": [60.0, 100.0], "verify_heater": {}}},
+                                   "max_temp": BED_MAX_C + 10.0, "targets": [60.0, BED_MAX_C], "verify_heater": {}}},
         "fans": {"part_fan": {"device": "part_fan", "role": "part"}, "hotend_fan": {"device": "hotend_fan", "role": "heatsink"}},
     }
     # hot parts wires must be rated for: the HeaterCore and nozzle block (not the whole part) and the bed plate
     hi = d.get("hotend").meta["interfaces"]
     rc = hi["heatercore_dia"] / 2
     hb = (-rc, YB0 + HOT_OFF - rc, hi["heater_block_box"][0][2], rc, YB0 + HOT_OFF + rc, hi["heater_block_box"][1][2])
-    el.hot_parts = {"hotend": {"temp": 250.0, "box": hb}, "bed": 100.0}
+    el.hot_parts = {"hotend": {"temp": 250.0, "box": hb}, "bed": BED_MAX_C}
     # the bay is the open tray under the bed: air leaves through the open sides of the frame
     el.bay = Bay(devices=[n for n in ("psu", "control_board", "host", "psu_relay", "bed_mosfet") if n in el.devices],
                  enclosed=False, vent_area_m2=0.02, height_m=0.05)
@@ -740,7 +775,7 @@ def build() -> Design:
         # the beam bolts (v7: two per side) sit in +/-1.5 mm slots across the machine: the gantry takes up the frame's
         # width error, so each Y rail can be set to its own frame rail (the Y belt hardware is on those rails)
         if len(BEAM_BOLT_X) > 1:      # tongue 3 mm longer over the beam only (the X guide block passes behind it)
-            plate += bx(sx * (YP_IN - 3.0), sx * YP_IN, YB0 + YP_NOTCH[1], YB0 + 9.5, zp0, zp1)
+            plate += bx(sx * (YP_IN - 7.5), sx * YP_IN, YB0 + YP_NOTCH[1], YB0 + 9.5, zp0, zp1)
         for xb in BEAM_BOLT_X:
             plate -= slot_z(sx * xb, YB0, 0.0, 1.5, clearance_hole("M5"), zp0, zp1)
         if sx < 0:
@@ -794,27 +829,31 @@ def build() -> Design:
     # Revo hot side: screws finger-tight into the Roto (its thread and 0.7 mm of its seat are inside the Roto's solid);
     # turned so the HeaterCore's leads leave to the rear left, away from the probe and the fan carrier
     seat = d.get("extruder").meta["interfaces"]["hotend_seat"][0]
-    place(d, "hotend", hotend_revo(40, 24.0, 0.4), Location(tuple(seat), (0, 0, 135)), body="xbody")
+    place(d, "hotend", hotend_revo(40, 24.0, 0.4), Location(tuple(seat), (0, 0, 100)), body="xbody")
     d.allow_overlap("hotend", "extruder")
     d.join("hotend", "extruder", "clamp")
-    # bed probe on the plate's left tab: two M3x25 from the rear through the probe into the plate
-    place(d, "bed_probe", bed_probe(), Location((PRB_X, YB0 + PRB_Y, Z_PRB), (0, 0, 90)), body="xbody")
-    for i, z in enumerate(PRB_SCREW_Z):
-        add_screw(d, f"probe_screw_{i}", "M3", 25, at=(PRB_X, YB0 + PRB_Y + 9.0, z), direction=(0, -1, 0), body="xbody",
-                  threads_into="tool_plate", clamps=("bed_probe",))
-    # part-cooling fan behind the Roto on its printed carrier
-    d.add("fan_carrier", fan_carrier_shape(), material=HOT, body="xbody", process="printed", meta={"print_up": "-Y"})
+    # bed probe (catalogue part) clamped by its own two nuts in the printed arm on the plate's left tab
+    d.add("probe_arm", probe_arm_shape(), material=HOT, body="xbody", process="printed", meta={"print_up": "+Z"})
+    for i, (x, z) in enumerate(ARM_SCREWS):
+        add_screw(d, f"probe_arm_screw_{i}", "M3", 16, at=(x, yrr + ARM_FL, Z_BEAM + z), direction=(0, -1, 0), body="xbody",
+                  threads_into="tool_plate", clamps=("probe_arm",))
+    place(d, "bed_probe", probe_omron_e2e(PRB_MODEL, clamp=PRB_CLAMP), Location((PRB_X, YB0 + PRB_Y, Z_PRB), (0, 0, PRB_TURN)), body="xbody")
+    d.join("bed_probe", "probe_arm", "clamped by its two nuts")
+    d.add("probe_key", probe_key_shape(), material=HOT, body="xbody", process="printed", meta={"print_up": "+Z"})
+    d.join("probe_key", "bed_probe", "clamped by its two nuts")
+    # part-cooling fan behind the Roto on the printed duct. 24 V fan on the board's 24 V fan output (see the docstring)
+    d.add("part_duct", part_duct_shape(), material=HOT, body="xbody", process="printed", meta={"print_up": "-Y"})
     for i, (x, z) in enumerate(FC_SCREWS):
-        add_screw(d, f"fan_carrier_screw_{i}", "M3", 16, at=(x, yf, Z_BEAM + z), direction=(0, 1, 0), body="xbody",
-                  clamps=("tool_plate", "fan_carrier"))
-        add_nut(d, f"fan_carrier_nut_{i}", "M3", at=(x, yrr + FC_FL - NUT_SLOT, Z_BEAM + z), direction=(0, 1, 0),
-                body="xbody", screw=f"fan_carrier_screw_{i}")
+        add_screw(d, f"part_duct_screw_{i}", "M3", 16, at=(x, yf, Z_BEAM + z), direction=(0, 1, 0), body="xbody",
+                  clamps=("tool_plate", "part_duct"))
+        add_nut(d, f"part_duct_nut_{i}", "M3", at=(x, yrr + FC_FL - NUT_SLOT, Z_BEAM + z), direction=(0, 1, 0),
+                body="xbody", screw=f"part_duct_screw_{i}")
     place(d, "part_fan", fan(30), Location(Plane(origin=(PFAN[0], YB0 + PFAN[1], Z_BEAM + PFAN[2]), x_dir=(1, 0, 0), z_dir=(0, 1, 0))),
           body="xbody")
     for i, sx in enumerate((-12.0, 12.0)):
         add_screw(d, f"part_fan_screw_{i}", "M3", 16, at=(PFAN[0] + sx, YB0 + PFAN[1] + 5.0, Z_BEAM + PFAN[2] - 12.0),
-                  direction=(0, -1, 0), body="xbody", clamps=("part_fan", "fan_carrier"))
-        add_nut(d, f"part_fan_nut_{i}", "M3", at=(PFAN[0] + sx, YB0 + FC_LUG_Y, Z_BEAM + PFAN[2] - 12.0), direction=(0, -1, 0),
+                  direction=(0, -1, 0), body="xbody", clamps=("part_fan", "part_duct"))
+        add_nut(d, f"part_fan_nut_{i}", "M3", at=(PFAN[0] + sx, YB0 + FC_LUG_Y + PLEN - FAN_LUG, Z_BEAM + PFAN[2] - 12.0), direction=(0, -1, 0),
                 body="xbody", screw=f"part_fan_screw_{i}")
     # ================= X drive ===================================================
     d.add("x_belt_block", belt_block_shape(), material=HOT, body="xbody", process="printed", meta={"print_up": "-Y"})
@@ -865,21 +904,22 @@ def build() -> Design:
     add_nut(d, "x_idler_nut", "M5", at=(XI_X, yb_r + X_SP + I_H(BWX), XD_Z), direction=(0, 1, 0), body="ybody", screw="x_idler_bolt")
     d.join("x_idler", "x_idler_bolt", "axle")
     d.join("x_idler_spacer", "x_idler_mount", "clamp")
-    XT0, XT1 = XI_X - 25.0 - 19.0, XI_X - 25.0 - 5.0          # anchor block, inboard of the idler plate
-    XT_Z = Z_BEAM + 15.0                                       # jack screw height: in the hook, on the plate's mid-plane
-    xta = bx(XT0, XT1, yb_r - 12.0, yb_r, Z_BEAM - 10.0, Z_BEAM + 10.0)
-    xta += bx(XT0, XT1, yb_r - 12.0, yb_r + 6.0, Z_BEAM + 10.0, Z_BEAM + 20.0)          # hooks 6 mm over the beam top
-    xta -= Pos((XT0 + XT1) / 2, yb_r - 6.0, Z_BEAM) * ycyl(PH5 / 2, 12.0)
-    xta -= Pos((XT0 + XT1) / 2, yb_r - MT / 2, XT_Z) * xcyl(PH3 / 2, XT1 - XT0)
-    xta -= hex_pocket_x(XT1, yb_r - MT / 2, XT_Z, NUT_POCKET)
-    d.add("x_tension_anchor", xta, material=COOL, body="ybody", process="printed", meta={"print_up": "+X"})
-    add_screw(d, "x_tension_anchor_bolt", "M5", 16, at=((XT0 + XT1) / 2, yb_r - 12.0, Z_BEAM), direction=(0, 1, 0),
-              body="ybody", threads_into="x_beam", tnut=True, clamps=("x_tension_anchor",))
-    add_screw(d, "x_tension_screw", "M3", 25, at=(XI_X - 25.0 - 25.0, yb_r - MT / 2, XT_Z), direction=(1, 0, 0), body="ybody",
-              clamps=("x_tension_anchor",))
-    add_nut(d, "x_tension_nut", "M3", at=(XT1 - NUT_POCKET, yb_r - MT / 2, XT_Z), direction=(1, 0, 0), body="ybody",
-            screw="x_tension_screw")
-    d.join("x_tension_nut", "x_tension_anchor", "clamp")      # captive in its pocket
+    if X_JACK:
+        XT0, XT1 = XI_X - 25.0 - 19.0, XI_X - 25.0 - 5.0          # anchor block, inboard of the idler plate
+        XT_Z = Z_BEAM + 15.0                                       # jack screw height: in the hook, on the plate's mid-plane
+        xta = bx(XT0, XT1, yb_r - 12.0, yb_r, Z_BEAM - 10.0, Z_BEAM + 10.0)
+        xta += bx(XT0, XT1, yb_r - 12.0, yb_r + 6.0, Z_BEAM + 10.0, Z_BEAM + 20.0)          # hooks 6 mm over the beam top
+        xta -= Pos((XT0 + XT1) / 2, yb_r - 6.0, Z_BEAM) * ycyl(PH5 / 2, 12.0)
+        xta -= Pos((XT0 + XT1) / 2, yb_r - MT / 2, XT_Z) * xcyl(PH3 / 2, XT1 - XT0)
+        xta -= hex_pocket_x(XT1, yb_r - MT / 2, XT_Z, NUT_POCKET)
+        d.add("x_tension_anchor", xta, material=COOL, body="ybody", process="printed", meta={"print_up": "+X"})
+        add_screw(d, "x_tension_anchor_bolt", "M5", 16, at=((XT0 + XT1) / 2, yb_r - 12.0, Z_BEAM), direction=(0, 1, 0),
+                  body="ybody", threads_into="x_beam", tnut=True, clamps=("x_tension_anchor",))
+        add_screw(d, "x_tension_screw", "M3", 25, at=(XI_X - 25.0 - 25.0, yb_r - MT / 2, XT_Z), direction=(1, 0, 0), body="ybody",
+                  clamps=("x_tension_anchor",))
+        add_nut(d, "x_tension_nut", "M3", at=(XT1 - NUT_POCKET, yb_r - MT / 2, XT_Z), direction=(1, 0, 0), body="ybody",
+                screw="x_tension_screw")
+        d.join("x_tension_nut", "x_tension_anchor", "clamp")      # captive in its pocket
     # X endstop on the left Y plate's land, behind the beam
     xsw = place(d, "x_endstop", endstop_switch(),
                 Location(Plane(origin=(X_ES_X0, X_ES_Y0, zp1 + ES_SP_X), x_dir=(0, -1, 0), z_dir=(0, 0, 1))), body="ybody")
@@ -951,7 +991,7 @@ def build() -> Design:
         # with a bought 6 mm aluminium spacer and a nut on the inside face
         xa, xb = sorted((sg * xf, sg * (xf + MT)))
         xm = (xa + xb) / 2
-        im = bx(xa, xb, YI_Y - 17.0, YI_Y + 15.0 + (0.5 if sg > 0 else 0.0), FZ - 10.0, Z_YC + 9.0)
+        im = bx(xa, xb, YI_Y - 15.5, YI_Y + 15.0, FZ - 10.0, Z_YC + 9.0)
         im -= Pos(xm, YI_Y, Z_YC) * xcyl(clearance_hole("M5") / 2, MT)
         for y in (YI_Y - 9.0, YI_Y + 6.0):
             im -= Pos(xm, y, FZ) * xcyl(clearance_hole("M5") / 2, MT)
@@ -964,7 +1004,9 @@ def build() -> Design:
                                        x_dir=(0, 0, 1), z_dir=(-1, 0, 0))))
             ys_holes = ysw.meta["interfaces"]["mount_holes_m3"]
             y_r0, z_r1 = ys_holes[0][1] - 5.5, max(h[2] for h in ys_holes) + 5.0
-            im += bx(xa, xb, y_r0, YI_Y + 15.5, Z_YC + 9.0, z_r1)
+            y_r1 = ys_holes[0][1] + 5.2
+            im += bx(xa, xb, y_r0, y_r1, Z_YC + 9.0, z_r1)
+            im += bx(xa, xb, YI_Y + 14.0, y_r1, FZ - 10.0, Z_YC + 9.0)     # the lower switch hole keeps 3.4 mm to the rear edge
             im += fillet_x(y_r0, Z_YC + 9.0, -1, 1, 2.0, xa, xb)
             for hx, hy, hz in ys_holes:
                 im -= Pos(xm, hy, hz) * xcyl(SH3 / 2, MT)
@@ -996,10 +1038,10 @@ def build() -> Design:
     pcbs = [(board, "mount_holes_m3", "M3", 16, 6.0, (0, 1, 2, 4)), (host, "mount_holes_m2.5", "M2.5", 12, 4.0, (0, 3))]
     if USE_CUTOFFS:
         relay = place(d, "psu_relay", relay_btt_v12(), Location((-88.0, 24.0, Z_TRAY + 6.0)))
-        pcbs.append((relay, "mount_holes_m3", "M3", 16, 6.0, None))
+        pcbs.append((relay, "mount_holes_m3", "M3", 16, 6.0, (0, 1, 2)))     # v7: three of its four holes
     if USE_MOSFET:
         mos = place(d, "bed_mosfet", mosfet_module(25.0), Location((100.0, 26.0, Z_TRAY + 6.0), (0, 0, 90)))
-        pcbs.append((mos, "mount_holes_m3", "M3", 16, 6.0, None))
+        pcbs.append((mos, "mount_holes_m3", "M3", 16, 6.0, (0, 1, 2)))       # v7: three of its four holes
     tray_bolts = [(sx * RAIL_X, y) for sx in (-1, 1) for y in (-128.0, 54.0)]
     for x, y in tray_bolts:
         tray -= Pos(x, y, 20 + T_TRAY / 2) * Cylinder(clearance_hole("M5") / 2, T_TRAY)
@@ -1024,9 +1066,12 @@ def build() -> Design:
     # mains inlet (switch + fuse) on a 3 mm panel bolted to the outside of the left bottom rail
     IN_Y, IN_Z, XP = 22.0, 60.0, -FX / 2
     panel = Pos(XP - 1.5, IN_Y, 49.0) * Box(3.0, 70.0, 94.0)
-    panel -= Pos(XP - 1.5, IN_Y, IN_Z) * Rot(0, 90, 0) * extrude(RectangleRounded(43.0, 28.0, 2.0), 1.5, both=True)
     inlet = place(d, "inlet", iec_inlet_c14(FUSE_A),
                   Location(Plane(origin=(XP - 3.0, IN_Y, IN_Z), x_dir=(0, 1, 0), z_dir=(-1, 0, 0))))
+    # v7: SCHURTER DD11 pattern from the part: 28.1 x 47.1 cut-out, R1 corners, two 3.4 mm holes 56 apart
+    cut_x, cut_y = inlet.meta["interfaces"]["cutout"]
+    panel -= Pos(XP - 1.5, IN_Y, IN_Z) * Rot(0, 90, 0) * extrude(
+        RectangleRounded(cut_y, cut_x, inlet.meta["interfaces"]["cutout_corner_radius"]), 1.5, both=True)
     for hx, hy, hz in inlet.meta["interfaces"]["mount_holes_m3"]:
         panel -= Pos(XP - 1.5, hy, hz) * Rot(0, 90, 0) * Cylinder(clearance_hole("M3") / 2, 3.0)
     PANEL_BOLTS = (IN_Y - 27.0, IN_Y + 27.0)
@@ -1037,7 +1082,7 @@ def build() -> Design:
         add_screw(d, f"inlet_panel_bolt_{i}", "M5", 8, at=(XP - 3.0, y, 10.0), direction=(1, 0, 0),
                   threads_into="frame_bot_left", tnut=True)
     for i, (hx, hy, hz) in enumerate(inlet.meta["interfaces"]["mount_holes_m3"]):
-        add_screw(d, f"inlet_screw_{i}", "M3", 16, at=(XP - 6.0, hy, hz), direction=(1, 0, 0), clamps=("inlet", "inlet_panel"))
+        add_screw(d, f"inlet_screw_{i}", "M3", 16, at=(XP - 5.5, hy, hz), direction=(1, 0, 0), clamps=("inlet", "inlet_panel"))
         add_nut(d, f"inlet_nut_{i}", "M3", at=(XP, hy, hz), direction=(1, 0, 0), screw=f"inlet_screw_{i}")
     # protective-earth stud: M5 screw into a T-nut in the outer slot of the left bottom rail, ring terminals and a star washer under its head
     add_screw(d, "earth_stud", "M5", 8, at=(XP - 2.0, 80.0, 10.0), direction=(1, 0, 0), threads_into="frame_bot_left", tnut=True)
@@ -1045,11 +1090,11 @@ def build() -> Design:
     # bench sub-assemblies: the bed carrier is built on the bench and fitted as a unit
     d.subassemblies["bed_carrier"] = (
         ["back_plate", "nut_block"] + [f"nut_block_{k}_{i}" for k in ("bolt", "nut") for i in range(len(NB_BOLTS))]
-        + [f"bed_arm_{n}{sfx}" for n in ("left", "right") for sfx in ("", "_bolt", "_bracket")])
+        + [f"bed_arm_{n}{sfx}" for n in ("left", "right") for sfx in ("", "_bolt", "_bracket", "_bracket_screw", "_bracket_nut")])
     # motors on their plates, idlers on theirs and the part fan on its carrier are bench jobs
     d.subassemblies["x_drive"] = ["x_motor_mount", "x_motor", "x_pulley"] + [f"x_motor_screw_{i}" for i in range(4)]
     d.subassemblies["x_idler_unit"] = ["x_idler_mount", "x_idler_spacer", "x_idler", "x_idler_bolt", "x_idler_nut"]
-    d.subassemblies["part_cooling"] = (["fan_carrier", "part_fan"]
+    d.subassemblies["part_cooling"] = (["part_duct", "part_fan"]
                                        + [f"part_fan_{k}_{i}" for k in ("screw", "nut") for i in range(2)])
     for tag in ("", "_l"):
         d.subassemblies[f"y_drive{tag}"] = ([f"y_motor_mount{tag}", f"y_motor{tag}", f"y_pulley{tag}"]
@@ -1091,9 +1136,9 @@ def build() -> Design:
     build_electrical(d)      # looms; their flexing spans are added to d.cables
     d.adjustments += [
         # Z homes on the probe; the nozzle-to-bed gap is the probe's z_offset in the firmware, set once with a feeler
-        # gauge. Rail, lead screw and nut have Z_UP of travel beyond the nominal nozzle plane (a Requirement below), so
-        # a bed that was built low can still come up. The Z joint's own range stops at the nominal plane, because in
-        # the nominal model anything further is the bed inside the nozzle (see docs/PRINTER_V6.md, checker notes).
+        # gauge. The Z joint has Z_UP of declared over-travel past the nominal nozzle plane (rail, screw and nut room is
+        # a Requirement below), so a bed that was built low can still come up; the probe's face is PRB_H above the
+        # nozzle, so even at the end of the over-travel the nominal bed is 0.15 mm short of it.
         Adjustment("probe z_offset in the firmware", "z_offset", range_mm=Z_UP),
         # the four bed screws (heads in the bed's counterbores) compress the silicone columns 0.5 .. 3.5 mm
         Adjustment("bed levelling screws on silicone columns", "bed_level", range_mm=1.5),
@@ -1248,7 +1293,10 @@ def build() -> Design:
     d.requirements.append(Requirement(f"target: both Y belts within 1 mm of plane in >= {MIN_BELT_IN_PLANE:.0%} of builds", lambda dd, m: (
         all(m["tolerance"]["belts"][b]["p_within_1mm"] >= MIN_BELT_IN_PLANE for b in ("y_belt", "y_belt_l")),
         str({b: m["tolerance"]["belts"][b]["p_within_1mm"] for b in ("y_belt", "y_belt_l")}))))
+    d.requirements.append(Requirement("the bed probe switches before the nozzle touches for every unit, and over-travel ends short of its face", lambda dd, m: (
+        (pz := m["subsystems"]["homing"]["z"])["z_offset_range_mm"][0] > 0.3 and Z_UP < PRB_H,
+        f"nozzle {pz['z_offset_range_mm'][0]:.2f} .. {pz['z_offset_range_mm'][1]:.2f} mm above the bed when the probe switches; over-travel {Z_UP:g} mm, face {PRB_H:g} mm above the nozzle")))
     d.requirements.append(Requirement("target: no purchased part is a stand-in where the catalogue has a real one", lambda dd: (
-        (px := [c.name for c in dd.components if c.cots and not c.meta.get("catalog")]) == ["bed_probe"],
-        f"hand-made purchased parts: {px} (the catalogue has no bed probe)")))
+        (px := [c.name for c in dd.components if c.cots and not c.meta.get("catalog")]) == [],
+        f"hand-made purchased parts: {px}")))
     return d

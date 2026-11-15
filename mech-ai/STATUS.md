@@ -276,3 +276,20 @@ with a rated voltage (`fan(30, 12)` is the Sunon part; the 24 V one has no sheet
 design declares each. Further effect on the designs, none of which was edited: **v4, v5 and v6 fail electrical**
 (`psu_relay.N` not wired) and their inlet panels are cut for the old 43 mm opening with screw holes 50 apart (the
 part is now 46.7 mm long with holes 56 apart).
+
+
+## printer_v7 (added 2026-11-15)
+
+`designs/printer_v7.py` is v6 corrected against the vendor data (v4, v5 and v6 were not edited and still fail). It
+passes all 12 verifiers with 7 warnings: 309 parts, $856 with fabrication, assembly estimate 64.6 min, toolhead
+0.394 kg, Y belts within 1 mm in 99.3 / 99.1 % of builds (standard error 0.17 %). Changes: lever switches moved to
+the data sheet's operating position with 1.5 mm of declared over-travel on X and Y; lead screw 8.0 mm in the
+coupler; 9 mm Y belts with the pulleys turned hub-outboard (28.4 N on the shaft against 35.7 N allowed); 1.65 mm of
+declared Z over-travel and a declared print area; the OMRON E2E-X10ME1 in a printed arm with its metal-free zone
+kept and the bed limited to 85 degC; relay neutral wired; SCHURTER inlet pattern; a drawn part-cooling duct; two
+laser-cut stops as the X rail's datum; two beam bolts per side; 180 W bed heater on the board's own output (no
+MOSFET module). One target is not met: the probe reaches 139.5 x 163 mm of the 180 x 180 mm print area. What got
+worse: resonance X / Y 74.0 / 54.6 Hz (v6 at the same belt stiffness: 78.2 / 60.0), acceleration an owner would
+run 5,200 mm/s^2 (3,600 to 8,100). Six checker observations (among them: the probe-clamp check counts eight fixed
+points per part, and Z over-travel is checked against a probe that moves with the nozzle) are in
+`docs/PRINTER_V7.md`.
