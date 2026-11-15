@@ -92,3 +92,7 @@ LATEST BATCH DELIVERY NOTES (not missing geometry)
    HIWIN catalogue; load/stiffness figures remain from HIWIN catalogue only.
    HIWIN original CAD not obtained: support portal/configurator require signup.
    Low priority reference Rat Rig only; v8 uses MGN12.
+
+
+=== practice_refs batch - 15 November 2026 ===
+Reference files for all 19 topics are in practice_refs, with partial fields explicitly marked. No previous Misumi or Zenodo decision was changed. Detailed gaps and scope limits: practice_refs/MISSING.txt and practice_refs/README_INDEX.txt. Main unresolved fields: exact current ISO4762 length-range matrix, printed-plastic bearing-pressure/creep allowables, small-screw engagement validation, MG block bolt torque, shaft-flat set-screw comparison, exact 2 mm legacy GT2 design/tension rules, generic T8x8 accuracy/backlash, and collar holding-force rating. Washer lower-size limits are standard-scope limits, not missing files.

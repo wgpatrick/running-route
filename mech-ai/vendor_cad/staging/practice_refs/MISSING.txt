@@ -1,0 +1,19 @@
+UNRESOLVED FIELDS / LIMITS OF THE COLLECTION
+Collected 15 November 2026. These are gaps in the sources checked, not claims that no such data exist anywhere.
+
+3. A definitive current ISO 4762 standard length-range matrix is not verified. Aramfix's detailed matrix is labeled DIN 912 despite its ISO 4762 cover; Lederer is a catalogue availability matrix.
+4. No validated permissible surface-pressure table for printed PETG/ABS under screw heads. Bossard's VDI tables cover metals and distinguish 1986 from 2015 values.
+5. No validation that Bossard's M6-M16 engagement trials apply to M2.5/M3. Material, screw class, tolerance and effective engagement matter.
+6. The requested washer size range does not exist in every named series: ISO 7090 starts at M5; ISO 7093-1 scope starts at M3. M2.5 in a maker's large-washer catalogue must not be relabeled as a standard ISO 7093-1 size.
+7. SPIROL pull-out/torque-out test values are for its named inserts and nylon test conditions, not Ruthex inserts or arbitrary printed PETG/ABS. A matched part/process test is still needed for a design allowable.
+8. SKF axial guidance is conditional and has a small-bearing exception. Fits depend on load and ring motion. No single universal 608 service axial-load/fit combination is established.
+9. Separate, explicitly identified MG block-to-carriage bolt torque not verified. Rail torque is not block torque.
+10. No controlled set-screw holding comparison with versus without a shaft flat verified. Flat-point screw terminology does not fill this gap.
+11. Ruland 8 mm collar dimensions included, but no matching verified holding-force rating. DIN 471 supplied as the circlip alternative, not a separate DIN 6799 table.
+12. Exact legacy Gates GT2 2 mm pulley/idler/mesh/tension-by-width coverage remains incomplete. Current Gates tables use GT3 belts with GT2 sprockets. They must not be relabeled as GT2 or generic printer-belt values.
+13. No generic T8x8 four-start screw/nut accuracy or backlash guarantee. Maker references apply to their listed thread, nut, material and support arrangement.
+14. No universal long-term allowable stress for printed PETG/ABS. ABS creep research is process-specific; PETG research uses pellet extrusion, not Prusament filament. HDT and unloaded aging are not creep allowables.
+16. Maker ISO 13715 summary has a B.7 source inconsistency: diagram/notation show 0.1-0.5 mm, text says 0.1-0.3 mm. Flagged in the saved snapshot; the licensed standard is needed to settle released drawing requirements.
+17. Electrical summaries are not the complete applicable standard, local code or compliance verification. General IP2X enclosure guidance is kept separate from residual-voltage exceptions at exposed plug conductors.
+
+See README_INDEX.txt for files, PDF page pointers, conditions and sources for standard size scopes. No guessed replacement values were supplied.

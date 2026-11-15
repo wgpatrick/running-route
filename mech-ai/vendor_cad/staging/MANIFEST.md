@@ -184,3 +184,64 @@ Listing now: 45 files in the root, zenodo-22716165: 3, zenodo-22770610: 4, zenod
 ### Batch 6 failures
 
 None.
+
+## Batch 7 (seventh sweep, recursive, 2026-11-15; Drive changes 22:18Z-22:31Z)
+
+New Drive subfolder `practice_refs` (id 1nlRypMgn7mdHPGyPKnV7zYL3XaSd-kjt, no nested folders): 41 files (38 PDFs + README_INDEX.txt, SOURCES.txt, MISSING.txt), all fetched into `staging/practice_refs/`. Root `SOURCES.txt` and `MISSING.txt` changed in place (same ids) and were re-downloaded. Nothing over 10 MB (largest 8,611,734 bytes), nothing skipped, no failures. The other three subfolders and all other root files are unchanged. Re-listing after the downloads showed nothing further. Text was extracted with pdftotext to scratch for checking only; nothing was executed.
+
+| Batch | Title | Drive file id | Drive size | Local size | Verified | sha256 | Type / text layer |
+|---|---|---|---|---|---|---|---|
+| 7 | MISSING.txt | 1gy1TUFXZAGar4ftPYUVva6sLPh5dHaxx | 6671 | 6671 | yes | cd1d848450f8f021ec433e4f1b04235aee99ff9d7ea00b9b5057e5142d989ff7 | `MISSING - current state, 2026-11-15 11:05 PT` (text) |
+| 7 | SOURCES.txt | 1EFyXKqnaWQfNG9-lNeOiPDEpMAxuu2rN | 27433 | 27433 | yes | d9029ad48c1f8d9fd09408c780f5f67b930713f45eb0fad3aa0e8ad9f86c3cf0 | `SOURCES - V6 Toolhead CAD and Datasheets (as of 20` (text) |
+| 7 | practice_refs/SOURCES.txt | 10PzJZyA0LTdTFD3zx3qrv6nE0uFob222 | 12692 | 12692 | yes | 2fa08ff13095de30af86798d9e67fd907adfd6539da2841fd3d4e277b37279a6 | `SOURCES - practice_refs` (text) |
+| 7 | practice_refs/README_INDEX.txt | 1A4kINfI64srEZ2AWNu31Bq5Y995XcOiX | 12656 | 12656 | yes | 739aa0792c657220c20b338178dd188c0962bc6eaf96581a1f84a0cce7cf9c87 | `PRACTICAL DESIGN REFERENCES` (text) |
+| 7 | practice_refs/MISSING.txt | 1Pr2JO5Zzaw8ADID1t2p5U8UL-9FTrlIR | 2876 | 2876 | yes | 3814f15198a12947d8dbe9fb99569577e2dbb8b3a6835f06a04d3a5c58b85ee1 | `UNRESOLVED FIELDS / LIMITS OF THE COLLECTION` (text) |
+| 7 | practice_refs/16_ISO13715_Modulus_maker_summary.pdf | 1jPthh9nr1XV83Ir02P5WGc7bzEGG94x0 | 1332389 | 1332389 | yes | f2d7f8cf5559e4645bcd6457ef052f4e80bfb2b8db8f2f5107a44bab7f1f4de2 | PDF, 8 pages, 295 words of text |
+| 7 | practice_refs/17_SUVA_machine_electrical_safety.pdf | 1WNLfoxgakYS5ekQnOy4De7bUmIE2rkGY | 287103 | 287103 | yes | a7ab89a2c3eb0e55ea5f96b66f06241422d8c039045b908827d9067f5844bcc8 | PDF, 2 pages, 1248 words of text |
+| 7 | practice_refs/17_IEC60204_IP2X_source_excerpt.pdf | 1mdyv1g7ndthB4M3fX5ICsxcomZ7Myqja | 2569 | 2569 | yes | b3e66af022eb1cc3b0635ea9e598c239f55afe7f2e95c4f55a53f7bc346be582 | PDF, 1 pages, 144 words of text |
+| 7 | practice_refs/18_Slocum_Topic9.pdf | 1d1BnIxqY7-UcJWwWbpshCVFRIoTTHXu4 | 4582688 | 4582688 | yes | f009f6f96d597381606225e5cf37eacbd5e2592e7a15285a40a93b6f536c29ee | PDF, 68 pages, 30260 words of text |
+| 7 | practice_refs/18_Slocum_fundamental_principles.pdf | 1T5fcez4WnyY_M-Rm-cGQG0c8ec_VYtdF | 8611734 | 8611734 | yes | 46ea600d5fe6ce9144d288f7510a698993425d41d9d58515d0ec3c99d14c7a20 | PDF, 41 pages, 6963 words of text |
+| 7 | practice_refs/19_NASA_STD5020B_revalidated2026.pdf | 1sMs8_NdCdMwdE9q-zILIPseYpTMmxjbJ | 1806504 | 1806504 | yes | 7718f257391e796a24e93d737a59dd5e4897f679e55477877f1ba8635411fa55 | PDF, 114 pages, 33668 words of text |
+| 7 | practice_refs/17_JMF_IEC60204_summary.pdf | 1j3TGWvQdLfIAPg-Ugg28SN35mr7Yg5Hf | 777015 | 777015 | yes | b4f7ca503ccc8fb46aa35c29b785e3a75a92b038b3e6643f76a530d408a75e65 | PDF, 68 pages, 7849 words of text |
+| 7 | practice_refs/14_Stratasys_ABSM30_TDS.pdf | 1ise5vxmwgKkbavDa3PpIFmYAiQAgrf9n | 2196600 | 2196600 | yes | e7986195117aa1ffb8e63c5fa2823fff7a072ef7ea786daecd60e936c35b6d0d | PDF, 11 pages, 1995 words of text |
+| 7 | practice_refs/14_PETG_creep_UTS_research.pdf | 1wvqfmyybPUDUEOFHz8umIiFFU2ChtQKj | 2458826 | 2458826 | yes | 314052710adc4db7f1099f245fa110a485f269251b0bdcc240130365ecbf2332 | PDF, 36 pages, 12751 words of text |
+| 7 | practice_refs/15_Stratasys_FDM_design_guide.pdf | 1XkyJt0QAmkoPikL6EvBlecFCMWuiROQw | 893057 | 893057 | yes | 4c92aa8d7d3f51383bd8d8d5ac6aa5463b5aa7eb6ed59663073eefa85b96a495 | PDF, 10 pages, 1918 words of text |
+| 7 | practice_refs/14_ABS_creep_MDPI_research.pdf | 1IbL2nrirNsvnoSdar0yzpzKkGlSJeUvr | 4944309 | 4944309 | yes | 7c33783ea0076f737ca66c4628d691c871cee84b29735b9943aaef844e205344 | PDF, 24 pages, 14861 words of text |
+| 7 | practice_refs/14_Prusament_PETG_TDS.pdf | 1kbyKsdFtrr-zda8clrM8-vJwl2-qkfxx | 1646301 | 1646301 | yes | 0159322f3d14300fe1b3a27a7e1233d87b6d7905ccb738f9f5a5bba88bb2e50d | PDF, 3 pages, 454 words of text |
+| 7 | practice_refs/13_Igus_dryspin_engineering.pdf | 1x-Zxtv1aY_Q0L6BjGI_s-JMNmCY8qmf8 | 1611207 | 1611207 | yes | 022eec8fe29b1b01ab665213fc36944f68e7316deeb308213316058bdb88ec03 | PDF, 16 pages, 2121 words of text |
+| 7 | practice_refs/12_Gates_light_power_precision.pdf | 1WiFURBn2Jcovo11OmuBxFaZcc8_WK-Dh | 4246471 | 4246471 | yes | ef9f602173dbaec8483c81e17f4a9c90046ccd5f737c5cb10f1bf41c40912cdc | PDF, 112 pages, 69518 words of text |
+| 7 | practice_refs/13_Igus_DryLin_leadscrews.pdf | 1OhtBRsmOh8Mjvt8LZO7UB6vQ8dysXvBZ | 1464984 | 1464984 | yes | a5aa78f80e32ff5ba9608eca8fb449dd12b2249f8f09568f57a665a1593d6eb5 | PDF, 28 pages, 6326 words of text |
+| 7 | practice_refs/12_Gates_GT2_drive_design.pdf | 1bMNFtJ63JvlLuN4PTB0xaFIl8jsZ6x4P | 4980438 | 4980438 | yes | 9b53f42d7fbccf4fae3710dabda1885e32debb4bbd32a9a5246f815b07653476 | PDF, 179 pages, 120945 words of text |
+| 7 | practice_refs/13_ElesaGanter_trapezoidal_engineering.pdf | 1wxv336UrJ6sZFlXblxIb-I94ghZ_K00i | 534243 | 534243 | yes | 42a70405734bcaf814aff958a477efadecfa61ed102a8b03d0d034068c63d4c6 | PDF, 5 pages, 1449 words of text |
+| 7 | practice_refs/09_HIWIN_installation.pdf | 14LlwpUxIzpPQb9C4GZ7ZTiXk5EHVUr_B | 3021247 | 3021247 | yes | 82ed31c28d67778b9db947187adbc4e0936fc20f60d0ad0665bd3818a32abb2d | PDF, 25 pages, 4746 words of text |
+| 7 | practice_refs/11_Ruland_metric_collars.pdf | 1BBXUn8e6Rz5-naOlJMBok8REz64xvv6y | 58009 | 58009 | yes | 48dbdaaf99a81cc376e32a5b3fdba0167ca9d2a3637b795ca0e5f650fa7ad816 | PDF, 2 pages, 341 words of text |
+| 7 | practice_refs/10_HoloKrome_metric_handbook.pdf | 1qvieHSO70j5bfnUMxLgyyKIVKCDknOqw | 7751393 | 7751393 | yes | 41a5e992f3674bf42cd70e4cbd2d6de97b722a2a8d3427ccdade5ec4a7c19b6d | PDF, 41 pages, 14683 words of text |
+| 7 | practice_refs/11_Maedler_DIN471.pdf | 1c3QhpJKrldyWZRggX3Cb0FCLyQqHZzHA | 472196 | 472196 | yes | 275baf568bf9a46d47e08112f84c4123f45c1ad50a220473e6e6261e91613d40 | PDF, 1 pages, 770 words of text |
+| 7 | practice_refs/08_SKF_installation_maintenance.pdf | 1T-Gj9NHDMGpeF2MtJ0mMVRSh18IhzB_i | 6477089 | 6477089 | yes | 14a6679f24105032acc8b616e2ec62147d4dfdece4591e959a63edf5570b6448 | PDF, 144 pages, 71276 words of text |
+| 7 | practice_refs/10_Unbrako_metric_set_screws.pdf | 1Wf1F9G8DVSvBtlEKTNvfKVsIIAfnomAv | 142025 | 142025 | yes | 3ed3c2c3aa94336116259d652d6ed08c2f332782259023e6f04c7f5ffe5c8d4e | PDF, 3 pages, 1247 words of text |
+| 7 | practice_refs/08_SKF_deep_groove_general_catalogue.pdf | 1ZDcD0FKpDXWbEcbgCgOV3fON91xoWkd9 | 6487489 | 6487489 | yes | 9f259fba745300e3a79283f04cf3ebc4a957200320355a0992b1bc40ef39a61c | PDF, 118 pages, 37988 words of text |
+| 7 | practice_refs/09_HIWIN_MG_catalogue.pdf | 1DGEeEqTkKMQtgaF3kz-4tNfXTSsYaclW | 641029 | 641029 | yes | 2ff61ddba211b04314c27fc910acf61c6a31a356bc0f0691e068c0966598b82c | PDF, 14 pages, 3501 words of text |
+| 7 | practice_refs/08_SKF_608_product_data.pdf | 1DEIgj5VwHLcpFeZr_bA2yGZjzUs3X19m | 1553139 | 1553139 | yes | 6de182b857f7bfe4bfed38f6bbb302ee182ebacf956c91ce5c51661f2c9f4009 | PDF, 4 pages, 843 words of text |
+| 7 | practice_refs/07_SPIROL_inserts_design_guide.pdf | 1iK7glowvwhP-DQNXnMM1kDWm5gmlcz0z | 5625420 | 5625420 | yes | 4b9c292dca8e3d3ea955ca6a15e7a43ca3877c8ebcea6deba5a834b38b33b3c6 | PDF, 24 pages, 8257 words of text |
+| 7 | practice_refs/07_SPIROL_heat_ultrasonic_hole_design.pdf | 1Ncp_qLaYx9gRQ5GKOglF0xBEoeP_BDRi | 1376063 | 1376063 | yes | 3a70ccbc9385d73986dca77399d0afcfb303363074a7ed60769dc820f0264d7a | PDF, 3 pages, 1277 words of text |
+| 7 | practice_refs/07_Ruthex_RX_insert_data.pdf | 1yXOzK-j6pOV8V6QDkAKlnZnUB5HhxhaD | 342196 | 342196 | yes | 6bfc05690afce95e31ad652a8c1860ea9d8781373cf34f5730c935f703bf1fde | PDF, 2 pages, 526 words of text |
+| 7 | practice_refs/06_Stephens_ISO7090.pdf | 1sV4Ck6Cupz6QkaZFsjeyx4PvAczPi-na | 40841 | 40841 | yes | 03b4d1ccc62b2614b026d53a51cd4a9690b239ed382bafaafa6fca981b24b9ab | PDF, 2 pages, 434 words of text |
+| 7 | practice_refs/06_RC_ISO_washers.pdf | 138asmmE7BZmayGA6QUytNYRTIil6i82K | 965377 | 965377 | yes | c07f6846d0a4c8498180823797cdb792154396ff9bed09eb65b5912b2597700c | PDF, 4 pages, 1516 words of text |
+| 7 | practice_refs/05_Bossard_thread_engagement.pdf | 1fVmUpqRYEuTwtyo1FKAYIjDAepMEYvpF | 568216 | 568216 | yes | b419af12b0dbcd1b7493179e83a039f398e76b3a7bc12e6ca0b8f5e453ac2125 | PDF, 1 pages, 620 words of text |
+| 7 | practice_refs/03_Aramfix_ISO4762_dimensions.pdf | 1IXajFkzZg1cZgYGU1JrHKjtifnu8g6sR | 386504 | 386504 | yes | 7b2c2bf40afdcf7287a5ba88accb859d49b6f754771fc4367915c69a62c2d3d7 | PDF, 6 pages, 3723 words of text |
+| 7 | practice_refs/04_Bossard_surface_pressure.pdf | 1oCOxBn9XCmcFcqRhXTDpUbr5smo0rwzS | 994383 | 994383 | yes | 5107ce62b98169318f8079e7c221a3fde75a448144f6dea1b2594d37bea20fe6 | PDF, 4 pages, 1712 words of text |
+| 7 | practice_refs/03_Westfield_socket_head_cap_screw.pdf | 1K_oZmhxidK-0YpgoGsS-aWfCpraFMSPD | 110744 | 110744 | yes | 046da96ae4a863f8e1cb3b5d208bd960f168f23ec2531cc34ee82580d15b7dd6 | PDF, 2 pages, 247 words of text |
+| 7 | practice_refs/03_Lederer_ISO4762.pdf | 145VKHJDBRffntwqCqD5qx8lLo-YDCJG0 | 1549624 | 1549624 | yes | 6d9ca9cf6a7c5a41bab4af412bce09cc3663b379376ae177a71341569b7f65f6 | PDF, 40 pages, 10646 words of text |
+| 7 | practice_refs/02_MetricMCC_ISO273_clearance.pdf | 11pMhkR8Ntm29kwmKIPiv9ccI-hxDSwoA | 1097888 | 1097888 | yes | 51d0804f667f2fe4e45e5fec2df85d104c9f7d36c81c3f8a9a346cd544ace8e5 | PDF, 1 pages, 0 words of text - NO TEXT LAYER |
+| 7 | practice_refs/01_Bossard_preload_torque.pdf | 19FcH_c1bpnMueCbYvgXsrdS85Cr-N-rp | 1648017 | 1648017 | yes | 1a8ebcd3fbd0fb2051d05cf0b6ef129d004230fdd7a300aeae38c4b489693fdb | PDF, 15 pages, 8155 words of text |
+
+### Batch 7 observations
+
+- `practice_refs/02_MetricMCC_ISO273_clearance.pdf` is a single scanned image (3945 x 5093 greyscale JPEG, no fonts): no text layer.
+- `practice_refs/16_ISO13715_Modulus_maker_summary.pdf` has a thin text layer (295 words over 8 pages); most content is diagrams.
+- Duplicates of earlier staged files (byte-identical): `practice_refs/12_Gates_light_power_precision.pdf` == `Gates_GT2_design_manual.pdf` (ef9f6021...); `practice_refs/09_HIWIN_MG_catalogue.pdf` == `Hiwin_MG_catalogue.pdf` (2ff61ddb...). Note the batch 1 file named "Gates_GT2_design_manual" is actually the current Gates Light Power and Precision manual (GT3 tables); the legacy GT2 manual is `practice_refs/12_Gates_GT2_drive_design.pdf`.
+- Root `MISSING.txt` only gained a short practice_refs pointer paragraph; root `SOURCES.txt` gained the practice_refs per-file entries.
+
+### Batch 7 failures
+
+None.

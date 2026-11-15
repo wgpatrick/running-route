@@ -98,3 +98,252 @@ MGN15H-block_LiMo-reference.step | https://limobearing.com/miniature-linear-guid
 MGN15H_LiMo_README.txt | https://limobearing.com/miniature-linear-guideway ; https://drive.google.com/file/d/1IwbFXDElQr-C3kqqETgqVulcb9-YP-hv/view?usp=drive_link | LiMo permits personal/commercial/educational use, copying/modification/distribution with attribution and no endorsement; no warranty. Vendor-equivalent, NOT HIWIN CAD. Assembly unchanged; separate files only extract existing geometry.
 V6_BATCH2_STATUS.txt | source URLs embedded in each listed properties/README file | status summary prepared for this collection
 CG3010U24_properties.txt | https://www.coolerguys.com/products/coolerguys-30mm-30x30x10mm-24v-dc-2pin-ultra-high-speed-fan-cg3010u24-with-4-inch-wire-length | sourced text summary; source licence not stated
+
+
+=== practice_refs batch - 15 November 2026 ===
+Folder: https://drive.google.com/drive/folders/1nlRypMgn7mdHPGyPKnV7zYL3XaSd-kjt?authuser=wgpatrick%40gmail.com
+38 PDFs plus README_INDEX.txt, SOURCES.txt and MISSING.txt. All individual files below 10 MB. Filenames below are relative to practice_refs/. Earlier Misumi and Zenodo decisions are unchanged.
+
+SOURCES - practice_refs
+Collected: 15 November 2026
+38 reference PDFs, including two explicitly labeled web-source derivatives (items 16 and 17). All files below 10,000,000 bytes; no splitting needed.
+PDFs are unchanged downloads except the two derivatives. References retain their original notices. Availability online does not itself grant redistribution or commercial reuse rights. No standards were purchased and no licensed ISO/IEC standard is represented as included.
+See README_INDEX.txt for technical scope, page pointers and source conflicts.
+
+01_Bossard_preload_torque.pdf
+URL: https://assets.eu.ctfassets.net/0vp0u5uh75zd/3S40LEUM235Qk3rJk2phR1/c715f9f45232756c12b59aa681c7fede/060_074_Preload_tightening_torques_Fastening_EN_01_2025.pdf
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 1648017
+SHA256: 1a8ebcd3fbd0fb2051d05cf0b6ef129d004230fdd7a300aeae38c4b489693fdb
+
+02_MetricMCC_ISO273_clearance.pdf
+URL: http://www.metricmcc.com/documents/dimensions_and_tolerances/bolt_and_screw_clearance_holes_information.pdf
+Type / rights note: Maker/distributor PDF or maker PDF hosted by a distributor/third-party; see source URL
+Bytes: 1097888
+SHA256: 51d0804f667f2fe4e45e5fec2df85d104c9f7d36c81c3f8a9a346cd544ace8e5
+
+03_Aramfix_ISO4762_dimensions.pdf
+URL: https://www.aramfix.com/content/files/i762caell/datasheet%20iso%204762.pdf
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 386504
+SHA256: 7b2c2bf40afdcf7287a5ba88accb859d49b6f754771fc4367915c69a62c2d3d7
+
+03_Lederer_ISO4762.pdf
+URL: https://www.lederer-online.com/fileadmin/users/redakteur/redakteur_upload/ISO4762.pdf
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 1549624
+SHA256: 6d9ca9cf6a7c5a41bab4af412bce09cc3663b379376ae177a71341569b7f65f6
+
+03_Westfield_socket_head_cap_screw.pdf
+URL: https://www.westfieldfasteners.co.uk/Datasheets/ScrewBolt_SHCap_M.pdf
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 110744
+SHA256: 046da96ae4a863f8e1cb3b5d208bd960f168f23ec2531cc34ee82580d15b7dd6
+
+04_Bossard_surface_pressure.pdf
+URL: https://assets.eu.ctfassets.net/0vp0u5uh75zd/7MM4CVEWakvMoaUSg5YsPX/c4b6542d94541de714325d3d8ebb7dc7/053_056_Surface_pressure_mounted_Fastening_EN_01_2025.pdf
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 994383
+SHA256: 5107ce62b98169318f8079e7c221a3fde75a448144f6dea1b2594d37bea20fe6
+
+05_Bossard_thread_engagement.pdf
+URL: https://assets.eu.ctfassets.net/0vp0u5uh75zd/3wPlDC2XQOYT3XOdwCk6lz/9a9282ffd29746a7a7f6b0149509f1cf/052_Length_engaged_thread_Fastening_EN_01_2025.pdf
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 568216
+SHA256: b419af12b0dbcd1b7493179e83a039f398e76b3a7bc12e6ca0b8f5e453ac2125
+
+06_RC_ISO_washers.pdf
+URL: https://www.rcfastener.com/documents/RC_Specs/Metric_Flatwasher_ISO7089_ISO7091_ISO7092_ISO7093.pdf
+Type / rights note: Maker/distributor PDF or maker PDF hosted by a distributor/third-party; see source URL
+Bytes: 965377
+SHA256: c07f6846d0a4c8498180823797cdb792154396ff9bed09eb65b5912b2597700c
+
+06_Stephens_ISO7090.pdf
+URL: https://www.stephensgaskets.co.uk/wp-content/uploads/2018/12/ISO-7090-Dimensions.pdf
+Type / rights note: Maker/distributor PDF or maker PDF hosted by a distributor/third-party; see source URL
+Bytes: 40841
+SHA256: 03b4d1ccc62b2614b026d53a51cd4a9690b239ed382bafaafa6fca981b24b9ab
+
+07_Ruthex_RX_insert_data.pdf
+URL: https://www.igo3d.com/mediafiles/Sonstiges/Ruthex/ruthex_Datenblatt_RX-Serie.pdf
+Type / rights note: Maker/distributor PDF or maker PDF hosted by a distributor/third-party; see source URL
+Bytes: 342196
+SHA256: 6bfc05690afce95e31ad652a8c1860ea9d8781373cf34f5730c935f703bf1fde
+
+07_SPIROL_heat_ultrasonic_hole_design.pdf
+URL: https://www.spirol.com/assets/files/ins-wp-how-to-design-the-proper-hole-for-heat-ultrasonic-inserts-us.pdf
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 1376063
+SHA256: 3a70ccbc9385d73986dca77399d0afcfb303363074a7ed60769dc820f0264d7a
+
+07_SPIROL_inserts_design_guide.pdf
+URL: https://www.spirol.com/assets/files/ins-threaded-inserts-design-guide-us.pdf
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 5625420
+SHA256: 4b9c292dca8e3d3ea955ca6a15e7a43ca3877c8ebcea6deba5a834b38b33b3c6
+
+08_SKF_608_product_data.pdf
+URL: https://documents.klium.com/5aa07082-4e54-4aa1-9d72-04d9150cc8a9/en/technical-data-sheet-skf-608-608-en.pdf
+Type / rights note: Maker/distributor PDF or maker PDF hosted by a distributor/third-party; see source URL
+Bytes: 1553139
+SHA256: 6de182b857f7bfe4bfed38f6bbb302ee182ebacf956c91ce5c51661f2c9f4009
+
+08_SKF_deep_groove_general_catalogue.pdf
+URL: https://www.pkl.hr/download/lezajevi/6000_EN_01_DGBB.pdf
+Type / rights note: Maker/distributor PDF or maker PDF hosted by a distributor/third-party; see source URL
+Bytes: 6487489
+SHA256: 9f259fba745300e3a79283f04cf3ebc4a957200320355a0992b1bc40ef39a61c
+
+08_SKF_installation_maintenance.pdf
+URL: https://cdn.skfmediahub.skf.com/api/public/0901d1968024f02a/pdf_preview_medium/0901d1968024f02a_pdf_preview_medium.pdf
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 6477089
+SHA256: 14a6679f24105032acc8b616e2ec62147d4dfdece4591e959a63edf5570b6448
+
+09_HIWIN_MG_catalogue.pdf
+URL: https://www.damencnc.com/userdata/file/3458-3_HIWIN_MGN_and_MGW_Product_Catalog_2023.pdf
+Type / rights note: Maker/distributor PDF or maker PDF hosted by a distributor/third-party; see source URL
+Bytes: 641029
+SHA256: 2ff61ddba211b04314c27fc910acf61c6a31a356bc0f0691e068c0966598b82c
+
+09_HIWIN_installation.pdf
+URL: https://www.hiwinsupport.com/download/tech_doc/gw/Installation-(E).pdf
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 3021247
+SHA256: 82ed31c28d67778b9db947187adbc4e0936fc20f60d0ad0665bd3818a32abb2d
+
+10_HoloKrome_metric_handbook.pdf
+URL: https://www.westfieldfasteners.co.uk/Datasheets/HoloKrome/HoloKrome_Technical_Handbook_Metric.pdf
+Type / rights note: Maker/distributor PDF or maker PDF hosted by a distributor/third-party; see source URL
+Bytes: 7751393
+SHA256: 41a5e992f3674bf42cd70e4cbd2d6de97b722a2a8d3427ccdade5ec4a7c19b6d
+
+10_Unbrako_metric_set_screws.pdf
+URL: https://www.unbrakousa.com/images/pdf/Socket_Set_Screws_Metric_Spec_Sheet.pdf
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 142025
+SHA256: 3ed3c2c3aa94336116259d652d6ed08c2f332782259023e6f04c7f5ffe5c8d4e
+
+11_Maedler_DIN471.pdf
+URL: https://smarthost.maedler.de/datenblaetter/K43_726_EN.pdf
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 472196
+SHA256: 275baf568bf9a46d47e08112f84c4123f45c1ad50a220473e6e6261e91613d40
+
+11_Ruland_metric_collars.pdf
+URL: https://media.distrelec.com/Web/Downloads/_t/ds/Ruland_4350905_eng_tds.pdf
+Type / rights note: Maker/distributor PDF or maker PDF hosted by a distributor/third-party; see source URL
+Bytes: 58009
+SHA256: 48dbdaaf99a81cc376e32a5b3fdba0167ca9d2a3637b795ca0e5f650fa7ad816
+
+12_Gates_GT2_drive_design.pdf
+URL: https://static.chipdip.ru/lib/569/DOC010569405.pdf
+Type / rights note: Maker/distributor PDF or maker PDF hosted by a distributor/third-party; see source URL
+Bytes: 4980438
+SHA256: 9b53f42d7fbccf4fae3710dabda1885e32debb4bbd32a9a5246f815b07653476
+
+12_Gates_light_power_precision.pdf
+URL: https://www.gates.com/content/dam/documents-library/catalogs/light-power-and-precision-manual.pdf
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 4246471
+SHA256: ef9f602173dbaec8483c81e17f4a9c90046ccd5f737c5cb10f1bf41c40912cdc
+
+13_ElesaGanter_trapezoidal_engineering.pdf
+URL: https://www.elesa-ganter.com/siteassets/technical_annex/Trapezoidal_Lead_Screws_EN.pdf
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 534243
+SHA256: 42a70405734bcaf814aff958a477efadecfa61ed102a8b03d0d034068c63d4c6
+
+13_Igus_DryLin_leadscrews.pdf
+URL: https://www.igus.com/contentData/Product_Files/Download/pdf/DryLinLeadScrews1.pdf
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 1464984
+SHA256: a5aa78f80e32ff5ba9608eca8fb449dd12b2249f8f09568f57a665a1593d6eb5
+
+13_Igus_dryspin_engineering.pdf
+URL: https://blog.igus.ca/wp-content/uploads/2024/09/dryspin-lead-screw-systems.pdf
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 1611207
+SHA256: 022eec8fe29b1b01ab665213fc36944f68e7316deeb308213316058bdb88ec03
+
+14_ABS_creep_MDPI_research.pdf
+URL: https://mdpi-res.com/d_attachment/polymers/polymers-13-03276/article_deploy/polymers-13-03276.pdf?version=1632585681
+Type / rights note: Published research, publisher-hosted. PDF states Creative Commons Attribution (CC BY).
+Bytes: 4944309
+SHA256: 7c33783ea0076f737ca66c4628d691c871cee84b29735b9943aaef844e205344
+
+14_PETG_creep_UTS_research.pdf
+URL: https://opus.lib.uts.edu.au/bitstream/10453/166023/2/Binder1.pdf
+Type / rights note: Accepted research manuscript in university repository. PDF states CC BY-NC-ND 4.0; retained unchanged.
+Bytes: 2458826
+SHA256: 314052710adc4db7f1099f245fa110a485f269251b0bdcc240130365ecbf2332
+
+14_Prusament_PETG_TDS.pdf
+URL: https://prusament.com/wp-content/uploads/2022/10/PETG_Prusament_TDS_2021_10_EN.pdf
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 1646301
+SHA256: 0159322f3d14300fe1b3a27a7e1233d87b6d7905ccb738f9f5a5bba88bb2e50d
+
+14_Stratasys_ABSM30_TDS.pdf
+URL: https://www.stratasys.com/siteassets/materials/materials-catalog/fdm-materials/abs-m30/mds_fdm_abs-m30_0921a.pdf
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 2196600
+SHA256: e7986195117aa1ffb8e63c5fa2823fff7a072ef7ea786daecd60e936c35b6d0d
+
+15_Stratasys_FDM_design_guide.pdf
+URL: https://www.stratasys.com/siteassets/sdm/content---website-storage/design-guides/dg_sdm_fdm_0725a.pdf
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 893057
+SHA256: 4c92aa8d7d3f51383bd8d8d5ac6aa5463b5aa7eb6ed59663073eefa85b96a495
+
+16_ISO13715_Modulus_maker_summary.pdf
+URL: https://www.modulusmetal.com/iso-13715-technical-product-documentation-edges-of-undefined-shape-indication-and-dimensioning/
+Type / rights note: Saved maker webpage text/diagrams with source and inconsistency notice. Not an ISO PDF; original source copyright retained.
+Bytes: 1332389
+SHA256: f2d7f8cf5559e4645bcd6457ef052f4e80bfb2b8db8f2f5107a44bab7f1f4de2
+
+17_IEC60204_IP2X_source_excerpt.pdf
+URL: https://www.gt-engineering.it/en/technical-standards/en-iec-standards/en-iec-60204-1-safety-of-machinery-electrical-equipment-of-machines/6-protection-against-electric-shock479820050/
+Type / rights note: One-page attributed quotation/source note prepared from engineering company webpage. Not an IEC PDF.
+Bytes: 2569
+SHA256: b3e66af022eb1cc3b0635ea9e598c239f55afe7f2e95c4f55a53f7bc346be582
+
+17_JMF_IEC60204_summary.pdf
+URL: https://www.jmf.or.jp/jmf/wp-content/uploads/2024/04/IEC-60204-1_2016.pdf
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 777015
+SHA256: b4f7ca503ccc8fb46aa35c29b785e3a75a92b038b3e6643f76a530d408a75e65
+
+17_SUVA_machine_electrical_safety.pdf
+URL: https://suva-p-001.sitecorecontenthub.cloud/api/public/content/ff1f2347429a457da20527aba49438c3?download=true&v=744996d8
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 287103
+SHA256: a7ab89a2c3eb0e55ea5f96b66f06241422d8c039045b908827d9067f5844bcc8
+
+18_Slocum_Topic9.pdf
+URL: https://stuff.mit.edu/afs/athena.mit.edu/course/2/2.75/fundamentals/FUNdaMENTALs%20Book%20pdf/FUNdaMENTALs%20Topic%209.PDF
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 4582688
+SHA256: f009f6f96d597381606225e5cf37eacbd5e2592e7a15285a40a93b6f536c29ee
+
+18_Slocum_fundamental_principles.pdf
+URL: https://web.mit.edu/2.70/Lecture%20Materials/Documents/Week%2002/Topic%202%20Fundamental%20Principles.pdf
+Type / rights note: Maker/institution-hosted source PDF
+Bytes: 8611734
+SHA256: 46ea600d5fe6ce9144d288f7510a698993425d41d9d58515d0ec3c99d14c7a20
+
+19_NASA_STD5020B_revalidated2026.pdf
+URL: https://standards.nasa.gov/system/files/tmp/NASA-STD-5020B%20Revalidated%201-5-2026.pdf
+Type / rights note: Official NASA PDF, cover states approved for public release, distribution unlimited.
+Bytes: 1806504
+SHA256: 7718f257391e796a24e93d737a59dd5e4897f679e55477877f1ba8635411fa55
+
+ADDITIONAL SCOPE / DISCOVERY SOURCES
+ISO 7090 scope (M5-M64): https://www.westfieldfasteners.co.uk/Standards/Washer-ISO7090-M.html
+ISO 7093-1 current published edition/scope (3-36 mm): https://www.iso.org/fr/standard/13677.html
+NASA standard landing page: https://standards.nasa.gov/standard/NASA/NASA-STD-5020
+PETG research repository record: https://opus.lib.uts.edu.au/handle/10453/166023
+ABS creep research article: https://www.mdpi.com/2073-4360/13/19/3276
+
+RETRIEVAL LIMIT
+An additional university-hosted ABS creep paper could not be downloaded (transport/TLS/browser retrieval failures). It was not included or substituted with invented data. The publisher-hosted ABS study above was retrieved instead.
