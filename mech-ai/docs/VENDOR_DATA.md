@@ -320,3 +320,19 @@ It closes two of the five lines under "Documents" in `vendor_cad/inbox/README.md
 Six STEP files came with the documents and are still in `vendor_cad/staging/` (not integrated): the two motors,
 the coupler, E3D's Roto Sensored and Roto Bowden reference models and E3D's Revo Voron reference. First inspection
 (solids, sizes, what differs from the catalogue parts) is in the report named above.
+
+## Second and third batch (2026-11-15)
+
+Same rules: labelled blocks only, no value in use changed. Details and effects: the same report, section "Second and
+third batch".
+
+| File | What it is | Recorded in | What it now backs | What it does not contain |
+|---|---|---|---|---|
+| `vendor_docs/ENDSTOP-MICRO_datasheet.pdf` | OMRON D2F ultra subminiature basic switch data sheet, 6 pages | new file `omron_d2f.json` | D2F body, mounting holes, terminals, ratings, and the hinge-lever figures: operating position 6.8 +/-1.5 mm from the mounting-hole line, free position 10 mm max, overtravel 0.55 mm min, movement differential 0.5 mm max, operating force 0.78 N max. **The catalogue endstop's trigger (9.0 mm, from a recalled "10 +/-1") is 2.2 mm too far out**; not changed here | Pretravel for lever models; the carrier board |
+| `vendor_docs/HOST-RPI-ZERO-2W_datasheet.pdf` | Raspberry Pi Zero 2 W product brief, April 2024, 6 pages | new file `raspberry_pi_zero2w.json` | 65 x 30 board, holes 3.5 mm from each edge (58 x 23), -20 to 70 degC, "5V DC 2.5A" input | Current draw (the 0.60 A in the 5 V budget stays unverified), supply tolerance, hole diameter, mass |
+| `vendor_cad/staging/SKR_Mini_E3_V3_drawing.pdf` | byte-identical to `vendor_docs/BTT_SKR_MINI_E3_V3.0_SIZE_20220301.pdf`; not copied again | `bigtreetech_skr_mini_e3_v3.json`, block `staging_copy_2026_11_15` | re-read confirms the outline and the five hole positions already recorded | hole diameter, connector positions |
+| `vendor_cad/staging/LRS-350-24_datasheet.pdf` | byte-identical to `vendor_docs/LRS-350-SPEC.PDF`; not copied again | `meanwell_lrs.json`, block `parts.350.staging_copy_2026_11_15` | confirms every LRS-350 figure in `parts/electrical.py`; adds leakage under 2 mA, derating to 80 % at 90 VAC, protections, side-hole positions, the EN 61000-3-2 note | — |
+| `vendor_cad/staging/MGN12H.step` | step.parts copy of the FreeCAD-library MGN12H | `hiwin_mgn12.json`, block `community_step_second_copy` | nothing new: identical geometry to `vendor_cad/mgn12h_block.step`, which is already the detail model | end caps, threads |
+
+The three Zenodo folders in staging are data sets, not vendor documents; they are assessed in the report (none is the
+commanded-motion-plus-response set that `Datasets and models for fitting the twin.md` asks for).

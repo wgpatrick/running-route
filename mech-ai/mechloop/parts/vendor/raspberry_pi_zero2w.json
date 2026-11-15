@@ -1,0 +1,56 @@
+{
+ "retrieved": "2026-11-15",
+ "family": "Raspberry Pi Zero 2 W",
+ "vendor": "Raspberry Pi Ltd",
+ "source_level": "vendor",
+ "source_url": "https://datasheets.raspberrypi.com",
+ "source_url_note": "maker's data-sheet site; the PDF itself was hand-collected by the owner (Drive folder, batch 3, fetched 2026-11-15; vendor_cad/staging/MANIFEST.md); SOURCES.txt does not list the batch 3 files, so the download URL is not recorded",
+ "title": "Raspberry Pi Zero 2 W product brief, published April 2024, 6 pages",
+ "document_file": "vendor_docs/HOST-RPI-ZERO-2W_datasheet.pdf",
+ "used_by_catalog": false,
+ "_label": "added 2026-11-15. Nothing reads this file: raspberry_pi_zero2w() in mechloop/parts/electrical.py keeps its values",
+ "values": {
+  "ref": "p.3 'Specification', p.4 'Physical specification'",
+  "form_factor_mm": [
+   65,
+   30
+  ],
+  "input_power": "5V DC 2.5A (as printed; micro USB socket)",
+  "operating_temperature_c": [
+   -20,
+   70
+  ],
+  "processor": "BCM2710A1 quad-core Cortex-A53 at 1 GHz, 512 MB",
+  "production_until": "at least January 2030",
+  "mount_holes": {
+   "count": 4,
+   "centre_from_each_edge_mm": 3.5,
+   "pattern_mm": [
+    58,
+    23
+   ],
+   "pattern_note": "58 = 65 - 2 x 3.5; the drawing prints 23 and the four 3.5 offsets",
+   "diameter_mm": null
+  },
+  "connector_centres_from_left_edge_mm": {
+   "mini_hdmi": 12.4,
+   "usb_otg": 41.4,
+   "power_micro_usb": 54.0
+  },
+  "header": "40-pin footprint (unpopulated) along the top edge, row centre 3.5 mm from that edge; dimension 29 from the left hole to the header centre"
+ },
+ "not_in_the_document": [
+  "supply voltage tolerance",
+  "typical or peak current",
+  "power by operating state",
+  "hole diameter",
+  "board thickness, component heights",
+  "mass"
+ ],
+ "compared_with_catalogue": {
+  "size and hole pattern": "65 x 30, 58 x 23: agree (were recalled)",
+  "hole diameter": "catalogue drills 2.8 (M2.5 clearance); not on the drawing",
+  "supply": "catalogue 3.0 W = 0.60 A at 5 V 'about, under load' (typical, unverified): neither confirmed nor contradicted; '5V DC 2.5A' is the recommended supply, not the board's draw",
+  "temperature": "-20 to 70 degC is new; the catalogue has no limit for the host"
+ }
+}

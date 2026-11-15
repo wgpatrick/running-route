@@ -1,0 +1,215 @@
+{
+ "retrieved": "2026-11-15",
+ "family": "Omron D2F ultra subminiature basic switch (the switch on the catalogue's lever endstop)",
+ "vendor": "OMRON Corporation",
+ "source_level": "vendor",
+ "source_url": "https://components.omron.com",
+ "source_url_note": "maker's component site; the PDF itself was hand-collected by the owner (Drive folder, batch 3, fetched 2026-11-15; vendor_cad/staging/MANIFEST.md); SOURCES.txt does not list the batch 3 files, so the download URL is not recorded",
+ "title": "OMRON D2F Ultra Subminiature Basic Switch, data sheet, 6 pages",
+ "document_file": "vendor_docs/ENDSTOP-MICRO_datasheet.pdf",
+ "used_by_catalog": false,
+ "_label": "added 2026-11-15. Nothing reads this file: endstop_switch() keeps its interfaces (mechloop/parts/details.py ENDSTOP). Proposed use: reports/Vendor documents - what they change.md, 'Second and third batch'",
+ "variants_covered": {
+  "ref": "p.1 model number legend, p.2 list of models",
+  "ratings": {
+   "D2F": "125 VAC 3 A (1 A for the low-force type), 30 VDC 2 A (0.5 A)",
+   "D2F-01": "30 VDC 0.1 A, gold-alloy crossbar contact",
+   "D2F-5": "250 VAC 5 A"
+  },
+  "operating_force_code": {
+   "none": "1.47 N max (pin plunger)",
+   "F": "0.74 N max (pin plunger)"
+  },
+  "actuators": {
+   "none": "pin plunger",
+   "L": "hinge lever",
+   "L2": "hinge roller lever",
+   "L3": "simulated roller lever R1.3",
+   "L30": "simulated roller lever R2.5"
+  },
+  "terminals": {
+   "none": "PCB, straight",
+   "-T": "self-clinching PCB",
+   "-A": "PCB right-angled",
+   "-A1": "PCB left-angled",
+   "-D3": "solder",
+   "-D": "compact solder"
+  },
+  "hinge_lever_pcb_models": [
+   "D2F-L",
+   "D2F-FL",
+   "D2F-01L",
+   "D2F-01FL",
+   "D2F-5L",
+   "and the -T, -A, -A1 terminal forms of the first four"
+  ]
+ },
+ "body_and_mounting": {
+  "ref": "p.3 'Terminals/Appearances' and 'Mounting Holes', p.4 drawings; general tolerance +/-0.4 unless stated",
+  "body_length_mm": 12.8,
+  "body_length_tol_mm": 0.15,
+  "body_height_above_bottom_mm": 6.5,
+  "body_height_tol_mm": 0.1,
+  "body_thickness_mm": 5.8,
+  "body_thickness_tol_mm": 0.15,
+  "mounting_holes": {
+   "count": 2,
+   "dia_mm": 2.0,
+   "dia_tol_mm": [
+    0,
+    0.12
+   ],
+   "second_hole_as_drawn": "2.2 +0.12/0 dia. on the pin plunger drawing",
+   "pitch_mm": 6.5,
+   "pitch_tol_mm": 0.15,
+   "first_hole_from_body_end_mm": 3.15,
+   "hole_centre_above_body_bottom_mm": 1.5,
+   "screw": "M2 with plain or spring washer, 0.08 to 0.1 N.m (p.5)"
+  },
+  "terminals": {
+   "pitch_mm": 5.08,
+   "count": 3,
+   "width_mm": 0.9,
+   "thickness_mm": 0.4,
+   "order": "COM, NO, NC (SPDT)",
+   "straight_pcb": {
+    "length_below_body_mm": 3.5,
+    "pcb_holes": "3 x 1.2 dia on 5.08 +/-0.1"
+   },
+   "self_clinching": {
+    "length_below_body_mm": 3.4
+   },
+   "right_or_left_angled": {
+    "leg_below_body_bottom_mm": 2.6,
+    "leg_tol_mm": 0.2,
+    "leg_beyond_body_face_mm": 3.1,
+    "leg_beyond_tol_mm": 0.2
+   }
+  },
+  "weight_g": "about 0.5 (pin plunger models)"
+ },
+ "hinge_lever_models": {
+  "ref": "p.4 'Hinge Lever Models' drawing and table. OP and FP are dimensioned from the centre line of the two mounting holes to the lever at point A; operation is in direction A (towards the body)",
+  "lever": {
+   "length_mm": 12.8,
+   "thickness_mm": 0.3,
+   "width_mm": 3,
+   "material": "stainless steel",
+   "point_A_from_hinge_side_mounting_hole_mm": 10.8,
+   "point_A_note": "reference dimension in brackets; 4.3 mm beyond the second hole, 7.55 mm from the body centre"
+  },
+  "columns": [
+   "D2F-L, D2F-01L, D2F-5L",
+   "D2F-FL, D2F-01FL (low force)"
+  ],
+  "operating_force_max_n": [
+   0.78,
+   0.25
+  ],
+  "releasing_force_min_n": [
+   0.05,
+   0.02
+  ],
+  "overtravel_min_mm": [
+   0.55,
+   0.55
+  ],
+  "movement_differential_max_mm": [
+   0.5,
+   0.5
+  ],
+  "free_position_max_mm": 10.0,
+  "operating_position_mm": 6.8,
+  "operating_position_tol_mm": 1.5,
+  "pretravel": "not specified for lever models (only for the pin plunger: 0.5 mm max)"
+ },
+ "pin_plunger_models": {
+  "ref": "p.4",
+  "operating_force_max_n": [
+   1.47,
+   0.74
+  ],
+  "releasing_force_min_n": [
+   0.2,
+   0.05
+  ],
+  "pretravel_max_mm": 0.5,
+  "overtravel_min_mm": 0.25,
+  "movement_differential_max_mm": 0.12,
+  "operating_position_mm": 5.5,
+  "operating_position_tol_mm": 0.3
+ },
+ "other_lever_models": {
+  "ref": "p.4, p.5",
+  "L3_simulated_roller_R1.3": {
+   "FP_max_mm": 13,
+   "OP_mm": "8.5 +/-1.2",
+   "OT_min_mm": 0.5,
+   "MD_max_mm": 0.45
+  },
+  "L30_simulated_roller_R2.5": {
+   "FP_max_mm": 12.6,
+   "OP_mm": "9.5 +/-1.0",
+   "OT_min_mm": 0.5,
+   "MD_max_mm": 0.5
+  },
+  "L2_hinge_roller": {
+   "FP_max_mm": 16.5,
+   "OP_mm": "13 +/-2",
+   "OT_min_mm": 0.55,
+   "MD_max_mm": 0.5
+  }
+ },
+ "ratings_and_characteristics": {
+  "ref": "p.2 'Contact Specifications' and 'Ratings', p.3 'Characteristics'",
+  "contact_gap_mm": 0.25,
+  "minimum_applicable_load": {
+   "D2F and D2F-5": "100 mA at 5 VDC",
+   "D2F-01": "1 mA at 5 VDC"
+  },
+  "contact_resistance_initial_mohm_max": {
+   "D2F-01": 100,
+   "D2F low force": 50,
+   "D2F general and D2F-5": 30
+  },
+  "operating_speed_lever_mm_s": [
+   5,
+   500
+  ],
+  "operating_frequency_lever_per_min": {
+   "mechanical": 100,
+   "electrical": 30
+  },
+  "durability_operations_min": {
+   "mechanical": 1000000,
+   "electrical D2F-01": 100000,
+   "electrical D2F": 30000,
+   "electrical D2F-5": 10000
+  },
+  "insulation_resistance_mohm_min": 100,
+  "dielectric_strength_vac_1min": {
+   "same polarity terminals": 600,
+   "to ground": 1500
+  },
+  "vibration_malfunction": "10 to 55 Hz, 1.5 mm double amplitude",
+  "shock_malfunction_m_s2": 300,
+  "bounce": "contact open or close 1 ms max under those",
+  "protection": "IP40",
+  "ambient_temperature_c": [
+   -40,
+   85
+  ]
+ },
+ "compared_with_endstop_switch": {
+  "catalogue_frame": "mounting-hole line of the switch at Y = 1.6 (details.ENDSTOP hole_line_y); lever pressed towards -Y",
+  "body": "12.8 x 6.55 x 5.8 in the catalogue; sheet 12.8 x 6.5 x 5.8: agrees",
+  "trigger": "catalogue 9.0 mm above the hole line (Y = 10.6), taken from a recalled 'operating position 10 +/-1'. Sheet: OP 6.8 +/-1.5 mm (5.3 to 8.3). The recalled figure is the FREE position (10 mm max), not the operating position. The catalogue trigger is 2.2 mm above the nominal OP and 0.7 mm above the highest OP any switch may have",
+  "lever_free": "catalogue 9.99 mm above the hole line; sheet FP 10 mm max: agrees with the maximum",
+  "pretravel": "catalogue 0.99 mm; sheet gives none for lever models; FP max minus OP is 3.2 mm at nominal (1.7 to 4.7)",
+  "overtravel": "catalogue 3.95 mm (to the lever lying on the case); sheet guarantees 0.55 mm minimum after the operating position",
+  "movement_differential": "not in the catalogue; sheet 0.5 mm max (release point above the operating point)",
+  "trigger_x": "catalogue lever tip 9.0 mm from the body centre (community model); sheet's point A is 7.55 mm from the body centre",
+  "pin_holes": "X = -5.08, 0, 5.08 agree. For an Omron right- or left-angled switch lying on a board the legs are 2.6 +/-0.2 mm below the body bottom (catalogue row: 0.9 mm below) and reach 3.1 mm from the body face, i.e. 1.5 mm through a 1.6 mm board (catalogue: 2.62 mm)",
+  "mount_holes_m3": "the two M3 holes at +/-7.5 belong to the generated carrier board, not to the switch; the switch's own holes are 2 x 2.0 dia on 6.5 mm"
+ }
+}

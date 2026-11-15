@@ -222,6 +222,86 @@
      "7~9": "DC OUTPUT +V",
      "pitch_mm": 9.5
     }
+   },
+   "staging_copy_2026_11_15": {
+    "_label": "added 2026-11-15. Not read by the code. The hand-collected vendor_cad/staging/LRS-350-24_datasheet.pdf is byte-for-byte the file already stored as vendor_docs/LRS-350-SPEC.PDF (same SHA-256), so no second copy was made; this block records what that file says beyond 'values' above",
+    "document_file": "vendor_docs/LRS-350-SPEC.PDF",
+    "document": "MEAN WELL LRS-350 series, file LRS-350-SPEC 2025-09-12, 4 pages",
+    "p2_specification_24v": {
+     "ripple_noise_mvpp_max": 150,
+     "voltage_tolerance_pct": 1.0,
+     "line_regulation_pct": 0.5,
+     "load_regulation_pct": 0.5,
+     "setup_rise_ms": {
+      "230": [
+       1500,
+       50
+      ],
+      "115": [
+       1500,
+       50
+      ]
+     },
+     "hold_up_ms_typ": {
+      "230": 16,
+      "115": 12
+     },
+     "ac_input": "90-132 VAC / 180-264 VAC selected by switch; 240-370 VDC with the switch on 230",
+     "frequency_hz": [
+      47,
+      63
+     ],
+     "leakage_current_ma_max": 2.0,
+     "leakage_condition": "240 VAC",
+     "overload": "110 to 140 % of rated power, hiccup, auto-recovery",
+     "over_voltage_v": [
+      28.8,
+      33.6
+     ],
+     "over_voltage_mode": "hiccup, auto-recovery",
+     "over_temperature": "hiccup, auto-recovery",
+     "peak_load": "150 % for up to 1 s, then hiccup (note 7)",
+     "fan": "on at RTH3 >= 50 degC, off at <= 40 degC",
+     "working_temp_c": [
+      -25,
+      70
+     ],
+     "temp_coefficient_pct_per_c": 0.03,
+     "withstand_kvac": {
+      "in_out": 3.75,
+      "in_fg": 2.0,
+      "out_fg": 0.5
+     },
+     "altitude": "5 degC / 1000 m derating above 2000 m (note 8)",
+     "harmonics_note_10": "does not meet EN 61000-3-2: not for end devices in the EU on 220 V or higher public mains with more than 75 W average input (exceptions listed in the note)",
+     "emc_note_9": "a component supply; EMC tested on a 360 x 360 x 1 mm metal plate; the final equipment must be re-confirmed"
+    },
+    "p3_curves": {
+     "derating_ambient": "100 % load from -25 to 50 degC, falling linearly to 60 % at 70 degC (horizontal mounting)",
+     "derating_input_voltage": "100 % from 100 to 132 VAC and across 180-264 VAC; on the low range it falls linearly to 80 % at 90 VAC"
+    },
+    "p4_mechanical": {
+     "case": "207A, 215 x 115 x 30, tolerance +/-1",
+     "base_holes": "4 x M4, screw depth 3 mm max, on 150 x 50, 32.5 from the terminal end and 32.5 from one long edge",
+     "side_holes": "4 x M4 each side, screw depth 5 mm max, 150 apart, 12.5 above the base",
+     "terminals": "9 positions, pitch 9.5; 1 AC/L, 2 AC/N, 3 FG, 4-6 -V, 7-9 +V",
+     "fan_centre": "47.45 from the far end, 36.7 from the long edge (top face)",
+     "air_flow": "out of the top face (arrow on the side view)"
+    },
+    "compared_with_code": {
+     "agree": [
+      "350.4 W, 14.6 A, 88 %, 6.8 / 3.4 A input, 60 A inrush, 0.76 kg (parts/electrical.py _LRS)",
+      "full load to 50 degC, 60 % at 70 degC (full_load_ambient_c, derate_to_frac_at_70c)",
+      "fan on at 50 degC"
+     ],
+     "not_modelled": [
+      "leakage current 2 mA",
+      "input-voltage derating below 100 VAC",
+      "150 % / 1 s peak",
+      "hold-up time",
+      "EN 61000-3-2 note"
+     ]
+    }
    }
   }
  },

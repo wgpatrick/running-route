@@ -238,5 +238,46 @@
   "board mass",
   "component height",
   "mounting hole diameter"
- ]
+ ],
+ "staging_copy_2026_11_15": {
+  "_label": "added 2026-11-15. Not read by the code. vendor_cad/staging/SKR_Mini_E3_V3_drawing.pdf is byte-for-byte the SIZE drawing already stored (vendor_docs/BTT_SKR_MINI_E3_V3.0_SIZE_20220301.pdf, same SHA-256); no second copy was made. Re-read of the rendered page:",
+  "document_file": "vendor_docs/BTT_SKR_MINI_E3_V3.0_SIZE_20220301.pdf",
+  "outline_mm": [
+   103.75,
+   70.25
+  ],
+  "hole_dimensions_as_printed": {
+   "top_left": "23.39 from the left edge, 3.22 from the top",
+   "top_right": "18.20 from the right edge, 3.02 from the top",
+   "left": "5.53 from the left edge, 32.05 from the bottom",
+   "middle": "37.34 from the left edge, 29.41 from the bottom",
+   "bottom_right": "2.53 from the right edge, 2.56 from the bottom"
+  },
+  "holes_xy_from_bottom_left_mm": [
+   [
+    23.39,
+    67.03
+   ],
+   [
+    85.55,
+    67.23
+   ],
+   [
+    5.53,
+    32.05
+   ],
+   [
+    37.34,
+    29.41
+   ],
+   [
+    101.22,
+    2.56
+   ]
+  ],
+  "agrees_with_values_above": true,
+  "hole_diameter": "not dimensioned. Scaled from the drawing the bore is about 3 mm inside a pad of about 6 mm",
+  "connector_positions": "not dimensioned, except four figures at the micro-SD / micro-USB edge: 2.79 (horizontal), 16.49, 21.88 and 30.26 (vertical, from the top edge)",
+  "board_height_mass": "not on the drawing"
+ }
 }

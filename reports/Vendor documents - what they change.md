@@ -300,3 +300,206 @@ motor files show that the connector block now in the `nema17` simulation solid i
 - Coupler drawing: angular, parallel and axial misalignment, torque, stiffness, speed, clamp screw size.
 - MIC-6: everything (empty tables).
 - ATP-5: specific heat, Poisson's ratio, stock thickness list.
+
+---
+
+# Second and third batch (added later on 2026-11-15)
+
+Four more PDFs, one STEP file and three Zenodo folders arrived in `mech-ai/vendor_cad/staging/` (MANIFEST.md, "Batch 2"
+and "Batch 3"). Same rules as above: read as data only, nothing a design depends on was changed, numbers added as
+labelled blocks. `tests/test_vendor.py` passes (44 tests). Effects are again hand arithmetic from the stored reports.
+
+Added:
+
+- `mechloop/parts/vendor/omron_d2f.json` (new; nothing reads it) and `vendor_docs/ENDSTOP-MICRO_datasheet.pdf`
+- `mechloop/parts/vendor/raspberry_pi_zero2w.json` (new; nothing reads it) and `vendor_docs/HOST-RPI-ZERO-2W_datasheet.pdf`
+- `meanwell_lrs.json`: block `parts.350.staging_copy_2026_11_15`
+- `bigtreetech_skr_mini_e3_v3.json`: block `staging_copy_2026_11_15`
+- `hiwin_mgn12.json`: block `community_step_second_copy`
+- Zenodo members of type CSV and G-code extracted to
+  `/tmp/claude-0/-home-user-running-route/87481e0a-8f62-5246-a6fc-1c1f80e15b45/scratchpad/agentDocs/` (84 files; nothing
+  extracted into the repository; no member had an absolute or `..` path)
+
+**Two of the four PDFs are files we already had.** `SKR_Mini_E3_V3_drawing.pdf` is byte-for-byte
+`vendor_docs/BTT_SKR_MINI_E3_V3.0_SIZE_20220301.pdf`, and `LRS-350-24_datasheet.pdf` is byte-for-byte
+`vendor_docs/LRS-350-SPEC.PDF` (same SHA-256). They were re-read, not copied again. `MGN12H.step` is the same geometry
+as the model already in use.
+
+## Answer in brief
+
+| Document | Headline | Against what we assume |
+|---|---|---|
+| Omron D2F | Hinge-lever models: **operating position 6.8 ±1.5 mm** above the mounting-hole line, free position 10 mm maximum, overtravel 0.55 mm minimum, movement differential 0.5 mm maximum, operating force 0.78 N maximum (0.25 N low-force) | **Contradicts the catalogue.** The recalled "operating position 10 ±1" is really the free position. The catalogue's trigger point is 2.2 mm too far out, and above the highest operating position any D2F-L can have |
+| SKR Mini E3 V3 drawing | Same file as before. Outline 103.75 × 70.25, five holes; re-read gives the same five positions | Confirms the catalogue part. Hole diameter and connector positions are not dimensioned |
+| LRS-350 | Same file as before. 14.6 A, 88 %, 60 A inrush, 100 % to 50 °C then 60 % at 70 °C, fan on at 50 °C | Confirms every figure the code uses. Not modelled: 2 mA leakage, derating below 100 VAC, the EN 61000-3-2 note |
+| Raspberry Pi Zero 2 W | 65 × 30 mm, holes 3.5 mm from each edge (58 × 23), "5V DC 2.5A" input, −20 to 70 °C | Confirms size and hole pattern. **No current-draw figure**: the 0.60 A in the 5 V budget stays unverified |
+| `MGN12H.step` | Identical to `vendor_cad/mgn12h_block.step` | Already the detail model; nothing to do |
+| Zenodo 5747732, 22770610, 22716165 | Six Ender 3 Pros with per-layer RMS vibration; a shaker test of a loose bed plate; a fault-detection set that was not downloaded | **None is the missing commanded-motion-plus-response data set** |
+
+## Proposed changes from this batch (continuing the numbering; none applied)
+
+| # | Change | Where | Expected effect |
+|---|---|---|---|
+| 12 | Endstop trigger: 9.0 → 6.8 mm above the switch's mounting-hole line (Y 10.6 → 8.4 in the part frame), with the tolerance ±1.5 recorded; `pretravel` and `overtravel` restated from the sheet; movement differential 0.5 mm added | `parts/details.py` `ENDSTOP["operate_y"]`, hence `endstop_switch().interfaces` | **`endstop_not_reached` on X and Y in printer_v4, v5 and v6, and on Z in v4**: every striker is drawn to stop exactly on the old trigger (gap 0.0 mm), which would be 2.2 mm short of the nominal operating position; the check fails above 1.0 mm. The fix in each design is to move each switch 2.2 mm towards its striker (`ES_TRIG` 10.6 → 8.4). Until then a real machine homes 2.2 mm (0.7 to 3.7) further than drawn, if the axis has that travel. v5 and v6 home Z on the probe and are not affected there |
+| 13 | State which D2F: a gold-contact D2F-01L type for a logic-level endstop. The general D2F needs 100 mA at 5 V as a minimum load; D2F-01 needs 1 mA | endstop `source` text and BOM | None on checks. A general-purpose D2F on a 3.3 V input with a pull-up is outside Omron's operating range |
+| 14 | If an Omron right-angled switch on a carrier board is really what is bought: terminal row 2.8 mm below the body bottom (catalogue 0.9), 1.5 mm through the board (catalogue 2.62) | `ENDSTOP["pins"]`, `["pins_z"]` | The three 2.5 mm clearance holes under each switch in v4 to v6 would be 1.9 mm off the pins. Only matters once the bought module is known; the board itself is still a generated one |
+| 15 | Leakage current 2 mA at 240 VAC and the input-voltage derating (80 % at 90 VAC) as PSU ratings | `parts/electrical.py` `psu_lrs` | None at 115 / 230 V. Lets an earth-leakage or brown-out check exist. Loads are 72 to 75 % of rating, so even the 80 % figure is not reached |
+| 16 | Pi: record −20 to 70 °C as the host's ambient limit; keep 0.60 A flagged unverified | `raspberry_pi_zero2w()` | The bay temperature check gains a limit for the host. No number moves |
+
+Change 12 is the only item in either batch that would turn a passing check into a failing one on its own.
+
+## 8. Omron D2F data sheet (`ENDSTOP-MICRO_datasheet.pdf`, 6 pages)
+
+Recorded in `omron_d2f.json`.
+
+Variants covered (p.1, p.2): ratings D2F (3 A 125 VAC, 2 A 30 VDC), D2F-F (low force, 1 A), D2F-01 and D2F-01F (0.1 A
+30 VDC, gold contacts), D2F-5 (5 A 250 VAC). Actuators: pin plunger, hinge lever (L), hinge roller lever (L2),
+simulated roller lever R1.3 (L3) and R2.5 (L30). Terminals: straight PCB, self-clinching PCB (-T), right-angled PCB
+(-A), left-angled PCB (-A1), solder (-D3), compact solder (-D).
+
+Hinge lever, PCB terminals (D2F-L, D2F-FL, D2F-01L, D2F-01FL, D2F-5L), p.3 and p.4:
+
+| Quantity | Sheet | Catalogue (`endstop_switch()`, `details.ENDSTOP`) | Difference |
+|---|---|---|---|
+| Body | 12.8 ±0.15 long, 6.5 ±0.1 high, 5.8 ±0.15 thick | 12.8 × 6.55 × 5.8 | agrees |
+| Switch mounting holes | 2 × Ø2.0 (+0.12 / 0) on 6.5 ±0.15, 3.15 from the body end, centres 1.5 above the body bottom; M2 screws at 0.08 to 0.1 N·m | hole line 1.5 above the body bottom (Y 1.6); the part's own `mount_holes_m3` are two M3 holes at ±7.5 on a generated carrier board | the switch geometry agrees; the carrier board has no maker |
+| Lever | stainless, 12.8 long, 0.3 thick, 3 wide; actuation point A 10.8 mm (reference) from the hinge-side hole, i.e. 7.55 mm from the body centre | lever tip 9.0 mm from the body centre (community model) | catalogue lever 1.45 mm longer |
+| **Operating position** | **6.8 ±1.5 mm** from the mounting-hole line (5.3 to 8.3) | `trigger` 9.0 mm from the hole line, from a recalled "10 ±1, low limit used" | **catalogue 2.2 mm too far out; 0.7 mm beyond the sheet's upper limit** |
+| Free position | 10 mm maximum | `lever_free` 9.99 mm | agrees with the maximum |
+| Pretravel | not given for lever models (pin plunger: 0.5 mm max). Free position maximum minus operating position: 3.2 mm nominal, 1.7 to 4.7 | `pretravel` 0.99 mm | catalogue too small by about 2.2 mm |
+| Overtravel | 0.55 mm minimum guaranteed | `overtravel` 3.95 mm (to the lever lying on the case) | the catalogue figure is geometric room from the wrong trigger; from the nominal operating position the case is about 1.5 mm away |
+| Movement differential | 0.5 mm maximum | not recorded | new: the switch releases up to 0.5 mm above where it operated |
+| Operating force | 0.78 N max (D2F-L, -01L, -5L); 0.25 N max (D2F-FL, -01FL); release 0.05 / 0.02 N min | not recorded | new |
+| Terminals | 3 on 5.08 pitch, 0.9 × 0.4; straight: 3.5 below the body, PCB holes Ø1.2; right- or left-angled: legs 2.6 ±0.2 below the body bottom, 3.1 ±0.2 beyond the body face | `pin_holes` at X −5.08, 0, 5.08, row 0.9 mm below the body bottom, 2.62 mm below the board | X agrees; row 1.9 mm off and length 1.1 mm long for an Omron angled part |
+| Ratings | contact gap 0.25 mm; minimum load 100 mA at 5 VDC (D2F, D2F-5) or 1 mA at 5 VDC (D2F-01); 1,000,000 mechanical operations; electrical 30,000 (D2F), 100,000 (D2F-01); lever speed 5 to 500 mm/s; −40 to 85 °C; IP40; bounce 1 ms max under the stated shock and vibration | endstop template: JST-XH, 1 A, 3 conductors | new; change 13 |
+
+How far off the recalled values were: the body and pin pitch were right; the operating position was wrong by 3.2 mm at
+nominal (10 against 6.8) because the free position was remembered in its place, and using its "low limit" reduced the
+error in the catalogue to 2.2 mm. Lever models are rated for operating speeds of 5 to 500 mm/s; the designs' homing speeds were
+not checked against that here.
+
+## 9. SKR Mini E3 V3.0 SIZE drawing (same file as already stored)
+
+| Quantity | Catalogue (`skr_mini_e3_v3()`, `control_board()`) | Drawing | Difference |
+|---|---|---|---|
+| Outline | 103.75 × 70.25 | 103.75 × 70.25 | none |
+| Holes, from the bottom-left corner | (23.39, 67.03), (85.55, 67.23), (5.53, 32.05), (37.34, 29.41), (101.22, 2.56) | printed as 23.39 / 3.22 from top, 18.20 from right / 3.02 from top, 5.53 / 32.05, 37.34 / 29.41, 2.53 from right / 2.56: the same five points | none |
+| Hole diameter | not recorded | not dimensioned; scaled from the drawing about 3 mm in a pad of about 6 mm | — |
+| Connector positions | from the pin drawing and vendor STEP | not dimensioned, apart from four figures at the micro-SD / micro-USB edge (2.79, 16.49, 21.88, 30.26) | — |
+
+**Are the holes the designs use in the right place?** printer_v4, v5 and v6 all place `skr_mini_e3_v3()` on the tray
+and take the five hole positions from the part, and the part's positions are exactly the drawing's. So yes, against
+this drawing. The open question is the one already in `docs/VENDOR_CAD.md`, and this file cannot close it because it is
+the same drawing: BIGTREETECH's own STEP model shows no holes at these five points and two 3.1 mm holes elsewhere.
+A real board still has to be measured before the tray is drilled.
+
+## 10. LRS-350-24 (same file as already stored)
+
+| Quantity | Code (`parts/electrical.py` `_LRS`, `psu_lrs`; `verifiers/electrical.py`) | Sheet (page) | Difference |
+|---|---|---|---|
+| Output | 350.4 W, 14.6 A, 24 V | 350.4 W, 14.6 A, 24 V; adjustable 21.6 to 28.8 V; tolerance ±1 %; ripple 150 mV p-p (p.2) | none |
+| Efficiency | 0.88 | 88 % typical | none |
+| Input current | 6.8 A at 115 V, 3.4 A at 230 V | the same, typical | none |
+| Inrush | 60 A | 60 A typical at 115 and 230 V, cold start | none |
+| Derating with temperature | 100 % to 50 °C, 60 % at 70 °C | the same, horizontal mounting (p.3) | none |
+| Derating with input voltage | not modelled | 100 % from 100 to 132 VAC and 180 to 264 VAC; falls to 80 % at 90 VAC (p.3) | new; change 15 |
+| Fan | "built-in fan, on at 50 °C internal" | on at RTH3 ≥ 50 °C, off at ≤ 40 °C | none |
+| Protections | not modelled beyond the fuse checks | overload 110 to 140 %, hiccup, auto-recovery; 150 % peak for 1 s; over-voltage 28.8 to 33.6 V; over-temperature hiccup | new, not needed by a check |
+| Earth leakage | not modelled | under 2 mA at 240 VAC | new; change 15 |
+| Hold-up | recorded, unused | 16 ms at 230 V, 12 ms at 115 V | none |
+| Dimensions, mounting | 215 × 115 × 30; 4 × M4 on 150 × 50, 3 mm screw depth; terminals pitch 9.5 | the same (p.4); side holes 4 × M4 each side, 5 mm depth, 12.5 above the base | none |
+| Mass | 0.76 kg | 0.76 kg (packing line) | none |
+| Mains harmonics | not mentioned | note 10: does not meet EN 61000-3-2; not for EU end devices above 75 W average input on public mains | a compliance note for a machine sold in the EU, not a check |
+
+Loads in the stored reports: 72 % (v4, v5) and 75 % (v6) of rating against the 85 % limit; nothing moves.
+
+## 11. Raspberry Pi Zero 2 W (`HOST-RPI-ZERO-2W_datasheet.pdf`, product brief, April 2024)
+
+| Quantity | Catalogue (`raspberry_pi_zero2w()`, `parts/electrical.py:225`) | Brief (page) | Difference |
+|---|---|---|---|
+| Board | 65 × 30 | 65 × 30 (p.3, p.4) | none |
+| Holes | four on 58 × 23, drilled 2.8 | centres 3.5 from each edge, so 58 × 23 (p.4); diameter not given | pattern confirmed |
+| Supply | 3.0 W, i.e. **0.60 A at 5 V**, "about, under load", unverified | "Input power: 5V DC 2.5A" (p.3) | not comparable: 2.5 A is the recommended supply, not the draw |
+| Supply tolerance, typical and peak current | — | **not in the document** | — |
+| Operating temperature | none | −20 to +70 °C (p.3) | new; change 16 |
+| Connectors | header along +Y | header footprint along the top edge (unpopulated); mini HDMI, USB and power centres at 12.4, 41.4 and 54 mm from the left edge | agrees |
+
+The 5 V budget is unchanged: v6 draws 0.74 A (0.60 host, 0.14 fan) against 0.88 A allowed on the board's 1.1 A fused
+rail; v4 and v5 draw 0.60 A. The margin for the Pi's own peaks is 0.14 A in v6, and this document does not say whether
+that is enough. The Pi's power figures by state are on Raspberry Pi's documentation site, not in this brief.
+
+## 12. `MGN12H.step` (step.parts)
+
+One solid, 28 faces, 9,481.2 mm³, box 27.0 × 10.0 × 45.4 with the body 3.0 to 13.0 above the rail base; four Ø3.0 holes
+on 20 × 20, 3.5 deep; two Ø1.5 ball rows at ±6.0. **Every one of these numbers is identical to
+`vendor_cad/mgn12h_block.step`**: it is the same FreeCAD-library model with a step.parts header.
+
+- Against Hiwin Table 3.79: W 27, L 45.4, H 13, H1 3, B 20, C 20 and thread depth 3.5 all agree.
+- Not drawn: end caps (so L1 32.4 is not in the model), the oil hole, H2, threads.
+- Good enough to be the detail model, kind "community CAD"? Yes, and it already is. Alignment is the existing one in
+  `details.mgn12h`: length along file Z from 0 to 45.4, so rotate (90, 0, 90) and shift −22.7 along the rail.
+- Nothing to integrate. SOURCES.txt says the step.parts page states no licence; the FreeCAD-library copy in use is
+  CC-BY 3.0, so keep that one.
+
+## 13. The Zenodo data sets
+
+`Datasets and models for fitting the twin.md` says what is missing: commanded motion together with the measured
+response on a machine whose masses and belt lengths are known.
+
+| | 5747732 "Federated learning dataset" | 22770610 "Printer-bed dataset" | 22716165 "Data acquisition and fault detection" |
+|---|---|---|---|
+| In staging | description PDF, `GCode.zip` (12 files), `RMS Acceleration by Layer.zip` (72 CSV), `Figures.zip` (2 JPG) | `measured_signals.zip` (7 HDF5, 1.6 MB each), `calibration.zip` (51 JPG of a 7 × 5 checkerboard, 20 mm squares) | a README only |
+| Left out | `Raw Acceleration Data.zip`, 90.6 MB | two high-speed-camera archives, 9.3 GB and 8.5 GB | 26 parquet files, about 1.05 GB |
+| Machine | six Creality Ender 3 Pro, assembled from kits | a printer bed plate hung free ("suspended"), not a machine | per the README title and file names: a printer printing Benchy under eight conditions (healthy, two temperatures, loose head, four nozzle sizes). Nothing else could be read |
+| Sensors, rate | two ADXL345, one on the extruder (X), one on the bed (Y), read by a Raspberry Pi at "around 200 Hz" | force and accelerometer channels and a trigger, logged by a data-acquisition task; high-speed camera | not known from what is here |
+| Commanded motion | Cura 4.8 G-code: a 20 × 20 × 3 mm square, 15 layers of 0.2 mm, air-printed, a 5 s pause between layers, speed settings 10 to 120 mm/s | none: a shaker test, sweep and random | G-code of a Benchy, not in the folder |
+| Is the command paired with the measurement? | The G-code that was run is given. The raw time histories (time, X, Y) are in the archive that was left out. What is here is one RMS value per layer per axis | force in, acceleration out: a paired input and output, but for a plate, not for motion | unknown |
+| Masses, belts, firmware limits | **none given.** The G-code sets no acceleration or jerk, so the firmware's values are unknown | not applicable | unknown |
+
+First look at 5747732 (all 72 CSV and two G-code files):
+
+- Each CSV has 15 rows: layer, mean speed, RMS X, RMS Y. The "mean speed" is path length over Cura's own time
+  estimate, not a measurement. It saturates: settings 10, 60 and 120 mm/s give 9.7, 39.8 and 40.7 mm/s, because a
+  20 mm side is too short to reach speed under whatever acceleration Cura assumed.
+- RMS acceleration (unit not stated, presumably m/s²) rises from about 0.5 to 0.6 at the slowest setting to 0.9 to 1.1
+  at the fastest on five printers. So the lowest values are close to a noise floor, and the whole usable signal is a
+  factor of two.
+- Printer 5 reads 1.0 to 1.8 on X throughout, about 1.7 times the others: one unit is clearly different (or its
+  sensor is). Y is alike on all six.
+- G-code: 2,609 lines at the 120 setting, feed rates up to F7200, no M201 / M204 / M205.
+
+Judgement:
+
+- **5747732 is not the missing data set.** The part in hand (RMS per layer) carries no time or frequency information
+  and can fit no twin parameter. Its one honest use is the one the earlier report gave it: unit-to-unit spread at a
+  fixed design, here about ±10 to 12 % in RMS among five machines, with one outlier. The 90.6 MB raw archive would add
+  time histories, but at about 200 Hz from a Pi: the Ender's toolhead and bed resonances (about 50 and 45 Hz in the
+  calibration study) are below the 100 Hz limit, yet the sampling is irregular, the accelerometer clock is not tied to
+  the G-code, and the machine's acceleration setting, masses and belt tension are not given. A resonance frequency per
+  printer and axis could probably be read from the ringing after each corner; that would add up to twelve
+  more Ender 3 frequencies of the kind the calibration study already has from better data. Effort about a day;
+  value low. Worth fetching only for the spread between six nominally identical machines.
+- **22770610 is a real input-output data set, of the wrong thing.** A free plate on a shaker gives the plate's bending
+  modes and their damping. The twin has no parameter for bed-plate modes; its bed is a rigid mass on the Y drive. It
+  could check the FEA's material damping or a plate-mode calculation for a bed like v6's, not the motion model. The
+  HDF5 files could not be opened here (no HDF5 reader is installed and nothing may be installed); a look at the raw
+  bytes shows `sample_rate`, `channel_names`, `force` and `trigger`. With a reader, extracting two or three mode
+  frequencies and damping ratios from the 11.5 MB of signals is half a day. The 17.8 GB of camera frames are not
+  needed for that.
+- **22716165 cannot be judged**: only the README is here. By its description (accelerometer on a printer printing
+  Benchy, healthy and faulted) it is again vibration without the commanded trajectory logged alongside, the same
+  limit the earlier report found in the other fault-detection sets. The "loose head" runs could give a signature for
+  the twin's slack-carriage case. Fetching one healthy and one loose-head file (about 40 to 80 MB each) would settle
+  what it contains; all 26 are not needed for a first look.
+- The gap stays open. The cheapest way to close it is still the one in the earlier report: Klipper's `motan` logger on
+  one machine whose masses and belts are measured.
+
+## What this batch did not contain
+
+- Omron: a pretravel figure for lever models; the carrier board (no maker's drawing exists for the generic module).
+- SKR drawing: hole diameter, connector positions, board height, mass. It is the file we already had.
+- LRS-350: nothing new beyond the items listed as not modelled. It is the file we already had.
+- Raspberry Pi: supply tolerance, typical and peak current, hole diameter, heights, mass.
+- Zenodo: machine masses, belt data and firmware acceleration settings in every set; raw time histories (5747732),
+  camera data (22770610) and all measurement files (22716165) were not downloaded.
+- SOURCES.txt does not yet list the four batch 3 PDFs, so their download addresses are not recorded.

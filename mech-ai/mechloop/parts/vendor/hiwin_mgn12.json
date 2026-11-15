@@ -625,5 +625,23 @@
    },
    "consequence": "the secondary values are confirmed by the primary catalogue; 'not_obtained' above is now obtained (this block). source_level stays 'secondary' until the catalogue code is switched over"
   }
+ },
+ "community_step_second_copy": {
+  "_label": "added 2026-11-15; first inspection of vendor_cad/staging/MGN12H.step, not integrated",
+  "file": "vendor_cad/staging/MGN12H.step",
+  "origin": "https://www.step.parts/parts/linearslide_mgn12h (community model; licence not stated on the page, per SOURCES.txt)",
+  "finding": "geometrically identical to vendor_cad/mgn12h_block.step, the FreeCAD-library model already used as the detail model: one solid, 28 faces, 9481.2 mm3, the same bounding box and the same six cylinders. Only the STEP header differs (step.parts metadata)",
+  "measured_mm": {
+   "width": 27.0,
+   "length": 45.4,
+   "height_range_above_rail_base": [
+    3.0,
+    13.0
+   ],
+   "holes": "4 x 3.0 dia, 20 x 20, 3.5 deep",
+   "ball_rows": "1.5 dia at +/-6.0, 5.5 above the rail base"
+  },
+  "against_catalogue_table_3_79": "W 27, L 45.4, H 13, H1 3, B 20, C 20, thread depth 3.5: all agree. Not drawn: end caps (so no L1 32.4), oil hole Gn, H2, threads (plain 3.0 holes)",
+  "frame": "length along Z from 0 to 45.4, width X, height Y; needs the rotation and shift already in details.mgn12h (rot (90, 0, 90), pos (-22.7, 0, 0))"
  }
 }
