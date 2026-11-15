@@ -362,16 +362,47 @@ def _probe(ctx, r, m):
                       hint="Use an NPN sensor, or a divider / optocoupler module and declare params['level_shift']=True.")
         else:
             r.add("error", "probe_output_unknown", f"Probe '{d.name}' does not say whether its output is NPN or PNP.", device=d.name)
+        # The sensor above the heated bed. Its temperature is estimated (mechloop.electrical.probe_temperature_estimate:
+        # a range, low with the air round the barrel at room temperature, high with it at the film temperature) and the
+        # HIGH end plus a margin is held against the maker's ambient rating. Where the estimate cannot be made (no
+        # geometry), the bed temperature itself is held against the rating less the same margin.
         amb = rt.get("max_ambient_c")
         hot = [(k, (v["temp"] if isinstance(v, dict) else v)) for k, v in (el.hot_parts or {}).items()]
         bed_t = next((t for k, t in hot if k == "bed"), None)
-        if amb is not None and bed_t is not None and bed_t > amb:
-            row["max_ambient_c"], row["bed_temp_c"] = amb, bed_t
-            r.add("warning", "probe_near_hot_bed",
-                  f"Probe '{d.name}' is rated for {amb:g} degC ambient ({src.get('max_ambient_c', 'source not stated')}) and its "
-                  f"face works a few mm above a bed that runs up to {bed_t:g} degC. Its temperature there is not simulated; an "
-                  "inductive sensor's switching distance also drifts with temperature (not modelled).", device=d.name,
-                  hint="Probe at one fixed bed temperature and keep the probe off the bed between probing moves.")
+        if amb is not None and bed_t is not None:
+            from ..electrical import PROBE_THERMAL, probe_geometry
+
+            margin = PROBE_THERMAL["margin_k"]
+            est = None
+            try:
+                pg_ = probe_geometry(design) if design is not None else None
+                if pg_ and pg_.get("probe") == d.component:
+                    est = pg_.get("sensor_temperature_estimate")
+            except Exception:
+                est = None
+            row["max_ambient_c"], row["bed_temp_c"], row["thermal_margin_required_k"] = amb, bed_t, margin
+            if est is not None:
+                row["sensor_temperature_estimate"] = est
+                row["thermal_margin_k"] = round(amb - est["high_c"], 1)
+                if est["high_c"] + margin > amb:
+                    r.add("warning", "probe_near_hot_bed",
+                          f"Probe '{d.name}' is rated for {amb:g} degC ambient ({src.get('max_ambient_c', 'source not stated')}). Its "
+                          f"face works {est['gap_mm']:g} mm above a bed that runs up to {bed_t:g} degC: the sensor is estimated at "
+                          f"{est['low_c']:g} to {est['high_c']:g} degC (moving in room air to parked over the bed), and the high end "
+                          f"is within the {margin:g} K asked of an unvalidated estimate (margin {amb - est['high_c']:.1f} K).",
+                          device=d.name, sensor_temp_c=[est["low_c"], est["high_c"]], max_ambient_c=amb, bed_temp_c=bed_t,
+                          hint="Lower the bed's highest target, use a sensor rated for a higher ambient, or keep the probe off the "
+                               "bed except while probing and probe at one fixed bed temperature.")
+            elif bed_t > amb - margin:
+                row["thermal_margin_k"] = round(amb - bed_t, 1)
+                row["sensor_temperature_estimate"] = None
+                r.add("warning", "probe_near_hot_bed",
+                      f"Probe '{d.name}' is rated for {amb:g} degC ambient ({src.get('max_ambient_c', 'source not stated')}) and works a "
+                      f"few mm above a bed that runs up to {bed_t:g} degC. Its own temperature could not be estimated here (no probe "
+                      f"geometry), so the bed temperature is held against the rating less {margin:g} K: margin {amb - bed_t:.1f} K.",
+                      device=d.name, max_ambient_c=amb, bed_temp_c=bed_t,
+                      hint="Declare the probe as the Z endstop on a printer design so its height over the bed is known, lower the "
+                           "bed's highest target, or use a sensor rated for a higher ambient.")
     if out:
         m["probe"] = out
 

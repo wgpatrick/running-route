@@ -54,11 +54,21 @@ def sample_poses(design: Design, per_joint: int = 9, max_corners: int = 64, n_ra
 
 
 def nozzle_approach(design: Design) -> dict | None:
-    """A printer's declared Z over-travel towards the nozzle: the travel in which the bed is, by declaration, allowed to
-    pass the nominal nozzle plane (a bed built low, a bed mesh lifting a low corner). Returns the Z joint's name, which
-    end of its travel that is, the bed part, the part that carries the nozzle tip (the one the tool point lies on) and
-    the over-travel in mm; None when the design declares none. Only the bed meeting THAT part, and only as deep as the
-    bed has gone past the working range, is not a collision there."""
+    """A printer's declared Z over-travel towards the nozzle. It is not a motion in which the bed passes through the
+    nozzle: it is allowance for where the nozzle really ends up relative to the bed in a built machine (the z-offset
+    stack-up) and for a bed mesh. Returns the Z joint's name, which end of its travel that is, the bed part, the part
+    that carries the nozzle tip (the one the tool point lies on), the body the nozzle rides on and the over-travel in
+    mm; None when the design declares none.
+
+    How collisions are judged in that over-travel (verify_motion):
+      * bed against the part that carries the tip: not a collision, as deep as the bed has gone past the working range;
+      * anything across the Z joint from a part ON THE NOZZLE'S BODY (probe, fan duct, the toolhead's screws): the
+        whole toolhead rides with the nozzle in that stack-up, so the bed can come no closer to such a part than
+        nozzle contact plus the part's own margin (mechloop.tolerance.toolhead.height_margin: the stack-up inside the
+        toolhead between part and tip, plus the bed's flatness over the distance between them). The pair is checked
+        at that depth, not at the full over-travel. A duct that hangs below the tip, or closer above it than its
+        margin, is still a collision;
+      * every other pair (bed against gantry or frame): checked over the full over-travel, as before."""
     pr = design.printer or {}
     j = next((x for x in design.joints if x.name == pr.get("z")), None)
     if j is None or design.tool_point is None or not pr.get("bed"):
@@ -95,7 +105,8 @@ def nozzle_approach(design: Design) -> dict | None:
         other = j.range[1 - side]
         if gap(q_end) < gap(other) and gap(q_end) < 5.0:
             out = {"joint": j.name, "side": side, "working_end": float(q_end), "overtravel_mm": float(ot), "bed": bed.name,
-                   "nozzle_part": nozzle, "gap_at_working_end_mm": round(gap(q_end), 3)}
+                   "nozzle_part": nozzle, "gap_at_working_end_mm": round(gap(q_end), 3), "tool_body": tb,
+                   "z_child": j.child}
     return out
 
 
@@ -161,13 +172,20 @@ def verify_motion(design: Design, per_joint: int = 9) -> VerifierResult:
             ot_m[approach["joint"]]["nozzle_approach"] = (
                 f"in the {approach['overtravel_mm']:g} mm past {approach['joint']}={approach['working_end']:g} the bed "
                 f"({approach['bed']}) meeting the nozzle tip ({approach['nozzle_part']}) is by declaration not a collision; "
-                f"every other pair is checked there")
+                f"parts on the nozzle's body ('{approach['tool_body']}') ride with the nozzle and are checked with the bed at "
+                f"nozzle contact plus each part's toolhead margin; every other pair is checked over the whole over-travel")
         if ot_m:
             r.metrics["overtravel"] = ot_m
         worst: dict[tuple, dict] = {}
         exact_checks = 0
         cache: dict = {}
         exempted = 0.0
+        tool_margin: dict = {}      # toolhead part -> its height margin above the nozzle tip (computed when first needed)
+        relieved: dict = {}         # toolhead parts that were checked at nozzle contact + margin instead of the full over-travel
+
+        def a_side(n: str) -> bool:      # which side of the Z joint a part is on
+            return _under_body(design, comps[n].body, approach["z_child"])
+
         for q in poses:
             pairs, T = colliding_pairs(design, q)
             past = 0.0
@@ -197,8 +215,26 @@ def verify_motion(design: Design, per_joint: int = 9) -> VerifierResult:
                         if depth <= past + 0.05:
                             exempted = max(exempted, past)
                             continue
+                # A part on the nozzle's body against something across the Z joint, in the over-travel: the toolhead
+                # rides with the nozzle, so the pair is judged no deeper than nozzle contact plus the part's margin.
+                Tq, qq, extra = T, q, {}
+                if past > 1e-9 and a_side(a) != a_side(b) and approach["tool_body"] in (comps[a].body, comps[b].body):
+                    tp_name = a if comps[a].body == approach["tool_body"] else b
+                    if tp_name not in tool_margin:
+                        from ..tolerance.toolhead import height_margin
+
+                        tool_margin[tp_name] = height_margin(design, tp_name)
+                    hm = tool_margin[tp_name]
+                    lim = approach["gap_at_working_end_mm"] + hm["margin_mm"]
+                    if past > lim:
+                        sgn = 1.0 if approach["side"] == 1 else -1.0
+                        qq = {**q, approach["joint"]: approach["working_end"] + sgn * lim}
+                        Tq = forward_kinematics(design, qq)
+                        relieved[tp_name] = hm
+                    extra = {"toolhead_margin_mm": hm["margin_mm"], "checked_past_working_end_mm": round(min(past, lim), 3),
+                             "toolhead_part": tp_name}
                 # relative transform fully determines the overlap -> cache on it
-                rel = np.linalg.inv(T[comps[a].body]) @ T[comps[b].body]
+                rel = np.linalg.inv(Tq[comps[a].body]) @ Tq[comps[b].body]
                 ck = (a, b, tuple(np.round(rel.reshape(-1), 4)))
                 if ck not in cache:
                     exact_checks += 1
@@ -209,22 +245,36 @@ def verify_motion(design: Design, per_joint: int = 9) -> VerifierResult:
                 if vol > VOL_TOL and (allowed is None or vol > allowed):
                     if (a, b) not in worst or vol > worst[(a, b)]["volume_mm3"]:
                         if where is not None:
-                            w = T[comps[a].body] @ np.array([*where, 1.0])
+                            w = Tq[comps[a].body] @ np.array([*where, 1.0])
                             where = tuple(np.round(w[:3], 1).tolist())
-                        first = worst.get((a, b), {}).get("first_pose", q)
-                        worst[(a, b)] = {"volume_mm3": round(vol, 2), "pose": q, "at": where,
-                                         "first_pose": first}
+                        first = worst.get((a, b), {}).get("first_pose", qq)
+                        worst[(a, b)] = {"volume_mm3": round(vol, 2), "pose": qq, "at": where,
+                                         "first_pose": first, **extra}
         for (a, b), w in sorted(worst.items(), key=lambda kv: -kv[1]["volume_mm3"]):
-            pose = {k: round(v, 2) for k, v in w["pose"].items()} or "home"
+            pose = {k: round(v, 3) for k, v in w["pose"].items()} or "home"
+            note, hint = "", "Shorten the joint range, move the part out of the swept path, or add clearance."
+            if "toolhead_part" in w:
+                note = (f" {w['toolhead_part']} rides with the nozzle: the bed was taken {w['checked_past_working_end_mm']:g} mm "
+                        f"past the working range, i.e. to nozzle contact plus this part's toolhead margin "
+                        f"({w['toolhead_margin_mm']:g} mm: stack-up to the nozzle tip and bed flatness), not through the whole "
+                        f"over-travel.")
+                hint = (f"Raise {w['toolhead_part']} so that its underside is at least {w['toolhead_margin_mm']:g} mm above the nozzle "
+                        f"tip over the bed, or tie it more tightly to the nozzle (fewer, more accurate joints).")
             r.add("error", "motion_collision",
-                  f"{a} hits {b} during travel: {w['volume_mm3']} mm^3 overlap at pose {pose}, near {w['at']}.",
-                  parts=[a, b], **{k: v for k, v in w.items() if k != "first_pose"},
-                  hint="Shorten the joint range, move the part out of the swept path, or add clearance.")
-        if approach and exempted > 0:
+                  f"{a} hits {b} during travel: {w['volume_mm3']} mm^3 overlap at pose {pose}, near {w['at']}." + note,
+                  parts=[a, b], **{k: v for k, v in w.items() if k != "first_pose"}, hint=hint)
+        if approach and relieved:
+            r.metrics["overtravel"][approach["joint"]]["toolhead_parts_checked_at_nozzle_contact_plus_margin"] = {
+                k: {"margin_mm": v["margin_mm"], "stackup_mm": v["stackup_mm"], "bed_rise_mm": v["bed_rise_mm"],
+                    **({"assumed": True} if v.get("assumed") else {})} for k, v in sorted(relieved.items())}
+        if approach and (exempted > 0 or relieved):
             r.add("info", "nozzle_approach_overtravel",
                   f"Joint {approach['joint']} has {approach['overtravel_mm']:g} mm of declared over-travel past the nozzle plane: "
-                  f"the bed meeting the nozzle tip there was not counted as a collision (checked to {exempted:g} mm past); "
-                  f"everything else was. The probe must stop the bed first: see the subsystems verifier.", joint=approach["joint"])
+                  f"the bed meeting the nozzle tip there was not counted as a collision (checked to {exempted:g} mm past). "
+                  + (f"{len(relieved)} part(s) on the nozzle's body ({', '.join(sorted(relieved)[:6])}) ride with the nozzle and were "
+                     f"checked with the bed at nozzle contact plus their toolhead margin; " if relieved else "")
+                  + "every other pair was checked over the whole over-travel. The probe's face height and trigger margin are "
+                    "judged by the subsystems verifier.", joint=approach["joint"])
         _runoff(design, r)
         from .belts import verify_belts
 
@@ -244,6 +294,19 @@ def verify_motion(design: Design, per_joint: int = 9) -> VerifierResult:
             except Exception as e:
                 r.add("error", "simulation_failed", f"Motion program simulation did not run: {type(e).__name__}: {e}")
     return r
+
+
+def _under_body(design: Design, body: str, ancestor: str) -> bool:
+    parent = {j.child: j.parent for j in design.joints}
+    seen = set()
+    while body not in seen:
+        if body == ancestor:
+            return True
+        seen.add(body)
+        if body not in parent:
+            return False
+        body = parent[body]
+    return False
 
 
 def _runoff(design: Design, r: VerifierResult) -> None:

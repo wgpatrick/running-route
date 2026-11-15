@@ -849,4 +849,4 @@ def add_corner_bracket(design: Design, name: str, a: str, b: str, corner, u, v, 
 # ----------------------------------------------------- more catalog parts (registered on import)
 from .hardware import bed_column_silicone, spacer_lengths, spacer_round  # noqa: E402,F401
 from .toolhead import extruder_roto, hotend_revo, hotend_v6  # noqa: E402,F401
-from .probes import probe_omron_e2e  # noqa: E402,F401
+from .probes import add_probe_nuts, e2e_nut, probe_omron_e2e  # noqa: E402,F401

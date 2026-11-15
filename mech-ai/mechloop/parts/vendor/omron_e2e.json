@@ -160,7 +160,7 @@
   "mass": "about 70 g packed with 2 m of cable (v6: 20 g)"
  },
  "used_by_catalog": true,
- "_label": "added 2026-11-15 (batch 4). Read since 2026-11-15 by mechloop/parts/probes.py (probe_omron_e2e): block 'catalogue_models'",
+ "_label": "added 2026-11-15 (batch 4). Read since 2026-11-15 by mechloop/parts/probes.py (probe_omron_e2e): block 'catalogue_models'. 2026-11-15: temperature_drift_full_range_frac added to the three-wire models (sheet p.16: +/-15 % of the sensing distance over -40 to 85 degC, re-read from the PDF's text)",
  "catalogue_models": {
   "_how": "one entry per sensor the catalogue offers. Ratings from the sheet's tables (p.13 two-wire, p.16 three-wire); surrounding-metal figures from the table on p.25 (l = sensing face proud of the mounting metal, d = diameter to keep free of metal round the head, m = distance to facing metal, n = between sensors); dimensions from p.27-28 (Diagrams 6, 10, 11); aluminium distance read BY EYE (+/-0.15 mm) from the 'Influence of Sensing Object Size and Material' charts (p.17 two-wire, p.18 three-wire), which are REFERENCE values for a 1 mm plate up to 45-60 mm square",
   "E2E-X8MD1": {
@@ -267,7 +267,8 @@
     "m": 20.0,
     "n": 36.0
    },
-   "tightening_torque_nm_max": 30
+   "tightening_torque_nm_max": 30,
+   "temperature_drift_full_range_frac": 0.15
   },
   "E2E-X10ME1": {
    "wires": 3,
@@ -322,7 +323,8 @@
     "n": 54.0
    },
    "tightening_torque_nm_max": 70,
-   "tightening_torque_note": "not re-read from the sheet for M18: recalled, unverified"
+   "tightening_torque_note": "not re-read from the sheet for M18: recalled, unverified",
+   "temperature_drift_full_range_frac": 0.15
   },
   "E2E-X5E1": {
    "wires": 3,
@@ -377,7 +379,8 @@
     "n": 27.0
    },
    "tightening_torque_nm_max": 70,
-   "tightening_torque_note": "not re-read from the sheet for M18: recalled, unverified"
+   "tightening_torque_note": "not re-read from the sheet for M18: recalled, unverified",
+   "temperature_drift_full_range_frac": 0.15
   },
   "model_code": "E2E-X<distance><M = unshielded, blank = shielded><D = DC two-wire, E = NPN three-wire, F = PNP><1 = NO, 2 = NC>. So E2E-X5ME1 is M12 UNSHIELDED 5 mm NPN; the shielded M12 three-wire type is the 2 mm E2E-X2E1 (about 0.6 mm on aluminium: too short for a bed probe, not offered); the shielded 5 mm three-wire type is the M18 E2E-X5E1",
   "not_in_the_sheet": [

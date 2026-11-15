@@ -1458,6 +1458,62 @@ PROBE_DEFAULTS = {
 }
 
 
+# A proximity sensor's own temperature a few millimetres above a heated bed (see probe_temperature_estimate).
+PROBE_THERMAL = {
+    "k_air_w_mk": 0.0285,        # air at about 55 degC
+    "emissivity": 0.9,           # bed surface and sensor face taken as near-black in the infrared (the high side)
+    "h_out_w_m2k": 10.0,         # barrel to the surrounding air: free convection plus radiation in still air (the low side)
+    "min_gap_mm": 0.5,
+    "margin_k": 10.0,            # asked between the HIGH estimate and the sensor's ambient rating
+}
+
+
+def probe_temperature_estimate(bed_c: float, room_c: float, gap_mm: float, face_area_mm2: float, side_area_mm2: float) -> dict:
+    """Steady temperature of a sensor body whose face hangs `gap_mm` above a plate at `bed_c`, as a range.
+
+    One lump (the metal barrel is a good conductor next to the air films): heat comes in through the face from the bed,
+    by conduction across the air gap (k_air / gap) and radiation (4 sigma eps T^3), and leaves from the barrel's side
+    to the air round it (h_out). So the body sits a fraction f = G_in / (G_in + G_out) of the way from that air's
+    temperature to the bed's. The unknown is the air round the barrel:
+      low  = room air (the toolhead is moving, or a fan stirs the air);
+      high = the film temperature (bed + room) / 2, the usual reference for the air in a free-convection layer over a
+             hot plate (the toolhead parked over the middle of the bed while it soaks).
+    Never above the bed, never below the room. NOT validated against a measurement: h_out, the emissivity and the choice
+    of the film temperature are textbook values, which is why the check asks PROBE_THERMAL['margin_k'] on top of `high`
+    (a still corner at 5 W/m2K, or a room 6 K warmer, each moves `high` by about 3 to 6 K)."""
+    c = PROBE_THERMAL
+    gap = max(float(gap_mm), c["min_gap_mm"])
+    t_film = 0.5 * (bed_c + room_c)
+    h_rad = 4.0 * 5.67e-8 * c["emissivity"] * (t_film + 273.15) ** 3
+    g_in = (c["k_air_w_mk"] / (gap * 1e-3) + h_rad) * face_area_mm2 * 1e-6
+    g_out = c["h_out_w_m2k"] * side_area_mm2 * 1e-6
+    f = g_in / (g_in + g_out) if (g_in + g_out) > 0 else 1.0
+    low = room_c + f * (bed_c - room_c)
+    high = t_film + f * (bed_c - t_film)
+    if bed_c <= room_c:
+        low = high = room_c
+    return {"low_c": round(low, 1), "high_c": round(high, 1), "bed_c": float(bed_c), "room_c": float(room_c), "gap_mm": round(gap, 2),
+            "face_area_mm2": round(face_area_mm2, 1), "side_area_mm2": round(side_area_mm2, 1),
+            "fraction_of_the_way_to_the_bed": round(f, 3), "air_round_the_barrel_c": [float(room_c), round(t_film, 1)],
+            "validated": False,
+            "basis": "one-lump balance: in through the face across the air gap (conduction k_air/gap + radiation), out from the "
+                     f"barrel's side at {c['h_out_w_m2k']:g} W/m2K to air between room temperature (low) and the film temperature "
+                     "(bed + room) / 2 (high). Textbook values, not validated against a measurement"}
+
+
+def _probe_areas(pc) -> tuple:
+    """(face area, side area) in mm^2 of a probe part: from its thread data when it is a threaded barrel, else from its
+    bounding box (footprint as the face, which is the high side for heat coming in; pi/4 of the box's sides)."""
+    mt = (pc.meta.get("interfaces") or {}).get("mounting") or {}
+    if mt.get("thread_dia") and mt.get("thread_z"):
+        d = float(mt["thread_dia"])
+        return math.pi * d * d / 4.0, math.pi * d * float(mt["thread_z"][1])      # the metal barrel, face to the end of the thread
+    bs = pc.shape.bounding_box().size
+    sz = sorted((float(bs.X), float(bs.Y), float(bs.Z)))
+    a, b, h = sz[0], sz[1], sz[2]
+    return a * b, math.pi / 4.0 * 2.0 * (a + b) * h
+
+
 def probe_of(design):
     """(endstop entry, component) of the design's bed probe, or (None, None). A probe is declared as
     design.endstops += [{"joint": <z joint>, "probe": <part>}]; its part carries an electrical template of kind 'probe'."""
@@ -1520,6 +1576,31 @@ def probe_geometry(design) -> dict | None:
     drift = float(rt.get("temperature_drift_frac", 0.0) or 0.0)
     sn_lo, sn_hi = (rt.get(f"switching_distance_{target}_range_mm") or [sn, sn])[:2]
     h_face = float(face[2] - noz[2])
+    # The sensor's own temperature over the heated bed, where the design says how hot the bed runs: the maker's drift
+    # figure holds up to `drift_rated_to_c`; if the sensor may run hotter, the wider figure for its full range applies.
+    el = getattr(design, "electrical", None)
+    hot = getattr(el, "hot_parts", None) or {}
+    bed_t = hot.get("bed")
+    bed_t = bed_t.get("temp") if isinstance(bed_t, dict) else bed_t
+    if bed_t is not None:
+        room = float({**DEFAULT_REQUIREMENTS, **(getattr(el, "requirements", None) or {})}.get("ambient_c", 25.0))
+        a_face, a_side = _probe_areas(pc)
+        est = probe_temperature_estimate(float(bed_t), room, h_face + float(pr.get("layer_height", 0.2)), a_face, a_side)
+        out["sensor_temperature_estimate"] = est
+        rated_to = rt.get("drift_rated_to_c")
+        out["temperature_drift_basis"] = (f"+/-{drift:.0%}" + (f", the maker's figure up to {rated_to:g} degC" if rated_to is not None else "")
+                                          + f"; sensor estimated at {est['low_c']:g} to {est['high_c']:g} degC over a {float(bed_t):g} degC bed")
+        if drift and rated_to is not None and est["high_c"] > float(rated_to):
+            full = rt.get("temperature_drift_full_range_frac")
+            if full:
+                drift = float(full)
+                out["temperature_drift_basis"] = (f"+/-{drift:.0%}: the sensor is estimated at up to {est['high_c']:g} degC over a "
+                                                  f"{float(bed_t):g} degC bed, above the {rated_to:g} degC to which the +/-"
+                                                  f"{float(rt['temperature_drift_frac']):.0%} figure holds, so the maker's figure for the "
+                                                  "full range is used")
+            else:
+                out["temperature_drift_basis"] += f": ABOVE the {rated_to:g} degC the figure holds to, and no wider figure is known"
+                out["assumed"].append("temperature_drift_frac above its rated temperature")
     out["sensing_distance_range_mm"] = [round(float(sn_lo), 3), round(float(sn_hi), 3)]
     out["temperature_drift_frac"] = drift
     out["z_offset_range_unit_spread_mm"] = [round(float(z_off - tol * sn), 3), round(float(z_off + tol * sn), 3)]
@@ -1822,8 +1903,10 @@ def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict
         L += [""]
     # ---- probe, Z homing over the bed, bed mesh
     if pg and probe_pin and pg.get("z_offset") is not None:
+        prov = _one_line((pg.get("sources") or {}).get(f"switching_distance_{pg.get('target')}_mm") or "source not stated")
         L += [f"# probe: offsets from the CAD; z_offset from the probe's nominal switching distance on {pg.get('target')} "
-              f"({pg.get('sensing_distance_mm')} mm, recalled class value) - set it on the machine with PROBE_CALIBRATE",
+              f"({pg.get('sensing_distance_mm')} mm) - set it on the machine with PROBE_CALIBRATE",
+              f"# that distance: {prov}",
               "[probe]", f"pin: {probe_pin}", f"x_offset: {pg['x_offset']:g}", f"y_offset: {pg['y_offset']:g}",
               f"z_offset: {pg['z_offset']:.3f}", "speed: 5", "lift_speed: 10", "samples: 3", "samples_result: median",
               "sample_retract_dist: 2", f"samples_tolerance: {max(0.02, 4 * pg.get('repeatability_mm', 0.01)):g}",
@@ -1969,6 +2052,12 @@ def thermal_plants(design, circuit: dict | None = None) -> dict:
     reads, the delivered power at 100 % duty, the Thermistor (adc <-> temperature) and the independent cut-offs.
     simulate_heater(plant, cfg, target, t_end, fault=...) runs it under Klipper's control laws."""
     return build_plants(design.electrical, design, circuit or electrical_loads(design))
+
+
+def _one_line(text, limit: int = 300) -> str:
+    """A provenance string as one config comment line (no line breaks, no '#', bounded)."""
+    t = " ".join(str(text).replace("#", "no.").split())
+    return t if len(t) <= limit else t[:limit - 3] + "..."
 
 
 def klipper_config_path(design, out_root: str = "out") -> str:

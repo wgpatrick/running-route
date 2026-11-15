@@ -301,6 +301,8 @@ def _switch_checks(design: Design, e: dict, sw, j, r: VerifierResult) -> dict:
 
 
 METALS = ("steel", "stainless304", "al6061", "al5052", "al_mic6", "al_atp5", "brass")
+CLAMP_RING_POINTS = 72          # samples round the nut's bearing circle
+CLAMP_RING_MIN_FRAC = 0.75      # share of that circle that must have plate under it (6 of 8 points before 2026-11-15)
 
 
 def _probe_mount_checks(design: Design, name: str, r: VerifierResult) -> dict | None:
@@ -330,30 +332,67 @@ def _probe_mount_checks(design: Design, name: str, r: VerifierResult) -> dict | 
               "part was made without `clamp=`: where its nuts sit is not declared.", part=name,
               hint="probe_omron_e2e(model, clamp=(z_lo, z_hi)): the two faces of the plate it is clamped in, above the sensing face.")
     else:
+        # The ring of plate the nut bears on: a circle under the nut's bearing face, at mid-thickness of the plate,
+        # sampled every 5 degrees from a direction fixed in the WORLD (not in the sensor: a round sensor turned about
+        # its own axis must not change the answer). Material of ANY part on the sensor's body counts, so a fork closed
+        # by a key is a complete ring; the sensor itself and its own nuts do not.
         rr = mt["thread_dia"] / 2 + 0.6 * (mt["nut_across_flats"] / 2 - mt["thread_dia"] / 2)      # under the nut's bearing face
         zm = (cl[0] + cl[1]) / 2
+        ref = np.array([1.0, 0.0, 0.0]) if abs(z[0]) < 0.9 else np.array([0.0, 1.0, 0.0])
+        u = ref - (ref @ z) * z
+        u /= np.linalg.norm(u)
+        v = np.cross(z, u)
+        centre = o + zm * z
+        others = [c for c in design.components if c is not pc and c.body == pc.body and c.meta.get("probe_nut_of") != name]
+        boxes = {c.name: c.shape.bounding_box() for c in others}
         held: dict = {}
-        for k in range(8):
-            a = 2 * np.pi * k / 8
-            wp = (P @ np.array([rr * np.cos(a), rr * np.sin(a), zm, 1.0]))[:3]
-            for c in design.components:
-                if c is pc or c.body != pc.body:
-                    continue
-                bb = c.shape.bounding_box()
+        covered = 0
+        for k in range(CLAMP_RING_POINTS):
+            a = 2 * np.pi * (k + 0.5) / CLAMP_RING_POINTS
+            wp = centre + rr * (np.cos(a) * u + np.sin(a) * v)
+            hit = False
+            for c in others:
+                bb = boxes[c.name]
                 if not (bb.min.X - 1e-6 <= wp[0] <= bb.max.X + 1e-6 and bb.min.Y - 1e-6 <= wp[1] <= bb.max.Y + 1e-6
                         and bb.min.Z - 1e-6 <= wp[2] <= bb.max.Z + 1e-6):
                     continue
                 if surface_distance(c.shape, wp) <= 1e-6:
                     held[c.name] = held.get(c.name, 0) + 1
+                    hit = True
+            covered += hit
+        frac = covered / CLAMP_RING_POINTS
         best = max(held.items(), key=lambda kv: kv[1], default=(None, 0))
         out["clamped_in"], out["clamp_mm"] = best[0], [cl[0], cl[1]]
-        if best[1] < 6:
+        out["clamp_ring_covered_frac"] = round(frac, 3)
+        out["clamp_ring_parts"] = {k_: round(n_ / CLAMP_RING_POINTS, 3) for k_, n_ in sorted(held.items(), key=lambda kv: -kv[1])}
+        if frac < CLAMP_RING_MIN_FRAC - 1e-9:
             r.add("error", "probe_not_clamped",
-                  f"Bed probe '{name}': its two nuts are drawn {cl[0]:g} and {cl[1]:g} mm above the sensing face, but no part on "
-                  f"body '{pc.body}' fills the space between them round the thread (material under {best[1]} of 8 points of the "
-                  "nut face).", part=name,
+                  f"Bed probe '{name}': its two nuts are drawn {cl[0]:g} and {cl[1]:g} mm above the sensing face, but the parts on "
+                  f"body '{pc.body}' fill only {frac:.0%} of the ring between them round the thread (the nut's bearing circle, "
+                  f"{2 * rr:.1f} mm diameter; at least {CLAMP_RING_MIN_FRAC:.0%} is required"
+                  + (f"; found: {out['clamp_ring_parts']}" if held else "; nothing is there") + ").", part=name,
+                  covered_frac=round(frac, 3), parts=out["clamp_ring_parts"],
                   hint=f"Give the toolhead a plate or tab {cl[1] - cl[0]:g} mm thick there with a {mt['hole_dia']:g} mm hole, and "
-                       "join the probe to it (design.join(probe, plate, 'clamped by its two nuts')).")
+                       "join the probe to it (design.join(probe, plate, 'clamped by its two nuts')). An open fork needs a key "
+                       "that closes it; a closed hole needs the sensor's nuts as separate parts "
+                       "(probe_omron_e2e(..., nuts='separate') and add_probe_nuts).")
+        if mt.get("nuts") == "separate":
+            # the two nuts are their own parts: each must be there, on the thread, with its bearing face on the plate
+            seats = {}
+            for c in design.components:
+                if c.meta.get("probe_nut_of") == name and c.meta.get("placement") and c.body == pc.body:
+                    Pn = np.array(c.meta["placement"], dtype=float)
+                    off = Pn[:, 3] - o
+                    seats[c.name] = (float(off @ z), float(np.linalg.norm(off - (off @ z) * z)), float(Pn[:, 2] @ z))
+            front = [n_ for n_, (h, rad, dz) in seats.items() if abs(h - cl[0]) < 0.05 and rad < 0.05 and dz < -0.99]
+            rear = [n_ for n_, (h, rad, dz) in seats.items() if abs(h - cl[1]) < 0.05 and rad < 0.05 and dz > 0.99]
+            out["nuts"] = {"front": front, "rear": rear}
+            if not front or not rear:
+                r.add("error", "probe_nuts_missing",
+                      f"Bed probe '{name}' was made with nuts='separate', but "
+                      + " and ".join(w for w, ok in (("no nut bears on the plate's lower face", front), ("no nut bears on its upper face", rear)) if not ok)
+                      + f" (clamp faces {cl[0]:g} and {cl[1]:g} mm above the sensing face).", part=name,
+                      hint=f"Call add_probe_nuts(design, '{name}') after placing the probe.")
     # ---- metal-free zone of an unshielded sensor
     l, d = float(mt["head_proud_of_metal_l"]), float(mt["metal_free_dia_d"])
     out["metal_free_zone"] = {"dia_mm": d, "from_face_mm": l}
@@ -361,7 +400,7 @@ def _probe_mount_checks(design: Design, name: str, r: VerifierResult) -> dict | 
         zone = (Pos(0, 0, l / 2) * Cylinder(d / 2, l)).moved(loc)
         hits = []
         for c in design.components:
-            if c is pc or c.name == bed or c.material not in METALS:
+            if c is pc or c.name == bed or c.material not in METALS or c.meta.get("probe_nut_of") == name:
                 continue
             if c.body != pc.body:
                 continue                      # what rides with the sensor is always in its zone; the rest moves
@@ -461,6 +500,49 @@ def _probe_checks(design: Design, e: dict, r: VerifierResult) -> dict:
               needed_margin_mm=round(z_off - z_lo, 3),
               hint=f"Lower the probe so it switches at least {z_off - z_lo + 0.3:.1f} mm before the nozzle touches (1-2 mm is usual), "
                    "or mount it on a slot so its height can be set on the machine.")
+    # The probe rides on the toolhead with the nozzle, so the Z over-travel (the z-offset stack-up between bed and
+    # toolhead) is common to both and does not bring the bed to the probe. What can is local: the stack-up inside the
+    # toolhead between sensing face and nozzle tip, and the bed not being flat over the distance between them. The
+    # same margin applies on both sides: the face must be that far ABOVE the tip (or the face meets the bed when the
+    # nozzle does), and the shortest unit must switch with the nozzle still that far above the bed (or, with the
+    # face drawn that much too high or the bed that much higher under the nozzle, the nozzle is on the bed first).
+    hm = None
+    if pg["rides_with_nozzle"]:
+        from ..tolerance.toolhead import height_margin
+
+        pc_ = next(c for c in design.components if c.name == name)
+        hm = height_margin(design, name, pc_.meta["interfaces"]["sensing_face"][0])
+    if hm is not None:
+        M = hm["margin_mm"]
+        out["probe_to_nozzle_margin"] = {
+            "margin_mm": M, "stackup_mm": hm["stackup_mm"], "stackup_basis": hm["stackup_basis"],
+            "bed_rise_mm": hm["bed_rise_mm"], "bed_rise": hm["bed_rise"], **({"assumed": True} if hm.get("assumed") else {}),
+            "largest_contributors": hm.get("largest_contributors"),
+            "face_above_nozzle_mm": pg["face_above_nozzle_mm"], "face_clear_by_mm": round(pg["face_above_nozzle_mm"] - M, 3),
+            "shortest_trigger_above_bed_mm": z_lo, "trigger_clear_by_mm": round(z_lo - M, 3),
+            "face_window_mm": [M, round(pg["face_above_nozzle_mm"] + z_lo - M, 3)],
+            "note": "face_window_mm: sensing-face heights above the nozzle tip that keep the margin on both sides (empty when "
+                    "the second is below the first). Declared Z over-travel does not enter: it is common to nozzle and probe."}
+        if pg["face_above_nozzle_mm"] < M:
+            r.add("error", "probe_face_below_nozzle_margin",
+                  f"Bed probe '{name}': its sensing face is drawn {pg['face_above_nozzle_mm']:.2f} mm above the nozzle tip. Between "
+                  f"face and tip the toolhead's own stack-up is {hm['stackup_mm']:.2f} mm (99.7 %) and the bed can stand "
+                  f"{hm['bed_rise_mm']:.2f} mm higher under the probe than under the nozzle ({hm['bed_rise']['offset_mm']:g} mm "
+                  f"away): the face needs {M:.2f} mm, or in some builds it meets the bed before the nozzle does.", part=name,
+                  face_above_nozzle_mm=pg["face_above_nozzle_mm"], needed_mm=M, stackup_mm=hm["stackup_mm"],
+                  bed_rise_mm=hm["bed_rise_mm"],
+                  hint=f"Raise the sensing face to at least {M:.2f} mm above the nozzle tip, mount the probe closer to the nozzle, "
+                       "or shorten the chain of parts between probe and nozzle.")
+        elif 0.0 < z_lo < M:
+            r.add("warning", "probe_trigger_margin_thin",
+                  f"Bed probe '{name}': a unit at the short end of its spread ({what}) switches with the nozzle {z_lo:.2f} mm above "
+                  f"the bed as drawn. The toolhead's stack-up between face and tip ({hm['stackup_mm']:.2f} mm, 99.7 %) and the bed's "
+                  f"flatness over the {hm['bed_rise']['offset_mm']:g} mm between them ({hm['bed_rise_mm']:.2f} mm) add up to "
+                  f"{M:.2f} mm: with the face that much too high, or the bed that much higher under the nozzle, the nozzle "
+                  "touches first.", part=name, shortest_trigger_above_bed_mm=z_lo, margin_mm=M,
+                  hint=f"Lower the face (it may come down to {M:.2f} mm above the tip), use a sensor with more range on this bed, "
+                       "or set the sensor's height on the built machine with its nuts against a gauge and say so in the build "
+                       "instructions (that removes the stack-up, not the bed's flatness).")
     if pg["face_above_nozzle_mm"] < 1.0:
         r.add("warning", "probe_face_near_nozzle_plane",
               f"Bed probe '{name}': its face is {pg['face_above_nozzle_mm']:.2f} mm above the nozzle tip; a curled print edge "

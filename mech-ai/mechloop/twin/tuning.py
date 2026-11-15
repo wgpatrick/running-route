@@ -359,21 +359,54 @@ def bed_mesh_study(printer_path, out, pm: PrinterMap, bed: dict, at=(45.0, 45.0)
                         "the probe's z_offset is taken as calibrated (its unit-to-unit spread is a separate finding)"]}
 
 
-def pm_for(design, out_root="out") -> tuple:
-    """PrinterMap with frame stiffness from the last full verify, if its report is there. Returns (pm, where from)."""
+def pm_for_detail(design, out_root="out") -> tuple:
+    """PrinterMap with frame stiffness from the last full verify, if its report is there.
+    Returns (pm, where from or None, tried): `tried` lists every report file looked for and what was wrong with it
+    ("not found", "unreadable: ...", "no FEA frame stiffness in it"), so a fall-back to belt stiffness only can say
+    which file it wanted. Reports are looked for at <out_root>/<design name>/report.json, then out/<design name>/."""
     import json
     from pathlib import Path
 
+    tried = []
+    roots = []
     for root in (out_root, "out"):
+        if str(root) not in roots:
+            roots.append(str(root))
+    for root in roots:
         prev = Path(root) / design.name / "report.json"
-        if prev.exists():
-            try:
-                pm = printer_map_for(design, json.loads(prev.read_text())["metrics"])
-            except Exception:
-                continue
-            if pm.struct_stiffness or not (design.printer or {}).get("stiffness"):      # a partial run has no FEA figures
-                return pm, str(prev)
-    return printer_map_for(design), None
+        if not prev.exists():
+            tried.append({"path": str(prev), "status": "not found"})
+            nested = Path(root) / design.name / design.name / "report.json"
+            if nested.exists():
+                tried[-1]["hint"] = (f"{nested} exists: that verify was run with --out {Path(root) / design.name}; --out is the ROOT "
+                                     f"folder (files go to <out>/<design name>/). Pass --out {Path(root) / design.name} here as well, "
+                                     f"or re-run verify with --out {root}")
+            continue
+        try:
+            pm = printer_map_for(design, json.loads(prev.read_text())["metrics"])
+        except Exception as ex:
+            tried.append({"path": str(prev), "status": f"unreadable: {type(ex).__name__}: {ex}"})
+            continue
+        if pm.struct_stiffness or not (design.printer or {}).get("stiffness"):      # a partial run has no FEA figures
+            return pm, str(prev), tried
+        tried.append({"path": str(prev), "status": "no FEA frame stiffness in it (the fea verifier did not run or did not report the "
+                                                   "design's stiffness cases)"})
+    return printer_map_for(design), None, tried
+
+
+def pm_for(design, out_root="out") -> tuple:
+    """(pm, where from): see pm_for_detail."""
+    pm, src, _ = pm_for_detail(design, out_root)
+    return pm, src
+
+
+def missing_report_warning(design, tried: list) -> str:
+    """One loud sentence for a fall-back to belt stiffness only."""
+    looked = "; ".join(f"{t['path']} ({t['status']})" for t in tried) or "nothing"
+    hints = " ".join(t["hint"] + "." for t in tried if t.get("hint"))
+    return (f"WARNING: no usable verify report for '{design.name}': looked for {looked}. The frame's FEA stiffness is therefore NOT "
+            f"used: resonances, input shaper and everything derived from them rest on belt stiffness only and are too high. "
+            f"Run `mechloop verify <design>` (a full run, same --out) first." + (" " + hints if hints else ""))
 
 
 def tune_report(design_path, out_root="out", only=None, bed=None) -> dict:
@@ -396,11 +429,17 @@ def tune_report(design_path, out_root="out", only=None, bed=None) -> dict:
         res["klipper_commit"] = commit
     except fw.FirmwareNotAvailable as ex:
         return {"design": design.name, "ok": False, "error": f"not run: {ex}"}
-    pm, src = pm_for(design, out_root)
+    pm, src, tried = pm_for_detail(design, out_root)
     if str(out_root) not in TUNING_ROOTS:
         TUNING_ROOTS.insert(0, str(out_root))
     res["frame_stiffness_n_per_mm"] = pm.struct_stiffness or None
     res["frame_stiffness_from"] = src or "none (no verify report found): belt stiffness only"
+    res["verify_reports_looked_for"] = tried
+    if src is None and (design.printer or {}).get("stiffness"):
+        import sys
+
+        res["warnings"] = [missing_report_warning(design, tried)]
+        print(res["warnings"][0], file=sys.stderr, flush=True)
     try:
         if "shaper" in only:
             sh = input_shaper(design, pm)

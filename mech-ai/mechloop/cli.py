@@ -7,22 +7,37 @@ import sys
 from pathlib import Path
 
 
+OUT_HELP = ("ROOT folder for outputs (default: out). Files are written to <out>/<design name>/ (report.json, renders, STEP, "
+            "electrical/printer.cfg, score/, tune/), so pass the same root to verify, score, tune and assemble: "
+            "`--out out` gives out/printer_v7/report.json; `--out out/printer_v7` gives out/printer_v7/printer_v7/report.json, "
+            "which score, tune and print started with the default root will not find")
+
+
+def _warn_nested_out(out, name: str) -> None:
+    """--out is a root, not the design's own folder: say so when the two were probably confused."""
+    if Path(out).name == name:
+        print(f"WARNING: --out {out} ends in the design's name: outputs go to {Path(out) / name}/ (--out is the ROOT folder; "
+              f"<out>/<design name>/ is added). `mechloop score`, `tune` and `print` run without the same --out will not find "
+              f"this run's report.json. Use --out {Path(out).parent} to write to {out}/.", file=sys.stderr, flush=True)
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="mechloop")
     sub = p.add_subparsers(dest="cmd", required=True)
     v = sub.add_parser("verify", help="build a design script and run the verifiers")
     v.add_argument("design", help="python file defining build() -> Design")
     v.add_argument("--only", nargs="*", help="subset of: geometry interference tolerance manufacture ratings motion subsystems electrical assemblability fea printing requirements")
-    v.add_argument("--out", default="out")
+    v.add_argument("--out", default="out", help=OUT_HELP)
     v.add_argument("--no-render", action="store_true")
     v.add_argument("--max-findings", type=int, default=25)
     h = sub.add_parser("history", help="show the loop history of a design")
     h.add_argument("name")
-    h.add_argument("--out", default="out")
+    h.add_argument("--out", default="out", help="ROOT folder the verify runs wrote to (reads <out>/<name>/history.jsonl)")
     pr = sub.add_parser("print", help="digital twin: slice a part and print it on a printer design")
     pr.add_argument("printer", help="python file defining build() -> Design of the printer")
     pr.add_argument("part", help="<design.py>:<component> or a .stl/.step file; printed as modelled, base on the bed")
-    pr.add_argument("--out", default="out/twin")
+    pr.add_argument("--out", default="out/twin", help="folder for this print's outputs: <out>/<part name>/ (default out/twin). The "
+                    "printer's frame stiffness is read from out/<printer name>/report.json (the default verify root)")
     pr.add_argument("--layer-height", type=float, default=0.2)
     pr.add_argument("--accel-scale", type=float, default=1.0, help="what-if multiplier on XY acceleration limits")
     pr.add_argument("--no-render", action="store_true")
@@ -30,12 +45,12 @@ def main(argv=None) -> int:
     pr.add_argument("--trajectory", action="store_true", help="save the simulated nozzle path for replay in the viewer")
     asm = sub.add_parser("assemble", help="simulate building the design: order, holding, tools, time, instructions")
     asm.add_argument("design")
-    asm.add_argument("--out", default="out")
+    asm.add_argument("--out", default="out", help=OUT_HELP)
     asm.add_argument("--no-render", action="store_true")
     sc = sub.add_parser("score", help="scorecard for a printer design (things to improve, not just pass); every headline number "
                                       "comes with a [low, expected, high] range under 'headline' and 'ranges'")
     sc.add_argument("design")
-    sc.add_argument("--out", default="out")
+    sc.add_argument("--out", default="out", help=OUT_HELP)
     sc.add_argument("--assembly", action="store_true", help="also run the assembly simulation (slower)")
     sc.add_argument("--firmware", choices=["klipper"], help="also score with the real firmware planning every print from the "
                     "generated printer.cfg (input shaper and pressure advance on, and off for comparison); reported under 'klipper'")
@@ -44,7 +59,8 @@ def main(argv=None) -> int:
                     "and cross-track error (resonance and the acceleration an owner would run keep their ranges)")
     tu = sub.add_parser("tune", help="firmware tuning on the twin: input shaper, pressure-advance sweep, bed mesh (needs Klipper)")
     tu.add_argument("design")
-    tu.add_argument("--out", default="out")
+    tu.add_argument("--out", default="out", help=OUT_HELP + ". tune reads the frame's FEA stiffness from <out>/<design name>/report.json "
+                    "(then out/<design name>/report.json) and warns on stderr, and under 'warnings', when neither is usable")
     tu.add_argument("--only", nargs="*", choices=["shaper", "pressure_advance", "bed_mesh"], help="default: all three")
     tu.add_argument("--bed", nargs=3, type=float, metavar=("TILT_X", "TILT_Y", "BOW"), default=None,
                     help="assumed as-built bed surface for the mesh study, mm (default 0.30 0.20 0.15)")
@@ -64,6 +80,7 @@ def main(argv=None) -> int:
 
         _ve.OUT_ROOT = a.out      # the electrical verifier writes printer.cfg and the wiring tables under the same root
         rep = run(a.design, a.out, only, render=not a.no_render)
+        _warn_nested_out(a.out, rep.design)
         print(rep.to_json(max_findings=a.max_findings))
         return 0 if rep.ok else 1
     if a.cmd == "print":
@@ -84,6 +101,9 @@ def main(argv=None) -> int:
             from .twin import printer_map_for
 
             prev = Path("out") / printer.name / "report.json"   # belt and frame stiffness from the last verify, if any
+            if not prev.exists() and (printer.printer or {}).get("stiffness"):
+                print(f"WARNING: {prev} not found: the print is simulated WITHOUT the frame's FEA stiffness (belt stiffness only). "
+                      f"Run `mechloop verify {a.printer}` with the default --out first.", file=sys.stderr, flush=True)
             pm = printer_map_for(printer, json.loads(prev.read_text())["metrics"] if prev.exists() else None,
                                  layer_height=a.layer_height)
         if a.firmware:      # a pressure-advance sweep made by `mechloop tune` with the same --out root is used if there

@@ -10,7 +10,14 @@ from ..geom import to_trimesh
 from ..model import Design
 from .planner import Plan, plan
 
-# seconds; rough bench-assembly allowances, for comparing designs rather than predicting a clock time
+# seconds; rough bench-assembly allowances, for comparing designs rather than predicting a clock time.
+# What a declared bench sub-assembly does to the estimate: its parts and screws are costed exactly like parts and
+# screws of the main assembly, except that its first part is free (it is laid on the bench, not fitted to anything) and
+# the finished unit costs T_SUBASM (12 s, against T_PLACE 6 s for one part) to carry over and locate, plus holding and
+# direction like any part. So a sub-assembly costs about 6 s MORE than the same parts fitted one by one unless building
+# it on the bench makes its steps cheaper: fewer parts to hold (the unit may lie any way up on the bench), fewer
+# steps from below, fewer turns of the whole machine. Turning a sub-assembly over is costed like turning the machine
+# (T_FLIP), which is high for a unit that fits in a hand: an allowance, not corrected here.
 T_PLACE, T_HOLD, T_BELOW, T_SIDE, T_TWO_STEP, T_SUBASM = 6.0, 10.0, 8.0, 2.0, 4.0, 12.0
 T_SCREW, T_TNUT, T_SCREW_BELOW, T_TOOL_CHANGE, T_FLIP = 8.0, 6.0, 4.0, 4.0, 25.0
 
@@ -174,7 +181,10 @@ def analyse(design: Design, p: Plan | None = None, _depth: int = 0, reorient: bo
     if n:
         best = np.full((n, len(names)), np.inf)
         back = np.zeros((n, len(names)), dtype=int)
-        start_pen = np.array([0.0 if un == "+Z" else T_FLIP for un in names])
+        # The main assembly starts upright (as designed); beginning any other way up is counted as one turn. A bench
+        # sub-assembly has no such starting position: its first part is laid on the bench whichever way suits the
+        # steps that follow, and nothing is turned to do that.
+        start_pen = np.array([0.0 if (un == "+Z" or within is not None) else T_FLIP for un in names])
         best[0] = cost[0] + start_pen
         for i in range(1, n):
             for k in range(len(names)):
@@ -192,6 +202,11 @@ def analyse(design: Design, p: Plan | None = None, _depth: int = 0, reorient: bo
     counts = {"needs_holding": 0, "from_below": 0, "two_move_paths": 0, "unsupported_steps": 0}
     last_tool, tool_changes, tools, skus = None, 0, set(), set()
     subs, flips, prev_o = {}, 0, "+Z"
+    if within is not None and seq:
+        prev_o = names[seq[0]]      # a bench sub-assembly is started the way up its first step wants: not a turn
+        rows[0]["orientation"] = prev_o
+        if prev_o != "+Z":
+            rows[0]["start_orientation"] = UP_WORDS[prev_o]
     loose: set[str] = set()   # parts placed but not yet touched by an installed screw
     if p.steps[0].kind == "subassembly" and _depth < 2:   # the starting unit is itself built first
         inner0 = analyse(design, plan(design, members=p.steps[0].parts), _depth + 1, reorient, within=p.steps[0].unit)
@@ -300,7 +315,8 @@ def _steps_md(res: dict) -> list[str]:
     while i < len(rows):
         r = rows[i]
         if r.get("action") == "start with":
-            out.append(f"{n + 1}. Start with **{r['unit']}** on the bench.")
+            out.append(f"{n + 1}. Start with **{r['unit']}** on the bench"
+                       + (f", {r['start_orientation']}." if r.get("start_orientation") else "."))
             n += 1
             i += 1
             continue
