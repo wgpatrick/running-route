@@ -452,6 +452,12 @@ def verify_ratings(design: Design) -> VerifierResult:
                 r.metrics["leadscrew_axial_loads"] = al
         except Exception as e:
             r.add("warning", "axial_load_not_checked", f"Axial load on lead screws was not checked: {type(e).__name__}: {e}")
+        try:      # what each screw head, nut and washer bears on: slots and oversize holes, soft seats
+            from .bearing import head_bearing
+
+            r.metrics["head_bearing"] = head_bearing(design, r)
+        except Exception as e:
+            r.add("warning", "head_bearing_not_checked", f"Screw head bearing was not checked: {type(e).__name__}: {e}")
         # bill of materials
         bom: dict[str, dict] = {}
         for c in design.components:

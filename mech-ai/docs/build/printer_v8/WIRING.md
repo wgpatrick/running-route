@@ -13,7 +13,7 @@ Source: the design's electrical model (24 wires) as written out by the electrica
 > **MAINS VOLTAGE. This design has NOT been safety-certified, tested or inspected by anyone.** The mains side (inlet, fuse, relay module, supply terminals, protective earth) must be wired, or checked before first power, by a person competent to do so under your local rules. The electrical verifier checks ratings and that the wires exist; it does not check creepage, enclosure, strain relief, touch protection, or any standard.
 
 - Supply voltage declared: (115.0, 230.0) V. Mains current {'115': 4.65, '230': 2.32} A; inlet rated 10.0 A; fuse T8A (time-lag); cold-start inrush 60.0 A (the fuse riding through it was assumed, I2t not checked).
-- **Set the supply's 115 / 230 V selector switch to your mains before first power.** It is on the supply's side; the wrong position destroys the supply (230 V on the 115 V setting).
+- **Set the supply's 115 / 230 V selector switch to your mains before first power** (the catalogue's note for the supply: 'set the 115/230 V selector; ring or fork terminals on mains, earth and DC wires'). 230 V on the 115 V setting destroys the supply.
 - The inlet's fuse drawer and fuse-link are ordered separately from the inlet (see BOM.md).
 - Live terminals that are open to touch in this open-frame design: the inlet's rear quick-connect tabs, the relay module's screw terminals and solder side, the supply's terminal block. **No cover for any of them is in the design.** Fit covers or an enclosure before the machine is powered with hands near it.
 
@@ -110,18 +110,18 @@ It holds only what the model knows. Add your host's sections (`[virtual_sdcard]`
 
 | Where in printer.cfg | Value in the file | What to do |
 |---|---|---|
-| [extruder] pid_Kp/Ki/Kd | pid_Kp 43.601; pid_Ki 18.167; pid_Kd 26.161 | `PID_CALIBRATE HEATER=extruder TARGET=<print temp>` with the part fan at print speed; the values in the file come from a simulated autotune |
-| [heater_bed] pid_Kp/Ki/Kd | pid_Kp 70.226; pid_Ki 4.682; pid_Kd 263.347 | `PID_CALIBRATE HEATER=heater_bed TARGET=60`; simulated values, heater tolerance +/-10 % not modelled |
-| [input_shaper] shaper_type/freq, damping_ratio | shaper_type_x ei; shaper_type_y mzv; shaper_freq_x 100.6; shaper_freq_y 59.8; damping_ratio_x 0.065; damping_ratio_y 0.069 | measure with an accelerometer on the toolhead (`SHAPER_CALIBRATE`); the file holds the twin's prediction |
+| [extruder] pid_Kp/pid_Ki/pid_Kd | pid_Kp 43.601; pid_Ki 18.167; pid_Kd 26.161 | `PID_CALIBRATE HEATER=extruder TARGET=<print temp>` with the part fan at print speed; the values in the file come from a simulated autotune |
+| [heater_bed] pid_Kp/pid_Ki/pid_Kd | pid_Kp 70.226; pid_Ki 4.682; pid_Kd 263.347 | `PID_CALIBRATE HEATER=heater_bed TARGET=60`; simulated values, heater tolerance +/-10 % not modelled |
+| [input_shaper] shaper_type/shaper_freq/damping_ratio | shaper_type_x ei; shaper_type_y mzv; shaper_freq_x 100.6; shaper_freq_y 59.8; damping_ratio_x 0.065; damping_ratio_y 0.069 | measure with an accelerometer on the toolhead (`SHAPER_CALIBRATE`); the file holds the twin's prediction |
 | [extruder] pressure_advance | pressure_advance 0.0420; pressure_advance_smooth_time 0.04 | print a pressure-advance tower / pattern; the file holds the twin's sweep result |
 | [probe] z_offset | z_offset 3.000 | `PROBE_CALIBRATE` with the bed and nozzle at working temperature; the file's value assumes the nominal switching distance on iron |
-| [probe] x_offset / y_offset | x_offset 0; y_offset 34.5 | confirm by probing a known feature or a mark; values are from the CAD |
+| [probe] x_offset/y_offset | x_offset 0; y_offset 34.5 | confirm by probing a known feature or a mark; values are from the CAD |
 | [bed_mesh] | [bed_mesh] present | `BED_MESH_CALIBRATE` hot; compare the range with the prediction in COMMISSIONING.md |
-| [stepper_*] rotation_distance | rotation_distance stepper_x: 40; rotation_distance stepper_y: 40; rotation_distance stepper_z: 2 | command 100 mm, measure with a rule / calipers / dial indicator; belts: 40 = 20 teeth x 2 mm; Z: the screw's lead |
-| [extruder] rotation_distance / gear_ratio | rotation_distance 26.8937; gear_ratio 11.262:1 | mark filament, extrude 100 mm slowly, measure; the values are E3D's published figures |
-| [tmc2209 *] run_current | run_current stepper_x: 0.280; run_current stepper_y: 1.200; run_current stepper_z: 1.000; run_current extruder: 0.400 | the design's choices; check motor case temperature after 30 min (predictions in COMMISSIONING.md) and that no axis loses steps |
-| [stepper_*] dir_pin | dir_pin stepper_x: !PB12; dir_pin stepper_y: PC5; dir_pin stepper_z: !PB2 | `STEPPER_BUZZ` each motor and jog each axis: invert where the direction is wrong. The left Y motor is a mirror image: one coil pair swapped at its connector |
-| [stepper_x/y] position_endstop, position_min/max | not present | after the switches are set (ASSEMBLY.md), home and measure the real travel to the other end |
+| [stepper_*] rotation_distance | stepper_x rotation_distance 40; stepper_y rotation_distance 40; stepper_z rotation_distance 2 | command 100 mm, measure with a rule / calipers / dial indicator; belts: 40 = 20 teeth x 2 mm; Z: the screw's lead |
+| [extruder] rotation_distance/gear_ratio | rotation_distance 26.8937; gear_ratio 11.262:1 | mark filament, extrude 100 mm slowly, measure; the values are E3D's published figures |
+| [tmc2209 *] run_current | stepper_x run_current 0.280; stepper_y run_current 1.200; stepper_z run_current 1.000; extruder run_current 0.400 | the design's choices; check motor case temperature after 30 min (predictions in COMMISSIONING.md) and that no axis loses steps |
+| [stepper_*] dir_pin | stepper_x dir_pin !PB12; stepper_y dir_pin PC5; stepper_z dir_pin !PB2 | `STEPPER_BUZZ` each motor and jog each axis: invert where the direction is wrong. The left Y motor is a mirror image: one coil pair swapped at its connector |
+| [stepper_*] position_endstop/position_min/position_max | stepper_x position_endstop 0; stepper_x position_min 0; stepper_x position_max 180; stepper_y position_endstop 214.5; stepper_y position_min 0; stepper_y position_max 214.5; stepper_z position_min -1.550; stepper_z position_max 183.100 | after the switches are set (ASSEMBLY.md), home and measure the real travel to the other end |
 | [stepper_z] position_min | position_min -1.550 | negative by the declared Z over-travel; confirm the bed can physically rise that far past the nozzle plane without anything else touching |
 | [verify_heater *] | [verify_heater extruder] present; [verify_heater heater_bed] present | leave as generated unless a false trip occurs; never loosen to hide a real fault |
 | [mcu] serial | serial /dev/ttyAMA0 | the host's UART device as wired (TFT header); check `ls /dev/serial*` |

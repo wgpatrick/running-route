@@ -86,7 +86,19 @@ def check_part(r: VerifierResult, design: Design, c) -> dict:
     from ..shops import check_shop_part
 
     check_shop_part(r, design, c, row, lim)      # what the part's named shop publishes (mechloop/shops/*.json); nothing for "generic"
+    try:      # sharp edges and corners (dfm_edges.py): B-rep only, cheap
+        from . import dfm_edges
+
+        ed = dfm_edges.check_edges(r, design, c, proc, row, _PRINTED_EDGES)
+        _EDGE_CLASSES[c.name] = ed.pop("_class")
+        row["edges"] = ed
+    except Exception as e:
+        row["edges"] = {"checked": False, "why": f"{type(e).__name__}: {e}"}
     return row
+
+
+_PRINTED_EDGES: dict = {}      # filled per run by check_part, reported once by verify_manufacture
+_EDGE_CLASSES: dict = {}
 
 
 def verify_manufacture(design: Design) -> VerifierResult:
@@ -97,6 +109,8 @@ def verify_manufacture(design: Design) -> VerifierResult:
         return r
     with timed(r):
         parts = {}
+        _PRINTED_EDGES.clear()
+        _EDGE_CLASSES.clear()
         for c in custom:
             try:
                 parts[c.name] = check_part(r, design, c)
@@ -108,6 +122,21 @@ def verify_manufacture(design: Design) -> VerifierResult:
                       f"it has not been judged.", part=c.name, trace=traceback.format_exc()[-500:])
                 parts[c.name] = {"process": process_of(c), "checked": False}
         _explain_vendor_patterns(design, r)
+        lead = None
+        try:
+            from . import dfm_edges
+
+            if _PRINTED_EDGES:
+                pe = dict(sorted(_PRINTED_EDGES.items()))
+                r.add("info", "printed_edges",
+                      f"{len(pe)} printed part(s) have sharp edges on the face they are printed on ("
+                      f"{sum(v['sharp_edges_on_bed_face'] for v in pe.values())} edges: the squashed first layer spreads there, a 0.4 mm "
+                      f"chamfer hides it) and hole mouths without a lead-in ({sum(v['hole_mouths_without_lead_in'] for v in pe.values())}: "
+                      f"a small chamfer helps a screw, insert or shaft start). Information only; counts per part in the data.",
+                      parts=pe)
+            lead = dfm_edges.lead_ins(r, design, dict(_EDGE_CLASSES))
+        except Exception as e:
+            r.add("warning", "lead_ins_not_checked", f"Lead-ins of shafts and bores were not checked: {type(e).__name__}: {e}")
         procs = sorted({v["process"] for v in parts.values()})
         setups = sum(v.get("setups_estimate", 0) for v in parts.values())
         cost = sum((v.get("estimate") or {}).get("cost_usd_each_qty1", 0) or 0 for v in parts.values())
@@ -120,6 +149,13 @@ def verify_manufacture(design: Design) -> VerifierResult:
                      "shop": shop, "limits_overridden": over,
                      "machining_setups_total": setups or None,
                      "machining_cost_estimate_usd_qty1": round(cost, 0) or None,
+                     "edges": {"sharp_outside_edges_by_part": {k: v["edges"]["sharp_outside_edges"] for k, v in sorted(parts.items())
+                                                               if isinstance(v.get("edges"), dict) and v["edges"].get("sharp_outside_edges")},
+                               "sharp_profile_corners_by_part": {k: v["edges"]["sharp_profile_corners"] for k, v in sorted(parts.items())
+                                                                 if isinstance(v.get("edges"), dict) and v["edges"].get("sharp_profile_corners")},
+                               "edge_break_declared": {k: v["edges"]["edge_break_declared_mm"] for k, v in sorted(parts.items())
+                                                       if isinstance(v.get("edges"), dict) and v["edges"].get("edge_break_declared_mm")},
+                               "shaft_bore_lead_ins": lead},
                      "parts": parts if len(parts) <= 40 else {k: {kk: vv for kk, vv in v.items() if kk in ("process", "form", "setups_estimate", "up")}
                                                               for k, v in parts.items()}}
     return r

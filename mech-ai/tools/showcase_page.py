@@ -570,7 +570,7 @@ def sec_features(F) -> str:
         F, "exploded", "Pulled apart by sub-assembly",
         "The four groups are moved apart for the picture only. Part counts are from the model.",
         "Exploded view: gantry lifted above the frame, bed and Z stage pulled out to the left, electronics tray dropped below"))
-    out.append('<p class="aside" id="inspector-link">An interactive 3D inspector of this model exists as a separate page.</p></div></section>')
+    out.append('<p class="aside" id="inspector-link">An interactive 3D inspector of this model is on a separate page: <a href="https://claude.ai/artifact/NLHdccrmUsqED5apWtm83r">open the 3D inspector</a>.</p></div></section>')
     return "".join(out)
 
 
@@ -655,13 +655,28 @@ def sec_bed(F) -> str:
         for nm, d in ff["designs"].items():
             pw = d.get("print_weight") or {}
             cards.append(f'<figure class="feac"><div class="stage"><img src="img/{e(d["file"])}" alt="Deflected shape of the bed carrier of {e(nm)}, coloured by vertical sag" loading="lazy"></div>'
-                         f'<figcaption><b>{e(nm.replace("printer_", ""))}</b> largest sag in the field {d["field_max_sag_screwed_mm"]:.3f} mm '
+                         f'<figcaption><b>{e(nm.replace("printer_", ""))}</b> largest sag anywhere in the body {d["field_max_sag_screwed_mm"]:.3f} mm '
                          f'(the verifier adds {num(pw.get("support_compliance_mm"), 4)} mm for guide blocks and nuts and reports {num(pw.get("total_screwed_mm"), 4)} mm at the load point). {d["nodes"]:,} nodes, {d["parts"]} parts.</figcaption></figure>')
         grad = ",".join(ff["ramp"])
-        fea = (f'<h3>The same load on both beds, one colour scale</h3><div class="feagrid">{"".join(cards)}</div>'
+        d8 = ff["designs"].get(F["design"]) or {}
+        loose = {k: v for k, v in (d8.get("nut_seats") or {}).items() if v["least_movement_screwed_mm"] > 0.001}
+        held = [k for k, v in (d8.get("nut_seats") or {}).items() if v["least_movement_screwed_mm"] <= 0.001]
+        if loose:
+            cs = d8.get("print_corners") or []
+            worstc = max(cs, key=lambda c: c["sag_screwed_mm"]) if cs else None
+            loadc = next((c for c in cs if c["loaded"]), None)
+            caution = ('<div class="notice caution" role="note"><strong>The v8 figure above is suspect.</strong> Keeping the field showed something the two reported numbers hide. '
+                       f'In the verifier\'s model of v8 only {len(held)} of {len(held) + len(loose)} nut seats ({", ".join(held)}) is held vertically. '
+                       + ", ".join(f'{k} moves {v["least_movement_screwed_mm"]:.3f} mm' for k, v in loose.items())
+                       + ' as a whole, so the front screws carry nothing in this calculation and the bed is again held from the back.'
+                       + (f' The load was placed at the {loadc["corner"]} print corner, next to the supports that are held, where the surface drops {loadc["sag_screwed_mm"]:.4f} mm; under that same load the {worstc["corner"]} corner drops {worstc["sag_screwed_mm"]:.4f} mm.' if worstc and loadc else "")
+                       + ' The cause is in the checker (the seat face of the two front nut blocks is not selected), not in the design, and it probably affects the three-screw and two-screw study variants too. With all three seats held the true figure should be better than the picture, but it has not been computed. Treat v8\'s bed-support result as unproven until the check is fixed and re-run.</div>')
+        else:
+            caution = ""
+        fea = (f'<h3>The same load on both beds, one colour scale</h3>{caution}<div class="feagrid">{"".join(cards)}</div>'
                f'<div class="cbar" aria-hidden="true"><span>0</span><span class="bar" style="background:linear-gradient(90deg,{grad})"></span><span>{ff["colour_max_mm"]:.3f} mm down</span></div>'
                f'<p class="cap"><b>What was checked.</b> The verifier\'s own finite-element case, run again with the displacement field kept: the bed plate and everything that carries it as one meshed body, held sideways at the guide blocks and vertically at the nut seats, with a 1 kg print at the worst corner of the print area. Joints are held only round their screws (the soft bound). '
-               f'<b>What it means.</b> Shapes are exaggerated {ff["exaggeration"]:.0f} times, equally for both. v7\'s plate tips forward off its rear support; v8\'s barely moves. '
+               f'<b>What it means.</b> Shapes are exaggerated {ff["exaggeration"]:.0f} times, equally for both. v7\'s plate tips forward off its rear support. v8\'s moves far less, {"but read the caution above: its front edge sinks under a load placed at the rear, which three working screws would not allow. " if caution else ""}'
                f'<b>Assumed.</b> Linear elastic parts, no gaps or friction in joints, nut and bearing stiffness taken from assumed figures (10 N/um thread contact). The grey box is the undeformed outline.</p>')
     return f'''
 <section id="bed"><div class="wrap">
@@ -669,7 +684,7 @@ def sec_bed(F) -> str:
   <p class="intro">v7 held its bed from the back, like a shelf. Today's checks measure how far the printing surface drops when a heavy print sits on its worst corner. v7 dropped {v7["print"][1]:.3f} mm under 1 kg, which is {100 * v7["print"][1] / lh:.0f}% of a {lh:g} mm layer, so v8 began with a trade study of four ways to hold the bed.</p>
   <h3>How far the bed drops: v7, three study variants and v8</h3>
   {chart}
-  <p class="cap"><b>What was checked.</b> Deflection of the print surface at the worst corner of the 180 mm print area under a 1 kg print and under a 20 N push of a hand. Each bar spans two models of the same joints: every touching face bonded (stiff) and joints held only round their screws (soft). The truth should lie between. <b>What it means.</b> Against the {lim:g} mm guide ({100 * lim / lh:.0f}% of a layer, applied to the 1 kg case on the soft bound) v7 is {over} times over and v8 has room: about {ratio} times less sag than v7. Variants (b) and (c) are stiffer still but were rejected because a small height difference between screws loads their nuts until one lifts. <b>Assumed.</b> The variants are trade-study models, not finished machines; the guide is the harness's own, not a standard.</p>
+  <p class="cap"><b>What was checked.</b> Deflection of the print surface at the worst corner of the 180 mm print area under a 1 kg print and under a 20 N push of a hand. Each bar spans two models of the same joints: every touching face bonded (stiff) and joints held only round their screws (soft). The truth should lie between. <b>What it means.</b> Against the {lim:g} mm guide ({100 * lim / lh:.0f}% of a layer, applied to the 1 kg case on the soft bound) v7 is {over} times over. v8 is reported with room to spare, about {ratio} times less sag than v7{", but see the caution under the next heading before trusting that figure" if (F.get("fea_fields") or {}).get("designs") else ""}. Variants (b) and (c) are stiffer still but were rejected because a small height difference between screws loads their nuts until one lifts. <b>Assumed.</b> The variants are trade-study models, not finished machines; the guide is the harness's own, not a standard.</p>
   {details("Table of these values", table(["Design", "Layout", "1 kg bonded, mm", "1 kg screw-only, mm", "20 N bonded, mm", "20 N screw-only, mm", "Tilt across print area under 1 kg, mm", "Source"], tb))}
   {fea}
 </div></section>'''
@@ -680,10 +695,12 @@ def sec_tolerance(F) -> str:
     sc = Scale(-1.0, 2.0)
     rows, tb = [], []
 
+    nb = F["headline"]["builds"]
+
     def add(p, ver, cur=""):
         a, sd = p["gap_mm"], p["gap_sd_mm"]
         pc = p.get("p_closed") or 0.0
-        val = (f'<b>{100 * pc:.1f}%</b> close' if pc >= 0.0005 else "0 of 3,000")
+        val = (f'<b>{100 * pc:.1f}%</b> close' if pc >= 0.0005 else f"0 of {nb:,}")
         rows.append({"label": f'{ver}  {p["parts"][0]} / {p["parts"][1]}', "sub": f'drawn {a:.2f} mm, spread {sd:.2f} mm (1 SD)', "cls": cur,
                      "marks": [("range", a - 3 * sd, a + 3 * sd, "s2" if ver == "v7" else "s1"), ("dot", a, "s2" if ver == "v7" else "s1")],
                      "value": val, "tip": f'{p["parts"][0]} to {p["parts"][1]}: drawn {a:.2f} mm, 1 SD {sd:.3f} mm, 0.15th percentile {p.get("gap_mm_0p15_percentile")} mm, closed in {100 * pc:.2f}% of builds'})

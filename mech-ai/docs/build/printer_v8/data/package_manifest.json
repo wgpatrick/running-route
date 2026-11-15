@@ -4,7 +4,9 @@
  "report_md5": "1d5bf219132d07272e60dc6013061919",
  "report_time": "2026-11-15 18:53:15",
  "stale": [],
- "warnings": [],
+ "warnings": [
+  "the parts catalogue has changed since the report was written (the package uses the catalogue as it is NOW; re-run verify to make the report agree): NUT-M5 mass differs from the report; SHCS-M3x16 mass differs from the report; NUT-M3 mass differs from the report; SHCS-M5x8 mass differs from the report; SHCS-M3x6 McMaster status: report 'unconfirmed: the STEP file delivered under this na', catalogue now 'confirmed by the delivered STEP file'"
+ ],
  "recon": {
   "components": 386,
   "purchased_components": 351,
@@ -34,11 +36,11 @@
  ],
  "open_items": {
   "A": 17,
-  "B": 23,
-  "C": 17
+  "B": 24,
+  "C": 19
  },
  "washer_audit_rows": 124,
- "commissioning_steps": 35,
+ "commissioning_steps": 39,
  "dxf_cut_length_check": {
   "back_plate": {
    "written_mm": 925.1,

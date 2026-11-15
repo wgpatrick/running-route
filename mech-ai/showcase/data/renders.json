@@ -10,9 +10,9 @@
      "key": "c1",
      "label": "Toolhead: E3D Roto extruder and Revo hotend, hung behind the X beam",
      "visible": true,
-     "x": 0.5243,
-     "y": 0.1594,
-     "visible_px": 3433,
+     "x": 0.527,
+     "y": 0.1049,
+     "visible_px": 4153,
      "parts": [
       "extruder"
      ]
@@ -21,9 +21,9 @@
      "key": "c2",
      "label": "X beam, a 2020 extrusion with one MGN12 rail",
      "visible": true,
-     "x": 0.4863,
-     "y": 0.2433,
-     "visible_px": 12114,
+     "x": 0.4603,
+     "y": 0.1888,
+     "visible_px": 14571,
      "parts": [
       "x_beam"
      ]
@@ -32,9 +32,9 @@
      "key": "c3",
      "label": "Y motor, one each side, on a sheet-steel mount",
      "visible": true,
-     "x": 0.775,
-     "y": 0.1638,
-     "visible_px": 5542,
+     "x": 0.8017,
+     "y": 0.1022,
+     "visible_px": 6650,
      "parts": [
       "y_motor"
      ]
@@ -43,9 +43,9 @@
      "key": "c4",
      "label": "Bed: steel print sheet on a magnet on a cast aluminium plate",
      "visible": true,
-     "x": 0.6103,
-     "y": 0.3835,
-     "visible_px": 28133,
+     "x": 0.6257,
+     "y": 0.3469,
+     "visible_px": 33676,
      "parts": [
       "bed"
      ]
@@ -54,9 +54,9 @@
      "key": "c5",
      "label": "Lead screw, one of three, top end free",
      "visible": true,
-     "x": 0.585,
-     "y": 0.6879,
-     "visible_px": 6591,
+     "x": 0.593,
+     "y": 0.6629,
+     "visible_px": 7866,
      "parts": [
       "leadscrew_fr"
      ]
@@ -65,9 +65,9 @@
      "key": "c6",
      "label": "Bed carrier: front plate ties the two arms",
      "visible": true,
-     "x": 0.3557,
-     "y": 0.4585,
-     "visible_px": 33012,
+     "x": 0.3423,
+     "y": 0.4317,
+     "visible_px": 39543,
      "parts": [
       "front_plate"
      ]
@@ -76,9 +76,9 @@
      "key": "c7",
      "label": "Z motor: the only one, beside the rear screw",
      "visible": true,
-     "x": 0.641,
-     "y": 0.6844,
-     "visible_px": 4691,
+     "x": 0.6817,
+     "y": 0.6808,
+     "visible_px": 5609,
      "parts": [
       "z_motor"
      ]
@@ -87,9 +87,9 @@
      "key": "c8",
      "label": "Power supply on the electronics tray",
      "visible": true,
-     "x": 0.419,
-     "y": 0.7942,
-     "visible_px": 45348,
+     "x": 0.413,
+     "y": 0.7978,
+     "visible_px": 53993,
      "parts": [
       "psu"
      ]
@@ -98,9 +98,9 @@
      "key": "c9",
      "label": "Frame of 2020 extrusion; the front top rail sits lower so the X beam passes over it",
      "visible": true,
-     "x": 0.481,
-     "y": 0.4049,
-     "visible_px": 25223,
+     "x": 0.475,
+     "y": 0.3719,
+     "visible_px": 30169,
      "parts": [
       "frame_top_front"
      ]
@@ -119,9 +119,9 @@
      "key": "c1",
      "label": "Flexure post: an M5 screw from the plate down to a tab, two nuts at the tab set the level",
      "visible": true,
-     "x": 0.311,
-     "y": 0.2799,
-     "visible_px": 6008,
+     "x": 0.355,
+     "y": 0.3308,
+     "visible_px": 3515,
      "parts": [
       "bed_post_2",
       "bed_post_3",
@@ -133,9 +133,9 @@
      "key": "c2",
      "label": "Laser-cut steel tab bolted on the arm",
      "visible": true,
-     "x": 0.3357,
-     "y": 0.3987,
-     "visible_px": 10447,
+     "x": 0.3857,
+     "y": 0.4326,
+     "visible_px": 6200,
      "parts": [
       "bed_post_tab_2",
       "bed_post_tab_3",
@@ -147,9 +147,9 @@
      "key": "c3",
      "label": "Rear tie: a flat steel strip that locates the plate in X, Y and yaw and is soft vertically",
      "visible": true,
-     "x": 0.4423,
-     "y": 0.2183,
-     "visible_px": 5241,
+     "x": 0.4557,
+     "y": 0.2906,
+     "visible_px": 3214,
      "parts": [
       "bed_tie"
      ]
@@ -158,9 +158,9 @@
      "key": "c4",
      "label": "Arm, 2020 extrusion",
      "visible": true,
-     "x": 0.3977,
-     "y": 0.4478,
-     "visible_px": 5323,
+     "x": 0.435,
+     "y": 0.4737,
+     "visible_px": 3489,
      "parts": [
       "bed_arm_left"
      ]
@@ -169,9 +169,9 @@
      "key": "c5",
      "label": "Back plate, 5 mm aluminium, on the two guide blocks",
      "visible": true,
-     "x": 0.357,
-     "y": 0.2692,
-     "visible_px": 64842,
+     "x": 0.4303,
+     "y": 0.3701,
+     "visible_px": 37915,
      "parts": [
       "back_plate"
      ]
@@ -180,9 +180,9 @@
      "key": "c6",
      "label": "Front plate, 3 mm steel, across the arms' front ends",
      "visible": true,
-     "x": 0.4557,
-     "y": 0.5156,
-     "visible_px": 85285,
+     "x": 0.6703,
+     "y": 0.4317,
+     "visible_px": 49173,
      "parts": [
       "front_plate"
      ]
@@ -191,9 +191,9 @@
      "key": "c7",
      "label": "Printed nut block with a floating nut, one per screw",
      "visible": true,
-     "x": 0.4037,
-     "y": 0.6112,
-     "visible_px": 13113,
+     "x": 0.4277,
+     "y": 0.5951,
+     "visible_px": 7518,
      "parts": [
       "nut_block_fl"
      ]
@@ -202,9 +202,9 @@
      "key": "c8",
      "label": "Front lead screws, over the bottom side rails",
      "visible": true,
-     "x": 0.371,
-     "y": 0.4326,
-     "visible_px": 11515,
+     "x": 0.405,
+     "y": 0.5317,
+     "visible_px": 6562,
      "parts": [
       "leadscrew_fl"
      ]
@@ -213,9 +213,9 @@
      "key": "c9",
      "label": "Rear lead screw",
      "visible": true,
-     "x": 0.3783,
-     "y": 0.1228,
-     "visible_px": 2347,
+     "x": 0.4043,
+     "y": 0.2085,
+     "visible_px": 1426,
      "parts": [
       "leadscrew"
      ]
@@ -224,9 +224,9 @@
      "key": "c10",
      "label": "One guide block per rail",
      "visible": true,
-     "x": 0.2617,
-     "y": 0.2272,
-     "visible_px": 274,
+     "x": 0.3117,
+     "y": 0.3004,
+     "visible_px": 188,
      "parts": [
       "z_carriage_left_hi"
      ]
@@ -235,9 +235,9 @@
      "key": "c11",
      "label": "Z rail on the rear upright",
      "visible": true,
-     "x": 0.5137,
-     "y": 0.0004,
-     "visible_px": 7093,
+     "x": 0.5103,
+     "y": 0.1147,
+     "visible_px": 4790,
      "parts": [
       "z_rail_right"
      ]
@@ -246,9 +246,9 @@
      "key": "c12",
      "label": "Closed belt round all three screws (black)",
      "visible": true,
-     "x": 0.813,
-     "y": 0.7112,
-     "visible_px": 1310,
+     "x": 0.7403,
+     "y": 0.6683,
+     "visible_px": 774,
      "parts": [
       "z_pulley_fr"
      ]
@@ -267,9 +267,9 @@
      "key": "c1",
      "label": "Printed pedestal holding two 608 bearings; the screw stands in them",
      "visible": true,
-     "x": 0.4123,
-     "y": 0.8315,
-     "visible_px": 15909,
+     "x": 0.4243,
+     "y": 0.8115,
+     "visible_px": 11727,
      "parts": [
       "z_pedestal_fl"
      ]
@@ -278,9 +278,9 @@
      "key": "c2",
      "label": "20-tooth pulley fixed to the screw; its hub rests on the upper bearing and carries the bed's weight",
      "visible": true,
-     "x": 0.4183,
-     "y": 0.7605,
-     "visible_px": 1738,
+     "x": 0.433,
+     "y": 0.7395,
+     "visible_px": 1252,
      "parts": [
       "z_pulley_fl"
      ]
@@ -289,9 +289,9 @@
      "key": "c3",
      "label": "Z motor under the rear mount",
      "visible": true,
-     "x": 0.437,
-     "y": 0.6825,
-     "visible_px": 3774,
+     "x": 0.4497,
+     "y": 0.6795,
+     "visible_px": 2871,
      "parts": [
       "z_motor"
      ]
@@ -300,9 +300,9 @@
      "key": "c4",
      "label": "Toothed idler in a slot: the belt tensioner",
      "visible": true,
-     "x": 0.4283,
+     "x": 0.4383,
      "y": 0.6355,
-     "visible_px": 220,
+     "visible_px": 156,
      "parts": [
       "z_idler"
      ]
@@ -311,9 +311,9 @@
      "key": "c5",
      "label": "Rear drive mount, printed: bearings for the rear screw, motor and tensioner",
      "visible": true,
-     "x": 0.3663,
-     "y": 0.7025,
-     "visible_px": 12841,
+     "x": 0.369,
+     "y": 0.6855,
+     "visible_px": 9718,
      "parts": [
       "z_drive_mount"
      ]
@@ -322,20 +322,20 @@
      "key": "c6",
      "label": "8 mm cast plate",
      "visible": true,
-     "x": 0.4923,
-     "y": 0.1475,
-     "visible_px": 18830,
+     "x": 0.511,
+     "y": 0.2265,
+     "visible_px": 13691,
      "parts": [
       "bed_plate"
      ]
     },
     {
      "key": "c7",
-     "label": "Screw tops end below the top rails; nothing holds them",
+     "label": "Lead screw: its top ends below the top rails and nothing holds it",
      "visible": true,
-     "x": 0.8143,
-     "y": 0.3855,
-     "visible_px": 9637,
+     "x": 0.7717,
+     "y": 0.4295,
+     "visible_px": 7171,
      "parts": [
       "leadscrew_fr"
      ]
@@ -356,7 +356,7 @@
      "visible": true,
      "x": 0.6237,
      "y": 0.3237,
-     "visible_px": 131811,
+     "visible_px": 130870,
      "parts": [
       "extruder"
      ]
@@ -421,8 +421,8 @@
      "key": "c7",
      "label": "Printed duct",
      "visible": true,
-     "x": 0.4943,
-     "y": 0.6683,
+     "x": 0.5083,
+     "y": 0.6888,
      "visible_px": 23125,
      "parts": [
       "part_duct"
@@ -443,8 +443,8 @@
      "key": "c9",
      "label": "Printed belt block",
      "visible": true,
-     "x": 0.823,
-     "y": 0.2853,
+     "x": 0.8317,
+     "y": 0.2201,
      "visible_px": 14795,
      "parts": [
       "x_belt_block"
@@ -454,9 +454,9 @@
      "key": "c10",
      "label": "X rail on the beam",
      "visible": true,
-     "x": 0.9983,
-     "y": 0.4263,
-     "visible_px": 34834,
+     "x": 0.9037,
+     "y": 0.4388,
+     "visible_px": 25008,
      "parts": [
       "x_rail"
      ]
@@ -467,7 +467,7 @@
      "visible": true,
      "x": 0.5983,
      "y": 0.8183,
-     "visible_px": 46173,
+     "visible_px": 42593,
      "parts": [
       "bed"
      ]
@@ -512,9 +512,9 @@
      "key": "c1",
      "label": "Y plate, laser-cut steel: carries the beam end on a Y guide block",
      "visible": true,
-     "x": 0.3003,
-     "y": 0.6015,
-     "visible_px": 8473,
+     "x": 0.2503,
+     "y": 0.6825,
+     "visible_px": 12327,
      "parts": [
       "y_plate_left"
      ]
@@ -523,9 +523,9 @@
      "key": "c2",
      "label": "X beam",
      "visible": true,
-     "x": 0.4797,
-     "y": 0.5225,
-     "visible_px": 17613,
+     "x": 0.4823,
+     "y": 0.5775,
+     "visible_px": 25540,
      "parts": [
       "x_beam"
      ]
@@ -534,9 +534,9 @@
      "key": "c3",
      "label": "X rail and its guide block",
      "visible": true,
-     "x": 0.531,
-     "y": 0.4595,
-     "visible_px": 775,
+     "x": 0.5297,
+     "y": 0.5095,
+     "visible_px": 1129,
      "parts": [
       "x_rail"
      ]
@@ -545,9 +545,9 @@
      "key": "c4",
      "label": "X motor, rides on the left Y plate",
      "visible": true,
-     "x": 0.4117,
-     "y": 0.5385,
-     "visible_px": 15366,
+     "x": 0.3837,
+     "y": 0.6055,
+     "visible_px": 22314,
      "parts": [
       "x_motor"
      ]
@@ -556,9 +556,9 @@
      "key": "c5",
      "label": "Y motor",
      "visible": true,
-     "x": 0.181,
-     "y": 0.3325,
-     "visible_px": 9243,
+     "x": 0.1063,
+     "y": 0.3595,
+     "visible_px": 13029,
      "parts": [
       "y_motor_l"
      ]
@@ -567,9 +567,9 @@
      "key": "c6",
      "label": "Y motor mount, 2 mm steel sheet, slides on T-nuts to tension the belt",
      "visible": true,
-     "x": 0.1483,
-     "y": 0.3865,
-     "visible_px": 4820,
+     "x": 0.0923,
+     "y": 0.4935,
+     "visible_px": 5309,
      "parts": [
       "y_motor_mount_l"
      ]
@@ -578,9 +578,9 @@
      "key": "c7",
      "label": "Y rail on the top side rail",
      "visible": true,
-     "x": 0.403,
-     "y": 0.7045,
-     "visible_px": 12937,
+     "x": 0.3937,
+     "y": 0.8325,
+     "visible_px": 18827,
      "parts": [
       "y_rail_left"
      ]
@@ -589,9 +589,9 @@
      "key": "c8",
      "label": "Y idler on an L-shaped mount beyond the frame's front end",
      "visible": true,
-     "x": 0.439,
-     "y": 0.8155,
-     "visible_px": 3651,
+     "x": 0.357,
+     "y": 0.8675,
+     "visible_px": 4685,
      "parts": [
       "y_idler_mount_l"
      ]
@@ -600,9 +600,9 @@
      "key": "c9",
      "label": "Y endstop on a sliding mount; the right Y plate's rear edge presses it",
      "visible": true,
-     "x": 0.587,
-     "y": 0.2895,
-     "visible_px": 1718,
+     "x": 0.595,
+     "y": 0.3045,
+     "visible_px": 2473,
      "parts": [
       "y_endstop_mount"
      ]
@@ -611,9 +611,9 @@
      "key": "c10",
      "label": "Right Y plate",
      "visible": true,
-     "x": 0.761,
-     "y": 0.3675,
-     "visible_px": 3525,
+     "x": 0.8037,
+     "y": 0.3985,
+     "visible_px": 5093,
      "parts": [
       "y_plate_right"
      ]
@@ -622,9 +622,9 @@
      "key": "c11",
      "label": "Printed tension anchor with an M3 jack screw",
      "visible": true,
-     "x": 0.1903,
-     "y": 0.5105,
-     "visible_px": 2429,
+     "x": 0.1217,
+     "y": 0.5835,
+     "visible_px": 3530,
      "parts": [
       "y_tension_anchor_l"
      ]
@@ -643,9 +643,9 @@
      "key": "c1",
      "label": "Y motor",
      "visible": true,
-     "x": 0.7612,
-     "y": 0.4906,
-     "visible_px": 59571,
+     "x": 0.7065,
+     "y": 0.6306,
+     "visible_px": 50287,
      "parts": [
       "y_motor"
      ]
@@ -654,9 +654,9 @@
      "key": "c2",
      "label": "Pulley with its hub outboard, so the belt runs close to the motor face",
      "visible": true,
-     "x": 0.6042,
-     "y": 0.5872,
-     "visible_px": 11338,
+     "x": 0.5642,
+     "y": 0.7228,
+     "visible_px": 9615,
      "parts": [
       "y_pulley"
      ]
@@ -665,9 +665,9 @@
      "key": "c3",
      "label": "Mount in 2 mm steel sheet",
      "visible": true,
-     "x": 0.6081,
-     "y": 0.6906,
-     "visible_px": 53175,
+     "x": 0.4396,
+     "y": 0.6983,
+     "visible_px": 45227,
      "parts": [
       "y_motor_mount"
      ]
@@ -676,9 +676,9 @@
      "key": "c4",
      "label": "Y endstop switch",
      "visible": true,
-     "x": 0.375,
-     "y": 0.2928,
-     "visible_px": 4699,
+     "x": 0.3504,
+     "y": 0.4506,
+     "visible_px": 4005,
      "parts": [
       "y_endstop"
      ]
@@ -687,9 +687,9 @@
      "key": "c5",
      "label": "Its mount slides along the rail on two T-nuts",
      "visible": true,
-     "x": 0.4212,
-     "y": 0.3583,
-     "visible_px": 4886,
+     "x": 0.3981,
+     "y": 0.5239,
+     "visible_px": 4152,
      "parts": [
       "y_endstop_mount"
      ]
@@ -698,9 +698,9 @@
      "key": "c6",
      "label": "Right Y plate: its rear edge is the striker",
      "visible": true,
-     "x": 0.1242,
-     "y": 0.2194,
-     "visible_px": 15640,
+     "x": 0.115,
+     "y": 0.3828,
+     "visible_px": 13695,
      "parts": [
       "y_plate_right"
      ]
@@ -709,9 +709,9 @@
      "key": "c7",
      "label": "Y rail",
      "visible": true,
-     "x": 0.4135,
-     "y": 0.4172,
-     "visible_px": 26853,
+     "x": 0.2612,
+     "y": 0.4717,
+     "visible_px": 20143,
      "parts": [
       "y_rail_right"
      ]
@@ -785,8 +785,8 @@
      "key": "c6",
      "label": "Inlet panel, laser-cut",
      "visible": true,
-     "x": 0.277,
-     "y": 0.3714,
+     "x": 0.2723,
+     "y": 0.3703,
      "visible_px": 7249,
      "parts": [
       "inlet_panel"
@@ -796,8 +796,8 @@
      "key": "c7",
      "label": "Tray, laser-cut aluminium, bolted to the bottom rails",
      "visible": true,
-     "x": 0.7183,
-     "y": 0.5672,
+     "x": 0.745,
+     "y": 0.5422,
      "visible_px": 92665,
      "parts": [
       "electronics_tray"
@@ -828,9 +828,9 @@
      "key": "c1",
      "label": "Gantry, toolhead and Y drive: 147 parts",
      "visible": true,
-     "x": 0.675,
-     "y": 0.1396,
-     "visible_px": 6110,
+     "x": 0.6803,
+     "y": 0.1029,
+     "visible_px": 7307,
      "parts": [
       "x_beam"
      ]
@@ -839,9 +839,9 @@
      "key": "c2",
      "label": "Bed, carrier and Z drive: 162 parts",
      "visible": true,
-     "x": 0.3097,
-     "y": 0.3246,
-     "visible_px": 23298,
+     "x": 0.293,
+     "y": 0.3088,
+     "visible_px": 27858,
      "parts": [
       "bed"
      ]
@@ -850,9 +850,9 @@
      "key": "c3",
      "label": "Frame: 28 parts",
      "visible": true,
-     "x": 0.7017,
-     "y": 0.4629,
-     "visible_px": 10660,
+     "x": 0.7103,
+     "y": 0.4671,
+     "visible_px": 12747,
      "parts": [
       "frame_top_right"
      ]
@@ -861,9 +861,9 @@
      "key": "c4",
      "label": "Electronics tray: 49 parts",
      "visible": true,
-     "x": 0.591,
-     "y": 0.8862,
-     "visible_px": 19632,
+     "x": 0.607,
+     "y": 0.9038,
+     "visible_px": 19287,
      "parts": [
       "psu"
      ]

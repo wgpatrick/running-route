@@ -181,6 +181,23 @@ def build():
   `belt_length(teeth_a, teeth_b, center)`, program steps `{"to": {...}, "speed": v}` / `{"to": {}, "dwell": s}`.
 - `add_screw(design, name, size, length, at=<underside of head>, direction=<thread direction>,
   threads_into=..., tnut=False)` adds the screw, its driver-access check and the joint.
+- **Washers and what a head bears on** (ratings verifier, `ratings.head_bearing`; `mechloop/verifiers/bearing.py`). For
+  every screw head and hex nut the material really under its bearing ring is measured and judged:
+  `screw_head_seat_too_small` (over a slot or an oversize / adjustment hole: under 60 % of the ring a bare head has on
+  its standard clearance hole is an error, under 85 % a warning) and `screw_head_bearing_pressure` (preload over that
+  area against the seat's material: printed plastic above two thirds of its yield is a warning, above yield an error;
+  aluminium and brass above yield, steel above 1.5 x yield, a warning). There is no "every screw needs a washer"
+  rule: a steel head on steel or 6061 at the class torque passes. Preload = torque / (0.2 x d) with an ASSUMED torque
+  table (class 8.8: M3 1.3, M4 3.0, M5 5.9 N.m; a joint that clamps or threads into plastic: M3 0.5, M4 1.1, M5 2.0);
+  state your own with `d.manufacturing["tightening_torque_nm"] = {"M3": 0.8}` or `meta["torque_nm"]` on a screw.
+  Remedy: a catalogue flat washer, `add_screw(..., washer=True)` (ISO 7089: M2.5 6 x 0.5, M3 7 x 0.5, M4 9 x 0.8,
+  M5 10 x 1.0, M6 12 x 1.6) or `washer="large"` (ISO 7093-1: M3 9 x 0.8, M4 12 x 1.0, M5 15 x 1.2) for slots and
+  soft seats; under a nut, `add_washer(design, name, size, at=<face it bears on>, direction=<towards the nut>,
+  screw=<screw>)` and place the nut on its top. With `washer=True`, `at` is the face the WASHER bears on: the head sits
+  one washer thickness higher, so the screw reaches that much less far into its thread (choose the length with the
+  washer in; the engagement check sees it). A washer is a part: it is in the BOM (`WASHER-M5`), in the part count and
+  in the assembly estimate. Bought parts as the seat are not judged for pressure. Not modelled: infill under the head
+  (printed parts are taken as solid), countersunk heads. Washer sizes are the standards' nominal ones, recalled.
 
 ## Printers: the digital twin and the improvement loop
 
@@ -312,7 +329,8 @@ the as-built direction of the rails over the travel, bend scatter of bent parts.
   the 1.5 mm search distance; `d.require_clearance(a, b, gap)` states the gap you want for one pair.
 - NOT reported, because it is a designed contact: parts that touch or have a declared `join` / `allow_overlap`; a
   screw against what it clamps, threads into or passes through; a guide block or nut against its rail or screw, and what is fixed to that block or nut (name
-  the nut in the drive); a screw let into a counterbore; a shaft in its bore (the fit check); an endstop switch against its striker (the endstop
+  the nut in the drive); a screw let into a counterbore; a screw head recessed in a counterbore of a part of its stack, against a part seated on
+  that face over it (a bed sheet over the bed's screws: the gap is the counterbore's depth less the head, one part's feature); a shaft in its bore (the fit check); an endstop switch against its striker (the endstop
   window, below); a toolhead part over the bed (the toolhead margin). So if two parts are MEANT to touch or locate each
   other, declare it; an undeclared near-contact is treated as a clearance.
 - `clearance_not_evaluated` (warning): a pair drawn close in which one part is not tied to the stack-up. Not a pass.
@@ -343,6 +361,11 @@ on a screw's shank) are listed as `catalogue fit, trusted` with whatever toleran
 simulated; drawn with the shaft larger than the bore they are `catalogue_fit_mismatch`. A made part that turns on a
 screw's shank is found only if you say so: `d.join(part, screw, "axle")`.
 
+**Parts held apart on screws.** Two parts that a screw clamps to each other are located by that screwed joint whether
+or not they touch (a plate on posts with jam nuts, a part over an undrawn spacer): name both in the screw's `clamps`
+(or one in `clamps` and one in `threads_into`). The joint is placed at the screw(s) and listed under
+`tolerance.located_by_screws_without_contact`; no `design.join` is needed for it.
+
 Real machines absorb error with adjustment. Declare what the design provides:
 
 ```python
@@ -359,6 +382,10 @@ An adjustment must be real: model the slot, spring, jack screw or oversize hole 
 range (the Z axis also needs that much extra travel: declare it as `overtravel` on the Z joint), and say in a comment
 how it is set. The verifier reports how much adjustment each one needs (`*_needed_mm_99`) against what you declared.
 
+A verify is a function of the design alone: two runs of one design give the same report except for timings (keys
+named `seconds` / `*_seconds`, the seconds in each summary line) and file paths; `mechloop.report.without_timings`
+strips those for a comparison. It reads nothing an earlier run, `tune` or `score` left on disk (the pressure advance
+in a verify's printer.cfg is the twin's assumed value; `tune`, `score` and `print` use a stored sweep).
 The simulation is repeatable: fixed seed, fixed order of draws, so an identical run gives identical numbers. Every
 percentage comes with its sampling error (`..._standard_error`, sqrt(p(1-p)/builds), about 0.3 % at 97 % over 3000
 builds), and a result within two standard errors of the limit it is judged against is flagged
@@ -398,8 +425,22 @@ their sources are in `mechloop/verifiers/dfm_rules.py` and `docs/DFM.md`. Every 
   small horizontal hole, long bridges, horizontal holes over 10 mm, walls (two near-parallel faces: under one bead is
   `wall_too_thin_to_print`, an error; between one and two beads `wall_single_bead`, a warning; a skin lying in the
   layers needs one layer; the tip of a knife edge and slivers under 5 mm2 are not walls), small holes and pins, first-layer
-  contact and tall-thin parts, build volume, plastic around threads (heat-set insert guidance), a load case pulling
-  along the build direction, and a rule-of-thumb warp warning.
+  contact and tall-thin parts, build volume, plastic around threads (heat-set insert guidance), a load case acting
+  along the build direction, and a rule-of-thumb warp warning. The load-case check (`load_across_layers`) tells
+  tension from compression by where the load is applied relative to where the part is held (the centres of the case's
+  `loaded` and `fixed` faces): pulled away from the held face = tension, the weak case (warning); pushed towards it =
+  compression, benign (info `load_presses_layers_together`, and it no longer counts against the orientation); loaded
+  beside the held face rather than above or below it = shear and bending across the layers (warning, said so). When
+  held and loaded faces coincide it cannot tell and warns as tension.
+- **sharp edges, corners and lead-ins** (all processes; `mechloop/verifiers/dfm_edges.py`, B-rep only): sheet parts,
+  `sharp_profile_corners` (warning: outside corners of the cut profile with no radius; give every corner at least
+  0.5 mm, it is free in laser cutting); machined parts, `edges_not_broken` (warning: outside edges drawn sharp) unless
+  the drawing note is declared, `d.add(..., meta={"edge_break_mm": 0.3})` on a part or
+  `d.manufacturing["edge_break_mm"] = 0.3` for all ("break all sharp edges 0.2 to 0.5 mm"), or the edges are modelled
+  with chamfers or fillets; printed parts, one info `printed_edges` (sharp edges on the bed face, hole mouths without a
+  lead-in); and `no_lead_in` (warning) for a shaft in a bore where neither the shaft's end nor the bore's mouth is
+  chamfered (a bought part counts as chamfered only if its solid shows it: put the lead-in on your part). Counts per
+  part are in `manufacture.edges`.
 - **machined**: plate (stock thickness), block or turned; sharp inside corners no cutter can reach (error) or only from the
   side (warning); corner radius against depth; deep or narrow slots; thin walls and floors; hole depth and non-standard
   drill sizes; the threads your screws need (depth, blind run-out); surface no straight cutter reaches from six sides
@@ -475,7 +516,12 @@ their sources are in `mechloop/verifiers/dfm_rules.py` and `docs/DFM.md`. Every 
   - **Unshielded** sensors need metal kept away from the head: the face must stand `l` mm proud of any metal and a
     cylinder `d` mm in diameter round the head must hold no metal (M12: l 15, d 40; M18: l 22, d 55;
     `interfaces["mounting"]`). Any metal part of the toolhead in that zone (the tab itself, the heater block, the
-    extruder, screws) is `probe_metal_in_clear_zone`, with each part's distance. So: a metal tab at `z_lo >= l` and at
+    extruder, screws) is `probe_metal_in_clear_zone`, with each part's distance. The sensor's OWN two nuts are not
+    counted: they are its mounting as supplied, run on its thread (which starts 7 / 10 mm behind the face by the
+    maker's design), and the zone is about the metal round the sensor; the sheet gives no separate figure for them,
+    so this is a reading of OMRON's mounting drawing. A nut is exempt only while it does that job (on the thread,
+    bearing on a clamp face: the same test that counts it for clamping, `probe_nuts_missing`); a nut placed anywhere
+    else on the barrel is metal in the zone. `homing.z.mounting.metal_free_zone.own_nuts_not_counted` lists them. So: a metal tab at `z_lo >= l` and at
     least d/2 from other metal, or a printed (plastic) bracket, which may be anywhere. A **shielded** sensor may sit
     flush in metal, at the price of range.
   - **Electrical.** `device_from(el, d, "<probe>")`, wire its `out` port to an endstop input, and declare its supply:
@@ -600,10 +646,32 @@ three-point one:
   friction that adds (`z_guide_friction_from_screw_offset`; `z_guides_bind` when it reaches the weight, which plain
   bushings on a long overhang do).
 - `level_over_travel`: compliance does not tilt the bed as it moves (same blocks, same moment); the rails' running
-  accuracy over the block spacing does (`bed_level_changes_over_travel`).
-- several screws: `constraint` says how many screws are redundant; `screw_synchronisation` gives the height error of
-  the declared arrangement (independent motors: 2 full steps at power-up; belt: 0.02 mm assumed) as bed tilt and as
-  force on a guide block, and whether the firmware can re-level (`z_screws_not_levelled`, `z_over_constrained`).
+  accuracy does (`bed_level_changes_over_travel`). It is worked out on ALL the bed's supports: every guide block
+  wanders by the running parallelism (sideways, and turned over its own ball track), and the height change at the
+  print corners is read off the body on its blocks AND its lead-screw nuts. With guides alone holding the tilt this
+  is the old formula (slope over the block spacing carried to the far corner, still given as
+  `guides_alone_formula_mm`); with three screws holding the plane, one block per rail hardly moves a corner.
+  `from_screw_lead_error_mm` is the level change from the screws' lead error over the travel.
+- A nut is a support along its screw only (all a floating nut can do). The ratings finding
+  `cantilever_on_guide_blocks` counts the nuts too when the drive names two or more (`supports_counted` in
+  `ratings.guide_loads`): three screws round a bed on one block per rail is not a cantilever; three screws in one
+  line still are.
+- several screws: `constraint.redundant_screw_supports` is found from stiffness, not by counting parts: a pattern of
+  nut heights is held twice when the guides resist it at least half as stiffly as the screws do (two blocks per rail
+  hold tilt; one block per rail does not). `screw_synchronisation` gives the height error of the declared arrangement
+  (independent motors: 2 full steps at power-up; belt: 0.02 mm assumed) as bed tilt and as force on a guide block,
+  and whether the firmware can re-level (`z_screws_not_levelled`, `z_over_constrained` / `z_several_screws`).
+- `nut_seating_and_lead_error` (several screws): the screws' LEAD ERROR over the travel is added to the
+  synchronisation error (the screw part's `ratings["lead_accuracy_mm_per_300mm"]` if it has one, else +/-0.1 mm per
+  300 mm, a class value for rolled trapezoidal screws, marked ASSUMED; neither a belt nor independent motors remove
+  it). For each nut: the load the moving mass seats it with, the load a height error takes off it per mm, the height
+  error at which it unloads, and its margin at three error levels (sync; + one screw at its class limit; + two at
+  opposite limits). Nuts bear one way: `drive["nut_seating"] = "gravity"` (the body sits on the nut; assumed when a
+  floating nut is declared) or `"captive"` (bears again on its other flank after 0.1 mm of backlash, assumed). When a
+  nut unseats the result says which, how far the bed's level then changes, the force on a guide block and how far 1 kg
+  then lowers the bed on the supports that are left. Findings: `z_tilt_over_constrained` (warning: rails and screws
+  both hold the tilt and a nut unseats at the expected error; the deflection figures then do not describe the machine)
+  and `z_nut_unseats` (warning: a nut unseats without that). Flexure is not in these figures.
 - `bed_not_held` (error): the declared supports leave the bed free in some direction (three screws and no guides).
   `bed_support_not_evaluated`: no named nut, or the nozzle rides Z. Not evaluated is not a pass.
 
@@ -613,6 +681,13 @@ three-point one:
   gaps={"nozzle gap": ("nozzle", "bed", "z", 0.05)}, flatness=("bed", "z", 0.1))` in `design.thermalcases`
   heats parts by the given rise in kelvin and reports how probe points move, how gaps change and how
   much a part bows. A heated bed should be fixed at one point and free to grow at the others.
+  Parts are bonded where they touch, EXCEPT a pair joined with a sliding kind: `d.join(sheet, plate, "magnet")` (a
+  print sheet held by a magnetic base) or `d.join(a, b, "sliding")` (any declared sliding contact; a kind that starts
+  with either word). Such a contact carries normal load and slides in its plane (frictionless; located in plane at
+  the middle of the face), so a steel sheet does not bend an aluminium plate as a bonded bimetal would. Put the sheet
+  in the case's components: leaving it out is no longer needed. Everywhere else a sliding join is a join like any
+  other (the parts are held). A contact face that is not one plane square to a world axis stays bonded, with the
+  warning `sliding_contact_left_bonded`.
 - Every `AssemblyCase` is solved twice: every touching face bonded (`stiffness_n_per_mm`, the upper
   bound) and screwed joints held only around their screws (`stiffness_low_n_per_mm`, the lower bound).
   Deflection limits are judged on the lower bound, and the digital twin uses it.
@@ -648,7 +723,9 @@ Clearance under tolerance: gaps drawn wider than 1.5 mm are not examined (a find
 than that); the gap is judged along its drawn direction only (an edge sliding past a corner is not); adjustments are
 not credited (the share is as built, before anything is set), except Z homing on the bed. Bent parts: springback
 along a bend and twist are not modelled. Bed support: nut axial stiffness and backlash, block stiffness sideways and
-about the rail, belt synchronisation error and the rail accuracy class are assumed and said so in the metrics; the
+about the rail, belt synchronisation error, the screws' lead accuracy (0.1 mm per 300 mm unless the part records one) and
+the rail accuracy class are assumed and said so in the metrics; nut seating is a rigid-body contact solution (flexure of
+arms and plate not in it), and whether a nut is gravity-seated is taken from the floating-nut declaration; the
 straightness of the extrusion a rail is screwed to is not catalogued and not included; the silicone bed columns are
 meshed with the catalogue's stand-in rubber (real silicone is softer).
 Several lead screws on one Z are NOT supported by: the digital twin (it models one Z drive: travel per turn and
@@ -663,6 +740,10 @@ nut dimensions and thrust rating are missing).
 
 `python -m mechloop print <printer.py> <design.py>:<part> --firmware klipper` plans the print with real Klipper
 from the design's generated printer.cfg (needs `tools/setup_klipper.sh` once). Treat anything Klipper refuses
-(`firmware_rejected_move`, `firmware_error`) as a design or configuration error. Add `--trajectory` to save the
+(`firmware_rejected_move`, `firmware_error`) as a design or configuration error. `firmware_not_decoded` is different:
+Klipper raised nothing, but its command stream could not be read back (its batch mode can leave the output file a few
+seconds short on a loaded machine; the run is repeated up to three times). That print was NOT RUN: it is neither a
+pass nor a failed print (`not_run` in the print report). In `score --firmware klipper` such a point is left out of
+"highest clean" and of "first failure", listed under `not_run` with a warning, and printed on stderr. Add `--trajectory` to save the
 nozzle path, then `python tools/export_viewer.py <printer.py> --no-assembly --print <print folder>` to replay it
 in `viewer/`. See `docs/FIRMWARE_IN_THE_LOOP.md` for what is and is not real.

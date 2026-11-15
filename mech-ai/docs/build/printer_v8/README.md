@@ -15,8 +15,8 @@ Regenerate: `.venv/bin/python tools/build_package.py designs/printer_v8.py`. The
 | report | `out/printer_v8/report.json`, written 2026-11-15 18:53:15, md5 `1d5bf219132d07272e60dc6013061919` |
 | report result | geometry: pass; interference: pass; tolerance: pass; manufacture: pass; ratings: pass; motion: pass; subsystems: pass; electrical: pass; assemblability: pass; fea: pass; printing: pass; requirements: pass |
 | scorecard | 2026-11-15T18:52:23 |
-| freshness warnings | none |
-| package generated | 2026-11-15 20:15:12 |
+| freshness warnings | the parts catalogue has changed since the report was written (the package uses the catalogue as it is NOW; re-run verify to make the report agree): NUT-M5 mass differs from the report; SHCS-M3x16 mass differs from the report; NUT-M3 mass differs from the report; SHCS-M5x8 mass differs from the report; SHCS-M3x6 McMaster status: report 'unconfirmed: the STEP file delivered under this na', catalogue now 'confirmed by the delivered STEP file' |
+| package generated | 2026-11-15 20:22:43 |
 
 ## Counts
 
@@ -33,7 +33,7 @@ Regenerate: `.venv/bin/python tools/build_package.py designs/printer_v8.py`. The
 | mass | 12.44 kg | report geometry |
 | size | 388.0 x 419.34 x 463.0 mm | report geometry |
 | assembly time allowance (simulation; excludes T-nuts, bracket screws, belts, wiring) | 84.7 min; 96 parts held, 53 from below, 12 turns | assembly simulation |
-| open items | 17 A / 23 B / 17 C | OPEN_ITEMS.md |
+| open items | 17 A / 24 B / 19 C | OPEN_ITEMS.md |
 
 ## Documents
 
@@ -50,12 +50,12 @@ Regenerate: `.venv/bin/python tools/build_package.py designs/printer_v8.py`. The
 
 | Folder | Files | Size |
 |---|---|---|
-| . | 13 | 355 kB |
+| . | 13 | 363 kB |
 | cad | 35 | 2554 kB |
 | data | 3 | 119 kB |
-| drawings | 71 | 15226 kB |
+| drawings | 71 | 12751 kB |
 | dxf | 20 | 340 kB |
-| images | 19 | 2267 kB |
+| images | 19 | 2266 kB |
 | stl | 13 | 732 kB |
 
 ## Licence note

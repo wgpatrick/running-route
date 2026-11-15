@@ -101,7 +101,7 @@ def view_defs(sc, mf: dict) -> dict:
     V = {}
     V["hero"] = dict(
         q={"x": 20, "y": -30, "z": 110}, show=A, size=(1500, 1120),
-        camera={"pos": (830, -1060, 800), "focal": (0, 0, 226), "angle": 19.5},
+        camera={"pos": (830, -1060, 800), "focal": (0, 0, 208), "angle": 22},
         callouts=[
             ("Toolhead: E3D Roto extruder and Revo hotend, hung behind the X beam", ["extruder"]),
             ("X beam, a 2020 extrusion with one MGN12 rail", ["x_beam"]),
@@ -118,7 +118,7 @@ def view_defs(sc, mf: dict) -> dict:
     V["bed_top"] = dict(
         q={"x": 0, "y": 0, "z": 110}, show=zs - plate_stack, ghost=ghost_frame | {"bed_plate"},
         size=(1500, 1120), belt_names={"z_belt"},
-        camera={"pos": (-600, -920, 860), "focal": (0, 30, 185), "angle": 30},
+        camera={"pos": (-600, -920, 860), "focal": (0, 30, 180), "angle": 26.5},
         callouts=[
             ("Flexure post: an M5 screw from the plate down to a tab, two nuts at the tab set the level", ["bed_post_2", "bed_post_3", "bed_post_0", "bed_post_1"]),
             ("Laser-cut steel tab bolted on the arm", ["bed_post_tab_2", "bed_post_tab_3", "bed_post_tab_0", "bed_post_tab_1"]),

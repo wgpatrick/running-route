@@ -225,34 +225,34 @@ Orange: fitted in this stage. Grey: already there.
 
 | # | Fit | Touches (simulation) | Screws that hold it (count x size, key, direction) | Check before moving on | Sim. step |
 |---|---|---|---|---|---|
-| 1 | **frame_bot_left** (EXT2020-360) | - | 1 x M5x8 cap screw, 4 mm key, from the left, pointing right (+X), into T-nut (earth_stud) | ends flush and square to the neighbouring members (set square on two faces) | 0 |
-| 2 | **frame_top_right** (EXT2020-360) | - | - | ends flush and square to the neighbouring members (set square on two faces) | 7 |
-| 3 | **frame_top_left** (EXT2020-360) | - | - | ends flush and square to the neighbouring members (set square on two faces) | 17 |
-| 4 | **post_rf** (EXT2020-364) | frame_top_right | - | ends flush and square to the neighbouring members (set square on two faces) | 27 |
-| 5 | **frame_bot_right** (EXT2020-360) | electronics_tray, post_rf | - | ends flush and square to the neighbouring members (set square on two faces) | 28 |
-| 6 | **frame_bot_back** (EXT2020-300) | frame_bot_left, frame_bot_right, upright_left | - | ends flush and square to the neighbouring members (set square on two faces) | 29 |
+| 1 | **frame_bot_back** (EXT2020-300) | frame_bot_left, frame_bot_right, upright_left | - | ends flush and square to the neighbouring members (set square on two faces) | 29 |
+| 2 | **frame_bot_front** (EXT2020-300) | frame_bot_left, frame_bot_right, post_lf | - | ends flush and square to the neighbouring members (set square on two faces) | 232 |
+| 3 | **frame_bot_left** (EXT2020-360) | - | - | ends flush and square to the neighbouring members (set square on two faces) | 0 |
+| 4 | **frame_bot_right** (EXT2020-360) | electronics_tray, post_rf | - | ends flush and square to the neighbouring members (set square on two faces) | 28 |
+| 5 | **post_lb** (EXT2020-364) | frame_bot_back, frame_bot_left, frame_top_left | - | ends flush and square to the neighbouring members (set square on two faces) | 227 |
+| 6 | **post_lf** (EXT2020-364) | frame_bot_left, frame_top_left, y_idler_mount_l | - | ends flush and square to the neighbouring members (set square on two faces) | 226 |
 | 7 | **post_rb** (EXT2020-364) | frame_bot_back, frame_bot_right, frame_top_right | - | ends flush and square to the neighbouring members (set square on two faces) | 225 |
-| 8 | **post_lf** (EXT2020-364) | frame_bot_left, frame_top_left, y_idler_mount_l | - | ends flush and square to the neighbouring members (set square on two faces) | 226 |
-| 9 | **post_lb** (EXT2020-364) | frame_bot_back, frame_bot_left, frame_top_left | - | ends flush and square to the neighbouring members (set square on two faces) | 227 |
-| 10 | **frame_top_front** (EXT2020-300) | post_lf, post_rf | - | ends flush and square to the neighbouring members (set square on two faces) | 228 |
-| 11 | **frame_top_back** (EXT2020-300) | frame_top_left, frame_top_right, post_lb | - | ends flush and square to the neighbouring members (set square on two faces) | 231 |
-| 12 | **frame_bot_front** (EXT2020-300) | frame_bot_left, frame_bot_right, post_lf | - | ends flush and square to the neighbouring members (set square on two faces) | 232 |
-| 13 | **bracket_9** (BRKT-2020) | frame_top_front, post_rf | - | both legs flat on their members; T-nuts turned across the slot before tightening | 247 |
-| 14 | **bracket_8** (BRKT-2020) | frame_top_right, post_rf | - | both legs flat on their members; T-nuts turned across the slot before tightening | 248 |
-| 15 | **bracket_7** (BRKT-2020) | frame_bot_back, frame_bot_left | - | both legs flat on their members; T-nuts turned across the slot before tightening | 249 |
-| 16 | **bracket_6** (BRKT-2020) | frame_bot_left, post_lb | - | both legs flat on their members; T-nuts turned across the slot before tightening | 250 |
-| 17 | **bracket_5** (BRKT-2020) | frame_top_back, frame_top_left, post_lb | - | both legs flat on their members; T-nuts turned across the slot before tightening | 251 |
-| 18 | **bracket_4** (BRKT-2020) | frame_top_left, post_lb | - | both legs flat on their members; T-nuts turned across the slot before tightening | 252 |
-| 19 | **bracket_3** (BRKT-2020) | frame_bot_front, frame_bot_left | - | both legs flat on their members; T-nuts turned across the slot before tightening | 253 |
-| 20 | **bracket_2** (BRKT-2020) | frame_bot_left, post_lf | - | both legs flat on their members; T-nuts turned across the slot before tightening | 254 |
-| 21 | **bracket_15** (BRKT-2020) | frame_bot_back, frame_bot_right | - | both legs flat on their members; T-nuts turned across the slot before tightening | 255 |
-| 22 | **bracket_14** (BRKT-2020) | frame_bot_right, post_rb | - | both legs flat on their members; T-nuts turned across the slot before tightening | 256 |
-| 23 | **bracket_13** (BRKT-2020) | frame_top_back, frame_top_right, post_rb | - | both legs flat on their members; T-nuts turned across the slot before tightening | 257 |
-| 24 | **bracket_12** (BRKT-2020) | frame_top_right, post_rb | - | both legs flat on their members; T-nuts turned across the slot before tightening | 258 |
-| 25 | **bracket_11** (BRKT-2020) | frame_bot_front, frame_bot_right | - | both legs flat on their members; T-nuts turned across the slot before tightening | 259 |
-| 26 | **bracket_10** (BRKT-2020) | frame_bot_right, post_rf | - | both legs flat on their members; T-nuts turned across the slot before tightening | 260 |
-| 27 | **bracket_1** (BRKT-2020) | frame_top_front, post_lf | - | both legs flat on their members; T-nuts turned across the slot before tightening | 261 |
-| 28 | **bracket_0** (BRKT-2020) | frame_top_left, post_lf | - | both legs flat on their members; T-nuts turned across the slot before tightening | 262 |
+| 8 | **post_rf** (EXT2020-364) | frame_top_right | - | ends flush and square to the neighbouring members (set square on two faces) | 27 |
+| 9 | **frame_top_front** (EXT2020-300) | post_lf, post_rf | - | ends flush and square to the neighbouring members (set square on two faces) | 228 |
+| 10 | **frame_top_back** (EXT2020-300) | frame_top_left, frame_top_right, post_lb | - | ends flush and square to the neighbouring members (set square on two faces) | 231 |
+| 11 | **frame_top_left** (EXT2020-360) | - | - | ends flush and square to the neighbouring members (set square on two faces) | 17 |
+| 12 | **frame_top_right** (EXT2020-360) | - | - | ends flush and square to the neighbouring members (set square on two faces) | 7 |
+| 13 | **bracket_11** (BRKT-2020) | frame_bot_front, frame_bot_right | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 259 |
+| 14 | **bracket_15** (BRKT-2020) | frame_bot_back, frame_bot_right | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 255 |
+| 15 | **bracket_3** (BRKT-2020) | frame_bot_front, frame_bot_left | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 253 |
+| 16 | **bracket_7** (BRKT-2020) | frame_bot_back, frame_bot_left | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 249 |
+| 17 | **bracket_10** (BRKT-2020) | frame_bot_right, post_rf | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 260 |
+| 18 | **bracket_14** (BRKT-2020) | frame_bot_right, post_rb | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 256 |
+| 19 | **bracket_2** (BRKT-2020) | frame_bot_left, post_lf | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 254 |
+| 20 | **bracket_6** (BRKT-2020) | frame_bot_left, post_lb | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 250 |
+| 21 | **bracket_0** (BRKT-2020) | frame_top_left, post_lf | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 262 |
+| 22 | **bracket_1** (BRKT-2020) | frame_top_front, post_lf | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 261 |
+| 23 | **bracket_12** (BRKT-2020) | frame_top_right, post_rb | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 258 |
+| 24 | **bracket_13** (BRKT-2020) | frame_top_back, frame_top_right, post_rb | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 257 |
+| 25 | **bracket_4** (BRKT-2020) | frame_top_left, post_lb | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 252 |
+| 26 | **bracket_5** (BRKT-2020) | frame_top_back, frame_top_left, post_lb | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 251 |
+| 27 | **bracket_8** (BRKT-2020) | frame_top_right, post_rf | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 248 |
+| 28 | **bracket_9** (BRKT-2020) | frame_top_front, post_rf | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 247 |
 
 Build the bottom rectangle flat on a surface plate or a known-flat table, then the four posts, then the top. The front top rail sits lower than the other three. Check: diagonals of the bottom and top rectangles equal within 0.5 mm; the frame does not rock. The frame's squareness is not in any tolerance result beyond the saw-cut length figures.
 
@@ -270,14 +270,14 @@ Orange: fitted in this stage. Grey: already there.
 | 4 | **z_rail_left** (MGN12-R-250) | upright_left | 5 x M3x8 cap screw, 2.5 mm key, from the front, pointing back (+Y), into T-nut (z_rail_left_screw_0, z_rail_left_screw_1, z_rail_left_screw_4, z_rail_left_screw_3, z_rail_left_screw_2) | rail lies flat in the slot's faces; leave its screws just nipped until the rail-alignment step for this axis | 5 |
 | 5 | **z_carriage_right_hi** (MGN12H) | back_plate, z_rail_right | - | the block is slid on without losing balls (keep it on its plastic keeper until the rail is under it); it runs the whole rail by hand with even drag | 196 |
 | 6 | **z_carriage_left_hi** (MGN12H) | back_plate, z_rail_left | - | the block is slid on without losing balls (keep it on its plastic keeper until the rail is under it); it runs the whole rail by hand with even drag | 201 |
-| 7 | **brkt_up_top_out_right** (BRKT-2020) | frame_top_back, upright_right | - | both legs flat on their members; T-nuts turned across the slot before tightening | 239 |
-| 8 | **brkt_up_top_out_left** (BRKT-2020) | frame_top_back, upright_left | - | both legs flat on their members; T-nuts turned across the slot before tightening | 240 |
-| 9 | **brkt_up_top_in_right** (BRKT-2020) | frame_top_back, upright_right | - | both legs flat on their members; T-nuts turned across the slot before tightening | 241 |
-| 10 | **brkt_up_top_in_left** (BRKT-2020) | frame_top_back, upright_left | - | both legs flat on their members; T-nuts turned across the slot before tightening | 242 |
-| 11 | **brkt_up_bot_out_right** (BRKT-2020) | frame_bot_back, upright_right | - | both legs flat on their members; T-nuts turned across the slot before tightening | 243 |
-| 12 | **brkt_up_bot_out_left** (BRKT-2020) | frame_bot_back, upright_left | - | both legs flat on their members; T-nuts turned across the slot before tightening | 244 |
-| 13 | **brkt_up_bot_in_right** (BRKT-2020) | frame_bot_back, upright_right | - | both legs flat on their members; T-nuts turned across the slot before tightening | 245 |
-| 14 | **brkt_up_bot_in_left** (BRKT-2020) | frame_bot_back, upright_left | - | both legs flat on their members; T-nuts turned across the slot before tightening | 246 |
+| 7 | **brkt_up_top_out_right** (BRKT-2020) | frame_top_back, upright_right | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 239 |
+| 8 | **brkt_up_top_out_left** (BRKT-2020) | frame_top_back, upright_left | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 240 |
+| 9 | **brkt_up_top_in_right** (BRKT-2020) | frame_top_back, upright_right | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 241 |
+| 10 | **brkt_up_top_in_left** (BRKT-2020) | frame_top_back, upright_left | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 242 |
+| 11 | **brkt_up_bot_out_right** (BRKT-2020) | frame_bot_back, upright_right | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 243 |
+| 12 | **brkt_up_bot_out_left** (BRKT-2020) | frame_bot_back, upright_left | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 244 |
+| 13 | **brkt_up_bot_in_right** (BRKT-2020) | frame_bot_back, upright_right | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 245 |
+| 14 | **brkt_up_bot_in_left** (BRKT-2020) | frame_bot_back, upright_left | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 246 |
 
 Slide each block onto its rail before the rail's far end is closed off by the top back rail. Rail alignment: see 'rail_align (z)' below.
 
@@ -308,6 +308,8 @@ Orange: fitted in this stage. Grey: already there.
 | 3 | **inlet** (INLET-C14-SW-FUSE-T8A) | inlet_panel | - | seated flat on inlet_panel with no gap; all its screws started before any is tightened | 163 |
 | 4 | **inlet_nut_1** (NUT-M3) | inlet_panel | 1 x M3x16 cap screw, 2.5 mm key, from the left, pointing right (+X) (inlet_screw_1) | seated flat on inlet_panel with no gap; all its screws started before any is tightened | 164 |
 | 5 | **inlet_nut_0** (NUT-M3) | inlet_panel | 1 x M3x16 cap screw, 2.5 mm key, from the left, pointing right (+X) (inlet_screw_0) | seated flat on inlet_panel with no gap; all its screws started before any is tightened | 166 |
+
+Also in this stage, into parts fitted earlier: 1 x M5x8 cap screw, 4 mm key, from the left, pointing right (+X), into T-nut (earth_stud).
 
 
 ### Stage: Z drive: mount, pedestals, bearings, screws, pulleys, belt
@@ -374,7 +376,7 @@ Orange: fitted in this stage. Grey: already there.
 | 15 | **bed_post_0_nut_top** (NUT-M5) | bed_plate | - | seated flat on bed_plate with no gap; all its screws started before any is tightened | 54 |
 | 16 | **bed_post_0_nut_low** (NUT-M5) | bed_post_tab_0 | - | seated flat on bed_post_tab_0 with no gap; all its screws started before any is tightened | 55 |
 | 17 | **bed_post_0_nut_arm** (NUT-M5) | bed_post_tab_0 | 1 x M5x90 cap screw, 4 mm key, from above, pointing down (-Z) (bed_post_0) | seated flat on bed_post_tab_0 with no gap; all its screws started before any is tightened | 56 |
-| 18 | **bed_tie_bracket** (BRKT-2020) | back_plate | - | both legs flat on their members; T-nuts turned across the slot before tightening | 81 |
+| 18 | **bed_tie_bracket** (BRKT-2020) | back_plate | M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked) | both legs flat on their members; T-nuts turned across the slot before tightening | 81 |
 | 19 | **bed_tie_bracket_nut** (NUT-M5) | back_plate | 1 x M5x16 cap screw, 4 mm key, from the front, pointing back (+Y) (bed_tie_bracket_screw) | seated flat on back_plate with no gap; all its screws started before any is tightened | 82 |
 | 20 | **bed_tie** (custom) | bed_tie_bracket | - | seated flat on bed_tie_bracket with no gap; all its screws started before any is tightened | 84 |
 | 21 | **bed_tie_bracket_nut_a** (NUT-M5) | bed_tie | 1 x M5x10 cap screw, 4 mm key, from below, pointing up (+Z) (bed_tie_bracket_screw_a) | seated flat on bed_tie with no gap; all its screws started before any is tightened | 85 |
@@ -502,10 +504,10 @@ Every `Adjustment` the design declares, with what the tolerance simulation says 
 
 ### belt_tension (z): z belt: tensioner idler bolt in a slot
 
-- z_belt (6 mm): **9.3 N per span** is what the motor shaft-load check used (Gates' minimum installation tension for the width; Gates' 'general' figure is None N). Tensioner travel +/-3 mm.
-  - Measure by plucking a free span at the home position and reading the pitch (phone tuner app): no free span long enough. From f = sqrt(T / mu) / 2L with mu = None g/m, a figure the catalogue DERIVES from Gates' constants (not printed by Gates): treat +/-10 %.
+- z_belt (6 mm): **9.3 N per span** is what the motor shaft-load check used (Gates' minimum installation tension for the width; Gates' 'general' figure is 44.5 N). Tensioner travel +/-3 mm.
+  - Measure by plucking a free span at the home position and reading the pitch (phone tuner app): 320.0 mm span: about 61 Hz; 286.2 mm span: about 68 Hz; 323.4 mm span: about 60 Hz. From f = sqrt(T / mu) / 2L with mu = 6.1 g/m, a figure the catalogue DERIVES from Gates' constants (not printed by Gates): treat +/-10 %.
   - Spans at home: [320.0, 286.2, 31.0, 37.0, 323.4] mm.
-- Check: both Y belts read the same pitch on the same span (the gantry must not rack); after 20 full strokes the pitch has not dropped.
+- Check: after 20 full strokes the pitch has not dropped; all three screws turn together when the motor pulley is turned by hand.
 
 ### rail_align (y): y rails on sliding T-nuts
 
@@ -529,17 +531,17 @@ Design note: left rail to a square, right rail tightened while the bed carrier i
 
 ### belt_tension (x): x belt: idler plate slides on its T-nuts, M3 jack screw
 
-- x_belt (9 mm): **14.2 N per span** is what the motor shaft-load check used (Gates' minimum installation tension for the width; Gates' 'general' figure is None N). Tensioner travel +/-3 mm.
-  - Measure by plucking a free span at the home position and reading the pitch (phone tuner app): no free span long enough. From f = sqrt(T / mu) / 2L with mu = None g/m, a figure the catalogue DERIVES from Gates' constants (not printed by Gates): treat +/-10 %.
+- x_belt (9 mm): **14.2 N per span** is what the motor shaft-load check used (Gates' minimum installation tension for the width; Gates' 'general' figure is 75.6 N). Tensioner travel +/-3 mm.
+  - Measure by plucking a free span at the home position and reading the pitch (phone tuner app): 104.0 mm span: about 189 Hz; 236.0 mm span: about 83 Hz; 104.0 mm span: about 189 Hz. From f = sqrt(T / mu) / 2L with mu = 9.2 g/m, a figure the catalogue DERIVES from Gates' constants (not printed by Gates): treat +/-10 %.
   - Spans at home: [104.0, 236.0, 104.0] mm.
-- Check: both Y belts read the same pitch on the same span (the gantry must not rack); after 20 full strokes the pitch has not dropped.
+- Check: after 20 full strokes the pitch has not dropped.
 
 ### belt_tension (y): y belts: motor mounts slide on their T-nuts, M3 jack screws
 
-- y_belt (12 mm): **18.7 N per span** is what the motor shaft-load check used (Gates' minimum installation tension for the width; Gates' 'general' figure is None N). Tensioner travel +/-3 mm.
-  - Measure by plucking a free span at the home position and reading the pitch (phone tuner app): no free span long enough. From f = sqrt(T / mu) / 2L with mu = None g/m, a figure the catalogue DERIVES from Gates' constants (not printed by Gates): treat +/-10 %.
+- y_belt (12 mm): **18.7 N per span** is what the motor shaft-load check used (Gates' minimum installation tension for the width; Gates' 'general' figure is 106.8 N). Tensioner travel +/-3 mm.
+  - Measure by plucking a free span at the home position and reading the pitch (phone tuner app): 140.8 mm span: about 140 Hz; 389.2 mm span: about 51 Hz; 215.4 mm span: about 91 Hz. From f = sqrt(T / mu) / 2L with mu = 12.1 g/m, a figure the catalogue DERIVES from Gates' constants (not printed by Gates): treat +/-10 %.
   - Spans at home: [140.8, 389.2, 215.4] mm.
-- y_belt_l (12 mm): **18.7 N per span** is what the motor shaft-load check used (Gates' minimum installation tension for the width; Gates' 'general' figure is None N). Tensioner travel +/-3 mm.
-  - Measure by plucking a free span at the home position and reading the pitch (phone tuner app): no free span long enough. From f = sqrt(T / mu) / 2L with mu = None g/m, a figure the catalogue DERIVES from Gates' constants (not printed by Gates): treat +/-10 %.
+- y_belt_l (12 mm): **18.7 N per span** is what the motor shaft-load check used (Gates' minimum installation tension for the width; Gates' 'general' figure is 106.8 N). Tensioner travel +/-3 mm.
+  - Measure by plucking a free span at the home position and reading the pitch (phone tuner app): 140.8 mm span: about 140 Hz; 389.2 mm span: about 51 Hz; 215.4 mm span: about 91 Hz. From f = sqrt(T / mu) / 2L with mu = 12.1 g/m, a figure the catalogue DERIVES from Gates' constants (not printed by Gates): treat +/-10 %.
   - Spans at home: [140.8, 389.2, 215.4] mm.
 - Check: both Y belts read the same pitch on the same span (the gantry must not rack); after 20 full strokes the pitch has not dropped.

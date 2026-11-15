@@ -40,6 +40,12 @@ SPARE_FRAC = 0.10
 
 
 # ------------------------------------------------------------------------------------------------ small helpers
+def rel(p) -> str:
+    """Path as text, relative to the repository when it is inside it."""
+    p = Path(p)
+    return str(p.relative_to(ROOT)) if p.is_absolute() and p.is_relative_to(ROOT) else str(p)
+
+
 def md5_of(path: Path) -> str:
     return hashlib.md5(Path(path).read_bytes()).hexdigest()
 
@@ -161,6 +167,7 @@ def check_fresh(cx: Ctx) -> None:
     if cx.rep.get("partial") or len(summ) < 12:
         bad.append(f"report is not a full run ({len(summ)} verifiers)")
     cx.warnings = []
+    cx.doc_md5_ok = None
     if cx.design_path.stat().st_mtime > cx.rpath.stat().st_mtime + 1:
         cx.warnings.append("the design file's modification time is LATER than the report's (content checks passed; a checkout also does this)")
     doc = ROOT / "docs" / f"{cx.name.upper()}.md"
@@ -172,10 +179,30 @@ def check_fresh(cx: Ctx) -> None:
             cx.doc_md5_ok = mm.group(1)
     if not cx.rep.get("ok"):
         bad.append("the report is not a pass (errors present)")
+    # the parts catalogue is code too: has it changed since the report was written? (a warning: quantities still agree)
+    drift = []
+    now_backed = sorted({c.sku or c.name for c in d.components if c.cots and c.meta.get("vendor_backed")})
+    was_backed = sorted(dig(m, "ratings", "vendor_backed_parts", default=[]))
+    if now_backed != was_backed:
+        drift.append("vendor-backed parts: now also " + ", ".join(sorted(set(now_backed) - set(was_backed)) or ["none"]) + "; no longer " + ", ".join(sorted(set(was_backed) - set(now_backed)) or ["none"]))
+    seen = {}
+    for c in d.components:
+        if c.cots and (c.sku or c.name) not in seen:
+            seen[c.sku or c.name] = c
+    for sku, c in seen.items():
+        r_ = rb.get(sku, {})
+        if r_.get("unit_cost_usd") is not None and c.meta.get("cost_usd") is not None and abs(r_["unit_cost_usd"] - c.meta["cost_usd"]) > 1e-6:
+            drift.append(f"{sku} unit cost: report {r_['unit_cost_usd']}, catalogue now {c.meta['cost_usd']}")
+        if r_.get("mcmaster_pn_status") != c.ratings.get("mcmaster_pn_status"):
+            drift.append(f"{sku} McMaster status: report '{str(r_.get('mcmaster_pn_status'))[:50]}', catalogue now '{str(c.ratings.get('mcmaster_pn_status'))[:50]}'")
+        if abs((r_.get("mass_kg") or 0) - sum(x.mass() for x in d.components if (x.sku or x.name) == sku)) > 5e-4:
+            drift.append(f"{sku} mass differs from the report")
+    if drift:
+        cx.warnings.append("the parts catalogue has changed since the report was written (the package uses the catalogue as it is NOW; re-run verify to make the report agree): " + "; ".join(drift[:12]))
     if bad:
         msg = "report.json does not match the design file:\n  - " + "\n  - ".join(bad)
         if not cx.force:
-            sys.exit("REFUSED: " + msg + f"\nRun `python -m mechloop verify {cx.design_path.relative_to(ROOT)}` (full) and re-run, or pass --force "
+            sys.exit("REFUSED: " + msg + f"\nRun `python -m mechloop verify {rel(cx.design_path)}` (full) and re-run, or pass --force "
                      "to write a package marked STALE.")
         print("WARNING (--force): " + msg, file=sys.stderr)
         cx.stale = bad
@@ -727,7 +754,7 @@ def analyse_part(cx: Ctx, c) -> dict:
                     ft["flags"].append(f"seat of bearing {o.name}: fit")
                 if (o.sku or "").startswith("PROBE"):
                     ft["flags"].append("probe clamp hole: locates the probe")
-                if (o.sku or "").startswith("NEMA") and abs(along) <= 0.5 * ft["depth"] + 3.0:
+                if (o.sku or "").startswith("NEMA") and abs(along) - half <= 0.5 * ft["depth"] + 1.0:
                     ft["flags"].append(f"pilot of motor {o.name}")
                 if (o.sku or "").startswith("T8-NUT"):
                     ft["flags"].append(f"floating lead-screw nut {o.name}")
@@ -793,7 +820,7 @@ def _edges_2d(shape, origin, up):
     vis, hid = shape.project_to_viewport(origin, viewport_up=up, look_at=(0, 0, 0))
 
     def poly(e):
-        n = 2 if e.geom_type == GeomType.LINE else 25
+        n = 2 if e.geom_type == GeomType.LINE else 73
         return np.array([[p.X, p.Y] for p in (e.position_at(float(t)) for t in np.linspace(0, 1, n))])
     return [poly(e) for e in vis], [poly(e) for e in hid]
 
@@ -802,7 +829,11 @@ def draw_sheet(cx: Ctx, a: dict, path_svg: Path, path_pdf: Path, pdf_pages=None,
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
-    from matplotlib.patches import Circle, Rectangle
+    from matplotlib.patches import Rectangle
+
+    matplotlib.rcParams["svg.fonttype"] = "none"      # text stays text: small files, searchable
+    matplotlib.rcParams["pdf.fonttype"] = 42
+    matplotlib.rcParams["svg.hashsalt"] = "build_package"
 
     c, proc, size, feats = a["c"], a["proc"], a["size"], a["feats"]
     W, H, D = (float(x) for x in size)
@@ -892,7 +923,7 @@ def draw_sheet(cx: Ctx, a: dict, path_svg: Path, path_pdf: Path, pdf_pages=None,
     y = 232.0
     ax.text(RX0, y, "HOLES AND SLOTS  (centre X, Y, Z in mm from datums C, B, A; red = critical, see notes)", fontsize=5.6, weight="bold", color=ink)
     y -= 3.4
-    hdr = f"{'ID':<4}{'ax':<3}{'X':>8}{'Y':>8}{'Z':>8} {'dia':>8} {'depth':<14}{'function':<15}{'pat':<3}"
+    hdr = f"{'ID':<4}{'ax':<3}{'X':>8}{'Y':>8}{'Z':>8} {'dia':>8} {'depth':<15} {'function':<14}{'pat':<3}"
     ax.text(RX0, y, hdr, fontsize=5.0, **mono)
     y -= 1.0
     ax.plot([RX0, 412], [y, y], color=ink, lw=0.3)
@@ -904,7 +935,7 @@ def draw_sheet(cx: Ctx, a: dict, path_svg: Path, path_pdf: Path, pdf_pages=None,
         dep = ("thru" if ft["through"] else f"{ft['depth']:.1f}") + cb
         diam = f"{ft['dia']:.2f}" if ft["kind"] == "hole" else f"{ft['dia']:.1f}x{ft['length']:.1f}"
         fn = ft["type"].replace("clearance ", "clr ").replace("bore / opening", "bore").replace("hole (no screw or part on its axis in the model)", "open")
-        line = f"{ft['id']:<4}{ft['axis_name'][:1]:<3}{ft['center'][0]:>8.2f}{ft['center'][1]:>8.2f}{ft['center'][2]:>8.2f} {diam:>8} {dep:<14.14}{fn:<15.15}{ft['pattern']:<3}"
+        line = f"{ft['id']:<4}{ft['axis_name'][:1]:<3}{ft['center'][0]:>8.2f}{ft['center'][1]:>8.2f}{ft['center'][2]:>8.2f} {diam:>8} {dep:<15.15} {fn:<14.14}{ft['pattern']:<3}"
         ax.text(RX0, y, line, fontsize=5.0, family="DejaVu Sans Mono", color="#c0392b" if ft["flags"] else ink)
     if len(feats) > len(shown):
         y -= 2.6
@@ -1293,7 +1324,7 @@ def write_fabrication(cx: Ctx, drawings: bool = True) -> dict:
         est = mp.get("estimate") or {}
         T += [f"### {n}", "", f"![{n}](drawings/{n}.svg)", "",
               f"- Quantity 1. {MATERIAL_WORDS.get(c.material, c.material)}; {a['proc']}; {' x '.join(f2(x) for x in a['size'])} mm; {c.mass():.3f} kg."
-              + (f" Same or mirror-image geometry as {', '.join(twins[n])}." if n in twins else "")]
+              + (f" Same size, volume and hole list as {', '.join(twins[n])} (same or mirror-image part: compare before sharing a file)." if n in twins else "")]
         if a["proc"] == "sheet":
             dc = dxfc.get(n, {})
             T += [f"- Sheet {f2(mp.get('stock_mm'))} mm, {mp.get('cut_method')} cut, flat (no bends), through-cut only. Flat size {mp.get('flat_size_mm')} mm, cut length "
@@ -1478,8 +1509,19 @@ def belt_targets(cx: Ctx) -> list[dict]:
     from mechloop.verifiers.belts import route
 
     g = vendor_data("gates_gt2")
-    mu = dig(g, "mass_per_length", "g_per_m", default={})
-    tmin = dig(g, "installation_tension", "minimum_tst_n", default={})
+
+    def find(o, key):      # the record nests these under its own headings: look the key up wherever it sits
+        if isinstance(o, dict):
+            if key in o:
+                return o[key]
+            for v_ in o.values():
+                r_ = find(v_, key)
+                if r_ is not None:
+                    return r_
+        return None
+    mu = (find(g, "mass_per_length") or {}).get("g_per_m", {})
+    it = find(g, "installation_tension") or {}
+    tmin = it.get("minimum_tst_n", {})
     T0 = forward_kinematics(cx.d, {})
     out = []
     loads = dig(cx.m, "ratings", "belt_shaft_loads", default={})
@@ -1494,7 +1536,7 @@ def belt_targets(cx: Ctx) -> list[dict]:
         m = mu.get(w)
         out.append({"belt": b.name, "width": b.width, "tension_n": ten, "mu_g_per_m": m, "spans_mm": [round(s, 1) for s in spans],
                     "freq_hz": [round(math.sqrt(ten / (m * 1e-3)) / (2 * s * 1e-3), 0) if (m and ten and s > 60) else None for s in spans],
-                    "adjust": b.adjust, "general_n": dig(g, "installation_tension", "general_tst_n", w)})
+                    "adjust": b.adjust, "general_n": dig(it, "general_tst_n", w)})
     return out
 
 
@@ -1514,6 +1556,7 @@ def write_assembly(cx: Ctx, bom: dict, rerun: bool, images: bool) -> dict:
     ustage = {r["unit"]: _stage_of(cx, r["unit"]) for r in units}
     unit_name = lambda p: sub_of.get(p, p)
     per_unit = defaultdict(list)
+    late = defaultdict(list)
     fstage = {}
     for r in fasts:
         f = cx.fast[r["unit"]]
@@ -1524,6 +1567,11 @@ def write_assembly(cx: Ctx, bom: dict, rerun: bool, images: bool) -> dict:
         host = max(touch, key=lambda u: (order.index(ustage[u]), step_of.get(u, 0))) if touch else None
         if host is None:
             host = units[0]["unit"]
+        own = next((st for pre, st in NAME_STAGE if r["unit"].startswith(pre)), None)
+        if own is not None and order.index(own) > order.index(ustage[host]):
+            late[own].append(r["unit"])
+            fstage[r["unit"]] = own
+            continue
         per_unit[host].append(r["unit"])
         fstage[r["unit"]] = ustage[host]
     stage_units = defaultdict(list)
@@ -1612,6 +1660,9 @@ def write_assembly(cx: Ctx, bom: dict, rerun: bool, images: bool) -> dict:
         us = [r for r in units if ustage[r["unit"]] == key]
         if not us:
             continue
+        if key == "frame":      # bottom members first, then posts, then top, then the brackets (the simulation's order within the frame is arbitrary)
+            zc = lambda u: (lambda bb: 0.5 * (bb.min.Z + bb.max.Z))(cx.comps[u].shape.bounding_box()) if u in cx.comps else 0.0
+            us.sort(key=lambda r: ((cx.comps[r["unit"]].sku or "").startswith("BRKT") if r["unit"] in cx.comps else False, round(zc(r["unit"]) / 50.0), r["unit"]))
         T += [f"### Stage: {title}", ""]
         if imgs.get(f"stage_{key}"):
             T += [f"![{key}]({imgs['stage_' + key]})", "", "Orange: fitted in this stage. Grey: already there.", ""]
@@ -1619,9 +1670,14 @@ def write_assembly(cx: Ctx, bom: dict, rerun: bool, images: bool) -> dict:
         for i, r in enumerate(us):
             c = cx.comps.get(r["unit"])
             what = f"bench unit **{r['unit']}**" if r["kind"] == "subassembly" else f"**{r['unit']}**" + (f" ({c.sku})" if c is not None and c.cots else " (custom)")
-            rows.append([i + 1, what, ", ".join((r.get("onto") or [])[:3]) or "-", fast_words(per_unit.get(r["unit"], [])),
+            fw = fast_words(per_unit.get(r["unit"], []))
+            if c is not None and (c.sku or "").startswith("BRKT") and not any((cx.comps[x].sku or "").startswith("SHCS") and r["unit"] in x for x in per_unit.get(r["unit"], [])):
+                fw = "M5 x 8 cap screw and T-nut in each leg that lies on a T-slot, 4 mm key (BOM only: not drawn, access not checked)"
+            rows.append([i + 1, what, ", ".join((r.get("onto") or [])[:3]) or "-", fw,
                          _unit_check(cx, r["unit"], r.get("onto") or []), r["step"]])
         T += [table(["#", "Fit", "Touches (simulation)", "Screws that hold it (count x size, key, direction)", "Check before moving on", "Sim. step"], rows), ""]
+        if late.get(key):
+            T += ["Also in this stage, into parts fitted earlier: " + fast_words(late[key]).replace("<br>", "; ") + ".", ""]
         T += STAGE_NOTES.get(key, []) + [""]
     # ---- adjustments
     tol = m.get("tolerance", {})
@@ -1659,7 +1715,8 @@ def write_assembly(cx: Ctx, bom: dict, rerun: bool, images: bool) -> dict:
                       f"  - Measure by plucking a free span at the home position and reading the pitch (phone tuner app): {'; '.join(fr) or 'no free span long enough'}. "
                       f"From f = sqrt(T / mu) / 2L with mu = {b['mu_g_per_m']} g/m, a figure the catalogue DERIVES from Gates' constants (not printed by Gates): treat +/-10 %.",
                       f"  - Spans at home: {b['spans_mm']} mm."]
-            T += ["- Check: both Y belts read the same pitch on the same span (the gantry must not rack); after 20 full strokes the pitch has not dropped.", ""]
+            T += ["- Check: " + ("both Y belts read the same pitch on the same span (the gantry must not rack); " if a.joint == "y" else "")
+                  + "after 20 full strokes the pitch has not dropped" + ("; all three screws turn together when the motor pulley is turned by hand." if a.joint == "z" else "."), ""]
         elif a.kind == "bed_level":
             pt = tol.get("printer", {})
             T += [f"- Needed {pt.get('levelling_needed_mm_99')} mm (99 %); provided +/-{f2(a.range_mm)} mm of thread at each post. As built, before tramming, the bed is up to {pt.get('bed_out_of_level_mm_99')} mm out of level (99 %).",
@@ -1716,18 +1773,18 @@ MAINS_WARNING = ("> **MAINS VOLTAGE. This design has NOT been safety-certified, 
                  "The electrical verifier checks ratings and that the wires exist; it does not check creepage, enclosure, strain relief, touch protection, or any standard.")
 
 TUNE_ON_MACHINE = [  # (config section / key, what to do) - every value in the generated printer.cfg that is a prediction or a guess (generator)
-    ("[extruder] pid_Kp/Ki/Kd", "`PID_CALIBRATE HEATER=extruder TARGET=<print temp>` with the part fan at print speed; the values in the file come from a simulated autotune"),
-    ("[heater_bed] pid_Kp/Ki/Kd", "`PID_CALIBRATE HEATER=heater_bed TARGET=60`; simulated values, heater tolerance +/-10 % not modelled"),
-    ("[input_shaper] shaper_type/freq, damping_ratio", "measure with an accelerometer on the toolhead (`SHAPER_CALIBRATE`); the file holds the twin's prediction"),
+    ("[extruder] pid_Kp/pid_Ki/pid_Kd", "`PID_CALIBRATE HEATER=extruder TARGET=<print temp>` with the part fan at print speed; the values in the file come from a simulated autotune"),
+    ("[heater_bed] pid_Kp/pid_Ki/pid_Kd", "`PID_CALIBRATE HEATER=heater_bed TARGET=60`; simulated values, heater tolerance +/-10 % not modelled"),
+    ("[input_shaper] shaper_type/shaper_freq/damping_ratio", "measure with an accelerometer on the toolhead (`SHAPER_CALIBRATE`); the file holds the twin's prediction"),
     ("[extruder] pressure_advance", "print a pressure-advance tower / pattern; the file holds the twin's sweep result"),
     ("[probe] z_offset", "`PROBE_CALIBRATE` with the bed and nozzle at working temperature; the file's value assumes the nominal switching distance on iron"),
-    ("[probe] x_offset / y_offset", "confirm by probing a known feature or a mark; values are from the CAD"),
+    ("[probe] x_offset/y_offset", "confirm by probing a known feature or a mark; values are from the CAD"),
     ("[bed_mesh]", "`BED_MESH_CALIBRATE` hot; compare the range with the prediction in COMMISSIONING.md"),
     ("[stepper_*] rotation_distance", "command 100 mm, measure with a rule / calipers / dial indicator; belts: 40 = 20 teeth x 2 mm; Z: the screw's lead"),
-    ("[extruder] rotation_distance / gear_ratio", "mark filament, extrude 100 mm slowly, measure; the values are E3D's published figures"),
+    ("[extruder] rotation_distance/gear_ratio", "mark filament, extrude 100 mm slowly, measure; the values are E3D's published figures"),
     ("[tmc2209 *] run_current", "the design's choices; check motor case temperature after 30 min (predictions in COMMISSIONING.md) and that no axis loses steps"),
     ("[stepper_*] dir_pin", "`STEPPER_BUZZ` each motor and jog each axis: invert where the direction is wrong. The left Y motor is a mirror image: one coil pair swapped at its connector"),
-    ("[stepper_x/y] position_endstop, position_min/max", "after the switches are set (ASSEMBLY.md), home and measure the real travel to the other end"),
+    ("[stepper_*] position_endstop/position_min/position_max", "after the switches are set (ASSEMBLY.md), home and measure the real travel to the other end"),
     ("[stepper_z] position_min", "negative by the declared Z over-travel; confirm the bed can physically rise that far past the nozzle plane without anything else touching"),
     ("[verify_heater *]", "leave as generated unless a false trip occurs; never loosen to hide a real fault"),
     ("[mcu] serial", "the host's UART device as wired (TFT header); check `ls /dev/serial*`"),
@@ -1761,12 +1818,13 @@ def write_wiring(cx: Ctx, bom: dict) -> dict:
         return "board fuse " + "/".join(f"{f2(v)} A" for v in board_fuse.values()) + " (shared; no fuse per branch)"
 
     T = [f"# Wiring: {cx.name}", "", cx.stamp(), MAINS_WARNING, "",
-         f"Source: the design's electrical model ({len(model_wires)} wires) as written out by the electrical verifier (`{cx.eldir.relative_to(ROOT) if cx.eldir.is_relative_to(ROOT) else cx.eldir}/wiring.csv`, "
+         f"Source: the design's electrical model ({len(model_wires)} wires) as written out by the electrical verifier (`{rel(cx.eldir)}/wiring.csv`, "
          f"{len(wires)} rows" + ("" if model_wires == csv_wires else f"; **MISMATCH with the design: {sorted(model_wires ^ csv_wires)}**") + "). Lengths are routed lengths along the modelled looms.", "",
          "## Mains side", "", MAINS_WARNING, "",
          f"- Supply voltage declared: {getattr(el, 'mains_v', None)} V. Mains current {mains.get('mains_current_a')} A; inlet rated {mains.get('inlet_rating_a')} A; fuse T{f2(mains.get('fuse_a'))}A (time-lag); "
          f"cold-start inrush {mains.get('inrush_a')} A (the fuse riding through it was assumed, I2t not checked).",
-         "- **Set the supply's 115 / 230 V selector switch to your mains before first power.** It is on the supply's side; the wrong position destroys the supply (230 V on the 115 V setting).",
+         "- **Set the supply's 115 / 230 V selector switch to your mains before first power** (the catalogue's note for the supply: '"
+         + str(dig(el.devices["psu"].product, "builder_work") if el and "psu" in el.devices else "") + "'). 230 V on the 115 V setting destroys the supply.",
          "- The inlet's fuse drawer and fuse-link are ordered separately from the inlet (see BOM.md).",
          "- Live terminals that are open to touch in this open-frame design: the inlet's rear quick-connect tabs, the relay module's screw terminals and solder side, the supply's terminal block. "
          "**No cover for any of them is in the design.** Fit covers or an enclosure before the machine is powered with hands near it.", ""]
@@ -1817,7 +1875,7 @@ def write_wiring(cx: Ctx, bom: dict) -> dict:
     if pm.exists() and "## Pin map" in pm.read_text():
         T += ["## Pin map (from the electrical verifier)", "", pm.read_text().split("## Pin map", 1)[1].strip(), ""]
     T += ["## Firmware configuration", "",
-          f"`printer.cfg` in this folder is a copy of `{cfg_p.relative_to(ROOT) if cfg_p.is_relative_to(ROOT) else cfg_p}`, generated from the electrical model and loaded by real Klipper in batch mode "
+          f"`printer.cfg` in this folder is a copy of `{rel(cfg_p)}`, generated from the electrical model and loaded by real Klipper in batch mode "
           f"(klippy ran: {dig(em, 'klipper_config_check', 'klippy', 'ran')}, ok: {dig(em, 'klipper_config_check', 'klippy', 'ok')}, commit {str(dig(em, 'klipper_config_check', 'klippy', 'commit'))[:8]}; "
           f"that covers: {dig(em, 'klipper_config_check', 'klippy', 'covers')}).", "",
           "It holds only what the model knows. Add your host's sections (`[virtual_sdcard]`, `[pause_resume]`, `[display_status]`, macros) yourself. "
@@ -1853,6 +1911,7 @@ def _cfg_sections(cfg: str) -> dict:
 
 
 def _cfg_value(cfg: str, where: str) -> str:
+    """Values in the generated config for '[section pattern] key/key...' (a key matches by prefix)."""
     sec = _cfg_sections(cfg)
     m_ = re.match(r"\[([^\]]+)\]\s*(.*)", where)
     if not m_:
@@ -1863,16 +1922,11 @@ def _cfg_value(cfg: str, where: str) -> str:
         return "; ".join(f"[{n}] present" for n in names) or "not present"
     out = []
     for n in names:
-        for k in re.split(r"[/,]\s*", keys):
-            k = k.strip()
-            cand = [kk for kk in sec[n] if kk == k or kk.startswith(k.rstrip("*")) or (k.startswith("pid_K") and kk.startswith("pid_K")) or (k in ("Ki", "Kd") and kk == "pid_" + k)
-                    or (k == "freq" and "freq" in kk) or (k == "position_min/max" and kk.startswith("position_m"))]
-            for kk in cand:
-                s = f"{sec[n][kk]}" if len(names) == 1 else f"{n.split()[-1]}: {sec[n][kk]}"
-                s = f"{kk} {s}" if len(names) == 1 else f"{kk} {s}"
-                if s not in out:
-                    out.append(s)
-    return "; ".join(out)[:260] or "not present"
+        for k in [x.strip() for x in keys.split("/") if x.strip()]:
+            for kk, vv in sec[n].items():
+                if kk == k or kk.startswith(k + "_"):
+                    out.append(f"{kk} {vv}" if len(names) == 1 else f"{n.split()[-1]} {kk} {vv}")
+    return "; ".join(out)[:300] or "not present"
 
 
 # =================================================================================================== 5. COMMISSIONING
@@ -1942,7 +1996,7 @@ def write_commissioning(cx: Ctx, asm: dict) -> dict:
         R("M5", "**Bed deflection under 1 kg at the worst print corner**", f"dial indicator on the frame (not on the gantry) touching the print sheet at the corner of the print area furthest from the supports "
           f"(machine coordinates {pw.get('at')}); zero; place a {pw.get('load_n', 9.81) / 9.81:.1f} kg mass beside the stylus; read",
           f"{pw.get('total_screwed_mm')} mm (joints held at their screws) to {pw.get('total_bonded_mm')} mm (joints bonded); tilt across the print area {pw.get('tilt_across_print_area_screwed_mm')} mm",
-          f"<= {pw.get('limit_mm')} mm (the design's limit: a tenth of a layer). Up to 3 x the prediction still passes that limit; more than 2 x the prediction means the twin's joint model is optimistic: record it.",
+          f"<= {pw.get('limit_mm')} mm (the design's limit: a tenth of a layer; that is {pw.get('limit_mm', 0) / max(pw.get('total_screwed_mm', 1), 1e-9):.1f} x the prediction). A reading above 2 x the prediction means the twin's joint model is optimistic: record it either way.",
           "fea.bed_support.print_weight", "look for a loose post jam nut, a nut block not seated on its nut, or a pedestal rocking")
         R("M6", "Bed under a 20 N hand load, same corner", "same set-up, press with a spring balance or a 2 kg mass", f"{hl.get('total_screwed_mm')} mm ({hl.get('total_bonded_mm')} bonded)", f"<= {3 * hl.get('total_screwed_mm', 0):.3f} mm (3 x predicted)", "fea.bed_support.hand_load", "")
     lot = bs.get("level_over_travel", {})
@@ -1968,7 +2022,7 @@ def write_commissioning(cx: Ctx, asm: dict) -> dict:
           "subsystems.homing; printer.cfg", "re-set the switch (ASSEMBLY.md); correct position_max")
     sz = cfg.get("stepper_z", {})
     R("E7", "Z homing on the probe and Z over-travel", "home Z over the bed centre; `PROBE_CALIBRATE`; then lower Z to its minimum slowly with paper under the nozzle removed and the nozzle cold",
-      f"z_offset {hz.get('z_offset')} mm (range {hz.get('z_offset_range_mm')}); position_min {sz.get('position_min')} mm = {hz.get('z_overtravel_past_working_range_mm')} mm of over-travel past the nozzle plane; probe face stays {f2((face or 0) - (hz.get('z_overtravel_past_working_range_mm') or 0))} mm above the bed at the end of it",
+      f"z_offset {hz.get('z_offset')} mm (range {hz.get('z_offset_range_mm')}); position_min {sz.get('position_min')} mm = {hz.get('z_overtravel_past_working_range_mm')} mm of over-travel past the nozzle plane; probe face stays {f2((face or 0) + (hz.get('nozzle_above_bed_at_end_of_z_travel_mm') or 0))} mm above the nominal bed at the end of it",
       f"measured z_offset inside {hz.get('z_offset_range_mm')} mm; face height above the nozzle inside {pn.get('face_window_mm')} mm; at position_max ({sz.get('position_max')}) the nuts are still on their screws and the blocks on their rails",
       "subsystems.homing.z; printer.cfg [stepper_z]", "if z_offset is outside the range the sensing distance differs from the data sheet: back to B1")
     R("E8", "Rotation distances", "command 100 mm on X and Y (rule), 50 mm on Z (indicator or calipers on the carrier), 100 mm of filament", f"X {dig(cfg, 'stepper_x', 'rotation_distance')}, Y {dig(cfg, 'stepper_y', 'rotation_distance')}, Z {dig(cfg, 'stepper_z', 'rotation_distance')}, "
@@ -2059,8 +2113,8 @@ def write_open_items(cx: Ctx, bom: dict, fab: dict, asm: dict, wash: list, lead:
     d, m = cx.d, cx.m
     items = []
 
-    def add(rank, title, detail, check, source):
-        items.append({"rank": rank, "title": title, "detail": detail, "check": check, "source": source})
+    def add(rank, title, detail, check, source, prio=5):
+        items.append({"rank": rank, "title": title, "detail": detail, "check": check, "source": source, "prio": prio})
 
     tol, hz = m.get("tolerance", {}), dig(m, "subsystems", "homing", "z", default={})
     pn = hz.get("probe_to_nozzle_margin", {})
@@ -2069,7 +2123,7 @@ def write_open_items(cx: Ctx, bom: dict, fab: dict, asm: dict, wash: list, lead:
     add("A", "Bed probe on a thin spring-steel sheet: sensing distance unverified",
         f"Every probe figure (z_offset {hz.get('z_offset')} mm, range {hz.get('z_offset_range_mm')}, face window {pn.get('face_window_mm')} mm) assumes the sensor switches at {hz.get('sensing_distance_mm')} mm, "
         f"the maker's figure for a 1 mm iron target. The target here is a stand-in 0.5 mm spring-steel sheet on a magnet. Basis recorded by the report: {dig(hz, 'sources', 'switching_distance_steel_mm')}.",
-        "COMMISSIONING.md step B1 with the real sensor, sheet and magnet BEFORE ordering anything else; pass window there", "report: subsystems.homing.z; design: stand-in sheet")
+        "COMMISSIONING.md step B1 with the real sensor, sheet and magnet BEFORE ordering anything else; pass window there", "report: subsystems.homing.z; design: stand-in sheet", prio=0)
     for t in bom.get("thread_length_issues", []):
         pass
     tl = bom.get("thread_length_issues", [])
@@ -2082,7 +2136,7 @@ def write_open_items(cx: Ctx, bom: dict, fab: dict, asm: dict, wash: list, lead:
                 f"{len({t['screw'] for t in ts})} screws ({', '.join(sorted({t['screw'] for t in ts}))}) carry nuts or threads that start {min(t['starts_mm_from_head'] for t in ts)} mm from under the head; an ISO 4762 screw this long is threaded "
                 f"only over the last {ts[0]['thread_length_b']:g} mm (from {ts[0]['thread_starts_mm_from_head']} mm). The catalogue's solid is threaded to the head, so no check sees it. "
                 "No McMaster number is recorded for this size.",
-                "order FULLY THREADED screws of this size (or studding with a nut as the head) and confirm the head still fits its counterbore", "generator: thread_length_issues() on the design's fasteners")
+                "order FULLY THREADED screws of this size (or studding with a nut as the head) and confirm the head still fits its counterbore", "generator: thread_length_issues() on the design's fasteners", prio=1)
     for L in bom.get("standins", []):
         add("A", f"STAND-IN: `{L['key']}` x {L['qty']}", f"{L['description']}. {L['why']}.", "identify a real part and its data sheet; put it in the catalogue; re-verify", "BOM.md")
     # GT2 SKU ambiguity
@@ -2096,7 +2150,7 @@ def write_open_items(cx: Ctx, bom: dict, fab: dict, asm: dict, wash: list, lead:
                 "order from BOM.md / bom.csv (split by width), not from report.json", "generator: build_bom()")
     add("A", "Mains side: no touch protection, one bonded extrusion, not certified",
         "Open frame; live terminals on the inlet's rear, the relay module and the supply are exposed and no cover is in the design. The model earths the supply and one extrusion; everything else relies on anodised joints. "
-        "The supply has a 115 / 230 V selector that must be set by hand.", "WIRING.md mains section; continuity test E1; a competent person signs off the mains side", "generator, from the electrical model")
+        "The supply has a 115 / 230 V selector that must be set by hand.", "WIRING.md mains section; continuity test E1; a competent person signs off the mains side", "generator, from the electrical model", prio=2)
     for p in cx.problems:
         add(p["rank"], p["title"], p["detail"], p["check"], "generator")
     add("A", "The simulated assembly order cannot be followed by a person; the guide's stage order is unchecked",
@@ -2183,9 +2237,21 @@ def write_open_items(cx: Ctx, bom: dict, fab: dict, asm: dict, wash: list, lead:
         "Only 2 mm of plate lies under each post head's counterbore, clamped between head and jam nut, and the magnetic sheet covers the heads.", "FABRICATION.md per part", "generator")
     add("C", "Not in the design at all", "; ".join(x.split(":")[0].split(".")[0] for x in NOT_IN_MODEL), "BOM.md, last section", "generator")
     for rank, title, detail, check in CURATED_OPEN_ITEMS:
-        add(rank, title, detail, check, f"curated from docs/{cx.name.upper()}.md and the design file")
+        add(rank, title, detail, check, f"curated from docs/{cx.name.upper()}.md and the design file", prio=2 if rank == "A" else 6)
+    # heater pad against the plate; firmware coordinates of the print area
+    hp, bp = cx.comps.get("bed_heater"), cx.comps.get(dig(d.printer or {}, "bed_plate", default="bed_plate"))
+    if hp is not None and bp is not None:
+        a_, b_ = hp.shape.bounding_box(), bp.shape.bounding_box()
+        ha, pa = (a_.max.X - a_.min.X) * (a_.max.Y - a_.min.Y), (b_.max.X - b_.min.X) * (b_.max.Y - b_.min.Y)
+        add("B", f"Heater pad covers {ha / pa:.0%} of the plate", f"Pad {a_.max.X - a_.min.X:.0f} x {a_.max.Y - a_.min.Y:.0f} mm under a {b_.max.X - b_.min.X:.0f} x {b_.max.Y - b_.min.Y:.1f} mm plate. The heater model is one lump: "
+            "the temperature across the print area is not predicted, and the front and rear strips are heated only through the plate.", "commissioning E10: surface temperature at centre and corners", "generator, from the parts' sizes")
+    pa_ = dig(m, "subsystems", "homing", "z", "print_area")
+    if pa_ and (pa_[0][0] != 0 or pa_[1][0] != 0):
+        add("C", f"The print area does not start at firmware zero: X {pa_[0]}, Y {pa_[1]}", "The Y axis has extra travel at the front so the probe can reach; a slicer set up as a plain bed starting at 0, 0 prints off-centre.",
+            "set the slicer's bed shape / origin to these coordinates", "report: subsystems.homing.z.print_area")
+    add("C", "Changing the closed Z belt means lifting the bed carrier off all three lead screws", "The loop runs round the three screws below the carrier; nothing in the design lets it be opened.", "buy a spare belt with the first; fit carefully", "generator, from the belt path")
     order = {"A": 0, "B": 1, "C": 2}
-    items.sort(key=lambda it: order[it["rank"]])      # stable: within a rank, the order written above
+    items.sort(key=lambda it: (order[it["rank"]], it["prio"]))      # stable: within a rank and priority, the order written above
     # ---- needed vendor data
     vend = []
     for L in bom["lines"]:
@@ -2260,11 +2326,11 @@ def write_readme(cx: Ctx, bom, fab, asm, opn, wash) -> None:
         by_dir[k][0] += 1
         by_dir[k][1] += p.stat().st_size
     T = [f"# Build package: {cx.name}", "", cx.stamp(),
-         "Regenerate: `.venv/bin/python tools/build_package.py " + str(cx.design_path.relative_to(ROOT)) + "`. The generator refuses to run if `report.json` does not describe the design file "
+         "Regenerate: `.venv/bin/python tools/build_package.py " + rel(cx.design_path) + "`. The generator refuses to run if `report.json` does not describe the design file "
          "(part count, mass, BOM quantities, custom part list, full pass); `--force` writes a package marked STALE.", "",
          "## Stamp", "",
-         table(["", ""], [["design file", f"`{cx.design_path.relative_to(ROOT)}`"], ["design md5", f"`{cx.md5}`" + (f" (matches the md5 recorded in docs/{cx.name.upper()}.md: {cx.doc_md5_ok}...)" if getattr(cx, "doc_md5_ok", None) else "")],
-                          ["report", f"`{cx.rpath.relative_to(ROOT) if cx.rpath.is_relative_to(ROOT) else cx.rpath}`, written {cx.report_time}, md5 `{cx.report_md5}`"],
+         table(["", ""], [["design file", f"`{rel(cx.design_path)}`"], ["design md5", f"`{cx.md5}`" + (f" (matches the md5 recorded in docs/{cx.name.upper()}.md: {cx.doc_md5_ok}...)" if getattr(cx, "doc_md5_ok", None) else "")],
+                          ["report", f"`{rel(cx.rpath)}`, written {cx.report_time}, md5 `{cx.report_md5}`"],
                           ["report result", "; ".join(f"{k}: {v.split(' (')[0]}" for k, v in cx.rep.get("summary", {}).items())],
                           ["scorecard", str(dig(cx.score or {}, "time"))], ["freshness warnings", "; ".join(getattr(cx, "warnings", [])) or "none"],
                           ["package generated", time.strftime("%Y-%m-%d %H:%M:%S")]]), "",
@@ -2315,6 +2381,24 @@ def main(argv=None) -> int:
     cx = Ctx(Path(a.design), Path(a.out), Path(a.report_root), a.force)
     check_fresh(cx)
     cx.out.mkdir(parents=True, exist_ok=True)
+    # report.json carries no hash of the design it was made from. What can be told: the last package's manifest. If the
+    # report is the same file as then and the design is not, the report cannot describe both.
+    prev = cx.out / "data" / "package_manifest.json"
+    if prev.exists():
+        try:
+            pm_ = json.loads(prev.read_text())
+            if pm_.get("report_md5") == cx.report_md5 and pm_.get("design_md5") not in (None, cx.md5) and not pm_.get("stale"):
+                msg = (f"the design file has changed (md5 {pm_['design_md5'][:8]}... -> {cx.md5[:8]}...) since the last package and report.json has not: "
+                       "the report was made from another version of the file")
+                if not a.force:
+                    sys.exit("REFUSED: " + msg + f". Run `python -m mechloop verify {rel(cx.design_path)}` (full) and re-run, or pass --force to write a package marked STALE.")
+                cx.stale.append(msg)
+                print("WARNING (--force): " + msg, file=sys.stderr)
+        except (ValueError, KeyError):
+            pass
+    cx.need("the design file's hash inside report.json (written by `mechloop verify`)",
+            "staleness can only be inferred: from part count, mass, BOM and custom-part list, from the md5 quoted in docs/<NAME>.md, and from the previous package's manifest. "
+            "A design edit that changes none of these (a hole moved) is not detected on a first run")
     log = lambda s: print(f"[{time.time() - t0:6.1f}s] {s}", file=sys.stderr, flush=True)
     bom = write_bom(cx); log("BOM.md")
     fab = write_fabrication(cx, drawings=not a.no_drawings); log("FABRICATION.md, drawings, cad, dxf, stl")

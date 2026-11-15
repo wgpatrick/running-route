@@ -735,15 +735,42 @@ def tap_drill(size: str) -> float:
     return SCREW[size][5]
 
 
+def add_washer(design: Design, name: str, size: str, at, direction=(0, 0, 1), body: str = "world",
+               screw: str | None = None, series: str = "normal") -> Component:
+    """Place a flat washer (mechloop.parts.hardware.washer_flat) with the face that bears on the part at `at`, the
+    washer extending along `direction` (towards the head or nut that sits on it). `screw=` records which screw it
+    belongs to (a join, and the screw then holds it). series="large" for slots and soft seats."""
+    from .hardware import washer_flat
+
+    dvec = Vector(*direction).normalized()
+    c = place(design, name, washer_flat(size, series), Location(Plane(origin=at, z_dir=dvec)), body=body)
+    if screw:
+        design.join(screw, name, "washer")
+        for f in design.fasteners:
+            if f.name == screw and name not in f.clamps:
+                f.clamps = tuple(f.clamps) + (name,)
+    return c
+
+
 def add_screw(design: Design, name: str, size: str, length: float, at, direction=(0, 0, -1),
               body: str = "world", threads_into: str | list[str] | None = None, clamps=(),
-              tnut: bool = False) -> Component:
+              tnut: bool = False, washer: bool | str = False) -> Component:
     """Place a cap screw with the underside of its head at `at`, pointing along `direction`.
     Registers it as a Fastener (tool access is checked), allows the thread to overlap the
     part(s) it screws into and records that it holds them. tnut=True means it threads into
-    a T-nut in that part's slot (added to the BOM)."""
+    a T-nut in that part's slot (added to the BOM).
+    washer=True (or "large"): a catalogue flat washer `<name>_washer` goes under the head. `at` is then the face the
+    WASHER bears on; the head sits one washer thickness higher, so the same screw reaches that much less far into its
+    thread (the engagement check sees it: choose the length with the washer in)."""
     st = shcs(size, length)
     dvec = Vector(*direction).normalized()
+    washer_at = None
+    if washer:
+        from .hardware import WASHER
+
+        series = "large" if washer == "large" else "normal"
+        washer_at = tuple(at)
+        at = tuple(Vector(*at) - dvec * WASHER[series][size][2])
     loc = Location(Plane(origin=at, z_dir=-dvec))
     c = place(design, name, st, loc, body=body, thread_d=SCREW[size][0],
               threads_into=[threads_into] if isinstance(threads_into, str) else list(threads_into or []),
@@ -758,6 +785,9 @@ def add_screw(design: Design, name: str, size: str, length: float, at, direction
             design.join(name, t, "tnut" if tnut else "thread")
     if tnut:
         design.bom_extra(f"TNUT-2020-{size}", 1, 0.15)
+    if washer_at is not None:
+        add_washer(design, f"{name}_washer", size, washer_at, tuple(-dvec), body=body, screw=name,
+                   series="large" if washer == "large" else "normal")
     return c
 
 

@@ -65,7 +65,7 @@ z_drive_mount,H2,hole,Z,93.5,26.5,50.5,4.2,,5.0,True,,,clearance M3,z_motor_scre
 z_drive_mount,H3,hole,Z,8.0,32.0,10.0,6.0,,8.0,True,10.0x39.0,+Z face,clearance M5,z_drive_mount_bolt_0,,b,
 z_drive_mount,H4,hole,Z,20.0,32.0,10.0,6.0,,8.0,True,10.0x39.0,+Z face,clearance M5,z_drive_mount_bolt_1,,b,
 z_drive_mount,H5,hole,Z,41.0,42.0,29.5,22.4,,47.0,False,,,bore / opening,,z_sleeve (custom) leadscrew (T8x2-300) z_bearing_lo (BRG-608) z_bearing_hi (BRG-608) z_pulley (GT2-20T-B8),,seat of bearing z_bearing_hi: fit; seat of bearing z_bearing_lo: fit
-z_drive_mount,H6,hole,Z,78.0,42.0,50.5,23.0,,5.0,True,,,bore / opening,,z_motor (NEMA17-40) z_pulley_m (GT2-20T-B5),,
+z_drive_mount,H6,hole,Z,78.0,42.0,50.5,23.0,,5.0,True,,,bore / opening,,z_motor (NEMA17-40) z_pulley_m (GT2-20T-B5),,pilot of motor z_motor
 z_drive_mount,H7,hole,Z,62.5,57.5,50.5,4.2,,5.0,True,,,clearance M3,z_motor_screw_1,,a,locates motor z_motor
 z_drive_mount,H8,hole,Z,93.5,57.5,50.5,4.2,,5.0,True,,,clearance M3,z_motor_screw_3,,a,locates motor z_motor
 z_drive_mount,S1,slot,Z,63.0,12.0,50.5,5.5,11.5,5.0,True,,,clearance M5,z_idler_bolt,,,axle of z_idler: sets the belt plane
@@ -126,7 +126,7 @@ x_belt_block,H4,hole,Y,23.5,22.25,5.5,4.2,,5.5,False,,,clearance M3,x_belt_block
 x_motor_mount,H1,hole,Z,25.5,9.5,1.5,3.6,,3.0,True,,,clearance M3,x_motor_screw_0,,a,locates motor x_motor
 x_motor_mount,H2,hole,Z,56.5,9.5,1.5,3.6,,3.0,True,,,clearance M3,x_motor_screw_1,,a,locates motor x_motor
 x_motor_mount,H3,hole,Z,8.0,10.0,1.5,5.5,,3.0,True,,,clearance M5,x_motor_mount_bolt_0,,b,
-x_motor_mount,H4,hole,Z,41.0,25.0,1.5,23.0,,3.0,True,,,bore / opening,,x_motor (NEMA17-34),,
+x_motor_mount,H4,hole,Z,41.0,25.0,1.5,23.0,,3.0,True,,,bore / opening,,x_motor (NEMA17-34),,pilot of motor x_motor
 x_motor_mount,H5,hole,Z,8.0,40.0,1.5,5.5,,3.0,True,,,clearance M5,x_motor_mount_bolt_1,,b,
 x_motor_mount,H6,hole,Z,25.5,40.5,1.5,3.6,,3.0,True,,,clearance M3,x_motor_screw_2,,a,locates motor x_motor
 x_motor_mount,H7,hole,Z,56.5,40.5,1.5,3.6,,3.0,True,,,clearance M3,x_motor_screw_3,,a,locates motor x_motor
@@ -139,7 +139,7 @@ y_motor_mount,H1,hole,Z,10.0,20.0,1.0,5.5,,2.0,True,,,clearance M5,y_motor_mount
 y_motor_mount,H2,hole,Z,40.0,20.0,1.0,5.5,,2.0,True,,,clearance M5,y_motor_mount_bolt_1,,a,
 y_motor_mount,H3,hole,Z,63.5,24.834,1.0,3.6,,2.0,True,,,clearance M3,y_motor_screw_0,,b,locates motor y_motor
 y_motor_mount,H4,hole,Z,94.5,24.834,1.0,3.6,,2.0,True,,,clearance M3,y_motor_screw_2,,b,locates motor y_motor
-y_motor_mount,H5,hole,Z,79.0,40.334,1.0,23.0,,2.0,True,,,bore / opening,,y_motor (NEMA17-48),,
+y_motor_mount,H5,hole,Z,79.0,40.334,1.0,23.0,,2.0,True,,,bore / opening,,y_motor (NEMA17-48),,pilot of motor y_motor
 y_motor_mount,H6,hole,Z,63.5,55.834,1.0,3.6,,2.0,True,,,clearance M3,y_motor_screw_1,,b,locates motor y_motor
 y_motor_mount,H7,hole,Z,94.5,55.834,1.0,3.6,,2.0,True,,,clearance M3,y_motor_screw_3,,b,locates motor y_motor
 y_tension_anchor,H1,hole,Y,7.0,5.7,5.0,4.2,,11.4,True,,,clearance M3,y_tension_screw,,,
@@ -151,7 +151,7 @@ y_motor_mount_l,H1,hole,Z,10.0,20.0,1.0,5.5,,2.0,True,,,clearance M5,y_motor_mou
 y_motor_mount_l,H2,hole,Z,40.0,20.0,1.0,5.5,,2.0,True,,,clearance M5,y_motor_mount_l_bolt_1,,a,
 y_motor_mount_l,H3,hole,Z,63.5,24.834,1.0,3.6,,2.0,True,,,clearance M3,y_motor_l_screw_0,,b,locates motor y_motor_l
 y_motor_mount_l,H4,hole,Z,94.5,24.834,1.0,3.6,,2.0,True,,,clearance M3,y_motor_l_screw_2,,b,locates motor y_motor_l
-y_motor_mount_l,H5,hole,Z,79.0,40.334,1.0,23.0,,2.0,True,,,bore / opening,,y_motor_l (NEMA17-48),,
+y_motor_mount_l,H5,hole,Z,79.0,40.334,1.0,23.0,,2.0,True,,,bore / opening,,y_motor_l (NEMA17-48),,pilot of motor y_motor_l
 y_motor_mount_l,H6,hole,Z,63.5,55.834,1.0,3.6,,2.0,True,,,clearance M3,y_motor_l_screw_1,,b,locates motor y_motor_l
 y_motor_mount_l,H7,hole,Z,94.5,55.834,1.0,3.6,,2.0,True,,,clearance M3,y_motor_l_screw_3,,b,locates motor y_motor_l
 y_tension_anchor_l,H1,hole,Y,11.0,5.7,5.0,4.2,,11.4,True,,,clearance M3,y_tension_screw_l,,,

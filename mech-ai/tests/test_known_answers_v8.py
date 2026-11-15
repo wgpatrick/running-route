@@ -551,3 +551,188 @@ def test_the_ported_relay_autotune_gives_klippers_own_gains_on_the_same_plant(mo
         pos = sorted((pk[p][0] - pk[p - 2][0], p) for p in range(4, len(pk)))[len(range(4, len(pk))) // 2][1]
         ku = 4.0 * 0.5 / (math.pi * 0.5 * abs(pk[pos][1] - pk[pos - 1][1]))
         assert port[0] == pytest.approx(0.6 * ku * 255.0, abs=2e-3)
+
+
+# ===================================================================== 11. what a screw head bears on; washers
+def seated_screw(material="al6061", hole="standard", washer=False, size="M5", torque=None):
+    """A steel block (top at z = 0) with a 5 mm plate of `material` on it, held by one cap screw from the top that
+    threads into the block. hole: "standard" (close clearance), "slot" (clearance width, 20 mm long), or a diameter."""
+    from mechloop.parts import SCREW
+
+    d = Design("seat", base="block")
+    d.add("block", Pos(0, 0, -10) * Box(60, 60, 20), material="steel")
+    clr = SCREW[size][4]
+    plate = Pos(0, 0, 2.5) * Box(60, 60, 5)
+    if hole == "slot":
+        plate -= Pos(0, 0, 2.5) * Box(20, clr, 5)
+    else:
+        plate -= Pos(0, 0, 2.5) * Cylinder((clr if hole == "standard" else float(hole)) / 2, 5)
+    d.add("plate", plate, material=material)
+    add_screw(d, "s", size, 16, at=(0, 0, 5), threads_into="block", clamps=("plate",), washer=washer)
+    if torque:
+        d.manufacturing = {"tightening_torque_nm": {size: torque}}
+    return d
+
+
+def bearing(d):
+    from mechloop.verifiers.bearing import head_bearing
+
+    r = VerifierResult("ratings")
+    return head_bearing(d, r), {f.code: f for f in r.findings}
+
+
+def test_a_steel_head_on_steel_or_wrought_aluminium_at_the_class_torque_is_not_flagged():
+    """M5 at 5.9 N.m (class 8.8, assumed), K = 0.2: 5,900 N on the head's ring over a 5.5 mm hole, pi (3.91^2 - 2.75^2)
+    = 24.3 mm^2: 243 MPa. Under 6061's 276 MPa and steel's 1.5 x 250: no finding, no blanket "needs a washer"."""
+    for mat in ("al6061", "steel"):
+        m, f = bearing(seated_screw(mat))
+        assert f == {} and m["seats_examined"] == 1
+        w = m["worst"][0]
+        assert w["seat_area_mm2"] == pytest.approx(math.pi * ((0.92 * 8.5 / 2) ** 2 - 2.76 ** 2), rel=0.02)
+        assert w["preload_n"] == 5900 and w["bearing_pressure_mpa"] == pytest.approx(243, abs=5) and "ASSUMED" in w["torque_basis"]
+
+
+def test_a_head_over_a_slot_or_an_oversize_hole_needs_a_washer_and_a_washer_clears_it():
+    """M5 head (bearing diameter 7.8 mm) over a 5.5 mm slot: only the two slivers beside the slot carry it, about a
+    third of the standard ring: error. Over a 6.6 mm hole: pi (3.91^2 - 3.3^2) = 13.8 mm^2, 57 %: error; over 6.0 mm,
+    81 %: warning (marginal). An ISO 7089 washer (10 mm) over the same slot has more seat than a bare head on a
+    standard hole: no finding. It is a catalogue part in the BOM and the head sits its 1 mm higher."""
+    m, f = bearing(seated_screw(hole="slot"))
+    assert f["screw_head_seat_too_small"].severity == "error" and 0.2 < f["screw_head_seat_too_small"].data["least_ratio"] < 0.45
+    m, f = bearing(seated_screw(hole=6.6))
+    assert f["screw_head_seat_too_small"].severity == "error" and f["screw_head_seat_too_small"].data["least_ratio"] == pytest.approx(0.57, abs=0.03)
+    m, f = bearing(seated_screw(hole=6.0))
+    assert f["screw_head_seat_too_small"].severity == "warning" and f["screw_head_seat_too_small"].data["least_ratio"] == pytest.approx(0.81, abs=0.03)
+    d = seated_screw(hole="slot", washer=True)
+    m, f = bearing(d)
+    assert f == {} and m["on_washers"] == 1 and m["worst"][0]["bears_with"] == "head on washer s_washer"
+    assert m["worst"][0]["seat_area_over_standard"] > 1.0
+    w = d.get("s_washer")
+    assert w.sku == "WASHER-M5" and w.meta["interfaces"] == {"od": 10.0, "bore": 5.3, "thickness": 1.0}
+    assert d.joins[frozenset(("s", "s_washer"))] == "washer" and "s_washer" in d.fasteners[0].clamps
+    zs = lambda dd: (dd.get("s").shape.bounding_box().min.Z, dd.get("s").shape.bounding_box().max.Z)
+    assert zs(d) == pytest.approx(tuple(z + 1.0 for z in zs(seated_screw(hole="slot"))), abs=1e-6)       # 1 mm less thread in the block
+    from mechloop.verifiers.ratings import verify_ratings
+
+    assert verify_ratings(d).metrics["bom"]["WASHER-M5"]["qty"] == 1
+
+
+def test_a_bare_head_crushes_printed_plastic_and_a_washer_or_a_stated_torque_clears_it():
+    """M3 clamping PETG (yield 45 MPa), 0.5 N.m assumed for a joint with plastic in it: 833 N on pi (2.53^2 - 1.71^2)
+    = 10.9 mm^2 = 76 MPa, above yield: error. With an ISO 7089 washer (7 mm): 29.3 mm^2, 28 MPa, under the 30 MPa
+    allowed for a sustained load (two thirds of yield): no finding. Bare, at a stated 0.15 N.m: 23 MPa, no finding;
+    at a stated 0.3 N.m: 46 MPa, between the allowance and yield... above yield here (45): error stays."""
+    m, f = bearing(seated_screw("petg", size="M3"))
+    assert f["screw_head_bearing_pressure"].severity == "error" and f["screw_head_bearing_pressure"].data["worst_mpa"] == pytest.approx(76, abs=3)
+    assert f["screw_head_bearing_pressure"].data["allowable_mpa"] == pytest.approx(30.0)
+    m, f = bearing(seated_screw("petg", size="M3", washer=True))
+    assert f == {} and m["worst"][0]["bearing_pressure_mpa"] == pytest.approx(28.4, abs=1.0)
+    assert bearing(seated_screw("petg", size="M3", torque=0.15))[1] == {}
+    m, f = bearing(seated_screw("petg", size="M3", torque=0.25))                  # 38 MPa: over the allowance, under yield
+    assert f["screw_head_bearing_pressure"].severity == "warning" and "declared" in m["worst"][0]["torque_basis"]
+
+
+def test_soft_aluminium_under_a_bare_head_is_a_warning_and_a_washer_spreads_it():
+    """M5 at the class torque on 5052-H32 sheet (yield 193 MPa): 243 MPa: warning (the seat embeds). On cast MIC-6
+    (105 MPa) likewise. With a washer the ring is pi (5^2 - 2.76^2) = 54.6 mm^2: 108 MPa, fine on 5052; still just over
+    on MIC-6, where the large series (15 mm: 152 mm^2, 39 MPa) is needed."""
+    assert bearing(seated_screw("al5052"))[1]["screw_head_bearing_pressure"].severity == "warning"
+    assert bearing(seated_screw("al5052", washer=True))[1] == {}
+    assert bearing(seated_screw("al_mic6", washer=True))[1]["screw_head_bearing_pressure"].severity == "warning"
+    m, f = bearing(seated_screw("al_mic6", washer="large"))
+    assert f == {} and m["worst"][0]["bearing_pressure_mpa"] == pytest.approx(5900 / (math.pi * (7.5 ** 2 - 2.76 ** 2)), rel=0.03)
+
+
+def test_a_washer_is_one_more_part_to_put_on_in_the_assembly_estimate():
+    from mechloop.assembly.simulate import analyse
+
+    bare, with_w = analyse(seated_screw("petg", size="M3")), analyse(seated_screw("petg", size="M3", washer=True))
+    assert [r_["unit"] for r_ in with_w["rows"]] == ["block", "plate", "s_washer", "s"]                 # the washer goes on before its screw
+    assert with_w["metrics"]["estimated_time_min"] > bare["metrics"]["estimated_time_min"]
+
+
+# ===================================================================== 12. sharp edges, corners and lead-ins
+def edge_findings(shape, process, material="al6061", meta=None, man=None):
+    from mechloop.verifiers.manufacture import verify_manufacture
+
+    d = Design("e")
+    if man:
+        d.manufacturing = man
+    d.add("p", shape, material=material, process=process, meta=meta or {})
+    r = verify_manufacture(d)
+    return {f.code: f for f in r.findings}, r.metrics["parts"]["p"]["edges"]
+
+
+def test_edge_classification_of_a_box_a_filleted_box_and_a_chamfered_box():
+    """A box has 12 edges, all convex, all between faces at 90 degrees: 12 sharp. With every edge filleted the edges
+    that remain are tangent: none sharp. With every edge chamfered the faces meet at 45 degrees: none sharp. A hole
+    through a box adds two sharp mouths; chamfering them removes both."""
+    from build123d import chamfer, fillet
+
+    from mechloop.verifiers.dfm_edges import _dedupe, classify
+
+    box = Box(40, 30, 10)
+    assert len(classify(box)["sharp_convex"]) == 12 and classify(box)["sharp_concave"] == 0
+    assert classify(fillet(box.edges(), 1.0))["sharp_convex"] == []
+    assert classify(chamfer(box.edges(), 1.0))["sharp_convex"] == []
+    holed = box - Cylinder(3, 10)
+    cl = classify(holed)
+    assert len(_dedupe(cl["hole_mouths"])) == 2 and cl["shaft_ends"] == [] and {m_["dia"] for m_ in cl["hole_mouths"]} == {6.0}
+    mouths = [e for e in holed.edges() if e.geom_type.name == "CIRCLE"]
+    assert classify(chamfer(mouths, 0.5))["hole_mouths"] == []
+    pin = Cylinder(3, 20)
+    assert len(_dedupe(classify(pin)["shaft_ends"])) == 2 and classify(pin)["hole_mouths"] == []
+
+
+def test_sheet_corners_machined_edges_and_printed_edges_are_reported_by_process():
+    """The same 60 x 40 plate. As 3 mm SHEET: its four profile corners are dead sharp: warning with the count; with the
+    corners rounded 2 mm: nothing. As a 10 mm MACHINED plate: 12 unbroken outside edges: warning; with the drawing
+    note declared on the part, or for the whole design, or with every edge chamfered: nothing. PRINTED: information
+    only (four sharp edges on the bed face)."""
+    from build123d import Axis, chamfer, fillet
+
+    sheet = Box(60, 40, 3)
+    f, e = edge_findings(sheet, "sheet")
+    assert f["sharp_profile_corners"].severity == "warning" and f["sharp_profile_corners"].data["count"] == 4 and e["sharp_profile_corners"] == 4
+    assert len(f["sharp_profile_corners"].data["at"]) == 4
+    f, e = edge_findings(fillet(sheet.edges().filter_by(Axis.Z), 2.0), "sheet")
+    assert "sharp_profile_corners" not in f and e["sharp_profile_corners"] == 0
+    plate = Box(60, 40, 10)
+    f, e = edge_findings(plate, "machined")
+    assert f["edges_not_broken"].severity == "warning" and f["edges_not_broken"].data["count"] == 12
+    assert "edges_not_broken" not in edge_findings(plate, "machined", meta={"edge_break_mm": 0.3})[0]
+    f, e = edge_findings(plate, "machined", man={"edge_break_mm": 0.3})
+    assert "edges_not_broken" not in f and e["edge_break_declared_mm"] == 0.3 and e["sharp_outside_edges"] == 12
+    assert "edges_not_broken" not in edge_findings(chamfer(plate.edges(), 0.5), "machined")[0]
+    f, e = edge_findings(plate, "printed", material="petg", meta={"print_up": "+Z"})
+    assert "edges_not_broken" not in f and "sharp_profile_corners" not in f
+    assert f["printed_edges"].severity == "info" and f["printed_edges"].data["parts"]["p"]["sharp_edges_on_bed_face"] == 4
+
+
+def pin_in_block(chamfer_bore=False, chamfer_pin=False):
+    from build123d import chamfer
+
+    d = Design("pin", base="block")
+    block = Pos(0, 0, 10) * Box(40, 40, 20) - Pos(0, 0, 10) * Cylinder(4.05, 20)
+    if chamfer_bore:
+        block = chamfer([e for e in block.edges() if e.geom_type.name == "CIRCLE"], 0.5)
+    pin = Pos(0, 0, 20) * Cylinder(4.0, 60)
+    if chamfer_pin:
+        pin = chamfer(pin.edges(), 0.5)
+    d.add("block", block, material="al6061", meta={"edge_break_mm": 0.3})
+    d.add("pin", pin, material="steel", meta={"edge_break_mm": 0.3})
+    d.join("pin", "block", "sliding")
+    return d
+
+
+def test_a_shaft_meeting_its_bore_edge_to_edge_has_no_lead_in_and_a_chamfer_on_either_gives_one():
+    from mechloop.verifiers.manufacture import verify_manufacture
+
+    r = verify_manufacture(pin_in_block())
+    f = [x for x in r.findings if x.code == "no_lead_in"]
+    assert len(f) == 1 and f[0].severity == "warning" and f[0].data["parts"] == ["pin", "block"]
+    for kw in (dict(chamfer_bore=True), dict(chamfer_pin=True)):
+        r = verify_manufacture(pin_in_block(**kw))
+        assert [x for x in r.findings if x.code == "no_lead_in"] == []
+        row = r.metrics["edges"]["shaft_bore_lead_ins"][0]
+        assert row["bore_mouth_chamfered"] == bool(kw.get("chamfer_bore")) and row["shaft_end_chamfered"] == bool(kw.get("chamfer_pin"))

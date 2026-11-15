@@ -100,7 +100,7 @@ def _render(fld: dict, path: Path, clim: float, camera: dict, size=(1100, 760), 
     sag = np.asarray(fld["sag_screwed"], dtype=float)
     grid.point_data["sag_um"] = sag * 1000.0
     grid.cell_data["part"] = np.asarray(fld["part"])
-    surf = grid.extract_surface()
+    surf = grid.extract_surface(algorithm='dataset_surface')
     warped = surf.copy()
     pts = warped.points.copy()
     pts[:, 2] -= surf.point_data["sag_um"] / 1000.0 * EXAGGERATION
@@ -143,12 +143,34 @@ def run(design_path: Path, img: Path, data: Path, compare: Path | None = None) -
                "angle": 24}
         _render(f, img / f"fea_{name}.webp", clim, cam)
         m = f["metrics"]
+        # two checks of the model itself, read off the field: is every nut seat really held, and where is the sag largest
+        names, tets, part = list(f["names"]), np.asarray(f["tets"]), np.asarray(f["part"])
+        sag_s, sag_b = np.asarray(f["sag_screwed"], dtype=float), np.asarray(f["sag_bonded"], dtype=float)
+        seats = {}
+        for txt in ((m.get("flexure") or {}).get("nut_seat") or []):
+            blk = str(txt).split(" under ")[0]
+            if blk in names:
+                nodes = np.unique(tets[part == names.index(blk)])
+                seats[blk] = {"least_movement_screwed_mm": round(float(np.abs(sag_s[nodes]).min()), 4),
+                              "least_movement_bonded_mm": round(float(np.abs(sag_b[nodes]).min()), 4)}
+        top = np.abs(xyz[:, 2] - xyz[:, 2].max()) < 0.01
+        tc = (xyz[top].min(0) + xyz[top].max(0)) / 2
+        at = np.array((m.get("print_weight") or {}).get("at") or tc, dtype=float)
+        hx, hy = abs(at[0] - tc[0]), abs(at[1] - tc[1])
+        corners = []
+        for sx, sy, lab in ((-1, 1, "rear left"), (1, 1, "rear right"), (-1, -1, "front left"), (1, -1, "front right")):
+            cx, cy = tc[0] + sx * hx, tc[1] + sy * hy
+            dd = np.hypot(xyz[top][:, 0] - cx, xyz[top][:, 1] - cy)
+            pick = dd <= 10.0
+            corners.append({"corner": lab, "xy": [round(float(cx), 1), round(float(cy), 1)],
+                            "sag_screwed_mm": round(float(sag_s[top][pick].mean()), 4), "sag_bonded_mm": round(float(sag_b[top][pick].mean()), 4),
+                            "loaded": bool(abs(cx - at[0]) < 1 and abs(cy - at[1]) < 1)})
         out["designs"][name] = {
             "file": f"fea_{name}.webp", "nodes": int(len(xyz)), "parts": int(len(f["names"])),
             "field_max_sag_screwed_mm": round(float(np.max(f["sag_screwed"])), 4),
             "field_max_sag_bonded_mm": round(float(np.max(f["sag_bonded"])), 4),
             "print_weight": m.get("print_weight"), "hand_load": m.get("hand_load"),
-            "constraint": m.get("constraint"),
+            "constraint": m.get("constraint"), "nut_seats": seats, "print_corners": corners,
             "flexure": {k: v for k, v in (m.get("flexure") or {}).items() if k != "parts"},
         }
     (data / "fea_fields.json").write_text(json.dumps(out, indent=1, default=str))

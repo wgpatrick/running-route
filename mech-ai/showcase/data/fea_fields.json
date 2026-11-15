@@ -1,0 +1,277 @@
+{
+ "exaggeration": 250.0,
+ "colour_max_mm": 0.1057,
+ "ramp": [
+  "#e6f0fd",
+  "#cde2fb",
+  "#9ec5f4",
+  "#6da7ec",
+  "#3987e5",
+  "#256abf",
+  "#184f95",
+  "#0d366b",
+  "#07244a"
+ ],
+ "designs": {
+  "printer_v7": {
+   "file": "fea_printer_v7.webp",
+   "nodes": 130896,
+   "parts": 15,
+   "field_max_sag_screwed_mm": 0.1057,
+   "field_max_sag_bonded_mm": 0.0766,
+   "print_weight": {
+    "load_n": 9.81,
+    "at": [
+     90.0,
+     -67.0,
+     143.3
+    ],
+    "support_compliance_mm": 0.0042,
+    "support_compliance_tilt_mm": 0.0028,
+    "flexure_bonded_mm": 0.0632,
+    "total_bonded_mm": 0.0674,
+    "tilt_across_print_area_bonded_mm": 0.074,
+    "flexure_screwed_mm": 0.0883,
+    "total_screwed_mm": 0.0925,
+    "tilt_across_print_area_screwed_mm": 0.1084,
+    "range_note": "bonded: every touching face joined (stiff bound); screwed: joints held only round their screws (soft bound)",
+    "judged_mm": 0.0925,
+    "limit_mm": 0.02
+   },
+   "hand_load": {
+    "load_n": 20.0,
+    "at": [
+     90.0,
+     -67.0,
+     143.3
+    ],
+    "support_compliance_mm": 0.0086,
+    "support_compliance_tilt_mm": 0.0057,
+    "flexure_bonded_mm": 0.1289,
+    "total_bonded_mm": 0.1375,
+    "tilt_across_print_area_bonded_mm": 0.1508,
+    "flexure_screwed_mm": 0.1801,
+    "total_screwed_mm": 0.1887,
+    "tilt_across_print_area_screwed_mm": 0.221,
+    "range_note": "bonded: every touching face joined (stiff bound); screwed: joints held only round their screws (soft bound)",
+    "judged_mm": 0.1887,
+    "point_basis": "worst corner of the print area (the flexure was solved there)"
+   },
+   "constraint": {
+    "lead_screws": 1,
+    "guide_rails_or_rods": 2,
+    "guide_blocks": 4,
+    "redundant_screw_supports": 0,
+    "redundancy": {
+     "redundant": 0,
+     "nuts_spanning": 1,
+     "guide_over_screw_stiffness_by_mode": [
+      0.0
+     ],
+     "modes_held_by_guides_too": 0,
+     "threshold": 0.5
+    },
+    "note": "one screw sets the height, the guides hold the tilt: exactly constrained in height"
+   },
+   "nut_seats": {
+    "nut_block": {
+     "least_movement_screwed_mm": 0.0,
+     "least_movement_bonded_mm": 0.0
+    }
+   },
+   "print_corners": [
+    {
+     "corner": "rear left",
+     "xy": [
+      -90.0,
+      113.0
+     ],
+     "sag_screwed_mm": -0.0186,
+     "sag_bonded_mm": -0.0093,
+     "loaded": false
+    },
+    {
+     "corner": "rear right",
+     "xy": [
+      90.0,
+      113.0
+     ],
+     "sag_screwed_mm": 0.0229,
+     "sag_bonded_mm": 0.012,
+     "loaded": false
+    },
+    {
+     "corner": "front left",
+     "xy": [
+      -90.0,
+      -67.0
+     ],
+     "sag_screwed_mm": 0.0125,
+     "sag_bonded_mm": 0.0084,
+     "loaded": false
+    },
+    {
+     "corner": "front right",
+     "xy": [
+      90.0,
+      -67.0
+     ],
+     "sag_screwed_mm": 0.0883,
+     "sag_bonded_mm": 0.0632,
+     "loaded": true
+    }
+   ],
+   "flexure": {
+    "evaluated": true,
+    "parts_from": "the parts of AssemblyCase 'payload_x3_on_bed'",
+    "supports": "held across the rail at the guide blocks and along the screw at the nut seat",
+    "nodes": 130896,
+    "nut_seat": [
+     "nut_block under z_nut"
+    ],
+    "unit_load_n": 10.0,
+    "bonded_mm_per_n": 0.00644579211111111,
+    "bonded_tilt_mm_per_n": 0.007255508357645944,
+    "screwed_mm_per_n": 0.009003434111111111,
+    "screwed_tilt_mm_per_n": 0.010764789894291738,
+    "screwed_joints": 21
+   }
+  },
+  "printer_v8": {
+   "file": "fea_printer_v8.webp",
+   "nodes": 180045,
+   "parts": 40,
+   "field_max_sag_screwed_mm": 0.0297,
+   "field_max_sag_bonded_mm": 0.0193,
+   "print_weight": {
+    "load_n": 9.81,
+    "at": [
+     90.0,
+     111.5,
+     193.3
+    ],
+    "support_compliance_mm": 0.0008,
+    "support_compliance_tilt_mm": 0.0008,
+    "flexure_bonded_mm": 0.0046,
+    "total_bonded_mm": 0.0054,
+    "tilt_across_print_area_bonded_mm": 0.0139,
+    "flexure_screwed_mm": 0.0072,
+    "total_screwed_mm": 0.0081,
+    "tilt_across_print_area_screwed_mm": 0.0205,
+    "range_note": "bonded: every touching face joined (stiff bound); screwed: joints held only round their screws (soft bound)",
+    "judged_mm": 0.0081,
+    "limit_mm": 0.02
+   },
+   "hand_load": {
+    "load_n": 20.0,
+    "at": [
+     90.0,
+     111.5,
+     193.3
+    ],
+    "support_compliance_mm": 0.0017,
+    "support_compliance_tilt_mm": 0.0016,
+    "flexure_bonded_mm": 0.0093,
+    "total_bonded_mm": 0.011,
+    "tilt_across_print_area_bonded_mm": 0.0282,
+    "flexure_screwed_mm": 0.0147,
+    "total_screwed_mm": 0.0164,
+    "tilt_across_print_area_screwed_mm": 0.0419,
+    "range_note": "bonded: every touching face joined (stiff bound); screwed: joints held only round their screws (soft bound)",
+    "judged_mm": 0.0164,
+    "point_basis": "worst corner of the print area (the flexure was solved there)"
+   },
+   "constraint": {
+    "lead_screws": 3,
+    "guide_rails_or_rods": 2,
+    "guide_blocks": 2,
+    "redundant_screw_supports": 0,
+    "redundancy": {
+     "redundant": 0,
+     "nuts_spanning": 3,
+     "guide_over_screw_stiffness_by_mode": [
+      0.024,
+      0.024,
+      0.0
+     ],
+     "modes_held_by_guides_too": 0,
+     "threshold": 0.5
+    },
+    "note": "3 screws and 2 guide(s), 2 block(s): the screws set the bed's plane and the guides do not resist it (their stiffness in tilt is small beside the screws'): a height difference between screws becomes tilt, not force"
+   },
+   "nut_seats": {
+    "nut_block": {
+     "least_movement_screwed_mm": 0.0,
+     "least_movement_bonded_mm": 0.0
+    },
+    "nut_block_fl": {
+     "least_movement_screwed_mm": 0.0153,
+     "least_movement_bonded_mm": 0.0094
+    },
+    "nut_block_fr": {
+     "least_movement_screwed_mm": 0.0247,
+     "least_movement_bonded_mm": 0.016
+    }
+   },
+   "print_corners": [
+    {
+     "corner": "rear left",
+     "xy": [
+      -90.0,
+      111.5
+     ],
+     "sag_screwed_mm": 0.0031,
+     "sag_bonded_mm": 0.0018,
+     "loaded": false
+    },
+    {
+     "corner": "rear right",
+     "xy": [
+      90.0,
+      111.5
+     ],
+     "sag_screwed_mm": 0.0072,
+     "sag_bonded_mm": 0.0046,
+     "loaded": true
+    },
+    {
+     "corner": "front left",
+     "xy": [
+      -90.0,
+      -68.5
+     ],
+     "sag_screwed_mm": 0.0171,
+     "sag_bonded_mm": 0.0106,
+     "loaded": false
+    },
+    {
+     "corner": "front right",
+     "xy": [
+      90.0,
+      -68.5
+     ],
+     "sag_screwed_mm": 0.0225,
+     "sag_bonded_mm": 0.0146,
+     "loaded": false
+    }
+   ],
+   "flexure": {
+    "evaluated": true,
+    "parts_from": "design.printer['bed_support']['parts']",
+    "supports": "held across the rail at the guide blocks and along the screw at the nut seat",
+    "nodes": 180045,
+    "nut_seat": [
+     "nut_block under z_nut",
+     "nut_block_fl under z_nut_fl",
+     "nut_block_fr under z_nut_fr"
+    ],
+    "unit_load_n": 10.0,
+    "bonded_mm_per_n": 0.0004668891727272727,
+    "bonded_tilt_mm_per_n": 0.0013320182357093328,
+    "screwed_mm_per_n": 0.000736178290909091,
+    "screwed_tilt_mm_per_n": 0.0020138370479629584,
+    "screwed_joints": 23
+   }
+  }
+ }
+}

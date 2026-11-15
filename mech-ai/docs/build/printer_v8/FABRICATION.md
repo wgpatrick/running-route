@@ -56,7 +56,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 | bed_post_tab_2 | sheet | steel sheet (grade NOT specified in the model) | 43.5 x 38 x 3 | 0.037 | 3 / 0 | 0 | bed_post_tab_0, bed_post_tab_1, bed_post_tab_3 | [svg](drawings/bed_post_tab_2.svg) [pdf](drawings/bed_post_tab_2.pdf) [dxf](dxf/bed_post_tab_2.dxf) [step](cad/bed_post_tab_2.step) |
 | bed_post_tab_3 | sheet | steel sheet (grade NOT specified in the model) | 43.5 x 38 x 3 | 0.037 | 3 / 0 | 0 | bed_post_tab_0, bed_post_tab_1, bed_post_tab_2 | [svg](drawings/bed_post_tab_3.svg) [pdf](drawings/bed_post_tab_3.pdf) [dxf](dxf/bed_post_tab_3.dxf) [step](cad/bed_post_tab_3.step) |
 | bed_tie | sheet | steel sheet (grade NOT specified in the model) | 54 x 46.5 x 1.5 | 0.028 | 2 / 0 | 0 | - | [svg](drawings/bed_tie.svg) [pdf](drawings/bed_tie.pdf) [dxf](dxf/bed_tie.dxf) [step](cad/bed_tie.step) |
-| z_drive_mount | printed | PETG | 101 x 69 x 53 | 0.090 | 8 / 1 | 6 | - | [svg](drawings/z_drive_mount.svg) [pdf](drawings/z_drive_mount.pdf) [step](cad/z_drive_mount.step) [stl](stl/z_drive_mount.stl) |
+| z_drive_mount | printed | PETG | 101 x 69 x 53 | 0.090 | 8 / 1 | 7 | - | [svg](drawings/z_drive_mount.svg) [pdf](drawings/z_drive_mount.pdf) [step](cad/z_drive_mount.step) [stl](stl/z_drive_mount.stl) |
 | z_sleeve | printed | PETG | 22 x 22 x 32.75 | 0.008 | 1 / 0 | 0 | - | [svg](drawings/z_sleeve.svg) [pdf](drawings/z_sleeve.pdf) [step](cad/z_sleeve.step) [stl](stl/z_sleeve.stl) |
 | z_pedestal_fl | printed | PETG | 64 x 32 x 43.75 | 0.046 | 3 / 0 | 1 | z_pedestal_fr | [svg](drawings/z_pedestal_fl.svg) [pdf](drawings/z_pedestal_fl.pdf) [step](cad/z_pedestal_fl.step) [stl](stl/z_pedestal_fl.stl) |
 | z_pedestal_fr | printed | PETG | 64 x 32 x 43.75 | 0.046 | 3 / 0 | 1 | z_pedestal_fl | [svg](drawings/z_pedestal_fr.svg) [pdf](drawings/z_pedestal_fr.pdf) [step](cad/z_pedestal_fr.step) [stl](stl/z_pedestal_fr.stl) |
@@ -68,13 +68,13 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 | probe_mount | printed | ABS | 37 x 21.69 x 51.55 | 0.009 | 3 / 0 | 1 | - | [svg](drawings/probe_mount.svg) [pdf](drawings/probe_mount.pdf) [step](cad/probe_mount.step) [stl](stl/probe_mount.stl) |
 | part_duct | printed | ABS | 46 x 33.3 x 30 | 0.009 | 6 / 0 | 0 | - | [svg](drawings/part_duct.svg) [pdf](drawings/part_duct.pdf) [step](cad/part_duct.step) [stl](stl/part_duct.stl) |
 | x_belt_block | printed | ABS | 28 x 25 x 17.5 | 0.011 | 4 / 0 | 0 | - | [svg](drawings/x_belt_block.svg) [pdf](drawings/x_belt_block.pdf) [step](cad/x_belt_block.step) [stl](stl/x_belt_block.stl) |
-| x_motor_mount | sheet | steel sheet (grade NOT specified in the model) | 64 x 50 x 3 | 0.063 | 7 / 0 | 4 | - | [svg](drawings/x_motor_mount.svg) [pdf](drawings/x_motor_mount.pdf) [dxf](dxf/x_motor_mount.dxf) [step](cad/x_motor_mount.step) |
+| x_motor_mount | sheet | steel sheet (grade NOT specified in the model) | 64 x 50 x 3 | 0.063 | 7 / 0 | 5 | - | [svg](drawings/x_motor_mount.svg) [pdf](drawings/x_motor_mount.pdf) [dxf](dxf/x_motor_mount.dxf) [step](cad/x_motor_mount.step) |
 | x_idler_mount | sheet | steel sheet (grade NOT specified in the model) | 53 x 50 x 3 | 0.061 | 3 / 0 | 1 | - | [svg](drawings/x_idler_mount.svg) [pdf](drawings/x_idler_mount.pdf) [dxf](dxf/x_idler_mount.dxf) [step](cad/x_idler_mount.step) |
 | x_tension_anchor | printed | PETG | 18 x 14 x 30 | 0.007 | 2 / 0 | 0 | y_tension_anchor, y_tension_anchor_l | [svg](drawings/x_tension_anchor.svg) [pdf](drawings/x_tension_anchor.pdf) [step](cad/x_tension_anchor.step) [stl](stl/x_tension_anchor.stl) |
-| y_motor_mount | sheet | steel sheet (grade NOT specified in the model) | 100 x 63.33 x 2 | 0.054 | 7 / 0 | 4 | y_motor_mount_l | [svg](drawings/y_motor_mount.svg) [pdf](drawings/y_motor_mount.pdf) [dxf](dxf/y_motor_mount.dxf) [step](cad/y_motor_mount.step) |
+| y_motor_mount | sheet | steel sheet (grade NOT specified in the model) | 100 x 63.33 x 2 | 0.054 | 7 / 0 | 5 | y_motor_mount_l | [svg](drawings/y_motor_mount.svg) [pdf](drawings/y_motor_mount.pdf) [dxf](dxf/y_motor_mount.dxf) [step](cad/y_motor_mount.step) |
 | y_tension_anchor | printed | PETG | 18 x 14 x 30 | 0.007 | 2 / 0 | 0 | x_tension_anchor, y_tension_anchor_l | [svg](drawings/y_tension_anchor.svg) [pdf](drawings/y_tension_anchor.pdf) [step](cad/y_tension_anchor.step) [stl](stl/y_tension_anchor.stl) |
 | y_idler_mount | sheet | steel sheet (grade NOT specified in the model) | 78.19 x 39.33 x 2 | 0.027 | 3 / 0 | 1 | y_idler_mount_l | [svg](drawings/y_idler_mount.svg) [pdf](drawings/y_idler_mount.pdf) [dxf](dxf/y_idler_mount.dxf) [step](cad/y_idler_mount.step) |
-| y_motor_mount_l | sheet | steel sheet (grade NOT specified in the model) | 100 x 63.33 x 2 | 0.054 | 7 / 0 | 4 | y_motor_mount | [svg](drawings/y_motor_mount_l.svg) [pdf](drawings/y_motor_mount_l.pdf) [dxf](dxf/y_motor_mount_l.dxf) [step](cad/y_motor_mount_l.step) |
+| y_motor_mount_l | sheet | steel sheet (grade NOT specified in the model) | 100 x 63.33 x 2 | 0.054 | 7 / 0 | 5 | y_motor_mount | [svg](drawings/y_motor_mount_l.svg) [pdf](drawings/y_motor_mount_l.pdf) [dxf](dxf/y_motor_mount_l.dxf) [step](cad/y_motor_mount_l.step) |
 | y_tension_anchor_l | printed | PETG | 18 x 14 x 30 | 0.007 | 2 / 0 | 0 | x_tension_anchor, y_tension_anchor | [svg](drawings/y_tension_anchor_l.svg) [pdf](drawings/y_tension_anchor_l.pdf) [step](cad/y_tension_anchor_l.step) [stl](stl/y_tension_anchor_l.stl) |
 | y_idler_mount_l | sheet | steel sheet (grade NOT specified in the model) | 78.19 x 39.33 x 2 | 0.027 | 3 / 0 | 1 | y_idler_mount | [svg](drawings/y_idler_mount_l.svg) [pdf](drawings/y_idler_mount_l.pdf) [dxf](dxf/y_idler_mount_l.dxf) [step](cad/y_idler_mount_l.step) |
 | y_endstop_mount | sheet | steel sheet (grade NOT specified in the model) | 54.5 x 25 x 3 | 0.018 | 4 / 0 | 2 | - | [svg](drawings/y_endstop_mount.svg) [pdf](drawings/y_endstop_mount.pdf) [dxf](dxf/y_endstop_mount.dxf) [step](cad/y_endstop_mount.step) |
@@ -167,7 +167,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 
 ![nut_block_fl](drawings/nut_block_fl.svg)
 
-- Quantity 1. ABS; printed; 57 x 35 x 34 mm; 0.018 kg. Same or mirror-image geometry as nut_block_fr.
+- Quantity 1. ABS; printed; 57 x 35 x 34 mm; 0.018 kg. Same size, volume and hole list as nut_block_fr (same or mirror-image part: compare before sharing a file).
 - Print with the machine's **-Y** direction up (STL already turned). Support needed under 20.0 mm2; longest bridge 15.8 mm; bed contact 0.92; thinnest wall 2.9 mm; 11.3 g, 0.8 h (estimate). Holes opening on the bed face: 4 (first-layer squash makes them tight).
 - Threads: none. Heat-set inserts: none. Reaming: none.
 
@@ -182,7 +182,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 
 ![nut_block_fr](drawings/nut_block_fr.svg)
 
-- Quantity 1. ABS; printed; 57 x 35 x 34 mm; 0.018 kg. Same or mirror-image geometry as nut_block_fl.
+- Quantity 1. ABS; printed; 57 x 35 x 34 mm; 0.018 kg. Same size, volume and hole list as nut_block_fl (same or mirror-image part: compare before sharing a file).
 - Print with the machine's **-Y** direction up (STL already turned). Support needed under 20.0 mm2; longest bridge 15.8 mm; bed contact 0.92; thinnest wall 2.9 mm; 11.3 g, 0.8 h (estimate). Holes opening on the bed face: 4 (first-layer squash makes them tight).
 - Threads: none. Heat-set inserts: none. Reaming: none.
 
@@ -217,7 +217,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 
 ![bed_post_tab_0](drawings/bed_post_tab_0.svg)
 
-- Quantity 1. steel sheet (grade NOT specified in the model); sheet; 43.5 x 38 x 3 mm; 0.037 kg. Same or mirror-image geometry as bed_post_tab_1, bed_post_tab_2, bed_post_tab_3.
+- Quantity 1. steel sheet (grade NOT specified in the model); sheet; 43.5 x 38 x 3 mm; 0.037 kg. Same size, volume and hole list as bed_post_tab_1, bed_post_tab_2, bed_post_tab_3 (same or mirror-image part: compare before sharing a file).
 - Sheet 3 mm, laser cut, flat (no bends), through-cut only. Flat size [43.5, 38.0] mm, cut length 215.0 mm, 4 pierces (report). DXF written here: {'LINE': 4, 'CIRCLE': 3}, cut length 214.8 mm, extent (43.5, 38.0).
 - Threads: none. Heat-set inserts: none. Reaming: none.
 - Drawing note, not yet in the model: Deburr; break all sharp edges 0.2-0.5 mm; outside profile corners R1 min unless dimensioned.
@@ -232,7 +232,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 
 ![bed_post_tab_1](drawings/bed_post_tab_1.svg)
 
-- Quantity 1. steel sheet (grade NOT specified in the model); sheet; 43.5 x 38 x 3 mm; 0.037 kg. Same or mirror-image geometry as bed_post_tab_0, bed_post_tab_2, bed_post_tab_3.
+- Quantity 1. steel sheet (grade NOT specified in the model); sheet; 43.5 x 38 x 3 mm; 0.037 kg. Same size, volume and hole list as bed_post_tab_0, bed_post_tab_2, bed_post_tab_3 (same or mirror-image part: compare before sharing a file).
 - Sheet 3 mm, laser cut, flat (no bends), through-cut only. Flat size [43.5, 38.0] mm, cut length 215.0 mm, 4 pierces (report). DXF written here: {'LINE': 4, 'CIRCLE': 3}, cut length 214.8 mm, extent (43.5, 38.0).
 - Threads: none. Heat-set inserts: none. Reaming: none.
 - Drawing note, not yet in the model: Deburr; break all sharp edges 0.2-0.5 mm; outside profile corners R1 min unless dimensioned.
@@ -247,7 +247,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 
 ![bed_post_tab_2](drawings/bed_post_tab_2.svg)
 
-- Quantity 1. steel sheet (grade NOT specified in the model); sheet; 43.5 x 38 x 3 mm; 0.037 kg. Same or mirror-image geometry as bed_post_tab_0, bed_post_tab_1, bed_post_tab_3.
+- Quantity 1. steel sheet (grade NOT specified in the model); sheet; 43.5 x 38 x 3 mm; 0.037 kg. Same size, volume and hole list as bed_post_tab_0, bed_post_tab_1, bed_post_tab_3 (same or mirror-image part: compare before sharing a file).
 - Sheet 3 mm, laser cut, flat (no bends), through-cut only. Flat size [43.5, 38.0] mm, cut length 215.0 mm, 4 pierces (report). DXF written here: {'LINE': 4, 'CIRCLE': 3}, cut length 214.8 mm, extent (43.5, 38.0).
 - Threads: none. Heat-set inserts: none. Reaming: none.
 - Drawing note, not yet in the model: Deburr; break all sharp edges 0.2-0.5 mm; outside profile corners R1 min unless dimensioned.
@@ -262,7 +262,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 
 ![bed_post_tab_3](drawings/bed_post_tab_3.svg)
 
-- Quantity 1. steel sheet (grade NOT specified in the model); sheet; 43.5 x 38 x 3 mm; 0.037 kg. Same or mirror-image geometry as bed_post_tab_0, bed_post_tab_1, bed_post_tab_2.
+- Quantity 1. steel sheet (grade NOT specified in the model); sheet; 43.5 x 38 x 3 mm; 0.037 kg. Same size, volume and hole list as bed_post_tab_0, bed_post_tab_1, bed_post_tab_2 (same or mirror-image part: compare before sharing a file).
 - Sheet 3 mm, laser cut, flat (no bends), through-cut only. Flat size [43.5, 38.0] mm, cut length 215.0 mm, 4 pierces (report). DXF written here: {'LINE': 4, 'CIRCLE': 3}, cut length 214.8 mm, extent (43.5, 38.0).
 - Threads: none. Heat-set inserts: none. Reaming: none.
 - Drawing note, not yet in the model: Deburr; break all sharp edges 0.2-0.5 mm; outside profile corners R1 min unless dimensioned.
@@ -307,7 +307,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 | H3 | hole | Z | 8 | 32 | 10 | 6 | - | through | 10 x 39, +Z face | clearance M5 | z_drive_mount_bolt_0 (SHCS-M5x16) | - | b: frame_bot_back | - |
 | H4 | hole | Z | 20 | 32 | 10 | 6 | - | through | 10 x 39, +Z face | clearance M5 | z_drive_mount_bolt_1 (SHCS-M5x16) | - | b: frame_bot_back | - |
 | H5 | hole | Z | 41 | 42 | 29.5 | 22.4 | - | 47 | - | bore / opening | - | z_sleeve (custom), leadscrew (T8x2-300), z_bearing_lo (BRG-608), z_bearing_hi (BRG-608), z_pulley (GT2-20T-B8) | - | seat of bearing z_bearing_hi: fit; seat of bearing z_bearing_lo: fit |
-| H6 | hole | Z | 78 | 42 | 50.5 | 23 | - | through | - | bore / opening | - | z_motor (NEMA17-40), z_pulley_m (GT2-20T-B5) | - | - |
+| H6 | hole | Z | 78 | 42 | 50.5 | 23 | - | through | - | bore / opening | - | z_motor (NEMA17-40), z_pulley_m (GT2-20T-B5) | - | pilot of motor z_motor |
 | H7 | hole | Z | 62.5 | 57.5 | 50.5 | 4.2 | - | through | - | clearance M3 | z_motor_screw_1 (SHCS-M3x8) | - | a: z_motor | locates motor z_motor |
 | H8 | hole | Z | 93.5 | 57.5 | 50.5 | 4.2 | - | through | - | clearance M3 | z_motor_screw_3 (SHCS-M3x8) | - | a: z_motor | locates motor z_motor |
 | S1 | slot | Z | 63 | 12 | 50.5 | 5.5 | 11.5 | through | - | clearance M5 | z_idler_bolt (SHCS-M5x25) | - | - | axle of z_idler: sets the belt plane |
@@ -328,7 +328,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 
 ![z_pedestal_fl](drawings/z_pedestal_fl.svg)
 
-- Quantity 1. PETG; printed; 64 x 32 x 43.75 mm; 0.046 kg. Same or mirror-image geometry as z_pedestal_fr.
+- Quantity 1. PETG; printed; 64 x 32 x 43.75 mm; 0.046 kg. Same size, volume and hole list as z_pedestal_fr (same or mirror-image part: compare before sharing a file).
 - Print with the machine's **+Z** direction up (STL already turned). Support needed under 0.0 mm2; longest bridge 14.3 mm; bed contact 0.9; thinnest wall 4.81 mm; 23.6 g, 1.34 h (estimate). Holes opening on the bed face: 2 (first-layer squash makes them tight).
 - Threads: none. Heat-set inserts: none. Reaming: H2 if the bearing does not slide in.
 - **Needs more than the general tolerance, or rests on an assumption:**
@@ -344,7 +344,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 
 ![z_pedestal_fr](drawings/z_pedestal_fr.svg)
 
-- Quantity 1. PETG; printed; 64 x 32 x 43.75 mm; 0.046 kg. Same or mirror-image geometry as z_pedestal_fl.
+- Quantity 1. PETG; printed; 64 x 32 x 43.75 mm; 0.046 kg. Same size, volume and hole list as z_pedestal_fl (same or mirror-image part: compare before sharing a file).
 - Print with the machine's **+Z** direction up (STL already turned). Support needed under 0.0 mm2; longest bridge 14.3 mm; bed contact 0.9; thinnest wall 4.81 mm; 23.6 g, 1.34 h (estimate). Holes opening on the bed face: 2 (first-layer squash makes them tight).
 - Threads: none. Heat-set inserts: none. Reaming: H2 if the bearing does not slide in.
 - **Needs more than the general tolerance, or rests on an assumption:**
@@ -413,7 +413,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 
 ![x_rail_stop_left](drawings/x_rail_stop_left.svg)
 
-- Quantity 1. steel sheet (grade NOT specified in the model); sheet; 26.5 x 20 x 3 mm; 0.007 kg. Same or mirror-image geometry as x_rail_stop_right.
+- Quantity 1. steel sheet (grade NOT specified in the model); sheet; 26.5 x 20 x 3 mm; 0.007 kg. Same size, volume and hole list as x_rail_stop_right (same or mirror-image part: compare before sharing a file).
 - Sheet 3 mm, laser cut, flat (no bends), through-cut only. Flat size [26.5, 20.0] mm, cut length 110.0 mm, 2 pierces (report). DXF written here: {'LINE': 8, 'CIRCLE': 1}, cut length 110.3 mm, extent (26.5, 20.0).
 - Threads: none. Heat-set inserts: none. Reaming: none.
 - Drawing note, not yet in the model: Deburr; break all sharp edges 0.2-0.5 mm; outside profile corners R1 min unless dimensioned.
@@ -426,7 +426,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 
 ![x_rail_stop_right](drawings/x_rail_stop_right.svg)
 
-- Quantity 1. steel sheet (grade NOT specified in the model); sheet; 26.5 x 20 x 3 mm; 0.007 kg. Same or mirror-image geometry as x_rail_stop_left.
+- Quantity 1. steel sheet (grade NOT specified in the model); sheet; 26.5 x 20 x 3 mm; 0.007 kg. Same size, volume and hole list as x_rail_stop_left (same or mirror-image part: compare before sharing a file).
 - Sheet 3 mm, laser cut, flat (no bends), through-cut only. Flat size [26.5, 20.0] mm, cut length 110.0 mm, 2 pierces (report). DXF written here: {'LINE': 8, 'CIRCLE': 1}, cut length 110.3 mm, extent (26.5, 20.0).
 - Threads: none. Heat-set inserts: none. Reaming: none.
 - Drawing note, not yet in the model: Deburr; break all sharp edges 0.2-0.5 mm; outside profile corners R1 min unless dimensioned.
@@ -523,7 +523,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 | H1 | hole | Z | 25.5 | 9.5 | 1.5 | 3.6 | - | through | - | clearance M3 | x_motor_screw_0 (SHCS-M3x6) | - | a: x_motor | locates motor x_motor |
 | H2 | hole | Z | 56.5 | 9.5 | 1.5 | 3.6 | - | through | - | clearance M3 | x_motor_screw_1 (SHCS-M3x6) | - | a: x_motor | locates motor x_motor |
 | H3 | hole | Z | 8 | 10 | 1.5 | 5.5 | - | through | - | clearance M5 | x_motor_mount_bolt_0 (SHCS-M5x8) | - | b: x_beam | - |
-| H4 | hole | Z | 41 | 25 | 1.5 | 23 | - | through | - | bore / opening | - | x_motor (NEMA17-34) | - | - |
+| H4 | hole | Z | 41 | 25 | 1.5 | 23 | - | through | - | bore / opening | - | x_motor (NEMA17-34) | - | pilot of motor x_motor |
 | H5 | hole | Z | 8 | 40 | 1.5 | 5.5 | - | through | - | clearance M5 | x_motor_mount_bolt_1 (SHCS-M5x8) | - | b: x_beam | - |
 | H6 | hole | Z | 25.5 | 40.5 | 1.5 | 3.6 | - | through | - | clearance M3 | x_motor_screw_2 (SHCS-M3x6) | - | a: x_motor | locates motor x_motor |
 | H7 | hole | Z | 56.5 | 40.5 | 1.5 | 3.6 | - | through | - | clearance M3 | x_motor_screw_3 (SHCS-M3x6) | - | a: x_motor | locates motor x_motor |
@@ -549,7 +549,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 
 ![x_tension_anchor](drawings/x_tension_anchor.svg)
 
-- Quantity 1. PETG; printed; 18 x 14 x 30 mm; 0.007 kg. Same or mirror-image geometry as y_tension_anchor, y_tension_anchor_l.
+- Quantity 1. PETG; printed; 18 x 14 x 30 mm; 0.007 kg. Same size, volume and hole list as y_tension_anchor, y_tension_anchor_l (same or mirror-image part: compare before sharing a file).
 - Print with the machine's **+X** direction up (STL already turned). Support needed under 0.0 mm2; longest bridge 0.0 mm; bed contact 0.85; thinnest wall 1.6 mm; 4.4 g, 0.29 h (estimate). Holes opening on the bed face: 1 (first-layer squash makes them tight).
 - Threads: none. Heat-set inserts: none. Reaming: none.
 
@@ -562,7 +562,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 
 ![y_motor_mount](drawings/y_motor_mount.svg)
 
-- Quantity 1. steel sheet (grade NOT specified in the model); sheet; 100 x 63.33 x 2 mm; 0.054 kg. Same or mirror-image geometry as y_motor_mount_l.
+- Quantity 1. steel sheet (grade NOT specified in the model); sheet; 100 x 63.33 x 2 mm; 0.054 kg. Same size, volume and hole list as y_motor_mount_l (same or mirror-image part: compare before sharing a file).
 - Sheet 2 mm, laser cut, flat (no bends), through-cut only. Flat size [106.5, 59.2] mm, cut length 477.0 mm, 8 pierces (report). DXF written here: {'LINE': 8, 'ARC': 2, 'CIRCLE': 7}, cut length 476.6 mm, extent (100.0, 63.33).
 - Threads: none. Heat-set inserts: none. Reaming: none.
 - Drawing note, not yet in the model: Deburr; break all sharp edges 0.2-0.5 mm; outside profile corners R1 min unless dimensioned.
@@ -576,7 +576,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 | H2 | hole | Z | 40 | 20 | 1 | 5.5 | - | through | - | clearance M5 | y_motor_mount_bolt_1 (SHCS-M5x8) | - | a: frame_top_right | - |
 | H3 | hole | Z | 63.5 | 24.83 | 1 | 3.6 | - | through | - | clearance M3 | y_motor_screw_0 (SHCS-M3x6) | - | b: y_motor | locates motor y_motor |
 | H4 | hole | Z | 94.5 | 24.83 | 1 | 3.6 | - | through | - | clearance M3 | y_motor_screw_2 (SHCS-M3x6) | - | b: y_motor | locates motor y_motor |
-| H5 | hole | Z | 79 | 40.33 | 1 | 23 | - | through | - | bore / opening | - | y_motor (NEMA17-48) | - | - |
+| H5 | hole | Z | 79 | 40.33 | 1 | 23 | - | through | - | bore / opening | - | y_motor (NEMA17-48) | - | pilot of motor y_motor |
 | H6 | hole | Z | 63.5 | 55.83 | 1 | 3.6 | - | through | - | clearance M3 | y_motor_screw_1 (SHCS-M3x6) | - | b: y_motor | locates motor y_motor |
 | H7 | hole | Z | 94.5 | 55.83 | 1 | 3.6 | - | through | - | clearance M3 | y_motor_screw_3 (SHCS-M3x6) | - | b: y_motor | locates motor y_motor |
 
@@ -584,7 +584,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 
 ![y_tension_anchor](drawings/y_tension_anchor.svg)
 
-- Quantity 1. PETG; printed; 18 x 14 x 30 mm; 0.007 kg. Same or mirror-image geometry as x_tension_anchor, y_tension_anchor_l.
+- Quantity 1. PETG; printed; 18 x 14 x 30 mm; 0.007 kg. Same size, volume and hole list as x_tension_anchor, y_tension_anchor_l (same or mirror-image part: compare before sharing a file).
 - Print with the machine's **-X** direction up (STL already turned). Support needed under 0.0 mm2; longest bridge 3.5 mm; bed contact 0.86; thinnest wall 1.92 mm; 4.4 g, 0.29 h (estimate). Holes opening on the bed face: 1 (first-layer squash makes them tight).
 - Threads: none. Heat-set inserts: none. Reaming: none.
 
@@ -597,7 +597,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 
 ![y_idler_mount](drawings/y_idler_mount.svg)
 
-- Quantity 1. steel sheet (grade NOT specified in the model); sheet; 78.19 x 39.33 x 2 mm; 0.027 kg. Same or mirror-image geometry as y_idler_mount_l.
+- Quantity 1. steel sheet (grade NOT specified in the model); sheet; 78.19 x 39.33 x 2 mm; 0.027 kg. Same size, volume and hole list as y_idler_mount_l (same or mirror-image part: compare before sharing a file).
 - Sheet 2 mm, laser cut, flat (no bends), through-cut only. Flat size [78.2, 39.3] mm, cut length 286.0 mm, 4 pierces (report). DXF written here: {'LINE': 6, 'ARC': 1, 'CIRCLE': 3}, cut length 286.0 mm, extent (78.19, 39.33).
 - Threads: none. Heat-set inserts: none. Reaming: none.
 - Drawing note, not yet in the model: Deburr; break all sharp edges 0.2-0.5 mm; outside profile corners R1 min unless dimensioned.
@@ -614,7 +614,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 
 ![y_motor_mount_l](drawings/y_motor_mount_l.svg)
 
-- Quantity 1. steel sheet (grade NOT specified in the model); sheet; 100 x 63.33 x 2 mm; 0.054 kg. Same or mirror-image geometry as y_motor_mount.
+- Quantity 1. steel sheet (grade NOT specified in the model); sheet; 100 x 63.33 x 2 mm; 0.054 kg. Same size, volume and hole list as y_motor_mount (same or mirror-image part: compare before sharing a file).
 - Sheet 2 mm, laser cut, flat (no bends), through-cut only. Flat size [106.5, 59.2] mm, cut length 477.0 mm, 8 pierces (report). DXF written here: {'LINE': 8, 'ARC': 2, 'CIRCLE': 7}, cut length 476.6 mm, extent (100.0, 63.33).
 - Threads: none. Heat-set inserts: none. Reaming: none.
 - Drawing note, not yet in the model: Deburr; break all sharp edges 0.2-0.5 mm; outside profile corners R1 min unless dimensioned.
@@ -628,7 +628,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 | H2 | hole | Z | 40 | 20 | 1 | 5.5 | - | through | - | clearance M5 | y_motor_mount_l_bolt_1 (SHCS-M5x8) | - | a: frame_top_left | - |
 | H3 | hole | Z | 63.5 | 24.83 | 1 | 3.6 | - | through | - | clearance M3 | y_motor_l_screw_0 (SHCS-M3x6) | - | b: y_motor_l | locates motor y_motor_l |
 | H4 | hole | Z | 94.5 | 24.83 | 1 | 3.6 | - | through | - | clearance M3 | y_motor_l_screw_2 (SHCS-M3x6) | - | b: y_motor_l | locates motor y_motor_l |
-| H5 | hole | Z | 79 | 40.33 | 1 | 23 | - | through | - | bore / opening | - | y_motor_l (NEMA17-48) | - | - |
+| H5 | hole | Z | 79 | 40.33 | 1 | 23 | - | through | - | bore / opening | - | y_motor_l (NEMA17-48) | - | pilot of motor y_motor_l |
 | H6 | hole | Z | 63.5 | 55.83 | 1 | 3.6 | - | through | - | clearance M3 | y_motor_l_screw_1 (SHCS-M3x6) | - | b: y_motor_l | locates motor y_motor_l |
 | H7 | hole | Z | 94.5 | 55.83 | 1 | 3.6 | - | through | - | clearance M3 | y_motor_l_screw_3 (SHCS-M3x6) | - | b: y_motor_l | locates motor y_motor_l |
 
@@ -636,7 +636,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 
 ![y_tension_anchor_l](drawings/y_tension_anchor_l.svg)
 
-- Quantity 1. PETG; printed; 18 x 14 x 30 mm; 0.007 kg. Same or mirror-image geometry as x_tension_anchor, y_tension_anchor.
+- Quantity 1. PETG; printed; 18 x 14 x 30 mm; 0.007 kg. Same size, volume and hole list as x_tension_anchor, y_tension_anchor (same or mirror-image part: compare before sharing a file).
 - Print with the machine's **+X** direction up (STL already turned). Support needed under 0.0 mm2; longest bridge 3.5 mm; bed contact 0.86; thinnest wall 1.73 mm; 4.4 g, 0.29 h (estimate). Holes opening on the bed face: 1 (first-layer squash makes them tight).
 - Threads: none. Heat-set inserts: none. Reaming: none.
 
@@ -649,7 +649,7 @@ The model's own comment calls these 'typical shop figures, deliberately a little
 
 ![y_idler_mount_l](drawings/y_idler_mount_l.svg)
 
-- Quantity 1. steel sheet (grade NOT specified in the model); sheet; 78.19 x 39.33 x 2 mm; 0.027 kg. Same or mirror-image geometry as y_idler_mount.
+- Quantity 1. steel sheet (grade NOT specified in the model); sheet; 78.19 x 39.33 x 2 mm; 0.027 kg. Same size, volume and hole list as y_idler_mount (same or mirror-image part: compare before sharing a file).
 - Sheet 2 mm, laser cut, flat (no bends), through-cut only. Flat size [78.2, 39.3] mm, cut length 286.0 mm, 4 pierces (report). DXF written here: {'LINE': 6, 'ARC': 1, 'CIRCLE': 3}, cut length 286.0 mm, extent (78.19, 39.33).
 - Threads: none. Heat-set inserts: none. Reaming: none.
 - Drawing note, not yet in the model: Deburr; break all sharp edges 0.2-0.5 mm; outside profile corners R1 min unless dimensioned.
