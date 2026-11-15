@@ -1015,11 +1015,14 @@ def build() -> Design:
     d.subassemblies["bed_carrier"] = (
         ["back_plate", "nut_block"] + [f"nut_block_{k}_{i}" for k in ("bolt", "nut") for i in range(len(NB_BOLTS))]
         + [f"bed_arm_{n}{sfx}" for n in ("left", "right") for sfx in ("", "_bolt", "_bracket")])
-    # v6: the whole X gantry is built on the bench and lowered onto the two Y guide blocks, where eight M3 screws
-    # from the top hold it (v5: beam bolts driven from below through holes in the electronics tray). On the bench:
-    # rail on the beam, guide block, the two Y plates, X motor and idler plates, X endstop, and the toolhead.
-    d.subassemblies["gantry"] = [c.name for c in d.components if c.body in ("xbody", "ybody")
-                                 and not c.name.startswith(("y_carriage", "y_plate_left_screw", "y_plate_right_screw"))]
+    # motors on their plates, idlers on theirs and the part fan on its carrier are bench jobs
+    d.subassemblies["x_drive"] = ["x_motor_mount", "x_motor", "x_pulley"] + [f"x_motor_screw_{i}" for i in range(4)]
+    d.subassemblies["x_idler_unit"] = ["x_idler_mount", "x_idler_spacer", "x_idler", "x_idler_bolt", "x_idler_nut"]
+    d.subassemblies["part_cooling"] = (["fan_carrier", "part_fan"]
+                                       + [f"part_fan_{k}_{i}" for k in ("screw", "nut") for i in range(2)])
+    for tag in ("", "_l"):
+        d.subassemblies[f"y_drive{tag}"] = ([f"y_motor_mount{tag}", f"y_motor{tag}", f"y_pulley{tag}"]
+                                            + [f"y_motor{tag}_screw_{i}" for i in range(4)])
     # ================= belts =====================================================
     d.belts.append(Belt("x_belt", [("anchor", "xbody", (-14.0, XB_Y, Z_XL)), ("pulley", "x_pulley", "ccw"),
                                    ("pulley", "x_idler", "ccw"), ("anchor", "xbody", (14.0, XB_Y, Z_XL))],
