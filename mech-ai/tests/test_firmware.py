@@ -44,14 +44,17 @@ def test_queue_step_is_decoded_with_interval_count_and_add(tmp_path):
     assert n.tolist() == [1, 2, 3, 4, 3, 2]
 
 
-def test_a_z_move_after_a_pause_longer_than_the_clock_is_put_in_the_xy_gap(tmp_path):
+def test_a_z_step_after_a_pause_longer_than_the_clock_is_placed_by_its_position_in_the_stream(tmp_path):
     wrap = 1 << 32
     # X steps steadily for 100 s except for a 0.2 s gap at 80 s; the Z move really happens in that gap, but its
     # 32-bit interval has wrapped once and reads as 80 s - 67.1 s
-    lines = ["queue_step oid=0 interval=64000 count=60000 add=0", "queue_step oid=0 interval=64000 count=19999 add=0",
-             "queue_step oid=0 interval=12864000 count=1 add=0", "queue_step oid=0 interval=64000 count=19000 add=0",
-             "queue_step oid=1 interval=64000 count=1 add=0",
-             f"queue_step oid=2 interval={int(80.05 * HZ) - wrap} count=1 add=0", "queue_step oid=2 interval=6400 count=50 add=0"]
+    # Klipper writes commands in the order of the clock they are wanted at: the far Z step (wanted at its own time,
+    # 80.05 s) comes after the X command that began at 80.0 s and before the one that begins at 80.2 s
+    lines = ["queue_step oid=1 interval=64000 count=1 add=0",
+             "queue_step oid=0 interval=64000 count=60000 add=0", "queue_step oid=0 interval=64000 count=19999 add=0",
+             "queue_step oid=0 interval=12864000 count=1 add=0",
+             f"queue_step oid=2 interval={int(80.05 * HZ) - wrap} count=1 add=0", "queue_step oid=2 interval=6400 count=50 add=0",
+             "queue_step oid=0 interval=64000 count=19000 add=0"]
     d = fw.decode(_dump(tmp_path, lines), CFG, HZ)
     tz = d["steps"][2][0]
     assert d["clock_wraps_resolved"]["Z"] == 1

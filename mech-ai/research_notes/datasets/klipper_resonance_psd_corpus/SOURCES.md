@@ -1,0 +1,9 @@
+# Klipper resonance-test spectra from public printer-config repositories
+
+- Fetched: 2026-11-15, from `raw.githubusercontent.com` (default branch at that date).
+- Found with GitHub code search: `filename:resonances_x extension:csv`, `filename:resonances_y extension:csv`, `filename:calibration_data_x|y extension:csv`, and the header string `"freq,psd_x,psd_y,psd_z,psd_xyz" extension:csv`.
+- Licence: per repository, listed in `corpus_index_and_peaks.csv` (column `licence`). Only files from repositories with a LICENSE file that is MIT, Apache-2.0, CC0-1.0 or GPL-3.0 are stored here (98 files, 16 repositories). The other 176 files (46 repositories with no licence file, one CC BY-NC-SA) are **not stored**; the index gives their URL and the peak frequency and damping ratio computed from them.
+
+Each file is the output of Klipper's `TEST_RESONANCES` / `SHAPER_CALIBRATE`: power spectral density of toolhead (or bed) acceleration against frequency, 0-133 Hz or 0-200 Hz in about 1.5 Hz bins, columns `freq, psd_x, psd_y, psd_z, psd_xyz` (calibration files add one column per fitted shaper). One sub-directory per source repository; file names are prefixed with a hash of the original path. Machines are mostly Voron 2.4 / Trident / V0 (CoreXY), some Ender 3, Sovol, Prusa Bear, Creality K1, FlashForge AD5M, Snapmaker U1. `prestonbrown__helixscreen/` holds per-belt diagonal sweeps (CoreXY A and B paths) with an extra `accel_per_hz` column. `corpus_index_and_peaks.csv` lists all 274 parsed files with URL, licence, guessed machine, main peak and half-power damping ratio. The machine name is a guess from the repository name; printer mass, belt length and belt width are not in these files and would have to be read from each repository's `printer.cfg`.
+
+These are untrusted third-party files: parse as CSV only.

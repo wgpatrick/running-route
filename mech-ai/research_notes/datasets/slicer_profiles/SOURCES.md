@@ -1,0 +1,6 @@
+# Slicer vendor profiles: volumetric flow limits and pressure-advance values
+
+Fetched 2026-11-15.
+
+- `bambustudio_filament_derived/bbl_filament_pa_flow.csv`: derived from the 2,233 filament JSON profiles under https://github.com/bambulab/BambuStudio/tree/HEAD/resources/profiles/BBL/filament (AGPL-3.0, LICENSE copied; version 02.09.00.74). 2,107 instantiated profiles with inheritance resolved: filament type, nozzle temperature, maximum volumetric speed, flow ratio, density, glass-transition temperature, bed temperature, retraction, compatible printers. Bambu profiles carry no pressure-advance value (the machines calibrate it per spool), so that column is empty. The JSON files themselves are not stored.
+- `prusaslicer_profiles/PrusaResearch_2.3.0.ini`: https://github.com/prusa3d/PrusaSlicer-settings-prusa-fff/blob/HEAD/PrusaResearch/2.3.0.ini (1.4 MB; no licence file found in that repository, PrusaSlicer itself is AGPL-3.0; kept because it is plain vendor configuration text). Holds 1,025 `filament_max_volumetric_speed` entries and the factory pressure-advance values: `M572 S...` per nozzle size for MK4/XL/MINI input-shaper profiles (for example 0.03-0.058 s at 0.4 mm on the direct-drive Nextruder, 0.23-0.24 s on the Bowden MINI) and `M900 K...` linear-advance values for MK3.

@@ -98,11 +98,14 @@ def decode(dump: Path, cfg_text: str, clock_hz: float) -> dict:
     for sec, k in AXES.items():
         if c.has_section(sec):
             pin_axis[c.get(sec, "step_pin").strip().lstrip("!^~")] = k
-    oid_axis, state, other, far = {}, {}, {}, {}
-    FAR, WRAP = 3 << 28, (1 << 32) / clock_hz
+    oid_axis, state, other = {}, {}, {}
+    WRAP_TICKS = 1 << 32
     times: dict[int, list] = {}
     signs: dict[int, list] = {}
     rx = re.compile(r"(\w+)=(-?\w+)")
+    xy_start = 0            # latest clock at which an X or Y command began, so far in the stream
+    slack = int(0.05 * clock_hz)
+    n_wrap = {"Z": 0}
     for line in Path(dump).read_text().splitlines():
         name = line.split(" ", 1)[0]
         if name == "queue_step":
@@ -112,10 +115,18 @@ def decode(dump: Path, cfg_text: str, clock_hz: float) -> dict:
                 continue
             st = state[oid]
             interval, count, add = int(a["interval"]), int(a["count"]), int(a["add"])
+            if oid_axis[oid] in (0, 1):
+                xy_start = max(xy_start, st["clock"])
+            elif oid_axis[oid] == 2 and count == 1:
+                # A step after a pause longer than the 32-bit clock (67 s at 64 MHz) arrives with its interval cut to
+                # 32 bits. Klipper writes commands in the order of the clock they are wanted at (a lone far step: its
+                # own time; any other: the time of the stepper's previous step), so this step cannot be earlier than
+                # the start of an X or Y command already written. Add whole clock periods until it is not.
+                while st["clock"] + interval < xy_start - slack:
+                    interval += WRAP_TICKS
+                    n_wrap["Z"] += 1
             k = np.arange(1, count + 1, dtype=np.int64)
             ticks = st["clock"] + interval * k + add * (k * (k - 1) // 2)
-            if count == 1 and interval >= FAR:      # a step after a long pause: its 32-bit interval may have wrapped
-                far[oid].append(sum(len(x) for x in times[oid]))
             st["clock"] = int(ticks[-1])
             times[oid].append(ticks)
             signs[oid].append(np.full(count, st["dir"], dtype=np.int8))
@@ -136,42 +147,17 @@ def decode(dump: Path, cfg_text: str, clock_hz: float) -> dict:
                 oid = int(a["oid"])
                 oid_axis[oid] = pin_axis[a["step_pin"]]
                 state[oid] = {"clock": 0, "dir": 1}
-                times[oid], signs[oid], far[oid] = [], [], []
+                times[oid], signs[oid] = [], []
         else:
             other[name] = other.get(name, 0) + 1
-    out, wraps = {}, {}
+    out = {}
     for oid, ax in oid_axis.items():
         if times[oid]:
             t = np.concatenate(times[oid]) / clock_hz
             out[ax] = (t, np.cumsum(np.concatenate(signs[oid]).astype(np.int64)))
         else:
             out[ax] = (np.zeros(0), np.zeros(0, dtype=np.int64))
-    # A pause longer than the 32-bit clock (67 s at 64 MHz) cannot be read from the interval alone. Klipper runs moves
-    # one after another, so a Z-only move starts while X and Y are still: push each such step back by whole clock
-    # periods until it lands in a gap in the X and Y steps.
-    ax_oid = {ax: oid for oid, ax in oid_axis.items()}
-    if 2 in out and len(out[2][0]) and 0 in out and 1 in out:
-        xy = np.sort(np.concatenate([out[0][0], out[1][0]]))
-        t = out[2][0].copy()
-        n_wrap = 0
-        gaps = np.diff(t)
-        # every Z move is a candidate, not only steps flagged as far: a wrapped interval can look short
-        for i in [0] + [int(x) + 1 for x in np.where(gaps >= 0.02)[0]]:
-            j = i                                   # the whole Z move this step starts
-            while j < len(gaps) and gaps[j] < 0.02:
-                j += 1
-            for k in range(0, 60):
-                a0, a1 = t[i] + k * WRAP - 0.0003, t[j] + k * WRAP + 0.0003
-                if np.searchsorted(xy, a1) - np.searchsorted(xy, a0) == 0:
-                    break
-            else:
-                raise FirmwareError("Could not place a Z move in a pause of X and Y; the command stream was not decoded.")
-            if k:
-                t[i:] += k * WRAP
-                n_wrap += k
-        out[2] = (t, out[2][1])
-        wraps["Z"] = n_wrap
-    return {"steps": out, "other_commands": other, "clock_wraps_resolved": wraps}
+    return {"steps": out, "other_commands": other, "clock_wraps_resolved": n_wrap}
 
 
 def _mm_per_step(c, sec):
@@ -432,6 +418,9 @@ def commanded(design, info, gcode_path: Path, pts: np.ndarray, dt: float, workdi
     # the approach from the home pose is one straight move in the twin's reading of the G-code and separate Z and XY
     # moves in Klipper's; compare from the first move after it
     after = seg >= 3
+    if len(pts) > 6 and seg[-1] < len(pts) - 3:
+        raise FirmwareError(f"The decoded motion could be followed only as far as G-code move {int(seg[-1])} of {len(pts) - 1}; "
+                            "the command stream was not decoded correctly, so no result is reported.")
     off_path = float(dev[after].max()) if after.any() else 0.0
     if off_path > 0.1:
         k = int(np.argmax(np.where(after, dev, 0.0)))

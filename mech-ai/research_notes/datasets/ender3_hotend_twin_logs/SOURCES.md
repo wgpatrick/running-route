@@ -1,0 +1,6 @@
+# Ender 3 hotend thermal calibration logs and fitted three-node model
+
+- URL: https://github.com/batu63562/ender3-hotend-twin (files from `benchmark/` and the repository root, branch `main`)
+- Licence: GPL-3.0 (LICENSE copied here). Author Baturay Tatliatun. Fetched 2026-11-15.
+
+Nine logged runs of one Creality Ender 3 (direct drive, all-metal V6-style hotend, 24 V 40 W cartridge, EPCOS 100K thermistor, Klipper): thermistor temperature, heater PWM duty, part-fan state and extruder velocity at about 3-4 Hz (some at 0.5 Hz), covering heat-up at full power, holds at 150/180/220/245 C, fan on/off steps and free cool-down, plus one print at 245 C. Columns: `time,T1_real,T1_model,residual,pwm,fan_state,extrude_velocity,anomali[,k_loss,eventtime]`. `calibration.example.json` holds the author's fitted three-node parameters (C1 2.0, C2 4.03, C3 0.83 J/K; R31 3.0, R_HB 1.8 K/W; natural loss 0.036 W/K plus radiation; fan term). `hotend_termal_model_raporu.md` (Turkish) is the earlier two-node fit report (C1 5.57 J/K, 0.075 W/K still, 0.143 W/K with fan, RMSE 3.2 C). `benchmark__setler.csv` is the author's calibration/test split and lists further logs that live in the repository's `loglar/` folder, which were not fetched. The repository's Python code was not downloaded.

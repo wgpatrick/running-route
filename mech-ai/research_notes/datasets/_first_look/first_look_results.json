@@ -1,0 +1,125 @@
+{
+ "psd": {
+  "x": {
+   "n": 94,
+   "zeta_p10": 0.0579,
+   "zeta_med": 0.083,
+   "zeta_p90": 0.1287,
+   "f_p10": 42.27,
+   "f_med": 59.95,
+   "f_p90": 126.94
+  },
+  "y": {
+   "n": 101,
+   "zeta_p10": 0.068,
+   "zeta_med": 0.115,
+   "zeta_p90": 0.205,
+   "f_p10": 31.7,
+   "f_med": 41.4,
+   "f_p90": 57.6
+  },
+  "machines": 58,
+  "files_total": 274,
+  "by_class": {
+   "CoreXY (Voron etc.) x": {
+    "n": 67,
+    "f_med": 58.0,
+    "zeta_med": 0.082
+   },
+   "other/unknown x": {
+    "n": 15,
+    "f_med": 63.7,
+    "zeta_med": 0.074
+   },
+   "bed slinger x": {
+    "n": 12,
+    "f_med": 67.55,
+    "zeta_med": 0.0935
+   },
+   "CoreXY (Voron etc.) y": {
+    "n": 69,
+    "f_med": 42.0,
+    "zeta_med": 0.109
+   },
+   "other/unknown y": {
+    "n": 20,
+    "f_med": 39.900000000000006,
+    "zeta_med": 0.14350000000000002
+   },
+   "bed slinger y": {
+    "n": 12,
+    "f_med": 38.2,
+    "zeta_med": 0.1225
+   }
+  }
+ },
+ "hotend": {
+  "file": "benchmark__2026-09-25_1443_klipper_245tutma_fan_soguma.csv",
+  "duration_s": 569.7365210056305,
+  "n": 1868,
+  "Tmax": 246.35,
+  "one_node": {
+   "C_J_per_K": 6.8551838655446335,
+   "h_still_W_per_K": 0.08410618377618963,
+   "h_fan_extra_W_per_K": 0.023489200658930596,
+   "lag_s": 2.0,
+   "rmse_C": 6.5247863595921105,
+   "tau_s": 81.5063002238526
+  },
+  "two_node": {
+   "C_heater": 0.20000880012012862,
+   "C_block": 6.82819243444666,
+   "R12_K_per_W": 0.6535945694617074,
+   "h_still": 0.08373077387401598,
+   "h_fan_extra": 0.0234303964932959,
+   "rmse_C": 4.809644884681564
+  }
+ },
+ "plucks": {
+  "a_belt_86hz_1": {
+   "fs": 3095.9752321979727,
+   "n": 1545,
+   "peak_hz": 172.83356878775092,
+   "tension_N_if_6mm": 22.88491835079922,
+   "tension_N_if_9mm": 34.32737752619883
+  },
+  "b_belt_82hz_1": {
+   "fs": 3086.419753086506,
+   "n": 1545,
+   "peak_hz": 70.16860441887606,
+   "tension_N_if_6mm": 3.7720622380210536,
+   "tension_N_if_9mm": 5.65809335703158
+  }
+ },
+ "arts": {
+  "lines": 1056023,
+  "header": [
+   "LabVIEW Measurement,",
+   "Writer_Version,2",
+   "Reader_Version,2",
+   "Separator,Comma",
+   "Decimal_Separator,.",
+   "Multi_Headings,No",
+   "X_Columns,One",
+   "Time_Pref,Absolute",
+   "Operator,localuser",
+   "Date,2024/07/01",
+   "Time,17:17:53.2257814687496938121",
+   "***End_of_Header***,",
+   ",",
+   "Channels,3,,,",
+   "Samples,1056000,1056000,1056000,",
+   "Date,2024/07/01,2024/07/01,2024/07/01,",
+   "Time,17:17:53.2257814687496938121,17:17:53.2257814687496938121,17:17:53.2257814687496938121,",
+   "Y_Unit_Label,g,g,g,",
+   "X_Dimension,Time,Time,Time,",
+   "X0,0.0000000000000000E+0,0.0000000000000000E+0,0.0000000000000000E+0,",
+   "Delta_X,0.000605,0.000605,0.000605,",
+   "***End_of_Header***,,,,",
+   "X_Value,Acceleration_0,Acceleration_1,Acceleration_2,Comment",
+   "0.000000,0.010635,0.387397,0.050477",
+   "0.000605,-0.452456,0.032918,-0.302893",
+   "0.001211,-0.155906,0.300286,-0.057808"
+  ]
+ }
+}

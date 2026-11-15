@@ -231,9 +231,12 @@ def ringing_test(design, pm: PrinterMap, out, opts: dict | None = None, travel_m
     lengths = [travel_mm * k for k in (0.12, 0.2, 0.31, 0.45, 0.6, 0.78, 1.0)]
     x0 = y0 = -travel_mm / 2
     lines = ["G90", "G1 Z2 F600", f"G1 X{x0:g} Y{y0:g} F{f:g}", f"G1 X{x0:g} Y{y0 + 1:g} F600", f"G1 X{x0:g} Y{y0:g} F600", f"G4 P{p}"]
+    # ... and at several speeds: a constant-acceleration ramp that lasts a whole number of periods leaves no ringing
+    # by itself, so one speed can make an axis look quiet by coincidence
+    speeds = [v * k for k in (1.0, 0.27, 0.8, 0.4, 0.6, 0.33, 0.5)]
     for ax in "XY":
-        for L in lengths:
-            lines += [f"G1 {ax}{x0 + L:g} F{f:g}", f"G4 P{p}", f"G1 {ax}{x0:g} F{f:g}", f"G4 P{p}"]
+        for L, vv in zip(lengths, speeds):
+            lines += [f"G1 {ax}{x0 + L:g} F{vv * 60:g}", f"G4 P{p}", f"G1 {ax}{x0:g} F{vv * 60 * 0.85:g}", f"G4 P{p}"]
     n_test = 4 * len(lengths)
     gpath = out / "ringing.gcode"
     gpath.write_text("\n".join(lines) + "\n")
@@ -259,7 +262,7 @@ def ringing_test(design, pm: PrinterMap, out, opts: dict | None = None, travel_m
     still = (np.abs(Vn[:, :2]).max(axis=1) < 0.5) & (np.abs(Vc[:, :2]).max(axis=1) < 0.5)
     still[: int(np.argmax(np.concatenate([seg, [seg[-1]] * n_settle]) >= len(pts) - 1 - n_test))] = False
     err = (Qa - Qn)[:, :2]
-    out_d = {"speed_mm_s": v, "accel_mm_s2": float(res["report"]["what_if"]["max_accel"]), "travel_mm": travel_mm,
+    out_d = {"speeds_mm_s": sorted({round(x, 1) for x in speeds} | {round(0.85 * x, 1) for x in speeds}), "accel_mm_s2": float(res["report"]["what_if"]["max_accel"]), "travel_mm": travel_mm,
              "input_shaper": res["report"]["features"]["input_shaper"], "samples_at_rest": int(still.sum())}
     # one window per dwell; within it, ringing is the excursion about where the axis finally comes to rest (rail
     # friction leaves a small standing offset that is not vibration; it is reported separately)
