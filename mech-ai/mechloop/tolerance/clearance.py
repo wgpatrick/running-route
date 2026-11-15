@@ -567,6 +567,25 @@ def clearance_check(design: Design, B: Build, r: VerifierResult, shaft_pairs=())
 
     bed = pr.get("bed")
     toolhead_vs_bed: list = []
+    # what is fixed to a guide block or nut is located on the rail or screw by that guide, not by the stack-up
+    by_guide = set()
+    for gp in guides:
+        for g, partner in (tuple(gp), tuple(gp)[::-1]):
+            fixed = {x for k in design.joins if g in k for x in k if x != g}
+            for sname, held in stacks.items():
+                if g in held:
+                    fixed |= set(held) | {sname}
+            for x in fixed - {g, partner}:
+                by_guide.add(frozenset((x, partner)))
+    axis_of = {f.name: np.abs(np.array(f.axis, dtype=float) / np.linalg.norm(f.axis)) for f in design.fasteners}
+
+    def _sunk(screw, other):
+        (lo_s, hi_s), (lo_o, hi_o) = _bb(comps[screw].shape), _bb(comps[other].shape)
+        side = axis_of[screw] < 0.5                    # the directions across the screw
+        return bool(np.all(lo_s[side] >= lo_o[side] - 1e-6) and np.all(hi_s[side] <= hi_o[side] + 1e-6)
+                    and np.all(hi_s >= lo_o - 1e-6) and np.all(lo_s <= hi_o + 1e-6)
+                    and float((np.minimum(hi_s, hi_o) - np.maximum(lo_s, lo_o))[~side].max()) > 0.3)
+
     # what is let into or stuck onto the bed plate: its screws (heads in counterbores), heater pad, sensors
     bed_stack = set()
     if bed in comps:
@@ -598,6 +617,11 @@ def clearance_check(design: Design, B: Build, r: VerifierResult, shaft_pairs=())
             # a screw in a guide block or nut is located on the rail or screw by that guide, not by the stack-up
             if s in fast and any(frozenset((t, o)) in guides for t in (comps[s].meta.get("threads_into") or [])):
                 return "a screw in a guide, against what the guide runs on"
+        if key in by_guide:
+            return "a part fixed to a guide or nut, against what that guide runs on"
+        for s, o in ((a, b), (b, a)):
+            if s in fast and _sunk(s, o):
+                return "a screw let into the part (head in its counterbore)"
         if key in striker_pairs:
             return "an endstop switch and its striker (endstop window, subsystems verifier)"
         if noz in (a, b) and bed_stack and (a in bed_stack or b in bed_stack):
@@ -641,15 +665,12 @@ def clearance_check(design: Design, B: Build, r: VerifierResult, shaft_pairs=())
             rel = S.relative(a, pose["pa"], b, pose["pb_home"], pose["q"], nvec)
             if rel is None:
                 continue
-            if rezero is not None and comps[a].body != comps[b].body:
-                # a toolhead part against a part that rides with the bed: homing on the bed (probe, z offset) takes out
-                # the height error between nozzle and bed, which is common to both
-                ta, tb_ = comps[a].body == tool_body, comps[b].body == tool_body
-                za, zb = under(comps[a].body, jz.child), under(comps[b].body, jz.child)
-                if (ta and zb and not za) or (tb_ and za and not zb):
-                    sgn = 1.0 if zb else -1.0          # the bed-side part is B (+) or A (-)
-                    rel = rel - sgn * rezero * float(zdir @ (nvec / g0))
-                    rezeroed = True
+            if rezero is not None and {comps[a].body, comps[b].body} == {tool_body, comps[bed].body} and tool_body != comps[bed].body:
+                # a part on the nozzle's body against a part on the bed's body (whichever of the two rides Z): homing on
+                # the bed (probe, z offset) takes out the height error between nozzle and bed, which is common to both
+                sgn = 1.0 if comps[b].body == comps[bed].body else -1.0          # the bed-side part is B (+) or A (-)
+                rel = rel - sgn * rezero * float(zdir @ (nvec / g0))
+                rezeroed = True
             sh = share_closed(g0, rel)
             if best is None or (sh["p_closed"], sh["p_closed_normal_estimate"]) > (best[1]["p_closed"], best[1]["p_closed_normal_estimate"]):
                 best = (pose, sh, g0)

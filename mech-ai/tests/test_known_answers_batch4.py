@@ -90,7 +90,10 @@ def test_unshielded_probe_needs_its_metal_free_zone():
     f, z = probe_result(probe_toolhead(clamp=(15.0, 18.0), metal_block_at=14.0))
     assert list(f) == ["probe_metal_in_clear_zone"] and z["mounting"]["metal_in_zone"][0]["part"] == "block"
     assert z["mounting"]["metal_in_zone"][0]["nearest_to_axis_mm"] == 14.0
-    assert not probe_result(probe_toolhead(clamp=(15.0, 18.0), metal_block_at=21.0))[0]       # outside the 20 mm radius
+    # 1 mm outside the 20 mm radius: not in the zone as drawn. (This toy toolhead's block is tied to nothing, so whether it
+    # ends up inside when built cannot be simulated, which is said: a warning, never a silent pass.)
+    f, z = probe_result(probe_toolhead(clamp=(15.0, 18.0), metal_block_at=21.0))
+    assert set(f) <= {"probe_zone_not_evaluated"} and z["mounting"]["metal_in_zone"] == []
 
 
 def test_shielded_probe_may_sit_flush_and_every_probe_must_be_clamped():

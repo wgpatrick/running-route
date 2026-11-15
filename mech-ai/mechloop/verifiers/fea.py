@@ -951,4 +951,16 @@ def verify_fea(design: Design, keep_dir: Path | None = None) -> VerifierResult:
                 r.metrics[mc.name] = run_modal(design, mc, r)
             except Exception as e:
                 r.add("error", "fea_crashed", f"{mc.name}: {type(e).__name__}: {e}", case=mc.name)
+        if has_bed:      # how the printer's bed is held: support compliance, flexure, screw offset (bed_support.py)
+            try:
+                from .bed_support import bed_support
+
+                bs = bed_support(design, r)
+                if bs is not None:
+                    r.metrics["bed_support"] = bs
+            except Exception as e:      # not evaluated is not a pass
+                import traceback
+
+                r.add("error", "bed_support_failed", f"The bed support measures did not run: {type(e).__name__}: {e}",
+                      trace=traceback.format_exc()[-600:])
     return r

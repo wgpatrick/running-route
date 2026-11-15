@@ -369,14 +369,19 @@ def _endstop_window_scatter(design, e, sw, j, r, gap, nearest, latest, press, q_
                   f"'{adj.name}' gives {adj.range_mm} mm.", joint=jn, needed=round(need, 2))
         return out
     if p_out > 0.0:
-        sev = "error" if p_out > WINDOW_P_ERROR else "warning"
-        r.add(sev, "endstop_window_under_tolerance",
+        # A warning, not an error: the window is judged at the DECLARED end of mechanical travel, but nothing in the model
+        # says what stops the axis there. A machine that homes on the switch signal and is never driven further works
+        # with its switch a few tenths off (the reference kit in docs/REFERENCE_MACHINE.md does); what the share says is
+        # that the drawn window itself is not something the parts can hold.
+        r.add("warning", "endstop_window_under_tolerance",
               f"Endstop {sw.name} on joint {jn}: on the drawing {striker} ends {s0:+.2f} mm past the switch's latest operating "
               f"position, inside a window of {-REACH_TOL:g} to {width - 0.02:g} mm before the lever lies on the case. Built from "
               f"real parts the two are {delta.std():.2f} mm (one standard deviation) from where they are drawn relative to each "
               f"other: {p_out:.0%} of {B.n} simulated builds end outside the window (standard error "
               f"{std_error(p_out, B.n):.1%}, limit {WINDOW_P_ERROR:.0%}): in {p_short:.0%} a switch at the late end of its "
-              f"spread never operates, in {p_long:.0%} the lever is pressed onto the case.",
+              f"spread never operates, in {p_long:.0%} the lever is pressed onto the case, IF the axis really goes "
+              f"to its declared end of travel: what stops it there is not modelled, and a machine that only ever homes on the "
+              f"switch signal is not affected.",
               joint=jn, **{k: v for k, v in out.items() if k != "basis"},
               hint=f"A {width:g} mm window cannot be held by part accuracy. Mount the switch on a slot and set it against the "
                    f"striker at assembly (declare Adjustment(name, 'endstop', range_mm >= {need:.1f}, joint='{jn}')), or let "

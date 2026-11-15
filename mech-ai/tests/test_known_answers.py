@@ -51,11 +51,17 @@ def test_nut_slot_is_not_the_clearance_hole(slot):
 
 
 def test_tight_lug_hole_beside_a_nut_slot_is_still_caught():
-    """The check is not weakened: a 3.1 mm printed hole in the lug has 0.10 mm radial clearance, less than
-    the 0.075 mm a printed hole closes up plus its scatter, and is reported."""
+    """The check is not weakened: a hole too small for the screw is reported. 2026-11-15: a screw is now taken to cut up
+    to 0.15 mm into a tight PLASTIC hole (tolerance/process.py), so the 3.1 mm printed hole that was the bad case here
+    (0.10 mm radial clearance, 0.075 mm lost to the print) starts, though rarely freely; a 2.7 mm hole, tighter than the
+    screw by more than the plastic gives, does not."""
     r = VerifierResult("t")
     out = screw_patterns(nut_slot_design(3.7, lug_hole=3.1), r)
     assert out["body -> n0"]["nominal_radial_clearance_mm"] == pytest.approx(0.10, abs=0.01)
+    assert out["body -> n0"]["p_all_start"] >= 0.99 and out["body -> n0"]["p_all_start_freely"] < 0.9
+    assert "screws_cut_into_printed_holes" in [f.code for f in r.findings]
+    r = VerifierResult("t")
+    out = screw_patterns(nut_slot_design(3.7, lug_hole=2.7), r)
     assert out["body -> n0"]["p_all_start"] < 0.9
     assert "screws_may_not_align" in [f.code for f in r.findings]
 

@@ -169,11 +169,11 @@ def lever_axis(face_y, with_adjustment=False):
 def test_endstop_window_is_judged_with_the_stackup_not_on_the_drawing():
     """Drawn in the middle of the 0.25 mm window between the switch's latest operating position (Y 6.9) and its case
     (6.65), the design passed. Striker and switch sit at the ends of a chain of a machined frame, a carriage and two
-    printed parts: their relative error is several times the window, so most builds end outside it: error, with the two
+    printed parts: their relative error is several times the window, so most builds end outside it: reported, with the two
     shares (never switches / lever on the case). A switch set at assembly on a slot (declared) takes the error out."""
     r = verify_subsystems(lever_axis(6.78))
     f = find(r, "endstop_window_under_tolerance")
-    assert len(f) == 1 and f[0].severity == "error"
+    assert len(f) == 1 and f[0].severity == "warning"       # a warning: what stops the axis at its end is not modelled
     w = r.metrics["homing"]["y"]["window_under_tolerance"]
     assert w["evaluated"] and w["striker"] == "striker" and w["window_mm"] == [-0.1, 0.23]
     assert w["drawn_position_in_window_mm"] == pytest.approx(0.12, abs=0.01) and w["relative_error_sd_mm"] > 0.15

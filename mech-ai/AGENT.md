@@ -311,8 +311,8 @@ the as-built direction of the rails over the travel, bend scatter of bent parts.
   `d.manufacturing["min_clearance_mm"] = 0.4` or `{"printed": 0.6}`; `d.manufacturing["clearance_check_mm"]` changes
   the 1.5 mm search distance; `d.require_clearance(a, b, gap)` states the gap you want for one pair.
 - NOT reported, because it is a designed contact: parts that touch or have a declared `join` / `allow_overlap`; a
-  screw against what it clamps, threads into or passes through; a guide block or nut against its rail or screw (name
-  the nut in the drive); a shaft in its bore (the fit check); an endstop switch against its striker (the endstop
+  screw against what it clamps, threads into or passes through; a guide block or nut against its rail or screw, and what is fixed to that block or nut (name
+  the nut in the drive); a screw let into a counterbore; a shaft in its bore (the fit check); an endstop switch against its striker (the endstop
   window, below); a toolhead part over the bed (the toolhead margin). So if two parts are MEANT to touch or locate each
   other, declare it; an undeclared near-contact is treated as a clearance.
 - `clearance_not_evaluated` (warning): a pair drawn close in which one part is not tied to the stack-up. Not a pass.
@@ -320,7 +320,8 @@ the as-built direction of the rails over the travel, bend scatter of bent parts.
 **Functional windows use the stack-up too** (subsystems verifier): the endstop window
 (`endstop_window_under_tolerance`: at the end of travel the striker must end between the switch's latest operating
 position and its case, 0.25 mm on the OMRON D2F; as built, striker and switch are a few tenths from where they are
-drawn, so the share of builds outside the window is reported, error above 1 %); the probe's metal-free zone
+drawn, so the share of builds outside the window is reported, as a warning: what stops the axis at its declared
+end is not modelled, and a machine that only homes on the switch signal works regardless); the probe's metal-free zone
 (`probe_metal_zone_under_tolerance`: metal drawn just outside the zone, same judgement); the probe's face window
 (already built on the toolhead's stack-up). A 0.25 mm window cannot be held by part accuracy: put the switch on a
 slot and set it against its striker at assembly, and declare that with
