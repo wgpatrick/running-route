@@ -293,3 +293,22 @@ worse: resonance X / Y 74.0 / 54.6 Hz (v6 at the same belt stiffness: 78.2 / 60.
 run 5,200 mm/s^2 (3,600 to 8,100). Six checker observations (among them: the probe-clamp check counts eight fixed
 points per part, and Z over-travel is checked against a probe that moves with the nozzle) are in
 `docs/PRINTER_V7.md`.
+
+
+## printer_v8 (added 2026-11-15)
+
+`designs/printer_v8.py` is v7 redesigned for function against the tightened checks (v7 now fails with six errors
+and was not edited). It passes all 12 verifiers with 0 errors and 13 warnings in two full runs with identical
+findings: 386 parts, $931 with fabrication, assembly estimate 84.7 min, toolhead 0.344 kg. A trade study of four
+bed supports (`designs/studies/v8_bed_*.py`: stiffened cantilever 0.022 mm under a 1 kg print at the worst corner,
+two screws 0.005, three screws with two blocks per rail 0.004, three screws with one block per rail 0.008) chose
+three T8 screws on one closed belt with one guide block per rail, because only there does a height difference
+between screws stay a small tilt (2.8 N on a nut for 0.02 mm, against 31 to 41 N in the others, more than the
+floating nuts' seating load). Screws stand in 608 bearings (no coupler); 8 mm plate on four M5 flexure posts with a
+tie; steel print sheet and magnet as declared stand-ins (bed limited to 80 degC); OMRON E2E-X5ME1 34.5 mm behind
+the nozzle on a Y axis made 34.5 mm longer, so the whole 180 x 180 mm is probed; both lever switches set at
+assembly; no gap under 1.0 mm between non-mating parts; 12 mm Y belts at 0.91 of the shaft limit. Not achieved:
+beating v6 on speed (X / Y 79.3 / 58.8 Hz against 78.2 / 60.0, owner's acceleration 6,000 against 6,300: equal
+within the ranges). What it cost against v7: 77 parts, 20 minutes, $75, and Y belts within 1 mm of plane in 98.1 %
+of builds (99.2 %). Ten checker observations (among them: the stack-up locates a bed through its locating tie,
+and a three-screw bed with one block per rail is still judged as a cantilever) are in `docs/PRINTER_V8.md`.
