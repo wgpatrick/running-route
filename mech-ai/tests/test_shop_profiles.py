@@ -23,6 +23,9 @@ def check(shape, material="al6061", man=None, screws=(), meta=None, process="she
     for i, (size, length, at, direction) in enumerate(screws):
         add_screw(d, f"s{i}", size, length, at=at, direction=direction, threads_into="p")
     r = verify_manufacture(d)
+    # the sharp-edge, corner and lead-in rules have their own tests (tests/test_known_answers_v8.py); the boxes used here are
+    # drawn dead sharp on purpose and would draw them every time
+    r.findings[:] = [f for f in r.findings if f.code not in ("sharp_profile_corners", "edges_not_broken", "no_lead_in", "printed_edges")]
     return {f.code: f for f in r.findings}, r.metrics["parts"]["p"]
 
 

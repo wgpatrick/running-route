@@ -13,13 +13,16 @@ def test_plate_with_a_sharp_pocket_corner_and_odd_thickness():
     d = Design("p")
     d.add("plate", Box(80, 60, 6.5) - Pos(10, 0, 0) * Box(30, 20, 6.5), material="al6061")   # square window
     r = verify_manufacture(d)
+    # the sharp-edge, corner and lead-in rules have their own tests (tests/test_known_answers_v8.py); the boxes used here are
+    # drawn dead sharp on purpose and would draw them every time
+    r.findings[:] = [f for f in r.findings if f.code not in ("sharp_profile_corners", "edges_not_broken", "no_lead_in", "printed_edges")]
     assert {"sharp_inside_corner", "non_stock_thickness"} <= set(codes(r))
     assert r.metrics["parts"]["plate"]["sharp_inside_corners"] == 4
     # the same window with a round end mill's radius in the corners, in stock thickness, is fine
     from build123d import RectangleRounded, extrude
     win = extrude(RectangleRounded(30, 20, 2.0), 3, both=True)
     d2 = Design("p2")
-    d2.add("plate", Box(80, 60, 6) - Pos(10, 0, 0) * win, material="al6061")
+    d2.add("plate", Box(80, 60, 6) - Pos(10, 0, 0) * win, material="al6061", meta={"edge_break_mm": 0.3})     # with the drawing note
     assert codes(verify_manufacture(d2)) == []
 
 
@@ -30,6 +33,9 @@ def test_block_needing_many_setups_and_a_simple_one():
     d = Design("b")
     d.add("block", blk, material="al6061")
     r = verify_manufacture(d)
+    # the sharp-edge, corner and lead-in rules have their own tests (tests/test_known_answers_v8.py); the boxes used here are
+    # drawn dead sharp on purpose and would draw them every time
+    r.findings[:] = [f for f in r.findings if f.code not in ("sharp_profile_corners", "edges_not_broken", "no_lead_in", "printed_edges")]
     assert "many_setups" in codes(r) and r.metrics["parts"]["block"]["setups_estimate"] >= 5
     d2 = Design("b2")
     d2.add("block", Box(60, 60, 60) - Pos(0, 0, 25) * Box(20, 20, 10), material="al6061")
@@ -41,6 +47,9 @@ def test_printed_part_orientation_support_and_size():
     tee = Pos(0, 0, 5) * Box(20, 20, 10) + Pos(0, 0, 13) * Box(80, 20, 6)       # a T: flat arm over a narrow stem
     d.add("tee", tee, material="petg")
     r = verify_manufacture(d)
+    # the sharp-edge, corner and lead-in rules have their own tests (tests/test_known_answers_v8.py); the boxes used here are
+    # drawn dead sharp on purpose and would draw them every time
+    r.findings[:] = [f for f in r.findings if f.code not in ("sharp_profile_corners", "edges_not_broken", "no_lead_in", "printed_edges")]
     row = r.metrics["parts"]["tee"]
     assert row["up"] in ("-Z", "+Y", "-Y")           # arm down on the bed, or on its side: no overhang
     assert row["support_area_mm2"] < 50 and "needs_support" not in codes(r)
@@ -72,6 +81,9 @@ def check(shape, material="al6061", man=None, screws=(), loads=(), **kw):
     for name, force in loads:
         d.loadcases.append(LoadCase(name, "p", fixed=lambda f: True, loaded=lambda f: True, force=force))
     r = verify_manufacture(d)
+    # the sharp-edge, corner and lead-in rules have their own tests (tests/test_known_answers_v8.py); the boxes used here are
+    # drawn dead sharp on purpose and would draw them every time
+    r.findings[:] = [f for f in r.findings if f.code not in ("sharp_profile_corners", "edges_not_broken", "no_lead_in", "printed_edges")]
     return r, {f.code: f for f in r.findings}, r.metrics["parts"]["p"]
 
 
