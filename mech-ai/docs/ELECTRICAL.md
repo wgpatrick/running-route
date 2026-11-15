@@ -12,8 +12,8 @@ A design declares `design.electrical = Electrical(...)`:
 
 | Object | What it holds |
 |---|---|
-| `Device` | kind (board, psu, inlet, relay, mosfet, heater, thermistor, thermal_fuse, fan, stepper, endstop, host, earth_point), the CAD part that represents it, typed `Port`s, ratings, the source of each rating, and a `product` record (what to buy) |
-| `Port` | kind (power in/out, heater output, stepper output, fan output, thermistor input, endstop input, mains, PE, series, signal), connector type, current rating, MCU pin, position and plug direction in the CAD |
+| `Device` | kind (board, psu, inlet, relay, mosfet, heater, thermistor, thermal_fuse, fan, stepper, endstop, probe, host, earth_point), the CAD part that represents it, typed `Port`s, ratings, the source of each rating, and a `product` record (what to buy) |
+| `Port` | kind (power in/out, heater output, stepper output, fan output, thermistor input, endstop input, probe, mains, PE, series, signal), connector type, current rating, MCU pin, position and plug direction in the CAD |
 | `Wire` | from port, to port, AWG, conductor count, insulation, the looms it runs through, optional high-temperature pigtail at the device end; length is computed from the route |
 | `Loom` | waypoints tied to bodies; two consecutive waypoints on different bodies are a flexing span with its own cable length; each flexing span is also written into `design.cables`, so the existing subsystems check does the length-over-travel test (not duplicated) |
 | `firmware` | Klipper settings: run current per axis, heater/sensor pairs, control law, min/max temperature, `verify_heater`, fans |
@@ -34,10 +34,11 @@ is reported as `skipped` with the reason, not as a pass of anything electrical.
 
 | Check | Basis | Default limit |
 |---|---|---|
-| Completeness | every motor, heater, sensor, fan and endstop traced through the wiring to a compatible board port; one wire per port; each heater has a thermistor and a firmware entry; each printer axis has a driver and an endstop or sensorless homing; Klipper has a host; every electrical CAD part has a device and every device a fastened CAD part | none missing |
+| Completeness | every motor, heater, sensor, fan and endstop traced through the wiring to a compatible board port; one wire per port; each heater has a thermistor and a firmware entry; each printer axis has a driver and an endstop, a probe or sensorless homing; Klipper has a host; every electrical CAD part has a device and every device a fastened CAD part | none missing |
 | Off the shelf | every device has a `product` record; `custom_pcb` or not `off_the_shelf` is an error | zero custom PCBs |
 | Power budget | all heaters at 100 %, all motors at run current (copper loss + driver loss), fans, board, host, wire loss, against the supply rating; board input fuse; 5 V rail | load <= 85 % of supply, <= 80 % of fuse |
 | Wires | conductor temperature from I^2R against heat loss from the wire surface (12 W/m^2K, still air), derated by the IEC 60364-5-52 grouping factor for the loaded conductors sharing a loom | conductor <= 70 degC or the insulation rating |
+| Bed probe | a three-wire proximity probe (device kind `probe`): fed inside its supply range from a declared rail; three conductors; output type against the board pin: NPN open collector only pulls the pin to 0 V and needs the board's pull-up, an internal pull-up to the supply or a PNP output puts the supply voltage on the pin; rated ambient against the bed temperature (warning, not simulated) | supply within rating; signal high level <= the pin's limit unless a series diode or level shifter is declared |
 | Connectors, outputs, series devices | current against the port rating and the connector class rating | <= 80 % continuous |
 | Voltage drop | routed length, gauge, conductor temperature, board output resistance, feed wire carrying the whole board current; solved iteratively | <= 3 % from supply to heater |
 | Mains | current from the supply's data-sheet AC current scaled by load, at the lowest declared mains voltage; fuse present, time-lag, >= 1.25 x current and <= inlet rating; mains wire carries the fuse rating and is >= 0.75 mm^2; not bundled with low voltage; PE wire to the supply and to an earth point on a metal frame part, no thinner than the mains wire | as stated |
@@ -46,7 +47,7 @@ is reported as `skipped` with the reason, not as a pass of anything electrical.
 | Heater faults | fault injection in the same simulation (below) | detected within 60 s (hotend) / 180 s (bed); peak <= 300 degC (hotend) / 150 degC (bed) |
 | Physical | 12 mm keep-out in front of every plugged connector, checked against every part over the sampled poses; fixed loom runs >= 3 mm clear of parts that move relative to them over the whole travel and not through any part; bend radius; a clamp on a real part at both ends of every flexing span; insulation rating within 12 mm of a declared hot part | as stated |
 | Thermal effect | bay air temperature from dissipated power with buoyant flow through the declared openings (and wall loss if enclosed, and a fan if declared); supply derating at that temperature; motor case temperature from copper loss over its own surface | bay <= 50 degC; motor case <= 80 degC |
-| Artifacts | `wiring.csv`, `wiring.md`, `pin_map.json`, `printer.cfg`, electrical BOM with cost; the config is parsed and checked | no problems |
+| Artifacts | `wiring.csv`, `wiring.md`, `pin_map.json`, `printer.cfg`, electrical BOM with cost; the config is parsed and checked offline, then loaded by klippy itself and run on a few moves when Klipper is installed (`klipper_config_check.klippy`; not installed = an info finding saying it was not done, never a pass) | no problems; klippy accepts it |
 
 ### One answer for torque at speed
 
@@ -68,8 +69,12 @@ derating factor is applied.
 - Hotend: two nodes, cartridge and block (12 J/K, from the V6 block's size), natural convection and
   radiation from 16 cm^2 of block, 0.025 W/K up the heat break (assumed).
 - Heater power is the wattage at the voltage actually delivered (from the circuit solution).
-- Firmware: ports of Klipper's `ControlPID`, `ControlBangBang`, `verify_heater`, the ADC min/max range
-  check (4 consecutive reports), sampled as Klipper does (ADC report every 0.3 s, `verify_heater` every 1 s,
+- Firmware: Klipper's own `heaters.ControlPID` / `ControlBangBang`, `verify_heater.HeaterCheck` and
+  `pid_calibrate.ControlAutoTune` classes, loaded from the Klipper checkout and called directly on the model
+  (`mechloop/twin/klippy_code.py`; each heater's metrics say which code ran in `control_code`). Without the
+  checkout the line-for-line port in `mechloop/electrical.py` is used and says so; on printer_v5 the two give
+  the same gains and the same trip times to the last digit. Still a port: the ADC min/max range
+  check (4 consecutive reports) and the thermistor conversion. Sampled as Klipper does (ADC report every 0.3 s, `verify_heater` every 1 s,
   1 s smoothing, PWM averaged over its 0.1 s cycle), with sensor lag and 12-bit ADC quantisation through
   the thermistor and pull-up. PID gains come from Klipper's `PID_CALIBRATE` relay test run on the model.
 - Validation: a one-node network against the closed-form RC step response (within 0.5 K), energy
@@ -261,8 +266,23 @@ the two columns are not like for like.
 
 Generated config: `out/printer_v4/electrical/printer.cfg`. It was parsed with Klipper's configparser
 settings and checked for required options, known sensor types, pins that exist on the board and pins
-used twice: no problems. **It was not run through klippy**: that needs an MCU dictionary from a firmware
-build, which was not done.
+used twice: no problems. Since the firmware-in-the-loop work the verifier also hands the file to klippy
+(`third_party/klipper`, built by `tools/setup_klipper.sh`), which loads every section and plans a few moves
+on it; printer_v4 and printer_v5 are both accepted.
+
+### What the generated printer.cfg now contains
+
+| Section | From | Rests on |
+|---|---|---|
+| `[input_shaper]` type, frequency and damping ratio per axis | Klipper's `shaper_calibrate.find_best_shaper`, fed the twin's own frequency response for each axis instead of an accelerometer's | assumed damping ratios (stepper 0.25, belt/frame 0.05), assumed belt stiffness, FEA frame stiffness from the last verify (belt only when there is none; the file says which) |
+| `pressure_advance`, `pressure_advance_smooth_time` | the best K of `mechloop tune`'s sweep on the twin when one has been run, else the twin's melt-flow lag | the lag itself is an assumed 30 ms |
+| `max_extrude_only_distance/velocity/accel` | `firmware["steppers"]["extruder"]["extrude_only"]`, else 100 mm, 60 mm/s, 3000 mm/s^2 | Klipper-style defaults |
+| `[probe]` pin (`^!` for NPN normally open), `x_offset`, `y_offset`, `z_offset` | the CAD: sensing face against the nozzle tip; `z_offset` = switching distance on the bed's metal less the face's height above the nozzle | the switching distance is a recalled class value with a recalled +/-10 % spread |
+| `[stepper_z] endstop_pin: probe:z_virtual_endstop`, `[safe_z_home]` | the nozzle position that puts the probe over the middle of the bed | |
+| `[bed_mesh]` bounds, 5 x 5, lagrange, `zero_reference_position` | the plate inset by the probe's edge margin, cut to where X/Y travel can carry the probe | edge margin = probe body width (assumed) |
+
+A design without a probe (printer_v4: Z microswitch) gets a plain `endstop_pin` and `position_endstop` and none
+of the probe sections. Every tuned value is a prediction and is labelled so in the file.
 
 ## Sources of ratings
 
@@ -286,7 +306,8 @@ build, which was not done.
 ## Not modelled, or assumed
 
 - EMC, noise on thermistor and endstop lines, ground loops, stepper cable crosstalk.
-- Firmware bugs; the firmware itself is not run (its control laws are ported). klippy has not parsed the config.
+- Firmware bugs. Heater control runs Klipper's own classes against the thermal model, not the whole firmware: no MCU, no ADC timing, no serial link. klippy loads the generated config; homing and probing against real switches are not exercised.
+- The probe's supply lead is declared (`params["supply_v"]`), not routed as a wire; whether an unbranded NPN sensor has an internal pull-up is unknown (a warning); the board pin's voltage limit (3.6 V) is an assumption; the probe's temperature next to a hot bed and its drift are not simulated.
 - Crimp and solder quality, connector wear, wire fatigue in the flexing looms (only length, bend radius and strain relief).
 - The real PID tune, heater tolerance (+/-10 %), supply voltage tolerance and adjustment, mains voltage variation.
 - Fuse I^2t against inrush; DC interrupting rating of the thermal cut-off at 24 V; relay contact life.
