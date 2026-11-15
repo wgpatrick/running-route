@@ -5,8 +5,9 @@ from __future__ import annotations
 import math
 
 import numpy as np
-from build123d import Edge, GeomType
+from build123d import Edge, GeomType, Plane, Solid
 from OCP.BRepAdaptor import BRepAdaptor_Surface
+from OCP.BRepExtrema import BRepExtrema_DistShapeShape
 
 from ..geom import bboxes_overlap
 from ..model import Design
@@ -15,11 +16,42 @@ from .process import process_of, tol
 
 
 def _hole_radius(part, a0, a1) -> float | None:
-    """Radius of the hole a screw's shank passes through in `part` (None if the shank is not inside it)."""
+    """Radius of the hole a screw's shank passes through in `part`: the smallest RADIAL distance from the
+    stretch of screw axis a0-a1 to the part (None if it cannot be measured).
+
+    The plain distance from a line segment to a solid is not that: where the screw ends inside a nut slot
+    or a blind pocket, the nearest material can be the wall beyond the end of the segment, and the distance
+    to it is measured along the screw, not across it. A captive-nut slot 3.7 mm wide along the screw was
+    read as a 3.2 mm clearance hole that way. So when the nearest point lies beyond either end of the
+    segment, the part is cut to the slab between the two ends first and the distance is taken to that."""
     try:
+        a0, a1 = np.asarray(a0, dtype=float), np.asarray(a1, dtype=float)
         line = Edge.make_line(tuple(a0), tuple(a1))
-        r = part.distance_to(line)
-        return float(r)
+        ex = BRepExtrema_DistShapeShape(part.wrapped, line.wrapped)
+        if not ex.IsDone() or ex.NbSolution() < 1:
+            return None
+        r = float(ex.Value())
+        length = float(np.linalg.norm(a1 - a0))
+        if length < 1e-9:
+            return r
+        u = (a1 - a0) / length
+
+        def radial(k):
+            p = ex.PointOnShape1(k)
+            v = np.array([p.X(), p.Y(), p.Z()]) - a0
+            t = float(v @ u)
+            return -1e-6 <= t <= length + 1e-6 and abs(float(np.linalg.norm(v - t * u)) - r) < 1e-6
+
+        if r <= 1e-9 or any(radial(k) for k in range(1, ex.NbSolution() + 1)):
+            return r
+        # end-on: keep only the material alongside the segment and measure again
+        bb = part.bounding_box()
+        reach = 2.0 * float(np.linalg.norm([bb.size.X, bb.size.Y, bb.size.Z])) + 10.0
+        slab = Solid.make_cylinder(reach, length, Plane(origin=tuple(a0), z_dir=tuple(u)))
+        cut = part & slab
+        if cut is None or not cut.solids():
+            return None                      # no material beside this stretch of the screw: it is not in a hole
+        return float(cut.distance_to(line))
     except Exception:
         return None
 
