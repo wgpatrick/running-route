@@ -44,6 +44,7 @@ What is NOT reported, because it is a designed contact or is judged elsewhere:
   parts that touch (drawn gap <= 0.02 mm: a seat) or overlap (the interference verifier's business)
   pairs with a declared join or allowed overlap (press fit, thread, clamp, set screw, axle, bond)
   a screw against the parts it clamps, threads into or passes through, and against its own nut
+  a screw whose head is recessed in a counterbore of a part of its stack, against a part seated on that face over it
   a guide block, bearing or nut tagged `guides=` against the rail, rod or screw it runs on
   a shaft in its bore (coaxial cylinders: the fit check judges those)
   a toolhead part against the bed in the nozzle approach: the motion verifier's toolhead margin judges that
@@ -586,6 +587,50 @@ def clearance_check(design: Design, B: Build, r: VerifierResult, shaft_pairs=())
                     and np.all(hi_s >= lo_o - 1e-6) and np.all(lo_s <= hi_o + 1e-6)
                     and float((np.minimum(hi_s, hi_o) - np.maximum(lo_s, lo_o))[~side].max()) > 0.3)
 
+    sign_of = {f.name: np.array(f.axis, dtype=float) / np.linalg.norm(f.axis) for f in design.fasteners}     # towards the head
+    _seat_cache: dict = {}
+
+    def _seated(o, p_):
+        key_ = frozenset((o, p_))
+        if key_ in design.joins:
+            return True
+        if key_ not in _seat_cache:
+            try:
+                _seat_cache[key_] = bool(comps[o].shape.distance_to(comps[p_].shape) <= 0.05)
+            except Exception:
+                _seat_cache[key_] = False
+        return _seat_cache[key_]
+
+    def _under_cover(screw, other):
+        """A screw whose head is let into a counterbore of a part P of its own stack, with `other` seated on P over that
+        counterbore: the head sits on P's counterbore floor, `other` on P's face, so the gap between head and cover is
+        the depth of P's counterbore less the head's height, a feature of P alone, not a clearance between two
+        separately located parts. Needs all of: the screw sunk in P (head inside P's outline and in its thickness);
+        `other` touching or joined to P; `other` beyond the head end of the screw; the whole screw inside `other`'s
+        outline seen along the screw (the cover lies over the head). A screw passing beside a part, or one whose head
+        stands proud, is none of this."""
+        ax = sign_of[screw]
+        k = int(np.argmax(np.abs(ax)))
+        if abs(ax[k]) < 0.999:
+            return False
+        (lo_s, hi_s), (lo_o, hi_o) = _bb(comps[screw].shape), _bb(comps[other].shape)
+        side = np.arange(3) != k
+        if not (np.all(lo_s[side] >= lo_o[side] - 1e-6) and np.all(hi_s[side] <= hi_o[side] + 1e-6)):
+            return False
+        head_end = hi_s[k] if ax[k] > 0 else lo_s[k]
+        beyond = (lo_o[k] >= head_end - 1e-6) if ax[k] > 0 else (hi_o[k] <= head_end + 1e-6)
+        if not beyond:
+            return False
+        for p_ in stacks.get(screw, ()):
+            if p_ == other or p_ in fast or p_ not in comps:
+                continue
+            lo_p, hi_p = _bb(comps[p_].shape)
+            face = hi_p[k] if ax[k] > 0 else lo_p[k]
+            recessed = (head_end <= face + 1e-6) if ax[k] > 0 else (head_end >= face - 1e-6)
+            if recessed and _sunk(screw, p_) and _seated(other, p_):
+                return True
+        return False
+
     # what is let into or stuck onto the bed plate: its screws (heads in counterbores), heater pad, sensors
     bed_stack = set()
     if bed in comps:
@@ -622,6 +667,9 @@ def clearance_check(design: Design, B: Build, r: VerifierResult, shaft_pairs=())
         for s, o in ((a, b), (b, a)):
             if s in fast and _sunk(s, o):
                 return "a screw let into the part (head in its counterbore)"
+        for s, o in ((a, b), (b, a)):
+            if s in fast and o not in fast and _under_cover(s, o):
+                return "a screw head recessed in a counterbore, under a part seated on that face"
         if key in striker_pairs:
             return "an endstop switch and its striker (endstop window, subsystems verifier)"
         if noz in (a, b) and bed_stack and (a in bed_stack or b in bed_stack):

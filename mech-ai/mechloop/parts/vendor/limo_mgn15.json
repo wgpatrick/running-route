@@ -1,0 +1,41 @@
+{
+ "retrieved": "2026-11-15",
+ "family": "MGN15H block on MGN15 rail: LiMo vendor-equivalent CAD, with Hiwin's catalogue figures for the Hiwin part",
+ "vendor": "LiMo Bearing (CAD); HIWIN (ratings, mechloop/parts/vendor/hiwin_mgn12.json block 'catalogue')",
+ "source_level": "vendor-equivalent CAD (not Hiwin's) measured here; ratings from Hiwin's own catalogue",
+ "source_url": "https://limobearing.com/miniature-linear-guideway",
+ "title": "LiMo SZ15L assembly STEP (MGN15H on a 150 mm rail)",
+ "step_file": "vendor_cad/staging/MGN15H-150mm-assembly_LiMo-vendor-equivalent.step",
+ "readme_file": "vendor_cad/staging/MGN15H_LiMo_README.txt",
+ "used_by_catalog": true,
+ "not_used": "MGN15-rail-150_LiMo-reference.step and MGN15H-block_LiMo-reference.step are re-exports split out of the assembly by the uploading agent; the assembly is the vendor's original and is the geometry source",
+ "step_measured_mm": {
+  "how": "mechloop CAD kernel, 2026-11-15; file frame: rail along X, up +Y, rail base at Y -10",
+  "rail": {
+   "length": 150.0,
+   "width": 15.0,
+   "height": 10.0,
+   "hole_dia": 3.5,
+   "counterbore_dia": 6.0,
+   "counterbore_depth": 4.4,
+   "hole_pitch": 40.0,
+   "end_distance": 15.0
+  },
+  "block": {
+   "metal_body_length": 43.4,
+   "length_with_end_caps_and_seals": 58.8,
+   "width": 32.0,
+   "underside_above_rail_base": 4.0,
+   "top_above_rail_base": 16.0,
+   "hole_pattern": [
+    25.0,
+    25.0
+   ],
+   "thread": "M3 (drawn 2.46 minor dia)",
+   "thread_depth": 4.0
+  }
+ },
+ "agrees_with_hiwin": "Table 3.79 (MGN15H: W 32, L1 43.4, L 58.8, H 16, H1 4, B = C = 25, M3 x 4) and Table 3.81 (MGNR15: 15 x 10, D 6, h 4.5, d 3.5, P 40): every measured dimension equals the catalogue's (counterbore depth 4.4 against 4.5)",
+ "caveat": "the CAD is LiMo's. A LiMo block does not carry Hiwin's load ratings, rigidity or accuracy: the catalogue part's ratings are for a HIWIN MGN15H and say so",
+ "licence": "LiMo permits personal, commercial and educational use, copying, modification and distribution with attribution to LiMo Bearing and no implied endorsement; no warranty"
+}

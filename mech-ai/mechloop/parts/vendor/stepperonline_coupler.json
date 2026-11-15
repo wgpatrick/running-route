@@ -115,5 +115,13 @@
   },
   "how_measured": "mechloop's CAD kernel: bore cylinders 7.3 mm long behind a 0.2 mm chamfer; a 5 mm test shaft first overlaps the spider (its web) at 12.05 mm of insertion; an 8 mm test shaft first overlaps the spider (the rim of its 7 mm centre hole) between 8.5 and 8.7 mm. The first-inspection figure of 9.5 mm was where the 7 mm hole proper begins",
   "note": "past the 7.5 mm bore a shaft is no longer clamped; the insertion limits are where it would start to crush the elastomer"
+ },
+ "not_published_by_the_maker": {
+  "added": "2026-11-15 (batch 6)",
+  "checked": "exact-model product page and drawing (vendor_cad/staging/MH2025-5-8_spec_gaps.txt)",
+  "angular_misalignment": "not published",
+  "parallel_misalignment": "not published",
+  "axial_stiffness": "not published (the page's 55 N.m/rad is TORSIONAL stiffness)",
+  "consequence": "the catalogue's angular_misalignment_deg = 1.0 stays an ASSUMED figure (typical of small jaw couplings); no parallel-misalignment or axial-stiffness figure is carried, and none was borrowed from larger couplings"
  }
 }

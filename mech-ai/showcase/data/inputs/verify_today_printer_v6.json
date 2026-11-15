@@ -1,0 +1,562 @@
+{
+ "design": "printer_v6",
+ "ok": false,
+ "source": "/tmp/claude-0/-home-user-running-route/87481e0a-8f62-5246-a6fc-1c1f80e15b45/scratchpad/showcase/vout/printer_v6/report.json",
+ "report_time": "2026-11-15 20:09 UTC",
+ "summary": {
+  "geometry": "pass (0 errors, 0 warnings, 17.8s)",
+  "interference": "FAIL (3 errors, 0 warnings, 12.3s)",
+  "tolerance": "FAIL (3 errors, 4 warnings, 26.0s)",
+  "manufacture": "pass (0 errors, 2 warnings, 2.6s)",
+  "ratings": "pass (0 errors, 3 warnings, 0.1s)",
+  "motion": "pass (0 errors, 0 warnings, 97.0s)",
+  "subsystems": "FAIL (2 errors, 1 warnings, 9.7s)",
+  "electrical": "FAIL (1 errors, 2 warnings, 4.1s)",
+  "assemblability": "skipped: not run: parts that overlap cannot be sequenced; fix interference first",
+  "fea": "pass (0 errors, 1 warnings, 268.3s)",
+  "printing": "pass (0 errors, 0 warnings, 37.2s)",
+  "requirements": "pass (0 errors, 0 warnings, 0.0s)"
+ },
+ "findings": [
+  {
+   "verifier": "interference",
+   "severity": "error",
+   "code": "interference",
+   "message": "z_coupler and leadscrew overlap by 196.0 mm^3 near (-0.0, 180.0, 81.95)."
+  },
+  {
+   "verifier": "interference",
+   "severity": "error",
+   "code": "interference",
+   "message": "inlet and inlet_panel overlap by 315.1 mm^3 near (-171.5, 22.0, 37.61)."
+  },
+  {
+   "verifier": "interference",
+   "severity": "error",
+   "code": "shaft_too_deep_in_coupler",
+   "message": "leadscrew is drawn 12.5 mm into the 8 mm bore of z_coupler, but a shaft of that size can enter only 8.6 mm before it meets the coupler's elastomer spider: 3.9 mm too deep."
+  },
+  {
+   "verifier": "tolerance",
+   "severity": "error",
+   "code": "clearance_closes_under_tolerance",
+   "message": "bracket_13 to part_fan_screw_1: drawn 0.48 mm apart (closest with {'x': 90.0, 'y': 90.0}). Built from purchased and purchased parts through the joints between them the gap is 0.48 +/-0.59 mm (one standard deviation) and closes in 22.0% of 3000 simulated builds (standard error 0.8%; limit 1%)."
+  },
+  {
+   "verifier": "tolerance",
+   "severity": "error",
+   "code": "clearance_closes_under_tolerance",
+   "message": "x_beam to x_endstop_nut_1: drawn 0.35 mm apart. Built from extrusion and purchased parts through the joints between them the gap is 0.35 +/-0.37 mm (one standard deviation) and closes in 17.7% of 3000 simulated builds (standard error 0.7%; limit 1%)."
+  },
+  {
+   "verifier": "tolerance",
+   "severity": "error",
+   "code": "clearance_closes_under_tolerance",
+   "message": "x_carriage to x_belt_block: drawn 0.50 mm apart. Built from purchased and printed parts through the joints between them the gap is 0.50 +/-0.26 mm (one standard deviation) and closes in 2.3% of 3000 simulated builds (standard error 0.3%; limit 1%)."
+  },
+  {
+   "verifier": "subsystems",
+   "severity": "error",
+   "code": "endstop_not_reached",
+   "message": "Endstop x_endstop on joint x: at the min end of travel (x=-90) the striker stops 3.70 mm short of the switch's latest operating position (nominal 2.20 mm short; the operating position is nominal +/-1.5 mm unit to unit), so it is never pressed."
+  },
+  {
+   "verifier": "subsystems",
+   "severity": "error",
+   "code": "endstop_not_reached",
+   "message": "Endstop y_endstop on joint y: at the min end of travel (y=-90) the striker stops 3.70 mm short of the switch's latest operating position (nominal 2.20 mm short; the operating position is nominal +/-1.5 mm unit to unit), so it is never pressed."
+  },
+  {
+   "verifier": "electrical",
+   "severity": "error",
+   "code": "device_supply_not_connected",
+   "message": "Device 'psu_relay' needs a supply connection on its port 'N' (mains neutral: the module's own 5 V converter is fed from LIN and N; without it the relay never pulls in and the machine does not switch on), and nothing is wired to it."
+  },
+  {
+   "verifier": "tolerance",
+   "severity": "warning",
+   "code": "clash_in_stackup",
+   "message": "1 pair(s) of parts overlap in the model without a declared thread, press fit or join (largest: inlet and inlet_panel, 315.09 mm^3). An overlap is a clash, not a seat: it is left out of the stack-up, so it cannot tighten any tolerance chain. Fix the clash (see the interference verifier) before reading the figures below."
+  },
+  {
+   "verifier": "tolerance",
+   "severity": "warning",
+   "code": "clearance_closes_under_tolerance",
+   "message": "extruder to fan_carrier: drawn 0.50 mm apart. Built from purchased and printed parts through the joints between them the gap is 0.50 +/-0.17 mm (one standard deviation) and closes in 0.17% of 3000 simulated builds (standard error 0.07%; an error above 1%)."
+  },
+  {
+   "verifier": "tolerance",
+   "severity": "warning",
+   "code": "clearance_closes_under_tolerance",
+   "message": "x_rail to x_endstop_screw_1: drawn 1.30 mm apart. Built from purchased and purchased parts through the joints between them the gap is 1.30 +/-0.41 mm (one standard deviation) and closed in none of 3000 simulated builds, but its spread puts it at about 0.0008 of builds (normal estimate; an error above 1%)."
+  },
+  {
+   "verifier": "tolerance",
+   "severity": "warning",
+   "code": "clearance_below_minimum",
+   "message": "x_beam to x_endstop_nut_1: designed clearance 0.35 mm between two parts that do not mate, below the 0.5 mm minimum (default for the processes: extrusion 0.5 mm, purchased 0.2 mm, the larger)."
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "warning",
+   "code": "hole_smaller_than_thickness",
+   "message": "back_plate: 20 hole(s) or cut-out(s) narrower than the 5 mm sheet (smallest 3.40 mm at [-23.0, 144.5, 107.0]): they cut, but taper and lose accuracy."
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "warning",
+   "code": "hole_smaller_than_thickness",
+   "message": "electronics_tray: 2 hole(s) or cut-out(s) narrower than the 3 mm sheet (smallest 2.70 mm at [56.5, -2.0, 21.5]): they cut, but taper and lose accuracy."
+  },
+  {
+   "verifier": "ratings",
+   "severity": "warning",
+   "code": "motor_shaft_radial_load",
+   "message": "Belt y_belt pulls 37 N sideways on the shaft of y_motor (NEMA17-48) at 18.7 N per span (default: Gates' minimum recommended installation tension for a 12 mm belt (design manual p.65)), 16.2 mm from the mounting face. The motor's limit is 21 N at 20 mm (read from drawing, meaning inferred: drawing A0842 prints only 'COMMENT:LENGTH 20mm: 21N MAX'; taken as the maximum radial force on the shaft 20 mm from the mounting f"
+  },
+  {
+   "verifier": "ratings",
+   "severity": "warning",
+   "code": "motor_shaft_radial_load",
+   "message": "Belt y_belt_l pulls 37 N sideways on the shaft of y_motor_l (NEMA17-48) at 18.7 N per span (default: Gates' minimum recommended installation tension for a 12 mm belt (design manual p.65)), 16.2 mm from the mounting face. The motor's limit is 21 N at 20 mm (read from drawing, meaning inferred: drawing A0842 prints only 'COMMENT:LENGTH 20mm: 21N MAX'; taken as the maximum radial force on the shaft 20 mm from the mounti"
+  },
+  {
+   "verifier": "ratings",
+   "severity": "warning",
+   "code": "uncatalogued_cots",
+   "message": "bed_probe is marked off-the-shelf but did not come from the parts catalog (dimensions and ratings unverified)."
+  },
+  {
+   "verifier": "subsystems",
+   "severity": "warning",
+   "code": "bed_mesh_does_not_cover_print_area",
+   "message": "Bed probe 'bed_probe' is offset (-32, -6.19) mm from the nozzle and kept 18 mm inside the plate edge, so strips of the print area are never probed: {'x_high': 32.0, 'y_high': 6.19} (mm wide; print area not declared (design.printer['print_area']): taken as the whole XY travel over the plate, so travel added for probing counts as print area). The firmware holds the nearest measured value there."
+  },
+  {
+   "verifier": "electrical",
+   "severity": "warning",
+   "code": "probe_near_hot_bed",
+   "message": "Probe 'bed_probe' is rated for 70 degC ambient (PL-08N class value, recalled (typical, unverified)). Its face works 2.2 mm above a bed that runs up to 100 degC: the sensor is estimated at 43.6 to 71.8 degC (moving in room air to parked over the bed), and the high end is within the 10 K asked of an unvalidated estimate (margin -1.8 K)."
+  },
+  {
+   "verifier": "electrical",
+   "severity": "warning",
+   "code": "cutoff_depends_on_mcu",
+   "message": "Heater 'extruder': a shorted MOSFET is survived only because the firmware drops the supply relay (peak 282 degC). There is no cut-off that works if the controller has also hung."
+  },
+  {
+   "verifier": "fea",
+   "severity": "warning",
+   "code": "bed_sags_under_print_weight",
+   "message": "A 1 kg print at the worst corner of the print area lowers the print surface there by 0.087 mm (bonded joints 0.063, screw-only joints 0.087; of which guides and nut 0.004), more than 0.1 of a 0.2 mm layer (0.020 mm). The bed is levelled and meshed empty, so neither sees it."
+  }
+ ],
+ "parts": 317,
+ "tolerance_printer": {
+  "z_arrangement": "the bed rides Z",
+  "nominal_gap_mm": 0.1,
+  "gap_error_mm_99": 1.58,
+  "bed_out_of_level_mm_99": 2.32,
+  "p_first_layer_reachable_as_built": 0.143,
+  "p_bed_level_within_half_a_layer_as_built": 0.012,
+  "p_first_layer_reachable_standard_error": 0.0064,
+  "p_bed_level_standard_error": 0.002,
+  "z_offset_needed_mm_99": 1.58,
+  "z_offset_available_mm": 2.0,
+  "levelling_needed_mm_99": 1.16,
+  "levelling_available_mm": 1.5
+ },
+ "clearances": {
+  "pairs_examined": 17,
+  "pairs_closing": {
+   "error": 3,
+   "warning": 2
+  },
+  "threshold_mm": 1.5,
+  "builds": 3000,
+  "pairs": [
+   {
+    "parts": [
+     "bracket_13",
+     "part_fan_screw_1"
+    ],
+    "gap_mm": 0.484,
+    "gap_sd_mm": 0.588,
+    "p_closed": 0.22,
+    "p_closed_standard_error": 0.0076,
+    "gap_mm_0p15_percentile": -1.185,
+    "p_closed_normal_estimate": 0.21,
+    "severity": "error",
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "x_beam",
+     "x_endstop_nut_1"
+    ],
+    "gap_mm": 0.35,
+    "gap_sd_mm": 0.371,
+    "p_closed": 0.1773,
+    "p_closed_standard_error": 0.007,
+    "gap_mm_0p15_percentile": -0.616,
+    "p_closed_normal_estimate": 0.17,
+    "severity": "error",
+    "processes": [
+     "extrusion",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "x_carriage",
+     "x_belt_block"
+    ],
+    "gap_mm": 0.5,
+    "gap_sd_mm": 0.256,
+    "p_closed": 0.0233,
+    "p_closed_standard_error": 0.0028,
+    "gap_mm_0p15_percentile": -0.261,
+    "p_closed_normal_estimate": 0.024,
+    "severity": "error",
+    "processes": [
+     "purchased",
+     "printed"
+    ]
+   },
+   {
+    "parts": [
+     "extruder",
+     "fan_carrier"
+    ],
+    "gap_mm": 0.5,
+    "gap_sd_mm": 0.167,
+    "p_closed": 0.0017,
+    "p_closed_standard_error": 0.0007,
+    "gap_mm_0p15_percentile": 0.007,
+    "p_closed_normal_estimate": 0.0012,
+    "severity": "warning",
+    "processes": [
+     "purchased",
+     "printed"
+    ]
+   },
+   {
+    "parts": [
+     "x_rail",
+     "x_endstop_screw_1"
+    ],
+    "gap_mm": 1.3,
+    "gap_sd_mm": 0.411,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.125,
+    "p_closed_normal_estimate": 0.00079,
+    "severity": "warning",
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "bed_probe",
+     "x_endstop_screw_0"
+    ],
+    "gap_mm": 1.4,
+    "gap_sd_mm": 0.342,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.444,
+    "p_closed_normal_estimate": 2.4e-05,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "tool_screw_1",
+     "fan_carrier"
+    ],
+    "gap_mm": 0.991,
+    "gap_sd_mm": 0.232,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.308,
+    "p_closed_normal_estimate": 8.9e-06,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "printed"
+    ]
+   },
+   {
+    "parts": [
+     "tool_screw_0",
+     "extruder"
+    ],
+    "gap_mm": 0.2,
+    "gap_sd_mm": 0.044,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.076,
+    "p_closed_normal_estimate": 3.3e-06,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "extruder",
+     "x_belt_block_screw_0"
+    ],
+    "gap_mm": 0.2,
+    "gap_sd_mm": 0.044,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.082,
+    "p_closed_normal_estimate": 2.6e-06,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "tool_screw_2",
+     "extruder"
+    ],
+    "gap_mm": 0.2,
+    "gap_sd_mm": 0.044,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.069,
+    "p_closed_normal_estimate": 2.3e-06,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "tool_screw_1",
+     "extruder"
+    ],
+    "gap_mm": 0.2,
+    "gap_sd_mm": 0.043,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.074,
+    "p_closed_normal_estimate": 1.6e-06,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "psu",
+     "tray_bolt_0"
+    ],
+    "gap_mm": 1.25,
+    "gap_sd_mm": 0.271,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.501,
+    "p_closed_normal_estimate": 1.6e-06,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "extruder",
+     "x_belt_block_screw_1"
+    ],
+    "gap_mm": 0.2,
+    "gap_sd_mm": 0.043,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.075,
+    "p_closed_normal_estimate": 1.5e-06,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "tool_screw_3",
+     "extruder"
+    ],
+    "gap_mm": 0.2,
+    "gap_sd_mm": 0.043,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.074,
+    "p_closed_normal_estimate": 1.1e-06,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "extruder_screw_0",
+     "fan_carrier"
+    ],
+    "gap_mm": 1.192,
+    "gap_sd_mm": 0.219,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.53,
+    "p_closed_normal_estimate": 2.6e-08,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "printed"
+    ]
+   },
+   {
+    "parts": [
+     "inlet",
+     "inlet_nut_1"
+    ],
+    "gap_mm": 1.475,
+    "gap_sd_mm": 0.134,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 1.14,
+    "p_closed_normal_estimate": 2.1e-28,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "inlet",
+     "inlet_nut_0"
+    ],
+    "gap_mm": 1.475,
+    "gap_sd_mm": 0.133,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 1.135,
+    "p_closed_normal_estimate": 1.1e-28,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   }
+  ]
+ },
+ "probe": {
+  "x_offset": -32.0,
+  "y_offset": -6.19,
+  "unprobed_strip_mm": {
+   "x_low": 0.0,
+   "x_high": 32.0,
+   "y_low": 0.0,
+   "y_high": 6.19
+  },
+  "edge_margin_mm": 18.0,
+  "print_area": [
+   [
+    0.0,
+    180.0
+   ],
+   [
+    0.0,
+    180.0
+   ]
+  ],
+  "mesh_min": [
+   -2.0,
+   -2.0
+  ],
+  "mesh_max": [
+   148.0,
+   173.81
+  ],
+  "target": "aluminium",
+  "sensing_distance_mm": 3.2,
+  "face_above_nozzle_mm": 2.0,
+  "z_offset_range_mm": [
+   0.88,
+   1.52
+  ]
+ },
+ "probe_metal_near": null,
+ "bed_support": {
+  "print_weight": {
+   "load_n": 9.81,
+   "at": [
+    -88.0,
+    -62.0,
+    143.3
+   ],
+   "support_compliance_mm": 0.0041,
+   "support_compliance_tilt_mm": 0.0027,
+   "flexure_bonded_mm": 0.0586,
+   "total_bonded_mm": 0.0627,
+   "tilt_across_print_area_bonded_mm": 0.0682,
+   "flexure_screwed_mm": 0.083,
+   "total_screwed_mm": 0.0871,
+   "tilt_across_print_area_screwed_mm": 0.1011,
+   "range_note": "bonded: every touching face joined (stiff bound); screwed: joints held only round their screws (soft bound)",
+   "judged_mm": 0.0871,
+   "limit_mm": 0.02
+  },
+  "hand_load": {
+   "load_n": 20.0,
+   "at": [
+    -88.0,
+    -62.0,
+    143.3
+   ],
+   "support_compliance_mm": 0.0083,
+   "support_compliance_tilt_mm": 0.0055,
+   "flexure_bonded_mm": 0.1196,
+   "total_bonded_mm": 0.1279,
+   "tilt_across_print_area_bonded_mm": 0.1389,
+   "flexure_screwed_mm": 0.1692,
+   "total_screwed_mm": 0.1776,
+   "tilt_across_print_area_screwed_mm": 0.2061,
+   "range_note": "bonded: every touching face joined (stiff bound); screwed: joints held only round their screws (soft bound)",
+   "judged_mm": 0.1776,
+   "point_basis": "worst corner of the print area (the flexure was solved there)"
+  },
+  "constraint": {
+   "lead_screws": 1,
+   "guide_rails_or_rods": 2,
+   "guide_blocks": 4,
+   "redundant_screw_supports": 0,
+   "redundancy": {
+    "redundant": 0,
+    "nuts_spanning": 1,
+    "guide_over_screw_stiffness_by_mode": [
+     0.0
+    ],
+    "modes_held_by_guides_too": 0,
+    "threshold": 0.5
+   },
+   "note": "one screw sets the height, the guides hold the tilt: exactly constrained in height"
+  }
+ }
+}

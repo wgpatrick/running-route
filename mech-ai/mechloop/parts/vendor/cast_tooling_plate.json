@@ -23,10 +23,40 @@
     "cte": "13.1 uin/in-degF 20-100 degC, 13.6 for 20-200 degC (upmet listing)"
    },
    "recalled": [
-    "density_kg_m3 (0.101 lb/in^3)",
-    "E_mpa (10.3 Msi)",
-    "nu (typical for aluminium)"
-   ]
+    "density_kg_m3 (2800; NOT in the maker's brochure)",
+    "nu (typical for aluminium; not in the brochure)"
+   ],
+   "thermal_conductivity_w_mk": 142,
+   "confirmed_by_brochure": {
+    "document": "Alcoa MIC 6 brochure (4-2016), specifications table on PDF page 8, read visually by the collector",
+    "document_file": "vendor_cad/staging/MIC6_Alcoa_brochure_readable.pdf",
+    "properties_file": "vendor_cad/staging/MIC6_properties.txt",
+    "values": {
+     "tensile_mpa_typ": 166,
+     "yield_mpa_typ": 105,
+     "elongation_pct": 3,
+     "hardness_hb": 65,
+     "E_mpa": 71000,
+     "thermal_conductivity_w_mk": 142,
+     "cte_per_k_20_100c": 2.36e-05,
+     "cte_per_k_20_200c": 2.45e-05,
+     "thickness_tol_mm": 0.127,
+     "flatness_mm": {
+      "6.35_to_15.9mm": 0.381,
+      "19mm_and_thicker": 0.127
+     },
+     "surface_um_max": 0.5
+    },
+    "applied": "2026-11-15: MATERIALS['al_mic6'] E 71,000 and yield 105 are now the maker's typical figures (the numbers did not move); fea.ALPHA 23.6e-6 confirmed; tolerance STOCK_PLATE_FLATNESS for al_mic6 is the maker's own (0.381 mm for 1/4 to 5/8 in plate; a 6.0 mm plate is below the 6.35 mm the brochure starts at)"
+   },
+   "density_note": {
+    "value_in_use": 2800,
+    "status": "NOT in the Alcoa brochure. 2800 kg/m3 is an input assumption of a third-party thermal report (NOVA, ATR chassis, Table 1) and equals 0.101 lb/in3 on a distributor's page, which also prints 2.7 g/cm3: no density is certified. Kept; ask for a material certificate for mass-critical work",
+    "specific_heat_j_kgk": {
+     "value": 880,
+     "source": "the same NOVA report input, not the maker"
+    }
+   }
   },
   "al_atp5": {
    "density_kg_m3": 2660,

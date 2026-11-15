@@ -69,14 +69,15 @@ def tol(c: Component) -> dict:
 # Flatness of cast aluminium tooling plate USED AS SUPPLIED (not re-machined), mm over the plate: the maker's guarantee.
 # Vista Metals ATP-5 product sheet (vendor_docs/ATP5_datasheet.pdf; mechloop/parts/vendor/cast_tooling_plate.json,
 # datasheets.al_atp5): 0.381 mm for plate 12.7 mm and thinner, 0.127 mm above, thickness +/-0.127 mm, listed from 6.35 mm.
-# No MIC-6 figure could be read (that sheet's tables are empty); the ATP-5 one is shown for it as the class value.
+# MIC-6 (since 2026-11-15): the Alcoa brochure's own guarantee, 0.381 mm for 1/4 to 5/8 in plate, 0.127 mm from 3/4 in.
 # This is a REFERENCE figure reported beside the bed results, not a tolerance the stack-up applies: the stack-up's
 # "machined" flatness (0.02 mm) is for a mating face a shop has cut.
 STOCK_PLATE_FLATNESS = {"al_atp5": {"thin_mm": 0.381, "thick_mm": 0.127, "thin_up_to_mm": 12.7, "thickness_tol_mm": 0.127,
                                     "listed_from_mm": 6.35, "source": "Vista Metals ATP-5 product sheet (guaranteed)"},
-                        "al_mic6": {"thin_mm": 0.381, "thick_mm": 0.127, "thin_up_to_mm": 12.7, "thickness_tol_mm": 0.127,
+                        "al_mic6": {"thin_mm": 0.381, "thick_mm": 0.127, "thin_up_to_mm": 19.0, "thickness_tol_mm": 0.127,   # 0.381 to 5/8 in, 0.127 from 3/4 in
                                     "listed_from_mm": 6.35,
-                                    "source": "ATP-5's figure shown as the class value: the MIC-6 sheet in hand has no numbers"}}
+                                    "source": "Alcoa MIC 6 brochure (guaranteed maximum deviation: 0.381 mm for 1/4 to 5/8 in plate, 0.127 mm for 3/4 in "
+                                              "and thicker; thickness +/-0.127 mm)"}}
 
 
 def stock_plate_flatness(material: str, thickness_mm: float) -> dict | None:

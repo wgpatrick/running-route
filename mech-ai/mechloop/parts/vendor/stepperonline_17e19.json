@@ -1,0 +1,133 @@
+{
+ "retrieved": "2026-11-15",
+ "family": "NEMA 17 external trapezoidal lead-screw stepper 17E19S1684MB4-300RS (non-captive nut on an integral Tr8x8 screw)",
+ "vendor": "STEPPERONLINE",
+ "source_level": "vendor documents transcribed by the collector from an image-only drawing; vendor STEP measured here",
+ "source_url": "https://www.omc-stepperonline.com/nema-17-external-trapezoidal-linear-stepper-motor-1-68a-48mm-stack-screw-lead-8mm-0-31496-lead-length-300mm-17e19s1684mb4-300rs",
+ "title": "17E19S1684MB4-300RS product page and drawing (files.omc-stepperonline.com/17E19S1684MB4-300RS.pdf)",
+ "document_file": "vendor_cad/staging/17E19S1684MB4-300RS_datasheet.pdf",
+ "properties_file": "vendor_cad/staging/17E19S1684MB4-300RS_properties.txt",
+ "step_file": "vendor_cad/staging/17E19S1684MB4-300RS.step",
+ "provenance_note": "the PDF has no text layer: every 'drawing' value below was read from its pixels by the collecting agent (properties file) and could not be machine-checked here. 'step' values were measured in the vendor's STEP with mechloop's CAD kernel on 2026-11-15",
+ "used_by_catalog": true,
+ "values": {
+  "holding_torque_nm": {
+   "value": 0.44,
+   "source": "drawing (transcribed)"
+  },
+  "rated_current_a": {
+   "value": 1.68,
+   "source": "drawing (transcribed)"
+  },
+  "phase_resistance_ohm": {
+   "value": 1.65,
+   "tol": "+/-10 % at 25 degC",
+   "source": "drawing (transcribed)"
+  },
+  "phase_inductance_mh": {
+   "value": 2.8,
+   "tol": "+/-20 % at 1 kHz",
+   "source": "drawing (transcribed)"
+  },
+  "rotor_inertia_gcm2": {
+   "value": 68.0,
+   "source": "drawing (transcribed)"
+  },
+  "step_angle_deg": {
+   "value": 1.8,
+   "source": "drawing (transcribed)"
+  },
+  "screw": {
+   "thread": "Tr8x8",
+   "diameter_mm": 8.0,
+   "lead_mm": 8.0,
+   "length_mm": 300.0,
+   "length_tol_mm": 1.0,
+   "travel_per_full_step_mm": 0.04,
+   "source": "drawing (transcribed)"
+  },
+  "frame_mm_max": {
+   "value": 42.3,
+   "source": "drawing (transcribed); step: 42.3"
+  },
+  "body_length_mm_max": {
+   "value": 48.0,
+   "source": "drawing (transcribed); step: 48.0 without the connector"
+  },
+  "hole_square_mm": {
+   "value": 31.0,
+   "tol": 0.1,
+   "source": "drawing (transcribed); step: 31.0"
+  },
+  "thread_depth_min_mm": {
+   "value": 4.5,
+   "thread": "M3",
+   "source": "drawing (transcribed); step: 2.5 mm tap-drill holes 4.5 deep"
+  },
+  "pilot": {
+   "dia_mm": 22.0,
+   "height_mm": 2.0,
+   "source": "drawing (transcribed); step: 22.0 x 2.0"
+  },
+  "cable_length_mm": {
+   "value": 500,
+   "source": "drawing (transcribed)"
+  },
+  "mass_kg": {
+   "conflict": true,
+   "datasheet_pdf": 0.35,
+   "product_page": 0.454,
+   "used": 0.454,
+   "note": "the PDF says 0.35 kg, the product page 454 g; neither was weighed. The HEAVIER is used for mass, moving-mass and weight checks (conservative); the lighter is kept in the part's ratings"
+  },
+  "axial_load_rating_n": {
+   "value": null,
+   "status": "NOT STATED by the maker on the product page or the drawing: no thrust rating, no thrust curve, no bearing axial-load limit",
+   "secondary_claim": {
+    "value_n": 7.6,
+    "what": "'Minimal Thrust (N) @300pps' on a reseller page for the same model number (osmtec.com)",
+    "not": "a permissible axial load or a bearing rating; a speed-specific output-thrust claim. Not used"
+   }
+  },
+  "efficiency": {
+   "value": null,
+   "status": "not stated; the catalogue uses 0.5 as for its other 8 mm-lead trapezoidal screw (typical, unverified)"
+  },
+  "torque_speed_curve": {
+   "value": null,
+   "status": "none published"
+  }
+ },
+ "step_measured_mm": {
+  "solids": 5,
+  "frame": 42.3,
+  "motor_axis_in_file": [
+   7.53,
+   0.56
+  ],
+  "mounting_face_z_in_file": 21.24,
+  "body_rear_z_in_file": -26.74,
+  "screw_above_mounting_face": 298.0,
+  "screw_overall_in_file": 303.0,
+  "connector": {
+   "side": "one side face, at the rear",
+   "stands_out": 21.4,
+   "width": 16.0,
+   "height_from_rear": 11.0,
+   "note": "two lead stubs go 2 mm further"
+  },
+  "nut": {
+   "flange_dia": 25.4,
+   "flange_thickness": 3.81,
+   "barrel_dia": 12.7,
+   "overall_length": 19.05,
+   "mount_holes": "3 x 3.56 dia on a 19.05 mm circle",
+   "note": "an inch-dimensioned flanged nut is drawn on the screw in the STEP; the transcription says only that nut dimensions are on the drawing. Material and whether it is anti-backlash: not stated"
+  }
+ },
+ "compared_with_catalogue": {
+  "leadscrew_t8": "the catalogue's separate T8 screw is used by the printers with lead 2 mm (T8x2) behind a 5x8 coupler; this part is lead 8 mm and has no coupler: 4 times the travel per step (0.04 mm against 0.01 mm) and a quarter of the force per unit torque. They are distinct SKUs",
+  "nema17(48)": "same 42.3 x 48 frame and hole pattern as the 17HS19-2004S1; 0.44 N.m against 0.59"
+ },
+ "licence": "not stated on the product page"
+}

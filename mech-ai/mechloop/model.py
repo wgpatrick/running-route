@@ -38,6 +38,8 @@ MATERIALS = {
         # E (10.3 Msi) recalled. ATP-5 (5083-type): density, E (10.1 Msi = 70,000 MPa) and yield from Vista Metals' product
         # sheet (vendor_docs/ATP5_datasheet.pdf); Poisson's ratio typical. Sources and what is confirmed:
         # mechloop/parts/vendor/cast_tooling_plate.json. Thermal expansion 23.6e-6 /K (both), not in this table.
+        # al_mic6 since 2026-11-15: E 71,000 and yield 105 are the Alcoa MIC 6 brochure's typical figures (tensile 166 MPa,
+        # 142 W/m.K, 23.6e-6 /K); DENSITY 2800 IS NOT IN THE BROCHURE (a third-party report's input; kept), nu is typical.
         Material("al_mic6", 2800, 71000, 0.33, 105),
         Material("al_atp5", 2660, 70000, 0.33, 124),
     ]

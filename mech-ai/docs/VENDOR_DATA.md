@@ -402,3 +402,34 @@ Tests: `tests/test_known_answers_batch4.py`. Status per proposal: the report's l
 Not vendor data after this: a 24 V 30 mm fan's figures, the relay's contact rating, the inlet's order number and
 terminal positions, any probe's repeatability and its distance on a large thick aluminium plate. No touch probe exists
 in the catalogue (no off-the-shelf module with data).
+
+
+# Sixth batch (2026-11-15): parts added, with conflicts and gaps
+
+Source files are in `vendor_cad/staging/` (MANIFEST.md, "Batch 6"); every file was parsed as data only. New part
+functions are in `mechloop/parts/batch6.py`; tests in `tests/test_known_answers_batch6.py`.
+
+| Part function | What it is | Vendor record | From the maker | Conflicts | Not published (marked on the part) |
+|---|---|---|---|---|---|
+| `leadscrew_motor_17e19()`, `leadscrew_nut_17e19()` | StepperOnline 17E19S1684MB4-300RS: NEMA 17 with an integral Tr8x8 x 300 screw, and the nut drawn on it. Motor and screw of a joint in one part (`drive={"motor": n, "kind": "leadscrew", "screw": n}`), no coupler | `stepperonline_17e19.json` | 0.44 N.m, 1.68 A, 1.65 ohm, 2.80 mH, 68 g.cm2, lead 8 mm (0.04 mm per full step), 42.3 x 48 body, 31 mm holes M3 x 4.5: transcribed by the collector from an image-only drawing. Frame, holes, pilot, 298 mm of screw above the face, connector and nut sizes measured in the maker's STEP | **Mass: drawing 0.35 kg, product page 454 g.** Both kept; 0.454 used | **Axial (thrust) load rating**, efficiency (0.5 assumed), torque-speed curve, nut material and backlash. The ratings verifier reports the axial load on it as a warning, `axial_load_rating_unknown`, with the number |
+| `manta_m5p(drivers="TMC2209")` | BIGTREETECH MANTA M5P V1.0 | `bigtreetech_manta_m5p.json` | PCB 137.39 x 95, holes 128.39 x 86 (SIZE drawing); bed 10 A, heaters 5.5 A, fans 1 A each and under 2.5 A together, 12 / 24 V in (manual p.6); five driver sockets, none fitted; CM4 or CB1 core board as host on the board (manual p.5, p.13, p.20-26). Pins: Klipper's `generic-bigtreetech-manta-m5p.cfg` | Board length: manual rounds to 137.5, drawing 137.39 (drawing used) | Mass, hole diameter, fuse rating, the core board's current, connector positions (spread along the edges in the part). The 135 MB vendor STEP is not loaded: the envelope is the PCB plus the STEP's reported 20.3 mm height. Only the TMC2209 stick has data as a driver module |
+| `fan_cg3010u24()` | Coolerguys CG3010U24, 24 V 30 x 30 x 10 fan | `coolerguys_cg3010u24.json` | 24 V, 0.07 A, 5.45 CFM, 8.01 mmH2O, 13,400 rpm, 31.5 dBA, 8 g | none | hole pattern (usual 24 mm taken), voltage range, bearing, temperature |
+| `mgn15_rail(L)`, `mgn15h_carriage(preload=None)` | Hiwin MGN15 rail and MGN15H block | `hiwin_mgn12.json` block `catalogue` (figures); `limo_mgn15.json` (CAD cross-check) | Hiwin Tables 3.76 to 3.88: 58.8 x 32, H 16, M3 x 4 on 25 x 25, Cdyn 6370 / C0 9110 N, 87 / 113 N/um at Z0 / Z1, 10 / 6 um rail parallelism; rail 15 x 10, pitch 40, 1.06 kg/m | none: LiMo's assembly STEP agrees on every dimension measured | The CAD is LiMo's vendor-equivalent model, not Hiwin's; it was measured, not attached as a detail model. A LiMo block does not carry Hiwin's ratings |
+| `print_sheet_pei180()` | TRONXY PEI180 spring-steel PEI sheet with magnetic base | `tronxy_pei180.json` | 180 x 180, 0.4 mm steel, base "to 130 degC" (seller's claim) | none | mass (computed from the steel: 0.102 kg), steel grade, base thickness (base not drawn), stack height, flatness |
+
+Changed records:
+
+- **MIC-6** (`cast_tooling_plate.json`): the Alcoa brochure gives tensile 166, yield 105 MPa, E 71 GPa, 142 W/m.K,
+  23.6e-6 /K, flatness 0.381 mm for 1/4 to 5/8 in plate and 0.127 mm from 3/4 in. `MATERIALS["al_mic6"]` keeps its numbers
+  (they equal the brochure's); they are now the maker's. **Density 2800 kg/m3 is not in the brochure** (a third-party
+  report's input; a distributor prints both 2.7 g/cm3 and 0.101 lb/in3): kept and marked. The stock flatness shown for a
+  MIC-6 bed is now Alcoa's own.
+- **Relay** (`bigtreetech_relay_v12.json` `contact_rating`): SONGLE SRD-05VDC-SL-C, 10 A 250 VAC, from the casing in
+  BIGTREETECH's own photo. A component marking, not a board rating, and resistive: not a rating for the supply's 60 A
+  inrush. `relay_btt_v12()` `contact_a` = 10 A with that basis; the existing `relay_contact_too_small` check compares
+  the mains current with it.
+- **SHCS-M3x6** (`mcmaster_fasteners.json`): the corrected file is 91290A111 (5.5 x 9.0 overall, measured); the BOM status
+  is now "confirmed".
+- **Coupler** (`stepperonline_coupler.json` `not_published_by_the_maker`): angular and parallel misalignment and axial
+  stiffness are not published; 1.0 deg stays assumed, the other two are `None` on the part.
+- The Sunon sheet was renamed in staging (`MF30101V2-1000U-A99_12V_datasheet.pdf`); `fan(30, 12)` is unchanged.

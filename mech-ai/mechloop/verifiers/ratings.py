@@ -444,6 +444,14 @@ def verify_ratings(design: Design) -> VerifierResult:
                 r.metrics["belt_shaft_loads"] = sl
         except Exception as e:      # a belt the routing check will report; never lose the other ratings checks to it
             r.add("warning", "belt_shaft_load_not_checked", f"Belt pull on motor shafts was not checked: {type(e).__name__}: {e}")
+        try:      # axial load on lead-screw motors whose maker states no thrust rating (parts/batch6.py)
+            from ..parts.batch6 import check_leadscrew_axial_loads
+
+            al = check_leadscrew_axial_loads(design, r)
+            if al:
+                r.metrics["leadscrew_axial_loads"] = al
+        except Exception as e:
+            r.add("warning", "axial_load_not_checked", f"Axial load on lead screws was not checked: {type(e).__name__}: {e}")
         # bill of materials
         bom: dict[str, dict] = {}
         for c in design.components:

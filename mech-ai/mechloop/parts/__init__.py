@@ -428,7 +428,11 @@ def shaft_coupler(bore_a: float = 5.0, bore_b: float = 8.0) -> Stock:
         - Pos(0, 0, length - ins_b / 2) * Cylinder(bore_b / 2, ins_b)
     return Stock(body, f"COUPLER-{bore_a:g}x{bore_b:g}", f"Flexible coupler {bore_a:g} to {bore_b:g} mm", mass,
                  material="al6061", ratings={"rated_torque_nmm": torque, "angular_misalignment_deg": 1.0,   # typical for jaw couplings; not on the vendor page
-                          "angular_misalignment_assumed": True, **extra},
+                          "angular_misalignment_assumed": True,
+                          # the maker publishes no angular or parallel misalignment and no axial stiffness for this coupling
+                          # (vendor/stepperonline_coupler.json, not_published_by_the_maker): 1.0 deg stays assumed, the others unknown
+                          "parallel_misalignment_mm": None, "axial_stiffness_n_per_mm": None,
+                          "misalignment_and_axial_stiffness": "not published by the maker", **extra},
                  interfaces={"bore_a": bore_a, "bore_b": bore_b, "length": length, "od": od,
                              "max_insertion_a": ins_a, "max_insertion_b": ins_b, **iface},
                  cost_usd=3.0, source=src, detail=detail, model=model)
@@ -851,3 +855,5 @@ def add_corner_bracket(design: Design, name: str, a: str, b: str, corner, u, v, 
 from .hardware import bed_column_silicone, spacer_lengths, spacer_round  # noqa: E402,F401
 from .toolhead import extruder_roto, hotend_revo, hotend_v6  # noqa: E402,F401
 from .probes import add_probe_nuts, e2e_nut, probe_omron_e2e  # noqa: E402,F401
+from .batch6 import (fan_cg3010u24, leadscrew_motor_17e19, leadscrew_nut_17e19, manta_m5p, mgn15_rail,  # noqa: E402,F401
+                     mgn15h_carriage, print_sheet_pei180)

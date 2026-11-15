@@ -1718,6 +1718,17 @@ def extruder_gearing_lines(el: Electrical, ex: dict) -> list:
     return L
 
 
+def _tmc_uart_lines(pins: dict) -> list:
+    """UART lines of a [tmc2209 ...] section: a board with one shared UART bus gives uart, tx and an address per driver
+    (SKR Mini E3 V3); a board with one UART pin per driver socket gives only that pin (MANTA M5P)."""
+    out = [f"uart_pin: {pins['uart']}"]
+    if pins.get("tx"):
+        out.append(f"tx_pin: {pins['tx']}")
+    if pins.get("uart_address") is not None:
+        out.append(f"uart_address: {pins['uart_address']}")
+    return out
+
+
 SENSORLESS_SGTHRS_START = 100      # StallGuard threshold written for a sensorless axis: a starting point, not a prediction
 
 
@@ -1875,7 +1886,7 @@ def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict
                 L += [f"homing_speed: {min(50.0, j.max_speed or 50.0):g}"]
             if at_max:
                 L += ["homing_positive_dir: true"]
-        L += ["", f"[tmc2209 stepper_{ax}]", f"uart_pin: {pins['uart']}", f"tx_pin: {pins['tx']}", f"uart_address: {pins['uart_address']}",
+        L += ["", f"[tmc2209 stepper_{ax}]", *_tmc_uart_lines(pins),
               f"run_current: {st['run_current']:.3f}", f"sense_resistor: {board.ratings.get('sense_resistor_ohm', 0.11):.3f}",
               "stealthchop_threshold: 0"]
         # further motors of this axis on their OWN drivers (a Z on two or three screws, each with a motor): Klipper's
@@ -1891,7 +1902,7 @@ def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict
             q2 = p2.pin
             L += ["", f"[stepper_{ax}{k2}]", f"step_pin: {q2['step']}", f"dir_pin: {q2['dir']}", f"enable_pin: !{q2['enable']}",
                   f"microsteps: {st.get('microsteps', 16)}", f"rotation_distance: {dr.get('travel_per_rev', 40):g}",
-                  "", f"[tmc2209 stepper_{ax}{k2}]", f"uart_pin: {q2['uart']}", f"tx_pin: {q2['tx']}", f"uart_address: {q2['uart_address']}",
+                  "", f"[tmc2209 stepper_{ax}{k2}]", *_tmc_uart_lines(q2),
                   f"run_current: {st['run_current']:.3f}", f"sense_resistor: {board.ratings.get('sense_resistor_ohm', 0.11):.3f}",
                   "stealthchop_threshold: 0"]
         if ax == "z" and extra_ports:
@@ -1943,7 +1954,7 @@ def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict
                   f"pressure_advance: {pa['value']:.4f}", f"pressure_advance_smooth_time: {pa.get('smooth_time', 0.04):g}"]
         L += [""]
         if port is not None:
-            L += ["[tmc2209 extruder]", f"uart_pin: {pins['uart']}", f"tx_pin: {pins['tx']}", f"uart_address: {pins['uart_address']}",
+            L += ["[tmc2209 extruder]", *_tmc_uart_lines(pins),
                   f"run_current: {ex['run_current']:.3f}", f"sense_resistor: {board.ratings.get('sense_resistor_ohm', 0.11):.3f}", ""]
     hb = (fw.get("heaters") or {}).get("heater_bed")
     if hb:

@@ -85,7 +85,7 @@ def test_unshielded_probe_needs_its_metal_free_zone():
     f, z = probe_result(probe_toolhead(clamp=(12.0, 15.0)))
     assert list(f) == ["probe_metal_in_clear_zone"] and f["probe_metal_in_clear_zone"].severity == "error"
     hit = z["mounting"]["metal_in_zone"][0]
-    assert hit["part"] == "tab" and hit["nearest_to_face_mm"] == 12.0 and z["mounting"]["metal_free_zone"] == {"dia_mm": 40.0, "from_face_mm": 15.0}
+    assert hit["part"] == "tab" and hit["nearest_to_face_mm"] == 12.0 and (z["mounting"]["metal_free_zone"]["dia_mm"], z["mounting"]["metal_free_zone"]["from_face_mm"]) == (40.0, 15.0)
     assert not probe_result(probe_toolhead(clamp=(12.0, 15.0), tab="petg"))[0]
     f, z = probe_result(probe_toolhead(clamp=(15.0, 18.0), metal_block_at=14.0))
     assert list(f) == ["probe_metal_in_clear_zone"] and z["mounting"]["metal_in_zone"][0]["part"] == "block"
@@ -258,7 +258,8 @@ def test_mcmaster_numbers_are_recorded_and_the_m5_nut_keeps_its_iso_height_unles
     from mechloop.verifiers.ratings import verify_ratings
 
     assert shcs("M3", 8).ratings["mcmaster_pn"] == "91290A400" and "confirmed" in shcs("M3", 8).ratings["mcmaster_pn_status"][:9]
-    assert shcs("M3", 6).ratings["mcmaster_pn"] == "91290A111" and shcs("M3", 6).ratings["mcmaster_pn_status"].startswith("unconfirmed")
+    # (SHCS-M3x6 was "unconfirmed" until the corrected file arrived in batch 6: see test_known_answers_batch6.py)
+    assert shcs("M3", 6).ratings["mcmaster_pn"] == "91290A111" and shcs("M3", 6).ratings["mcmaster_pn_status"].startswith("confirmed")
     assert "mcmaster_pn" not in shcs("M3", 25).ratings
     iso, din = hex_nut("M5"), hex_nut("M5", "din934")
     assert (iso.sku, iso.interfaces["height"], iso.interfaces["height_din934_mcmaster"]) == ("NUT-M5", 4.7, 4.0)
@@ -271,5 +272,5 @@ def test_mcmaster_numbers_are_recorded_and_the_m5_nut_keeps_its_iso_height_unles
     add_nut(d, "n", "M5", at=(0, 0, -6), direction=(0, 0, -1), screw="s", standard="din934")
     add_screw(d, "t", "M3", 6, at=(10, 10, 0), threads_into="a")
     bom = verify_ratings(d).metrics["bom"]
-    assert bom["NUT-M5-DIN934"]["mcmaster_pn"] == "90591A260" and bom["SHCS-M3x6"]["mcmaster_pn_status"].startswith("unconfirmed")
+    assert bom["NUT-M5-DIN934"]["mcmaster_pn"] == "90591A260" and bom["SHCS-M3x6"]["mcmaster_pn_status"].startswith("confirmed")
     assert "mcmaster_pn" not in bom["SHCS-M5x16"]

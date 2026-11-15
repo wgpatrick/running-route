@@ -25,9 +25,7 @@
   "NUT-M5": "90591A260"
  },
  "pages": "https://www.mcmaster.com/<part number>/",
- "wrong_file": {
-  "SHCS-M3x6.step": "byte-identical to SHCS-M3x12.step (same SHA-256); it carries product 91290A500 and is 12 mm long. It is NOT 91290A111. Do not use; fetch again"
- },
+ "wrong_file": {},
  "screws": {
   "SHCS-M2.5x12": {
    "mcmaster_pn": "91290A008",
@@ -197,6 +195,19 @@
    "head_dia_mm": 8.5,
    "head_height_mm": 5.0,
    "triangles_at_0.1mm_deflection": 22932
+  },
+  "SHCS-M3x6": {
+   "mcmaster_pn": "91290A111",
+   "faces": null,
+   "bounding_box_mm": [
+    5.5,
+    5.5,
+    9.0
+   ],
+   "volume_mm3": 92.6,
+   "head_dia_mm": 5.5,
+   "head_height_mm": 3.0,
+   "triangles_at_0.1mm_deflection": null
   }
  },
  "screws_common": {
@@ -247,12 +258,17 @@
   },
   "recommendation": "(c) keep the generated ISO solids as simulation and detail models; record the McMaster part numbers and these dimensions. Consider (b), a defeatured copy with the thread replaced by a cylinder, only if a close-up render ever needs the real head",
   "not_in_staging_but_used_by_printer_v6": [
-   "SHCS-M3x6 (wrong file)",
    "SHCS-M3x25",
    "SHCS-M3x45",
    "SHCS-M5x16"
   ]
  },
  "used_by_catalog": true,
- "_label": "added 2026-11-15 (batch 4). Read since 2026-11-15 by shcs() and hex_nut(): McMaster part numbers per SKU for the BOM, and the DIN 934 M5 nut height"
+ "_label": "added 2026-11-15 (batch 4). Read since 2026-11-15 by shcs() and hex_nut(): McMaster part numbers per SKU for the BOM, and the DIN 934 M5 nut height",
+ "corrected_files": {
+  "SHCS-M3x6.step": {
+   "was": "byte-identical to SHCS-M3x12.step (same SHA-256); it carries product 91290A500 and is 12 mm long. It is NOT 91290A111. Do not use; fetch again",
+   "now": "replaced in place on 2026-11-15 by McMaster 91290A111 (1,559,832 bytes); measured here: one solid, head 5.5 dia x 3.0, 6.0 mm under the head (9.0 overall), 92.6 mm3"
+  }
+ }
 }

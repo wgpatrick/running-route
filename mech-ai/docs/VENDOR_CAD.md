@@ -248,3 +248,12 @@ the model in use), and the later batches.
 The endstop's detail model is unchanged; what changed is where its lever operates (OMRON's data sheet: `docs/VENDOR_DATA.md`).
 The earlier line under "Not done / limits" that a lever is not checked for being crushed no longer holds: the
 subsystems verifier now reports `endstop_overtravel` when the striker ends past the case line.
+
+## Batch 6 CAD (2026-11-15): measured, not attached
+
+None of the batch 6 STEP files became a detail model. `17E19S1684MB4-300RS.step` (6.2 MB, over the 5 MB limit for
+`vendor_cad/`), LiMo's `MGN15H-150mm-assembly_LiMo-vendor-equivalent.step` (vendor-EQUIVALENT, not Hiwin's) and the
+corrected `SHCS-M3x6.step` were loaded once and measured; the figures are in `stepperonline_17e19.json`,
+`limo_mgn15.json` and `mcmaster_fasteners.json`. The MANTA M5P STEP (135 MB) was not loaded at all: its part uses the
+drawing's outline and the bounding-box height the collector reported. The new parts therefore show their simulation
+solids (`model.kind` "proxy", with the measured source named). All files stay in `vendor_cad/staging/`.

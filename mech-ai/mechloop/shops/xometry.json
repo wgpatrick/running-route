@@ -133,7 +133,7 @@
     25.4
    ],
    "source": "recalled",
-   "note": "RECALLED, not published by Xometry: MIC-6 is made in inch thicknesses (1/4, 3/8, 1/2, 5/8, 3/4, 1 in). SendCutSend's list (.250, .375, .500 in) agrees for the first three. An 8 mm cast plate is not MIC-6 stock."
+   "note": "RECALLED, not published by Xometry: MIC-6 is made in inch thicknesses (1/4, 3/8, 1/2, 5/8, 3/4, 1 in). SendCutSend's list (.250, .375, .500 in) agrees for the first three, and the maker's brochure held in mechloop/parts/vendor/cast_tooling_plate.json states flatness for '1/4 to 5/8 in' and '3/4 in and thicker' plate. An 8 mm cast plate is not MIC-6 stock."
   }
  },
  "rules": {

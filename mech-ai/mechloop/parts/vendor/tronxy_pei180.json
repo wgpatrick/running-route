@@ -1,0 +1,32 @@
+{
+ "retrieved": "2026-11-15",
+ "family": "TRONXY PEI180: 180 x 180 mm PEI-coated spring-steel sheet with magnetic base",
+ "vendor": "TRONXY",
+ "source_level": "seller's product page, read by the collector",
+ "source_url": "https://www.tronxy3d.com/products/pei-sheet-build-plate-magnetic-base-hot-bed-sticker-180-180mm",
+ "title": "PEI Sheet Build Plate + Magnetic Base 180 x 180 mm (product page)",
+ "properties_file": "vendor_cad/staging/PEI180_properties.txt",
+ "used_by_catalog": true,
+ "values": {
+  "size_mm": [
+   180.0,
+   180.0
+  ],
+  "steel_thickness_mm": {
+   "value": 0.4,
+   "note": "'PEI sprayed on spring steel with 0.4MM thickness': read as the steel, not the coated stack"
+  },
+  "magnetic_base_max_temp_c": {
+   "value": 130.0,
+   "note": "seller's claim 'up to 130 C for extended use'; no independent qualification, no holding force against temperature"
+  }
+ },
+ "not_published": [
+  "mass (catalogue: computed from the steel alone)",
+  "steel grade",
+  "magnetic base thickness and total installed thickness (catalogue: base NOT drawn)",
+  "PEI coating thickness",
+  "flatness"
+ ],
+ "licence": "not stated"
+}

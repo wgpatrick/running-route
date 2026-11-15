@@ -201,7 +201,7 @@ def render_view(scene: Scene, path: Path, *, q: dict, show, camera: dict, size=(
         placed: list = []
         for k, (key, label, names) in enumerate(callouts, 1):
             mask = (idimg[:, :, 0] == k * 8) & (idimg[:, :, 2] > 250)
-            mx, my = int(W * 0.035), int(H * 0.035)   # keep the callout clear of the picture's edge
+            mx, my = int(W * 0.05), int(H * 0.05)   # keep the callout clear of the picture's edge
             inner = np.zeros_like(mask)
             inner[my:H - my, mx:W - mx] = mask[my:H - my, mx:W - mx]
             if inner.sum() >= 12:

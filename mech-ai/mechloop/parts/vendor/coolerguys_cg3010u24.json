@@ -1,0 +1,35 @@
+{
+ "retrieved": "2026-11-15",
+ "family": "Coolerguys CG3010U24 30 x 30 x 10 mm 24 V axial fan",
+ "vendor": "Coolerguys",
+ "source_level": "vendor product sheet, read by the collector",
+ "source_url": "https://www.coolerguys.com/products/coolerguys-30mm-30x30x10mm-24v-dc-2pin-ultra-high-speed-fan-cg3010u24-with-4-inch-wire-length",
+ "title": "CG3010U24 product sheet (2-page PDF) and product page",
+ "document_file": "vendor_cad/staging/CG3010U24_datasheet.pdf",
+ "properties_file": "vendor_cad/staging/CG3010U24_properties.txt",
+ "used_by_catalog": true,
+ "values": {
+  "size_mm": [
+   30,
+   30,
+   10
+  ],
+  "rated_voltage_v": 24.0,
+  "rated_current_a": 0.07,
+  "air_flow_cfm": 5.45,
+  "static_pressure_mmh2o": 8.01,
+  "static_pressure_pa": 78.6,
+  "speed_rpm": 13400,
+  "noise_dba": 31.5,
+  "mass_g": 8,
+  "lead": "2-pin, 4 inch (about 100 mm)",
+  "note": "maximum air flow and maximum static pressure are the two ends of the curve, not one operating point"
+ },
+ "not_stated": [
+  "operating voltage range",
+  "mounting hole diameter and pitch (taken as the usual 24 mm / 3.2 mm of a 3010 frame)",
+  "bearing type and life",
+  "operating temperature"
+ ],
+ "licence": "not stated"
+}

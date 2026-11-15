@@ -267,12 +267,17 @@ def relay_btt_v12() -> Stock:
              "N": dict(kind="series", at=(33.0, 0.0, 12.0), dir=(1, 0, 0), multi=True, **sc),
              "LOT": dict(kind="series", at=(33.0, 9.0, 12.0), dir=(1, 0, 0), **sc),
              "ctrl": dict(kind="signal_in", connector="JST-XH", max_a=3.0, at=(-33.0, 0.0, 8.0), dir=(0, 0, 1), conductors=3)}
-    ratings = {"contact_a": 10.0, "volts": 265.0, "resistance_ohm": 0.0, "supply_w": 0.5}
+    ratings = {"contact_a": 10.0, "volts": 265.0, "resistance_ohm": 0.0, "supply_w": 0.5,
+               "contact_rating_basis": "component marking (SONGLE SRD-05VDC-SL-C: 10 A 250 VAC), not a board rating; resistive load",
+               "relay_component": "SONGLE SRD-05VDC-SL-C"}
     sources = {"outline_holes": "[BTT-R] dimensional drawing", "volts": "[BTT-R] AC input 85-265 V",
                "mains_terminals": "[BTT-R] manual p.3 (mechloop/parts/vendor/bigtreetech_relay_v12.json): LOT, N, LIN; the on-board "
                                   "converter ('INPUT 85-265VAC, OUTPUT DC5V/3W') is fed from LIN and N; one relay, live only. "
                                   "Terminal order along the strip is as drawn here, not dimensioned in the manual",
-               "contact_a": f"relay contact rating not in the manual ({TU})", "height": TU, "supply_w": TU, "mass": TU, "cost": TU}
+               "contact_a": "marking on the fitted relay in BIGTREETECH's own hardware photo: SONGLE SRD-05VDC-SL-C, 10 A 250 VAC / 10 A 125 VAC / "
+                            "10 A 30 VDC (mechloop/parts/vendor/bigtreetech_relay_v12.json, contact_rating). A COMPONENT marking for the "
+                            "photographed revision, not a rating of the board, terminals or tracks (the manual gives none), and a "
+                            "resistive-load figure: not a rating for the supply's 60 A inrush", "height": TU, "supply_w": TU, "mass": TU, "cost": TU}
     return Stock(pcb + env, "RELAY-BTT-V1.2", "BIGTREETECH Relay V1.2 mains relay module", 0.03, material="abs",
                  ratings={"electrical": {"kind": "relay", "ports": ports, "ratings": ratings, "sources": sources,
                                          "product": {'product': 'BIGTREETECH Relay V1.2', 'vendor': 'BIGTREETECH', 'part_number': 'Relay V1.2', 'form': 'assembled board', 'off_the_shelf': True, 'custom_pcb': False, 'builder_work': 'mount on spacers; ferrules on the mains wires; 3-wire JST-XH lead to PS-ON'}, "params": {"through": {"LIN": "LOT", "LOT": "LIN", "N": "N"}, "cuts": "psu", "required_supply_ports": {"N": "mains neutral: the module's own 5 V converter is fed from LIN and N; without it the relay never pulls in and the machine does not switch on"}}}, "approximate": True},

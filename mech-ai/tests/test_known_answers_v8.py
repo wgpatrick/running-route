@@ -1,0 +1,553 @@
+"""Known-answer tests for the checker problems reported by the printer_v8 design pass (docs/PRINTER_V8.md, "Checker
+behaviour I think is wrong or worth a look") and by the reference machine. Small purpose-built designs; answers by
+hand or by construction; each tested both ways (the bad case fails, the good case passes)."""
+import json
+import math
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+import numpy as np
+import pytest
+from build123d import Box, Cylinder, Location, Pos
+
+sys.path.insert(0, str(Path(__file__).parent))
+
+from test_known_answers_fit import bed_machine, clearances, codes, find, support      # noqa: E402
+
+from mechloop.model import Adjustment, Design, LoadCase, ThermalCase                  # noqa: E402
+from mechloop.parts import add_screw, clearance_hole, place                           # noqa: E402
+from mechloop.report import VerifierResult, without_timings                           # noqa: E402
+from mechloop.tolerance import stackup as SU                                          # noqa: E402
+from mechloop.verifiers import bed_support as BS                                      # noqa: E402
+
+ROOT = Path(__file__).resolve().parents[1]
+THREE = ((-90.0, -90.0), (90.0, -90.0), (0.0, 120.0))
+
+
+# ===================================================================== 1. a part clamped by screws is located by them
+def deck_on_posts(screws=True):
+    """A machined deck 30 mm ABOVE a machined base, held by four M5 screws that pass through it and thread into the base
+    (in reality with a spacer or jam nuts on each; none is drawn, so the two plates do not touch)."""
+    d = Design("deck", base="base")
+    d.add("base", Pos(0, 0, -5) * Box(100, 100, 10), material="al6061")
+    deck = Pos(0, 0, 32.5) * Box(100, 100, 5)
+    pts = [(-40, -40), (40, -40), (-40, 40), (40, 40)]
+    for x, y in pts:
+        deck -= Pos(x, y, 32.5) * Cylinder(clearance_hole("M5") / 2, 5)
+    d.add("deck", deck, material="al6061")
+    if screws:
+        for i, (x, y) in enumerate(pts):
+            add_screw(d, f"post{i}", "M5", 45, at=(x, y, 35), threads_into="base", clamps=("deck",))
+    return d
+
+
+def test_a_plate_held_on_screws_without_touching_is_located_by_those_screws():
+    """Four screws clamp the deck to the base across a 30 mm gap. The deck is located by that screwed joint: it is in
+    the stack-up, its height scatters by the two parts' seating accuracy (hundredths of a millimetre, not millimetres),
+    and it stays level to the same order. Without the rule (the old behaviour) it was "not tied to the base". A deck
+    that merely hovers, with no screws, is still not located."""
+    B = SU.Build(deck_on_posts(), 2000)
+    assert "deck" in B.A and B.unplaced == []
+    assert B.screwed_apart == [{"parts": ["base", "deck"], "screws": ["post0", "post1", "post2", "post3"]}]
+    z = B.at("deck", (0, 0, 35))[:, 2] - 35.0
+    assert 0.005 < z.std() < 0.15
+    tilt = B.at("deck", (40, 0, 35))[:, 2] - B.at("deck", (-40, 0, 35))[:, 2]
+    assert np.percentile(np.abs(tilt), 99.7) < 0.3
+    SU.SCREWED_JOINTS = False
+    try:
+        old = SU.Build(deck_on_posts(), 2000)
+        assert old.unplaced == ["deck"] and "deck" not in old.A          # what the v8 pass saw: four screws, "not tied to the base"
+    finally:
+        SU.SCREWED_JOINTS = True
+    loose = SU.Build(deck_on_posts(screws=False), 2000)
+    assert loose.unplaced == ["deck"]                                     # nothing holds it: still reported, never located
+
+
+# ===================================================================== 2. three screws and one block per rail is not a cantilever
+def floating(d):
+    d.adjustments.append(Adjustment("floating nut", "float", range_mm=0.5, joint="z"))
+    return d
+
+
+def ratings_z(d):
+    from mechloop.verifiers.ratings import verify_ratings
+
+    r = verify_ratings(d)
+    return r.metrics["guide_loads"]["z"], [f for f in r.findings if f.code == "cantilever_on_guide_blocks"]
+
+
+def test_lead_screw_nuts_count_as_supports_in_the_cantilever_finding():
+    """3 kg 200 mm in front of the bed, one guide block per rail. On ONE screw behind the bed it hangs from the blocks
+    (which resist tilt only over their own ball track): the body nods well below 100 Hz and the finding is raised. On
+    THREE screws round the bed the same mass sits between supports: hundreds of hertz, no finding, and the metrics
+    say the nuts were counted. Three screws in ONE LINE do not hold tilt across that line: the finding must stay."""
+    far = dict(blocks_per_rail=1, payload_at=(0.0, -100.0))
+    g, f = ratings_z(bed_machine(**far))
+    assert len(f) == 1 and g["tilt_mode_hz"] < 100 and "supports_counted" not in g
+    g3, f3 = ratings_z(bed_machine(screws=THREE, sync="belt", **far))
+    assert f3 == [] and g3["tilt_mode_hz"] > 3 * g["tilt_mode_hz"]
+    assert g3["supports_counted"]["lead_screw_nuts"] == ["nut0", "nut1", "nut2"] and "along its screw only" in g3["supports_counted"]["nut_holds"]
+    assert g3["sag_at_mass_centre_mm_per_kg"] < 0.2 * g["sag_at_mass_centre_mm_per_kg"]
+    gl, fl = ratings_z(bed_machine(screws=((-90.0, 120.0), (0.0, 120.0), (90.0, 120.0)), sync="belt", **far))
+    assert len(fl) == 1 and "3 lead-screw nuts" in fl[0].message and gl["tilt_mode_hz"] < 100
+
+
+def test_level_over_travel_uses_all_supports_and_agrees_with_the_old_formula_where_guides_alone_hold_tilt():
+    """Rail running accuracy by Hiwin's table for the travel (class C). One block per rail and ONE screw: the block follows its rail's slope
+    over its 32.4 mm ball track and nothing else holds the tilt: parallelism / 32.4 x the reach to the far corner, the
+    earlier formula, within a few per cent, and the finding at a 0.1 mm layer. The same blocks with THREE screws: the
+    screws hold the plane, the blocks' wander barely moves a corner (under a tenth of that), no finding."""
+    d1 = bed_machine(blocks_per_rail=1)
+    d1.printer["layer_height"] = 0.1
+    m1, r1 = support(d1)
+    lv = m1["level_over_travel"]
+    assert lv["from_rail_running_accuracy_mm"] == pytest.approx(lv["guides_alone_formula_mm"], rel=0.05)
+    assert lv["guides_alone_formula_mm"] == pytest.approx(lv["rail_running_parallelism_mm"] / 32.4 * lv["furthest_print_corner_from_guides_mm"], rel=0.01)
+    assert "bed_level_changes_over_travel" in codes(r1, "warning")
+    d3 = floating(bed_machine(screws=THREE, blocks_per_rail=1, sync="belt"))
+    d3.printer["layer_height"] = 0.1
+    m3, r3 = support(d3)
+    assert m3["level_over_travel"]["from_rail_running_accuracy_mm"] < 0.1 * lv["from_rail_running_accuracy_mm"]
+    assert not [f for f in find(r3, "bed_level_changes_over_travel") if "running accuracy" in f.message]
+    # two blocks per rail, one screw: the old formula's own case (slope over the block spacing), same answer within 15 %
+    m2, _ = support(bed_machine())
+    lv2 = m2["level_over_travel"]
+    assert lv2["from_rail_running_accuracy_mm"] == pytest.approx(lv2["guides_alone_formula_mm"], rel=0.15)
+
+
+def test_rails_and_screws_both_holding_the_tilt_is_an_over_constraint_and_screws_alone_is_not():
+    """Three screws. With TWO blocks per rail the rails hold the bed's tilt as stiffly as the screws: two redundant
+    supports, and a screw height error turns into force (tens of newtons on a block for 0.02 mm) that unseats
+    gravity-seated nuts: warning z_tilt_over_constrained. With ONE block per rail the blocks do not resist the plane
+    the screws set: no redundant support, no force on a block, no over-constraint finding."""
+    m2, r2 = support(floating(bed_machine(screws=THREE, blocks_per_rail=2, sync="belt")))
+    assert m2["constraint"]["redundant_screw_supports"] == 2 and m2["constraint"]["redundancy"]["modes_held_by_guides_too"] == 2
+    f = find(r2, "z_tilt_over_constrained")
+    assert len(f) == 1 and f[0].severity == "warning" and f[0].data["unseats_on_synchronisation_error_alone"]
+    assert m2["screw_synchronisation"]["force_on_a_guide_block_n"] > 20
+    m1, r1 = support(floating(bed_machine(screws=THREE, blocks_per_rail=1, sync="belt")))
+    assert m1["constraint"]["redundant_screw_supports"] == 0 and find(r1, "z_tilt_over_constrained") == []
+    assert m1["screw_synchronisation"]["force_on_a_guide_block_n"] < 1.0
+    assert max(m1["constraint"]["redundancy"]["guide_over_screw_stiffness_by_mode"]) < BS.GUIDES_HOLD_TILT_RATIO
+    # one screw, two blocks per rail: the rails alone hold the tilt, nothing is redundant
+    m0, r0 = support(bed_machine())
+    assert m0["constraint"]["redundant_screw_supports"] == 0 and "nut_seating_and_lead_error" not in m0
+
+
+# ===================================================================== 3. lead error and nut seating
+def test_lead_error_accumulates_over_travel_and_uses_the_catalogue_figure_when_there_is_one():
+    """Travel 100 mm. No lead accuracy on the screw part: the class value, 0.1 mm per 300 mm, marked assumed:
+    0.0333 mm per screw; the three levels are sync, sync + that, sync + twice that (0.02, 0.0533, 0.0867 for a belt).
+    With ratings['lead_accuracy_mm_per_300mm'] = 0.03 on every screw: 0.01 mm, not assumed. Independent motors carry
+    the same lead error on top of their own synchronisation error (2 full steps of an 8 mm lead: 0.08 mm)."""
+    d = floating(bed_machine(screws=THREE, blocks_per_rail=1, sync="belt"))
+    st = support(d)[0]["nut_seating_and_lead_error"]
+    assert st["lead_accuracy"]["assumed"] and st["lead_accuracy"]["mm_per_300mm"] == BS.LEAD_ACCURACY_ASSUMED_MM_PER_300 == 0.1
+    assert st["lead_error_over_travel_mm"] == pytest.approx(0.1 / 300 * 100, abs=1e-4)
+    assert [lv["height_error_mm"] for lv in st["levels"]] == pytest.approx([0.02, 0.02 + 0.0333, 0.02 + 0.0667], abs=2e-4)
+    for c in d.components:
+        if c.name.startswith("screw"):
+            c.ratings["lead_accuracy_mm_per_300mm"] = 0.03
+    st2 = support(d)[0]["nut_seating_and_lead_error"]
+    assert not st2["lead_accuracy"]["assumed"] and st2["lead_error_over_travel_mm"] == pytest.approx(0.01, abs=1e-4)
+    ind = support(floating(bed_machine(screws=THREE, blocks_per_rail=1)))[0]["nut_seating_and_lead_error"]
+    assert [lv["height_error_mm"] for lv in ind["levels"]] == pytest.approx([0.08, 0.08 + 0.0333, 0.08 + 0.0667], abs=2e-4)
+
+
+def test_nut_seating_loads_balance_the_weight_and_a_gravity_seated_nut_lifts_when_its_load_would_go_negative():
+    """The seating loads are statics: they add up to the moving weight. A nut's linear margin at a height error E is its
+    seating load less E times its sensitivity. Two blocks per rail (rails hold the tilt): the sensitivity is thousands
+    of N/mm, the margin at 0.02 mm is far below zero, and the contact solution has that nut carrying exactly nothing
+    while the nuts still seated carry the whole weight (the guides are free along the rail). One block per rail: the
+    sensitivity is ten times smaller."""
+    d = floating(bed_machine(screws=THREE, blocks_per_rail=2, sync="belt"))
+    m, r = support(d)
+    st = m["nut_seating_and_lead_error"]
+    W = m["moving_mass_on_guides"]["moving_mass_kg"] * BS.G
+    assert sum(v["seating_load_n"] for v in st["nuts"].values()) == pytest.approx(W, rel=2e-3)
+    assert st["nut_seating"]["kind"] == "gravity" and st["nut_seating"]["reverse_gap_mm"] is None
+    n0 = st["nuts"]["nut0"]
+    assert n0["unloads_at_height_error_mm"] == pytest.approx(n0["seating_load_n"] / n0["load_change_n_per_mm_of_height_error"], abs=2e-4)
+    lv = st["levels"][0]
+    assert lv["nut_load_margin_n"]["nut0"] == pytest.approx(n0["seating_load_n"] - 0.02 * n0["load_change_n_per_mm_of_height_error"], abs=0.1)
+    assert lv["nut_load_margin_n"]["nut0"] < 0
+    assert lv["a_nut_unseats"] and lv["worst_case"]["least_nut_load_n"] == 0.0 and lv["worst_case"]["nuts_not_seated"]
+    # the contact solution itself: weight carried by the seated nuts only, never a pulling nut
+    lay = BS.layout(d)
+    model = BS.support_model(d, lay)
+    com = np.array(m["moving_mass_on_guides"]["mass_centre"])
+    grav = np.concatenate([[0, 0, -W], np.cross(com - model["O"], [0, 0, -W])])
+    sol = BS.contact_solve(model, lay, grav, {"nut0": -0.05}, None)
+    assert sol["state"]["nut0"] == "free" and sol["nut_force_n"]["nut0"] == 0.0
+    assert min(sol["nut_force_n"].values()) >= 0.0 and sum(sol["nut_force_n"].values()) == pytest.approx(W, rel=5e-3)
+    # a captive nut (fixed both ways, 0.1 mm backlash assumed) bears again on its other flank once the gap is taken up
+    d.joints[-1].drive["nut_seating"] = "captive"
+    cap = support(d)[0]["nut_seating_and_lead_error"]
+    assert cap["nut_seating"]["kind"] == "captive" and cap["nut_seating"]["reverse_gap_mm"] == BS.NUT_BACKLASH_ASSUMED_MM
+    sol2 = BS.contact_solve(model, lay, grav, {"nut0": -0.5}, 0.1)
+    assert sol2["state"]["nut0"] == "reversed" and sol2["nut_force_n"]["nut0"] < 0
+    one = support(floating(bed_machine(screws=THREE, blocks_per_rail=1, sync="belt")))[0]["nut_seating_and_lead_error"]
+    assert one["nuts"]["nut0"]["load_change_n_per_mm_of_height_error"] < 0.2 * n0["load_change_n_per_mm_of_height_error"]
+
+
+# ===================================================================== 4. a magnet-held sheet slides on its plate
+def strip(kind):
+    d = Design("bimetal", base="plate")
+    d.add("plate", Pos(0, 0, 1.5) * Box(120, 20, 3), material="al6061")
+    d.add("sheet", Pos(0, 0, 3.5) * Box(120, 20, 1), material="steel")
+    d.join("sheet", "plate", kind)
+    d.thermalcases.append(ThermalCase("hot", ["plate", "sheet"], fixed=[("plate", lambda f: abs(f.center().X + 60) < 1e-6)],
+                                      temps={"plate": 60.0, "sheet": 60.0}, flatness=("sheet", "z", None), mesh_size=3.0))
+    return d
+
+
+def test_a_bonded_bimetal_bows_by_timoshenko_and_a_magnet_held_sheet_does_not():
+    """3 mm aluminium under 1 mm steel, 120 mm long, clamped at one end, heated 60 K. Bonded, it is a bimetal strip:
+    curvature 6 (a1 - a2) dT (1 + m)^2 / (h (3 (1 + m)^2 + (1 + m n)(m^2 + 1 / (m n)))) with m = 3, n = 68.9 / 200,
+    h = 4 mm: 2.45e-4 / mm, tip 1.76 mm (FEA within 10 %). Joined "magnet" or "sliding" the sheet carries normal load
+    and slides in its plane: nothing bends it, the bow is under 3 % of the bonded one. The design can say which."""
+    from mechloop.verifiers.fea import ALPHA, run_thermal
+
+    if not __import__("shutil").which("ccx"):
+        pytest.skip("CalculiX is not installed")
+    m_, n_, h = 3.0, 68900.0 / 200000.0, 4.0
+    kappa = 6 * (ALPHA["al6061"] - ALPHA["steel"]) * 60.0 * (1 + m_) ** 2 / (h * (3 * (1 + m_) ** 2 + (1 + m_ * n_) * (m_ ** 2 + 1 / (m_ * n_))))
+    bow = {}
+    for kind in ("bond", "magnet", "sliding"):
+        d = strip(kind)
+        r = VerifierResult("fea")
+        m = run_thermal(d, d.thermalcases[0], r)
+        assert not r.findings
+        bow[kind] = m["bow_mm"]["sheet"]
+        assert ("sliding_contacts" in m) == (kind != "bond") and d.slides_on("sheet", "plate") == (kind != "bond")
+    assert bow["bond"] == pytest.approx(kappa * 120.0 ** 2 / 2, rel=0.10)
+    assert bow["magnet"] < 0.03 * bow["bond"] and bow["sliding"] == pytest.approx(bow["magnet"], abs=1e-4)
+
+
+# ===================================================================== 5. tension, compression and shear across the layers
+def printed_post(force, held_z, loaded_z, loaded_x=None):
+    from mechloop.verifiers.manufacture import verify_manufacture
+
+    d = Design("t")
+    d.add("p", Pos(0, 0, 20) * Box(20, 20, 40) + Pos(20, 0, 12.5) * Box(20, 20, 5), material="petg", meta={"print_up": "+Z"})      # a ledge on its side, 10 to 15 mm up
+    loaded = (lambda f: abs(f.center().Z - loaded_z) < 1e-6) if loaded_x is None else \
+        (lambda f: abs(f.center().Z - loaded_z) < 1e-6 and f.center().X > loaded_x)
+    d.loadcases.append(LoadCase("load", "p", fixed=lambda f: abs(f.center().Z - held_z) < 1e-6 and f.center().X < 9.0, loaded=loaded, force=force))
+    r = verify_manufacture(d)
+    return {f.code: f for f in r.findings}, r.metrics["parts"]["p"]
+
+
+def test_a_load_pressing_the_layers_together_is_not_flagged_and_one_pulling_or_shearing_them_is():
+    """A post printed standing up, held on its foot. A load on its top face pointing DOWN presses the layers together:
+    benign, an info only. The same load pointing UP pulls them apart: warning, "tension". A downward load on a ledge
+    BESIDE the post (the loaded face 20 mm to the side of the held one and only 15 mm above it) crosses the layers in shear and bending:
+    warning, "shear". The direction of the force alone (all three are 100 % along the build direction) cannot tell."""
+    f, row = printed_post((0, 0, -100.0), held_z=0.0, loaded_z=40.0)
+    assert "load_across_layers" not in f and f["load_presses_layers_together"].severity == "info"
+    assert row["loads_against_layers"]["load"] == {"share_along_build_axis": 1.0, "kind": "compression"}
+    f, row = printed_post((0, 0, 100.0), held_z=0.0, loaded_z=40.0)
+    assert f["load_across_layers"].severity == "warning" and f["load_across_layers"].data["kind"] == "tension"
+    assert "pulls the layers apart" in f["load_across_layers"].message and "load_presses_layers_together" not in f
+    f, row = printed_post((0, 0, -100.0), held_z=0.0, loaded_z=15.0, loaded_x=12.0)
+    assert f["load_across_layers"].data["kind"] == "shear" and "shear and bending" in f["load_across_layers"].message
+    assert "pulls the layers apart" not in f["load_across_layers"].message
+
+
+def test_layer_load_kind_by_geometry():
+    from mechloop.verifiers.dfm_print import layer_load_kind
+
+    up = np.array([0, 0, 1.0])
+    assert layer_load_kind([0, 0, -1], [0, 0, 40], up) == "compression" and layer_load_kind([0, 0, 1], [0, 0, 40], up) == "tension"
+    assert layer_load_kind([0, 0, 1], [0, 0, -40], up) == "compression" and layer_load_kind([0, 0, -1], [0, 0, -40], up) == "tension"
+    assert layer_load_kind([0, 0, -1], [30, 0, 5], up) == "shear"
+    assert layer_load_kind([0, 0, -1], [0, 0, 0], up) == "unknown" and layer_load_kind([0, 0, -1], None, up) == "unknown"
+
+
+# ===================================================================== 6. the sensor's own nuts and its metal-free zone
+def test_own_nuts_on_the_clamp_faces_are_mounting_not_surrounding_metal_and_still_clamp():
+    """E2E-X10ME1 (unshielded M18: 22 mm of head proud of metal, 55 mm diameter clear), clamped in a plastic bracket
+    22 to 25 mm above the face with its two nuts as separate parts. The front nut's bearing face is at 22 mm and its
+    body reaches to 18 mm: inside the zone's depth, and it is not counted, because it is the sensor's own mounting; the
+    metrics name it. Both nuts are counted for clamping, and taking the rear one away is `probe_nuts_missing`. A THIRD
+    nut run further down the barrel (bearing at 14 mm, not on a clamp face) is not doing the mounting: it is metal in
+    the zone like any other part, although it carries the same tag."""
+    from test_known_answers_checkers import homing_z, probe_head
+
+    from mechloop.parts.probes import e2e_nut
+    from mechloop.verifiers.subsystems import verify_subsystems
+
+    d = probe_head(nuts="separate")
+    f, z = homing_z(d)
+    mz = z["mounting"]["metal_free_zone"]
+    assert "probe_metal_in_clear_zone" not in f and "probe_nuts_missing" not in f and "probe_not_clamped" not in f
+    assert z["mounting"]["nuts"] == {"front": ["probe_nut_front"], "rear": ["probe_nut_rear"]}
+    assert mz["own_nuts_not_counted"]["probe_nut_front"] == {"bearing_face_behind_sensing_face_mm": 22.0, "inside_zone_depth": False}
+    assert set(mz["own_nuts_not_counted"]) == {"probe_nut_front", "probe_nut_rear"} and "mounting" in mz["own_nuts_basis"]
+    assert z["mounting"]["metal_in_zone"] == []
+    # a nut that is not on a clamp face is surrounding metal
+    d2 = probe_head(nuts="separate")
+    pc = d2.get("probe")
+    P = np.array(pc.meta["placement"], dtype=float)
+    from build123d import Plane
+
+    place(d2, "stray_nut", e2e_nut("E2E-X10ME1"), Location(Plane(origin=tuple(P[:, 3] + 14.0 * P[:, 2]), z_dir=tuple(-P[:, 2]))),
+          body=pc.body, probe_nut_of="probe")
+    d2.join("stray_nut", "probe", "thread")
+    f2, z2 = homing_z(d2)
+    assert f2["probe_metal_in_clear_zone"].severity == "error"
+    assert [h["part"] for h in z2["mounting"]["metal_in_zone"]] == ["stray_nut"] and "stray_nut" not in z2["mounting"]["metal_free_zone"]["own_nuts_not_counted"]
+    assert "are part of its mounting" in f2["probe_metal_in_clear_zone"].message
+    # and the nuts still count for clamping: without the rear one the sensor is not held
+    d3 = probe_head(nuts="separate")
+    d3.components[:] = [c for c in d3.components if c.name != "probe_nut_rear"]
+    f3, _ = homing_z(d3)
+    assert f3["probe_nuts_missing"].severity == "error"
+
+
+# ===================================================================== 7. a stream that could not be read is "not run"
+def _stream(tmp_path, exit_time, last_step_s, motor_off=True):
+    from test_firmware import _dump
+
+    hz = 64_000_000
+    ticks = int(last_step_s * hz)
+    lines = [f"queue_step oid=0 interval={ticks // 1000} count=1000 add=0"]
+    if motor_off:
+        lines.append(f"queue_digital_out oid=16 clock={int((exit_time + 0.1) * hz) % (1 << 32)} on_ticks=1")
+    log = f"INFO:root:Exiting (print time {exit_time:.3f}s)\n"
+    return _dump(tmp_path, lines), log
+
+
+def test_a_stream_that_stops_before_the_print_time_klippy_logged_is_cut_short(tmp_path):
+    """Klipper logs "Exiting (print time 221.311s)". A complete stream carries the motor-off commands at that time and
+    its last step a fraction of a second earlier (measured: 0.11 to 0.16 s). The two v8 runs that "could not be
+    decoded" stopped 1.78 and 4.82 s early with a clean log: cut short, by the measured gap."""
+    from test_firmware import CFG, HZ
+
+    from mechloop.twin import firmware as fw
+
+    for exit_t, last, off, cut in ((221.311, 221.165, True, False), (221.311, 221.165, False, False),
+                                   (221.311, 219.534, False, True), (213.109, 208.285, False, True)):
+        p, log = _stream(tmp_path, exit_t, last, off)
+        dec = fw.decode(p, CFG, HZ)
+        got = fw.stream_cut_short(p, log, dec["steps"], HZ)
+        assert (got is not None) == cut
+        if cut:
+            assert got["missing_s"] == pytest.approx(exit_t - last, abs=0.01) and got["last_command"] == "queue_step"
+    p, _ = _stream(tmp_path, 100.0, 50.0, False)
+    assert fw.stream_cut_short(p, "no exit line", fw.decode(p, CFG, HZ)["steps"], HZ) is None       # nothing to compare with: not judged here
+
+
+def test_a_sweep_point_that_was_not_run_is_neither_clean_nor_the_first_failure():
+    """Sweep 1x to 6x of 4,000 mm/s^2: clean, NOT RUN, clean, clean, lost steps. Highest clean is 4x (16,000), the
+    first failure 5x (20,000); the point that was not run is listed, loudly, and counts as neither. Before, it was
+    scored as the first failure and "highest clean" came out as 1x. A point not run ABOVE the last clean one leaves
+    the figure open, and the summary says so."""
+    from mechloop.twin.score import sweep_summary
+
+    ok = {"ok": True, "errors": [], "not_run": None}
+    nr = {"ok": False, "errors": ["firmware_not_decoded"], "not_run": {"reason": "firmware_not_decoded", "detail": "cut short"}}
+    bad = {"ok": False, "errors": ["lost_steps"], "not_run": None, "lost_step_axes": ["x"]}
+    s = sweep_summary({1: ok, 2: nr, 3: ok, 4: ok, 5: bad, 6: bad}, 4000.0)
+    assert s["highest_clean_accel_mm_s2"] == 16000.0 and s["first_failure"]["accel_mm_s2"] == 20000.0
+    assert [r_["status"] for r_ in s["table"]] == ["clean", "NOT RUN", "clean", "clean", "failed", "failed"] and s["table"][1]["ok"] is None
+    assert s["not_run"][0]["accel_mm_s2"] == 8000.0 and "NOT RUN" in s["not_run_warning"] and "stands on its neighbours" in s["not_run_warning"]
+    s2 = sweep_summary({1: ok, 2: ok, 3: nr, 4: bad}, 4000.0)
+    assert s2["highest_clean_accel_mm_s2"] == 8000.0 and "may be higher" in s2["not_run_warning"] and "12000" in s2["not_run_warning"]
+    s3 = sweep_summary({1: ok, 2: bad, 3: ok}, 4000.0)                # a real failure still ends the clean run
+    assert s3["highest_clean_accel_mm_s2"] == 4000.0 and "not_run" not in s3
+
+
+def test_klipper_output_cut_short_is_rerun_and_if_it_stays_cut_the_print_is_not_run(tmp_path, monkeypatch):
+    """Real Klipper on printer_v4, with its output file cut 3,000 commands short after the fact (what a loaded machine
+    does to it). Cut once: the run is repeated and the print goes through, with the repeat on record. Cut every time:
+    the print is NOT RUN (`firmware_not_decoded`, `not_run` in the report), never a failed print."""
+    from test_firmware import _klipper
+
+    from mechloop.runner import load_design
+    from mechloop.twin import firmware as fw
+    from mechloop.twin import printer_map_for, run_print
+    from mechloop.twin.evals import summarise
+
+    _klipper()
+    real = fw.run_klippy
+    calls = {"n": 0, "cut": 1}
+
+    def cutting(cfg_text, gcode_text, workdir):
+        run = real(cfg_text, gcode_text, workdir)
+        calls["n"] += 1
+        if calls["n"] <= calls["cut"]:
+            lines = Path(run["dump"]).read_text().splitlines()
+            keep = max(i for i, ln in enumerate(lines[:-3000]) if ln.startswith("queue_step"))
+            Path(run["dump"]).write_text("\n".join(lines[:keep + 1]) + "\n")
+        return run
+
+    monkeypatch.setattr(fw, "run_klippy", cutting)
+    d = load_design(ROOT / "designs" / "printer_v4.py")
+    kw = dict(name="chip", render=False, collisions=False, firmware="klipper", firmware_opts={"input_shaper": False, "pressure_advance": False, "bed_mesh": False})
+    rep = run_print(d, Pos(0, 0, 1) * Box(10, 10, 2), tmp_path / "a", printer_map_for(d), **kw)
+    assert rep["ok"] and calls["n"] == 2 and len(rep["firmware"]["stream_cut_short_and_rerun"]) == 1
+    assert rep["firmware"]["stream_cut_short_and_rerun"][0]["missing_s"] > 1.0 and "not_run" not in rep
+    calls.update(n=0, cut=99)
+    rep = run_print(d, Pos(0, 0, 1) * Box(10, 10, 2), tmp_path / "b", printer_map_for(d), **kw)
+    assert not rep["ok"] and calls["n"] == fw.STREAM_ATTEMPTS
+    assert [f["code"] for f in rep["findings"]] == ["firmware_not_decoded"] and rep["not_run"]["reason"] == "firmware_not_decoded"
+    assert "NOT RUN" in rep["findings"][0]["message"] and summarise(rep)["not_run"]["reason"] == "firmware_not_decoded"
+
+
+# ===================================================================== 8. a verify is a function of the design alone
+MINI = '''
+import sys
+sys.path.insert(0, {tests!r})
+from build123d import Box, Cylinder, Pos
+from mechloop import Design, Joint
+from mechloop.parts import add_screw, clearance_hole
+
+
+def build():
+    if {electrical!r}:
+        from test_electrical import rig
+        return rig()
+    d = Design("mini", envelope=(300, 200, 120), base="base")
+    d.add("base", Pos(0, 0, -5) * Box(200, 120, 10), material="al6061")
+    names = []
+    for i, x in enumerate((-70, -35, 0, 35, 70)):
+        post = Pos(x, 0, 15) * Box(20, 60, 30) - Pos(x, 20, 15) * Cylinder(clearance_hole("M4") / 2, 30) - Pos(x, -20, 15) * Cylinder(clearance_hole("M4") / 2, 30)
+        d.add(f"post{{i}}", post, material="petg")
+        names.append(f"post{{i}}")
+        for k, y in enumerate((20, -20)):
+            add_screw(d, f"s{{i}}{{k}}", "M4", 35, at=(x, y, 30), threads_into="base", clamps=(f"post{{i}}",))
+    d.add("lid", Pos(0, 0, 32.5) * Box(190, 60, 5) - sum((Pos(x, y, 32.5) * Cylinder(4.5, 5) for x in (-70, -35, 0, 35, 70) for y in (20, -20)), Pos(0, 0, 0) * Box(0.1, 0.1, 0.1)), material="petg")
+    d.join("lid", "post0", "bond")
+    d.add("car", Pos(0, 50, 5) * Box(30, 20, 10), material="al6061", body="car")
+    d.joints.append(Joint("x", "slide", "world", "car", (1, 0, 0), range=(-60, 60), max_effort=10))
+    return d
+'''
+
+
+def _verify_in_a_fresh_process(path, out, seed, only):
+    env = {**os.environ, "PYTHONHASHSEED": str(seed)}
+    p = subprocess.run([sys.executable, "-m", "mechloop", "verify", str(path), "--no-render", "--out", str(out), "--only", *only],
+                       cwd=ROOT, env=env, capture_output=True, text=True, timeout=900)
+    return json.loads(p.stdout)
+
+
+@pytest.mark.parametrize("electrical,only", [(False, ["geometry", "interference", "tolerance", "manufacture", "ratings", "motion", "assemblability"]),
+                                            (True, ["geometry", "electrical", "subsystems"])])
+def test_two_verifies_in_separate_processes_with_different_hash_seeds_agree_apart_from_timings(tmp_path, electrical, only):
+    """The same small design verified twice, each time in a fresh interpreter with a different PYTHONHASHSEED (so every
+    set and dict keyed by strings iterates in a different order) and into a different folder (so nothing an earlier run
+    left on disk is there). Everything but timings
+    and file paths (mechloop.report.without_timings) must be identical."""
+    f = tmp_path / ("mini_el.py" if electrical else "mini.py")
+    f.write_text(MINI.format(tests=str(Path(__file__).parent), electrical=electrical))
+    a = _verify_in_a_fresh_process(f, tmp_path / "a", 1, only)
+    b = _verify_in_a_fresh_process(f, tmp_path / "b", 4242, only)
+    assert a["metrics"] and without_timings(a) == without_timings(b)
+    assert a["summary"] != without_timings(a)["summary"]                # the timings are there, labelled, and were what was removed
+
+
+def test_without_timings_removes_only_timings_and_paths():
+    rep = {"summary": {"geometry": "pass (0 errors, 0 warnings, 15.1s)", "electrical": "skipped: not declared"},
+           "metrics": {"geometry": {"vendor_cad": {"envelope": {"seconds": 11.0, "pairs_tested": 4}, "proxy_match_seconds": 3.5}},
+                       "electrical": {"artifacts": {"printer_cfg": "/tmp/x"}, "power_w": 120.0}},
+           "artifacts": {"seconds": {"verify": 3.0}, "iteration": 7}}
+    assert without_timings(rep) == {"summary": {"geometry": "pass (0 errors, 0 warnings)", "electrical": "skipped: not declared"},
+                                    "metrics": {"geometry": {"vendor_cad": {"envelope": {"pairs_tested": 4}}}, "electrical": {"power_w": 120.0}}}
+
+
+def test_a_verify_does_not_read_the_pressure_advance_sweep_a_tune_left_on_disk(tmp_path, monkeypatch):
+    """`mechloop tune` stores its sweep in <out>/<design>/tune/tuning.json and `score` / `print` use its best K. A verify
+    must not: with such a file present and with none, the tuning a verify asks for is the same (the twin's assumed
+    lag); only a caller that allows stored sweeps gets the swept value."""
+    from mechloop.twin import PrinterMap, tuning
+
+    class D:
+        name = "toy"
+        electrical = None
+
+    pm = PrinterMap()
+    (tmp_path / "toy" / "tune").mkdir(parents=True)
+    (tmp_path / "toy" / "tune" / "tuning.json").write_text(json.dumps(
+        {"pressure_advance": {"sweep": {"best": 0.077, "assumed_extruder_lag_s": pm.extruder_lag_s}}}))
+    monkeypatch.setattr(tuning, "TUNING_ROOTS", [str(tmp_path)])
+    assert tuning.pressure_advance(D, pm)["value"] == 0.077
+    v = tuning.pressure_advance(D, pm, use_stored=False)
+    assert v["value"] == pytest.approx(pm.extruder_lag_s) and "from_sweep" not in v
+
+
+# ===================================================================== 9. a recessed screw head under a cover
+def covered_screw(recess=0.2, sunk=True, cover="seated"):
+    """A machined block with an M4 cap screw from the top (head 4 mm high, 7 mm across). sunk: the head sits in a
+    counterbore `recess` deeper than the head; else on the block's top face. cover: "seated", a sheet lying on the
+    block's top face over the screw; "bridge", a plate standing on two posts beside the block, `recess` above the
+    proud head."""
+    d = Design("covered", base="base")
+    d.add("base", Pos(0, 0, -25) * Box(120, 60, 10), material="al6061")
+    blk = Pos(0, 0, 0) * Box(40, 40, 20)
+    blk -= Pos(0, 0, 0) * Cylinder(clearance_hole("M4") / 2, 20)
+    top = 10.0
+    if sunk:
+        blk -= Pos(0, 0, top - (4.0 + recess) / 2) * Cylinder(4.0, 4.0 + recess)
+    d.add("block", blk, material="al6061")
+    d.add("foot", Pos(0, 0, -15) * Box(40, 40, 10) - Pos(0, 0, -15) * Cylinder(clearance_hole("M4") / 2 + 1.0, 10), material="al6061")
+    d.join("foot", "base", "bond")
+    head_under = top - (4.0 + recess) if sunk else top
+    add_screw(d, "screw", "M4", 16 if sunk else 30, at=(0, 0, head_under), clamps=("block",), threads_into="foot")
+    if cover == "seated":
+        d.add("cover", Pos(0, 0, top + 0.4) * Box(40, 40, 0.8), material="steel")
+        d.join("cover", "block", "magnet")
+    elif cover == "bridge":
+        for sx in (-1, 1):
+            d.add(f"leg{sx}", Pos(sx * 40, 0, -20 + (top + 4.0 + recess + 20) / 2) * Box(10, 40, top + 4.0 + recess + 20), material="al6061")
+        d.add("cover", Pos(0, 0, top + 4.0 + recess + 1.0) * Box(90, 40, 2), material="al6061")
+    return d
+
+
+def test_a_recessed_head_under_a_seated_cover_is_a_designed_fit_and_a_proud_head_under_a_bridge_is_a_clearance():
+    """A screw head 0.2 mm below the face of the block it clamps, with a sheet lying on that face: the gap is the
+    counterbore's depth less the head's height, both features of one part and its screw: a designed fit, not reported
+    (the reference machine's bed sheet over its three bed screws). A head standing PROUD of the block with a plate on
+    two legs 0.2 mm above it is a real clearance between separately located parts: reported. So is a cover that is
+    not seated on the block the screw is let into."""
+    m, r = clearances(covered_screw())
+    assert codes(r) == []
+    assert m["search"]["designed_contacts_skipped"].get("a screw head recessed in a counterbore, under a part seated on that face") == 1
+    m, r = clearances(covered_screw(sunk=False, cover="bridge"))
+    pairs = [set(p["parts"]) for p in m["pairs"]]
+    assert {"cover", "screw"} in pairs
+    assert any(set(f.data["parts"]) == {"cover", "screw"} for f in find(r, "clearance_closes_under_tolerance") + find(r, "clearance_below_minimum"))
+    assert "a screw head recessed in a counterbore, under a part seated on that face" not in m["search"]["designed_contacts_skipped"]
+
+
+# ===================================================================== 10. the autotune without klippy
+def test_the_ported_relay_autotune_gives_klippers_own_gains_on_the_same_plant(monkeypatch):
+    """PID_CALIBRATE on one thermal plant, twice: decided by Klipper's ControlAutoTune (pid_calibrate.py, when its
+    source is installed) and by the line-for-line port in mechloop.electrical. Same peaks, same Ku = 4 (P / 2) / (pi a),
+    same Kp, Ki, Kd to three decimals, for a hotend and a bed. (A report that the port gave half of Klipper's Ku could
+    not be reproduced: at this Klipper commit the two agree exactly.)"""
+    from test_electrical import rig
+
+    from mechloop import electrical as E
+
+    monkeypatch.delenv("MECHLOOP_HEATER_CONTROL", raising=False)
+    if E.control_code()[0] is None:
+        pytest.skip("Klipper's source is not installed: nothing to compare the port with")
+    plants = E.thermal_plants(rig())
+    for name, target in (("extruder", 210.0), ("extruder", 250.0), ("heater_bed", 60.0)):
+        cfg = {"control": "pid", "max_power": 1.0, "max_temp": 400}
+        monkeypatch.delenv("MECHLOOP_HEATER_CONTROL", raising=False)
+        klippy = E.autotune_pid(plants[name], cfg, target)
+        ra = E.simulate_heater(plants[name], {**cfg, "verify_heater": None}, target, 900.0, autotune=True)
+        monkeypatch.setenv("MECHLOOP_HEATER_CONTROL", "port")
+        port = E.autotune_pid(plants[name], cfg, target)
+        rb = E.simulate_heater(plants[name], {**cfg, "verify_heater": None}, target, 900.0, autotune=True)
+        assert "port" in rb["control_code"] and "ControlAutoTune" in ra["control_code"]
+        assert [tuple(np.round(p, 6)) for p in ra["peaks"]] == [tuple(np.round(p, 6)) for p in rb["peaks"]]
+        assert port == pytest.approx(klippy, rel=1e-6) and klippy[0] > 0
+        # and the formula itself, on the port's peaks: amplitude a = half the last swing at the median cycle
+        pk = rb["peaks"]
+        pos = sorted((pk[p][0] - pk[p - 2][0], p) for p in range(4, len(pk)))[len(range(4, len(pk))) // 2][1]
+        ku = 4.0 * 0.5 / (math.pi * 0.5 * abs(pk[pos][1] - pk[pos - 1][1]))
+        assert port[0] == pytest.approx(0.6 * ku * 255.0, abs=2e-3)

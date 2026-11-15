@@ -1,0 +1,2242 @@
+{
+ "design": "printer_v8",
+ "generated": "2026-11-15 20:11 UTC",
+ "report_time": "2026-11-15 18:53 UTC",
+ "sources": {},
+ "fea_fields": null,
+ "headline": {
+  "parts": 386,
+  "cots_parts": 351,
+  "custom_parts": 35,
+  "by_process": {
+   "machined": 2,
+   "printed": 13,
+   "sheet": 20
+  },
+  "mass_kg": 12.4354,
+  "bbox_mm": [
+   388.0,
+   419.34,
+   463.0
+  ],
+  "bom_usd": 787.1,
+  "machining_usd": 119.0,
+  "errors": 0,
+  "warnings": 13,
+  "verifiers": 12,
+  "passed": 12,
+  "verify_seconds": 1074.6,
+  "requirements": {
+   "met": 17,
+   "total": 17
+  },
+  "builds": 3000,
+  "pairs_considered": 74305,
+  "poses_checked": 86
+ },
+ "strips": [
+  {
+   "label": "printer_v6",
+   "basis": "when it was designed",
+   "summary": {
+    "geometry": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "interference": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "tolerance": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "manufacture": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 3
+    },
+    "ratings": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 1
+    },
+    "motion": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "subsystems": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 1
+    },
+    "electrical": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 2
+    },
+    "assemblability": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 1
+    },
+    "fea": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "printing": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "requirements": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    }
+   },
+   "when": "2026-11-15 04:35 UTC",
+   "errors": 0,
+   "warnings": 8,
+   "source": "out/printer_v6/report.json",
+   "error_findings": []
+  },
+  {
+   "label": "printer_v6",
+   "basis": "today's checks",
+   "summary": {
+    "geometry": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "interference": {
+     "status": "fail",
+     "errors": 3,
+     "warnings": 0
+    },
+    "tolerance": {
+     "status": "fail",
+     "errors": 3,
+     "warnings": 4
+    },
+    "manufacture": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 2
+    },
+    "ratings": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 3
+    },
+    "motion": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "subsystems": {
+     "status": "fail",
+     "errors": 2,
+     "warnings": 1
+    },
+    "electrical": {
+     "status": "fail",
+     "errors": 1,
+     "warnings": 2
+    },
+    "assemblability": {
+     "status": "not run",
+     "errors": 0,
+     "warnings": 0
+    },
+    "fea": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 1
+    },
+    "printing": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "requirements": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    }
+   },
+   "when": "2026-11-15 20:09 UTC",
+   "errors": 9,
+   "warnings": 13,
+   "source": "showcase/data/inputs/verify_today_printer_v6.json",
+   "error_findings": [
+    {
+     "verifier": "interference",
+     "severity": "error",
+     "code": "interference",
+     "message": "z_coupler and leadscrew overlap by 196.0 mm^3 near (-0.0, 180.0, 81.95)."
+    },
+    {
+     "verifier": "interference",
+     "severity": "error",
+     "code": "interference",
+     "message": "inlet and inlet_panel overlap by 315.1 mm^3 near (-171.5, 22.0, 37.61)."
+    },
+    {
+     "verifier": "interference",
+     "severity": "error",
+     "code": "shaft_too_deep_in_coupler",
+     "message": "leadscrew is drawn 12.5 mm into the 8 mm bore of z_coupler, but a shaft of that size can enter only 8.6 mm before it meets the coupler's elastomer spider: 3.9 mm too deep."
+    },
+    {
+     "verifier": "tolerance",
+     "severity": "error",
+     "code": "clearance_closes_under_tolerance",
+     "message": "bracket_13 to part_fan_screw_1: drawn 0.48 mm apart (closest with {'x': 90.0, 'y': 90.0}). Built from purchased and purchased parts through the joints between them the gap is 0.48 +/-0.59 mm (one standard deviation) and closes in 22.0% of 3000 simulated builds (standard error 0.8%; limit 1%)."
+    },
+    {
+     "verifier": "tolerance",
+     "severity": "error",
+     "code": "clearance_closes_under_tolerance",
+     "message": "x_beam to x_endstop_nut_1: drawn 0.35 mm apart. Built from extrusion and purchased parts through the joints between them the gap is 0.35 +/-0.37 mm (one standard deviation) and closes in 17.7% of 3000 simulated builds (standard error 0.7%; limit 1%)."
+    },
+    {
+     "verifier": "tolerance",
+     "severity": "error",
+     "code": "clearance_closes_under_tolerance",
+     "message": "x_carriage to x_belt_block: drawn 0.50 mm apart. Built from purchased and printed parts through the joints between them the gap is 0.50 +/-0.26 mm (one standard deviation) and closes in 2.3% of 3000 simulated builds (standard error 0.3%; limit 1%)."
+    },
+    {
+     "verifier": "subsystems",
+     "severity": "error",
+     "code": "endstop_not_reached",
+     "message": "Endstop x_endstop on joint x: at the min end of travel (x=-90) the striker stops 3.70 mm short of the switch's latest operating position (nominal 2.20 mm short; the operating position is nominal +/-1.5 mm unit to unit), so it is never pressed."
+    },
+    {
+     "verifier": "subsystems",
+     "severity": "error",
+     "code": "endstop_not_reached",
+     "message": "Endstop y_endstop on joint y: at the min end of travel (y=-90) the striker stops 3.70 mm short of the switch's latest operating position (nominal 2.20 mm short; the operating position is nominal +/-1.5 mm unit to unit), so it is never pressed."
+    },
+    {
+     "verifier": "electrical",
+     "severity": "error",
+     "code": "device_supply_not_connected",
+     "message": "Device 'psu_relay' needs a supply connection on its port 'N' (mains neutral: the module's own 5 V converter is fed from LIN and N; without it the relay never pulls in and the machine does not switch on), and nothing is wired to it."
+    }
+   ]
+  },
+  {
+   "label": "printer_v7",
+   "basis": "when it was designed",
+   "summary": {
+    "geometry": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "interference": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "tolerance": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "manufacture": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 3
+    },
+    "ratings": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "motion": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "subsystems": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 1
+    },
+    "electrical": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 1
+    },
+    "assemblability": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 1
+    },
+    "fea": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "printing": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 1
+    },
+    "requirements": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    }
+   },
+   "when": "2026-11-15 08:18 UTC",
+   "errors": 0,
+   "warnings": 7,
+   "source": "out/printer_v7/report.json",
+   "error_findings": []
+  },
+  {
+   "label": "printer_v7",
+   "basis": "today's checks",
+   "summary": {
+    "geometry": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "interference": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "tolerance": {
+     "status": "fail",
+     "errors": 5,
+     "warnings": 5
+    },
+    "manufacture": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 3
+    },
+    "ratings": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "motion": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "subsystems": {
+     "status": "fail",
+     "errors": 1,
+     "warnings": 4
+    },
+    "electrical": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 1
+    },
+    "assemblability": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 1
+    },
+    "fea": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 1
+    },
+    "printing": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 1
+    },
+    "requirements": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    }
+   },
+   "when": "2026-11-15 20:01 UTC",
+   "errors": 6,
+   "warnings": 16,
+   "source": "showcase/data/inputs/verify_today_printer_v7.json",
+   "error_findings": [
+    {
+     "verifier": "tolerance",
+     "severity": "error",
+     "code": "clearance_closes_under_tolerance",
+     "message": "probe_arm to probe_key: drawn 0.20 mm apart. Built from printed and printed parts through the joints between them the gap is 0.20 +/-0.29 mm (one standard deviation) and closes in 23.8% of 3000 simulated builds (standard error 0.8%; limit 1%)."
+    },
+    {
+     "verifier": "tolerance",
+     "severity": "error",
+     "code": "clearance_closes_under_tolerance",
+     "message": "x_beam to x_endstop_nut_1: drawn 0.35 mm apart. Built from extrusion and purchased parts through the joints between them the gap is 0.35 +/-0.30 mm (one standard deviation) and closes in 13.2% of 3000 simulated builds (standard error 0.6%; limit 1%)."
+    },
+    {
+     "verifier": "tolerance",
+     "severity": "error",
+     "code": "clearance_closes_under_tolerance",
+     "message": "extruder to x_belt_block_screw_0: drawn 0.20 mm apart. Built from purchased and purchased parts through the joints between them the gap is 0.20 +/-0.16 mm (one standard deviation) and closes in 11.1% of 3000 simulated builds (standard error 0.6%; limit 1%)."
+    },
+    {
+     "verifier": "tolerance",
+     "severity": "error",
+     "code": "clearance_closes_under_tolerance",
+     "message": "extruder to x_belt_block_screw_1: drawn 0.20 mm apart. Built from purchased and purchased parts through the joints between them the gap is 0.20 +/-0.15 mm (one standard deviation) and closes in 9.6% of 3000 simulated builds (standard error 0.5%; limit 1%)."
+    },
+    {
+     "verifier": "tolerance",
+     "severity": "error",
+     "code": "clearance_closes_under_tolerance",
+     "message": "x_carriage to x_belt_block: drawn 0.50 mm apart. Built from purchased and printed parts through the joints between them the gap is 0.50 +/-0.26 mm (one standard deviation) and closes in 2.7% of 3000 simulated builds (standard error 0.3%; limit 1%)."
+    },
+    {
+     "verifier": "subsystems",
+     "severity": "error",
+     "code": "probe_metal_zone_under_tolerance",
+     "message": "Bed probe 'bed_probe': extruder (al6061) is drawn 0.05 mm outside the sensor's metal-free zone (55 mm diameter, 22 mm behind the face). As built the gap is 0.05 +/-0.58 mm (one standard deviation): the part is inside the zone in 44.5% of 3000 simulated builds (standard error 0.9%; limit 1%)."
+    }
+   ]
+  },
+  {
+   "label": "printer_v8",
+   "basis": "today's checks",
+   "summary": {
+    "geometry": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "interference": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "tolerance": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "manufacture": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 7
+    },
+    "ratings": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 3
+    },
+    "motion": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "subsystems": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "electrical": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 1
+    },
+    "assemblability": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 1
+    },
+    "fea": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 1
+    },
+    "printing": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    },
+    "requirements": {
+     "status": "pass",
+     "errors": 0,
+     "warnings": 0
+    }
+   },
+   "when": "2026-11-15 18:53 UTC",
+   "errors": 0,
+   "warnings": 13,
+   "source": "out/printer_v8/report.json",
+   "error_findings": []
+  }
+ ],
+ "warnings": [
+  {
+   "verifier": "manufacture",
+   "code": "hole_smaller_than_thickness",
+   "message": "back_plate: 12 hole(s) or cut-out(s) narrower than the 5 mm sheet (smallest 3.40 mm at [-23.0, 144.5, 100.0]): they cut, but taper and lose accuracy."
+  },
+  {
+   "verifier": "manufacture",
+   "code": "load_across_layers",
+   "message": "z_drive_mount: load case 'z_drive_mount_thrust' acts 100% along the build direction (-Z up): it pulls the layers apart, the weakest direction of a printed part, and the FEA assumes the material is equally strong every way."
+  },
+  {
+   "verifier": "manufacture",
+   "code": "load_across_layers",
+   "message": "z_pedestal_fr: load case 'z_pedestal_thrust' acts 100% along the build direction (+Z up): it pulls the layers apart, the weakest direction of a printed part, and the FEA assumes the material is equally strong every way."
+  },
+  {
+   "verifier": "manufacture",
+   "code": "holes_too_close",
+   "message": "y_plate_left: 2 pair(s) of holes or cut-outs with too little material between them (least 2.05 mm at [-175.13, -34.32, 418.5], wanted 3 mm = 1 x thickness)."
+  },
+  {
+   "verifier": "manufacture",
+   "code": "holes_too_close",
+   "message": "y_plate_right: 2 pair(s) of holes or cut-outs with too little material between them (least 2.05 mm at [175.13, -34.32, 418.5], wanted 3 mm = 1 x thickness)."
+  },
+  {
+   "verifier": "manufacture",
+   "code": "hole_smaller_than_thickness",
+   "message": "electronics_tray: 2 hole(s) or cut-out(s) narrower than the 3 mm sheet (smallest 2.70 mm at [106.5, -7.0, 21.5]): they cut, but taper and lose accuracy."
+  },
+  {
+   "verifier": "manufacture",
+   "code": "holes_too_close",
+   "message": "inlet_panel: 2 pair(s) of holes or cut-outs with too little material between them (least 2.75 mm at [-171.5, 22.0, 74.0], wanted 3 mm = 1 x thickness)."
+  },
+  {
+   "verifier": "ratings",
+   "code": "cantilever_on_guide_blocks",
+   "message": "Joint z: the 4.21 kg it carries hangs 132 mm from its 2 guide blocks, which have 0 mm of spacing along the rail. On the blocks' own give it nods at about 62 Hz and sags 0.015 mm per kg (estimate: block stiffness 63 N/um, the maker's radial figure at preload Z0, assumed (catalogue default Z0; not dec"
+  },
+  {
+   "verifier": "ratings",
+   "code": "uncatalogued_cots",
+   "message": "bed_magnet is marked off-the-shelf but did not come from the parts catalog (dimensions and ratings unverified)."
+  },
+  {
+   "verifier": "ratings",
+   "code": "uncatalogued_cots",
+   "message": "bed is marked off-the-shelf but did not come from the parts catalog (dimensions and ratings unverified)."
+  },
+  {
+   "verifier": "electrical",
+   "code": "cutoff_depends_on_mcu",
+   "message": "Heater 'extruder': a shorted MOSFET is survived only because the firmware drops the supply relay (peak 282 degC). There is no cut-off that works if the controller has also hung."
+  },
+  {
+   "verifier": "assemblability",
+   "code": "unsupported_step",
+   "message": "The only assembly order found installs something before the part that supports it (around ['bed_carrier', 'electronics', 'frame_bot_back', 'frame_bot_right', 'frame_top_left', 'frame_top_right']); it would need holding in place."
+  },
+  {
+   "verifier": "fea",
+   "code": "bed_level_changes_over_travel",
+   "message": "Joint z: the rails' running accuracy (15 um, class C assumed) over a block spacing of 0 mm, carried 238.2 mm out to the far print corner, changes the bed's level by up to 0.110 mm over the travel (limit half a layer)."
+  }
+ ],
+ "bed": [
+  {
+   "label": "v7",
+   "sub": "one rear screw, back plate cantilevered on four blocks, 6 mm plate on silicone",
+   "print": [
+    0.0674,
+    0.0925
+   ],
+   "hand": [
+    0.1375,
+    0.1887
+   ],
+   "tilt": 0.1084,
+   "limit": 0.02,
+   "source": "inputs/verify_today_printer_v7.json",
+   "constraint": "one screw sets the height, the guides hold the tilt: exactly constrained in height"
+  },
+  {
+   "label": "Study (a)",
+   "sub": "v7's cantilever, stiffened with steel gussets",
+   "print": [
+    0.0164,
+    0.0222
+   ],
+   "hand": [
+    0.0335,
+    0.0452
+   ],
+   "tilt": 0.0192,
+   "limit": 0.02,
+   "source": "inputs/study_a.json",
+   "constraint": "one screw sets the height, the guides hold the tilt: exactly constrained in height"
+  },
+  {
+   "label": "Study (b)",
+   "sub": "two screws, a rail each side",
+   "print": [
+    0.0036,
+    0.0046
+   ],
+   "hand": [
+    0.0074,
+    0.0094
+   ],
+   "tilt": 0.0049,
+   "limit": 0.02,
+   "source": "inputs/study_b.json",
+   "constraint": "2 screws and 2 guide(s): over-constrained in tilt by 1 screw(s); a height difference between screws becomes tilt or force on the guides"
+  },
+  {
+   "label": "Study (c)",
+   "sub": "three screws, two blocks per rail",
+   "print": [
+    0.0028,
+    0.0041
+   ],
+   "hand": [
+    0.0056,
+    0.0084
+   ],
+   "tilt": 0.0048,
+   "limit": 0.02,
+   "source": "inputs/study_c.json",
+   "constraint": "3 screws and 2 guide(s): over-constrained in tilt by 2 screw(s); a height difference between screws becomes tilt or force on the guides"
+  },
+  {
+   "label": "v8 (d)",
+   "sub": "three screws, one block per rail: chosen",
+   "print": [
+    0.0054,
+    0.0081
+   ],
+   "hand": [
+    0.011,
+    0.0164
+   ],
+   "tilt": 0.0205,
+   "limit": 0.02,
+   "source": "out/printer_v8/report.json",
+   "constraint": "3 screws and 2 guide(s): over-constrained in tilt by 2 screw(s); a height difference between screws becomes tilt or force on the guides"
+  }
+ ],
+ "bed_limit": 0.02,
+ "clear": {
+  "v8": {
+   "examined": 25,
+   "closing": {
+    "error": 0,
+    "warning": 0
+   },
+   "threshold": 1.5,
+   "min_by_process": {
+    "printed": 0.5,
+    "extrusion": 0.5,
+    "sheet": 0.3,
+    "machined": 0.2,
+    "purchased": 0.2
+   },
+   "search": {
+    "pairs": 74305,
+    "boxes_within_threshold": 871,
+    "designed_contacts_skipped": {
+     "declared join": 289,
+     "a screw and a part of its stack": 241,
+     "a guide and what it runs on": 8,
+     "a part fixed to a guide or nut, against what that guide runs on": 30,
+     "a screw in a guide, against what the guide runs on": 3,
+     "the nozzle over a screw or pad recessed in the bed (the nozzle meets the bed surface first)": 1,
+     "toolhead part over the bed (nozzle approach: toolhead margin)": 1,
+     "a screw let into the part (head in its counterbore)": 2,
+     "an endstop switch and its striker (endstop window, subsystems verifier)": 4
+    },
+    "touching_or_overlapping": 187,
+    "measured_exactly": 238
+   },
+   "pairs": [
+    {
+     "parts": [
+      "x_rail",
+      "x_endstop_nut_0"
+     ],
+     "gap_mm": 1.05,
+     "gap_sd_mm": 0.198,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.475,
+     "p_closed_normal_estimate": 6.9e-08,
+     "severity": null,
+     "processes": [
+      "purchased",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "back_plate",
+      "bed_tie"
+     ],
+     "gap_mm": 1.0,
+     "gap_sd_mm": 0.167,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.502,
+     "p_closed_normal_estimate": 1.2e-09,
+     "severity": null,
+     "processes": [
+      "sheet",
+      "sheet"
+     ]
+    },
+    {
+     "parts": [
+      "frame_bot_back",
+      "leadscrew"
+     ],
+     "gap_mm": 1.0,
+     "gap_sd_mm": 0.161,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.541,
+     "p_closed_normal_estimate": 2.1e-10,
+     "severity": null,
+     "processes": [
+      "extrusion",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "bed_magnet",
+      "bed_tie_screw_1"
+     ],
+     "gap_mm": 1.0,
+     "gap_sd_mm": 0.154,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.523,
+     "p_closed_normal_estimate": 3.7e-11,
+     "severity": null,
+     "processes": [
+      "purchased",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "extruder_screw_1",
+      "x_belt_block"
+     ],
+     "gap_mm": 1.062,
+     "gap_sd_mm": 0.173,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.568,
+     "p_closed_normal_estimate": 3.9e-10,
+     "severity": null,
+     "processes": [
+      "purchased",
+      "printed"
+     ]
+    },
+    {
+     "parts": [
+      "bed_magnet",
+      "bed_tie_screw_0"
+     ],
+     "gap_mm": 1.0,
+     "gap_sd_mm": 0.142,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.588,
+     "p_closed_normal_estimate": 9.8e-13,
+     "severity": null,
+     "processes": [
+      "purchased",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "z_drive_mount",
+      "leadscrew"
+     ],
+     "gap_mm": 1.0,
+     "gap_sd_mm": 0.14,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.592,
+     "p_closed_normal_estimate": 3e-13,
+     "severity": null,
+     "processes": [
+      "printed",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "y_idler_mount_l",
+      "y_idler_l"
+     ],
+     "gap_mm": 1.0,
+     "gap_sd_mm": 0.136,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.564,
+     "p_closed_normal_estimate": 1e-13,
+     "severity": null,
+     "processes": [
+      "sheet",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "y_idler_mount",
+      "y_idler"
+     ],
+     "gap_mm": 1.0,
+     "gap_sd_mm": 0.133,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.621,
+     "p_closed_normal_estimate": 2.2e-14,
+     "severity": null,
+     "processes": [
+      "sheet",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "leadscrew_fl",
+      "electronics_tray"
+     ],
+     "gap_mm": 1.0,
+     "gap_sd_mm": 0.118,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.656,
+     "p_closed_normal_estimate": 1.3e-17,
+     "severity": null,
+     "processes": [
+      "purchased",
+      "sheet"
+     ]
+    },
+    {
+     "parts": [
+      "leadscrew_fr",
+      "electronics_tray"
+     ],
+     "gap_mm": 1.0,
+     "gap_sd_mm": 0.118,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.667,
+     "p_closed_normal_estimate": 1.2e-17,
+     "severity": null,
+     "processes": [
+      "purchased",
+      "sheet"
+     ]
+    },
+    {
+     "parts": [
+      "extruder",
+      "part_duct"
+     ],
+     "gap_mm": 1.35,
+     "gap_sd_mm": 0.231,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.696,
+     "p_closed_normal_estimate": 2.3e-09,
+     "severity": null,
+     "processes": [
+      "purchased",
+      "printed"
+     ]
+    },
+    {
+     "parts": [
+      "extruder_screw_0",
+      "bed_probe"
+     ],
+     "gap_mm": 1.308,
+     "gap_sd_mm": 0.2,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.698,
+     "p_closed_normal_estimate": 3e-11,
+     "severity": null,
+     "processes": [
+      "purchased",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "extruder",
+      "x_belt_block_screw_1"
+     ],
+     "gap_mm": 1.2,
+     "gap_sd_mm": 0.155,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.763,
+     "p_closed_normal_estimate": 6.3e-15,
+     "severity": null,
+     "processes": [
+      "purchased",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "extruder",
+      "x_belt_block_screw_0"
+     ],
+     "gap_mm": 1.2,
+     "gap_sd_mm": 0.153,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.737,
+     "p_closed_normal_estimate": 1.9e-15,
+     "severity": null,
+     "processes": [
+      "purchased",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "x_rail",
+      "x_endstop"
+     ],
+     "gap_mm": 1.3,
+     "gap_sd_mm": 0.17,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.81,
+     "p_closed_normal_estimate": 1.4e-14,
+     "severity": null,
+     "processes": [
+      "purchased",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "x_rail",
+      "x_endstop_spacer_0"
+     ],
+     "gap_mm": 1.305,
+     "gap_sd_mm": 0.167,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.836,
+     "p_closed_normal_estimate": 3e-15,
+     "severity": null,
+     "processes": [
+      "purchased",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "bed_plate",
+      "bed"
+     ],
+     "gap_mm": 1.0,
+     "gap_sd_mm": 0.055,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.826,
+     "p_closed_normal_estimate": 5e-73,
+     "severity": null,
+     "processes": [
+      "machined",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "bed_magnet",
+      "bed_post_3"
+     ],
+     "gap_mm": 1.0,
+     "gap_sd_mm": 0.045,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.866,
+     "p_closed_normal_estimate": 2e-109,
+     "severity": null,
+     "processes": [
+      "purchased",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "bed_magnet",
+      "bed_post_0"
+     ],
+     "gap_mm": 1.0,
+     "gap_sd_mm": 0.045,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.865,
+     "p_closed_normal_estimate": 4.7e-111,
+     "severity": null,
+     "processes": [
+      "purchased",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "bed_magnet",
+      "bed_post_1"
+     ],
+     "gap_mm": 1.0,
+     "gap_sd_mm": 0.045,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.875,
+     "p_closed_normal_estimate": 2.2e-111,
+     "severity": null,
+     "processes": [
+      "purchased",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "bed_magnet",
+      "bed_post_2"
+     ],
+     "gap_mm": 1.0,
+     "gap_sd_mm": 0.045,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.866,
+     "p_closed_normal_estimate": 1.9e-111,
+     "severity": null,
+     "processes": [
+      "purchased",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "inlet",
+      "inlet_nut_0"
+     ],
+     "gap_mm": 1.475,
+     "gap_sd_mm": 0.198,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.969,
+     "p_closed_normal_estimate": 4.9e-14,
+     "severity": null,
+     "processes": [
+      "purchased",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "inlet",
+      "inlet_nut_1"
+     ],
+     "gap_mm": 1.475,
+     "gap_sd_mm": 0.197,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.94,
+     "p_closed_normal_estimate": 3.6e-14,
+     "severity": null,
+     "processes": [
+      "purchased",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "x_carriage",
+      "extruder_screw_0"
+     ],
+     "gap_mm": 1.0,
+     "gap_sd_mm": 0.036,
+     "p_closed": 0.0,
+     "gap_mm_0p15_percentile": 0.89,
+     "p_closed_normal_estimate": 1.9e-167,
+     "severity": null,
+     "processes": [
+      "purchased",
+      "purchased"
+     ]
+    }
+   ]
+  },
+  "v7": {
+   "examined": 19,
+   "closing": {
+    "error": 5,
+    "warning": 3
+   },
+   "pairs": [
+    {
+     "parts": [
+      "probe_arm",
+      "probe_key"
+     ],
+     "gap_mm": 0.2,
+     "gap_sd_mm": 0.291,
+     "p_closed": 0.2383,
+     "p_closed_standard_error": 0.0078,
+     "gap_mm_0p15_percentile": -0.65,
+     "p_closed_normal_estimate": 0.24,
+     "severity": "error",
+     "processes": [
+      "printed",
+      "printed"
+     ]
+    },
+    {
+     "parts": [
+      "x_beam",
+      "x_endstop_nut_1"
+     ],
+     "gap_mm": 0.35,
+     "gap_sd_mm": 0.302,
+     "p_closed": 0.1317,
+     "p_closed_standard_error": 0.0062,
+     "gap_mm_0p15_percentile": -0.481,
+     "p_closed_normal_estimate": 0.13,
+     "severity": "error",
+     "processes": [
+      "extrusion",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "extruder",
+      "x_belt_block_screw_0"
+     ],
+     "gap_mm": 0.2,
+     "gap_sd_mm": 0.158,
+     "p_closed": 0.1113,
+     "p_closed_standard_error": 0.0057,
+     "gap_mm_0p15_percentile": -0.263,
+     "p_closed_normal_estimate": 0.11,
+     "severity": "error",
+     "processes": [
+      "purchased",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "extruder",
+      "x_belt_block_screw_1"
+     ],
+     "gap_mm": 0.2,
+     "gap_sd_mm": 0.155,
+     "p_closed": 0.0963,
+     "p_closed_standard_error": 0.0054,
+     "gap_mm_0p15_percentile": -0.252,
+     "p_closed_normal_estimate": 0.096,
+     "severity": "error",
+     "processes": [
+      "purchased",
+      "purchased"
+     ]
+    },
+    {
+     "parts": [
+      "x_carriage",
+      "x_belt_block"
+     ],
+     "gap_mm": 0.5,
+     "gap_sd_mm": 0.259,
+     "p_closed": 0.0267,
+     "p_closed_standard_error": 0.0029,
+     "gap_mm_0p15_percentile": -0.227,
+     "p_closed_normal_estimate": 0.026,
+     "severity": "error",
+     "processes": [
+      "purchased",
+      "printed"
+     ]
+    },
+    {
+     "parts": [
+      "extruder_screw_0",
+      "part_duct"
+     ],
+     "gap_mm": 0.55,
+     "gap_sd_mm": 0.233,
+     "p_closed": 0.0097,
+     "p_closed_standard_error": 0.0018,
+     "gap_mm_0p15_percentile": -0.114,
+     "p_closed_normal_estimate": 0.0098,
+     "severity": "warning",
+     "processes": [
+      "purchased",
+      "printed"
+     ]
+    },
+    {
+     "parts": [
+      "extruder",
+      "part_duct"
+     ],
+     "gap_mm": 0.5,
+     "gap_sd_mm": 0.171,
+     "p_closed": 0.001,
+     "p_closed_standard_error": 0.0006,
+     "gap_mm_0p15_percentile": 0.026,
+     "p_closed_normal_estimate": 0.0017,
+     "severity": "warning",
+     "processes": [
+      "purchased",
+      "printed"
+     ]
+    },
+    {
+     "parts": [
+      "x_rail",
+      "x_endstop_screw_1"
+     ],
+     "gap_mm": 0.6,
+     "gap_sd_mm": 0.178,
+     "p_closed": 0.0,
+     "p_closed_standard_error": 0.0,
+     "gap_mm_0p15_percentile": 0.096,
+     "p_closed_normal_estimate": 0.00042,
+     "severity": "warning",
+     "processes": [
+      "purchased",
+      "purchased"
+     ]
+    }
+   ],
+   "probe_metal": [
+    {
+     "part": "extruder",
+     "material": "al6061",
+     "gap_mm": 0.05,
+     "p_closed": 0.4453,
+     "p_closed_standard_error": 0.0091,
+     "limit": 0.01,
+     "within_sampling_error_of_the_limit": false,
+     "builds": 3000,
+     "gap_sd_mm": 0.58,
+     "gap_mm_0p15_percentile": -1.503,
+     "p_closed_normal_estimate": 0.45,
+     "severity": "error"
+    }
+   ]
+  }
+ },
+ "adjust": [
+  {
+   "label": "Nozzle height (Z offset)",
+   "how": "probe offset in the firmware, inside the declared Z over-travel",
+   "need": 0.99,
+   "have": 1.65
+  },
+  {
+   "label": "Bed level",
+   "how": "two nuts at the tab of each bed post, set once at assembly",
+   "need": 0.79,
+   "have": 4.0
+  },
+  {
+   "label": "X endstop position",
+   "how": "x switch: its screws run in slots in the Y plate's land",
+   "need": 0.66,
+   "have": 2.0
+  },
+  {
+   "label": "Y endstop position",
+   "how": "y switch: its mount slides along the rail on two T-nuts",
+   "need": 1.59,
+   "have": 5.0
+  },
+  {
+   "label": "Lead-screw nut off its screw's axis",
+   "how": "floating nut in each nut block (worst of the three screws)",
+   "need": 1.9,
+   "have": 2.2
+  },
+  {
+   "label": "Y rails parallel",
+   "how": "y rails on sliding T-nuts (the maker allows 0.009 mm, so the pair must be aligned at assembly)",
+   "need": 1.453,
+   "have": 1.5
+  },
+  {
+   "label": "Z rails parallel",
+   "how": "z rails on sliding T-nuts (the maker allows 0.009 mm, so the pair must be aligned at assembly)",
+   "need": 0.964,
+   "have": 1.5
+  }
+ ],
+ "adjust_versions": [
+  {
+   "label": "v6",
+   "z_need": 1.58,
+   "z_have": 2.0,
+   "l_need": 1.16,
+   "l_have": 1.5
+  },
+  {
+   "label": "v7",
+   "z_need": 1.48,
+   "z_have": 1.65,
+   "l_need": 1.17,
+   "l_have": 1.5
+  },
+  {
+   "label": "v8",
+   "z_need": 0.99,
+   "z_have": 1.65,
+   "l_need": 0.79,
+   "l_have": 4.0
+  }
+ ],
+ "tol_misc": {
+  "as_built_first_layer": 0.222,
+  "as_built_level": 0.026,
+  "bed_out_of_level_99": 1.59,
+  "belts": {
+   "x_belt": {
+    "out_of_plane_mm_99": 1.11,
+    "p_within_1mm": 0.995,
+    "p_within_1mm_standard_error": 0.0013,
+    "limit": 0.95,
+    "within_sampling_error_of_the_limit": false
+   },
+   "y_belt": {
+    "out_of_plane_mm_99": 1.24,
+    "p_within_1mm": 0.981,
+    "p_within_1mm_standard_error": 0.0025,
+    "limit": 0.95,
+    "within_sampling_error_of_the_limit": false
+   },
+   "y_belt_l": {
+    "out_of_plane_mm_99": 1.28,
+    "p_within_1mm": 0.981,
+    "p_within_1mm_standard_error": 0.0025,
+    "limit": 0.95,
+    "within_sampling_error_of_the_limit": false
+   }
+  },
+  "monte_carlo": "3000 simulated builds, fixed seed 0 and a fixed order of draws: an identical run gives identical numbers. Each share p has a sampling error of sqrt(p(1-p)/3000), given beside it as standard_error; a share within two standard errors of its limit is flagged."
+ },
+ "probe": {
+  "v8": {
+   "x_offset": 0.0,
+   "y_offset": 34.5,
+   "unprobed_strip_mm": {
+    "x_low": 0.0,
+    "x_high": 0.0,
+    "y_low": 0.0,
+    "y_high": 0.0
+   },
+   "edge_margin_mm": 12.0,
+   "print_area": [
+    [
+     0.0,
+     180.0
+    ],
+    [
+     34.5,
+     214.5
+    ]
+   ],
+   "target": "steel",
+   "sensing_distance_mm": 5.0,
+   "face_above_nozzle_mm": 2.0,
+   "z_offset_range_mm": [
+    2.0,
+    4.0
+   ],
+   "z_offset_range_unit_spread_mm": [
+    2.5,
+    3.5
+   ]
+  },
+  "v8_margin": [
+   0.684,
+   3.316
+  ],
+  "v8_metal_zone": {
+   "dia_mm": 40.0,
+   "from_face_mm": 15.0
+  },
+  "v7": {
+   "x_offset": -36.5,
+   "y_offset": 13.01,
+   "unprobed_strip_mm": {
+    "x_low": 4.0,
+    "x_high": 36.5,
+    "y_low": 13.01,
+    "y_high": 4.0
+   },
+   "edge_margin_mm": 24.0,
+   "print_area": [
+    [
+     0.0,
+     180.0
+    ],
+    [
+     0.0,
+     180.0
+    ]
+   ],
+   "mesh_min": [
+    4.0,
+    13.01
+   ],
+   "mesh_max": [
+    143.5,
+    176.0
+   ],
+   "target": "aluminium",
+   "sensing_distance_mm": 3.0,
+   "face_above_nozzle_mm": 1.8,
+   "z_offset_range_mm": [
+    0.6,
+    2.16
+   ]
+  }
+ },
+ "tune": {
+  "input_shaper": {
+   "x": {
+    "shaper_type": "ei",
+    "shaper_freq": 98.2,
+    "predicted_resonance_hz": 77.7,
+    "suggested_max_accel": 17500.0,
+    "remaining_vibrations_frac": 0.0028,
+    "candidates": [
+     {
+      "shaper_type": "zv",
+      "shaper_freq": 78.4,
+      "vibrations_frac": 0.0385,
+      "smoothing": 0.0309,
+      "max_accel": 23700.0
+     },
+     {
+      "shaper_type": "mzv",
+      "shaper_freq": 78.0,
+      "vibrations_frac": 0.0032,
+      "smoothing": 0.0351,
+      "max_accel": 17800.0
+     },
+     {
+      "shaper_type": "ei",
+      "shaper_freq": 98.2,
+      "vibrations_frac": 0.0028,
+      "smoothing": 0.035,
+      "max_accel": 17500.0
+     },
+     {
+      "shaper_type": "2hump_ei",
+      "shaper_freq": 124.2,
+      "vibrations_frac": 0.0003,
+      "smoothing": 0.0388,
+      "max_accel": 16400.0
+     },
+     {
+      "shaper_type": "3hump_ei",
+      "shaper_freq": 149.8,
+      "vibrations_frac": 0.0,
+      "smoothing": 0.0409,
+      "max_accel": 15100.0
+     }
+    ]
+   },
+   "y": {
+    "shaper_type": "mzv",
+    "shaper_freq": 57.4,
+    "predicted_resonance_hz": 57.1,
+    "suggested_max_accel": 9600.0,
+    "remaining_vibrations_frac": 0.0022,
+    "candidates": [
+     {
+      "shaper_type": "zv",
+      "shaper_freq": 57.6,
+      "vibrations_frac": 0.0359,
+      "smoothing": 0.0518,
+      "max_accel": 12800.0
+     },
+     {
+      "shaper_type": "mzv",
+      "shaper_freq": 57.4,
+      "vibrations_frac": 0.0022,
+      "smoothing": 0.0622,
+      "max_accel": 9600.0
+     },
+     {
+      "shaper_type": "ei",
+      "shaper_freq": 71.2,
+      "vibrations_frac": 0.0005,
+      "smoothing": 0.0651,
+      "max_accel": 9200.0
+     },
+     {
+      "shaper_type": "2hump_ei",
+      "shaper_freq": 91.6,
+      "vibrations_frac": 0.0003,
+      "smoothing": 0.0673,
+      "max_accel": 8900.0
+     },
+     {
+      "shaper_type": "3hump_ei",
+      "shaper_freq": 115.2,
+      "vibrations_frac": 0.0002,
+      "smoothing": 0.0671,
+      "max_accel": 8900.0
+     }
+    ]
+   }
+  },
+  "selected_by": "Klipper's own code (klippy/extras, commit 29d4ec2) called directly (shaper_calibrate.find_best_shaper) on the twin's synthetic frequency response",
+  "pressure_advance": 0.042,
+  "bed_mesh": {
+   "over_print_area": {
+    "without_mesh_mm": {
+     "rms": 0.0967,
+     "worst": 0.305
+    },
+    "with_mesh_mm": {
+     "rms": 0.0074,
+     "worst": 0.017
+    },
+    "area": [
+     [
+      0.0,
+      180.0
+     ],
+     [
+      34.5,
+      214.5
+     ]
+    ],
+    "grid": 41,
+    "interpolation": "Klipper's own code (klippy/extras, commit 29d4ec2) called directly (bed_mesh.ZMesh)"
+   },
+   "bed_surface_assumed_mm": {
+    "tilt_x_mm": 0.3,
+    "tilt_y_mm": 0.2,
+    "bow_mm": 0.15
+   }
+  },
+  "mesh_points": [
+   [
+    -0.305167,
+    -0.197727,
+    -0.139515,
+    -0.096929,
+    -0.066204
+   ],
+   [
+    -0.220627,
+    -0.122209,
+    -0.050869,
+    -0.007574,
+    0.01862
+   ],
+   [
+    -0.1671,
+    -0.072932,
+    0.017214,
+    0.058905,
+    0.089381
+   ],
+   [
+    -0.130798,
+    -0.044975,
+    0.032936,
+    0.071179,
+    0.097141
+   ],
+   [
+    -0.147215,
+    -0.032407,
+    0.028825,
+    0.087156,
+    0.09421
+   ]
+  ],
+  "klipper_commit": "29d4ec2"
+ },
+ "twin": [
+  {
+   "label": "v4",
+   "time": "2026-11-15T08:36:03",
+   "res_x": [
+    49.7,
+    54.2,
+    61.2
+   ],
+   "res_y": [
+    52.5,
+    55.3,
+    59.1
+   ],
+   "accel": [
+    3400.0,
+    5000.0,
+    7900.0
+   ],
+   "ceiling": [
+    6000.0,
+    8000.0,
+    12000.0
+   ],
+   "accel_klipper": [
+    3400.0,
+    4200.0,
+    5500.0
+   ],
+   "cross_rms": [
+    0.0112,
+    0.017,
+    0.0247
+   ]
+  },
+  {
+   "label": "v5",
+   "time": "2026-11-15T08:44:33",
+   "res_x": [
+    64.2,
+    70.1,
+    79.1
+   ],
+   "res_y": [
+    57.1,
+    60.2,
+    64.3
+   ],
+   "accel": [
+    4500.0,
+    6400.0,
+    9500.0
+   ],
+   "ceiling": [
+    8000.0,
+    12000.0,
+    14000.0
+   ],
+   "accel_klipper": [
+    4000.0,
+    5000.0,
+    6600.0
+   ],
+   "cross_rms": [
+    0.0092,
+    0.0135,
+    0.0187
+   ]
+  },
+  {
+   "label": "v6",
+   "time": "2026-11-15T08:52:16",
+   "res_x": [
+    72.7,
+    78.2,
+    86.2
+   ],
+   "res_y": [
+    56.7,
+    60.0,
+    64.5
+   ],
+   "accel": [
+    4400.0,
+    6300.0,
+    9600.0
+   ],
+   "ceiling": [
+    8000.0,
+    10000.0,
+    12000.0
+   ],
+   "accel_klipper": [
+    4000.0,
+    5000.0,
+    6600.0
+   ],
+   "cross_rms": [
+    0.0085,
+    0.0122,
+    0.0167
+   ]
+  },
+  {
+   "label": "v7",
+   "time": "2026-11-15T08:00:45",
+   "res_x": [
+    68.8,
+    74.0,
+    81.5
+   ],
+   "res_y": [
+    51.1,
+    54.6,
+    59.5
+   ],
+   "accel": [
+    3600.0,
+    5200.0,
+    8100.0
+   ],
+   "ceiling": [
+    6000.0,
+    8000.0,
+    12000.0
+   ],
+   "accel_klipper": [
+    3400.0,
+    4200.0,
+    5500.0
+   ],
+   "cross_rms": [
+    0.0094,
+    0.0139,
+    0.0203
+   ]
+  },
+  {
+   "label": "v8",
+   "time": "2026-11-15T18:52:23",
+   "res_x": [
+    73.7,
+    79.3,
+    87.4
+   ],
+   "res_y": [
+    55.4,
+    58.8,
+    63.4
+   ],
+   "accel": [
+    4200.0,
+    6000.0,
+    9200.0
+   ],
+   "ceiling": [
+    8000.0,
+    10000.0,
+    12000.0
+   ],
+   "accel_klipper": [
+    3800.0,
+    4800.0,
+    6200.0
+   ],
+   "cross_rms": [
+    0.0087,
+    0.0125,
+    0.0173
+   ]
+  }
+ ],
+ "twin_notes": {
+  "varied": "belt stiffness, toolhead block stiffness, ringing damping ratio, extruder lag: soft / lightly damped / slow end against stiff / well damped / fast end of their fitted ranges",
+  "not_varied": "friction, motor torque curve, moving mass, FEA frame stiffness, stepper damping (no data to give them a range)",
+  "accel_meaning": "acceleration an owner would run with input shaping: 0.5 (0.4 to 0.65) x Klipper's shaper smoothing rule (MZV, 0.12 mm) at the lower resonance; calibrated on three machines"
+ },
+ "fw_sweep": {
+  "on": [
+   {
+    "accel_mm_s2": 4000.0,
+    "ok": true,
+    "errors": [],
+    "cross_track_rms_mm": 0.0064,
+    "cross_track_worst_mm": 0.0456,
+    "max_bulge_mm": 0.15,
+    "print_time_s": 233.4
+   },
+   {
+    "accel_mm_s2": 6000.0,
+    "ok": true,
+    "errors": [],
+    "cross_track_rms_mm": 0.0067,
+    "cross_track_worst_mm": 0.0498,
+    "max_bulge_mm": 0.2,
+    "print_time_s": 225.3
+   },
+   {
+    "accel_mm_s2": 8000.0,
+    "ok": true,
+    "errors": [],
+    "cross_track_rms_mm": 0.0069,
+    "cross_track_worst_mm": 0.0504,
+    "max_bulge_mm": 0.2,
+    "print_time_s": 221.0
+   },
+   {
+    "accel_mm_s2": 10000.0,
+    "ok": true,
+    "errors": [],
+    "cross_track_rms_mm": 0.335,
+    "cross_track_worst_mm": 9.3354,
+    "max_bulge_mm": 0.25,
+    "print_time_s": 218.3
+   },
+   {
+    "accel_mm_s2": 12000.0,
+    "ok": true,
+    "errors": [],
+    "cross_track_rms_mm": 0.0072,
+    "cross_track_worst_mm": 0.0676,
+    "max_bulge_mm": 0.2,
+    "print_time_s": 216.5
+   },
+   {
+    "accel_mm_s2": 16000.0,
+    "ok": true,
+    "errors": [],
+    "cross_track_rms_mm": 0.2641,
+    "cross_track_worst_mm": 8.5469,
+    "max_bulge_mm": 0.2,
+    "print_time_s": 214.2
+   },
+   {
+    "accel_mm_s2": 20000.0,
+    "ok": true,
+    "errors": [],
+    "cross_track_rms_mm": 0.0078,
+    "cross_track_worst_mm": 0.0945,
+    "max_bulge_mm": 0.2,
+    "print_time_s": 212.8
+   },
+   {
+    "accel_mm_s2": 24000.0,
+    "ok": true,
+    "errors": [],
+    "cross_track_rms_mm": 0.0081,
+    "cross_track_worst_mm": 0.1055,
+    "max_bulge_mm": 0.15,
+    "print_time_s": 211.8
+   },
+   {
+    "accel_mm_s2": 32000.0,
+    "ok": true,
+    "errors": [],
+    "cross_track_rms_mm": 0.0088,
+    "cross_track_worst_mm": 0.1341,
+    "max_bulge_mm": 0.15,
+    "print_time_s": 210.4
+   },
+   {
+    "accel_mm_s2": 40000.0,
+    "ok": true,
+    "errors": [],
+    "cross_track_rms_mm": 0.0095,
+    "cross_track_worst_mm": 0.1526,
+    "max_bulge_mm": 0.15,
+    "print_time_s": 209.6
+   },
+   {
+    "accel_mm_s2": 48000.0,
+    "ok": true,
+    "errors": [],
+    "cross_track_rms_mm": 0.0101,
+    "cross_track_worst_mm": 0.1696,
+    "max_bulge_mm": 0.15,
+    "print_time_s": 209.1
+   }
+  ],
+  "off": [
+   {
+    "accel_mm_s2": 4000.0,
+    "ok": true,
+    "errors": [],
+    "cross_track_rms_mm": 0.0088,
+    "cross_track_worst_mm": 0.0938,
+    "max_bulge_mm": 0.4,
+    "print_time_s": 233.4
+   },
+   {
+    "accel_mm_s2": 6000.0,
+    "ok": true,
+    "errors": [],
+    "cross_track_rms_mm": 0.0123,
+    "cross_track_worst_mm": 0.1228,
+    "max_bulge_mm": 0.45,
+    "print_time_s": 225.3
+   },
+   {
+    "accel_mm_s2": 8000.0,
+    "ok": false,
+    "errors": [
+     "firmware_error"
+    ],
+    "cross_track_rms_mm": null,
+    "cross_track_worst_mm": null,
+    "max_bulge_mm": null,
+    "print_time_s": null
+   },
+   {
+    "accel_mm_s2": 10000.0,
+    "ok": true,
+    "errors": [],
+    "cross_track_rms_mm": 0.0222,
+    "cross_track_worst_mm": 0.2083,
+    "max_bulge_mm": 0.45,
+    "print_time_s": 218.3
+   },
+   {
+    "accel_mm_s2": 12000.0,
+    "ok": true,
+    "errors": [],
+    "cross_track_rms_mm": 0.0268,
+    "cross_track_worst_mm": 0.2799,
+    "max_bulge_mm": 0.45,
+    "print_time_s": 216.5
+   },
+   {
+    "accel_mm_s2": 16000.0,
+    "ok": true,
+    "errors": [],
+    "cross_track_rms_mm": 0.0353,
+    "cross_track_worst_mm": 0.3471,
+    "max_bulge_mm": 0.45,
+    "print_time_s": 214.2
+   },
+   {
+    "accel_mm_s2": 20000.0,
+    "ok": false,
+    "errors": [
+     "firmware_error"
+    ],
+    "cross_track_rms_mm": null,
+    "cross_track_worst_mm": null,
+    "max_bulge_mm": null,
+    "print_time_s": null
+   },
+   {
+    "accel_mm_s2": 24000.0,
+    "ok": false,
+    "errors": [
+     "lost_steps",
+     "print_dimension_error",
+     "print_layer_shift",
+     "print_outline_defect",
+     "print_outline_poor"
+    ],
+    "cross_track_rms_mm": 0.8902,
+    "cross_track_worst_mm": 3.5054,
+    "max_bulge_mm": 1.5,
+    "print_time_s": 211.7
+   },
+   {
+    "accel_mm_s2": 32000.0,
+    "ok": false,
+    "errors": [
+     "lost_steps",
+     "print_dimension_error",
+     "print_outline_defect"
+    ],
+    "cross_track_rms_mm": 0.6973,
+    "cross_track_worst_mm": 3.526,
+    "max_bulge_mm": 1.5,
+    "print_time_s": 210.4
+   },
+   {
+    "accel_mm_s2": 40000.0,
+    "ok": false,
+    "errors": [
+     "lost_steps",
+     "print_dimension_error",
+     "print_layer_shift",
+     "print_outline_defect",
+     "print_outline_poor"
+    ],
+    "cross_track_rms_mm": 2.0237,
+    "cross_track_worst_mm": 6.2811,
+    "max_bulge_mm": 1.5,
+    "print_time_s": 209.6
+   },
+   {
+    "accel_mm_s2": 48000.0,
+    "ok": false,
+    "errors": [
+     "lost_steps",
+     "print_dimension_error",
+     "print_layer_shift",
+     "print_outline_defect",
+     "print_outline_poor"
+    ],
+    "cross_track_rms_mm": 2.0518,
+    "cross_track_worst_mm": 11.4142,
+    "max_bulge_mm": 1.5,
+    "print_time_s": 209.1
+   }
+  ],
+  "nominal_on": {
+   "ok": true,
+   "errors": [],
+   "print_time_s": 300.1,
+   "cross_track_rms_mm": 0.0059,
+   "cross_track_worst_mm": 0.0468,
+   "cross_track_p99_mm": 0.0199,
+   "command_smoothing_worst_mm": 0.0529,
+   "max_bulge_mm": 0.15,
+   "outline_offset_mm": -0.028
+  },
+  "nominal_off": {
+   "ok": true,
+   "errors": [],
+   "print_time_s": 300.1,
+   "cross_track_rms_mm": 0.008,
+   "cross_track_worst_mm": 0.0933,
+   "cross_track_p99_mm": 0.0284,
+   "command_smoothing_worst_mm": 0.0,
+   "max_bulge_mm": 0.4,
+   "outline_offset_mm": -0.025
+  },
+  "commit": "29d4ec2",
+  "speed_scale": 2.0
+ },
+ "print": {
+  "dir": "out/printer_v8/fil/bracket/bracket",
+  "part": "bracket",
+  "size": [
+   30.0,
+   44.0,
+   51.0
+  ],
+  "print": {
+   "layers": 255,
+   "layer_height_mm": 0.2,
+   "filament_mass_g": 15.26,
+   "outline_iou_mean": 0.9843,
+   "outline_iou_min": 0.9773,
+   "boundary_deviation_mm": {
+    "mean": 0.03,
+    "worst": 0.044
+   },
+   "max_bulge_mm": 0.4,
+   "layer_shift_mm_worst": 0.0,
+   "first_layer_gap_error_mm": {
+    "rms": 0.0014,
+    "worst": 0.0017,
+    "mean": 0.0014,
+    "min_gap": 0.2011,
+    "max_gap": 0.2017,
+    "fraction_outside_half_layer": 0.0
+   }
+  },
+  "time_s": 3890.9,
+  "poses": 4075,
+  "collisions": 0,
+  "cross": {
+   "cross_track_rms_mm": 0.0078,
+   "cross_track_worst_mm": 0.0601,
+   "cross_track_p99_mm": 0.0239
+  },
+  "fw": {
+   "firmware": "Klipper",
+   "mcu": "stm32g0b1xx",
+   "peak_step_rate_hz": {
+    "X": 12237,
+    "Y": 12253,
+    "Z": 19753
+   },
+   "mcu_step_rate_limit_hz": 263374,
+   "max_distance_from_gcode_path_mm": 0.0558,
+   "klipper_messages": {}
+  },
+  "commit": "29d4ec2",
+  "moves": 48837,
+  "axis_mass_kg": [
+   0.43,
+   1.743,
+   57.503
+  ],
+  "findings": [
+   "Corners and seams bulge up to 0.40 mm (material keeps flowing while the nozzle slows; size depends on the 32 ms extruder lag (direct drive, 0.4 mm nozzle: factory pressure-advance values (fitted_parameters.json: extruder_lag_s), range 0.02 to 0.058 s) and on t"
+  ]
+ },
+ "ref": {
+  "when": "2026-11-15 14:23 UTC",
+  "by_class": {
+   "checker": {
+    "floating_parts": 1,
+    "unfastened": 1,
+    "thread_engagement": 4,
+    "screws_may_not_align": 9
+   },
+   "missing": {
+    "thread_bottoms_out": 8,
+    "adjustment_too_small": 1,
+    "probe_signal_over_voltage": 1
+   },
+   "real": {
+    "mains_fuse_too_small": 1,
+    "frame_not_earthed": 1,
+    "no_independent_cutoff": 1
+   },
+   "checker_probable": {
+    "heater_overshoot": 1
+   },
+   "modelling": {
+    "requirement_failed": 1
+   }
+  },
+  "total": 30,
+  "summary": {
+   "geometry": {
+    "status": "pass",
+    "errors": 0,
+    "warnings": 0
+   },
+   "interference": {
+    "status": "fail",
+    "errors": 14,
+    "warnings": 0
+   },
+   "tolerance": {
+    "status": "fail",
+    "errors": 10,
+    "warnings": 1
+   },
+   "manufacture": {
+    "status": "pass",
+    "errors": 0,
+    "warnings": 9
+   },
+   "ratings": {
+    "status": "pass",
+    "errors": 0,
+    "warnings": 4
+   },
+   "motion": {
+    "status": "pass",
+    "errors": 0,
+    "warnings": 0
+   },
+   "subsystems": {
+    "status": "pass",
+    "errors": 0,
+    "warnings": 1
+   },
+   "electrical": {
+    "status": "fail",
+    "errors": 5,
+    "warnings": 3
+   },
+   "assemblability": {
+    "status": "pass",
+    "errors": 0,
+    "warnings": 1
+   },
+   "fea": {
+    "status": "pass",
+    "errors": 0,
+    "warnings": 0
+   },
+   "printing": {
+    "status": "pass",
+    "errors": 0,
+    "warnings": 1
+   },
+   "requirements": {
+    "status": "fail",
+    "errors": 1,
+    "warnings": 0
+   }
+  },
+  "warnings": 20
+ },
+ "versions": [
+  {
+   "label": "v2",
+   "parts": 173,
+   "mass_kg": 7.8237,
+   "bom_usd": 375.17,
+   "by_process": {
+    "machined": 13
+   },
+   "machining_usd": null
+  },
+  {
+   "label": "v4",
+   "parts": 292,
+   "mass_kg": 10.0186,
+   "bom_usd": 598.39,
+   "by_process": {
+    "machined": 35,
+    "sheet": 2
+   },
+   "machining_usd": 2381.0
+  },
+  {
+   "label": "v5",
+   "parts": 347,
+   "mass_kg": 10.5218,
+   "bom_usd": 650.83,
+   "by_process": {
+    "machined": 4,
+    "printed": 12,
+    "sheet": 8
+   },
+   "machining_usd": 360.0
+  },
+  {
+   "label": "v6",
+   "parts": 317,
+   "mass_kg": 10.2361,
+   "bom_usd": 719.19,
+   "by_process": {
+    "machined": 2,
+    "printed": 7,
+    "sheet": 11
+   },
+   "machining_usd": 112.0
+  },
+  {
+   "label": "v7",
+   "parts": 309,
+   "mass_kg": 10.2503,
+   "bom_usd": 726.7,
+   "by_process": {
+    "machined": 2,
+    "printed": 9,
+    "sheet": 13
+   },
+   "machining_usd": 112.0
+  },
+  {
+   "label": "v8",
+   "parts": 386,
+   "mass_kg": 12.4354,
+   "bom_usd": 787.1,
+   "by_process": {
+    "machined": 2,
+    "printed": 13,
+    "sheet": 20
+   },
+   "machining_usd": 119.0
+  }
+ ],
+ "unverified": [
+  "That thin spring steel on a magnet switches the sensor like OMRON's iron target. If it switches at 3 mm instead of 5, the window closes to nothing at a 2 mm face height: check on the bench before anything else.",
+  "Lead differences between the three screws, and so how evenly they carry.",
+  "The flexure posts: fatigue of a threaded M5 bent 0.3 mm at each heat cycle; that the jam nuts stay tight.",
+  "The bed's own vibration on four slender posts and a tie. No modal case was written for it.",
+  "Pulley set screws carrying each screw's axial load (10 to 20 N) on a plain 8 mm screw end.",
+  "The printed pedestals and mount under years of load (PETG creep); bearing seats printed 22.4 mm.",
+  "2 mm steel Y mounts: stiffness under 37 N of belt pull is not in any FEA case.",
+  "The frame: 50 mm taller, front top rail lowered. Frame stiffness does not enter the twin.",
+  "The Z belt's 1,056 mm stock length; a toothed idler running on the belt's back.",
+  "Air: the duct is v7's, 10 mm further right, with the fan on its upper holes.",
+  "The probe mount's stiffness (not in an FEA case) and heat on it 11 mm behind the Roto.",
+  "Everything v7 listed that v8 did not touch, and everything `AGENT.md` lists as not checked."
+ ],
+ "unverified_source": "docs/PRINTER_V8.md",
+ "media": {
+  "printed": "print_printed.webp",
+  "layers": "print_layers.webp",
+  "poster": "print_poster.webp",
+  "video": "print_printing.mp4"
+ }
+}

@@ -1,0 +1,616 @@
+{
+ "design": "v8_bed_a_cantilever",
+ "ok": true,
+ "source": "/tmp/claude-0/-home-user-running-route/87481e0a-8f62-5246-a6fc-1c1f80e15b45/scratchpad/agentV8/out_study/v8_bed_a_cantilever/report_partial.json",
+ "report_time": "2026-11-15 19:09 UTC",
+ "summary": {
+  "geometry": "pass (0 errors, 0 warnings, 21.2s)",
+  "interference": "pass (0 errors, 0 warnings, 24.4s)",
+  "tolerance": "pass (0 errors, 0 warnings, 55.0s)",
+  "ratings": "pass (0 errors, 2 warnings, 0.1s)",
+  "fea": "pass (0 errors, 1 warnings, 518.1s)"
+ },
+ "findings": [
+  {
+   "verifier": "ratings",
+   "severity": "warning",
+   "code": "uncatalogued_cots",
+   "message": "bed_magnet is marked off-the-shelf but did not come from the parts catalog (dimensions and ratings unverified)."
+  },
+  {
+   "verifier": "ratings",
+   "severity": "warning",
+   "code": "uncatalogued_cots",
+   "message": "bed is marked off-the-shelf but did not come from the parts catalog (dimensions and ratings unverified)."
+  },
+  {
+   "verifier": "fea",
+   "severity": "warning",
+   "code": "bed_sags_under_print_weight",
+   "message": "A 1 kg print at the worst corner of the print area lowers the print surface there by 0.022 mm (bonded joints 0.016, screw-only joints 0.022; of which guides and nut 0.004), more than 0.1 of a 0.2 mm layer (0.020 mm). The bed is levelled and meshed empty, so neither sees it."
+  }
+ ],
+ "parts": 367,
+ "tolerance_printer": {
+  "z_arrangement": "the bed rides Z",
+  "nominal_gap_mm": 0.1,
+  "gap_error_mm_99": 1.21,
+  "bed_out_of_level_mm_99": 1.91,
+  "p_first_layer_reachable_as_built": 0.199,
+  "p_bed_level_within_half_a_layer_as_built": 0.026,
+  "p_first_layer_reachable_standard_error": 0.0073,
+  "p_bed_level_standard_error": 0.0029,
+  "z_overtravel_mm": 1.65,
+  "p_bed_reaches_nozzle_with_overtravel": 1.0,
+  "p_bed_reaches_nozzle_with_overtravel_standard_error": 0.0,
+  "z_offset_needed_mm_99": 1.21,
+  "z_offset_available_mm": 1.65,
+  "levelling_needed_mm_99": 0.96,
+  "levelling_available_mm": 4.0
+ },
+ "clearances": {
+  "pairs_examined": 29,
+  "pairs_closing": {
+   "error": 0,
+   "warning": 0
+  },
+  "threshold_mm": 1.5,
+  "builds": 3000,
+  "pairs": [
+   {
+    "parts": [
+     "bed_arm_right_gusset",
+     "bed_post_tab_3"
+    ],
+    "gap_mm": 1.0,
+    "gap_sd_mm": 0.277,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.239,
+    "p_closed_normal_estimate": 0.00015,
+    "severity": null,
+    "processes": [
+     "sheet",
+     "sheet"
+    ]
+   },
+   {
+    "parts": [
+     "bed_arm_left_gusset",
+     "bed_post_tab_2"
+    ],
+    "gap_mm": 1.0,
+    "gap_sd_mm": 0.274,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.192,
+    "p_closed_normal_estimate": 0.00014,
+    "severity": null,
+    "processes": [
+     "sheet",
+     "sheet"
+    ]
+   },
+   {
+    "parts": [
+     "bed_arm_left_gusset_bracket_screw_a",
+     "bed_arm_left_gusset_bracket_screw"
+    ],
+    "gap_mm": 1.061,
+    "gap_sd_mm": 0.254,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.34,
+    "p_closed_normal_estimate": 1.5e-05,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "bed_arm_right_gusset_bracket_screw_a",
+     "bed_arm_right_gusset_bracket_screw"
+    ],
+    "gap_mm": 1.061,
+    "gap_sd_mm": 0.246,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.342,
+    "p_closed_normal_estimate": 7.7e-06,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "bed_arm_left_gusset",
+     "bed_post_tab_0"
+    ],
+    "gap_mm": 1.0,
+    "gap_sd_mm": 0.21,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.331,
+    "p_closed_normal_estimate": 9.7e-07,
+    "severity": null,
+    "processes": [
+     "sheet",
+     "sheet"
+    ]
+   },
+   {
+    "parts": [
+     "bed_arm_right_gusset",
+     "bed_post_tab_1"
+    ],
+    "gap_mm": 1.0,
+    "gap_sd_mm": 0.207,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.383,
+    "p_closed_normal_estimate": 6.2e-07,
+    "severity": null,
+    "processes": [
+     "sheet",
+     "sheet"
+    ]
+   },
+   {
+    "parts": [
+     "x_rail",
+     "x_endstop_nut_0"
+    ],
+    "gap_mm": 1.05,
+    "gap_sd_mm": 0.193,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.498,
+    "p_closed_normal_estimate": 2.9e-08,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "extruder",
+     "part_duct"
+    ],
+    "gap_mm": 1.35,
+    "gap_sd_mm": 0.233,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.653,
+    "p_closed_normal_estimate": 3.5e-09,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "printed"
+    ]
+   },
+   {
+    "parts": [
+     "back_plate",
+     "bed_tie"
+    ],
+    "gap_mm": 1.0,
+    "gap_sd_mm": 0.166,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.514,
+    "p_closed_normal_estimate": 7.9e-10,
+    "severity": null,
+    "processes": [
+     "sheet",
+     "sheet"
+    ]
+   },
+   {
+    "parts": [
+     "extruder_screw_1",
+     "x_belt_block"
+    ],
+    "gap_mm": 1.062,
+    "gap_sd_mm": 0.172,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.555,
+    "p_closed_normal_estimate": 3.3e-10,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "printed"
+    ]
+   },
+   {
+    "parts": [
+     "frame_bot_back",
+     "leadscrew"
+    ],
+    "gap_mm": 1.0,
+    "gap_sd_mm": 0.16,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.555,
+    "p_closed_normal_estimate": 1.7e-10,
+    "severity": null,
+    "processes": [
+     "extrusion",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "bed_magnet",
+     "bed_tie_screw_1"
+    ],
+    "gap_mm": 1.0,
+    "gap_sd_mm": 0.149,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.565,
+    "p_closed_normal_estimate": 1e-11,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "extruder_screw_0",
+     "bed_probe"
+    ],
+    "gap_mm": 1.308,
+    "gap_sd_mm": 0.193,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.723,
+    "p_closed_normal_estimate": 6.7e-12,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "bed_magnet",
+     "bed_tie_screw_0"
+    ],
+    "gap_mm": 1.0,
+    "gap_sd_mm": 0.145,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.592,
+    "p_closed_normal_estimate": 2.1e-12,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "z_drive_mount",
+     "leadscrew"
+    ],
+    "gap_mm": 1.0,
+    "gap_sd_mm": 0.14,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.567,
+    "p_closed_normal_estimate": 4.5e-13,
+    "severity": null,
+    "processes": [
+     "printed",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "y_idler_mount_l",
+     "y_idler_l"
+    ],
+    "gap_mm": 1.0,
+    "gap_sd_mm": 0.136,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.619,
+    "p_closed_normal_estimate": 1e-13,
+    "severity": null,
+    "processes": [
+     "sheet",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "inlet",
+     "inlet_nut_0"
+    ],
+    "gap_mm": 1.475,
+    "gap_sd_mm": 0.199,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.946,
+    "p_closed_normal_estimate": 7.1e-14,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "y_idler_mount",
+     "y_idler"
+    ],
+    "gap_mm": 1.0,
+    "gap_sd_mm": 0.135,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.592,
+    "p_closed_normal_estimate": 4.3e-14,
+    "severity": null,
+    "processes": [
+     "sheet",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "inlet",
+     "inlet_nut_1"
+    ],
+    "gap_mm": 1.475,
+    "gap_sd_mm": 0.195,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.945,
+    "p_closed_normal_estimate": 2.3e-14,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "extruder",
+     "x_belt_block_screw_1"
+    ],
+    "gap_mm": 1.2,
+    "gap_sd_mm": 0.157,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.743,
+    "p_closed_normal_estimate": 9.9e-15,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "extruder",
+     "x_belt_block_screw_0"
+    ],
+    "gap_mm": 1.2,
+    "gap_sd_mm": 0.156,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.73,
+    "p_closed_normal_estimate": 8e-15,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "x_rail",
+     "x_endstop"
+    ],
+    "gap_mm": 1.3,
+    "gap_sd_mm": 0.166,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.835,
+    "p_closed_normal_estimate": 2.6e-15,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "x_rail",
+     "x_endstop_spacer_0"
+    ],
+    "gap_mm": 1.305,
+    "gap_sd_mm": 0.165,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.824,
+    "p_closed_normal_estimate": 1.1e-15,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "bed_plate",
+     "bed"
+    ],
+    "gap_mm": 1.0,
+    "gap_sd_mm": 0.055,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.841,
+    "p_closed_normal_estimate": 3.2e-74,
+    "severity": null,
+    "processes": [
+     "machined",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "bed_magnet",
+     "bed_post_0"
+    ],
+    "gap_mm": 1.0,
+    "gap_sd_mm": 0.046,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.873,
+    "p_closed_normal_estimate": 1.2e-106,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "bed_magnet",
+     "bed_post_2"
+    ],
+    "gap_mm": 1.0,
+    "gap_sd_mm": 0.045,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.87,
+    "p_closed_normal_estimate": 2e-108,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "bed_magnet",
+     "bed_post_3"
+    ],
+    "gap_mm": 1.0,
+    "gap_sd_mm": 0.045,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.864,
+    "p_closed_normal_estimate": 1.8e-108,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "bed_magnet",
+     "bed_post_1"
+    ],
+    "gap_mm": 1.0,
+    "gap_sd_mm": 0.045,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.86,
+    "p_closed_normal_estimate": 3.9e-109,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   },
+   {
+    "parts": [
+     "x_carriage",
+     "extruder_screw_0"
+    ],
+    "gap_mm": 1.0,
+    "gap_sd_mm": 0.036,
+    "p_closed": 0.0,
+    "p_closed_standard_error": 0.0,
+    "gap_mm_0p15_percentile": 0.894,
+    "p_closed_normal_estimate": 7e-169,
+    "severity": null,
+    "processes": [
+     "purchased",
+     "purchased"
+    ]
+   }
+  ]
+ },
+ "probe": {
+  "x_offset": null,
+  "y_offset": null,
+  "unprobed_strip_mm": null,
+  "edge_margin_mm": null,
+  "print_area": null,
+  "mesh_min": null,
+  "mesh_max": null,
+  "target": null,
+  "sensing_distance_mm": null,
+  "face_above_nozzle_mm": null,
+  "z_offset_range_mm": null
+ },
+ "probe_metal_near": null,
+ "bed_support": {
+  "print_weight": {
+   "load_n": 9.81,
+   "at": [
+    -90.0,
+    -68.5,
+    193.3
+   ],
+   "support_compliance_mm": 0.004,
+   "support_compliance_tilt_mm": 0.0025,
+   "flexure_bonded_mm": 0.0125,
+   "total_bonded_mm": 0.0164,
+   "tilt_across_print_area_bonded_mm": 0.014,
+   "flexure_screwed_mm": 0.0182,
+   "total_screwed_mm": 0.0222,
+   "tilt_across_print_area_screwed_mm": 0.0192,
+   "range_note": "bonded: every touching face joined (stiff bound); screwed: joints held only round their screws (soft bound)",
+   "judged_mm": 0.0222,
+   "limit_mm": 0.02
+  },
+  "hand_load": {
+   "load_n": 20.0,
+   "at": [
+    -90.0,
+    -68.5,
+    193.3
+   ],
+   "support_compliance_mm": 0.0081,
+   "support_compliance_tilt_mm": 0.005,
+   "flexure_bonded_mm": 0.0255,
+   "total_bonded_mm": 0.0335,
+   "tilt_across_print_area_bonded_mm": 0.0285,
+   "flexure_screwed_mm": 0.0371,
+   "total_screwed_mm": 0.0452,
+   "tilt_across_print_area_screwed_mm": 0.0392,
+   "range_note": "bonded: every touching face joined (stiff bound); screwed: joints held only round their screws (soft bound)",
+   "judged_mm": 0.0452,
+   "point_basis": "worst corner of the print area (the flexure was solved there)"
+  },
+  "constraint": {
+   "lead_screws": 1,
+   "guide_rails_or_rods": 2,
+   "guide_blocks": 4,
+   "redundant_screw_supports": 0,
+   "note": "one screw sets the height, the guides hold the tilt: exactly constrained in height"
+  }
+ }
+}

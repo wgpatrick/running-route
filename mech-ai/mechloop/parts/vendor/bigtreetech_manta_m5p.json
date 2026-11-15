@@ -1,0 +1,183 @@
+{
+ "retrieved": "2026-11-15",
+ "family": "BIGTREETECH MANTA M5P V1.0 controller (5 driver sockets, core-board host)",
+ "vendor": "Shenzhen Big Tree Technology Co., Ltd.",
+ "source_level": "vendor manual and SIZE drawing; pins from Klipper's example configuration for this board",
+ "source_url": "https://github.com/bigtreetech/Manta-M5P",
+ "title": "BIGTREETECH MANTA M5P V1.0 User Manual (35 pages), SIZE-top drawing, 3D STEP",
+ "document_file": "vendor_cad/staging/BIGTREETECH MANTA M5P V1.0 User Manual.pdf",
+ "size_drawing_file": "vendor_cad/staging/BIGTREETECH MANTA M5P V1.0-SIZE-top.pdf",
+ "properties_file": "vendor_cad/staging/MANTA-M5P_properties.txt",
+ "pins_file": "third_party/klipper/config/generic-bigtreetech-manta-m5p.cfg",
+ "used_by_catalog": true,
+ "values": {
+  "mcu": {
+   "value": "STM32G0B1RET6",
+   "source": "manual p.5"
+  },
+  "input_v": {
+   "value": [
+    12.0,
+    24.0
+   ],
+   "source": "manual p.6: VIN = DC 12 V or DC 24 V"
+  },
+  "logic_v": {
+   "value": 3.3,
+   "source": "manual p.6"
+  },
+  "bed_a": {
+   "continuous": 10.0,
+   "instantaneous": 11.0,
+   "source": "manual p.6"
+  },
+  "heater_a": {
+   "continuous": 5.5,
+   "instantaneous": 6.0,
+   "outputs": [
+    "HE0",
+    "HE1"
+   ],
+   "source": "manual p.6"
+  },
+  "fan_a": {
+   "continuous": 1.0,
+   "instantaneous": 1.1,
+   "all_fans_total_max": 2.5,
+   "ports": "FAN0, FAN1, Pi-FAN (switched, 5 / 12 / 24 V by jumper) and one always-on FAN",
+   "source": "manual p.6"
+  },
+  "driver_sockets": {
+   "count": 5,
+   "names": [
+    "Motor1",
+    "Motor2",
+    "Motor3 (two connectors, one driver)",
+    "Motor4",
+    "Motor5"
+   ],
+   "drivers_included": false,
+   "modes": "SPI, UART, STEP/DIR by jumpers",
+   "source": "manual p.6, p.7, p.10-12; collector's properties file"
+  },
+  "thermistors": {
+   "count": 3,
+   "note": "3 x 100K NTC, two selectable NTC / PT1000 by jumper",
+   "source": "manual p.7"
+  },
+  "probe_port": {
+   "note": "proximity switch port, NPN or PNP selectable, 24 / 12 / 5 V selectable by jumper",
+   "source": "manual p.5, p.18"
+  },
+  "host": {
+   "what": "a core board plugs onto the board's BTB headers: Raspberry Pi CM4 or BIGTREETECH CB1 (not included). The board then carries the host's USB 2.0 x 2, LAN, HDMI x 2, DSI, CSI and a 40-pin GPIO header, and a 'Pi-FAN' output",
+   "consequence": "no separate single-board computer, no UART lead and no 5 V feed to one: the Pi Zero 2 W of the SKR-based designs is replaced by a CM4 / CB1 on the controller",
+   "not_stated": [
+    "the core board's current draw and the 5 V converter's rating",
+    "mass of board or core board"
+   ],
+   "source": "manual p.5, p.7, p.13, p.20-26"
+  },
+  "board_mm": {
+   "drawing": [
+    137.39,
+    95.0
+   ],
+   "manual_rounds_to": [
+    137.5,
+    95.0
+   ],
+   "used": [
+    137.39,
+    95.0
+   ],
+   "source": "SIZE-top drawing (collector's properties file); manual p.8"
+  },
+  "hole_pattern_mm": {
+   "value": [
+    128.39,
+    86.0
+   ],
+   "hole_dia": null,
+   "source": "SIZE-top drawing (collector's properties file); hole diameter not transcribed"
+  },
+  "assembly_bbox_mm": {
+   "value": [
+    137.394,
+    98.27,
+    20.323
+   ],
+   "source": "collector's import of the vendor STEP (3,839 solids), connector overhang included; the 134.7 MB STEP was not loaded here"
+  },
+  "mass": {
+   "value": null,
+   "status": "not stated"
+  }
+ },
+ "pins": {
+  "_source": "Klipper generic-bigtreetech-manta-m5p.cfg (third_party/klipper/config). The manual's pinout is an image and was not transcribed",
+  "M1": {
+   "step": "PC8",
+   "dir": "!PC9",
+   "enable": "PA15",
+   "uart": "PD9",
+   "diag": "PD3"
+  },
+  "M2": {
+   "step": "PA10",
+   "dir": "!PA14",
+   "enable": "PA13",
+   "uart": "PD8",
+   "diag": "PD2"
+  },
+  "M3": {
+   "step": "PC6",
+   "dir": "PC7",
+   "enable": "PA9",
+   "uart": "PB10",
+   "diag": "PC3"
+  },
+  "M4": {
+   "step": "PB12",
+   "dir": "!PB11",
+   "enable": "PA8",
+   "uart": "PB2",
+   "diag": "PC2"
+  },
+  "M5": {
+   "step": "PB0",
+   "dir": "PB1",
+   "enable": "PC4",
+   "uart": "PA6",
+   "diag": null
+  },
+  "HB": "PA5",
+  "HE0": "PC5",
+  "HE1": "PA7",
+  "THB": "PA0",
+  "TH0": "PA1",
+  "TH1": "PA2",
+  "FAN0": "PA4",
+  "FAN1": "PA3",
+  "MIN1": "PD3",
+  "MIN2": "PD2",
+  "MIN3": "PC3",
+  "MIN4": "PC2",
+  "PROBE": "PC15",
+  "BLTOUCH_SENSOR": "PC13",
+  "note": "each driver has its own UART pin (no shared bus, no uart_address). DIAG shares the MINx endstop pin and needs its jumper (manual p.12)",
+  "dir_note": "direction pins as in Klipper's example ('!' = inverted); confirm each on the machine"
+ },
+ "driver_modules": {
+  "TMC2209": {
+   "module": "BIGTREETECH TMC2209 V1.x stick",
+   "continuous_a_rms": 2.0,
+   "peak_a": 2.8,
+   "motor_v_max": 28.0,
+   "file": "mechloop/parts/vendor/trinamic_tmc2209.json",
+   "note": "module manual figures; usable current depends on cooling. Not for the board's separate 24-56 V motor input"
+  }
+ },
+ "driver_allocation_note": "five sockets: X, Y, extruder and TWO independent Z drivers; or X, Y and three Z with no socket left for an extruder. Motor3's second connector is in parallel on the same driver",
+ "licence": "no licence declared in the repository"
+}

@@ -818,26 +818,32 @@ def bed_support(design: Design, r: VerifierResult, with_fea: bool = True) -> dic
             # count: each block in turn is moved sideways by the running parallelism (both directions across the
             # rail) and, because a block follows its rail's slope over its own ball track, turned by
             # parallelism / track length (both axes across the rail). The bed's height change at the print corners
-            # is read off; the worst single disturbance is reported.
-            worst_lv, worst_what = 0.0, None
+            # is read off, the worst disturbance of each block taken, and the blocks' effects added (all wander at once).
+            worst_lv, worst_what, total_lv = 0.0, None, 0.0
             lat = [v_ for v_ in np.eye(3) if abs(v_ @ a) < 0.5]
             for s_ in model["supports"]:
                 if s_["kind"] != "guide":
                     continue
                 Jb = np.hstack([np.eye(3), -_skew(s_["r"])])
+                blk_worst, blk_what = 0.0, None
                 for v_ in lat:
-                    for kind_, wr in (("moved sideways", Jb.T @ (s_["k"] @ (v_ * run))),
+                    for kind_, wr in (("moved sideways", Jb.T @ (s_["k"] @ (v_ * run / 2.0))),      # the figure is between blocks: +/- half each
                                       ("turned with its rail", np.concatenate([np.zeros(3), s_["kappa"] @ (v_ * run / max(s_.get("track_mm", 30.0), 1.0))]))):
                         xx = np.linalg.lstsq(model["K"], wr, rcond=None)[0]
                         dz = max(abs(float((xx[:3] + np.cross(xx[3:], c_ - model["O"])) @ up)) for c_ in corners)
-                        if dz > worst_lv:
-                            worst_lv, worst_what = dz, f"{s_['name']} {kind_}"
+                        if dz > blk_worst:
+                            blk_worst, blk_what = dz, f"{s_['name']} {kind_}"
+                # every block wanders at once and in the unfavourable sense: the blocks' worst effects add
+                total_lv += blk_worst
+                if blk_worst > worst_lv:
+                    worst_lv, worst_what = blk_worst, blk_what
             lvl.update({"rail_running_parallelism_mm": run, "rail_class": f"{RAIL_CLASS_ASSUMED} (ASSUMED: the design does not state the accuracy class)",
                         "source": rp["ref"], "block_spacing_along_rail_mm": round(span, 1), "furthest_print_corner_from_guides_mm": round(reach, 1),
-                        "from_rail_running_accuracy_mm": round(worst_lv, 4), "worst_disturbance": worst_what,
+                        "from_rail_running_accuracy_mm": round(total_lv, 4), "worst_disturbance": worst_what,
+                        "largest_single_block_effect_mm": round(worst_lv, 4),
                         "guides_alone_formula_mm": round(run / base * reach, 4),
-                        "how": "each guide block in turn wanders by the running parallelism (sideways, and turned by parallelism / "
-                               "ball-track length); the bed's height change at the print corners on ALL its supports (guide blocks and "
+                        "how": "each guide block wanders by the running parallelism (sideways, and turned by parallelism / "
+                               "ball-track length; the worst of these per block, the blocks' effects added); the bed's height change at the print corners on ALL its supports (guide blocks and "
                                "lead-screw nuts, a nut holding along its screw only). guides_alone_formula_mm is the earlier estimate "
                                "(slope over the block spacing carried to the far corner), right when nothing but the guides holds the tilt"})
         else:
@@ -851,7 +857,7 @@ def bed_support(design: Design, r: VerifierResult, with_fea: bool = True) -> dic
         r.add("warning", "bed_level_changes_over_travel",
               f"Joint {j.name}: the rails' running accuracy ({lvl['rail_running_parallelism_mm'] * 1e3:.0f} um, class "
               f"{RAIL_CLASS_ASSUMED} assumed) changes the bed's level by up to {lvl['from_rail_running_accuracy_mm']:.3f} mm at a print "
-              f"corner over the travel (limit half a layer): worst is {lvl['worst_disturbance']}, on {len(lay['blocks'])} guide block(s) "
+              f"corner over the travel (limit half a layer): the largest single effect is {lvl['worst_disturbance']}, on {len(lay['blocks'])} guide block(s) "
               f"with {lvl['block_spacing_along_rail_mm']:g} mm of spacing along the rail and {n_s} lead-screw nut(s), which hold along "
               f"their screws only; the far print corner is {lvl['furthest_print_corner_from_guides_mm']:g} mm from the guides.", joint=j.name,
               hint="Space the blocks further apart along the rail, or carry the bed on three screws so that the screws set its plane.")

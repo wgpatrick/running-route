@@ -1,0 +1,24 @@
+sku,kind,size,length,in_model,bom_only,total,order,hex_key,mcmaster,mcmaster_status
+TNUT-2020-M3,T-nut 2020,M3,,0,27,27,30,,,
+TNUT-2020-M5,T-nut 2020,M5,,0,96,96,106,,,
+SHCS-M2.5x12,cap screw ISO 4762,M2.5,12,2,0,2,3,2,91290A008,confirmed by the delivered STEP file
+SHCS-M3x6,cap screw ISO 4762,M3,6,24,0,24,27,2.5,91290A111,confirmed by the delivered STEP file
+SHCS-M3x8,cap screw ISO 4762,M3,8,39,0,39,43,2.5,91290A400,confirmed by the delivered STEP file
+SHCS-M3x12,cap screw ISO 4762,M3,12,4,0,4,5,2.5,91290A500,confirmed by the delivered STEP file
+SHCS-M3x16,cap screw ISO 4762,M3,16,32,0,32,36,2.5,91290A120,confirmed by the delivered STEP file
+SHCS-M3x25,cap screw ISO 4762,M3,25,3,0,3,4,2.5,,
+SHCS-M3x50,cap screw ISO 4762,M3,50,2,0,2,3,2.5,,
+SHCS-M4x6,cap screw ISO 4762,M4,6,4,0,4,5,3,91290A139,confirmed by the delivered STEP file
+SHCS-M5x8,cap screw ISO 4762,M5,8,35,52,87,96,4,91290A222,confirmed by the delivered STEP file
+SHCS-M5x10,cap screw ISO 4762,M5,10,1,0,1,2,4,91290A224,confirmed by the delivered STEP file
+SHCS-M5x12,cap screw ISO 4762,M5,12,4,0,4,5,4,,
+SHCS-M5x16,cap screw ISO 4762,M5,16,14,0,14,16,4,,
+SHCS-M5x25,cap screw ISO 4762,M5,25,1,0,1,2,4,,
+SHCS-M5x30,cap screw ISO 4762,M5,30,3,0,3,4,4,91290A194,confirmed by the delivered STEP file
+SHCS-M5x90,cap screw ISO 4762,M5,90,4,0,4,5,4,,
+NUT-M5-DIN934,hex nut DIN 934,M5,,1,0,1,2,,90591A260,confirmed by the delivered STEP file
+NUT-M2.5,hex nut ISO 4032,M2.5,,2,0,2,3,,90591A270,confirmed by the delivered STEP file
+NUT-M3,hex nut ISO 4032,M3,,36,0,36,40,,90591A250,confirmed by the delivered STEP file
+NUT-M5,hex nut ISO 4032,M5,,21,0,21,24,,90591A260,"that McMaster number is the DIN 934 nut, 4 mm high, not this ISO 4032 nut (4.7 mm): buy ISO 4032 nuts, or declare hex_nut('M5', 'din934') / add_nut(..., standard='din934')"
+NYLOC-M3,nyloc nut,M3,,0,3,3,4,,,
+WASHER-M5-STAR,star washer,M5,,0,1,1,2,,,

@@ -25,7 +25,7 @@
   "what_it_switches": "the live conductor only, between LIN and LOT (one relay, single pole as drawn). The neutral terminal feeds the module's own AC-DC converter; neutral to the load is not switched",
   "own_supply": "from the mains through the on-board 5 V / 3 W AC-DC module; it needs both LIN and N connected",
   "contact_rating": null,
-  "contact_rating_note": "not stated anywhere in the manual; no relay part number is legible",
+  "contact_rating_note": "superseded by 'contact_rating' (component marking) on 2026-11-15",
   "low_voltage_connectors": {
    "5V_IN / GND": "short-circuit detection of the motherboard's 5 V (enabled by a jumper cap)",
    "S / G (first)": "print-finished shutdown signal (to the board's PS-ON pin)",
@@ -66,5 +66,18 @@
   ]
  },
  "used_by_catalog": true,
- "_label": "added 2026-11-15 (batch 4). Applied 2026-11-15: relay_btt_v12() has the N terminal and requires it to be wired (values copied into the part's sources; the file itself is cited, not parsed)"
+ "_label": "added 2026-11-15 (batch 4). Applied 2026-11-15: relay_btt_v12() has the N terminal and requires it to be wired (values copied into the part's sources; the file itself is cited, not parsed)",
+ "contact_rating": {
+  "added": "2026-11-15 (batch 6)",
+  "relay": "SONGLE SRD-05VDC-SL-C",
+  "marking": {
+   "250_vac_a": 10,
+   "125_vac_a": 10,
+   "30_vdc_a": 10,
+   "28_vdc_a": 10
+  },
+  "source": "casing markings on the relay in BIGTREETECH's own hardware photo (vendor_cad/staging/Relay_V1.2_official_photo.jpg; text note BTT_Relay_V1.2_contact_rating.txt); checked by eye by the collector",
+  "caveat": "a COMPONENT marking for the photographed revision, not a continuous rating of the board, its terminals or tracks; the manual publishes no board rating. It is a resistive-load figure: not a rating for a capacitive supply's inrush (LRS-350: 60 A) or an inductive load",
+  "used_as": "relay_btt_v12() ratings contact_a = 10 A; the electrical verifier compares the switched mains current (times its fuse factor) with it (relay_contact_too_small)"
+ }
 }
