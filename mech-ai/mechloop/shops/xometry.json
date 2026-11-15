@@ -1,0 +1,440 @@
+{
+ "name": "xometry",
+ "accessed": "2026-11-15",
+ "strict": false,
+ "processes": [
+  "machined"
+ ],
+ "source": "xo-standards",
+ "description": "Xometry CNC machining (a network of shops): general tolerance +/-0.005 in on metals, edges broken by default, anything tighter by drawing. Stands in for an equivalent online CNC bureau; every figure carries the page it was read on.",
+ "how_read": "plain page fetches on 2026-11-15, no account, no upload, no quote. The CNC design guide is a PDF behind a contact form and was NOT read.",
+ "sigma_rule": "a published +/- tolerance is taken as two standard deviations, the convention of mechloop/tolerance/process.py",
+ "sources": {
+  "xo-cnc": {
+   "url": "https://www.xometry.com/capabilities/cnc-machining-service/",
+   "title": "Custom Online CNC Machining Services",
+   "accessed": "2026-11-15"
+  },
+  "xo-milling": {
+   "url": "https://www.xometry.com/capabilities/cnc-machining-service/cnc-milling-service/",
+   "title": "CNC Milling Service",
+   "accessed": "2026-11-15"
+  },
+  "xo-standards": {
+   "url": "https://www.xometry.com/manufacturing-standards/",
+   "title": "Our Manufacturing Standards",
+   "accessed": "2026-11-15"
+  },
+  "xo-aluminum": {
+   "url": "https://www.xometry.com/capabilities/cnc-machining-service/cnc-aluminum/",
+   "title": "CNC Machining Aluminum",
+   "accessed": "2026-11-15"
+  },
+  "xo-inspection": {
+   "url": "https://www.xometry.com/resources/industry-design-tips/inspection-options/",
+   "title": "Inspection Options (updated 2026-08-26)",
+   "accessed": "2026-11-15"
+  },
+  "xo-thin-walls": {
+   "url": "https://www.xometry.com/resources/machining/cnc-machining-thin-walls/",
+   "title": "CNC Machining: How to Avoid High Costs on Thin Walls (updated 2025-09-11)",
+   "accessed": "2026-11-15"
+  },
+  "xo-corner-radii": {
+   "url": "https://www.xometry.com/resources/machining/cnc-machining-optimizing-internal-corner-radii/",
+   "title": "Optimizing Internal Corner Radii (updated 2024-08-13)",
+   "accessed": "2026-11-15"
+  },
+  "xo-cost": {
+   "url": "https://www.xometry.com/resources/machining/cnc-machining-cost-reduction/",
+   "title": "How to Reduce CNC Machining Costs (updated 2023-02-21)",
+   "accessed": "2026-11-15"
+  },
+  "xo-guide": {
+   "url": "https://www.xometry.com/resources/design-guides/design-guide-cnc-machining/",
+   "title": "Design Guide: CNC Machining (download form; NOT read)",
+   "accessed": "2026-11-15"
+  },
+  "recalled": {
+   "url": "",
+   "title": "recalled, no document fetched",
+   "accessed": "2026-11-15"
+  }
+ },
+ "materials": {
+  "al6061": {
+   "listed_as": "Aluminum 6061",
+   "grade": "6061-T6 (properties 'based upon 1/2\" Aluminum 6061-T6')",
+   "page": "xo-aluminum",
+   "properties_published": {
+    "yield_MPa": 276,
+    "fatigue_MPa": 96.5,
+    "elongation_pct": 17,
+    "hardness_HB": 95,
+    "density_g_cm3": 2.7
+   }
+  },
+  "al_mic6": {
+   "listed_as": "Aluminum MIC-6",
+   "grade": "MIC-6 cast plate",
+   "page": "xo-aluminum",
+   "properties_published": {
+    "yield_MPa": 105,
+    "elongation_pct": 3,
+    "hardness_HB": 65,
+    "density_g_cm3": 2.7
+   },
+   "notes": [
+    "cast specifically for applications that require highly accurate components like assembly jigs, test structures, and fixture plates ... its crystal structure has no internal stresses"
+   ]
+  },
+  "al5052": {
+   "listed_as": "Aluminum 5052",
+   "grade": "5052",
+   "page": "xo-cnc",
+   "properties_published": {}
+  },
+  "steel": {
+   "listed_as": "Steel 1018",
+   "grade": "1018 (also 1215, 4130, 4140, 4340)",
+   "page": "xo-cnc",
+   "properties_published": {}
+  },
+  "stainless304": {
+   "listed_as": "Stainless Steel 18-8",
+   "grade": "18-8 (304 family); also 303, 316/316L, 17-4",
+   "page": "xo-cnc",
+   "properties_published": {}
+  },
+  "brass": {
+   "listed_as": "Copper 360",
+   "grade": "360 brass (also 260)",
+   "page": "xo-cnc",
+   "properties_published": {}
+  },
+  "delrin": {
+   "listed_as": "Delrin (Acetal), Delrin 150, Delrin 100",
+   "grade": "acetal",
+   "page": "xo-cnc",
+   "properties_published": {}
+  }
+ },
+ "materials_not_listed": {
+  "al_atp5": "ATP-5 is not in the list; 'choose \"Custom\" under the material drop-down ... submit your quote for manual review'"
+ },
+ "plate_stock": {
+  "al_mic6": {
+   "mm": [
+    6.35,
+    9.525,
+    12.7,
+    15.875,
+    19.05,
+    25.4
+   ],
+   "source": "recalled",
+   "note": "RECALLED, not published by Xometry: MIC-6 is made in inch thicknesses (1/4, 3/8, 1/2, 5/8, 3/4, 1 in). SendCutSend's list (.250, .375, .500 in) agrees for the first three. An 8 mm cast plate is not MIC-6 stock."
+  }
+ },
+ "rules": {
+  "general_tolerance_mm": {
+   "value": 0.127,
+   "unit": "mm (+/-)",
+   "verbatim": "For features of size (Length, width, height, diameter) and location (position, concentricity, symmetry) +/- .005” (metals) or +/- .010 (plastics and composites) following ISO 2768 unless otherwise specified.",
+   "source": "xo-standards",
+   "checked_by": "tolerance.machined"
+  },
+  "form_tolerance_mm": {
+   "value": [
+    [
+     304.8,
+     0.127
+    ],
+    [
+     609.6,
+     0.254
+    ],
+    [
+     914.4,
+     0.406
+    ],
+    [
+     1524.0,
+     0.787
+    ],
+    [
+     null,
+     1.6
+    ]
+   ],
+   "unit": "mm over part length [up to mm, tolerance]",
+   "verbatim": "Parallelism, Perpendicularity, Cylindricity, Circularity, Concentricity, Flatness, and Straightness over Part Length: 0 to 12\" .005\" 0.5° ; 12\" to 24\" .010\" 0.5° ; 24\" - 36\" 1/64\" (.016\") 1° ; 36\" - 60\" 1/32\" (.031\") 1° ; Over 60\" 1/16\" (.063\") 1°",
+   "source": "xo-standards",
+   "checked_by": "tolerance.machined (flat)"
+  },
+  "tight_tolerance": {
+   "value": 0.0254,
+   "unit": "mm (+/-)",
+   "verbatim": "Xometry can manufacture and inspect to tight tolerances, including sub +/- 0.001\" tolerances, per your drawing specifications and GD&T callouts.",
+   "source": "xo-cnc",
+   "checked_by": null,
+   "note": "needs a drawing; priced per quote"
+  },
+  "edge_break": {
+   "value": null,
+   "unit": "",
+   "verbatim": "Sharp edges will be broken and deburred by default. Critical edges that must be left sharp should be noted and specified on a print.",
+   "source": "xo-standards",
+   "checked_by": "shop_notes.edge_break",
+   "note": "No radius or chamfer size is published. The 'Standard (As-Milled)' finish text on the CNC page reads differently: 'Machined parts are left with visible tool marks and potentially sharp edges and burrs, which can be removed upon request.' State the edge break on the drawing."
+  },
+  "workmanship_edges": {
+   "value": null,
+   "unit": "",
+   "verbatim": "All exposed edges will be free of burrs, sharp edges, and metal slivers.* *Parts made with Sheet Cutting are not deburred unless specified through a selected finish.",
+   "source": "xo-standards",
+   "checked_by": null
+  },
+  "surface_finish": {
+   "value": 3.2,
+   "unit": "um Ra (125 uin)",
+   "verbatim": "As machined surface finish is 125 Ra or better. Machine tool marks may leave a swirl-like pattern.",
+   "source": "xo-standards",
+   "checked_by": null
+  },
+  "min_feature_mm": {
+   "value": 0.5,
+   "unit": "mm",
+   "verbatim": "Minimum Feature Size | 0.020” (0.50 mm). This may vary depending on part geometry and chosen material.",
+   "source": "xo-cnc",
+   "severity": "error",
+   "checked_by": "shop_feature_below_minimum"
+  },
+  "max_part_milled_mm": {
+   "value": [
+    2032,
+    1219,
+    610
+   ],
+   "unit": "mm",
+   "verbatim": "Milled parts up to 80” x 48” x 24” (2,032 x 1,219 x 610 mm). Lathe parts up to 62” (1,575 mm) length and 32” (813 mm) diameter.",
+   "source": "xo-cnc",
+   "severity": "error",
+   "checked_by": "shop_part_too_big"
+  },
+  "max_part_by_axes_mm": {
+   "value": {
+    "3": 1524,
+    "4": 914,
+    "5": 660
+   },
+   "unit": "mm longest side",
+   "verbatim": "5 Axis Machining up to 26″ ; 4 Axis Machining up to 36″ ; 3 Axis Machining up to 60″ (general guidelines; larger goes to quote review)",
+   "source": "xo-cnc",
+   "severity": "warning",
+   "checked_by": "shop_part_too_big"
+  },
+  "wall_min_metal_mm": {
+   "value": 0.794,
+   "unit": "mm",
+   "verbatim": "As a general rule of thumb, CNC machined walls should have a minimum width of 1/32” (0.794mm).",
+   "source": "xo-thin-walls",
+   "severity": "warning",
+   "checked_by": "limits: cnc.wall_recommended_metal_mm"
+  },
+  "corner_depth_ratio": {
+   "value": 3.0,
+   "unit": "depth / tool diameter",
+   "verbatim": "use an inside corner radius that has a L:D ratio (length to diameter) of 3:1 or less",
+   "source": "xo-cost",
+   "severity": "warning",
+   "checked_by": "limits: cnc.corner_depth_ratio"
+  },
+  "corner_radius_margin_mm": {
+   "value": [
+    0.5,
+    1.27
+   ],
+   "unit": "mm",
+   "verbatim": "we recommend modeling your design with at least 0.02″ – 0.05″ added to internal corner radii",
+   "source": "xo-corner-radii",
+   "checked_by": null
+  },
+  "thread_depth_ratio": {
+   "value": 3.0,
+   "unit": "x diameter",
+   "verbatim": "you don't need to thread a hole to more than 3X the hole's diameter (and keep it shorter, if possible)",
+   "source": "xo-cost",
+   "severity": "warning",
+   "checked_by": "limits: cnc.thread_depth_ratio"
+  },
+  "thread_sizes": {
+   "value": null,
+   "unit": "",
+   "verbatim": "Xometry can accommodate any standard thread size. We can also machine custom threads; these will require a manual quote review. ... Anything smaller than a 2-56 requires hand tapping",
+   "source": "xo-cnc",
+   "checked_by": null
+  },
+  "thread_callout": {
+   "value": null,
+   "unit": "",
+   "verbatim": "Tapped holes not explicitly called out as Features on the quoted CAD model may be machined to the diameters specified in that model.",
+   "source": "xo-cnc",
+   "severity": "warning",
+   "checked_by": "shop_thread_callout"
+  },
+  "hole_depth": {
+   "value": null,
+   "unit": "",
+   "verbatim": "NOT READ on a fetched page: the hole depth-to-diameter figure is in the gated design guide. mechloop's general rule (Hubs: 10 x typical) stays in force.",
+   "source": "xo-guide",
+   "checked_by": null
+  },
+  "standard_sizes": {
+   "value": null,
+   "unit": "",
+   "verbatim": "conventional fractions of an inch, like 1/8”, 1/4”, or whole numbers of millimeters will be “standard.” Avoid using measurements like 0.492” or 3.841 mm.",
+   "source": "xo-cost",
+   "checked_by": null
+  },
+  "inspection_standard": {
+   "value": null,
+   "unit": "",
+   "verbatim": "Standard Inspection: ... If no dimensional print is provided with a part, QC measures to Xometry's Manufacturing Standards on dimensions they deem critical, such as overall size, holes, and depths. If a dimensional print is provided, QC will verify up to 20 dimensions they deem critical. Documentation will not be shipped with your parts.",
+   "source": "xo-inspection",
+   "checked_by": null
+  },
+  "inspection_options": {
+   "value": null,
+   "unit": "",
+   "verbatim": "Formal Inspection with Dimensional Report; CMM Inspection with Dimensional Report; First Article Inspection Report (FAIR AS9102); Source Inspection; Custom Inspection. A customer-supplied dimensional print is required for each.",
+   "source": "xo-inspection",
+   "checked_by": null
+  },
+  "finishes": {
+   "value": null,
+   "unit": "",
+   "verbatim": "Standard (As-Milled); Bead Blast; Tumbled (parts over 8” may require a manual review); Anodized (Type II or Type III); Chem Film (provides corrosion resistance and good conductivity properties ... adds very little thickness, about 0.00001”-0.00004”); Powder Coat; Zinc Plating",
+   "source": "xo-cnc",
+   "checked_by": null
+  },
+  "no_finish_unless_ordered": {
+   "value": null,
+   "unit": "",
+   "verbatim": "No surface treatments (e.g. anodize, bead blast, iridite, powder coat, etc.) will be applied unless you have paid for them and we have specifically acknowledged them.",
+   "source": "xo-cnc",
+   "checked_by": null
+  },
+  "large_part_flatness": {
+   "value": null,
+   "unit": "",
+   "verbatim": "+.005”/-.005” local tolerances across most geometries in metals ... Will vary for large parts, specifically when holding flatness over large parts after heat treatment.",
+   "source": "xo-cnc",
+   "checked_by": null
+  }
+ },
+ "limits": {
+  "cnc.wall_recommended_metal_mm": {
+   "value": 0.794,
+   "rule": "wall_min_metal_mm"
+  },
+  "cnc.corner_depth_ratio": {
+   "value": 3.0,
+   "rule": "corner_depth_ratio"
+  },
+  "cnc.thread_depth_ratio": {
+   "value": 3.0,
+   "rule": "thread_depth_ratio"
+  },
+  "cnc.part_max_mm": {
+   "value": 1524.0,
+   "rule": "max_part_by_axes_mm"
+  }
+ },
+ "tolerance": {
+  "machined": [
+   {
+    "up_to_mm": 304.8,
+    "pos": 0.0635,
+    "hole_sd": 0.0635,
+    "flat": 0.0635,
+    "basis": {
+     "pos": "half of +/-0.127 mm (features of location, no drawing)",
+     "hole_sd": "half of +/-0.127 mm (features of size, no drawing)",
+     "flat": "half of .005 in (0.127 mm) form tolerance, part length 0 to 12 in",
+     "pattern": "class value kept: no figure for features cut in one set-up is published",
+     "scale": "class value kept",
+     "hole_bias": "class value kept"
+    },
+    "source": "xo-standards"
+   },
+   {
+    "up_to_mm": 609.6,
+    "pos": 0.0635,
+    "hole_sd": 0.0635,
+    "flat": 0.127,
+    "basis": {
+     "flat": "half of .010 in (0.254 mm) form tolerance, part length 12 to 24 in",
+     "pos": "as above",
+     "hole_sd": "as above",
+     "pattern": "class value kept",
+     "scale": "class value kept",
+     "hole_bias": "class value kept"
+    },
+    "source": "xo-standards"
+   },
+   {
+    "up_to_mm": null,
+    "pos": 0.0635,
+    "hole_sd": 0.0635,
+    "flat": 0.203,
+    "basis": {
+     "flat": "half of 1/64 in (0.406 mm), part length 24 to 36 in; longer parts are looser still",
+     "pos": "as above",
+     "hole_sd": "as above",
+     "pattern": "class value kept",
+     "scale": "class value kept",
+     "hole_bias": "class value kept"
+    },
+    "source": "xo-standards"
+   }
+  ]
+ },
+ "material_rules": [
+  {
+   "id": "material_listed",
+   "kind": "material",
+   "severity": "warning",
+   "text": "a material not in the published list goes to manual quote review ('Custom')",
+   "checked_by": "shop_material_not_listed"
+  },
+  {
+   "id": "cast_plate_stock",
+   "kind": "stock",
+   "severity": "warning",
+   "text": "cast tooling plate used for flatness must be a thickness the plate is made in, or both faces are machined and the stock's flatness is lost (thickness list recalled, not published)",
+   "checked_by": "non_stock_thickness"
+  },
+  {
+   "id": "threads_called_out",
+   "kind": "advice",
+   "severity": "warning",
+   "text": "every tapped hole must be called out as a thread feature in the quote or on a drawing",
+   "checked_by": "shop_thread_callout"
+  },
+  {
+   "id": "tight_needs_drawing",
+   "kind": "advice",
+   "severity": "info",
+   "text": "anything tighter than +/-0.127 mm, any flatness under 0.127 mm, any edge that must stay sharp or have a stated break: on a drawing",
+   "checked_by": null
+  }
+ ],
+ "not_published": [
+  "the size of the default edge break",
+  "stock plate thicknesses (the network sources material; MIC-6 thicknesses here are recalled)",
+  "hole depth-to-diameter, pocket depth and minimum hole diameter rules (in the gated design guide; mechloop's general rules stay in force)",
+  "which tolerance class of ISO 2768 (the page says 'in accordance with ISO 2768' beside +/-0.005 in; it names no class)",
+  "a positional tolerance between features cut in one set-up"
+ ]
+}

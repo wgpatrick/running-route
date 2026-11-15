@@ -537,8 +537,56 @@ def _asm_mesh(design: Design, names, selections: dict, size: float | None, workd
             "sel_area": sel_area, "part_faces": part_faces, "ifaces": ifaces, "size": size, "cad_counts": counts}
 
 
+def _slide_interfaces(design: Design, mesh: dict, names) -> tuple:
+    """Interfaces declared as sliding (Design.slides_on: a magnet-held sheet, a declared sliding contact): the second
+    part gets its own nodes there, tied to the first part's in the direction normal to the face only. In the plane
+    the pair is located at one point (the node nearest the middle of the face, both directions) and kept from turning
+    by one more tie (the node furthest from it, across the line between them); everywhere else it slides freely.
+    Frictionless, and the normal tie holds both ways (the magnet holds the sheet down).
+    Returns (xyz, part_tets, equations [(dependent node, dof 1..3, independent node)], info, not_done)."""
+    xyz = mesh["xyz"].copy()
+    part_tets = [t.copy() for t in mesh["part_tets"]]
+    eqs, info, not_done, new_nodes = [], [], [], []
+    for i, j, nodes in mesh["ifaces"]:
+        a, b = names[i], names[j]
+        if not design.slides_on(a, b) or len(nodes) < 3:
+            continue
+        P = xyz[nodes]
+        c = P.mean(axis=0)
+        _, sv, vt = np.linalg.svd(P - c)
+        nrm = vt[2]
+        k = int(np.argmax(np.abs(nrm)))
+        if abs(nrm[k]) < 0.999 or sv[2] > 1e-3 * max(sv[0], 1e-9):
+            not_done.append(f"{a} / {b}: the contact face is not one plane square to a world axis; left bonded")
+            continue
+        remap = {}
+        for n in nodes:
+            remap[int(n)] = len(xyz) + len(new_nodes)
+            new_nodes.append(xyz[n])
+        flat = part_tets[j].reshape(-1)
+        mask = np.isin(flat, nodes)
+        flat[mask] = [remap[int(v)] for v in flat[mask]]
+        part_tets[j] = flat.reshape(-1, 10)
+        inpl = [d_ for d_ in range(3) if d_ != k]
+        dist = np.linalg.norm(P - c, axis=1)
+        n0 = int(nodes[int(dist.argmin())])
+        n1 = int(nodes[int(np.linalg.norm(P - xyz[n0], axis=1).argmax())])
+        for n in nodes:
+            eqs.append((remap[int(n)], k + 1, int(n)))
+        for d_ in inpl:
+            eqs.append((remap[n0], d_ + 1, n0))
+        dv = xyz[n1] - xyz[n0]
+        across = inpl[0] if abs(dv[inpl[1]]) >= abs(dv[inpl[0]]) else inpl[1]      # the in-plane direction across the line n0 -> n1
+        eqs.append((remap[n1], across + 1, n1))
+        info.append({"joint": f"{a} / {b}", "kind": str(design.joins.get(frozenset((a, b)))), "normal": "xyz"[k],
+                     "nodes": int(len(nodes)), "located_in_plane_at": [round(float(v), 1) for v in xyz[n0]]})
+    if new_nodes:
+        xyz = np.vstack([xyz, np.array(new_nodes)])
+    return xyz, part_tets, eqs, info, not_done
+
+
 def _asm_solve(workdir: Path, job: str, xyz, part_tets, comps, fixed_nodes, nodal: dict, traction, force, label, r,
-               temps: dict | None = None, bc: list | None = None):
+               temps: dict | None = None, bc: list | None = None, equations: list | None = None):
     """Write and run one linear static step. nodal: {node: weight}, load = traction * weight.
     temps: {part index: temperature rise in K} adds thermal expansion.
     bc: [(nodes, dof 1..3), ...] holds each set in one direction only (a guide block across its rail, a nut seat along
@@ -571,6 +619,10 @@ def _asm_solve(workdir: Path, job: str, xyz, part_tets, comps, fixed_nodes, noda
             if temps is not None:
                 f.write(f"*EXPANSION, ZERO=0.\n{ALPHA.get(c.material, 20e-6)}\n")
             f.write(f"*SOLID SECTION, ELSET=P{i}, MATERIAL=M{i}\n")
+        if equations:        # dependent node first; it must not also be held by a boundary condition in that direction
+            f.write("*EQUATION\n")
+            for dep, dof, ind in equations:
+                f.write(f"2\n{int(dep) + 1},{int(dof)},1.0,{int(ind) + 1},{int(dof)},-1.0\n")
         if temps is not None:
             f.write("*INITIAL CONDITIONS, TYPE=TEMPERATURE\nNALL,0.\n")
         if bc:
@@ -870,14 +922,22 @@ def run_thermal(design: Design, tc, r: VerifierResult) -> dict:
             r.add("error", "fea_setup", f"{tc.name}: no fixed faces matched ({mesh['cad_counts']}).", case=tc.name)
             return {}
         temps = {i: float(tc.temps.get(n, tc.temps.get("*", 0.0))) for i, n in enumerate(names)}
+        xyz, part_tets, eqs, slid, not_slid = _slide_interfaces(design, mesh, names)
+        for msg in not_slid:
+            r.add("warning", "sliding_contact_left_bonded", f"{tc.name}: {msg}. The result then contains a bimetal effect the real "
+                  f"joint does not have.", case=tc.name)
         res = _asm_solve(workdir, "thermal", xyz, part_tets, comps, np.unique(fixed_tris), {}, np.zeros(3), np.zeros(3),
-                         tc.name, None, temps=temps)
+                         tc.name, None, temps=temps, equations=eqs)
         if "error" in res:
             r.add("error", "fea_solver", f"{tc.name}: {res['error']}", case=tc.name)
             return {}
         U = res["U"]
         out = {"components": names, "nodes": len(xyz), "temperature_rise_k": {n: temps[i] for i, n in enumerate(names) if temps[i]},
-               "max_growth_mm": round(float(np.linalg.norm(U, axis=1).max()), 4), "joints": "bonded where parts touch"}
+               "max_growth_mm": round(float(np.linalg.norm(U, axis=1).max()), 4),
+               "joints": "bonded where parts touch" + ("; sliding contacts (normal load only, free in their plane, frictionless): "
+                                                       + ", ".join(f"{s_['joint']} ('{s_['kind']}')" for s_ in slid) if slid else "")}
+        if slid:
+            out["sliding_contacts"] = slid
         moved = {}
         for label, pt in (tc.probes or {}).items():
             dist = np.linalg.norm(xyz - np.array(pt), axis=1)

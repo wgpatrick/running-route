@@ -1,0 +1,7103 @@
+{
+ "name": "sendcutsend",
+ "accessed": "2026-11-15",
+ "strict": true,
+ "processes": [
+  "sheet"
+ ],
+ "source": "scs-minmax",
+ "description": "SendCutSend: laser-cut sheet and plate (router / waterjet for plastics and composites), with bending, tapping, countersinking, PEM hardware, deburring, tumbling, anodizing, powder coating and plating. Every figure carries the page it was read on and the page's own words.",
+ "how_read": "plain page fetches on 2026-11-15, no account, no upload, no quote. Per-thickness 'View specs' tables on the material pages (minimum hole, minimum bridge, tap hole-to-edge, countersink centre-to-edge, die width) are loaded by script from the ordering application and were NOT read.",
+ "sigma_rule": "a published +/- tolerance is taken as two standard deviations, the convention of mechloop/tolerance/process.py",
+ "sources": {
+  "scs-minmax": {
+   "url": "https://sendcutsend.com/materials/min-max/",
+   "title": "Material minimum and maximum sizes",
+   "accessed": "2026-11-15"
+  },
+  "scs-processing": {
+   "url": "https://sendcutsend.com/materials/processing-min-max/",
+   "title": "Processing minimum and maximum sizes",
+   "accessed": "2026-11-15"
+  },
+  "scs-sheet-cutting": {
+   "url": "https://sendcutsend.com/guidelines/sheet-cutting/",
+   "title": "Sheet Cutting Guidelines",
+   "accessed": "2026-11-15"
+  },
+  "scs-laser-service": {
+   "url": "https://sendcutsend.com/services/laser-cutting/",
+   "title": "Sheet cutting service page",
+   "accessed": "2026-11-15"
+  },
+  "scs-tolerances-blog": {
+   "url": "https://sendcutsend.com/blog/basic-tolerances-and-cut-feature-relationships/",
+   "title": "Basic Tolerances and Cut Feature Relationships (2025-01-30)",
+   "accessed": "2026-11-15"
+  },
+  "scs-hole-distance-blog": {
+   "url": "https://sendcutsend.com/blog/how-to-apply-hole-distance-specifications/",
+   "title": "How To Apply Hole Distance Specifications",
+   "accessed": "2026-11-15"
+  },
+  "scs-tapping": {
+   "url": "https://sendcutsend.com/services/tapping/",
+   "title": "Tapping service and guidelines",
+   "accessed": "2026-11-15"
+  },
+  "scs-countersinking": {
+   "url": "https://sendcutsend.com/services/countersinking/",
+   "title": "Countersinking service and guidelines",
+   "accessed": "2026-11-15"
+  },
+  "scs-bending": {
+   "url": "https://sendcutsend.com/services/cnc-bending/",
+   "title": "Bending service and guidelines",
+   "accessed": "2026-11-15"
+  },
+  "scs-deburring": {
+   "url": "https://sendcutsend.com/services/deburring-services/",
+   "title": "Deburring service and guidelines",
+   "accessed": "2026-11-15"
+  },
+  "scs-tumbling": {
+   "url": "https://sendcutsend.com/services/tumbling/",
+   "title": "Tumbling service and guidelines",
+   "accessed": "2026-11-15"
+  },
+  "scs-anodizing": {
+   "url": "https://sendcutsend.com/services/anodizing/",
+   "title": "Anodizing service and guidelines",
+   "accessed": "2026-11-15"
+  },
+  "scs-powder": {
+   "url": "https://sendcutsend.com/services/powder-coating/",
+   "title": "Powder coating service and guidelines",
+   "accessed": "2026-11-15"
+  },
+  "scs-plating": {
+   "url": "https://sendcutsend.com/services/plating/",
+   "title": "Plating service and guidelines",
+   "accessed": "2026-11-15"
+  },
+  "scs-hardware": {
+   "url": "https://sendcutsend.com/services/hardware/",
+   "title": "Hardware insertion service and guidelines",
+   "accessed": "2026-11-15"
+  },
+  "scs-hardware-catalog": {
+   "url": "https://sendcutsend.com/guidelines/hardware/catalog/",
+   "title": "Hardware catalog (PEM)",
+   "accessed": "2026-11-15"
+  },
+  "scs-edge-blog": {
+   "url": "https://sendcutsend.com/blog/edge-quality-and-surface-finish/",
+   "title": "A Guide to Edge Quality and Surface Finish",
+   "accessed": "2026-11-15"
+  },
+  "scs-warping": {
+   "url": "https://sendcutsend.com/faq/will-my-metal-parts-be-perfectly-flat/",
+   "title": "Warping in Laser Cutting Materials (2024-07-08)",
+   "accessed": "2026-11-15"
+  },
+  "scs-6061": {
+   "url": "https://sendcutsend.com/materials/6061-aluminum/",
+   "title": "6061 T6 Aluminum",
+   "accessed": "2026-11-15"
+  },
+  "scs-5052": {
+   "url": "https://sendcutsend.com/materials/5052-aluminum/",
+   "title": "5052 H32 Aluminum",
+   "accessed": "2026-11-15"
+  },
+  "scs-mild-steel": {
+   "url": "https://sendcutsend.com/materials/mild-steel/",
+   "title": "A36/1008 Mild Steel",
+   "accessed": "2026-11-15"
+  },
+  "scs-304": {
+   "url": "https://sendcutsend.com/materials/stainless-steel/",
+   "title": "304 Stainless Steel",
+   "accessed": "2026-11-15"
+  },
+  "scs-mic6": {
+   "url": "https://sendcutsend.com/materials/mic-6-cast-aluminum/",
+   "title": "MIC-6 Cast Aluminum Sheet",
+   "accessed": "2026-11-15"
+  },
+  "scs-delrin": {
+   "url": "https://sendcutsend.com/materials/delrin/",
+   "title": "Delrin 150",
+   "accessed": "2026-11-15"
+  },
+  "scs-cnc": {
+   "url": "https://sendcutsend.com/guidelines/cnc-machining/",
+   "title": "CNC machining guidelines (billet)",
+   "accessed": "2026-11-15"
+  }
+ },
+ "materials": {
+  "al6061": {
+   "listed_as": "6061 T6 Aluminum",
+   "grade": "6061-T6",
+   "page": "scs-6061",
+   "cut_tolerance_verbatim": "Laser cut, +/- .005\" tolerance",
+   "properties_published": {
+    "tensile_ultimate_psi": "~45,000 psi",
+    "yield_psi": "~40,000 psi",
+    "elongation": "12%",
+    "hardness": "Brinell ~95 HB",
+    "density": "0.0975 lb/in³"
+   },
+   "notes": [
+    "Thicker gauges (.190″–.500″) may show light dross that can be removed easily.",
+    "Design holes no smaller than material thickness. Keep holes and cutouts 1.5–2× material thickness away from edges to prevent warping or distortion. (best results, not a minimum)",
+    "Not in the bending table: SendCutSend does not bend 6061."
+   ],
+   "thicknesses": [
+    {
+     "t_mm": 1.016,
+     "t_in": 0.04,
+     "cut": {
+      "thickness_as_listed": ".040″ —- 1.02mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".040″ —- 1.02mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": null,
+     "countersink": null,
+     "deburr": null,
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".040″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       "N/A"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": null,
+     "tap": null,
+     "tumble": null
+    },
+    {
+     "t_mm": 1.6,
+     "t_in": 0.063,
+     "cut": {
+      "thickness_as_listed": ".063″ —- 1.6mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".063″ —- 1.6mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".063″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "countersink": null,
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       914.4,
+       3048.0
+      ],
+      "verbatim": [
+       ".063″",
+       "1″ x 3″",
+       "36″ x 120″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".063″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       "N/A"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".063″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 6.0,
+      "inch_min": "4-40",
+      "inch_max": "10-32",
+      "verbatim": [
+       ".063″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "10-32",
+       "M6 x 1.0"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": null
+    },
+    {
+     "t_mm": 2.032,
+     "t_in": 0.08,
+     "cut": {
+      "thickness_as_listed": ".080″ —- 2.03mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".080″ —- 2.03mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".080″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "countersink": null,
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       914.4,
+       3048.0
+      ],
+      "verbatim": [
+       ".080″",
+       "1″ x 3″",
+       "36″ x 120″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".080″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       "N/A"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".080″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 6.0,
+      "inch_min": "4-40",
+      "inch_max": "10-32",
+      "verbatim": [
+       ".080″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "10-32",
+       "M6 x 1.0"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": null
+    },
+    {
+     "t_mm": 2.54,
+     "t_in": 0.1,
+     "cut": {
+      "thickness_as_listed": ".100″ —- 2.54mm",
+      "max_instant_mm": [
+       762.0,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".100″ —- 2.54mm",
+       "56″ x 30″ —— 1422.4 x 762mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".100″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".100″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       "N/A"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".100″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 6.0,
+      "inch_min": "4-40",
+      "inch_max": "10-32",
+      "verbatim": [
+       ".100″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "10-32",
+       "M6 x 1.0"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": null
+    },
+    {
+     "t_mm": 3.175,
+     "t_in": 0.125,
+     "cut": {
+      "thickness_as_listed": ".125″ —- 3.18mm",
+      "max_instant_mm": [
+       1117.6,
+       1727.2
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".125″ —- 3.18mm",
+       "68″ x 44″ —— 1727.2 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".125″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "countersink": {
+      "min_part_mm": [
+       25.4,
+       101.6
+      ],
+      "max_part_mm": [
+       355.6,
+       1168.4
+      ],
+      "min_minor_mm": 2.51,
+      "max_major_mm": 11.99,
+      "verbatim": [
+       ".125″",
+       "1″ x 4″",
+       "14″ x 46″",
+       ".099″",
+       ".472″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       1016.0,
+       3048.0
+      ],
+      "verbatim": [
+       ".125″",
+       "1″ x 3″",
+       "40″ x 120″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".125″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       "N/A"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".125″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 10.0,
+      "inch_min": "4-40",
+      "inch_max": "3/8-24",
+      "verbatim": [
+       ".125″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "3/8-24",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".125″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 4.75,
+     "t_in": 0.187,
+     "cut": {
+      "thickness_as_listed": ".187″ —- 4.75mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       12.7,
+       12.7
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".187″ —- 4.75mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.5″ x 0.5″ —- 12.7 x 12.7mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".187″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "countersink": {
+      "min_part_mm": [
+       25.4,
+       101.6
+      ],
+      "max_part_mm": [
+       355.6,
+       1168.4
+      ],
+      "min_minor_mm": 2.51,
+      "max_major_mm": 13.49,
+      "verbatim": [
+       ".187″",
+       "1″ x 4″",
+       "14″ x 46″",
+       ".099″",
+       ".531″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       1016.0,
+       3048.0
+      ],
+      "verbatim": [
+       ".187″",
+       "1″ x 3″",
+       "40″ x 120″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".187″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       "N/A"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".187″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 3.0,
+      "metric_max": 10.0,
+      "inch_min": "4-40",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".187″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M3 x 0.5",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".187″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 6.35,
+     "t_in": 0.25,
+     "cut": {
+      "thickness_as_listed": ".250″ —- 6.35mm",
+      "max_instant_mm": [
+       1117.6,
+       1727.2
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       12.7,
+       19.05
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".250″ —- 6.35mm",
+       "68″ x 44″ —— 1727.2 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.5″ x 0.75″ —- 12.7 x 19.05mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".250″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "countersink": {
+      "min_part_mm": [
+       25.4,
+       101.6
+      ],
+      "max_part_mm": [
+       355.6,
+       1168.4
+      ],
+      "min_minor_mm": 2.51,
+      "max_major_mm": 13.49,
+      "verbatim": [
+       ".250″",
+       "1″ x 4″",
+       "14″ x 46″",
+       ".099″",
+       ".531″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       1016.0,
+       3048.0
+      ],
+      "verbatim": [
+       ".250″",
+       "1″ x 3″",
+       "40″ x 120″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".250″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       "N/A"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".250″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 3.0,
+      "metric_max": 10.0,
+      "inch_min": "4-40",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".250″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M3 x 0.5",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".250″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 7.95,
+     "t_in": 0.313,
+     "cut": {
+      "thickness_as_listed": ".313″ —- 7.95mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1193.8,
+       2413.0
+      ],
+      "min_mm": [
+       19.05,
+       25.4
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".313″ —- 7.95mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "95″ x 47″ —— 2413 x 1193.8mm",
+       "0.75″ x 1″ —- 19.05 x 25.4mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".313″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "countersink": {
+      "min_part_mm": [
+       25.4,
+       101.6
+      ],
+      "max_part_mm": [
+       355.6,
+       1168.4
+      ],
+      "min_minor_mm": 2.51,
+      "max_major_mm": 16.66,
+      "verbatim": [
+       ".313″",
+       "1″ x 4″",
+       "14″ x 46″",
+       ".099″",
+       ".656″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       1016.0,
+       2489.2
+      ],
+      "verbatim": [
+       ".313″",
+       "1″ x 3″",
+       "40″ x 98″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".313″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       "N/A"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".313″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 3.0,
+      "metric_max": 10.0,
+      "inch_min": "4-40",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".313″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M3 x 0.5",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".313″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 9.525,
+     "t_in": 0.375,
+     "cut": {
+      "thickness_as_listed": ".375″ —- 9.53mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       19.05,
+       25.4
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".375″ —- 9.53mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.75″ x 1″ —- 19.05 x 25.4mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".375″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "countersink": {
+      "min_part_mm": [
+       25.4,
+       101.6
+      ],
+      "max_part_mm": [
+       355.6,
+       1168.4
+      ],
+      "min_minor_mm": 3.3,
+      "max_major_mm": 16.66,
+      "verbatim": [
+       ".375″",
+       "1″ x 4″",
+       "14″ x 46″",
+       ".130″",
+       ".656″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       1016.0,
+       2082.8
+      ],
+      "verbatim": [
+       ".375″",
+       "1″ x 3″",
+       "40″ x 82″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".375″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       "N/A"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".375″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 5.0,
+      "metric_max": 10.0,
+      "inch_min": "8-32",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".375″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "8-32",
+       "M5 x 0.8",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".375″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 12.7,
+     "t_in": 0.5,
+     "cut": {
+      "thickness_as_listed": ".500″ —- 12.7mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       25.4,
+       25.4
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".500″ —- 12.7mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "1″ x 1″ —— 25.4 x 25.4mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".500″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "countersink": {
+      "min_part_mm": [
+       25.4,
+       101.6
+      ],
+      "max_part_mm": [
+       355.6,
+       1168.4
+      ],
+      "min_minor_mm": 4.9,
+      "max_major_mm": 16.66,
+      "verbatim": [
+       ".500″",
+       "1″ x 4″",
+       "14″ x 46″",
+       ".193″",
+       ".656″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       1016.0,
+       1549.4
+      ],
+      "verbatim": [
+       ".500″",
+       "1″ x 3″",
+       "40″ x 61″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".500″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       "N/A"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".500″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 5.0,
+      "metric_max": 10.0,
+      "inch_min": "10-32",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".500″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "10-32",
+       "M5 x 0.8",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".500″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 15.875,
+     "t_in": 0.625,
+     "cut": {
+      "thickness_as_listed": ".625″ —- 15.88 mm",
+      "max_instant_mm": [
+       1041.4,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1193.8,
+       1803.4
+      ],
+      "min_mm": [
+       76.2,
+       76.2
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".625″ —- 15.88 mm",
+       "56″ x 41″ —— 1422.4 x 1041.4mm",
+       "71″ x 47″ —— 1803.4 x 1193.8mm",
+       "3″ x 3″ —— 76.2 x 76.2mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": {
+      "min_part_mm": [
+       76.2,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".625″",
+       "3″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "countersink": {
+      "min_part_mm": [
+       76.2,
+       101.6
+      ],
+      "max_part_mm": [
+       355.6,
+       1168.4
+      ],
+      "min_minor_mm": 4.9,
+      "max_major_mm": 16.66,
+      "verbatim": [
+       ".625″",
+       "3″ x 4″",
+       "14″ x 46″",
+       ".193″",
+       ".656″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       76.2,
+       76.2
+      ],
+      "max_part_mm": [
+       1016.0,
+       1244.6
+      ],
+      "verbatim": [
+       ".625″",
+       "3″ x 3″",
+       "40″ x 49″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       76.2,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".625″",
+       "3″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       76.2,
+       76.2
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 8.0,
+      "metric_max": 10.0,
+      "inch_min": "5/16-18",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".625″",
+       "3″ x 3″",
+       "36″ x 46″",
+       "5/16-18",
+       "M8 x 1.25",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       76.2,
+       76.2
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".625″",
+       "3″ x 3″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 19.05,
+     "t_in": 0.75,
+     "cut": {
+      "thickness_as_listed": ".750″ —- 19.05 mm",
+      "max_instant_mm": [
+       1041.4,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1193.8,
+       1803.4
+      ],
+      "min_mm": [
+       76.2,
+       76.2
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".750″ —- 19.05 mm",
+       "56″ x 41″ —— 1422.4 x 1041.4mm",
+       "71″ x 47″ —— 1803.4 x 1193.8mm",
+       "3″ x 3″ —— 76.2 x 76.2mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": {
+      "min_part_mm": [
+       76.2,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".750″",
+       "3″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "countersink": {
+      "min_part_mm": [
+       76.2,
+       101.6
+      ],
+      "max_part_mm": [
+       355.6,
+       1168.4
+      ],
+      "min_minor_mm": 6.48,
+      "max_major_mm": 16.66,
+      "verbatim": [
+       ".750″",
+       "3″ x 4″",
+       "14″ x 46″",
+       ".255″",
+       ".656″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       76.2,
+       76.2
+      ],
+      "max_part_mm": [
+       1016.0,
+       1041.4
+      ],
+      "verbatim": [
+       ".750″",
+       "3″ x 3″",
+       "40″ x 41″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       76.2,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".750″",
+       "3″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       76.2,
+       76.2
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 8.0,
+      "metric_max": 16.0,
+      "inch_min": "3/8-16",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".750″",
+       "3″ x 3″",
+       "36″ x 46″",
+       "3/8-16",
+       "M8 x 1.25",
+       "1/2-20",
+       "M16 x 2.0"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       76.2,
+       76.2
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".750″",
+       "3″ x 3″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    }
+   ]
+  },
+  "al5052": {
+   "listed_as": "5052 H32 Aluminum",
+   "grade": "5052-H32",
+   "page": "scs-5052",
+   "cut_tolerance_verbatim": "Laser cut, +/- .005\" tolerance",
+   "properties_published": {
+    "tensile_ultimate_psi": "~33,000 psi (depending on temper)",
+    "yield_psi": "~28,000 psi"
+   },
+   "notes": [],
+   "thicknesses": [
+    {
+     "t_mm": 1.016,
+     "t_in": 0.04,
+     "cut": {
+      "thickness_as_listed": ".040″ —- 1.02mm",
+      "max_instant_mm": [
+       1117.6,
+       1727.2
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".040″ —- 1.02mm",
+       "68″ x 44″ —— 1727.2 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": null,
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 0.61,
+      "max_length_mm": 1117.6,
+      "min_flange_flat_mm": 6.48,
+      "min_flange_after_mm": 7.26,
+      "verbatim": [
+       ".040″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".024″",
+       "44″",
+       ".255″",
+       ".286″"
+      ],
+      "source": "scs-processing"
+     },
+     "countersink": null,
+     "deburr": null,
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".040″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": null,
+     "tap": null,
+     "tumble": null
+    },
+    {
+     "t_mm": 1.6,
+     "t_in": 0.063,
+     "cut": {
+      "thickness_as_listed": ".063″ —- 1.6mm",
+      "max_instant_mm": [
+       1117.6,
+       1727.2
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".063″ —- 1.6mm",
+       "68″ x 44″ —— 1727.2 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".063″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 0.89,
+      "max_length_mm": 1117.6,
+      "min_flange_flat_mm": 6.48,
+      "min_flange_after_mm": 7.7,
+      "verbatim": [
+       ".063″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".035″",
+       "44″",
+       ".255″",
+       ".303″"
+      ],
+      "source": "scs-processing"
+     },
+     "countersink": null,
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       914.4,
+       3048.0
+      ],
+      "verbatim": [
+       ".063″",
+       "1″ x 3″",
+       "36″ x 120″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".063″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".063″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 4.0,
+      "inch_min": "4-40",
+      "inch_max": "10/32",
+      "verbatim": [
+       ".063″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "10/32",
+       "M4 x 0.7"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": null
+    },
+    {
+     "t_mm": 2.032,
+     "t_in": 0.08,
+     "cut": {
+      "thickness_as_listed": ".080″ —- 2.03mm",
+      "max_instant_mm": [
+       1117.6,
+       1727.2
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".080″ —- 2.03mm",
+       "68″ x 44″ —— 1727.2 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".080″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 1.14,
+      "max_length_mm": 1117.6,
+      "min_flange_flat_mm": 6.48,
+      "min_flange_after_mm": 7.95,
+      "verbatim": [
+       ".080″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".045″",
+       "44″",
+       ".255″",
+       ".313″"
+      ],
+      "source": "scs-processing"
+     },
+     "countersink": null,
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       914.4,
+       3048.0
+      ],
+      "verbatim": [
+       ".080″",
+       "1″ x 3″",
+       "36″ x 120″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".080″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".080″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 6.0,
+      "inch_min": "4-40",
+      "inch_max": "1/4-28",
+      "verbatim": [
+       ".080″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "1/4-28",
+       "M6 x 1.0"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": null
+    },
+    {
+     "t_mm": 2.286,
+     "t_in": 0.09,
+     "cut": {
+      "thickness_as_listed": ".090″ —- 2.29mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".090″ —- 2.29mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".090″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 0.81,
+      "max_length_mm": 1117.6,
+      "min_flange_flat_mm": 6.48,
+      "min_flange_after_mm": 8.28,
+      "verbatim": [
+       ".090″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".032″",
+       "44″",
+       ".255″",
+       ".326″"
+      ],
+      "source": "scs-processing"
+     },
+     "countersink": null,
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       914.4,
+       3048.0
+      ],
+      "verbatim": [
+       ".090″",
+       "1″ x 3″",
+       "36″ x 120″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".090″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".090″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 6.0,
+      "inch_min": "4-40",
+      "inch_max": "1/4-28",
+      "verbatim": [
+       ".090″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "1/4-28",
+       "M6 x 1.0"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": null
+    },
+    {
+     "t_mm": 2.54,
+     "t_in": 0.1,
+     "cut": {
+      "thickness_as_listed": ".100″ —- 2.54mm",
+      "max_instant_mm": [
+       1117.6,
+       1727.2
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".100″ —- 2.54mm",
+       "68″ x 44″ —— 1727.2 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".100″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 3.17,
+      "max_length_mm": 1117.6,
+      "min_flange_flat_mm": 9.35,
+      "min_flange_after_mm": 11.76,
+      "verbatim": [
+       ".100″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".125″",
+       "44″",
+       ".368″",
+       ".463″"
+      ],
+      "source": "scs-processing"
+     },
+     "countersink": null,
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       914.4,
+       3048.0
+      ],
+      "verbatim": [
+       ".100″",
+       "1″ x 3″",
+       "36″ x 120″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".100″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".100″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 6.0,
+      "inch_min": "4-40",
+      "inch_max": "1/4-28",
+      "verbatim": [
+       ".100″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "1/4-28",
+       "M6 x 1.0"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": null
+    },
+    {
+     "t_mm": 3.175,
+     "t_in": 0.125,
+     "cut": {
+      "thickness_as_listed": ".125″ —- 3.18mm",
+      "max_instant_mm": [
+       1117.6,
+       1727.2
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".125″ —- 3.18mm",
+       "68″ x 44″ —— 1727.2 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".125″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 3.17,
+      "max_length_mm": 1117.6,
+      "min_flange_flat_mm": 9.35,
+      "min_flange_after_mm": 12.09,
+      "verbatim": [
+       ".125″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".125″",
+       "44″",
+       ".368″",
+       ".476″"
+      ],
+      "source": "scs-processing"
+     },
+     "countersink": {
+      "min_part_mm": [
+       25.4,
+       101.6
+      ],
+      "max_part_mm": [
+       355.6,
+       1168.4
+      ],
+      "min_minor_mm": 2.51,
+      "max_major_mm": 10.85,
+      "verbatim": [
+       ".125″",
+       "1″ x 4″",
+       "14″ x 46″",
+       ".099″",
+       ".427″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       1016.0,
+       3048.0
+      ],
+      "verbatim": [
+       ".125″",
+       "1″ x 3″",
+       "40″ x 120″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".125″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".125″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 10.0,
+      "inch_min": "4-40",
+      "inch_max": "3/8-24",
+      "verbatim": [
+       ".125″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "3/8-24",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".125″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 4.75,
+     "t_in": 0.187,
+     "cut": {
+      "thickness_as_listed": ".187″ —- 4.75mm",
+      "max_instant_mm": [
+       1117.6,
+       1727.2
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       12.7,
+       19.05
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".187″ —- 4.75mm",
+       "68″ x 44″ —— 1727.2 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.5″ x 0.75″ —- 12.7 x 19.05mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".187″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 6.35,
+      "max_length_mm": 1117.6,
+      "min_flange_flat_mm": 15.75,
+      "min_flange_after_mm": 20.27,
+      "verbatim": [
+       ".187″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".250″",
+       "44″",
+       ".620″",
+       ".798″"
+      ],
+      "source": "scs-processing"
+     },
+     "countersink": {
+      "min_part_mm": [
+       25.4,
+       101.6
+      ],
+      "max_part_mm": [
+       355.6,
+       1168.4
+      ],
+      "min_minor_mm": 2.51,
+      "max_major_mm": 13.49,
+      "verbatim": [
+       ".187″",
+       "1″ x 4″",
+       "14″ x 46″",
+       ".099″",
+       ".531″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       1016.0,
+       3048.0
+      ],
+      "verbatim": [
+       ".187″",
+       "1″ x 3″",
+       "40″ x 120″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".187″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".187″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 3.0,
+      "metric_max": 10.0,
+      "inch_min": "4-40",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".187″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M3 x 0.5",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".187″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 6.35,
+     "t_in": 0.25,
+     "cut": {
+      "thickness_as_listed": ".250″ —- 6.35mm",
+      "max_instant_mm": [
+       1117.6,
+       1727.2
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       12.7,
+       19.05
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".250″ —- 6.35mm",
+       "68″ x 44″ —— 1727.2 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.5″ x 0.75″ —- 12.7 x 19.05mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".250″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       63.5
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 6.35,
+      "max_length_mm": 1117.6,
+      "min_flange_flat_mm": 29.21,
+      "min_flange_after_mm": 34.82,
+      "verbatim": [
+       ".250″",
+       ".375″ x 2.5″",
+       "30″ x 44″",
+       ".250″",
+       "44″",
+       "1.150″",
+       "1.371″"
+      ],
+      "source": "scs-processing"
+     },
+     "countersink": {
+      "min_part_mm": [
+       25.4,
+       101.6
+      ],
+      "max_part_mm": [
+       355.6,
+       1168.4
+      ],
+      "min_minor_mm": 2.51,
+      "max_major_mm": 16.66,
+      "verbatim": [
+       ".250″",
+       "1″ x 4″",
+       "14″ x 46″",
+       ".099″",
+       ".656″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       1016.0,
+       3048.0
+      ],
+      "verbatim": [
+       ".250″",
+       "1″ x 3″",
+       "40″ x 120″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".250″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       ".3″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".250″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 3.0,
+      "metric_max": 10.0,
+      "inch_min": "4-40",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".250″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M3 x 0.5",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".250″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 7.95,
+     "t_in": 0.313,
+     "cut": {
+      "thickness_as_listed": ".313″ —- 7.95mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       19.05,
+       25.4
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".313″ —- 7.95mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.75″ x 1″ —- 19.05 x 25.4mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".313″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "countersink": {
+      "min_part_mm": [
+       25.4,
+       101.6
+      ],
+      "max_part_mm": [
+       355.6,
+       1168.4
+      ],
+      "min_minor_mm": 3.3,
+      "max_major_mm": 16.66,
+      "verbatim": [
+       ".313″",
+       "1″ x 4″",
+       "14″ x 46″",
+       ".130″",
+       ".656″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       1016.0,
+       2489.2
+      ],
+      "verbatim": [
+       ".313″",
+       "1″ x 3″",
+       "40″ x 98″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".313″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       "N/A"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".313″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 5.0,
+      "metric_max": 10.0,
+      "inch_min": "8-32",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".313″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "8-32",
+       "M5 x 0.8",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".313″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 9.525,
+     "t_in": 0.375,
+     "cut": {
+      "thickness_as_listed": ".375″ —- 9.53mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       19.05,
+       25.4
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".375″ —- 9.53mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.75″ x 1″ —- 19.05 x 25.4mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".375″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "bend": null,
+     "countersink": {
+      "min_part_mm": [
+       25.4,
+       101.6
+      ],
+      "max_part_mm": [
+       355.6,
+       1168.4
+      ],
+      "min_minor_mm": 3.3,
+      "max_major_mm": 16.66,
+      "verbatim": [
+       ".375″",
+       "1″ x 4″",
+       "14″ x 46″",
+       ".130″",
+       ".656″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       1016.0,
+       2082.8
+      ],
+      "verbatim": [
+       ".375″",
+       "1″ x 3″",
+       "40″ x 82″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".375″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       "N/A"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".375″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 5.0,
+      "metric_max": 10.0,
+      "inch_min": "8-32",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".375″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "8-32",
+       "M5 x 0.8",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".375″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 12.7,
+     "t_in": 0.5,
+     "cut": {
+      "thickness_as_listed": ".500″ —- 12.7mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       25.4,
+       25.4
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".500″ —- 12.7mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "1″ x 1″ —— 25.4 x 25.4mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "anodize": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".500″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "bend": null,
+     "countersink": {
+      "min_part_mm": [
+       25.4,
+       101.6
+      ],
+      "max_part_mm": [
+       355.6,
+       1168.4
+      ],
+      "min_minor_mm": 4.9,
+      "max_major_mm": 16.66,
+      "verbatim": [
+       ".500″",
+       "1″ x 4″",
+       "14″ x 46″",
+       ".193″",
+       ".656″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       1016.0,
+       1549.4
+      ],
+      "verbatim": [
+       ".500″",
+       "1″ x 3″",
+       "40″ x 61″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".500″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       "N/A"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".500″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 5.0,
+      "metric_max": 10.0,
+      "inch_min": "10-32",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".500″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "10-32",
+       "M5 x 0.8",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".500″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    }
+   ]
+  },
+  "steel": {
+   "listed_as": "Mild Steel",
+   "grade": "A1008 cold rolled up to .135″ (3.43 mm); A36/A1018 HRP&O (hot rolled, pickled and oiled) from .187″ (4.75 mm)",
+   "page": "scs-mild-steel",
+   "cut_tolerance_verbatim": "Tolerance: ±.005″ across all thicknesses from .030″–.500″.",
+   "properties_published": {
+    "tensile": "45–70 ksi",
+    "yield": "25–50 ksi"
+   },
+   "notes": [
+    "Mild steel is strong and resilient, but it will oxidize (rust) if left unprotected.",
+    "Outdoors or humid environments: Requires plating or powder coating to prevent rust.",
+    "The deburring table has no .187″ row for mild steel (rows run .135″ then .250″); the plating table starts at .187″, so cold-rolled sheet up to .135″ can be powder coated but not zinc plated here."
+   ],
+   "thicknesses": [
+    {
+     "t_mm": 0.762,
+     "t_in": 0.03,
+     "cut": {
+      "thickness_as_listed": ".030″ —- .76mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".030″ —- .76mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 1.14,
+      "max_length_mm": 1117.6,
+      "min_flange_flat_mm": 6.48,
+      "min_flange_after_mm": 7.26,
+      "verbatim": [
+       ".030″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".045″",
+       "44″",
+       ".255″",
+       ".286″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": null,
+     "hardware": null,
+     "powder_coat": null,
+     "tap": null,
+     "tumble": null
+    },
+    {
+     "t_mm": 1.219,
+     "t_in": 0.048,
+     "cut": {
+      "thickness_as_listed": ".048″ —- 1.23mm",
+      "max_instant_mm": [
+       1117.6,
+       1727.2
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".048″ —- 1.23mm",
+       "68″ x 44″ —— 1727.2 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 1.14,
+      "max_length_mm": 1117.6,
+      "min_flange_flat_mm": 6.48,
+      "min_flange_after_mm": 7.57,
+      "verbatim": [
+       ".048″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".045″",
+       "44″",
+       ".255″",
+       ".298″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       914.4,
+       3048.0
+      ],
+      "verbatim": [
+       ".048″",
+       "1″ x 3″",
+       "36″ x 120″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".048″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".048″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": null,
+     "tumble": null
+    },
+    {
+     "t_mm": 1.499,
+     "t_in": 0.059,
+     "cut": {
+      "thickness_as_listed": ".059″ —- 1.5mm",
+      "max_instant_mm": [
+       1117.6,
+       1727.2
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".059″ —- 1.5mm",
+       "68″ x 44″ —— 1727.2 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 1.6,
+      "max_length_mm": 1117.6,
+      "min_flange_flat_mm": 6.48,
+      "min_flange_after_mm": 7.85,
+      "verbatim": [
+       ".059″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".063″",
+       "44″",
+       ".255″",
+       ".309″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       914.4,
+       3048.0
+      ],
+      "verbatim": [
+       ".059″",
+       "1″ x 3″",
+       "36″ x 120″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".059″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".059″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 3.0,
+      "inch_min": "4-40",
+      "inch_max": "4-40",
+      "verbatim": [
+       ".059″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "4-40",
+       "M3 x 0.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": null
+    },
+    {
+     "t_mm": 1.88,
+     "t_in": 0.074,
+     "cut": {
+      "thickness_as_listed": ".074″ —- 1.88mm",
+      "max_instant_mm": [
+       1117.6,
+       1727.2
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".074″ —- 1.88mm",
+       "68″ x 44″ —— 1727.2 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 1.6,
+      "max_length_mm": 1117.6,
+      "min_flange_flat_mm": 6.48,
+      "min_flange_after_mm": 8.13,
+      "verbatim": [
+       ".074″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".063″",
+       "44″",
+       ".255″",
+       ".320″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       914.4,
+       3048.0
+      ],
+      "verbatim": [
+       ".074″",
+       "1″ x 3″",
+       "36″ x 120″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".074″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".074″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 6.0,
+      "inch_min": "4-40",
+      "inch_max": "10-32",
+      "verbatim": [
+       ".074″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "10-32",
+       "M6 x 1.0"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": null
+    },
+    {
+     "t_mm": 2.642,
+     "t_in": 0.104,
+     "cut": {
+      "thickness_as_listed": ".104″ —- 2.64mm",
+      "max_instant_mm": [
+       1117.6,
+       1727.2
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".104″ —- 2.64mm",
+       "68″ x 44″ —— 1727.2 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 1.6,
+      "max_length_mm": 1117.6,
+      "min_flange_flat_mm": 9.35,
+      "min_flange_after_mm": 11.66,
+      "verbatim": [
+       ".104″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".063″",
+       "44″",
+       ".368″",
+       ".459″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       914.4,
+       2286.0
+      ],
+      "verbatim": [
+       ".104″",
+       "1″ x 3″",
+       "36″ x 90″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".104″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".104″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 6.0,
+      "inch_min": "4-40",
+      "inch_max": "1/4-28",
+      "verbatim": [
+       ".104″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "1/4-28",
+       "M6 x 1.0"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": null
+    },
+    {
+     "t_mm": 3.023,
+     "t_in": 0.119,
+     "cut": {
+      "thickness_as_listed": ".119″ —- 3.02mm",
+      "max_instant_mm": [
+       1117.6,
+       1727.2
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".119″ —- 3.02mm",
+       "68″ x 44″ —— 1727.2 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 1.6,
+      "max_length_mm": 1117.6,
+      "min_flange_flat_mm": 9.35,
+      "min_flange_after_mm": 11.84,
+      "verbatim": [
+       ".119″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".063″",
+       "44″",
+       ".368″",
+       ".466″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       1016.0,
+       2133.6
+      ],
+      "verbatim": [
+       ".119″",
+       "1″ x 3″",
+       "40″ x 84″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".119″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".119″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 8.0,
+      "inch_min": "4-40",
+      "inch_max": "5/16-24",
+      "verbatim": [
+       ".119″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "5/16-24",
+       "M8 x 1.25"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".119″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 3.429,
+     "t_in": 0.135,
+     "cut": {
+      "thickness_as_listed": ".135″ —- 3.5mm",
+      "max_instant_mm": [
+       1117.6,
+       1727.2
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".135″ —- 3.5mm",
+       "68″ x 44″ —— 1727.2 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 2.54,
+      "max_length_mm": 1117.6,
+      "min_flange_flat_mm": 15.75,
+      "min_flange_after_mm": 18.85,
+      "verbatim": [
+       ".135″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".100″",
+       "44″",
+       ".620″",
+       ".742″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       1016.0,
+       1981.2
+      ],
+      "verbatim": [
+       ".135″",
+       "1″ x 3″",
+       "40″ x 78″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".135″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".135″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 10.0,
+      "inch_min": "4-40",
+      "inch_max": "3/8-24",
+      "verbatim": [
+       ".135″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "3/8-24",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".135″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 4.75,
+     "t_in": 0.187,
+     "cut": {
+      "thickness_as_listed": ".187″ —- 4.75mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       12.7,
+       19.05
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".187″ —- 4.75mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.5″ x 0.75″ —- 12.7 x 19.05mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 3.17,
+      "max_length_mm": 558.8,
+      "min_flange_flat_mm": 15.75,
+      "min_flange_after_mm": 19.84,
+      "verbatim": [
+       ".187″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".125″",
+       "22″",
+       ".620″",
+       ".781″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".187″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "plating": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".187″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".187″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 10.0,
+      "inch_min": "4-40",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".187″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".187″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 6.35,
+     "t_in": 0.25,
+     "cut": {
+      "thickness_as_listed": ".250″ —- 6.35mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       12.7,
+       19.05
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".250″ —- 6.35mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.5″ x 0.75″ —- 12.7 x 19.05mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       63.5
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 3.81,
+      "max_length_mm": 508.0,
+      "min_flange_flat_mm": 29.21,
+      "min_flange_after_mm": 34.57,
+      "verbatim": [
+       ".250",
+       ".375″ x 2.5″",
+       "30″ x 44″",
+       ".150″",
+       "20″",
+       "1.150″",
+       "1.361″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       1016.0,
+       1066.8
+      ],
+      "verbatim": [
+       ".250″",
+       "1″ x 3″",
+       "40″ x 42″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".250",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "plating": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".250",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".250",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 10.0,
+      "inch_min": "4-40",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".250",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".250",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 7.95,
+     "t_in": 0.313,
+     "cut": {
+      "thickness_as_listed": ".313″ —- 7.95mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       25.4,
+       25.4
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".313″ —- 7.95mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "1″ x 1″ —— 25.4 x 25.4mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": null,
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       609.6,
+       1168.4
+      ],
+      "verbatim": [
+       ".313″",
+       "1″ x 3″",
+       "24″ x 46″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".313″",
+       "1″ x 1.5″",
+       "36 x 46″",
+       "N/A"
+      ],
+      "source": "scs-processing"
+     },
+     "plating": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".313″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".313″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       24.13,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 4.0,
+      "metric_max": 10.0,
+      "inch_min": "1/4-20",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".313″",
+       ".950″ x 1.5″",
+       "36″ x 46″",
+       "1/4-20",
+       "M4 X 0.7",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".313",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 9.525,
+     "t_in": 0.375,
+     "cut": {
+      "thickness_as_listed": ".375″ —- 9.53mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       25.4,
+       25.4
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".375″ —- 9.53mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "1″ x 1″ —— 25.4 x 25.4mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": null,
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       609.6,
+       1168.4
+      ],
+      "verbatim": [
+       ".375″",
+       "1″ x 3″",
+       "24″ x 46″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".375″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "N/A"
+      ],
+      "source": "scs-processing"
+     },
+     "plating": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".375″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".375″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 6.0,
+      "metric_max": 10.0,
+      "inch_min": "1/4-20",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".375″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "1/4-20",
+       "M6 x 1.0",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".375″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 12.7,
+     "t_in": 0.5,
+     "cut": {
+      "thickness_as_listed": ".500″ —- 12.7mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       25.4,
+       25.4
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".500″ —- 12.7mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "1″ x 1″ —— 25.4 x 25.4mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": null,
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       609.6,
+       1168.4
+      ],
+      "verbatim": [
+       ".500″",
+       "1″ x 3″",
+       "24″ x 46″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".500″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "N/A"
+      ],
+      "source": "scs-processing"
+     },
+     "plating": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       584.2,
+       584.2
+      ],
+      "verbatim": [
+       ".500″",
+       "1″ x 3″",
+       "23″ x 23″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".500″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 6.0,
+      "metric_max": 10.0,
+      "inch_min": "1/4-20",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".500″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "1/4-20",
+       "M6 x 1.0",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".500″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    }
+   ]
+  },
+  "stainless304": {
+   "listed_as": "304 Stainless Steel",
+   "grade": "304",
+   "page": "scs-304",
+   "cut_tolerance_verbatim": "Laser cut, +/- .005\" tolerance",
+   "properties_published": {
+    "yield": "~30 ksi (205 MPa)",
+    "tensile": "~73 ksi (505 MPa)"
+   },
+   "notes": [],
+   "thicknesses": [
+    {
+     "t_mm": 0.762,
+     "t_in": 0.03,
+     "cut": {
+      "thickness_as_listed": ".030″ —- .76mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".030″ —- .76mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 2.03,
+      "max_length_mm": 1117.6,
+      "min_flange_flat_mm": 6.48,
+      "min_flange_after_mm": 7.47,
+      "verbatim": [
+       ".030″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".080″",
+       "44″",
+       ".255″",
+       ".294″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": null,
+     "hardware": null,
+     "powder_coat": null,
+     "tap": null,
+     "tumble": null
+    },
+    {
+     "t_mm": 1.219,
+     "t_in": 0.048,
+     "cut": {
+      "thickness_as_listed": ".048″ —- 1.23mm",
+      "max_instant_mm": [
+       1117.6,
+       1727.2
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".048″ —- 1.23mm",
+       "68″ x 44″ —— 1727.2 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 2.03,
+      "max_length_mm": 1117.6,
+      "min_flange_flat_mm": 6.48,
+      "min_flange_after_mm": 7.8,
+      "verbatim": [
+       ".048″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".080″",
+       "44″",
+       ".255″",
+       ".307″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       914.4,
+       3048.0
+      ],
+      "verbatim": [
+       ".048″",
+       "1″ x 3″",
+       "36″ x 120″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".048″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".048″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": null,
+     "tumble": null
+    },
+    {
+     "t_mm": 1.524,
+     "t_in": 0.06,
+     "cut": {
+      "thickness_as_listed": ".060″ —- 1.52mm",
+      "max_instant_mm": [
+       1117.6,
+       1727.2
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".060″ —- 1.52mm",
+       "68″ x 44″ —— 1727.2 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 1.78,
+      "max_length_mm": 1117.6,
+      "min_flange_flat_mm": 6.48,
+      "min_flange_after_mm": 7.98,
+      "verbatim": [
+       ".060″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".070″",
+       "44″",
+       ".255″",
+       ".314″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       914.4,
+       3048.0
+      ],
+      "verbatim": [
+       ".060″",
+       "1″ x 3″",
+       "36″ x 120″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".060″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".060″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 6.0,
+      "inch_min": "4-40",
+      "inch_max": "10-32",
+      "verbatim": [
+       ".060″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "10-32",
+       "M6 x 1.0"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": null
+    },
+    {
+     "t_mm": 1.88,
+     "t_in": 0.074,
+     "cut": {
+      "thickness_as_listed": ".074″ —- 1.88mm",
+      "max_instant_mm": [
+       1117.6,
+       1727.2
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".074″ —- 1.88mm",
+       "68″ x 44″ —— 1727.2 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 1.9,
+      "max_length_mm": 1117.6,
+      "min_flange_flat_mm": 6.48,
+      "min_flange_after_mm": 8.23,
+      "verbatim": [
+       ".074″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".075″",
+       "44″",
+       ".255″",
+       ".324″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       914.4,
+       3048.0
+      ],
+      "verbatim": [
+       ".074″",
+       "1″ x 3″",
+       "36″ x 120″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".074″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".074″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 6.0,
+      "inch_min": "4-40",
+      "inch_max": "10-32",
+      "verbatim": [
+       ".074″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "10-32",
+       "M6 x 1.0"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": null
+    },
+    {
+     "t_mm": 2.54,
+     "t_in": 0.1,
+     "cut": {
+      "thickness_as_listed": ".100″ —- 2.54mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".100″ —- 2.54mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 4.75,
+      "max_length_mm": 889.0,
+      "min_flange_flat_mm": 15.75,
+      "min_flange_after_mm": 18.59,
+      "verbatim": [
+       ".100″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".187″",
+       "35″",
+       ".620″",
+       ".732″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       914.4,
+       3048.0
+      ],
+      "verbatim": [
+       ".100″",
+       "1″ x 3″",
+       "36″ x 120″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".100″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".100″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 6.0,
+      "inch_min": "4-40",
+      "inch_max": "1/4-28",
+      "verbatim": [
+       ".100″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "1/4-28",
+       "M6 x 1.0"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": null
+    },
+    {
+     "t_mm": 3.175,
+     "t_in": 0.125,
+     "cut": {
+      "thickness_as_listed": ".125″ —- 3.18mm",
+      "max_instant_mm": [
+       1117.6,
+       1727.2
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".125″ —- 3.18mm",
+       "68″ x 44″ —— 1727.2 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 3.81,
+      "max_length_mm": 1016.0,
+      "min_flange_flat_mm": 15.75,
+      "min_flange_after_mm": 18.8,
+      "verbatim": [
+       ".125″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".150″",
+       "40″",
+       ".620″",
+       ".740″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       1016.0,
+       2108.2
+      ],
+      "verbatim": [
+       ".125″",
+       "1″ x 3″",
+       "40″ x 83″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".125″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".125″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 10.0,
+      "inch_min": "4-40",
+      "inch_max": "3/8-24",
+      "verbatim": [
+       ".125″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "3/8-24",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".125″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 4.75,
+     "t_in": 0.187,
+     "cut": {
+      "thickness_as_listed": ".187″ —- 4.75mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".187″ —- 4.75mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       38.1
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 3.3,
+      "max_length_mm": 914.4,
+      "min_flange_flat_mm": 15.75,
+      "min_flange_after_mm": 19.91,
+      "verbatim": [
+       ".187″",
+       ".375″ x 1.5″",
+       "30″ x 44″",
+       ".130″",
+       "36″",
+       ".620″",
+       ".784″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       1016.0,
+       1397.0
+      ],
+      "verbatim": [
+       ".187″",
+       "1″ x 3″",
+       "40″ x 55″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".187″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".187″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 3.0,
+      "metric_max": 10.0,
+      "inch_min": "6-32",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".187″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "6-32",
+       "M3 x 0.5",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".187″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 6.35,
+     "t_in": 0.25,
+     "cut": {
+      "thickness_as_listed": ".250″ —- 6.35mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       6.35,
+       9.52
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".250″ —- 6.35mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.25″ x 0.375″ —- 6.35 x 9.5mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": {
+      "min_part_mm": [
+       9.52,
+       63.5
+      ],
+      "max_part_mm": [
+       762.0,
+       1117.6
+      ],
+      "radius_mm": 5.71,
+      "max_length_mm": 457.2,
+      "min_flange_flat_mm": 29.21,
+      "min_flange_after_mm": 35.08,
+      "verbatim": [
+       ".250″",
+       ".375″ x 2.5″",
+       "30″ x 44″",
+       ".225″",
+       "18″",
+       "1.150″",
+       "1.381″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       1016.0,
+       1041.4
+      ],
+      "verbatim": [
+       ".250″",
+       "1″ x 3″",
+       "40″ x 41″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".250",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "3″"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".250″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 4.0,
+      "metric_max": 10.0,
+      "inch_min": "8-32",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".250″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "8-32",
+       "M4 x 0.74",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".250″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 9.525,
+     "t_in": 0.375,
+     "cut": {
+      "thickness_as_listed": ".375″ —- 9.53mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       12.7,
+       12.7
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".375″ —- 9.53mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.5″ x 0.5″ —- 12.7 x 12.7mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": null,
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       609.6,
+       1168.4
+      ],
+      "verbatim": [
+       ".375″",
+       "1″ x 3″",
+       "24″ x 46″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".375″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "N/A"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".375″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 6.0,
+      "metric_max": 10.0,
+      "inch_min": "1/4-20",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".375″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "1/4-20",
+       "M6 x 1.0",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".375″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 12.7,
+     "t_in": 0.5,
+     "cut": {
+      "thickness_as_listed": ".500″ —- 12.7mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1498.6,
+       3022.6
+      ],
+      "min_mm": [
+       12.7,
+       12.7
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".500″ —- 12.7mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "119″ x 59″ —— 3022.6 x 1498.6mm",
+       "0.5″ x 0.5″ —- 12.7 x 12.7mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "bend": null,
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       609.6,
+       1168.4
+      ],
+      "verbatim": [
+       ".500″",
+       "1″ x 3″",
+       "24″ x 46″"
+      ],
+      "source": "scs-processing"
+     },
+     "hardware": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".500″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "N/A"
+      ],
+      "source": "scs-processing"
+     },
+     "powder_coat": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       762.0,
+       914.4
+      ],
+      "verbatim": [
+       ".500″",
+       "1″ x 3″",
+       "30″ x 36″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 6.0,
+      "metric_max": 10.0,
+      "inch_min": "1/4-20",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".500″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "1/4-20",
+       "M6 x 1.0",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     },
+     "tumble": {
+      "min_part_mm": [
+       12.7,
+       38.1
+      ],
+      "max_part_mm": [
+       101.6,
+       177.8
+      ],
+      "verbatim": [
+       ".500″",
+       "0.5″ x 1.5″",
+       "4″ x 7″"
+      ],
+      "source": "scs-processing"
+     }
+    }
+   ]
+  },
+  "al_mic6": {
+   "listed_as": "MIC-6 Cast Aluminum (ALUMIC-6)",
+   "grade": "MIC-6 cast tooling plate",
+   "page": "scs-mic6",
+   "cut_tolerance_verbatim": "Laser cut, +/- .005\" tolerance",
+   "properties_published": {},
+   "notes": [
+    "Services: deburring, countersinking, tapping only (no anodizing, no powder coat listed).",
+    "The page's FAQ gives a minimum cut size of .750″ x 1.00″; its header and the min/max chart give .5″ x 1.00″ / 0.5″ x 0.75″."
+   ],
+   "thicknesses": [
+    {
+     "t_mm": 6.35,
+     "t_in": 0.25,
+     "cut": {
+      "thickness_as_listed": ".250″ —- 6.35mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1193.8,
+       1803.4
+      ],
+      "min_mm": [
+       12.7,
+       19.05
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".250″ —- 6.35mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "71″ x 47″ —— 1803.4 x 1193.8mm",
+       "0.5″ x 0.75″ —- 12.7 x 19.05mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "countersink": {
+      "min_part_mm": [
+       25.4,
+       101.6
+      ],
+      "max_part_mm": [
+       355.6,
+       1168.4
+      ],
+      "min_minor_mm": 2.51,
+      "max_major_mm": 16.66,
+      "verbatim": [
+       ".250″",
+       "1″ x 4″",
+       "14″ x 46″",
+       ".099″",
+       ".656″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".250″",
+       "1″ x 3″",
+       "36″ x 46″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       24.13,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 10.0,
+      "inch_min": "4-40",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".250″",
+       ".950″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 9.525,
+     "t_in": 0.375,
+     "cut": {
+      "thickness_as_listed": ".375″ —- 9.53mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1193.8,
+       1803.4
+      ],
+      "min_mm": [
+       12.7,
+       19.05
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".375″ —- 9.53mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "71″ x 47″ —— 1803.4 x 1193.8mm",
+       "0.5″ x 0.75″ —- 12.7 x 19.05mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "countersink": {
+      "min_part_mm": [
+       25.4,
+       101.6
+      ],
+      "max_part_mm": [
+       355.6,
+       1168.4
+      ],
+      "min_minor_mm": 3.3,
+      "max_major_mm": 16.66,
+      "verbatim": [
+       ".375″",
+       "1″ x 4″",
+       "14″ x 46″",
+       ".130″",
+       ".656″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".375″",
+       "1″ x 3″",
+       "36″ x 46″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       24.13,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 3.0,
+      "metric_max": 10.0,
+      "inch_min": "8-32",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".375″",
+       ".950″ x 1.5″",
+       "36″ x 46″",
+       "8-32",
+       "M3 x 0.5",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 12.7,
+     "t_in": 0.5,
+     "cut": {
+      "thickness_as_listed": ".500″ —- 12.7mm",
+      "max_instant_mm": [
+       1117.6,
+       1422.4
+      ],
+      "max_custom_mm": [
+       1193.8,
+       1803.4
+      ],
+      "min_mm": [
+       12.7,
+       19.05
+      ],
+      "process": "Fiber Laser",
+      "verbatim": [
+       ".500″ —- 12.7mm",
+       "56″ x 44″ —— 1422.4 x 1117.6mm",
+       "71″ x 47″ —— 1803.4 x 1193.8mm",
+       "0.5″ x 0.75″ —- 12.7 x 19.05mm",
+       "Fiber Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "countersink": {
+      "min_part_mm": [
+       25.4,
+       101.6
+      ],
+      "max_part_mm": [
+       355.6,
+       1168.4
+      ],
+      "min_minor_mm": 4.9,
+      "max_major_mm": 16.66,
+      "verbatim": [
+       ".500″",
+       "1″ x 4″",
+       "14″ x 46″",
+       ".193″",
+       ".656″"
+      ],
+      "source": "scs-processing"
+     },
+     "deburr": {
+      "min_part_mm": [
+       25.4,
+       76.2
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "verbatim": [
+       ".500″",
+       "1″ x 3″",
+       "36″ x 46″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       24.13,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 3.0,
+      "metric_max": 10.0,
+      "inch_min": "10-32",
+      "inch_max": "1/2-20",
+      "verbatim": [
+       ".500″",
+       ".950″ x 1.5″",
+       "36″ x 46″",
+       "10-32",
+       "M3 x 0.5",
+       "1/2-20",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     }
+    }
+   ]
+  },
+  "delrin": {
+   "listed_as": "Delrin 150 (acetal homopolymer, POM-H)",
+   "grade": "Delrin 150",
+   "page": "scs-delrin",
+   "cut_tolerance_verbatim": "Laser cut, +/- .009\" tolerance, CNC routed +/- .005\"",
+   "properties_published": {
+    "temperature": "will still deform or degrade at prolonged temperatures above ~185–200°F"
+   },
+   "notes": [
+    "The material page lists two thicknesses (.125″ laser cut, .270″ CNC routed); the min/max chart also lists .187″ (CNC router); the tapping and countersinking tables list .125″ and .250″.",
+    "Services: countersinking and tapping only. No deburring, tumbling or coating.",
+    "Routed parts keep fixturing tabs about 0.1875″ wide and a 0.063″ inside corner radius."
+   ],
+   "thicknesses": [
+    {
+     "t_mm": 3.175,
+     "t_in": 0.125,
+     "cut": {
+      "thickness_as_listed": ".125″ —- 3.18mm",
+      "max_instant_mm": [
+       584.2,
+       1117.6
+      ],
+      "max_custom_mm": [
+       1193.8,
+       1193.8
+      ],
+      "min_mm": [
+       25.4,
+       50.8
+      ],
+      "process": "CO2 Laser",
+      "verbatim": [
+       ".125″ —- 3.18mm",
+       "44″ x 23″ —— 1117.6 x 584.2mm",
+       "47″ x 47″ —— 1193.8 x 1193.8mm",
+       "1″ x 2″ —— 25.4 x 50.8mm",
+       "CO2 Laser"
+      ],
+      "source": "scs-minmax"
+     },
+     "countersink": {
+      "min_part_mm": [
+       25.4,
+       101.6
+      ],
+      "max_part_mm": [
+       355.6,
+       1168.4
+      ],
+      "min_minor_mm": 3.3,
+      "max_major_mm": 11.99,
+      "verbatim": [
+       ".125″",
+       "1″ x 4″",
+       "14″ x 46″",
+       ".130″",
+       ".472″"
+      ],
+      "source": "scs-processing"
+     },
+     "tap": {
+      "min_part_mm": [
+       25.4,
+       38.1
+      ],
+      "max_part_mm": [
+       914.4,
+       1168.4
+      ],
+      "metric_min": 2.0,
+      "metric_max": 10.0,
+      "inch_min": "4-40",
+      "inch_max": "3/8-24",
+      "verbatim": [
+       ".125″",
+       "1″ x 1.5″",
+       "36″ x 46″",
+       "4-40",
+       "M2 x 0.4",
+       "3/8-24",
+       "M10 x 1.5"
+      ],
+      "source": "scs-processing"
+     }
+    },
+    {
+     "t_mm": 4.75,
+     "t_in": 0.187,
+     "cut": {
+      "thickness_as_listed": ".187″ —- 4.75mm",
+      "max_instant_mm": [
+       584.2,
+       1117.6
+      ],
+      "max_custom_mm": [
+       584.2,
+       1117.6
+      ],
+      "min_mm": [
+       25.4,
+       50.8
+      ],
+      "process": "CNC Router",
+      "verbatim": [
+       ".187″ —- 4.75mm",
+       "44″ x 23″ —— 1117.6 x 584.2mm",
+       "44″ x 23″ —— 1117.6 x 584.2mm",
+       "1″ x 2″ —— 25.4 x 50.8mm",
+       "CNC Router"
+      ],
+      "source": "scs-minmax"
+     }
+    },
+    {
+     "t_mm": 6.858,
+     "t_in": 0.27,
+     "cut": {
+      "thickness_as_listed": ".270″ —- 6.86mm",
+      "max_instant_mm": [
+       863.6,
+       1117.6
+      ],
+      "max_custom_mm": [
+       889.0,
+       1193.8
+      ],
+      "min_mm": [
+       25.4,
+       50.8
+      ],
+      "process": "CNC Router",
+      "verbatim": [
+       ".270″ —- 6.86mm",
+       "44″ x 34″ —— 1117.6 x 863.6mm",
+       "47″ x 35″ —— 1193.8 x 889mm",
+       "1″ x 2″ —— 25.4 x 50.8mm",
+       "CNC Router"
+      ],
+      "source": "scs-minmax"
+     }
+    }
+   ]
+  }
+ },
+ "stock_match_mm": 0.05,
+ "rules": {
+  "hole_min_t_ratio": {
+   "value": 0.5,
+   "unit": "x thickness",
+   "verbatim": "Laser Cutting | At least 50% of material thickness ... Holes smaller than the minimum will distort, char, or fail to cut.",
+   "source": "scs-sheet-cutting",
+   "severity": "error",
+   "checked_by": "hole_too_small_to_cut (sheet.hole_min_t_ratio)",
+   "note": "'For laser and waterjet, the exact minimum changes with the material and thickness. The current values for every stock we carry live on each material's page.' Those per-thickness values were not readable."
+  },
+  "web_min_t_ratio": {
+   "value": 0.5,
+   "unit": "x thickness",
+   "verbatim": "We recommend that hole diameters and bridging widths be no less than 50% of the material thickness. For example, on a 0.125” thick part, this would mean having 0.0625” between all of your cut features, or cut features and the edge of your part.",
+   "source": "scs-tolerances-blog",
+   "severity": "error",
+   "checked_by": "shop_web_below_minimum"
+  },
+  "web_preferred_t_ratio": {
+   "value": 1.0,
+   "unit": "x thickness",
+   "verbatim": "For strength and cut quality reasons, we would prefer that wall thickness or bridging be closer to 1X – 1.5X the material thickness.",
+   "source": "scs-tolerances-blog",
+   "severity": "warning",
+   "checked_by": "holes_too_close / hole_too_close_to_edge (general rules, same 1 x thickness)"
+  },
+  "hole_to_edge_recommended_d_ratio": {
+   "value": 1.0,
+   "unit": "x hole diameter",
+   "verbatim": "we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features",
+   "source": "scs-tolerances-blog",
+   "severity": "info",
+   "checked_by": null
+  },
+  "cut_tolerance_mm": {
+   "value": 0.127,
+   "unit": "mm (+/-)",
+   "verbatim": "Laser: ±0.005″ on parts under 12″, ±0.010″ on parts over 12″",
+   "source": "scs-laser-service",
+   "checked_by": "tolerance.sheet"
+  },
+  "cut_tolerance_over_12in_mm": {
+   "value": 0.254,
+   "unit": "mm (+/-)",
+   "verbatim": "Laser: ±0.005″ on parts under 12″, ±0.010″ on parts over 12″",
+   "source": "scs-laser-service",
+   "checked_by": "tolerance.sheet"
+  },
+  "cut_tolerance_meaning": {
+   "value": null,
+   "unit": "",
+   "verbatim": "any given cut feature or perimeter geometry may be +/-.005″, or whatever the cut tolerance for that material and thickness is, in either the X or Y axis",
+   "source": "scs-tolerances-blog",
+   "checked_by": null
+  },
+  "common_line_gap_mm": {
+   "value": [
+    0.15,
+    0.3
+   ],
+   "unit": "mm",
+   "verbatim": "The actual gap between common-nested parts runs 0.006″ to 0.012″ depending on material (kerf)",
+   "source": "scs-sheet-cutting",
+   "checked_by": null
+  },
+  "inside_corner_laser": {
+   "value": null,
+   "unit": "",
+   "verbatim": "Laser Cutting | Approximately the kerf width (very small)",
+   "source": "scs-sheet-cutting",
+   "checked_by": "sheet.inside_radius_laser_mm (0.15 mm, mechloop's reading)"
+  },
+  "laser_thickness_max_mm": {
+   "value": 19.05,
+   "unit": "mm",
+   "verbatim": "Laser | Thicknesses | .015″ to .750″",
+   "source": "scs-laser-service",
+   "checked_by": "limits: sheet.thickness_max_laser_mm"
+  },
+  "edge_over_187": {
+   "value": 4.75,
+   "unit": "mm",
+   "verbatim": "Materials over .187″ thick will show small striations and an abrasive edge. Add deburring for a cleaner finish.",
+   "source": "scs-laser-service",
+   "severity": "info",
+   "checked_by": "shop_services.edge"
+  },
+  "removed_max_fraction": {
+   "value": 0.5,
+   "unit": "fraction",
+   "verbatim": "In general, removing around 50% of the material starts to increase the likelihood it will warp.",
+   "source": "scs-warping",
+   "severity": "warning",
+   "checked_by": "mostly_holes (sheet.removed_max_fraction)"
+  },
+  "flatness": {
+   "value": null,
+   "unit": "",
+   "verbatim": "NOT PUBLISHED: no flatness figure is given for cut parts. 'Sometimes, there's nothing you can do, and warping just happens'; 'often warped parts can't be deburred'.",
+   "source": "scs-warping",
+   "checked_by": null
+  },
+  "tap_min_thickness_mm": {
+   "value": 1.4986,
+   "unit": "mm",
+   "verbatim": ".059\" - .500\" Thick",
+   "source": "scs-tapping",
+   "severity": "error",
+   "checked_by": "limits: sheet.tap_min_thickness_mm; shop_tap_not_offered"
+  },
+  "tap_hole_to_edge": {
+   "value": null,
+   "unit": "",
+   "verbatim": "Keep the center of any tapped hole at least this distance from other cut features: (tap hole size ÷ 2) + minimum tap hole-to-edge distance for the material. The minimum tap hole-to-edge distance varies by material and thickness. Find it on each material info page.",
+   "source": "scs-tapping",
+   "checked_by": null,
+   "note": "per-material value NOT READ (script-loaded). The one worked example published: .063″ (1.6 mm) for .125″ 5052 (how-to-apply-hole-distance-specifications)."
+  },
+  "tap_direction": {
+   "value": null,
+   "unit": "",
+   "verbatim": "Tapping direction is perpendicular to the main surface only. All threads are right-hand",
+   "source": "scs-tapping",
+   "checked_by": null
+  },
+  "tap_powder": {
+   "value": null,
+   "unit": "",
+   "verbatim": "Tapped holes are not plugged before coating; expect to chase threads after",
+   "source": "scs-powder",
+   "checked_by": null
+  },
+  "tap_drill_mm": {
+   "value": {
+    "M2": 1.66,
+    "M2.5": 2.11,
+    "M3": 2.6,
+    "M4": 3.41,
+    "M5": 4.32,
+    "M6": 5.16,
+    "M8": 6.96,
+    "M10": 8.74
+   },
+   "unit": "mm",
+   "verbatim": "Model your hole at the size listed below for the tap you want. We automatically resize laser cut holes to the correct drill size. M3 x 0.5 | 0.102″ | 2.60 ; M4 x 0.7 | 0.134″ | 3.41 ; M5 x 0.8 | 0.170″ | 4.32",
+   "source": "scs-tapping",
+   "checked_by": "shop_services.tap"
+  },
+  "countersink_min_thickness_mm": {
+   "value": 3.175,
+   "unit": "mm",
+   "verbatim": "countersink table: no row thinner than .125″ has a size (5052/6061 .040″–.100″: N/A)",
+   "source": "scs-processing",
+   "severity": "error",
+   "checked_by": "limits: sheet.countersink_min_thickness_mm; shop_countersink_not_offered"
+  },
+  "countersink_depth_max_t_ratio": {
+   "value": 0.6,
+   "unit": "x thickness",
+   "verbatim": "Max countersink depth | Should not exceed 60% of material thickness",
+   "source": "scs-countersinking",
+   "severity": "warning",
+   "checked_by": null
+  },
+  "countersink_accuracy_mm": {
+   "value": 0.381,
+   "unit": "mm (+/-)",
+   "verbatim": "Accuracy | ±0.015″",
+   "source": "scs-countersinking",
+   "checked_by": null
+  },
+  "countersink_metric": {
+   "value": {
+    "M3": [
+     6.0,
+     3.18,
+     1.35
+    ],
+    "M4": [
+     8.0,
+     4.04,
+     1.93
+    ],
+    "M5": [
+     10.0,
+     5.0,
+     2.44
+    ],
+    "M6": [
+     12.0,
+     6.35,
+     2.77
+    ]
+   },
+   "unit": "mm [major, minor, depth], 90 deg",
+   "verbatim": "M3 x 0.5mm | 6mm (0.236”) | 3.18mm (0.130”) | 1.35mm (.053″) ; M4 x 0.7mm | 8mm | 4.04mm | 1.93mm ; M5 x 0.8mm | 10mm | 5.00mm | 2.44mm",
+   "source": "scs-countersinking",
+   "checked_by": "shop_services.countersink"
+  },
+  "countersink_file": {
+   "value": null,
+   "unit": "",
+   "verbatim": "Draw only the minor hole in your CAD file. Do not include the major diameter; the countersink is machined to the correct size automatically.",
+   "source": "scs-countersinking",
+   "checked_by": null
+  },
+  "bend_angle_tol_deg": {
+   "value": 1.0,
+   "unit": "deg (+/-)",
+   "verbatim": "Sheet metal bend angle tolerance: Bends up to 24″: +/- 1° ; Bends longer than 24″: +/- 2°",
+   "source": "scs-bending",
+   "checked_by": "bend_tolerance (equals mechloop's class value 0.5 deg one sigma)"
+  },
+  "bend_position_tol_mm": {
+   "value": 0.381,
+   "unit": "mm (+/-)",
+   "verbatim": "Bend-to-edge tolerance: +/- 0.015″ (each additional bend adds at least 0.015″)",
+   "source": "scs-bending",
+   "checked_by": "bend_tolerance (equals mechloop's class value 0.19 mm one sigma)"
+  },
+  "bend_angle_max_deg": {
+   "value": 130,
+   "unit": "deg",
+   "verbatim": "Max Bend Angle | 130°",
+   "source": "scs-bending",
+   "checked_by": null
+  },
+  "bend_radius": {
+   "value": null,
+   "unit": "",
+   "verbatim": "Bend radius and K factor are set per material thickness ... we don't offer custom bend radii.",
+   "source": "scs-bending",
+   "checked_by": "bend_radius_differs (existing bend table)"
+  },
+  "bend_hole_distance": {
+   "value": null,
+   "unit": "",
+   "verbatim": "Tapped holes near bends: Place tapped holes at least ½ the full die width away from the bend line. (.125″ 5052: bottom die width 0.630″, so 0.315″)",
+   "source": "scs-hole-distance-blog",
+   "checked_by": null,
+   "note": "die widths per thickness NOT READ (script-loaded)"
+  },
+  "bend_u_channel": {
+   "value": 2.0,
+   "unit": "x flange length",
+   "verbatim": "For U-channel and C-channel bends: Sheet metal: base must be at least 2x the flange length (2:1 ratio)",
+   "source": "scs-bending",
+   "checked_by": null
+  },
+  "deburr_min_thickness_mm": {
+   "value": 1.219,
+   "unit": "mm",
+   "verbatim": "Min thickness | .048″",
+   "source": "scs-deburring",
+   "checked_by": "shop_services.deburr"
+  },
+  "deburr_result": {
+   "value": null,
+   "unit": "",
+   "verbatim": "Parts are burr-free, smooth, and ready to use, but not perfectly cosmetic. Some edges will be sharp, while others may have slight rounding. Small machining tabs will remain on edges. ... aggressive edge softening must be done after delivery.",
+   "source": "scs-deburring",
+   "checked_by": null
+  },
+  "deburr_faces_only": {
+   "value": null,
+   "unit": "",
+   "verbatim": "our deburring process only contacts the top and bottom face of the material, so it will not fully remove edge dross",
+   "source": "scs-edge-blog",
+   "checked_by": null
+  },
+  "deburr_steel_rust": {
+   "value": null,
+   "unit": "",
+   "verbatim": "Deburred Mild Steel is more prone to rusting, and is not recommended for outdoor use unless it's coated.",
+   "source": "scs-deburring",
+   "checked_by": null
+  },
+  "tumble_min_thickness_mm": {
+   "value": 3.02,
+   "unit": "mm",
+   "verbatim": "Min material thickness | .119″",
+   "source": "scs-tumbling",
+   "checked_by": "shop_services.tumble"
+  },
+  "tumble_part_mm": {
+   "value": [
+    [
+     12.7,
+     38.1
+    ],
+    [
+     101.6,
+     177.8
+    ]
+   ],
+   "unit": "mm [min, max]",
+   "verbatim": "Min part size (flat) | .5″ x 1.5″ ; Max part size (flat) | 4″ x 7″",
+   "source": "scs-tumbling",
+   "checked_by": "shop_services.tumble"
+  },
+  "tumble_result": {
+   "value": null,
+   "unit": "",
+   "verbatim": "Tumbling is for deburring and edge softening only ... Expect rounded, uniform edges, not a specific radius. Holes and cutouts: Features smaller than 0.5″ won't be fully processed inside. For tumbling plus anodizing, plating, or powder coating, submit a custom quote request.",
+   "source": "scs-tumbling",
+   "checked_by": null
+  },
+  "powder_thickness_mm": {
+   "value": [
+    0.05,
+    0.127
+   ],
+   "unit": "mm per side",
+   "verbatim": "Coating thickness: Adds .002″–.005″ per side (.004″–.010″ total). Account for this in areas with tight clearances or small holes.",
+   "source": "scs-powder",
+   "checked_by": "shop_services.finish"
+  },
+  "powder_tabs": {
+   "value": null,
+   "unit": "",
+   "verbatim": "Tabs / micro joints: Not removed prior to coating. Visible through powder coat. Typically .015″–.030″ wide, ~.010″ tall.",
+   "source": "scs-powder",
+   "checked_by": null
+  },
+  "anodize_thickness_mm": {
+   "value": [
+    0.005,
+    0.023
+   ],
+   "unit": "mm per side",
+   "verbatim": "Type II anodizing adds ~0.0002″–0.0009″ per side to part dimensions",
+   "source": "scs-anodizing",
+   "checked_by": "shop_services.finish"
+  },
+  "anodize_conductivity": {
+   "value": null,
+   "unit": "",
+   "verbatim": "Anodizing is non-conductive. Scratches will expose raw aluminum beneath",
+   "source": "scs-anodizing",
+   "checked_by": null
+  },
+  "anodize_hanging_hole_mm": {
+   "value": 1.6,
+   "unit": "mm",
+   "verbatim": "Required hanging hole | ≥ .063″ (1.60 mm) ; Deburring is preselected on all anodized sheet metal parts.",
+   "source": "scs-anodizing",
+   "checked_by": null
+  },
+  "plating_thickness_mm": {
+   "value": [
+    0.0076,
+    0.0051
+   ],
+   "unit": "mm per side [zinc, nickel]",
+   "verbatim": "Zinc plating adds approximately .0003″ per side; nickel adds approximately .0002″ per side",
+   "source": "scs-plating",
+   "checked_by": "shop_services.finish"
+  },
+  "hardware": {
+   "value": null,
+   "unit": "",
+   "verbatim": "We offer three types of PEM® hardware: nuts, standoffs, and studs. Hardware is installed after anodizing and plating. Hardware is installed before powder coating. Nut, M3 (S-M3-0): hole in sheet .168″, minimum sheet thickness .031″, hole centre to edge .250″, centre to centre .336″.",
+   "source": "scs-hardware-catalog",
+   "checked_by": null
+  },
+  "file_format": {
+   "value": null,
+   "unit": "",
+   "verbatim": "2D vector files (preferred for flat cuts): .DXF (preferred), .DWG, .EPS, .AI. Scale 1:1. Inch units are preferred. Mm is fine if you keep it consistent between your file and your quote inputs. We don't support cm or meter units. Your file should contain only your part: strip out dimensions, notes, borders, title blocks. Convert all text to outlines. Closed contours only. No intersecting or shared lines. Single layer for cut paths. Best practice: one part per file.",
+   "source": "scs-sheet-cutting",
+   "checked_by": null
+  },
+  "file_holes_services": {
+   "value": null,
+   "unit": "",
+   "verbatim": "For hole services (countersinking, dimple forming, hardware, tapping), model simple through-holes and add the service in the app after upload. Model the part at the thickness you'll order.",
+   "source": "scs-sheet-cutting",
+   "checked_by": null
+  },
+  "billet_cnc": {
+   "value": null,
+   "unit": "",
+   "verbatim": "We offer 6061 T6 Aluminum for CNC machining services. Maximum overall part size: 7” x 7” x 12”. CNC milled parts will have an overall tolerance of +/- .005”. Sharp edges will have a .010” / .254mm edge break. Internal features will have a minimum radius of .0625” (1.587mm).",
+   "source": "scs-cnc",
+   "checked_by": null
+  }
+ },
+ "limits": {
+  "sheet.hole_min_t_ratio": {
+   "value": 0.5,
+   "rule": "hole_min_t_ratio"
+  },
+  "sheet.thickness_max_laser_mm": {
+   "value": 19.05,
+   "rule": "laser_thickness_max_mm"
+  },
+  "sheet.tap_min_thickness_mm": {
+   "value": 1.49,
+   "rule": "tap_min_thickness_mm"
+  },
+  "sheet.countersink_min_thickness_mm": {
+   "value": 3.17,
+   "rule": "countersink_min_thickness_mm"
+  }
+ },
+ "tolerance": {
+  "sheet": [
+   {
+    "up_to_mm": 304.8,
+    "pos": 0.0635,
+    "hole_sd": 0.0635,
+    "basis": {
+     "pos": "half of +/-0.127 mm ('Laser: ±0.005″ on parts under 12″')",
+     "hole_sd": "half of +/-0.127 mm on a cut feature's size",
+     "pattern": "class value kept: no hole-to-hole figure is published",
+     "scale": "class value kept",
+     "flat": "class value kept: no flatness figure is published",
+     "hole_bias": "class value kept"
+    },
+    "source": "scs-laser-service"
+   },
+   {
+    "up_to_mm": null,
+    "pos": 0.127,
+    "hole_sd": 0.0635,
+    "basis": {
+     "pos": "half of +/-0.254 mm ('±0.010″ on parts over 12″')",
+     "hole_sd": "half of +/-0.127 mm: a hole is a feature under 12 in",
+     "pattern": "class value kept",
+     "scale": "class value kept",
+     "flat": "class value kept",
+     "hole_bias": "class value kept"
+    },
+    "source": "scs-laser-service"
+   }
+  ]
+ },
+ "bend_tolerance": {
+  "angle_deg": 0.5,
+  "line_mm": 0.19,
+  "basis": "half of +/-1 deg and +/-0.015 in (0.381 mm), bends up to 24 in",
+  "source": "scs-bending"
+ },
+ "material_rules": [
+  {
+   "id": "stocked_thickness",
+   "kind": "stock",
+   "severity": "error",
+   "text": "a cut part's thickness must be one the shop stocks in that material (within 0.05 mm)",
+   "checked_by": "non_stock_thickness"
+  },
+  {
+   "id": "material_offered",
+   "kind": "material",
+   "severity": "error",
+   "text": "the material must be in the shop's cutting chart",
+   "checked_by": "shop_material_not_offered"
+  },
+  {
+   "id": "no_bend_6061",
+   "kind": "bend",
+   "materials": [
+    "al6061",
+    "al_mic6",
+    "delrin"
+   ],
+   "severity": "error",
+   "text": "6061-T6, cast plate and Delrin are not in the bending table; 5052-H32, mild steel and 304 are",
+   "checked_by": "material_not_bent"
+  },
+  {
+   "id": "bare_carbon_steel",
+   "kind": "finish_required",
+   "materials": [
+    "steel"
+   ],
+   "severity": "warning",
+   "text": "carbon steel needs a declared finish (meta['finish']: 'powder_coat', 'zinc', 'nickel', 'paint', 'oil' or 'bare' with a reason): 'it will oxidize (rust) if left unprotected'",
+   "checked_by": "bare_steel_no_finish",
+   "source": "scs-mild-steel"
+  },
+  {
+   "id": "zinc_min_thickness",
+   "kind": "finish_available",
+   "finish": "zinc",
+   "materials": [
+    "steel"
+   ],
+   "min_t_mm": 4.75,
+   "severity": "error",
+   "text": "zinc or nickel plating is listed for mild steel from .187 in (4.75 mm) only",
+   "checked_by": "shop_finish_not_offered",
+   "source": "scs-processing"
+  },
+  {
+   "id": "anodize_aluminium_only",
+   "kind": "finish_available",
+   "finish": "anodize",
+   "materials": [
+    "al6061",
+    "al5052"
+   ],
+   "severity": "error",
+   "text": "anodizing: 5052, 6061, 7075 from .063 in, parts 1 x 3 in to 23 x 23 in",
+   "checked_by": "shop_finish_not_offered",
+   "source": "scs-processing"
+  },
+  {
+   "id": "coating_insulates",
+   "kind": "advice",
+   "severity": "info",
+   "text": "anodizing is non-conductive and powder coat insulates: a protective-earth bond needs a masked or scraped contact, a serrated washer or a dedicated bare stud; powder adds 0.05-0.13 mm per side to every fit",
+   "checked_by": null,
+   "source": "scs-anodizing"
+  },
+  {
+   "id": "delrin_process",
+   "kind": "advice",
+   "severity": "info",
+   "text": "Delrin: 3.18 mm is laser cut at +/-0.23 mm (.009 in); 4.75 and 6.86 mm are routed at +/-0.127 mm with fixturing tabs and 1.6 mm inside corners; no deburring or coating",
+   "checked_by": null,
+   "source": "scs-delrin"
+  },
+  {
+   "id": "cast_plate_for_flat",
+   "kind": "advice",
+   "severity": "info",
+   "text": "a flatness-critical plate (print bed, fixture) should be cast tooling plate at a stocked thickness (MIC-6: 6.35, 9.53, 12.7 mm) so its faces stay as supplied",
+   "checked_by": null,
+   "source": "scs-mic6"
+  }
+ ],
+ "not_published": [
+  "per-thickness minimum hole, minimum bridge, tap hole-to-edge, countersink centre-to-edge and bending die width: on the material pages behind 'View specs', loaded by script; not read",
+  "flatness of cut parts",
+  "edge-break radius after deburring or tumbling (explicitly not controlled)",
+  "hole-to-hole position tolerance separate from the general cut tolerance",
+  "kerf width per material (only the 0.006-0.012 in common-line gap)",
+  "thickness tolerance of the stock"
+ ]
+}

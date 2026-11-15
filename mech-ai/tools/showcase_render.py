@@ -121,7 +121,7 @@ class Scene:
 
 def render_view(scene: Scene, path: Path, *, q: dict, show, camera: dict, size=(1500, 1000), ghost=(),
                 callouts=(), offsets=None, belt_names=None, belt_offsets=None, color_override=None, ss: int = 2,
-                extra=None) -> dict:
+                extra=None, marks=None, ghost_color="#7f8896") -> dict:
     """Draw one view. `show`/`ghost`: sets of part names. camera: {"pos", "focal", "up", "angle"} or with
     "parallel_scale". callouts: [(key, label, [part names])]. Returns {"size": [w, h], "callouts": [...]}; callout x, y
     are fractions of the picture from its top-left corner."""
@@ -157,11 +157,8 @@ def render_view(scene: Scene, path: Path, *, q: dict, show, camera: dict, size=(
         e = m.extract_feature_edges(feature_angle=38, boundary_edges=True, non_manifold_edges=False, manifold_edges=False)
         if e.n_points:
             pl.add_mesh(e, color="#20242b", line_width=1.0 * ss, lighting=False)
-    for n in ghost:
-        e = parts[n].extract_feature_edges(feature_angle=38, boundary_edges=True, non_manifold_edges=False,
-                                           manifold_edges=False)
-        if e.n_points:
-            pl.add_mesh(e, color="#8d95a3", line_width=0.8 * ss, lighting=False, opacity=0.55)
+    for n in ghost:  # phantom outline: the part's bounding box, not its detail
+        pl.add_mesh(parts[n].outline(), color=ghost_color, line_width=1.0 * ss, lighting=False)
     for name, bl, width in scene.belts(q, belt_offsets):
         if belt_names is not None and name not in belt_names:
             continue
@@ -171,12 +168,21 @@ def render_view(scene: Scene, path: Path, *, q: dict, show, camera: dict, size=(
         extra(pl, pv, ss)
     cam(pl)
     img = pl.screenshot(None, transparent_background=True, return_img=True)
+    proj = {}
+    if marks:
+        import vtk
+        co = vtk.vtkCoordinate()
+        co.SetCoordinateSystemToWorld()
+        for k, p in marks.items():
+            co.SetValue(float(p[0]), float(p[1]), float(p[2]))
+            dx, dy = co.GetComputedDoubleDisplayValue(pl.renderer)
+            proj[k] = [round(dx / (W * ss), 4), round(1.0 - dy / (H * ss), 4)]
     pl.close()
     im = Image.fromarray(img).resize((W, H), Image.LANCZOS)
     path.parent.mkdir(parents=True, exist_ok=True)
     im.save(path, "WEBP", quality=86, method=6)
 
-    out = {"size": [W, H], "callouts": [], "file": path.name}
+    out = {"size": [W, H], "callouts": [], "file": path.name, "marks": proj}
     if callouts:
         # identity pass: same camera, every shown part black, each called-out part its own flat colour
         pl2 = pv.Plotter(off_screen=True, window_size=(W, H), lighting="none")
@@ -194,6 +200,11 @@ def render_view(scene: Scene, path: Path, *, q: dict, show, camera: dict, size=(
         pl2.close()
         for k, (key, label, names) in enumerate(callouts, 1):
             mask = (idimg[:, :, 0] == k * 8) & (idimg[:, :, 2] > 250)
+            mx, my = int(W * 0.035), int(H * 0.035)   # keep the callout clear of the picture's edge
+            inner = np.zeros_like(mask)
+            inner[my:H - my, mx:W - mx] = mask[my:H - my, mx:W - mx]
+            if inner.sum() >= 12:
+                mask = inner
             if mask.sum() < 12:
                 out["callouts"].append({"key": key, "label": label, "visible": False, "parts": list(names)})
                 continue
@@ -202,6 +213,6 @@ def render_view(scene: Scene, path: Path, *, q: dict, show, camera: dict, size=(
             big = lab == (int(np.argmax(sizes)) + 1)
             dist = ndimage.distance_transform_edt(big)
             y, x = np.unravel_index(int(np.argmax(dist)), dist.shape)
-            out["callouts"].append({"key": key, "label": label, "visible": True, "x": round((x + 0.5) / W, 4),
-                                    "y": round((y + 0.5) / H, 4), "visible_px": int(mask.sum()), "parts": list(names)})
+            out["callouts"].append({"key": key, "label": label, "visible": True, "x": round(float(x + 0.5) / W, 4),
+                                    "y": round(float(y + 0.5) / H, 4), "visible_px": int(mask.sum()), "parts": list(names)})
     return out

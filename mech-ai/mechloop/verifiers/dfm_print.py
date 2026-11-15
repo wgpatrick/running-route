@@ -47,6 +47,50 @@ def _bridge_spans(sm: G.Sampled, idx: np.ndarray, up: np.ndarray, frame: np.ndar
     return span, nearest
 
 
+def _held_to_loaded(shape, lc):
+    """Vector from the area centre of the faces a LoadCase holds to that of the faces it loads; None when either
+    selection is empty or cannot be evaluated."""
+    def centre(pred):
+        acc, area = np.zeros(3), 0.0
+        for f in shape.faces():
+            try:
+                if not pred(f):
+                    continue
+                cc = f.center()
+                acc += f.area * np.array([cc.X, cc.Y, cc.Z])
+                area += f.area
+            except Exception:
+                continue
+        return acc / area if area > 0 else None
+
+    try:
+        a, b = centre(lc.fixed), centre(lc.loaded)
+    except Exception:
+        return None
+    return None if a is None or b is None else b - a
+
+
+def layer_load_kind(f_unit, arm, up) -> str:
+    """How a load meets the layers of a part printed with `up` as the build direction.
+
+    arm: from where the part is held to where it is loaded. Along the build direction the load either pulls the loaded
+    face away from the held one ("tension": layers pulled apart, the weak case), pushes it towards it ("compression":
+    layers pressed together, benign), or, when the loaded face lies beside the held one more than above or below it,
+    crosses the layers in shear and bending ("shear": weak). "unknown" when held and loaded faces coincide or no
+    geometry is available: the caller treats it as tension."""
+    if arm is None:
+        return "unknown"
+    arm = np.asarray(arm, dtype=float)
+    upv = np.asarray(up, dtype=float)
+    ax = float(arm @ upv)
+    lat = float(np.linalg.norm(arm - ax * upv))
+    if abs(ax) < 1e-6 and lat < 1e-6:
+        return "unknown"
+    if lat > abs(ax):
+        return "shear"
+    return "tension" if float(np.asarray(f_unit, dtype=float) @ upv) * ax > 0 else "compression"
+
+
 def evaluate(sm: G.Sampled, name: str, up: np.ndarray, frame: np.ndarray, holes: list, masks: list, lim: Limits, vol) -> dict:
     h = sm.pts @ up
     verts = np.asarray(sm.mesh.vertices) @ up
@@ -115,11 +159,13 @@ def check_printed(r, design, c, sm: G.Sampled, frame: np.ndarray, cyls: list, ho
 
     # ---- loads on this part, for the layer-direction check
     loads = []
+    load_arm = {}        # load case -> vector from the centre of the held faces to the centre of the loaded faces
     for lc in getattr(design, "loadcases", []):
         if lc.component == name:
             f = np.array(lc.force, dtype=float)
             if np.linalg.norm(f) > 0:
                 loads.append((lc.name, f / np.linalg.norm(f)))
+                load_arm[lc.name] = _held_to_loaded(c.shape, lc)
 
     pinned = lim.part.get("print_up") or c.meta.get("print_up")
     if pinned and pinned not in axes:
@@ -127,8 +173,12 @@ def check_printed(r, design, c, sm: G.Sampled, frame: np.ndarray, cyls: list, ho
     rows = {}
     for nm, up in axes.items():
         row = evaluate(sm, nm, up, frame, holes, masks, lim, vol)
-        across = max((abs(f @ up) for _, f in loads), default=0.0)
+        # a load that presses the layers together is not a weakness of the orientation: only tension, shear / bending
+        # and loads whose sense cannot be told count against it
+        across = max((abs(f @ up) for nm_, f in loads if layer_load_kind(f, load_arm.get(nm_), up) != "compression"), default=0.0)
         row["load_along_build_axis"] = round(float(across), 2)
+        row["compressive_load_along_build_axis"] = round(float(max((abs(f @ up) for nm_, f in loads
+                                                                    if layer_load_kind(f, load_arm.get(nm_), up) == "compression"), default=0.0)), 2)
         row["plain_score"] = (row["support_area_mm2"] - 0.2 * row["footprint_mm2"] + 0.5 * row["height_mm"]
                               + (0.0 if row["fits_print_volume"] else 1e6))
         row["score"] = row["plain_score"] + 400.0 * max(0.0, across - lim("fdm.layer_load_fraction"))
@@ -296,15 +346,31 @@ def check_printed(r, design, c, sm: G.Sampled, frame: np.ndarray, cyls: list, ho
                 hint=f"Leave at least {tp['d']:g} mm of wall all round (boss diameter at least three screw diameters).")
 
     # ---- layers
-    worst = max(((abs(f @ up), nm) for nm, f in loads), default=(0.0, None))
+    kinds = {nm: layer_load_kind(f, load_arm.get(nm), up) for nm, f in loads}
+    out["loads_against_layers"] = {nm: {"share_along_build_axis": round(float(abs(f @ up)), 2), "kind": kinds[nm]} for nm, f in loads}
+    weak = [(abs(f @ up), nm) for nm, f in loads if kinds[nm] != "compression"]
+    worst = max(weak, default=(0.0, None))
     if worst[0] > lim("fdm.layer_load_fraction") + 1e-9:
         better = min(rows.values(), key=lambda q: (q["load_along_build_axis"], q["score"]))
+        what = {"tension": "it pulls the layers apart (the loaded face is pulled away from where the part is held), the weakest "
+                           "direction of a printed part",
+                "shear": "the loaded face lies beside where the part is held, not above or below it, so the load crosses the layers in "
+                         "shear and bending: one side of the section is pulled apart, the other pressed, and layers are weak in both "
+                         "shear and tension",
+                "unknown": "whether it pulls the layers apart or presses them together cannot be told from the case (held and loaded "
+                           "faces coincide), so it is taken as pulling them apart, the weakest direction of a printed part"}[kinds[worst[1]]]
         add("warning", "load_across_layers",
-            f"load case '{worst[1]}' acts {worst[0]:.0%} along the build direction ({best['up']} up): it pulls the layers apart, the weakest "
-            f"direction of a printed part, and the FEA assumes the material is equally strong every way.",
-            rule="fdm.layer_load_fraction", value=worst[0],
+            f"load case '{worst[1]}' acts {worst[0]:.0%} along the build direction ({best['up']} up): {what}, and the FEA assumes the "
+            f"material is equally strong every way.",
+            rule="fdm.layer_load_fraction", value=worst[0], kind=kinds[worst[1]],
             hint=f"Print with {better['up']} up so the load runs along the layers, or add a through bolt that puts the layers in compression."
                  " (Direction only: a bending load across a tall part also loads the layers and is not detected.)")
+    pressed = [(abs(f @ up), nm) for nm, f in loads if kinds[nm] == "compression" and abs(f @ up) > lim("fdm.layer_load_fraction") + 1e-9]
+    if pressed:
+        add("info", "load_presses_layers_together",
+            f"load case(s) {', '.join(repr(nm) for _, nm in sorted(pressed, reverse=True))} act along the build direction ({best['up']} up) "
+            f"and press the layers together (the loaded face is pushed towards where the part is held): compression across the layers is "
+            f"not a weak direction. Not flagged.", kind="compression")
 
     # ---- warp (rule of thumb) and a rough cost
     from .warp import warp_risk

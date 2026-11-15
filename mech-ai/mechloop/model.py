@@ -200,6 +200,12 @@ class Belt:
     outboard_support: Sequence[str] = ()
 
 
+# Join kinds that hold two parts together across their contact face and let them slide along it (no shear carried):
+# a magnet-held sheet, or any contact declared as sliding. The thermal analysis ties such a pair in the normal
+# direction only; every other verifier treats the join as it treats any declared join (the parts are held).
+SLIDING_JOIN_PREFIXES = ("magnet", "sliding")
+
+
 @dataclass
 class ThermalCase:
     """Thermal growth of several parts meshed together.
@@ -208,6 +214,10 @@ class ThermalCase:
     probes: {label: (x, y, z)} points whose movement is reported.
     gaps: {name: (probe_a, probe_b, "x"|"y"|"z", limit_mm or None)} change in (a - b) along an axis.
     flatness: (part, "x"|"y"|"z", limit_mm or None) bow of that part's top face along the axis.
+
+    Parts are bonded where they touch, except a pair joined with a sliding kind (`design.join(a, b, "magnet")` or
+    `"sliding"`): that contact carries normal load and slides in its plane, so a steel sheet held by a magnet does
+    not bend the plate under it as a bonded bimetal would.
     """
 
     name: str
@@ -330,6 +340,13 @@ class Design:
 
     def join(self, a: str, b: str, kind: str = "bond") -> None:
         self.joins[frozenset((a, b))] = kind
+
+    def slides_on(self, a: str, b: str) -> bool:
+        """True when the declared join between a and b carries load across the contact but lets the two slide along
+        it: a join whose kind starts with "magnet" (a print sheet on a magnetic base) or "sliding" (any declared
+        sliding contact: `design.join(a, b, "sliding")`). See SLIDING_JOIN_PREFIXES."""
+        kind = str(self.joins.get(frozenset((a, b)), "")).strip().lower()
+        return kind.startswith(SLIDING_JOIN_PREFIXES)
 
     def bom_extra(self, sku: str, qty: int = 1, unit_cost_usd: float | None = None) -> None:
         e = self.bom_extras.setdefault(sku, {"qty": 0, "unit_cost_usd": unit_cost_usd})

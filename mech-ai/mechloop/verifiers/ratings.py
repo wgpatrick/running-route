@@ -385,6 +385,30 @@ def verify_ratings(design: Design) -> VerifierResult:
                 k_tilt = float((k * al ** 2).sum() + len(blocks) * k * track ** 2 / 12.0)      # N*m/rad
                 sag = 9.81 * arm_len / k_tilt * arm_len * 1e3                                # mm at the mass centre, per kg there
                 f_tilt = float(np.sqrt(k_tilt / max(m * arm_len ** 2, 1e-9)) / (2 * np.pi))
+                # A body that also sits on several lead-screw nuts does not hang from its blocks: the nuts are supports
+                # (each holds along its screw only, which is all a floating nut can do). Then the same two figures come
+                # from the body on ALL its supports: compliance c at the mass centre for a vertical load, sag = g c per
+                # kg, nod frequency sqrt(1 / (m c)) / 2 pi. With guide blocks alone this is the formula above.
+                nut_names = []
+                try:
+                    from . import bed_support as BS
+
+                    lay_ = BS.joint_layout(design, j)
+                    if len(lay_["nuts"]) >= 2 and lay_["kind"] == "leadscrew":
+                        mdl_ = BS.support_model(design, lay_)
+                        if mdl_["held"]:
+                            res_ = BS.respond(mdl_, gdir, com)
+                            c_mm_n = float(res_["at"](com) @ gdir)
+                            if c_mm_n > 0:
+                                nut_names = list(lay_["nuts"])
+                                sag = 9.81 * c_mm_n
+                                f_tilt = float(np.sqrt(1.0 / (m * c_mm_n * 1e-3)) / (2 * np.pi))
+                                loads[jn]["supports_counted"] = {"guide_blocks": len(blocks), "lead_screw_nuts": nut_names,
+                                                                 "nut_holds": "along its screw only (as a floating nut does)",
+                                                                 "compliance_at_mass_centre_mm_per_n": round(c_mm_n, 6),
+                                                                 "assumed": mdl_["assumed"]}
+                except Exception as e_:
+                    loads[jn]["supports_counted"] = {"error": f"{type(e_).__name__}: {e_}; guide blocks only"}
                 loads[jn].update({"tilt_stiffness_nm_per_rad": round(k_tilt), "sag_at_mass_centre_mm_per_kg": round(sag, 4),
                                   "tilt_mode_hz": round(f_tilt, 1), "block_stiffness_assumed_n_per_um": round(k * 1e-6, 1),
                                   "block_stiffness_source": (blocks[0].ratings.get("radial_stiffness_source") if maker_k else None)
@@ -397,7 +421,10 @@ def verify_ratings(design: Design) -> VerifierResult:
                 if f_tilt < 100.0:
                     r.add("warning", "cantilever_on_guide_blocks",
                           f"Joint {jn}: the {m:.2f} kg it carries hangs {arm_len * 1e3:.0f} mm from its {len(blocks)} guide blocks, which "
-                          f"have {float(al.max() - al.min()) * 1e3:.0f} mm of spacing along the rail. On the blocks' own give it nods at about "
+                          f"have {float(al.max() - al.min()) * 1e3:.0f} mm of spacing along the rail"
+                          + (f", and sits on {len(nut_names)} lead-screw nuts (counted as supports along their screws). On blocks and nuts "
+                             f"together it" if nut_names else ". On the blocks' own give it")
+                          + f" nods at about "
                           f"{f_tilt:.0f} Hz and sags {sag:.3f} mm per kg (estimate: block stiffness {k * 1e-6:.0f} N/um, "
                           + (f"the maker's radial figure at preload {'/'.join(classes)}, {loads[jn].get('preload_class_basis', '')})." if maker_k
                              else "assumed)."),

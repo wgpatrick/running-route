@@ -66,6 +66,12 @@ NUT_BACKLASH_ASSUMED_MM = 0.1       # typical for a plain brass T8 nut (ASSUMED)
 MU_BALL, MU_PLAIN = 0.005, 0.15     # recirculating balls; plain bushing on a rod (both assumed, as in the tolerance verifier)
 RAIL_CLASS_ASSUMED = "C"
 SYNC_BELT_MM = 0.02                 # screws tied by one closed belt: pitch and tension differences (ASSUMED)
+# Lead accuracy of a rolled trapezoidal screw: +/-0.1 mm per 300 mm of travel is the usual class figure for rolled Tr
+# screws (recalled from makers' catalogues, e.g. standard-grade rolled lead screws at 0.1 mm / 300 mm; no document
+# fetched, and the catalogue's StepperOnline record lists "lead accuracy" under not_obtained). ASSUMED, and reported so.
+# A screw part that carries ratings["lead_accuracy_mm_per_300mm"] overrides it.
+LEAD_ACCURACY_ASSUMED_MM_PER_300 = 0.1
+GUIDES_HOLD_TILT_RATIO = 0.5        # a tilt mode counts as held by the guides too when they are at least half as stiff in it as the screws
 G = 9.81
 
 
@@ -123,6 +129,214 @@ def layout(design: Design) -> dict | None:
 
 def _skew(r):
     return np.array([[0, -r[2], r[1]], [r[2], 0, -r[0]], [-r[1], r[0], 0]])
+
+
+def joint_layout(design: Design, j) -> dict:
+    """What support_model needs, for ANY joint (the ratings verifier uses it for a body on guide blocks and several
+    lead-screw nuts): axis, guide blocks, screws, nuts, motors, a reference point."""
+    comps = {c.name: c for c in design.components}
+    a = np.array(j.axis, dtype=float)
+    a /= np.linalg.norm(a)
+    drv = j.drive or {}
+    screws, nuts, motors = _aslist(drv.get("screw")), _aslist(drv.get("nut")), _aslist(drv.get("motor"))
+    nuts = [n for n in nuts if n in comps]
+    blocks = [c for c in design.components if c.meta.get("guides") == j.name and c.name not in nuts]
+    pts = [_center(b) for b in blocks] + [_center(comps[n]) for n in nuts]
+    top = np.mean(pts, axis=0) if pts else np.zeros(3)
+    return {"joint": j, "axis": a, "blocks": blocks, "screws": screws, "nuts": nuts, "motors": motors, "top": top,
+            "print_area": (100.0, 100.0), "kind": drv.get("kind")}
+
+
+def lead_accuracy(design: Design, lay: dict) -> dict:
+    """Lead accuracy of the Z screws, mm per 300 mm: the catalogue's where a screw part records it, else the class value."""
+    comps = {c.name: c for c in design.components}
+    vals = [comps[s_].ratings.get("lead_accuracy_mm_per_300mm") for s_ in lay["screws"] if s_ in comps]
+    if vals and all(v is not None for v in vals):
+        return {"mm_per_300mm": float(max(vals)), "basis": "catalogue (ratings['lead_accuracy_mm_per_300mm'] of the screw part)", "assumed": False}
+    return {"mm_per_300mm": LEAD_ACCURACY_ASSUMED_MM_PER_300, "assumed": True,
+            "basis": f"ASSUMED: +/-{LEAD_ACCURACY_ASSUMED_MM_PER_300:g} mm per 300 mm, the usual class figure for a rolled trapezoidal screw "
+                     f"(recalled; the catalogue has no lead accuracy for this screw: set ratings['lead_accuracy_mm_per_300mm'] on the part when the maker's is known)"}
+
+
+def nut_seating(design: Design, lay: dict) -> dict:
+    """How each nut carries load. "gravity": the nut only bears one way (the body sits on it; a floating nut is this
+    unless said otherwise); "captive": fixed both ways, with backlash between the flanks.
+    drive["nut_seating"] = "gravity" | "captive" states it; left out, a design that declares a floating nut
+    (Adjustment kind "float" on the joint) is taken as gravity-seated and any other as captive."""
+    j = lay["joint"]
+    said = (j.drive or {}).get("nut_seating")
+    floats = any(ad.kind == "float" and ad.joint in (None, j.name) for ad in design.adjustments)
+    kind = said if said in ("gravity", "captive") else ("gravity" if floats else "captive")
+    return {"kind": kind, "basis": ("declared (drive['nut_seating'])" if said in ("gravity", "captive") else
+                                    "a floating nut is declared (Adjustment 'float'): taken as seated by the load only" if floats else
+                                    "no floating nut declared: taken as fixed both ways"),
+            "reverse_gap_mm": None if kind == "gravity" else NUT_BACKLASH_ASSUMED_MM,
+            "reverse_gap_note": ("nothing pulls a gravity-seated nut back: once its load reaches zero it carries nothing"
+                                 if kind == "gravity" else
+                                 f"a captive nut bears again on its other flank after {NUT_BACKLASH_ASSUMED_MM} mm of backlash (ASSUMED)")}
+
+
+def split_stiffness(model: dict, lay: dict) -> tuple:
+    """(K of the guides alone, [(nut support, 6-vector c with c @ x = the body's rise at the nut along `up`, k axial)])."""
+    up = lay.get("up")
+    if up is None:
+        up = lay["axis"] * (1.0 if lay["axis"] @ np.array([0, 0, 1.0]) >= 0 else -1.0)
+    Kg = np.zeros((6, 6))
+    nuts = []
+    for s_ in model["supports"]:
+        J = np.hstack([np.eye(3), -_skew(s_["r"])])
+        if s_["kind"] == "guide":
+            Kg += J.T @ s_["k"] @ J
+            Kg[3:, 3:] += s_["kappa"]
+        else:
+            a = lay["axis"]
+            nuts.append((s_, J.T @ up, float(a @ s_["k"] @ a)))
+    return Kg, nuts
+
+
+def tilt_redundancy(model: dict, lay: dict) -> dict:
+    """How many screws are redundant, by stiffness and not by counting parts.
+
+    The nuts hold the body's height at their points. The guides hold a pattern of nut heights too when moving the
+    nuts in that pattern against the guides alone takes force comparable to the screws' own stiffness. With S the
+    guides' stiffness seen at the nuts (the force at the nuts per unit of imposed nut heights, the body held only by
+    its guides) and D the nuts' axial stiffness, the modes of D^-1/2 S D^-1/2 above GUIDES_HOLD_TILT_RATIO are held
+    twice: each is one redundant support. Nuts beyond three (or that do not span a plane) add the rest."""
+    Kg, nuts = split_stiffness(model, lay)
+    n = len(nuts)
+    if n == 0:
+        return {"redundant": 0, "modes": []}
+    B = np.column_stack([c for _, c, _ in nuts])
+    k = np.array([kk for _, _, kk in nuts])
+    Lc = max(float(max(lay["print_area"])), 50.0)
+    Sc = np.diag([1, 1, 1, 1 / Lc, 1 / Lc, 1 / Lc])
+    Kgs = Sc @ Kg @ Sc
+    eps = 1e-9 * max(float(np.abs(np.diag(Kgs)).max()), float(k.max()), 1e-9)
+    F = (Sc @ B).T @ np.linalg.inv(Kgs + eps * np.eye(6)) @ (Sc @ B)       # compliance of the guide-held body at the nuts
+    rank = int(np.linalg.matrix_rank(B, tol=1e-6 * np.abs(B).max()))
+    S = np.linalg.pinv(F, rcond=1e-9)
+    Dm = np.diag(1.0 / np.sqrt(k))
+    lam = np.sort(np.linalg.eigvalsh(Dm @ S @ Dm))[::-1][:rank]
+    held = [float(x) for x in lam if x > GUIDES_HOLD_TILT_RATIO]
+    return {"redundant": len(held) + (n - rank), "nuts_spanning": rank,
+            "guide_over_screw_stiffness_by_mode": [round(float(x), 3) for x in lam],
+            "modes_held_by_guides_too": len(held), "threshold": GUIDES_HOLD_TILT_RATIO}
+
+
+def contact_solve(model: dict, lay: dict, wrench, offsets: dict, gap) -> dict:
+    """The body on its guides (springs both ways) and on nuts that bear ONE way: nut i pushes up with
+    k_i (h_i - z_i) while that is positive (h_i: how far its screw stands high, z_i: the body's rise there); with a
+    reverse gap g it pulls down with k_i (h_i + g - z_i) once the body has risen g clear of it (a captive nut's other
+    flank); in between it carries nothing. Active-set iteration; the wrench is (force, moment about model["O"])."""
+    Kg, nuts = split_stiffness(model, lay)
+    w = np.asarray(wrench, dtype=float)
+    state = ["seated"] * len(nuts)
+    x = np.zeros(6)
+    for _ in range(40):
+        K = Kg.copy()
+        rhs = w.copy()
+        for (s_, c, k), st in zip(nuts, state):
+            if st == "free":
+                continue
+            h = offsets.get(s_["name"], 0.0) + (gap if st == "reversed" else 0.0)
+            K += k * np.outer(c, c)
+            rhs += k * h * c
+        x = np.linalg.lstsq(K, rhs, rcond=None)[0]
+        new = []
+        for (s_, c, k) in nuts:
+            z = float(c @ x)
+            h = offsets.get(s_["name"], 0.0)
+            new.append("seated" if h - z > 1e-12 else "reversed" if (gap is not None and z - h > gap) else "free")
+        if new == state:
+            break
+        state = new
+    forces = {}
+    for (s_, c, k), st in zip(nuts, state):
+        h = offsets.get(s_["name"], 0.0) + (gap if st == "reversed" else 0.0)
+        forces[s_["name"]] = 0.0 if st == "free" else float(k * (h - c @ x))
+    Kf = Kg.copy()
+    for (s_, c, k), st in zip(nuts, state):
+        if st != "free":
+            Kf += k * np.outer(c, c)
+    return {"u": x[:3], "theta": x[3:], "state": dict(zip([s_["name"] for s_, _, _ in nuts], state)), "nut_force_n": forces, "K": Kf, "Kg": Kg}
+
+
+def _guide_forces(model: dict, x) -> float:
+    u, th = x[:3], x[3:]
+    return max((float(np.linalg.norm(s_["k"] @ (u + np.cross(th, s_["r"])))) for s_ in model["supports"] if s_["kind"] == "guide"), default=0.0)
+
+
+def seating_study(design: Design, lay: dict, model: dict, W: float, com, wc, sync_err: float, travel: float) -> dict:
+    """Screw height errors against nut seating (several screws).
+
+    Height error between screws = the synchronisation error of the arrangement + the screws' lead error accumulated
+    over the travel since the bed was trammed. For each nut: the load the moving mass seats it with, how much one
+    screw standing high or low takes off it per mm (linear), hence the height error at which it unloads; and, with
+    nuts that bear one way, what the bed does at each error level: which nuts lift, the change of bed level across the
+    print area, the largest force on a guide block and a nut, and how far 1 kg at the worst corner then lowers the bed
+    on its supports (guides and the nuts still seated)."""
+    up = lay["up"]
+    la = lead_accuracy(design, lay)
+    seat = nut_seating(design, lay)
+    e_lead = la["mm_per_300mm"] / 300.0 * travel
+    Kg, nuts = split_stiffness(model, lay)
+    O = model["O"]
+    grav = np.concatenate([-up * W, np.cross(np.asarray(com) - O, -up * W)])
+    K_all = Kg + sum(k * np.outer(c, c) for _, c, k in nuts)
+    x0 = np.linalg.lstsq(K_all, grav, rcond=None)[0]
+    f0 = {s_["name"]: float(-k * (c @ x0)) for s_, c, k in nuts}
+    sens = {s_["name"]: 0.0 for s_, _, _ in nuts}          # N taken off this nut per mm of height error on the worst screw
+    for sk, ck, kk in nuts:
+        xk = np.linalg.lstsq(K_all, kk * ck, rcond=None)[0]       # screw k high by 1 mm
+        for s_, c, k in nuts:
+            df = k * ((1.0 if s_ is sk else 0.0) - c @ xk)
+            sens[s_["name"]] = max(sens[s_["name"]], abs(float(df)))
+    rows = {}
+    for n_ in f0:
+        crit = f0[n_] / sens[n_] if sens[n_] > 1e-9 else None
+        rows[n_] = {"seating_load_n": round(f0[n_], 2), "load_change_n_per_mm_of_height_error": round(sens[n_], 1),
+                    "unloads_at_height_error_mm": None if crit is None else round(max(crit, 0.0), 4)}
+    levels = [("synchronisation only", sync_err),
+              ("synchronisation + lead error over the travel, one screw at its class limit", sync_err + e_lead),
+              ("synchronisation + lead error over the travel, two screws at opposite limits", sync_err + 2.0 * e_lead)]
+    pw = PRINT_MASS_KG * G
+    lvl_rows = []
+    f_pw = np.concatenate([-up * pw, np.cross(np.asarray(wc) - O, -up * pw)])
+
+    def sag_on(K):
+        xx = np.linalg.lstsq(K, f_pw, rcond=None)[0]
+        return float(-((xx[:3] + np.cross(xx[3:], np.asarray(wc) - O)) @ up))
+
+    sag_seated = sag_on(K_all)
+    for label, E in levels:
+        worst = None
+        for sk, _, _ in nuts:
+            for sgn in (1.0, -1.0):
+                sol = contact_solve(model, lay, grav, {sk["name"]: sgn * E}, seat["reverse_gap_mm"])
+                lifted = sorted(n_ for n_, st in sol["state"].items() if st != "seated")
+                tilt = _tilt_mm(sol["theta"] - x0[3:], lay)
+                xs = np.concatenate([sol["u"], sol["theta"]])
+                row = {"screw": sk["name"], "stands": "high" if sgn > 0 else "low", "nuts_not_seated": lifted,
+                       "bed_level_change_across_print_area_mm": round(tilt, 4),
+                       "largest_force_on_a_guide_block_n": round(_guide_forces(model, xs), 1),
+                       "largest_nut_load_n": round(max(sol["nut_force_n"].values()), 1),
+                       "least_nut_load_n": round(min(sol["nut_force_n"].values()), 2),
+                       "print_weight_sag_on_supports_mm": round(sag_on(sol["K"]), 4)}
+                key = (len(lifted), row["print_weight_sag_on_supports_mm"], tilt)
+                if worst is None or key > worst[0]:
+                    worst = (key, row)
+        # the linear margin at this level: the least load any nut is left with if every nut stayed seated
+        margin = {n_: round(f0[n_] - E * sens[n_], 2) for n_ in f0}
+        lvl_rows.append({"case": label, "height_error_mm": round(E, 4), "nut_load_margin_n": margin,
+                         "a_nut_unseats": bool(worst[1]["nuts_not_seated"]), "worst_case": worst[1]})
+    return {"nut_seating": seat, "lead_accuracy": la, "travel_mm": round(travel, 1),
+            "lead_error_over_travel_mm": round(e_lead, 4),
+            "lead_error_note": "per screw, at the class limit; the difference between two screws is between 0 (same error) and twice this "
+                               "(opposite limits). It grows with the distance moved from the height the bed was trammed at; neither a belt "
+                               "nor independent motors remove it (a firmware re-level corrects it only at the height it is run at)",
+            "nuts": rows, "print_weight_sag_on_supports_all_seated_mm": round(sag_seated, 4), "levels": lvl_rows,
+            "how": "rigid body on guide springs and one-way nut springs (active-set contact); flexure of arms and plate is not in these "
+                   "figures; guide forces are those of the support model"}
 
 
 def support_model(design: Design, lay: dict) -> dict:
@@ -448,11 +662,17 @@ def bed_support(design: Design, r: VerifierResult, with_fea: bool = True) -> dic
     out["assumed"] = model["assumed"]
     n_s = len(lay["nuts"])
     rails = len({tuple(np.round((s["r"] - (s["r"] @ lay["axis"]) * lay["axis"]), 0)) for s in model["supports"] if s["kind"] == "guide"})
+    red = tilt_redundancy(model, {**lay}) if model["supports"] else {"redundant": 0}
+    n_red = int(red["redundant"])
     out["constraint"] = {"lead_screws": n_s, "guide_rails_or_rods": rails, "guide_blocks": len(lay["blocks"]),
-                         "redundant_screw_supports": max(n_s - 1, 0),
+                         "redundant_screw_supports": n_red, "redundancy": red,
                          "note": ("one screw sets the height, the guides hold the tilt: exactly constrained in height" if n_s == 1 else
-                                  f"{n_s} screws and {rails} guide(s): over-constrained in tilt by {n_s - 1} screw(s); a height difference "
-                                  f"between screws becomes tilt or force on the guides")}
+                                  f"{n_s} screws and {rails} guide(s), {len(lay['blocks'])} block(s): "
+                                  + (f"over-constrained by {n_red} support(s): the guides hold the bed's tilt as stiffly as the screws do in "
+                                     f"{red.get('modes_held_by_guides_too', 0)} mode(s), so a height difference between screws becomes force on "
+                                     f"guides and nuts" if n_red else
+                                     "the screws set the bed's plane and the guides do not resist it (their stiffness in tilt is small "
+                                     "beside the screws'): a height difference between screws becomes tilt, not force"))}
     if not model["held"]:
         out["evaluated"] = False
         out["why"] = f"the bed is not held in: {', '.join(model['free_directions']) or 'anything (no supports found)'}"
@@ -594,11 +814,32 @@ def bed_support(design: Design, r: VerifierResult, with_fea: bool = True) -> dic
             reach = float(max(np.linalg.norm((c_ - (np.mean([s["r"] for s in model["supports"] if s["kind"] == "guide"], axis=0) + model["O"]))
                                              - ((c_ - (np.mean([s["r"] for s in model["supports"] if s["kind"] == "guide"], axis=0) + model["O"])) @ a) * a)
                               for c_ in corners))
+            # What the wander does to the bed is found on the support model, so that screws which hold the bed's plane
+            # count: each block in turn is moved sideways by the running parallelism (both directions across the
+            # rail) and, because a block follows its rail's slope over its own ball track, turned by
+            # parallelism / track length (both axes across the rail). The bed's height change at the print corners
+            # is read off; the worst single disturbance is reported.
+            worst_lv, worst_what = 0.0, None
+            lat = [v_ for v_ in np.eye(3) if abs(v_ @ a) < 0.5]
+            for s_ in model["supports"]:
+                if s_["kind"] != "guide":
+                    continue
+                Jb = np.hstack([np.eye(3), -_skew(s_["r"])])
+                for v_ in lat:
+                    for kind_, wr in (("moved sideways", Jb.T @ (s_["k"] @ (v_ * run))),
+                                      ("turned with its rail", np.concatenate([np.zeros(3), s_["kappa"] @ (v_ * run / max(s_.get("track_mm", 30.0), 1.0))]))):
+                        xx = np.linalg.lstsq(model["K"], wr, rcond=None)[0]
+                        dz = max(abs(float((xx[:3] + np.cross(xx[3:], c_ - model["O"])) @ up)) for c_ in corners)
+                        if dz > worst_lv:
+                            worst_lv, worst_what = dz, f"{s_['name']} {kind_}"
             lvl.update({"rail_running_parallelism_mm": run, "rail_class": f"{RAIL_CLASS_ASSUMED} (ASSUMED: the design does not state the accuracy class)",
                         "source": rp["ref"], "block_spacing_along_rail_mm": round(span, 1), "furthest_print_corner_from_guides_mm": round(reach, 1),
-                        "from_rail_running_accuracy_mm": round(run / base * reach, 4),
-                        "how": "a block wanders by the running parallelism over the travel; over the block spacing that is a slope, "
-                               "carried out to the furthest print corner"})
+                        "from_rail_running_accuracy_mm": round(worst_lv, 4), "worst_disturbance": worst_what,
+                        "guides_alone_formula_mm": round(run / base * reach, 4),
+                        "how": "each guide block in turn wanders by the running parallelism (sideways, and turned by parallelism / "
+                               "ball-track length); the bed's height change at the print corners on ALL its supports (guide blocks and "
+                               "lead-screw nuts, a nut holding along its screw only). guides_alone_formula_mm is the earlier estimate "
+                               "(slope over the block spacing carried to the far corner), right when nothing but the guides holds the tilt"})
         else:
             lvl["from_rail_running_accuracy_mm"] = None
             lvl["rail_note"] = "NOT evaluated: no running accuracy catalogued for these guides"
@@ -609,9 +850,11 @@ def bed_support(design: Design, r: VerifierResult, with_fea: bool = True) -> dic
     if lvl.get("from_rail_running_accuracy_mm") and lvl["from_rail_running_accuracy_mm"] > lay["layer"] / 2:
         r.add("warning", "bed_level_changes_over_travel",
               f"Joint {j.name}: the rails' running accuracy ({lvl['rail_running_parallelism_mm'] * 1e3:.0f} um, class "
-              f"{RAIL_CLASS_ASSUMED} assumed) over a block spacing of {lvl['block_spacing_along_rail_mm']:g} mm, carried "
-              f"{lvl['furthest_print_corner_from_guides_mm']:g} mm out to the far print corner, changes the bed's level by up to "
-              f"{lvl['from_rail_running_accuracy_mm']:.3f} mm over the travel (limit half a layer).", joint=j.name)
+              f"{RAIL_CLASS_ASSUMED} assumed) changes the bed's level by up to {lvl['from_rail_running_accuracy_mm']:.3f} mm at a print "
+              f"corner over the travel (limit half a layer): worst is {lvl['worst_disturbance']}, on {len(lay['blocks'])} guide block(s) "
+              f"with {lvl['block_spacing_along_rail_mm']:g} mm of spacing along the rail and {n_s} lead-screw nut(s), which hold along "
+              f"their screws only; the far print corner is {lvl['furthest_print_corner_from_guides_mm']:g} mm from the guides.", joint=j.name,
+              hint="Space the blocks further apart along the rail, or carry the bed on three screws so that the screws set its plane.")
     # ---- several screws
     if n_s > 1:
         sy = _sync(design, lay)
@@ -633,9 +876,59 @@ def bed_support(design: Design, r: VerifierResult, with_fea: bool = True) -> dic
                     worst_nut = max(worst_nut, fo)
         sy.update({"bed_tilt_across_print_area_mm": round(worst_t, 4), "force_on_a_guide_block_n": round(worst_block, 1),
                    "force_on_a_nut_n": round(worst_nut, 1),
-                   "how": "one screw high by the height error, the bed on its supports' stiffness: part becomes tilt, part force"})
+                   "how": "one screw high by the height error, the bed on its supports' stiffness: part becomes tilt, part force "
+                          "(linear: every nut taken as seated; see nut_seating_and_lead_error for what happens when one is not)"})
         out["screw_synchronisation"] = sy
+        travel = abs(j.range[1] - j.range[0])
+        st = None
+        if abs(float(a @ up)) > 0.99:
+            try:
+                st = seating_study(design, lay, model, W, com, wc, sy["height_error_mm"], travel)
+            except Exception as e:      # never lose the other measures to this one; say so
+                out["nut_seating_and_lead_error"] = {"evaluated": False, "why": f"{type(e).__name__}: {e}"}
+                r.add("warning", "nut_seating_not_evaluated", f"Joint {j.name}: nut seating under screw height errors was NOT evaluated ({type(e).__name__}: {e}).")
+        else:
+            out["nut_seating_and_lead_error"] = {"evaluated": False, "why": "the Z axis is not vertical: the nuts are not seated by weight"}
+        if st is not None:
+            st["evaluated"] = True
+            out["nut_seating_and_lead_error"] = st
+            lvl["from_screw_lead_error_mm"] = st["levels"][1]["worst_case"]["bed_level_change_across_print_area_mm"]
+            lvl["from_screw_lead_error_note"] = (f"one screw at its lead-accuracy limit over the {travel:g} mm travel "
+                                                 f"({st['lead_error_over_travel_mm']:g} mm; {st['lead_accuracy']['basis']})")
         half = lay["layer"] / 2
+        expected = st["levels"][1] if st is not None else None
+        sync_only = st["levels"][0] if st is not None else None
+        seat_txt = ""
+        if expected is not None:
+            wc_ = expected["worst_case"]
+            least = min(expected["nut_load_margin_n"].values())
+            seat_txt = (f" Nut seating ({st['nut_seating']['kind']}: {st['nut_seating']['basis']}): the moving mass seats the nuts with "
+                        + ", ".join(f"{v['seating_load_n']:.1f}" for v in st["nuts"].values()) + f" N. With the screws' lead error over the "
+                        f"{travel:g} mm travel added ({st['lead_error_over_travel_mm']:.3f} mm, {'ASSUMED class value' if st['lead_accuracy']['assumed'] else 'catalogue'}) "
+                        f"the height error is {expected['height_error_mm']:.3f} mm and the least nut load would be {least:.1f} N"
+                        + (f": {', '.join(wc_['nuts_not_seated'])} unseat(s) ({wc_['screw']} standing {wc_['stands']}); the bed's level then "
+                           f"changes {wc_['bed_level_change_across_print_area_mm']:.3f} mm across the print area, a guide block carries "
+                           f"{wc_['largest_force_on_a_guide_block_n']:.0f} N, and 1 kg at the worst corner lowers the bed "
+                           f"{wc_['print_weight_sag_on_supports_mm']:.3f} mm on its supports instead of "
+                           f"{st['print_weight_sag_on_supports_all_seated_mm']:.3f} mm." if expected["a_nut_unseats"] else
+                           f": every nut stays seated; the bed's level changes {wc_['bed_level_change_across_print_area_mm']:.3f} mm across the print area."))
+        if expected is not None and expected["a_nut_unseats"] and n_red > 0:
+            r.add("warning", "z_tilt_over_constrained",
+                  f"Joint {j.name}: {n_s} lead screws and {len(lay['blocks'])} guide block(s) on {rails} rail(s) both hold the bed's tilt "
+                  f"({n_red} redundant support(s)): the rails fight the screws. A screw height error of {sy['height_error_mm']:g} mm "
+                  f"({sy['sync']}) alone puts {worst_block:.0f} N on a guide block and {worst_nut:.0f} N on a nut." + seat_txt
+                  + " The deflection figures above assume every nut seated and are then not what the machine does.",
+                  joint=j.name, redundant_supports=n_red, height_error_mm=expected["height_error_mm"],
+                  nuts_not_seated=expected["worst_case"]["nuts_not_seated"],
+                  unseats_on_synchronisation_error_alone=bool(sync_only and sync_only["a_nut_unseats"]),
+                  hint="Let one thing hold the tilt: one guide block per rail with three screws (the screws set the plane), or one "
+                       "screw with two blocks per rail (the rails set it); or make the nuts carry load both ways without backlash.")
+        elif expected is not None and expected["a_nut_unseats"]:
+            r.add("warning", "z_nut_unseats",
+                  f"Joint {j.name}: on {n_s} lead screws ({sy['sync']}) a nut can lose its load." + seat_txt,
+                  joint=j.name, height_error_mm=expected["height_error_mm"], nuts_not_seated=expected["worst_case"]["nuts_not_seated"],
+                  hint="Bring the mass centre inside the triangle of the screws with more margin, add weight or a spring on the "
+                       "light nut, or use nuts that carry load both ways.")
         if not sy["firmware_can_relevel"] and (worst_t > half or (drive_n and worst_nut > 0.3 * drive_n)):
             r.add("warning", "z_screws_not_levelled",
                   f"Joint {j.name} rides on {n_s} lead screws ({sy['sync']}): {sy['basis']}. On the supports' stiffness that is "
@@ -644,10 +937,16 @@ def bed_support(design: Design, r: VerifierResult, with_fea: bool = True) -> dic
                   hint="Declare el.firmware['z_tilt'] = {'z_positions': [...], 'points': [...]} with one driver per Z motor, or tie the "
                        "screws with a closed belt and level the bed mechanically once.")
         else:
-            r.add("info", "z_over_constrained",
-                  f"Joint {j.name}: {n_s} lead screws with {rails} guide(s) over-constrain the bed in tilt. Screw height error "
+            r.add("info", "z_over_constrained" if n_red else "z_several_screws",
+                  f"Joint {j.name}: {n_s} lead screws with {rails} guide(s), {out['constraint']['note'].split(': ', 1)[1]}. Screw height error "
                   f"{sy['height_error_mm']:g} mm ({sy['sync']}) gives {worst_t:.3f} mm of tilt across the print area and "
                   f"{worst_block:.0f} N on a guide block; "
-                  + ("the firmware re-levels the screws (z_tilt)." if sy["firmware_can_relevel"] else f"not correctable by firmware: {sy['why_not']}."),
-                  joint=j.name)
+                  + ("the firmware re-levels the screws (z_tilt)." if sy["firmware_can_relevel"] else f"not correctable by firmware: {sy['why_not']}.")
+                  + ("" if (expected is not None and expected["a_nut_unseats"]) else seat_txt), joint=j.name)
+        if lvl.get("from_screw_lead_error_mm") and lvl["from_screw_lead_error_mm"] > half:
+            r.add("warning", "bed_level_changes_over_travel",
+                  f"Joint {j.name}: the screws' lead error ({lvl['from_screw_lead_error_note']}) changes the bed's level by "
+                  f"{lvl['from_screw_lead_error_mm']:.3f} mm across the print area over the travel (limit half a layer).", joint=j.name,
+                  hint="Screws cut from one bar of the same lot differ far less than the class limit; a mesh taken at print height "
+                       "does not see what accumulates above it.")
     return out

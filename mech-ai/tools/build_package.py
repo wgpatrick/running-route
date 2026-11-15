@@ -181,3 +181,875 @@ def check_fresh(cx: Ctx) -> None:
         cx.stale = bad
     for w in cx.warnings:
         print("WARNING: " + w, file=sys.stderr)
+
+
+# =================================================================================================== 1. BOM
+CATEGORIES = [  # (category, test on sku)
+    ("Frame: T-slot extrusion and brackets", lambda s: s.startswith(("EXT2020", "BRKT", "TNUT"))),
+    ("Linear guides", lambda s: s.startswith("MGN12")),
+    ("Motors", lambda s: s.startswith("NEMA")),
+    ("Belts, pulleys, idlers", lambda s: s.startswith("GT2")),
+    ("Lead screws, nuts, bearings", lambda s: s.startswith(("T8", "BRG"))),
+    ("Toolhead: extruder, hotend, fan, probe", lambda s: s.startswith(("EXTRUDER", "HOTEND", "FAN", "PROBE", "NUT-OMRON"))),
+    ("Bed: heater, sheet, magnet, cut-off", lambda s: s.startswith(("HEATER", "BED-", "PRINT-SHEET", "TCO"))),
+    ("Electronics", lambda s: s.startswith(("PSU", "CTRL", "HOST", "RELAY", "INLET", "ENDSTOP", "FUSE", "DIODE", "MOSFET"))),
+    ("Wire, connectors, cable management", lambda s: s.startswith(("WIRE", "CONN", "SLEEVE", "CABLE"))),
+    ("Spacers", lambda s: s.startswith("SPACER")),
+    ("Fasteners", lambda s: s.startswith(("SHCS", "NUT", "NYLOC", "WASHER"))),
+]
+
+# Which purchased lines are STAND-INS: a rule on what the catalogue records, with the reason shown in the BOM. (generator)
+STANDIN_RULES = [
+    (lambda sku, c, e: c is not None and not c.meta.get("catalog"),
+     "hand-made stand-in in the design file: the catalogue has no such part; every dimension and rating is a typical value"),
+    (lambda sku, c, e: "GT2" in sku and "CLOSED" in sku,
+     "closed-loop belt of a computed length: that this length exists as stock is not confirmed"),
+    (lambda sku, c, e: c is not None and sku.startswith("GT2") and dig(c.meta, "source", "gates_stock_belt_width") is False,
+     "generic part: this belt width is not Gates stock in 2 mm pitch; no maker's data"),
+    (lambda sku, c, e: sku.startswith("GT2-BELT-12"),
+     "generic 12 mm belt: not a Gates stock width in 2 mm pitch; no maker's data"),
+    (lambda sku, c, e: c is not None and sku.startswith("GT2-") and "IDLER" not in sku and "BELT" not in sku
+     and abs(float(dig(c.meta, "interfaces", "bore", default=5.0)) - 5.0) > 0.01,
+     "generic pulley with a bore other than the motor shaft's 5 mm: a real part with its hub diameter and set screws must be found"),
+]
+
+
+def _spec_of(c) -> str:
+    """Key spec of a purchased part, from what the catalogue part records."""
+    i, r, s = c.meta.get("interfaces") or {}, c.ratings or {}, c.sku or ""
+    bits = []
+    if s.startswith("EXT2020"):
+        bits.append(f"20 x 20 mm T-slot, slot {f2(i.get('slot_width'))} mm, cut length {s.split('-')[-1]} mm")
+        if i.get("end_tap"):
+            bits.append(f"centre hole tappable {i['end_tap']}")
+    elif s.startswith("GT2") and "pitch_diameter_mm" in r:
+        w = r.get("belt_width_mm") or (i.get("height", 0) - 2.5 if "IDLER" in s else i.get("height", 0) - 9.0)
+        bits.append(f"{r['teeth']} teeth, 2 mm pitch, for {f2(w)} mm belt, bore {f2(i.get('bore'))} mm, overall height {f2(i.get('height'))} mm")
+        if i.get("flange_dia"):
+            bits.append(f"flange dia {f2(i['flange_dia'])} mm")
+    elif s.startswith("SHCS"):
+        bits.append(f"ISO 4762, head dia {f2(i.get('head_d'))} x {f2(i.get('head_h'))} mm, hex key {f2(i.get('hex_key'))} mm")
+    elif s.startswith("NUT-M"):
+        bits.append(f"across flats {f2(i.get('across_flats'))} mm, height {f2(i.get('height'))} mm")
+    elif s.startswith("NEMA"):
+        e = r.get("electrical") if isinstance(r.get("electrical"), dict) else {}
+        er = e.get("ratings", {}) if e else {}
+        bits.append(f"holding torque {f2(r.get('holding_torque_nmm'))} N.mm" + (f", {f2(er.get('rated_current_a'))} A/phase" if er.get("rated_current_a") else ""))
+    elif s.startswith("T8x"):
+        bits.append(f"Tr8, lead {f2(r.get('lead_mm'))} mm, length {s.split('-')[-1]} mm, plain ends as drawn (no machined journals)")
+    elif s.startswith("BRG"):
+        bits.append(f"bore {f2(i.get('bore'))} x OD {f2(i.get('od'))} x width {f2(i.get('width'))} mm")
+    elif s.startswith("MGN12-R"):
+        bits.append(f"MGN12 rail, length {s.split('-')[-1]} mm")
+    elif s.startswith("MGN12H"):
+        bits.append(f"MGN12H block, preload {r.get('preload_class')} ({r.get('preload_class_basis', '')})")
+    elif s.startswith("SPACER"):
+        bits.append("round spacer OD x ID x length = " + s.split("-")[-1].replace("x", " x ") + " mm")
+    return "; ".join(bits)
+
+
+def _maker_of(c):
+    """(maker, maker part number) from the catalogue's provenance / product record; never invented."""
+    src = c.meta.get("source") or {}
+    e = c.ratings.get("electrical") if isinstance(c.ratings.get("electrical"), dict) else {}
+    prod = (e or {}).get("product") or {}
+    maker, pn = None, None
+    if prod:
+        maker, pn = prod.get("vendor"), prod.get("part_number")
+    if src.get("level") == "vendor":
+        maker = maker or src.get("vendor")
+        pn = pn or src.get("part")
+    if not pn and c.ratings.get("vendor_part"):
+        pn = c.ratings["vendor_part"]
+        maker = maker or pn.split()[0]
+    if src.get("level") == "standard":
+        maker, pn = "any (to the standard)", src.get("part")
+    return maker or "not specified", pn or "not specified"
+
+
+def _provenance(sku, c, e):
+    for rule, why in STANDIN_RULES:
+        try:
+            if rule(sku, c, e):
+                return "STAND-IN - confirm before buying", why
+        except Exception:
+            pass
+    if c is None:
+        return "class value", "BOM line without geometry in the model (quantity and price are the design's estimates)"
+    src = c.meta.get("source") or {}
+    lvl = src.get("level")
+    el = c.ratings.get("electrical") if isinstance(c.ratings.get("electrical"), dict) else {}
+    prod = (el or {}).get("product") or {}
+    if lvl == "vendor" and c.meta.get("vendor_backed"):
+        return "vendor data", f"{src.get('file', '')}" + (f"; not confirmed: {', '.join(src['unverified_fields'])}" if src.get("unverified_fields") else "")
+    if lvl == "standard":
+        return "class value", f"dimensions to {src.get('part')}"
+    if prod.get("part_number") and prod.get("vendor") and "commodity" not in str(prod.get("vendor")):
+        return "vendor data", "maker's product named in the electrical catalogue; mechanical record level: " + str(lvl or "none") \
+            + (f"; note: {src.get('note')}" if src.get("note") else "")
+    note = src.get("note") or c.ratings.get("source") or "typical values"
+    return "class value", f"catalogue level '{lvl or 'proxy'}': {note}"
+
+
+def build_bom(cx: Ctx) -> dict:
+    d = cx.d
+    lines = OrderedDict()
+
+    def key_of(c):
+        s = c.sku or c.name
+        r, i = c.ratings or {}, c.meta.get("interfaces") or {}
+        if s.startswith("GT2") and "pitch_diameter_mm" in r:      # the catalogue gives 6 and 12 mm parts the SAME SKU
+            w = r.get("belt_width_mm") or (i.get("height", 0) - 2.5 if "IDLER" in s else i.get("height", 0) - 9.0)
+            return f"{s} [{f2(w)} mm belt]"
+        return s
+
+    for c in d.components:
+        if not c.cots:
+            continue
+        k = key_of(c)
+        L = lines.setdefault(k, {"key": k, "sku": c.sku or c.name, "qty": 0, "qty_model": 0, "qty_extra": 0, "c": c, "used": []})
+        L["qty"] += 1
+        L["qty_model"] += 1
+        L["used"].append(c.name)
+    for sku, e in d.bom_extras.items():
+        L = lines.setdefault(sku, {"key": sku, "sku": sku, "qty": 0, "qty_model": 0, "qty_extra": 0, "c": None, "used": [], "extra": e})
+        L["qty"] += e["qty"]
+        L["qty_extra"] += e["qty"]
+        L.setdefault("extra", e)
+    rb = dig(cx.m, "ratings", "bom", default={})
+    out = []
+    for k, L in lines.items():
+        c, sku = L["c"], L["sku"]
+        cat = next((n for n, t in CATEGORIES if t(sku)), "Other")
+        unit = c.meta.get("cost_usd") if c is not None else L["extra"].get("unit_cost_usd")
+        prov, why = _provenance(sku, c, L.get("extra"))
+        maker, pn = _maker_of(c) if c is not None else ("not specified", "not specified")
+        mc = (c.ratings.get("mcmaster_pn") if c is not None else None)
+        mcs = (c.ratings.get("mcmaster_pn_status") if c is not None else None)
+        if c is None and sku in rb and rb[sku].get("mcmaster_pn"):
+            mc, mcs = rb[sku]["mcmaster_pn"], rb[sku].get("mcmaster_pn_status")
+        desc = c.meta.get("description", "") if c is not None else EXTRA_DESCRIPTIONS.get(sku.split("-")[0] + "-" + (sku.split("-")[1] if "-" in sku else ""), sku)
+        if c is None:
+            desc = next((v for kk, v in EXTRA_DESCRIPTIONS.items() if sku.startswith(kk)), sku)
+        out.append({"category": cat, "sku": sku, "key": k, "qty": L["qty"], "qty_model": L["qty_model"], "qty_extra": L["qty_extra"],
+                    "description": desc, "maker": maker, "maker_pn": pn, "mcmaster": mc or "", "mcmaster_status": mcs or "",
+                    "spec": _spec_of(c) if c is not None else "", "unit": unit, "ext": None if unit is None else unit * L["qty"],
+                    "provenance": prov, "why": why, "used": L["used"]})
+    order = [n for n, _ in CATEGORIES] + ["Other"]
+    out.sort(key=lambda r: (order.index(r["category"]), r["sku"], r["key"]))
+    return {"lines": out}
+
+
+# Words for BOM lines that have no geometry in the model. They describe the SKU the design wrote; no number is added. (generator)
+EXTRA_DESCRIPTIONS = {
+    "TNUT-2020-M5": "T-nut for 2020 slot, M5 (one per screw declared tnut=True and one per corner-bracket leg on a slot). Type (drop-in / slide-in) not specified",
+    "TNUT-2020-M3": "T-nut for 2020 slot, M3 (rail screws). Type (drop-in / slide-in) not specified",
+    "NYLOC-M3": "M3 nylon-insert lock nut (under each T8 nut's anti-rotation pin, left 0.2 mm slack)",
+    "WASHER-M5-STAR": "M5 serrated (star) washer for the protective-earth stud",
+    "GT2-BELT-6MM-CLOSED": "GT2 closed-loop belt, 6 mm wide, 2 mm pitch; length in mm is the last field of the SKU",
+    "GT2-BELT-9MM-OPEN": "GT2 open belt, 9 mm wide, 2 mm pitch, 1 m piece (X axis)",
+    "GT2-BELT-12MM-OPEN": "GT2 open belt, 12 mm wide, 2 mm pitch, 1 m pieces (Y axis, one per side)",
+    "WIRE-": "hook-up wire, metres (gauge and insulation in the SKU)",
+    "CONN-JST-XH": "JST-XH housing with crimps (count of wire ends)",
+    "CONN-DUPONT": "2.54 mm 'Dupont' housing with crimps",
+    "CONN-FASTON-4.8": "4.8 mm insulated quick-connect receptacle (inlet tabs)",
+    "CONN-FERRULE": "bootlace ferrule (screw terminals)",
+    "CONN-MOLEX-MICROFIT": "Molex Micro-Fit 3.0 connector (E3D leads)",
+    "CONN-RING-M4": "ring terminal, M4 hole (as the earth point's port is declared)",
+    "SLEEVE-BRAIDED": "braided sleeve 8 mm, metres",
+    "CABLE-TIE": "cable tie 100 mm",
+    "FUSE-5x20": "5 x 20 mm time-lag fuse-link (rating in the SKU; one fitted, one spare)",
+    "DIODE-BAT85": "BAT85 Schottky diode, in series with the probe's signal lead (cathode to the sensor)",
+    "SHCS-M5x8": "Socket head cap screw M5 x 8 (corner-bracket legs on T-slots: not drawn in the model)",
+}
+
+
+def fastener_table(cx: Ctx, bom: dict):
+    rows = []
+    for L in bom["lines"]:
+        s = L["sku"]
+        if not s.startswith(("SHCS", "NUT-M", "NYLOC", "WASHER", "TNUT")):
+            continue
+        n = L["qty"]
+        order = max(n + 1, math.ceil(n * (1 + SPARE_FRAC)))
+        c = cx.comps.get(L["used"][0]) if L["used"] else None
+        key = dig(c.meta, "interfaces", "hex_key") if c is not None else None
+        m = re.match(r"SHCS-(M[\d.]+)x([\d.]+)", s)
+        kind = ("cap screw ISO 4762" if s.startswith("SHCS") else "T-nut 2020" if s.startswith("TNUT") else "nyloc nut" if s.startswith("NYLOC")
+                else "star washer" if s.startswith("WASHER") else "hex nut " + ("DIN 934" if "DIN934" in s else "ISO 4032"))
+        size = m.group(1) if m else (re.search(r"M[\d.]+", s) or [""])[0] if re.search(r"M[\d.]+", s) else ""
+        rows.append({"sku": s, "kind": kind, "size": size, "length": m.group(2) if m else "", "in_model": L["qty_model"],
+                     "bom_only": L["qty_extra"], "total": n, "order": order, "hex_key": f2(key) if key else "",
+                     "mcmaster": L["mcmaster"], "mcmaster_status": L["mcmaster_status"]})
+    rows.sort(key=lambda r: (r["kind"], float(re.sub(r"[^\d.]", "", r["size"]) or 0), float(r["length"] or 0)))
+    return rows
+
+
+def thread_length_issues(cx: Ctx):
+    """ISO 4762 screws are only threaded over b = 2d + 12 mm from the tip when longer than that (the catalogue's solid and
+    its McMaster STEP are threaded right up to the head on every length). A nut or tapped part that sits nearer the
+    head than L - b cannot be reached by the thread of a standard screw."""
+    out = []
+    for f in cx.d.fasteners:
+        c = cx.comps[f.name]
+        m = re.match(r"SHCS-M([\d.]+)x([\d.]+)", c.sku or "")
+        if not m:
+            continue
+        dia, L = float(m.group(1)), float(m.group(2))
+        b = 2 * dia + 12
+        if L <= b + 1e-9:
+            continue
+        dvec = -np.array(f.axis, float)
+        seat = np.array(f.head_center, float) + dvec * float(dig(c.meta, "interfaces", "head_h", default=0.0))
+        for t in c.meta.get("threads_into") or []:
+            if c.meta.get("tnut") or t not in cx.comps:
+                continue
+            bb = cx.comps[t].shape.bounding_box()
+            corners = np.array([[x, y, z] for x in (bb.min.X, bb.max.X) for y in (bb.min.Y, bb.max.Y) for z in (bb.min.Z, bb.max.Z)])
+            s = (corners - seat) @ dvec
+            lo = max(float(s.min()), 0.0)
+            if lo < L - b - 0.5:
+                out.append({"screw": f.name, "sku": c.sku, "into": t, "starts_mm_from_head": round(lo, 1), "thread_starts_mm_from_head": round(L - b, 1),
+                            "thread_length_b": b})
+    return out
+
+
+def write_bom(cx: Ctx) -> dict:
+    bom = build_bom(cx)
+    d, m = cx.d, cx.m
+    lines = bom["lines"]
+    fast = fastener_table(cx, bom)
+    # ---- reconciliation
+    n_cots = sum(1 for c in d.components if c.cots)
+    n_custom = len(d.components) - n_cots
+    q_model = sum(L["qty_model"] for L in lines)
+    q_extra = sum(L["qty_extra"] for L in lines)
+    cost = sum(L["ext"] for L in lines if L["ext"] is not None)
+    rb = dig(m, "ratings", "bom", default={})
+    by_sku = Counter()
+    for L in lines:
+        by_sku[L["sku"]] += L["qty"]
+    sku_ok = all(rb.get(k, {}).get("qty") == v for k, v in by_sku.items()) and set(rb) == set(by_sku)
+    rep_cost = dig(m, "ratings", "bom_cost_usd_estimate")
+    recon = {"components": len(d.components), "purchased_components": n_cots, "custom_components": n_custom, "bom_lines": len(lines),
+             "report_skus": len(rb), "qty_modelled": q_model, "qty_bom_only": q_extra, "cost": round(cost, 2), "report_cost": rep_cost,
+             "sku_quantities_equal_report": sku_ok, "modelled_equals_components": q_model == n_cots}
+    bom["recon"], bom["fasteners"] = recon, fast
+    standins = [L for L in lines if L["provenance"].startswith("STAND-IN")]
+    bom["standins"] = standins
+    # ---- cut lengths
+    ext = [(c.name, c.sku, int(c.sku.split("-")[-1])) for c in d.components if (c.sku or "").startswith("EXT2020")]
+    belts = dig(m, "motion", "belts", default={})
+    wires = list(csv.DictReader(open(cx.eldir / "wiring.csv"))) if (cx.eldir / "wiring.csv").exists() else []
+    bom["wires"] = wires
+    tl = thread_length_issues(cx)
+    bom["thread_length_issues"] = tl
+    # ---- markdown
+    T = [f"# Purchasing list: {cx.name}", "", cx.stamp(),
+         "Costs are the design's own estimates (`cost_usd` on each catalogue part, `bom_extra` prices), not quotes. No price or supplier "
+         "was looked up for this package. Where the catalogue records no maker or part number the cell says **not specified** and the "
+         "key-spec column says what to search for.", "",
+         "Provenance: **vendor data** = the catalogue record rests on the maker's datasheet / CAD (`vendor_docs/`, `vendor_cad/`, "
+         "`mechloop/parts/vendor/*.json`); **class value** = a generic part, dimensions to a standard or typical for its class; "
+         "**STAND-IN** = no real part is identified yet: confirm before buying.", ""]
+    T += ["## Reconciliation against the model", "",
+          table(["Check", "Value"], [
+              ["components in the design", recon["components"]],
+              ["of which custom (fabricated; see FABRICATION.md)", n_custom],
+              ["of which purchased, each on a BOM line below", f"{n_cots} (BOM lines sum to {q_model}: {'equal' if recon['modelled_equals_components'] else 'NOT EQUAL'})"],
+              ["BOM-only items (no geometry: T-nuts, bracket screws, belts, wire, connectors ...)", q_extra],
+              ["BOM lines here / SKUs in report.json", f"{len(lines)} / {len(rb)}" + ("" if len(lines) == len(rb) else
+               f" ({len(lines) - len(rb)} more here: GT2 pulleys and idlers that the catalogue gives one SKU for 6 and 12 mm belts are split by width)")],
+              ["every SKU quantity equals report.json (ratings.bom)", "yes" if sku_ok else "NO"],
+              ["cost of all lines / report's bom_cost_usd_estimate", f"${cost:.2f} / ${f2(rep_cost)}"],
+              ["fabrication estimate (report: machining + laser + filament; not in the line above)",
+               "$" + f2(sum((p.get("estimate") or {}).get(k, 0) for p in dig(m, "manufacture", "parts", default={}).values()
+                            for k in ("cost_usd_each_qty1", "cut_usd", "material_usd")))],
+          ]), ""]
+    for cat in [n for n, _ in CATEGORIES] + ["Other"]:
+        rows = [L for L in lines if L["category"] == cat]
+        if not rows:
+            continue
+        T += [f"## {cat}", "",
+              table(["Qty", "SKU (design)", "Description", "Maker", "Maker part no.", "McMaster no.", "Key spec / what to search for", "Unit $", "Ext $", "Provenance", "Basis"],
+                    [[L["qty"], f"`{L['key']}`", L["description"], L["maker"], L["maker_pn"],
+                      (L["mcmaster"] + (" (" + L["mcmaster_status"] + ")" if L["mcmaster_status"] and "confirmed by" not in L["mcmaster_status"] else "")) or "not recorded",
+                      L["spec"] or "-", money(L["unit"]), money(L["ext"]), f"**{L['provenance']}**" if L["provenance"].startswith("STAND") else L["provenance"], L["why"]]
+                     for L in rows]), ""]
+    T += ["## Cut lengths", "", "### Extrusions (2020, saw-cut; the tolerance model assumes length within "
+          f"+/-{TOL_K * 0.15:.2f} mm + {TOL_K * 0.1:.1f} % and square ends)", "",
+          table(["Length mm", "Qty", "Parts", "End work"],
+                [[L_, len(ns), ", ".join(ns), _end_work(cx, ns)] for L_, ns in sorted(_group(ext).items(), reverse=True)]), "",
+          "### Linear rails and lead screws", "",
+          table(["Part", "Qty", "Length mm", "Used as"],
+                [[L["sku"], L["qty"], L["sku"].split("-")[-1], ", ".join(L["used"])] for L in lines if L["sku"].startswith(("MGN12-R", "T8x"))]), "",
+          "### Belts", "",
+          table(["Belt", "Width mm", "Kind", "Path length in the model mm", "Stock / cut", "Tensioner travel"],
+                [[b.name, f2(b.width), "closed loop" if b.stock_length else "open, ends anchored",
+                  f2(dig(belts, b.name, "length_mm"), 1),
+                  (f"closed loop {f2(b.stock_length)} mm = {f2(b.stock_length / 2.0)} teeth (STAND-IN: confirm it is a stock length); the path needs "
+                   f"{f2(dig(belts, b.name, 'length_mm'), 1)} mm, {f2(b.stock_length - dig(belts, b.name, 'length_mm', default=0), 2)} mm less")
+                  if b.stock_length else "cut from the 1 m piece: path length plus what the fold-back anchors take at both ends (fold-back length is not modelled)",
+                  f"+/-{f2(b.adjust)} mm"] for b in d.belts]), ""]
+    if any(not b.stock_length for b in d.belts):
+        cx.need("fold-back length of each open belt end in its anchor", "cut length of the X and Y belts = path length + two anchors; only the path is modelled")
+    T += ["### Wires (cut length = routed length in the model; add what you need for stripping and service loops)", "",
+          table(["Wire", "AWG", "Conductors", "Insulation", "Length mm"],
+                [[w["wire"], w["awg"], w["conductors"], w["insulation"], w["length_mm"]] for w in wires]), "",
+          "Totals by type (the BOM's metre quantities above are the design's rounded-up figures): "
+          + "; ".join(f"AWG {k[0]} {k[1]}: {v / 1000:.2f} m" for k, v in sorted(_wire_totals(wires).items())), ""]
+    T += ["## Fasteners by type and length", "",
+          f"`In model` = drawn and checked (driver access, thread engagement). `BOM only` = counted by the design but not drawn (corner-bracket "
+          f"screws and all T-nuts). `Order` = total + about {SPARE_FRAC:.0%} spares (at least one).", "",
+          table(["Kind", "Size", "Length mm", "In model", "BOM only", "Total", "Order", "Hex key mm", "McMaster no.", "Note"],
+                [[r["kind"], r["size"], r["length"], r["in_model"], r["bom_only"], r["total"], r["order"], r["hex_key"], r["mcmaster"] or "not recorded",
+                  "" if "confirmed by" in r["mcmaster_status"] or not r["mcmaster_status"] else r["mcmaster_status"]] for r in fast]), "",
+          f"Screws drawn in the model: {len(d.fasteners)}. Fastener types (SKUs): {len(fast)}.", ""]
+    if tl:
+        T += ["### Screws that cannot be standard partially-threaded cap screws", "",
+              "ISO 4762 cap screws longer than about 2d + 12 mm are threaded only over that length from the tip. The catalogue's solid is threaded "
+              "to the head on every length, so no verifier sees this. These need **fully threaded** screws (or studding):", "",
+              table(["Screw", "SKU", "Thread needed for", "Starts, mm from under the head", "Standard thread starts at, mm"],
+                    [[t["screw"], t["sku"], t["into"], t["starts_mm_from_head"], t["thread_starts_mm_from_head"]] for t in tl]), ""]
+    notin = NOT_IN_MODEL
+    T += ["## Not in the model: the buyer must add", "",
+          "The design file has no line for these. They are listed so the order is complete; quantities and types are the builder's choice (generator's list, not design data).", "",
+          "\n".join(f"- {x}" for x in notin), ""]
+    (cx.out / "BOM.md").write_text("\n".join(T))
+    with open(cx.out / "bom.csv", "w", newline="") as fh:
+        w = csv.writer(fh)
+        w.writerow(["category", "qty", "sku", "bom_key", "description", "maker", "maker_part_number", "mcmaster_number", "mcmaster_status", "key_spec",
+                    "unit_cost_usd", "ext_cost_usd", "provenance", "basis", "qty_in_model", "qty_bom_only", "used_as"])
+        for L in lines:
+            w.writerow([L["category"], L["qty"], L["sku"], L["key"], L["description"], L["maker"], L["maker_pn"], L["mcmaster"], L["mcmaster_status"],
+                        L["spec"], "" if L["unit"] is None else round(L["unit"], 4), "" if L["ext"] is None else round(L["ext"], 2), L["provenance"], L["why"],
+                        L["qty_model"], L["qty_extra"], " ".join(L["used"])])
+    with open(cx.out / "fasteners.csv", "w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=list(fast[0].keys()))
+        w.writeheader()
+        w.writerows(fast)
+    return bom
+
+
+NOT_IN_MODEL = [
+    "Washers: the model has none under any screw head or nut (see OPEN_ITEMS.md, washer audit, for where they matter).",
+    "Filament for the printed parts (masses per part in FABRICATION.md) and the raw stock for the cut and machined parts if you make them yourself.",
+    "Mains lead (IEC C13) for your country; the inlet's fuse drawer if the inlet is ordered without one (see the inlet line).",
+    "microSD cards (control board flashing, host), a pin header for the host board if it comes without one.",
+    "Accelerometer board for input-shaper measurement (commissioning step; e.g. an ADXL345 breakout) and its lead.",
+    "Dial indicator with a stand, feeler gauges, a 1 kg mass, a straight edge and a square (commissioning and alignment).",
+    "Thread-locking compound for pulley set screws and the bed posts' jam nuts; grease for the rails and lead screws.",
+    "Filament path: spool holder, guide or PTFE tube. None is in the design.",
+    "Feet or pads under the frame. None is in the design: the bottom extrusions and the bracket screws' heads sit on the bench.",
+    "Covers for the mains terminals (relay module, inlet tabs, supply terminal block). None is in the design.",
+    "Adhesive / cleaning materials for bonding the heater pad, thermal cut-off and magnetic sheet to the plate; high-temperature tape for the cut-off.",
+    "Crimp tools for JST-XH, Micro-Fit, ferrules and quick-connects.",
+]
+
+
+def _group(ext):
+    g = defaultdict(list)
+    for n, sku, L in ext:
+        g[L].append(n)
+    return g
+
+
+def _end_work(cx, names):
+    """Extrusion ends that a screw threads into (a tapped end), from the screws."""
+    hits = []
+    for c in cx.d.components:
+        if c.name in cx.fast and not c.meta.get("tnut"):
+            for t in c.meta.get("threads_into") or []:
+                if t in names:
+                    hits.append(f"{t}: tap {'M%g' % c.meta.get('thread_d', 0)} in the end's centre hole for {c.name} ({c.sku})")
+    return "; ".join(hits) or "none"
+
+
+def _wire_totals(wires):
+    t = defaultdict(float)
+    for w in wires:
+        t[(w["awg"], w["insulation"])] += float(w["length_mm"]) * (1 if int(w["conductors"]) == 1 else int(w["conductors"]))
+    return t
+
+
+# =================================================================================================== 2. FABRICATION
+MATERIAL_WORDS = {  # words for the model's material keys; the numbers are the model's own (mechloop.model.MATERIALS)
+    "al6061": "aluminium 6061", "al5052": "aluminium 5052-H32", "steel": "steel sheet (grade NOT specified in the model)",
+    "stainless304": "stainless steel 304", "al_mic6": "cast aluminium tooling plate (MIC-6 class), faces as supplied",
+    "al_atp5": "cast aluminium tooling plate (ATP-5)", "pla": "PLA", "petg": "PETG", "abs": "ABS", "nylon_pa12": "nylon PA12"}
+METALS = {"al6061", "al5052", "steel", "stainless304", "al_mic6", "al_atp5", "brass"}
+DEBURR_NOTE = "Deburr; break all sharp edges 0.2-0.5 mm; outside profile corners R1 min unless dimensioned"
+SCALES = [10, 5, 4, 3, 2, 1.5, 1, 0.75, 0.5, 0.4, 1 / 3, 0.25, 0.2, 0.125, 0.1]
+
+
+def _frame_for(c, proc):
+    """Rows X, Y, Z of the drawing frame in world coordinates. Z: the plate's thickness direction (sheet, plate) or the
+    direction carrying most flat area; X: the longer of the other two."""
+    from mechloop.verifiers import dfm_geom as G
+
+    fr = G.part_frame(c.shape)
+    verts = np.array([[v.X, v.Y, v.Z] for v in c.shape.vertices()])
+    ext = np.array([np.ptp(verts @ fr[i]) for i in range(3)])
+    k = 2
+    if proc == "sheet" or (proc == "machined" and ext.min() <= 0.5 * np.sort(ext)[1]):
+        k = int(np.argmin(ext))
+    others = [i for i in range(3) if i != k]
+    xi, yi = (others if ext[others[0]] >= ext[others[1]] else others[::-1])
+    X, Z = fr[xi], fr[k]
+    Y = np.cross(Z, X)
+    return np.array([X, Y, Z])
+
+
+def _to_local(shape, R):
+    from build123d import Plane, Pos, Vector
+
+    pl = Plane(origin=(0, 0, 0), x_dir=Vector(*R[0]), z_dir=Vector(*R[2]))
+    loc = pl.to_local_coords(shape)
+    bb = loc.bounding_box()
+    off = np.array([bb.min.X, bb.min.Y, bb.min.Z])
+    return Pos(*(-off)) * loc, off, np.array([bb.max.X, bb.max.Y, bb.max.Z]) - off
+
+
+def _slots(local, holes_found):
+    """Round-ended slots: two concave half-cylinders of one radius on parallel axes with nothing between them."""
+    from mechloop.verifiers import dfm_geom as G
+    from mechloop.geom import to_trimesh
+
+    cyls = [c for c in G.cylinders(local) if c.concave and 150.0 <= c.angle <= 200.0]
+    tris = np.asarray(to_trimesh(local).triangles, dtype=float)
+    used, out = set(), []
+    for i, a in enumerate(cyls):
+        if i in used:
+            continue
+        best = None
+        for j, b in enumerate(cyls):
+            if j <= i or j in used or abs(a.radius - b.radius) > 1e-3 or abs(abs(a.axis @ b.axis) - 1) > 1e-4:
+                continue
+            dv = b.origin - a.origin
+            dv = dv - (dv @ a.axis) * a.axis
+            dist = float(np.linalg.norm(dv))
+            if not (0.2 < dist < 80.0):
+                continue
+            # the two arcs must face each other: each surface midpoint lies on the far side of its own axis
+            if (a.mid - a.origin) @ dv > 0 or (b.mid - b.origin) @ dv < 0:
+                continue
+            za = 0.5 * (a.lo + a.hi)
+            mid = a.origin + a.axis * za + 0.5 * dv
+            if G._point_inside(tris, mid):
+                continue
+            if best is None or dist < best[0]:
+                best = (dist, j, dv, mid)
+        if best:
+            dist, j, dv, mid = best
+            used |= {i, j}
+            out.append({"center": mid, "axis": a.axis, "width": 2 * a.radius, "length": dist + 2 * a.radius, "dir": dv / dist, "depth": abs(a.hi - a.lo)})
+    return out
+
+
+def analyse_part(cx: Ctx, c) -> dict:
+    """Drawing frame, holes, slots and what each is for, all from the design's geometry and fasteners."""
+    from mechloop.tolerance.process import PROCESS, process_of, stock_plate_flatness
+    from mechloop.verifiers import dfm_geom as G
+
+    proc = process_of(c)
+    R = _frame_for(c, proc)
+    local, off, size = _to_local(c.shape, R)
+
+    def w2l(p):
+        return R @ np.asarray(p, float) - off
+
+    def l2w(p):
+        return R.T @ (np.asarray(p, float) + off)
+
+    holes = G.holes(local)
+    slots = _slots(local, holes)
+    feats = []
+    for h in holes:
+        feats.append({"kind": "hole", "center": np.array(h.origin), "axis": np.array(h.axis), "dia": float(h.diameter), "depth": float(h.depth),
+                      "through": bool(h.through), "steps": list(h.steps), "csk": bool(h.countersink), "reach": 0.5 * float(h.diameter) + 0.8})
+    for s in slots:
+        feats.append({"kind": "slot", "center": np.array(s["center"]), "axis": np.array(s["axis"]), "dia": float(s["width"]), "length": float(s["length"]),
+                      "dir": np.array(s["dir"]), "depth": float(s["depth"]), "through": True, "steps": [], "csk": False, "reach": 0.5 * float(s["length"]) + 0.8})
+    joins = cx.d.joins
+    for ft in feats:
+        ft["screws"], ft["occupants"], ft["flags"], ft["mates"] = [], [], [], set()
+        ax = ft["axis"]
+        for f in cx.d.fasteners:
+            sc = cx.comps[f.name]
+            dv = R @ (-np.array(f.axis, float))
+            if abs(abs(dv @ ax) - 1) > 1e-3:
+                continue
+            m_ = re.match(r"SHCS-(M[\d.]+)x([\d.]+)", sc.sku or "")
+            L = float(m_.group(2)) if m_ else 10.0
+            hh = float(dig(sc.meta, "interfaces", "head_h", default=3.0))
+            seat = w2l(f.head_center) + dv * hh
+            rel = ft["center"] - seat
+            along = float(rel @ dv)
+            perp = float(np.linalg.norm(rel - along * dv))
+            if perp <= ft["reach"] and -hh - 0.5 * ft["depth"] - 0.6 <= along <= L + 0.5 * ft["depth"] + 0.6:
+                tapped = c.name in (sc.meta.get("threads_into") or []) and not sc.meta.get("tnut")
+                ft["screws"].append({"name": f.name, "sku": sc.sku, "size": m_.group(1) if m_ else "", "tapped": tapped,
+                                     "head_here": abs(along) < 0.5 * ft["depth"] + hh + 1.0 and along <= 0.5 * ft["depth"] + 0.2})
+                partners = set(sc.meta.get("threads_into") or []) | set(f.clamps or ())
+                for pn in partners - {c.name}:
+                    pc = cx.comps.get(pn)
+                    if pc is None or pn in cx.fast or (pc.sku or "").startswith(("NUT-M", "SPACER")):
+                        continue
+                    ft["mates"].add(pn)
+                    if pc.meta.get("guides"):
+                        ft["flags"].append(f"locates guide block {pn}")
+                    if (pc.sku or "").startswith("NEMA"):
+                        ft["flags"].append(f"locates motor {pn}")
+                    if (pc.sku or "").startswith("ENDSTOP"):
+                        ft["flags"].append(f"carries endstop {pn} (set at assembly)")
+                for (pair, kind) in joins.items():
+                    if kind == "axle" and f.name in pair:
+                        other = next(iter(pair - {f.name}))
+                        ft["flags"].append(f"axle of {other}: sets the belt plane")
+        cw = l2w(ft["center"])
+        for o in cx.d.components:
+            if o.name == c.name or o.name in cx.fast or not o.cots or (o.sku or "").startswith(("NUT-M", "SPACER", "EXT2020", "BRKT")):
+                continue
+            bb = o.shape.bounding_box()
+            if (bb.min.X - 0.3 <= cw[0] <= bb.max.X + 0.3 and bb.min.Y - 0.3 <= cw[1] <= bb.max.Y + 0.3 and bb.min.Z - 0.3 <= cw[2] <= bb.max.Z + 0.3):
+                oc = np.array([(bb.min.X + bb.max.X) / 2, (bb.min.Y + bb.max.Y) / 2, (bb.min.Z + bb.max.Z) / 2])
+                rel = R @ (oc - cw)
+                if np.linalg.norm(rel - (rel @ ax) * ax) < 0.5 * ft["dia"] + 1.0:       # on the hole's axis
+                    ft["occupants"].append(f"{o.name} ({o.sku})")
+                    if (o.sku or "").startswith("BRG"):
+                        ft["flags"].append(f"seat of bearing {o.name}: fit")
+                    if (o.sku or "").startswith("PROBE"):
+                        ft["flags"].append("probe clamp hole: locates the probe")
+                    if (o.sku or "").startswith("NEMA"):
+                        ft["flags"].append(f"pilot of motor {o.name}")
+        ft["flags"] = sorted(set(ft["flags"]))
+        k_ax = int(np.argmax(np.abs(ft["axis"])))
+        ft["cb_side"] = ""
+        if ft["steps"]:      # the narrow part of the hole lies towards one face: the counterbore is cut from the other
+            ft["cb_side"] = ("+" if ft["center"][k_ax] < 0.5 * size[k_ax] else "-") + "XYZ"[k_ax] + " face"
+        tp = [s for s in ft["screws"] if s["tapped"]]
+        if tp:
+            ft["type"] = f"TAP {tp[0]['size']}" + (" through" if ft["through"] else f" x {f2(ft['depth'], 1)} deep")
+        elif ft["screws"]:
+            ft["type"] = f"clearance {ft['screws'][0]['size']}"
+        elif ft["occupants"]:
+            ft["type"] = "bore / opening"
+        else:
+            ft["type"] = "hole (no screw or part on its axis in the model)"
+    # order and name: by axis (Z, Y, X), then position
+    def axn(a):
+        k = int(np.argmax(np.abs(a)))
+        return "XYZ"[k] if abs(a[k]) > 0.999 else "skew"
+    for ft in feats:
+        ft["axis_name"] = axn(ft["axis"])
+    feats.sort(key=lambda f_: ({"Z": 0, "Y": 1, "X": 2, "skew": 3}[f_["axis_name"]], f_["kind"], round(f_["center"][1], 1), round(f_["center"][0], 1), round(f_["center"][2], 1)))
+    nh = ns = 0
+    pat = {}
+    for ft in feats:
+        if ft["kind"] == "hole":
+            nh += 1
+            ft["id"] = f"H{nh}"
+        else:
+            ns += 1
+            ft["id"] = f"S{ns}"
+        key = tuple(sorted(ft["mates"])) if ft["mates"] else None
+        if key:
+            pat.setdefault(key, chr(ord("a") + len(pat)) if len(pat) < 26 else "z")
+            ft["pattern"] = pat[key]
+        else:
+            ft["pattern"] = ""
+    cones = sum(1 for f in c.shape.faces() if f.geom_type.name == "CONE")
+    t = PROCESS[proc]
+    mp = dig(cx.m, "manufacture", "parts", c.name, default={})
+    return {"c": c, "proc": proc, "R": R, "off": off, "size": size, "local": local, "feats": feats, "patterns": {v: k for k, v in pat.items()},
+            "tol": t, "mp": mp, "cones": cones, "w2l": w2l, "l2w": l2w,
+            "stock_flat": stock_plate_flatness(c.material, float(size[2])) if proc == "machined" else None}
+
+
+def _tol_lines(a) -> list[str]:
+    t, proc = a["tol"], a["proc"]
+    k = TOL_K
+    L = [f"GENERAL TOLERANCES ({proc}; = +/-{k:g} x the standard deviation the tolerance simulation assumed for this process):",
+         f"  feature position to datums A/B/C: +/-{k * t['pos']:.2f} mm",
+         f"  feature to feature within one pattern (same set-up): +/-{k * t['pattern']:.2f} mm",
+         f"  linear size: +/-{k * t['scale'] * 100:.2f} % of the dimension (in addition)",
+         f"  hole diameter as made: drawn {t['hole_bias']:+.2f} +/-{k * t['hole_sd']:.2f} mm" + (" (printed holes come out small: drawn sizes already allow for it)" if t["hole_bias"] else ""),
+         f"  flatness of a mating face: {k * t['flat']:.2f} mm"]
+    return L
+
+
+def _edges_2d(shape, origin, up):
+    from build123d import GeomType
+
+    vis, hid = shape.project_to_viewport(origin, viewport_up=up, look_at=(0, 0, 0))
+
+    def poly(e):
+        n = 2 if e.geom_type == GeomType.LINE else 25
+        return np.array([[p.X, p.Y] for p in (e.position_at(float(t)) for t in np.linspace(0, 1, n))])
+    return [poly(e) for e in vis], [poly(e) for e in hid]
+
+
+def draw_sheet(cx: Ctx, a: dict, path_svg: Path, path_pdf: Path, pdf_pages=None, sheet_no=1, sheet_of=1, png=None):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Circle, Rectangle
+
+    c, proc, size, feats = a["c"], a["proc"], a["size"], a["feats"]
+    W, H, D = (float(x) for x in size)
+    PW, PH = 420.0, 297.0
+    fig = plt.figure(figsize=(PW / 25.4, PH / 25.4))
+    ax = fig.add_axes([0, 0, 1, 1])
+    ax.set_xlim(0, PW)
+    ax.set_ylim(0, PH)
+    ax.set_aspect("equal")
+    ax.axis("off")
+    ink, grey = "#111111", "#8a8a8a"
+    ax.add_patch(Rectangle((5, 5), PW - 10, PH - 10, fill=False, lw=0.8, ec=ink))
+    # ---- layout: views region left, tables right, title block bottom
+    VX0, VX1, VY0, VY1 = 12.0, 262.0, 64.0, 286.0
+    RX0 = 268.0
+    gap = 20.0
+    s_fit = min((VX1 - VX0 - gap - 24) / (W + D), (VY1 - VY0 - gap - 22) / (H + D))
+    s = next((x for x in SCALES if x <= s_fit), SCALES[-1])
+    px0 = VX0 + 20.0
+    py0 = VY1 - 12.0 - s * H                     # plan view lower-left
+    fy0 = py0 - gap - s * D                      # front view lower-left (below the plan)
+    sx0 = px0 + s * W + gap                      # side view lower-left (right of the plan)
+    plan, front, side = (lambda p: (px0 + s * p[0], py0 + s * p[1])), (lambda p: (px0 + s * p[0], fy0 + s * p[2])), (lambda p: (sx0 + s * (D - p[2]), py0 + s * p[1]))
+    views = [((0, 0, 1000), (0, 1, 0), lambda q: (px0 + s * q[:, 0], py0 + s * q[:, 1])),
+             ((0, -1000, 0), (0, 0, 1), lambda q: (px0 + s * q[:, 0], fy0 + s * q[:, 1])),
+             ((1000, 0, 0), (0, 1, 0), lambda q: (sx0 + s * (D + q[:, 0]), py0 + s * q[:, 1]))]
+    for origin, up, tf in views:
+        vis, hid = _edges_2d(a["local"], origin, up)
+        for q in hid:
+            x, y = tf(q)
+            ax.plot(x, y, color=grey, lw=0.3, ls=(0, (2.5, 1.5)), solid_capstyle="butt")
+        for q in vis:
+            x, y = tf(q)
+            ax.plot(x, y, color=ink, lw=0.6, solid_capstyle="round")
+    # iso view in its own box
+    from build123d import Pos
+    cen = Pos(-W / 2, -H / 2, -D / 2) * a["local"]
+    vis, hid = _edges_2d(cen, (1000, -1000, 800), (0, 0, 1))
+    allp = np.vstack(vis) if vis else np.zeros((1, 2))
+    bx0, bx1, by0, by1 = RX0, 412.0, 236.0, 288.0
+    si = min((bx1 - bx0 - 6) / max(np.ptp(allp[:, 0]), 1e-6), (by1 - by0 - 8) / max(np.ptp(allp[:, 1]), 1e-6))
+    cxm, cym = allp[:, 0].mean() if len(allp) else 0, 0.5 * (allp[:, 1].min() + allp[:, 1].max())
+    cxm = 0.5 * (allp[:, 0].min() + allp[:, 0].max())
+    for q in vis:
+        ax.plot((bx0 + bx1) / 2 + si * (q[:, 0] - cxm), (by0 + by1) / 2 - 2 + si * (q[:, 1] - cym), color=ink, lw=0.45)
+    ax.text(bx0, by1 - 1.5, "ISOMETRIC (not to scale)", fontsize=5, va="top", color=grey)
+    # ---- datums and overall dimensions
+    def dim(p0, p1, txt, off_xy, rot=0):
+        (x0, y0), (x1, y1) = p0, p1
+        ox, oy = off_xy
+        ax.plot([x0, x0 + ox], [y0, y0 + oy], color=ink, lw=0.25)
+        ax.plot([x1, x1 + ox], [y1, y1 + oy], color=ink, lw=0.25)
+        ax.annotate("", xy=(x0 + 0.85 * ox, y0 + 0.85 * oy), xytext=(x1 + 0.85 * ox, y1 + 0.85 * oy),
+                    arrowprops=dict(arrowstyle="<|-|>", lw=0.35, color=ink, mutation_scale=5, shrinkA=0, shrinkB=0))
+        ax.text((x0 + x1) / 2 + 0.85 * ox + (0 if rot == 0 else -1.2 * np.sign(ox or 1)), (y0 + y1) / 2 + 0.85 * oy + (1.0 if rot == 0 else 0), txt,
+                fontsize=6.5, ha="center" if rot == 0 else "right" if ox < 0 else "left", va="bottom" if rot == 0 else "center", rotation=rot, color=ink)
+    dim((px0, py0 + s * H), (px0 + s * W, py0 + s * H), f2(W), (0, 9))
+    dim((px0, py0), (px0, py0 + s * H), f2(H), (-13, 0), rot=90)
+    dim((px0, fy0), (px0, fy0 + s * D), f2(D), (-13, 0), rot=90)
+    dim((sx0, py0 + s * H), (sx0 + s * D, py0 + s * H), f2(D), (0, 9))
+    # datum flags: B = the edge y = 0, C = the edge x = 0 of the plan view, A = the face z = 0 (far side of the plan view)
+    for (x, y, t_) in ((px0 + 0.5 * s * W, py0 - 3.2, "B"), (px0 - 3.6, py0 + 0.35 * s * H, "C"), (px0 + 0.8 * s * W, fy0 - 3.2, "A")):
+        ax.text(x, y, t_, fontsize=6.5, ha="center", va="center", bbox=dict(boxstyle="square,pad=0.25", fc="white", ec=ink, lw=0.5))
+    ax.plot([px0 - 2.5, px0 + 2.5], [py0, py0], color=ink, lw=0.3)
+    ax.plot([px0, px0], [py0 - 2.5, py0 + 2.5], color=ink, lw=0.3)
+    ax.text(px0 - 1.0, py0 - 1.0, "0,0", fontsize=4.5, ha="right", va="top", color=ink)
+    ax.text(px0, py0 + s * H + 12.5, "PLAN (looking at the +Z face; A is the far face)", fontsize=5.5, color=grey)
+    ax.text(px0, fy0 - 7.5, "VIEW ON B (looking in +Y)", fontsize=5.5, color=grey, va="top")
+    ax.text(sx0, py0 - 4.5, "VIEW FROM +X", fontsize=5.5, color=grey, va="top")
+    # ---- feature balloons, in the view that sees the feature end-on
+    for ft in feats:
+        tf = {"Z": plan, "Y": front, "X": side}.get(ft["axis_name"])
+        if tf is None:
+            continue
+        x, y = tf(ft["center"])
+        r = s * ft["dia"] / 2
+        crit = bool(ft["flags"])
+        ax.plot([x - r * 0.9, x + r * 0.9], [y, y], color="#c0392b" if crit else ink, lw=0.2)
+        ax.plot([x, x], [y - r * 0.9, y + r * 0.9], color="#c0392b" if crit else ink, lw=0.2)
+        ang = math.radians(35 + 23 * (hash(ft["id"]) % 5))
+        tx, ty = x + (r + 2.6) * math.cos(ang), y + (r + 2.6) * math.sin(ang)
+        ax.plot([x + r * math.cos(ang), tx - 0.9 * math.cos(ang)], [y + r * math.sin(ang), ty - 0.9 * math.sin(ang)], color=ink, lw=0.2)
+        ax.text(tx, ty, ft["id"], fontsize=4.6, ha="center", va="center", color="#c0392b" if crit else ink,
+                bbox=dict(boxstyle="round,pad=0.12", fc="white", ec="#c0392b" if crit else ink, lw=0.3))
+    # ---- right column: feature table
+    mono = dict(family="DejaVu Sans Mono", color=ink)
+    y = 232.0
+    ax.text(RX0, y, "HOLES AND SLOTS  (centre X, Y, Z in mm from datums C, B, A; red = critical, see notes)", fontsize=5.6, weight="bold", color=ink)
+    y -= 3.4
+    hdr = f"{'ID':<4}{'ax':<3}{'X':>8}{'Y':>8}{'Z':>8} {'dia':>6} {'depth':<9}{'function':<17}{'pat':<4}"
+    ax.text(RX0, y, hdr, fontsize=5.0, **mono)
+    y -= 1.0
+    ax.plot([RX0, 412], [y, y], color=ink, lw=0.3)
+    rows_max = int((y - 62.0 - 44.0) / 2.35)
+    shown = feats[:rows_max]
+    for ft in shown:
+        y -= 2.35
+        cb = (" cb%s" % "/".join(f"{d_:g}x{h_:g}" for d_, h_ in ft["steps"])) if ft["steps"] else ""
+        dep = ("thru" if ft["through"] else f"{ft['depth']:.1f}") + cb
+        diam = f"{ft['dia']:.2f}" if ft["kind"] == "hole" else f"{ft['dia']:.1f}x{ft['length']:.1f}"
+        fn = ft["type"].replace("clearance ", "clr ").replace("bore / opening", "bore").replace("hole (no screw or part on its axis in the model)", "open")
+        line = f"{ft['id']:<4}{ft['axis_name'][:1]:<3}{ft['center'][0]:>8.2f}{ft['center'][1]:>8.2f}{ft['center'][2]:>8.2f} {diam:>6} {dep:<9.9}{fn:<17.17}{ft['pattern']:<4}"
+        ax.text(RX0, y, line, fontsize=5.0, family="DejaVu Sans Mono", color="#c0392b" if ft["flags"] else ink)
+    if len(feats) > len(shown):
+        y -= 2.6
+        ax.text(RX0, y, f"... {len(feats) - len(shown)} more features: full table in FABRICATION.md", fontsize=5.0, color="#c0392b")
+    y -= 4.0
+    notes = []
+    if a["patterns"]:
+        notes.append("Patterns (features that must agree with one mating part):")
+        for k_, v_ in sorted(a["patterns"].items()):
+            notes.append(f"  {k_}: {', '.join(v_)}"[:96])
+    crits = OrderedDict()
+    for ft in feats:
+        for fl in ft["flags"]:
+            crits.setdefault(fl, []).append(ft["id"])
+    if crits:
+        notes.append("CRITICAL (the tolerance simulation's results rest on these):")
+        for fl, ids in crits.items():
+            notes.append(f"  {', '.join(ids[:10])}: {fl}"[:98])
+    for n_ in notes[: max(0, int((y - 108.0) / 2.3))]:
+        ax.text(RX0, y, n_, fontsize=4.8, color=ink)
+        y -= 2.3
+    # tolerance block
+    yb = 104.0
+    ax.add_patch(Rectangle((RX0 - 2, 60.0), 412 - RX0 + 4, yb - 58.0, fill=False, lw=0.4, ec=ink))
+    for i, ln in enumerate(_tol_lines(a)):
+        ax.text(RX0, yb - 2.5 - 3.0 * i, ln, fontsize=5.2, color=ink, weight="bold" if i == 0 else None)
+    yy = yb - 2.5 - 3.0 * 6 - 1.0
+    extra = ["Datums: A = the face z = 0 (far side of the plan view); B = the outline's edge at y = 0;",
+             "C = the outline's edge at x = 0. The table's origin is where B and C meet, on A.",
+             "Geometry not dimensioned here (outline, cut-outs, pockets, radii): from the CAD file,",
+             "to the general tolerance. The CAD file's coordinates are this drawing's coordinates."]
+    for ln in extra:
+        ax.text(RX0, yy, ln, fontsize=4.8, color=ink)
+        yy -= 2.4
+    # ---- title block
+    ax.add_patch(Rectangle((5, 5), PW - 10, 52, fill=False, lw=0.8, ec=ink))
+    mp = a["mp"]
+    mat = MATERIAL_WORDS.get(c.material, c.material)
+    proc_words = {"sheet": f"laser-cut sheet ({dig(mp, 'cut_method', default='laser')}), flat, through-cut only",
+                  "machined": f"CNC machined from plate, {dig(mp, 'setups_estimate', default='?')} set-up(s), tool axis drawing Z",
+                  "printed": "FDM printed"}[proc]
+    ax.text(10, 50, c.name, fontsize=15, weight="bold", color=ink, va="top")
+    ax.text(10, 41.5, f"{cx.name}   -   quantity 1   -   sheet {sheet_no} of {sheet_of}", fontsize=7, color=ink, va="top")
+    info = [f"Material: {mat}" + (f", {f2(D)} mm thick" if proc != "printed" else ""),
+            f"Process: {proc_words}",
+            f"Size (X x Y x Z): {f2(W)} x {f2(H)} x {f2(D)} mm     Mass: {c.mass() - (0 if c.mass_kg is None else 0):.3f} kg" + (" (includes a declared payload mass)" if c.mass_kg else ""),
+            f"Scale {('%g:1' % s) if s >= 1 else ('1:%g' % round(1 / s, 2))} on A3 - do not scale; third-angle projection; dimensions in mm"]
+    if proc == "printed":
+        est = dig(mp, "estimate", default={})
+        info.insert(2, f"Print: {dig(mp, 'up', default='?')} of the machine up = see STL (already turned, bed face on Z = 0); nozzle "
+                       f"{dig(cx.d.manufacturing, 'printer', 'nozzle', default='?')} mm; support area {f2(dig(mp, 'support_area_mm2'), 0)} mm2; {est.get('filament_g', '?')} g, {est.get('print_hours', '?')} h ({est.get('basis', '')[:60]})")
+    for i, ln in enumerate(info):
+        ax.text(10, 36 - 4.6 * i, ln[:150], fontsize=6.2, color=ink, va="top")
+    nx = 215.0
+    tn = []
+    if c.material in METALS:
+        tn += ["DRAWING NOTE (not yet in the CAD model - the model has sharp edges):", "  " + DEBURR_NOTE + "."]
+    if c.material == "steel":
+        tn += ["Finish: NOT specified in the model (bare steel rusts): agree a finish with the shop."]
+    tapped = [ft["id"] for ft in feats if ft["type"].startswith("TAP")]
+    if tapped:
+        tn += [f"Tapped holes (drawn as tap-drill holes): {', '.join(tapped)}."]
+    if proc == "printed":
+        tn += ["No threads in plastic and no heat-set inserts: every screw runs into a steel nut.",
+               "Clearance holes are drawn oversize for print shrink: do not 'correct' them."]
+        if any("bearing" in fl for ft in feats for fl in ft["flags"]):
+            tn += ["Bearing seats: check with the real bearing (sliding fit, no play); ream or re-print if tight."]
+    if a["stock_flat"]:
+        tn += [f"Stock faces are used as supplied: maker's flatness {a['stock_flat']['flatness_mm']} mm (the simulation used",
+               f"  {a['tol']['flat']} mm for mating faces: see FABRICATION.md)."]
+    tn += [f"Design md5 {cx.md5[:12]}  report {cx.report_time}", "SIMULATED DESIGN - NOT BUILT - not a released drawing: a person must check it before cutting metal."]
+    for i, ln in enumerate(tn[:10]):
+        ax.text(nx, 53 - 4.4 * i, ln[:118], fontsize=5.6, color="#c0392b" if ln.startswith(("DRAWING NOTE", "SIMULATED", "Finish")) else ink, va="top")
+    ax.plot([nx - 3, nx - 3], [5, 57], color=ink, lw=0.5)
+    path_svg.parent.mkdir(parents=True, exist_ok=True)
+    fig.savefig(path_svg, format="svg", metadata={"Date": None})
+    fig.savefig(path_pdf, format="pdf", metadata={"CreationDate": None})
+    if pdf_pages is not None:
+        pdf_pages.savefig(fig)
+    if png is not None:
+        fig.savefig(png, format="png", dpi=110)
+    plt.close(fig)
+    return s
+
+
+def export_part_files(cx: Ctx, a: dict) -> dict:
+    """STEP of every custom part in its drawing frame; DXF of the flat profile for sheet parts; STL in print orientation."""
+    from build123d import ExportDXF, Plane, Pos, Unit, Vector, export_step, export_stl
+
+    c, proc = a["c"], a["proc"]
+    out = {}
+    p = cx.out / "cad" / f"{c.name}.step"
+    p.parent.mkdir(parents=True, exist_ok=True)
+    import copy
+    s_ = copy.copy(a["local"])
+    s_.label = c.name
+    export_step(s_, str(p))
+    out["step"] = p
+    if proc == "sheet":
+        D = float(a["size"][2])
+        ex = ExportDXF(unit=Unit.MM)
+        ex.add_layer("CUT")
+        n = 0
+        for f in a["local"].faces():
+            if f.geom_type.name == "PLANE" and abs(f.normal_at(f.center()).Z - 1) < 1e-6 and abs(f.center().Z - D) < 1e-6:
+                ex.add_shape(Pos(0, 0, -D) * f, layer="CUT")
+                n += 1
+        if n:
+            q = cx.out / "dxf" / f"{c.name}.dxf"
+            q.parent.mkdir(parents=True, exist_ok=True)
+            ex.write(str(q))
+            out["dxf"] = q
+    if proc == "printed":
+        up = dig(a["mp"], "up_vector") or {"+X": (1, 0, 0), "-X": (-1, 0, 0), "+Y": (0, 1, 0), "-Y": (0, -1, 0), "+Z": (0, 0, 1), "-Z": (0, 0, -1)}.get(c.meta.get("print_up", "+Z"))
+        up = np.array(up, float)
+        ref = np.array([1.0, 0, 0]) if abs(up[0]) < 0.9 else np.array([0, 1.0, 0])
+        xd = np.cross(ref, up)
+        pl = Plane(origin=(0, 0, 0), x_dir=Vector(*xd), z_dir=Vector(*up))
+        loc = pl.to_local_coords(c.shape)
+        bb = loc.bounding_box()
+        loc = Pos(-bb.min.X, -bb.min.Y, -bb.min.Z) * loc
+        q = cx.out / "stl" / f"{c.name}.stl"
+        q.parent.mkdir(parents=True, exist_ok=True)
+        export_stl(loc, str(q), tolerance=0.02, angular_tolerance=0.2)
+        out["stl"] = q
+    return out
+
+
+def dxf_check(path: Path) -> dict:
+    """Read a written DXF back: entity counts, extents and total cut length (for the cross-check against the report)."""
+    import ezdxf
+
+    doc = ezdxf.readfile(str(path))
+    n = Counter()
+    length = 0.0
+    xs, ys = [], []
+    for e in doc.modelspace():
+        t = e.dxftype()
+        n[t] += 1
+        if t == "LINE":
+            a_, b_ = tuple(e.dxf.start), tuple(e.dxf.end)
+            length += math.dist(a_[:2], b_[:2])
+            xs += [a_[0], b_[0]]; ys += [a_[1], b_[1]]
+        elif t == "CIRCLE":
+            length += 2 * math.pi * e.dxf.radius
+            xs += [e.dxf.center[0] - e.dxf.radius, e.dxf.center[0] + e.dxf.radius]; ys += [e.dxf.center[1] - e.dxf.radius, e.dxf.center[1] + e.dxf.radius]
+        elif t == "ARC":
+            sweep = (e.dxf.end_angle - e.dxf.start_angle) % 360.0
+            length += math.radians(sweep) * e.dxf.radius
+            xs += [e.dxf.center[0]]; ys += [e.dxf.center[1]]
+        elif t in ("SPLINE", "LWPOLYLINE", "POLYLINE", "ELLIPSE"):
+            try:
+                pts = list(e.flattening(0.01))
+                length += sum(math.dist(pts[i][:2], pts[i + 1][:2]) for i in range(len(pts) - 1))
+            except Exception:
+                pass
+    return {"entities": dict(n), "cut_length_mm": round(length, 1), "extent": (round(max(xs) - min(xs), 2), round(max(ys) - min(ys), 2)) if xs else None}
