@@ -736,3 +736,99 @@ def test_a_shaft_meeting_its_bore_edge_to_edge_has_no_lead_in_and_a_chamfer_on_e
         assert [x for x in r.findings if x.code == "no_lead_in"] == []
         row = r.metrics["edges"]["shaft_bore_lead_ins"][0]
         assert row["bore_mouth_chamfered"] == bool(kw.get("chamfer_bore")) and row["shaft_end_chamfered"] == bool(kw.get("chamfer_pin"))
+
+
+# ===================================================================== bed-support FEA: every declared support must hold
+def seated_bed(screws=THREE, lift=None):
+    """bed_machine with what each nut sits in drawn: a 30 x 30 aluminium pad under the bed plate, resting on the nut's
+    top face (bonded to the plate). lift: the name of one nut whose pad is drawn 0.5 mm clear of it."""
+    d = floating(bed_machine(screws=screws, blocks_per_rail=1, sync="belt" if len(screws) > 1 else None))
+    parts = ["bed"] + [c.name for c in d.components if c.name.startswith("blk")]
+    for i, (x, y) in enumerate(screws):
+        top = d.get(f"nut{i}").shape.bounding_box().max.Z
+        z0 = top + (0.5 if lift == f"nut{i}" else 0.0)
+        d.add(f"pad{i}", Pos(x, y, (z0 + 100.0) / 2) * (Box(30, 30, 100.0 - z0) - Cylinder(5.0, 100.0 - z0)), material="al6061", body="zb")
+        d.join(f"pad{i}", "bed", "bond")
+        parts.append(f"pad{i}")
+    d.printer["bed_support"] = {"parts": parts}
+    return d
+
+
+def test_every_declared_support_holds_nodes_and_a_support_that_holds_none_is_an_error_not_a_figure():
+    """A plate on three screws (one pad under the plate on each nut) and one guide block per rail. All three seats hold
+    nodes: evaluated, with the node count per support, the five print points each loaded in turn, and the worst taken
+    from those. With one pad drawn 0.5 mm clear of its nut that seat holds nothing: before, the FEA ran on the two that
+    were found and reported the lot as held; now it is `bed_support_not_held_in_fea` (error) and no figure. And
+    un-holding a support does change the answer: the same plate on TWO screws (the rear one removed from the drive)
+    sinks several times further at the rear corners than on three."""
+    if not __import__("shutil").which("ccx"):
+        pytest.skip("CalculiX is not installed")
+    r = VerifierResult("fea")
+    m = BS.bed_support(seated_bed(), r)
+    fx = m["flexure"]
+    assert fx["evaluated"] and not fx["idealised"] and "bed_support_not_held_in_fea" not in codes(r)
+    assert set(fx["constrained_nodes"]) == {"blk00", "blk10", "nut0", "nut1", "nut2"} and min(fx["constrained_nodes"].values()) >= 3
+    assert set(fx["by_point"]) == {"corner -x -y", "corner -x +y", "corner +x -y", "corner +x +y", "centre"}
+    pw = m["print_weight"]
+    assert pw["worst_point"] == max(pw["by_point_mm"], key=lambda k: pw["by_point_mm"][k]["judged_mm"])
+    assert pw["judged_mm"] == max(v["judged_mm"] for v in pw["by_point_mm"].values())
+    assert fx["bonded_mm_per_n"] == fx["by_point"][fx["worst_point"]]["bonded_mm_per_n"]
+    # a load at one corner moves that corner most: the field under it is read at the other points too
+    row = fx["by_point"]["corner +x +y"]
+    assert row["bonded_elsewhere_mm_per_n"]["corner +x +y"] == pytest.approx(row["bonded_mm_per_n"], abs=1e-6)
+    assert row["bonded_mm_per_n"] > row["bonded_elsewhere_mm_per_n"]["corner -x -y"]
+
+    r2 = VerifierResult("fea")
+    m2 = BS.bed_support(seated_bed(lift="nut2"), r2)
+    f2 = find(r2, "bed_support_not_held_in_fea")
+    assert len(f2) == 1 and f2[0].severity == "error" and f2[0].data["unheld"] == ["nut2"]
+    assert not m2["flexure"]["evaluated"] and m2["flexure"]["constrained_nodes"]["nut2"] == 0 and m2["flexure"]["constrained_nodes"]["nut0"] >= 3
+    assert "total_bonded_mm" not in m2["print_weight"]                    # no flexure figure is reported for a model that is not held
+
+    r3 = VerifierResult("fea")
+    m3 = BS.bed_support(seated_bed(screws=THREE[:2]), r3)                  # the rear screw taken away: the rear edge hangs
+    rear3 = max(m["print_weight"]["by_point_mm"][k]["total_bonded_mm"] for k in ("corner -x +y", "corner +x +y"))
+    rear2 = max(m3["print_weight"]["by_point_mm"][k]["total_bonded_mm"] for k in ("corner -x +y", "corner +x +y"))
+    assert m3["flexure"]["evaluated"] and rear2 > 3.0 * rear3
+
+
+def test_the_displacement_field_of_the_bed_support_case_is_saved_for_rendering(tmp_path, monkeypatch):
+    if not __import__("shutil").which("ccx"):
+        pytest.skip("CalculiX is not installed")
+    monkeypatch.setattr(BS, "FIELD_DIR", tmp_path / "fea")
+    m = BS.bed_support(seated_bed(), VerifierResult("fea"))
+    z = np.load(m["flexure"]["displacement_fields"])
+    assert z["xyz"].shape[1] == 3 and len(z["print_point_labels"]) == 5 and len(z["part"]) == len(z["xyz"])
+    u = z["U_corner_px_py__bonded"]
+    assert u.shape == z["xyz"].shape and float(np.abs(u).max()) > 0
+
+
+# ===================================================================== review anomalies
+def test_an_adjustment_used_beyond_nine_tenths_of_its_range_is_flagged_and_one_with_room_is_not():
+    """Needed 1.453 of 1.5 mm (97 %): `adjustment_margin_thin`, with the share. 1.2 of 1.5 (80 %): nothing. 1.6 of
+    1.5: not this warning (the error `adjustment_too_small` is the caller's)."""
+    from mechloop.tolerance import ADJUSTMENT_MARGIN_THIN, thin_adjustment
+
+    adj = Adjustment("y rail set to the plate", "rail_align", range_mm=1.5, joint="y")
+    r = VerifierResult("tolerance")
+    out = thin_adjustment(r, adj, 1.453, "Axis y: aligning its two rails")
+    assert out == {"share_of_range_used_99": 0.969, "margin_thin": True} and ADJUSTMENT_MARGIN_THIN == 0.9
+    f = find(r, "adjustment_margin_thin")
+    assert len(f) == 1 and f[0].severity == "warning" and f[0].data["share_used"] == 0.969 and "97%" in f[0].message
+    r = VerifierResult("tolerance")
+    assert not thin_adjustment(r, adj, 1.2, "x")["margin_thin"] and not thin_adjustment(r, adj, 1.6, "x")["margin_thin"] and r.findings == []
+
+
+def test_reports_carry_the_hash_of_the_checker_and_of_the_design_file(tmp_path):
+    from mechloop.report import provenance_of, source_hash
+    from mechloop.runner import run
+
+    f = tmp_path / "tiny.py"
+    f.write_text("from build123d import Box\nfrom mechloop import Design\n\n\ndef build():\n    d = Design('tiny')\n    d.add('a', Box(10, 10, 10))\n    return d\n")
+    rep = run(f, tmp_path / "out", only=["geometry"], render=False).to_dict()
+    h = rep["provenance"]
+    assert h["mechloop_source_sha256"] == source_hash()["mechloop_source_sha256"] and len(h["mechloop_source_sha256"]) == 16
+    assert h["design_file"] == "tiny.py" and h["design_file_sha256"] == provenance_of(f)["design_file_sha256"]
+    f.write_text(f.read_text() + "# changed\n")
+    assert provenance_of(f)["design_file_sha256"] != h["design_file_sha256"]
+    assert json.loads((tmp_path / "out" / "tiny" / "report_partial.json").read_text())["provenance"] == h

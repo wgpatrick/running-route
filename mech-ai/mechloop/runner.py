@@ -97,8 +97,14 @@ def run(path: str | Path, out_root: str | Path = "out", only=None, render: bool 
         res.add("error", "build_failed", f"Design script failed: {type(e).__name__}: {e}",
                 trace=traceback.format_exc()[-900:])
         rep.results.append(res)
+        from .report import provenance_of
+
+        rep.provenance = provenance_of(path)
         return rep
     rep = verify(design, only)
+    from .report import provenance_of
+
+    rep.provenance = provenance_of(path)
     t_ver = time.time()
     out = Path(out_root) / design.name
     out.mkdir(parents=True, exist_ok=True)

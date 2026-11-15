@@ -42,6 +42,7 @@ class Report:
     results: list[VerifierResult] = field(default_factory=list)
     artifacts: dict = field(default_factory=dict)
     partial: bool = False  # only a subset of verifiers was requested
+    provenance: dict = field(default_factory=dict)  # what produced this report: hashes of the mechloop source and of the design file
 
     @property
     def ok(self) -> bool:
@@ -56,6 +57,7 @@ class Report:
         return {
             "design": self.design,
             "ok": self.ok,
+            **({"provenance": self.provenance} if self.provenance else {}),
             **({"partial": "only some verifiers were run; this is not a full pass"} if self.partial else {}),
             "summary": {
                 r.verifier: (
@@ -116,4 +118,44 @@ def without_timings(report: dict) -> dict:
     out = strip(report)
     if isinstance(out.get("summary"), dict):
         out["summary"] = {k: re.sub(r", \d+(\.\d+)?s\)$", ")", str(v)) for k, v in out["summary"].items()}
+    return out
+
+
+_SOURCE_HASH: dict = {}
+
+
+def source_hash() -> dict:
+    """SHA-256 over every file of the installed mechloop package that decides a result (*.py and the *.json data:
+    vendor records, fitted parameters, shop profiles), in sorted path order, each file's relative path and bytes.
+    {"mechloop_source_sha256": the first 16 hex digits, "files": count}. The same label on two reports means the same
+    checker produced them."""
+    if not _SOURCE_HASH:
+        import hashlib
+        from pathlib import Path
+
+        root = Path(__file__).resolve().parent
+        h = hashlib.sha256()
+        files = sorted(f for f in root.rglob("*") if f.is_file() and f.suffix in (".py", ".json") and "__pycache__" not in f.parts)
+        for f in files:
+            h.update(str(f.relative_to(root)).replace("\\", "/").encode())
+            h.update(b"\0")
+            h.update(f.read_bytes())
+            h.update(b"\0")
+        _SOURCE_HASH.update({"mechloop_source_sha256": h.hexdigest()[:16], "files": len(files)})
+    return dict(_SOURCE_HASH)
+
+
+def provenance_of(design_path) -> dict:
+    """source_hash() plus the design file's own SHA-256 (first 16 hex digits) and its name."""
+    import hashlib
+    from pathlib import Path
+
+    out = source_hash()
+    try:
+        fp = Path(design_path)
+        out.update({"design_file": fp.name, "design_file_sha256": hashlib.sha256(fp.read_bytes()).hexdigest()[:16]})
+    except Exception as e:
+        out["design_file_sha256"] = f"not hashed: {type(e).__name__}"
+    out["note"] = ("hashes label what produced the report: the mechloop package's source and data files, and the design file itself "
+                   "(not the files a design imports)")
     return out

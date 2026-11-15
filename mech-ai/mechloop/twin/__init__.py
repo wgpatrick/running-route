@@ -193,6 +193,12 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
         rep["findings"] = [{"severity": f.severity, "code": f.code, "message": f.message, "data": f.data}
                            for f in r.findings]
         rep["seconds"] = round(time.time() - t0, 1)
+        try:
+            from ..report import source_hash
+
+            rep["provenance"] = source_hash()
+        except Exception:
+            pass
         (out / "print_report.json").write_text(json.dumps(rep, indent=1, default=float))
         return rep
 
@@ -357,6 +363,11 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
     lag = np.abs(Qa - Qc)                 # how far the nozzle/bed is from the command at each instant
     mlag = np.abs(Qm - Qc)
     rep["dynamics"] = {"axis_mass_kg": [round(float(x), 3) for x in mass],
+                       "axis_mass_note": "EFFECTIVE mass at the joint: the mass the axis carries plus its motors' rotor inertia reflected "
+                                         "through the drive (J (2 pi / travel per turn)^2: tens of kg behind a 2 mm lead screw). The two "
+                                         "parts are given separately below",
+                       "axis_carried_mass_kg": [round(float(m_ - r_), 3) for m_, r_ in zip(mass, mm["motor_mass"])],
+                       "axis_reflected_rotor_mass_kg": [round(float(x), 3) for x in mm["motor_mass"]],
                        "gravity_bias_n": [round(float(x), 2) for x in bias],
                        "friction_n_assumed": fric, "belts_per_axis": belts_used, **sinfo,
                        "toolhead_compliance": mm["toolhead"], "damping": mm["damping"],

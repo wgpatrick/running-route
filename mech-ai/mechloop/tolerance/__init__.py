@@ -31,6 +31,27 @@ def _rng99(x) -> float:
     return float(np.percentile(np.abs(x), 99.7))
 
 
+ADJUSTMENT_MARGIN_THIN = 0.9      # an adjustment used beyond this share of its range (99.7th percentile of builds) is flagged
+
+
+def thin_adjustment(r: VerifierResult, adj, need: float, what: str, n: int = 3000, **data) -> dict:
+    """An adjustment whose range covers what the builds need, but only just: more than ADJUSTMENT_MARGIN_THIN of the range
+    is used at the 99.7th percentile. That percentile rests on about 0.3 % of the simulated builds (9 of 3000), so a
+    margin of a few per cent is inside its own sampling noise, and nothing is left for what the stack-up does not
+    model. Adds the warning `adjustment_margin_thin`; returns the metrics to put beside the figures."""
+    rng_ = float(adj.range_mm)
+    used = need / rng_ if rng_ > 0 else float("inf")
+    out = {"share_of_range_used_99": round(used, 3), "margin_thin": bool(ADJUSTMENT_MARGIN_THIN < used <= 1.0)}
+    if out["margin_thin"]:
+        r.add("warning", "adjustment_margin_thin",
+              f"{what}: needs up to {need:.3f} mm (99.7th percentile of {n} builds) of the {rng_:g} mm that '{adj.name}' provides: "
+              f"{used:.0%} of the range, {rng_ - need:.3f} mm to spare. That percentile rests on the few most extreme builds, so the "
+              f"margin is within its own sampling noise, and nothing is left for what the stack-up does not model.",
+              adjustment=adj.name, needed_mm=round(need, 3), available_mm=rng_, share_used=round(used, 3), **data,
+              hint=f"Give the adjustment more range (about {need / 0.75:.1f} mm would leave a quarter in hand) or shorten the tolerance chain.")
+    return out
+
+
 def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
     r = VerifierResult("tolerance")
     with timed(r):
@@ -198,7 +219,10 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
                       joint=jn, p_ok=round(p_ok, 3),
                       hint="Declare how the rails are aligned at assembly (Adjustment kind='rail_align': one rail fixed, the other "
                            "screwed down while the moving plate is run along it), or let one side float.")
-            elif adj and _rng99(drift) > adj.range_mm:
+            if adj:
+                rails_m[jn].update({"alignment_needed_mm_99": round(_rng99(drift), 3), "alignment_available_mm": adj.range_mm,
+                                    **thin_adjustment(r, adj, _rng99(drift), f"Axis {jn}: aligning its two rails", n, joint=jn)})
+            if adj and _rng99(drift) > adj.range_mm:
                 r.add("error", "adjustment_too_small",
                       f"Axis {jn}: aligning the rails needs up to {_rng99(drift):.2f} mm of movement but '{adj.name}' gives "
                       f"{adj.range_mm} mm.", joint=jn)
@@ -260,6 +284,7 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
                       joint=jn, hint="Name the nut in the joint's drive (drive={..., 'nut': '<part>'}).")
             if adj:
                 screws_m[jn]["float_available_mm"] = adj.range_mm
+                screws_m[jn].update(thin_adjustment(r, adj, _rng99(err), f"Axis {jn}: the nut's float against the screw's axis", n, joint=jn))
             if adj and _rng99(err) > adj.range_mm:
                 r.add("error", "adjustment_too_small",
                       f"Axis {jn}: the nut is up to {_rng99(err):.2f} mm off the screw's axis as built, but '{adj.name}' lets it "
@@ -372,6 +397,7 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
                   pm["p_bed_reaches_nozzle_with_overtravel_standard_error"] = round(std_error(p_ot, n), 4)
               if a_z:
                   pm["z_offset_needed_mm_99"], pm["z_offset_available_mm"] = round(_rng99(offset), 2), a_z.range_mm
+                  pm["z_offset_margin"] = thin_adjustment(r, a_z, _rng99(offset), "The nozzle-to-bed gap", n)
                   if _rng99(offset) > a_z.range_mm:
                       r.add("error", "adjustment_too_small",
                             f"The nozzle-to-bed gap is off by up to {_rng99(offset):.2f} mm as built, but '{a_z.name}' only "
@@ -385,6 +411,9 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
                              "range, and give the Z axis that much extra travel.")
               if a_lvl:
                   pm["levelling_needed_mm_99"], pm["levelling_available_mm"] = round(_rng99(tilt) / 2, 2), a_lvl.range_mm
+                  pm["levelling_note"] = ("levelling_needed is HALF of bed_out_of_level: a level adjustment of +/- its range at each "
+                                          "corner takes out twice its range of height difference")
+                  pm["levelling_margin"] = thin_adjustment(r, a_lvl, _rng99(tilt) / 2, "Levelling the bed", n)
                   if _rng99(tilt) / 2 > a_lvl.range_mm:
                       r.add("error", "adjustment_too_small",
                             f"The bed is up to {_rng99(tilt):.2f} mm out of level under the nozzle as built, but '{a_lvl.name}' only "

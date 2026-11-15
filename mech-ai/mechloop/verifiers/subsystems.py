@@ -363,6 +363,9 @@ def _endstop_window_scatter(design, e, sw, j, r, gap, nearest, latest, press, q_
            "basis": "stack-up between switch and striker along the lever's travel, at the declared end of mechanical travel"}
     if adj is not None:
         out.update({"set_at_assembly": adj.name, "adjustment_needed_mm_99": round(need, 2), "adjustment_available_mm": adj.range_mm})
+        from ..tolerance import thin_adjustment
+
+        out.update(thin_adjustment(r, adj, need, f"Endstop {sw.name} on joint {jn}: setting the switch against its striker", B.n, joint=jn))
         if need > adj.range_mm:
             r.add("error", "adjustment_too_small",
                   f"Endstop {sw.name} on joint {jn}: setting the switch against its striker needs up to {need:.2f} mm, but "

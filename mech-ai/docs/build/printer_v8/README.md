@@ -16,7 +16,7 @@ Regenerate: `.venv/bin/python tools/build_package.py designs/printer_v8.py`. The
 | report result | geometry: pass; interference: pass; tolerance: pass; manufacture: pass; ratings: pass; motion: pass; subsystems: pass; electrical: pass; assemblability: pass; fea: pass; printing: pass; requirements: pass |
 | scorecard | 2026-11-15T18:52:23 |
 | freshness warnings | the parts catalogue has changed since the report was written (the package uses the catalogue as it is NOW; re-run verify to make the report agree): NUT-M5 mass differs from the report; SHCS-M3x16 mass differs from the report; NUT-M3 mass differs from the report; SHCS-M5x8 mass differs from the report; SHCS-M3x6 McMaster status: report 'unconfirmed: the STEP file delivered under this na', catalogue now 'confirmed by the delivered STEP file' |
-| package generated | 2026-11-15 20:22:43 |
+| package generated | 2026-11-15 20:30:49 |
 
 ## Counts
 
@@ -53,7 +53,7 @@ Regenerate: `.venv/bin/python tools/build_package.py designs/printer_v8.py`. The
 | . | 13 | 363 kB |
 | cad | 35 | 2554 kB |
 | data | 3 | 119 kB |
-| drawings | 71 | 12751 kB |
+| drawings | 71 | 12752 kB |
 | dxf | 20 | 340 kB |
 | images | 19 | 2266 kB |
 | stl | 13 | 732 kB |
