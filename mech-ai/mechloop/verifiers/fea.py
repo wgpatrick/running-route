@@ -212,6 +212,7 @@ def _solve(mesh, material, force, workdir: Path, tag: str, label: str = "", r: V
 def _parse_dat(dat: Path, n_nodes: int, n_el: int):
     U = np.zeros((n_nodes, 3))
     vm_el = np.zeros(n_el)
+    S_el = np.zeros((n_el, 6))         # the stress tensor at each element's highest von Mises point
     rf = None
     mode = None
     with open(dat) as f:
@@ -239,9 +240,10 @@ def _parse_dat(dat: Path, n_nodes: int, n_el: int):
                                  + 3 * (sxy ** 2 + sxz ** 2 + syz ** 2))
                     if vm > vm_el[e]:
                         vm_el[e] = vm
+                        S_el[e] = (sx, sy, sz, sxy, sxz, syz)
             except ValueError:
                 continue
-    return {"U": U, "vm_el": vm_el, "rf": rf}
+    return {"U": U, "vm_el": vm_el, "S_el": S_el, "rf": rf}
 
 
 def run_loadcase(design: Design, lc: LoadCase, r: VerifierResult, keep_dir: Path | None = None) -> dict:
@@ -286,6 +288,7 @@ def run_loadcase(design: Design, lc: LoadCase, r: VerifierResult, keep_dir: Path
             e_peak = int(np.flatnonzero(~at_fixture)[free.argmax()]) if len(free) else int(vm.argmax())
             where = xyz[tets[e_peak, :4]].mean(axis=0).round(1).tolist()
             umag = np.linalg.norm(res["U"], axis=1)
+            last_field = (res, ~at_fixture)
             runs.append({"mesh_size": round(size, 3), "nodes": len(xyz), "elements": len(tets),
                          "peak_vm_mpa": round(peak, 2), "peak_vm_incl_fixture_mpa": round(peak_all, 2),
                          "peak_at": where, "max_deflection_mm": float(umag.max()),
@@ -336,6 +339,32 @@ def run_loadcase(design: Design, lc: LoadCase, r: VerifierResult, keep_dir: Path
             r.add("info", "fea_fixture_peak",
                   f"{lc.name}: raw peak {last['peak_vm_incl_fixture_mpa']} MPa is at the fixed boundary "
                   f"(artificially stiff clamp); governing stress taken away from it.", loadcase=lc.name)
+        from .. import printsettings as PS
+
+        if PS.is_printed(comp):
+            # a printed part: judged on the LOWER bound (print settings: sparse core, across-layer strength and modulus)
+            lb = PS.lower_bound_fos(comp, last_field[0]["S_el"], last_field[0]["vm_el"], last_field[1])
+            mb = PS.modulus_bounds(comp)
+            d_lo = last["max_deflection_mm"] * mb["upper"] / max(mb["lower"], 1e-9)
+            out["printed"] = {**lb, "fos_solid": round(fos, 2), "deflection_lower_bound_mm": round(d_lo, 4),
+                              "deflection_upper_bound_mm": round(last["max_deflection_mm"], 4), "modulus_bounds": mb,
+                              "note": "fos is judged on fos_lower; fos_solid is the part taken as solid along-layer plastic"}
+            if lb:
+                out["fos"] = lb["fos_lower"]
+                if lb["fos_lower"] < lc.min_fos <= fos:
+                    r.add("error", "fos_low_printed",
+                          f"{lc.name}: factor of safety {lb['fos_lower']:.2f} < {lc.min_fos} on printed {lc.component} on the lower bound "
+                          f"({lb['governed_by']}; {PS.mass_note(comp)}; across the layers {lb['across_layers_mpa']:g} MPa, along "
+                          f"{lb['printed_yield_mpa']:g} MPa, {lb['orientation']}); as solid plastic it would be {fos:.2f}.",
+                          loadcase=lc.name, fos=lb["fos_lower"], fos_solid=round(fos, 2), governed_by=lb["governed_by"],
+                          hint="Declare the print settings and orientation (meta['print']: walls, infill, orientation) that keep tension in "
+                               "the layers, add walls / infill, or add material.")
+            if lc.max_deflection is not None and last["max_deflection_mm"] <= lc.max_deflection < d_lo:
+                r.add("error", "deflection_high",
+                      f"{lc.name}: deflection {d_lo:.3f} mm > {lc.max_deflection} mm on the printed part's lower-bound modulus "
+                      f"({mb['lower']:g} MPa against {mb['upper']:g} solid; {last['max_deflection_mm']:.3f} mm as solid).",
+                      loadcase=lc.name, deflection=round(d_lo, 4), printed_lower_bound=True,
+                      hint="Add walls / infill (meta['print']) or deepen the section.")
         if fos < lc.min_fos:
             r.add("error", "fos_low",
                   f"{lc.name}: factor of safety {fos:.2f} < {lc.min_fos} on {lc.component} "
@@ -348,8 +377,8 @@ def run_loadcase(design: Design, lc: LoadCase, r: VerifierResult, keep_dir: Path
                   f"at {last['deflection_at']}.", loadcase=lc.name,
                   deflection=round(last["max_deflection_mm"], 4),
                   hint="Stiffness scales with section depth cubed: deepen the section or add ribs/gussets.")
-        if fos > 8 * lc.min_fos and not comp.cots:
-            r.add("info", "overbuilt", f"{lc.name}: FoS {fos:.1f} is far above the {lc.min_fos} target; "
+        if out["fos"] > 8 * lc.min_fos and not comp.cots:
+            r.add("info", "overbuilt", f"{lc.name}: FoS {out['fos']:.1f} is far above the {lc.min_fos} target; "
                   f"mass could be removed.", loadcase=lc.name)
         if keep_dir:
             keep_dir.mkdir(parents=True, exist_ok=True)
@@ -585,13 +614,23 @@ def _slide_interfaces(design: Design, mesh: dict, names) -> tuple:
     return xyz, part_tets, eqs, info, not_done
 
 
+def _modulus(c, lower: bool) -> float:
+    if not lower:
+        return MATERIALS[c.material].E
+    from ..printsettings import modulus_bounds
+
+    return modulus_bounds(c)["lower"]
+
+
 def _asm_solve(workdir: Path, job: str, xyz, part_tets, comps, fixed_nodes, nodal: dict, traction, force, label, r,
-               temps: dict | None = None, bc: list | None = None, equations: list | None = None):
+               temps: dict | None = None, bc: list | None = None, equations: list | None = None, printed_lower: bool = False):
     """Write and run one linear static step. nodal: {node: weight}, load = traction * weight.
     temps: {part index: temperature rise in K} adds thermal expansion.
     bc: [(nodes, dof 1..3), ...] holds each set in one direction only (a guide block across its rail, a nut seat along
     its screw) instead of fixing `fixed_nodes` in all three; `fixed_nodes` must then be the union of the sets (the
-    reactions are summed over it)."""
+    reactions are summed over it).
+    printed_lower: printed parts take the LOWER bound of their modulus (mechloop.printsettings.modulus_bounds: printed
+    modulus, across-layer knock-down, shell plus sparse core); otherwise every part is solid."""
     ccx_order = [0, 1, 2, 3, 4, 5, 6, 7, 9, 8]
     with open(workdir / f"{job}.inp", "w") as f:
         f.write("*NODE, NSET=NALL\n")
@@ -615,7 +654,8 @@ def _asm_solve(workdir: Path, job: str, xyz, part_tets, comps, fixed_nodes, noda
                     f.write(f"{int(n) + 1},\n")
         for i, c in enumerate(comps):
             m = MATERIALS[c.material]
-            f.write(f"*MATERIAL, NAME=M{i}\n*ELASTIC\n{m.E},{m.nu}\n")
+            E = _modulus(c, printed_lower)
+            f.write(f"*MATERIAL, NAME=M{i}\n*ELASTIC\n{E},{m.nu}\n")
             if temps is not None:
                 f.write(f"*EXPANSION, ZERO=0.\n{ALPHA.get(c.material, 20e-6)}\n")
             f.write(f"*SOLID SECTION, ELSET=P{i}, MATERIAL=M{i}\n")
@@ -859,19 +899,22 @@ def run_assembly(design: Design, ac, r: VerifierResult) -> dict:
         out.update({"deflection_mm": round(defl, 5), "deflection_at": at,
                     "stiffness_n_per_mm": round(fmag / defl, 1) if defl > 0 else None, "joints": "bonded where parts touch"})
         # lower bound: screwed joints held only around their screws
+        low_field = None
         try:
             xyz2, tets2, info = _unbond_away_from_screws(design, mesh, names)
             if info:
                 res2 = _asm_solve(workdir, "asm_screwed", xyz2, tets2, comps, fixed_nodes, nodal, traction, force,
-                                  ac.name + " (screwed joints)", None)
+                                  ac.name + " (screwed joints)", None, printed_lower=True)
                 if "error" not in res2 and res2["rf"] is not None and \
                         float(np.linalg.norm(res2["rf"] + force)) / max(fmag, 1e-12) < 0.01:
                     d2, _, _ = probe_defl(res2["U"], xyz2[:len(xyz)])
                     out["deflection_screwed_joints_mm"] = round(d2, 5)
                     out["stiffness_low_n_per_mm"] = round(fmag / d2, 1) if d2 > 0 else None
                     out["screwed_joints"] = info[:12]
-                    out["stiffness_range_note"] = ("low: joints held only around their screws; high: every touching face bonded. "
+                    out["stiffness_range_note"] = ("low: joints held only around their screws and printed parts at their lower-bound "
+                                                   "modulus (print settings); high: every touching face bonded, every part solid. "
                                                    "The real machine is in between; no bolt preload or contact is modelled.")
+                    low_field = res2
                 else:
                     out["screwed_joints_note"] = "the screw-only model did not solve cleanly (a part came free); only the bonded figure is given"
         except Exception as e:
@@ -880,15 +923,33 @@ def run_assembly(design: Design, ac, r: VerifierResult) -> dict:
         fixed_mask = np.zeros(len(xyz), dtype=bool)
         fixed_mask[fixed_nodes] = True
         per_part = {}
+        from .. import printsettings as PS
+
         for i, (c, (a, b)) in enumerate(zip(comps, ranges)):
             if b <= a:
                 continue
             tets = part_tets[i]
             vm = res["vm_el"][a - 1:b - 1]
-            free = vm[~fixed_mask[tets].any(axis=1)]
+            keep = ~fixed_mask[tets].any(axis=1)
+            free = vm[keep]
             peak = float(free.max()) if len(free) else float(vm.max())
             fos = MATERIALS[c.material].yield_mpa / peak if peak > 0 else float("inf")
             per_part[c.name] = {"peak_vm_mpa": round(peak, 2), "fos": round(min(fos, 9999.0), 1)}
+            if PS.is_printed(c):
+                # lower bound: the worse of the bonded field and the screw-only field with printed parts at their lower modulus
+                lbs = [PS.lower_bound_fos(c, fld["S_el"][a - 1:b - 1], fld["vm_el"][a - 1:b - 1], keep if keep.any() else None)
+                       for fld in (res, low_field) if fld is not None]
+                lbs = [x for x in lbs if x]
+                if lbs:
+                    lb = min(lbs, key=lambda x: x["fos_lower"])
+                    per_part[c.name].update({"fos_solid": per_part[c.name]["fos"], "fos": lb["fos_lower"], "fos_lower": lb["fos_lower"],
+                                             "governed_by": lb["governed_by"], "settings_from": lb["settings_from"]})
+                    if ac.min_fos is not None and lb["fos_lower"] < ac.min_fos <= fos:
+                        r.add("error", "fos_low_printed",
+                              f"{ac.name}: printed {c.name} factor of safety {lb['fos_lower']:.2f} < {ac.min_fos} on the lower bound "
+                              f"({lb['governed_by']}; {PS.mass_note(c)}; {lb['orientation']}); as solid plastic {fos:.2f}.",
+                              case=ac.name, part=c.name, fos=lb["fos_lower"], fos_solid=round(fos, 2),
+                              hint="Declare print settings and orientation (meta['print']) that keep tension in the layers, or add material.")
             if ac.min_fos is not None and fos < ac.min_fos:
                 r.add("error", "fos_low", f"{ac.name}: {c.name} factor of safety {fos:.2f} < {ac.min_fos} "
                       f"(peak von Mises {peak:.1f} MPa; interface stresses in a bonded model are approximate).",

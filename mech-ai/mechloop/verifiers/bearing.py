@@ -9,24 +9,32 @@ diameter, ISO 4762's d_w). Two things go wrong there, and a flat washer is the r
         under SEAT_ERROR_FRACTION (0.6) of A_ref   -> `screw_head_seat_too_small` (error): fit a washer
         under SEAT_WARN_FRACTION (0.85) of A_ref   -> the same code as a warning (marginal)
 (b) THE SEAT IS SOFT. Bearing pressure = preload / area under the ring, against an allowable for the seat's material:
-        printed plastic: PLASTIC_SUSTAINED_FRACTION (two thirds) x the material's yield. Plastics creep under a sustained
-            clamp load and the joint loses its preload; two thirds is an allowance, ASSUMED (no creep data in the
-            materials table). Above the yield itself the head crushes the surface as it is tightened.
-            over the allowance -> `screw_head_bearing_pressure` warning; over yield -> error.
-        metals: aluminium, brass: the material's yield; steel: 1.5 x yield (VDI 2230's limiting surface pressures are
-            about yield for wrought aluminium and well above it for structural steel; recalled, conservative). Over
-            it -> warning: the seat embeds and the joint loses preload (soft cast plate, thin soft sheet).
-    Preload = T / (K d), K = 0.2 (dry or lightly oiled steel, the usual nut factor), with the tightening torque T of
-    TORQUE_NM: "steel" for a joint with metal only in its grip (class 8.8 at the usual catalogue torque), "soft" for a
-    joint that clamps or threads into plastic, where nobody applies the steel torque. BOTH TABLES ARE ASSUMED
-    (recalled class values, no document fetched). State your own: design.manufacturing["tightening_torque_nm"] =
-    {"M3": 0.8} or component.meta["torque_nm"] on one screw.
+        metals: the limiting surface pressure p_G of VDI 2230 (2015 edition), as Bossard tabulates it
+            (vendor_cad/staging/practice_refs/04_Bossard_surface_pressure.pdf): S235 490, X4CrNi18-12 (1.4303, for
+            304) 630, AW-6082 T6 (the nearest to 6061-T6) 360, AW-5083 325, cast GK-AlSi9Cu3 200 (for cast tooling
+            plate: MIC-6 / ATP-5) MPa. 5052-H32 is not tabulated: DERIVED from AW-5083's p_G scaled by tensile strength
+            (228 / 260 x 325 = 285 MPa). Brass: not tabulated, its yield (conservative). Over it -> warning: the seat
+            embeds and the joint loses preload.
+        printed plastic: no published allowable exists (practice_refs MISSING.txt, item 4). DERIVED: a sustained bearing
+            pressure of PLASTIC_SUSTAINED_FRACTION (0.3) x the data sheet's printed tensile yield (PETG 47 MPa,
+            Prusament TDS; ABS 30.8 MPa, ABS-M30 TDS: mechloop.printsettings.PRINTED). 0.3 because the plastic creeps
+            under a constant clamp load (the creep papers in practice_refs/14_* report creep at a few MPa, and PETG's
+            linear-viscoelastic limit is 6.5 MPa at 75 degC), and it matches the practice rule PRT-030. Above the
+            printed yield itself the surface crushes on tightening (error). Where the ring is not over the part's
+            perimeters (the solid walls round the hole, from its print settings) and the skin under it is thinner than
+            the ring is wide, the outer part of the ring bears on sparse infill: that share carries only infill x the
+            allowable (infill^1.5 when the head presses across the layers), Gibson-Ashby honeycomb scaling, DERIVED.
+    Preload F = T / X with Bossard's conversion factor X = M_A / F_M for coarse threads at mu = 0.12 (VDI 2230 2015,
+    practice_refs/01_Bossard_preload_torque.pdf: M2.5 0.44, M3 0.51, M4 0.67, M5 0.81, M6 0.99, M8 1.32 mm). The
+    tightening torque T: "steel" = Bossard's maximum torque for property class 8.8 at mu = 0.12 (90 % of yield; M3
+    1.27, M4 3.0, M5 5.9, M6 10.1, M8 24.6 N.m) for a joint with metal only in its grip; "soft" for a joint that clamps
+    or threads into plastic, where nobody applies the steel torque: ASSUMED (no table exists). State your own:
+    design.manufacturing["tightening_torque_nm"] = {"M3": 0.8} or component.meta["torque_nm"] on one screw.
 
 Bought parts (catalogue parts) as the seat are not judged for pressure: their mounting holes are the maker's.
 A catalogue flat washer (mechloop.parts.hardware.washer_flat, ISO 7089 / 7093-1; `add_screw(..., washer=True)` or
 `add_washer`) between head or nut and the part moves the check to the washer's own ring on the part.
-Not judged: sparse infill under the head (the printed part is taken as solid), countersunk heads, painted or anodised
-earth-bond seats.
+Not judged: countersunk heads, painted or anodised earth-bond seats.
 """
 from __future__ import annotations
 
@@ -39,15 +47,24 @@ from ..report import VerifierResult
 
 BEARING_DIA_OVER_HEAD = 0.92
 NUT_BEARING_OVER_FLATS = 0.95
-NUT_FACTOR = 0.2
+NUT_FACTOR = 0.2           # kept for callers; the preload now uses Bossard's X below
 SEAT_ERROR_FRACTION, SEAT_WARN_FRACTION = 0.6, 0.85
-PLASTIC_SUSTAINED_FRACTION = 2.0 / 3.0
-STEEL_PRESSURE_OVER_YIELD = 1.5
+PLASTIC_SUSTAINED_FRACTION = 0.3
 PLASTICS = ("pla", "petg", "abs", "nylon_pa12")
-# N.m. ASSUMED class values (recalled): "steel" = property class 8.8 at the torque fastener catalogues list for it;
-# "soft" = what is applied to a screw that clamps or threads into plastic.
-TORQUE_NM = {"steel": {"M2.5": 0.7, "M3": 1.3, "M4": 3.0, "M5": 5.9, "M6": 10.0, "M8": 25.0},
+# Bossard (VDI 2230 2015), coarse thread, mu_K = mu_G = 0.12: conversion factor X = M_A / F_M, mm (N.m per kN)
+TORQUE_TO_PRELOAD_MM = {"M2.5": 0.44, "M3": 0.51, "M4": 0.67, "M5": 0.81, "M6": 0.99, "M8": 1.32}
+# N.m. "steel": Bossard's maximum tightening torque, class 8.8, mu 0.12 (practice_refs/01). "soft": ASSUMED.
+TORQUE_NM = {"steel": {"M2.5": 0.73, "M3": 1.27, "M4": 3.0, "M5": 5.9, "M6": 10.1, "M8": 24.6},
              "soft": {"M2.5": 0.3, "M3": 0.5, "M4": 1.1, "M5": 2.0, "M6": 3.5, "M8": 8.0}}
+# VDI 2230 (2015) limiting surface pressure p_G, MPa, via Bossard (practice_refs/04): (value, basis)
+SURFACE_PRESSURE_MPA = {
+    "steel": (490.0, "VDI 2230 (2015) p_G of S235, 490 MPa (Bossard table)"),
+    "stainless304": (630.0, "VDI 2230 (2015) p_G of X4CrNi18-12 (1.4303), 630 MPa (Bossard table)"),
+    "al6061": (360.0, "VDI 2230 (2015) p_G of AW-6082 T6 (AlMgSi1 F31), 360 MPa, the nearest tabulated alloy to 6061-T6"),
+    "al5052": (285.0, "DERIVED: VDI 2230 (2015) p_G of AW-5083 (325 MPa at Rm 260) scaled to 5052-H32's Rm 228 MPa"),
+    "al_mic6": (200.0, "VDI 2230 (2015) p_G of cast GK-AlSi9Cu3 (Rm 160), 200 MPa, taken for cast tooling plate (Rm 166)"),
+    "al_atp5": (200.0, "VDI 2230 (2015) p_G of cast GK-AlSi9Cu3, 200 MPa, taken for cast tooling plate"),
+}
 N_R, N_A = 6, 16
 
 
@@ -126,8 +143,16 @@ def torque_for(design: Design, comp, size: str, soft: bool) -> tuple:
         return float(said), "declared (design.manufacturing['tightening_torque_nm'])"
     kind = "soft" if soft else "steel"
     t = TORQUE_NM[kind].get(size)
-    return t, (f"ASSUMED: {t:g} N.m, " + ("what is applied to a screw that clamps or threads into plastic" if soft else
-                                             "property class 8.8 at the usual catalogue torque") + " (recalled class value)")
+    return t, (f"ASSUMED: {t:g} N.m, what is applied to a screw that clamps or threads into plastic (no table exists)" if soft else
+               f"{t:g} N.m, Bossard's maximum for class 8.8 at mu 0.12 (VDI 2230 2015)")
+
+
+def preload_n(size: str, torque_nm: float) -> float:
+    """F = T / X (Bossard, mu 0.12); a size outside the table: T / (0.2 d)."""
+    X = TORQUE_TO_PRELOAD_MM.get(size)
+    if X is None:
+        return torque_nm * 1e3 / (NUT_FACTOR * float(size[1:]))
+    return torque_nm * 1e3 / X
 
 
 def allowable(material: str) -> tuple:
@@ -136,14 +161,42 @@ def allowable(material: str) -> tuple:
     if m is None:
         return None, None, "material not in the table"
     if material in PLASTICS:
-        return PLASTIC_SUSTAINED_FRACTION * m.yield_mpa, m.yield_mpa, (
-            f"two thirds of yield ({m.yield_mpa:g} MPa) for a sustained clamp load on a plastic that creeps "
-            f"(ASSUMED allowance); above yield the surface crushes on tightening")
-    if material in ("steel", "stainless304"):
-        return STEEL_PRESSURE_OVER_YIELD * m.yield_mpa, None, (
-            f"{STEEL_PRESSURE_OVER_YIELD:g} x yield of {material} ({m.yield_mpa:g} MPa): a steel seat under a hard head work-hardens and is "
-            f"constrained by the metal round it (VDI 2230 lists limiting surface pressures well above yield for structural steel; recalled)")
-    return m.yield_mpa, None, f"yield of {material} ({m.yield_mpa:g} MPa), taken as the limiting surface pressure (conservative)"
+        from ..printsettings import material_figures
+
+        mf = material_figures(material)
+        y = mf["tensile_yield_mpa"]
+        return round(PLASTIC_SUSTAINED_FRACTION * y, 1), y, (
+            f"DERIVED: {PLASTIC_SUSTAINED_FRACTION:g} x the printed tensile yield {y:g} MPa ({mf['source']}) for a sustained clamp "
+            f"load on a plastic that creeps (no published allowable exists); above the yield the surface crushes on tightening")
+    if material in SURFACE_PRESSURE_MPA:
+        v, basis = SURFACE_PRESSURE_MPA[material]
+        return v, None, basis
+    return m.yield_mpa, None, f"yield of {material} ({m.yield_mpa:g} MPa), taken as the limiting surface pressure (not tabulated; conservative)"
+
+
+def _infill_share(sc, axis, r_in, r_out) -> tuple:
+    """(capacity factor of the ring on a printed seat, note): the part of the ring over the perimeters round the hole, or
+    under a skin at least as thick as the ring is wide, is solid; the rest bears on sparse infill."""
+    from .. import printsettings as PS
+
+    if not PS.is_printed(sc):
+        return 1.0, None
+    fr = PS.fractions(sc)
+    if fr["settings"]["infill"] >= 0.999:
+        return 1.0, None
+    up, frame = PS.build_direction(sc, fr["settings"])
+    upv = up if up is not None else frame[2]
+    along = abs(float(np.dot(np.asarray(axis, dtype=float), upv))) > 0.7
+    skin = max(fr["top_mm"], fr["bottom_mm"]) if along else fr["wall_mm"]
+    if skin >= (r_out - r_in):
+        return 1.0, None
+    r_solid = min(r_in + fr["wall_mm"], r_out)
+    a_all = math.pi * (r_out ** 2 - r_in ** 2)
+    a_solid = math.pi * (r_solid ** 2 - r_in ** 2)
+    k, why = PS.infill_bearing_factor(sc, axis)
+    cap = (a_solid + (a_all - a_solid) * k) / a_all
+    return cap, (f"{1 - a_solid / a_all:.0%} of the ring is over sparse infill ({fr['settings']['infill']:.0%}; {why}) under a "
+                 f"{skin:.1f} mm skin; DERIVED")
 
 
 def head_bearing(design: Design, r: VerifierResult) -> dict:
@@ -211,9 +264,15 @@ def head_bearing(design: Design, r: VerifierResult) -> dict:
         if area / a_ref < SEAT_WARN_FRACTION:
             small.append((row, area / a_ref))
         if torque and area > 1e-6:
-            preload = torque * 1e3 / (NUT_FACTOR * d)
+            preload = preload_n(size, torque)
             p = preload / area
             warn_at, err_at, basis = allowable(sc.material)
+            cap, inote = _infill_share(sc, into, r_in, r_out)
+            if cap < 1.0 and warn_at is not None:
+                warn_at = round(warn_at * cap, 1)
+                err_at = round(err_at * cap, 1) if err_at is not None else None
+                basis = f"{basis}; x {cap:.2f}: {inote}"
+                row["over_sparse_infill"] = inote
             row.update({"tightening_torque_nm": torque, "torque_basis": t_basis, "preload_n": round(preload),
                         "bearing_pressure_mpa": round(p, 1), "allowable_mpa": warn_at, "allowable_basis": basis, "seat_material": sc.material})
             if warn_at is not None and p > warn_at and area / a_ref >= SEAT_ERROR_FRACTION:
@@ -247,7 +306,7 @@ def head_bearing(design: Design, r: VerifierResult) -> dict:
         r.add(sev, "screw_head_bearing_pressure",
               f"{len(g)} {size} screw head(s) / nut(s) bear " + ("through a washer " if washered else "directly ") + f"on {mat} "
               f"({', '.join(parts[:6])}{'...' if len(parts) > 6 else ''}): up to {w['bearing_pressure_mpa']:.0f} MPa under {w['fastener']} at a "
-              f"preload of {w['preload_n']} N ({w['torque_basis']}; K = {NUT_FACTOR}), against {w['allowable_mpa']:.0f} MPa allowed "
+              f"preload of {w['preload_n']} N ({w['torque_basis']}; F = T / X, Bossard, mu 0.12), against {w['allowable_mpa']:.0f} MPa allowed "
               f"({w['allowable_basis']})."
               + (" The surface crushes as the screw is tightened." if sev == "error" else " The seat creeps or embeds and the joint loses its preload."),
               fasteners=sorted(x["fastener"] for x in g)[:60], parts=parts, size=size, material=mat, count=len(g),
@@ -263,7 +322,11 @@ def head_bearing(design: Design, r: VerifierResult) -> dict:
             "pressure_findings_by_part": dict(sorted(by_part.items())),
             "worst": sorted([x for x in rows if "bearing_pressure_mpa" in x and x.get("allowable_mpa")],
                             key=lambda x: -x["bearing_pressure_mpa"] / x["allowable_mpa"])[:12],
-            "torque_tables_nm": TORQUE_NM, "nut_factor": NUT_FACTOR,
-            "assumed": ["tightening torques (class values, recalled)", f"nut factor {NUT_FACTOR}",
-                        "plastic allowable two thirds of yield for creep", "aluminium / brass allowable = yield, steel 1.5 x yield",
-                        "printed parts taken as solid under the head (infill not modelled)"]}
+            "torque_tables_nm": TORQUE_NM, "torque_to_preload_mm": TORQUE_TO_PRELOAD_MM,
+            "sources": ["preload and class 8.8 torque: Bossard / VDI 2230 2015, mu 0.12 (practice_refs/01)",
+                        "metal surface pressure: VDI 2230 2015 p_G via Bossard (practice_refs/04)",
+                        "washers: ISO 7089 / 7093 (practice_refs/06)"],
+            "assumed": ["torque in joints with plastic in them (no table exists)", "friction mu 0.12 (Bossard's column)",
+                        "printed-plastic allowable DERIVED: 0.3 x the TDS printed tensile yield",
+                        "5052-H32 surface pressure DERIVED from AW-5083 by tensile strength; brass at its yield",
+                        "infill under a head: Gibson-Ashby scaling, DERIVED"]}

@@ -185,19 +185,63 @@ def build():
   every screw head and hex nut the material really under its bearing ring is measured and judged:
   `screw_head_seat_too_small` (over a slot or an oversize / adjustment hole: under 60 % of the ring a bare head has on
   its standard clearance hole is an error, under 85 % a warning) and `screw_head_bearing_pressure` (preload over that
-  area against the seat's material: printed plastic above two thirds of its yield is a warning, above yield an error;
-  aluminium and brass above yield, steel above 1.5 x yield, a warning). There is no "every screw needs a washer"
-  rule: a steel head on steel or 6061 at the class torque passes. Preload = torque / (0.2 x d) with an ASSUMED torque
-  table (class 8.8: M3 1.3, M4 3.0, M5 5.9 N.m; a joint that clamps or threads into plastic: M3 0.5, M4 1.1, M5 2.0);
-  state your own with `d.manufacturing["tightening_torque_nm"] = {"M3": 0.8}` or `meta["torque_nm"]` on a screw.
-  Remedy: a catalogue flat washer, `add_screw(..., washer=True)` (ISO 7089: M2.5 6 x 0.5, M3 7 x 0.5, M4 9 x 0.8,
-  M5 10 x 1.0, M6 12 x 1.6) or `washer="large"` (ISO 7093-1: M3 9 x 0.8, M4 12 x 1.0, M5 15 x 1.2) for slots and
-  soft seats; under a nut, `add_washer(design, name, size, at=<face it bears on>, direction=<towards the nut>,
+  area against the seat's allowable). There is no "every screw needs a washer" rule: a steel head on steel or 6061 at
+  the class torque passes. Preload F = T / X with Bossard's conversion factor at mu 0.12 (VDI 2230 2015; X = 0.44,
+  0.51, 0.67, 0.81, 0.99, 1.32 mm for M2.5 to M8) and T = Bossard's maximum torque for class 8.8 (M3 1.27, M4 3.0, M5
+  5.9, M6 10.1, M8 24.6 N.m) where only metal is in the grip; a joint that clamps or threads into plastic takes an
+  ASSUMED lower torque (M3 0.5, M4 1.1, M5 2.0 N.m); state your own with
+  `d.manufacturing["tightening_torque_nm"] = {"M3": 0.8}` or `meta["torque_nm"]` on a screw. Allowables: metals,
+  VDI 2230's limiting surface pressure p_G (S235 490, 304 630, 6061 as AW-6082 360, 5052 285 DERIVED from AW-5083,
+  cast tooling plate as cast AlSi9Cu3 200 MPa; warning above). Printed plastic: no published allowable exists, so a
+  DERIVED one: 0.3 x the data sheet's printed tensile yield (PETG 47, ABS 30.8 MPa) for a sustained clamp load
+  (warning), the yield itself on tightening (error); where the ring reaches past the perimeters round the hole onto a
+  skin thinner than the ring is wide, the share over sparse infill counts only infill (along the build direction) or
+  infill^1.5 (across) of that (`over_sparse_infill` in the row). Remedy: a catalogue flat washer,
+  `add_screw(..., washer=True)` (ISO 7089: M2.5 6 x 0.5, M3 7 x 0.5, M4 9 x 0.8, M5 10 x 1.0, M6 12 x 1.6, M8 16 x 1.6)
+  or `washer="large"` (ISO 7093-1, M3 to M8: M3 9 x 0.8, M4 12 x 1.0, M5 15 x 1.2, M6 18 x 1.6, M8 24 x 2.0) for slots
+  and soft seats; under a nut, `add_washer(design, name, size, at=<face it bears on>, direction=<towards the nut>,
   screw=<screw>)` and place the nut on its top. With `washer=True`, `at` is the face the WASHER bears on: the head sits
   one washer thickness higher, so the screw reaches that much less far into its thread (choose the length with the
   washer in; the engagement check sees it). A washer is a part: it is in the BOM (`WASHER-M5`), in the part count and
-  in the assembly estimate. Bought parts as the seat are not judged for pressure. Not modelled: infill under the head
-  (printed parts are taken as solid), countersunk heads. Washer sizes are the standards' nominal ones, recalled.
+  in the assembly estimate. Bought parts as the seat are not judged for pressure. Not modelled: countersunk heads.
+  Sources: `vendor_cad/staging/practice_refs/01_*` (torque, preload), `04_*` (surface pressure), `06_*` (washers),
+  `14_*` (plastics).
+- `add_screw(..., insert=True)`: the screw threads into a heat-set insert in the printed part (`INSERT-HEATSET-M3` in
+  the BOM); see print settings below for the wall it needs.
+
+### Printed parts: print settings
+
+A printed part is a shell of walls and top / bottom skins round a sparse infill (`mechloop/printsettings.py`). Declare
+how it is printed, once for the design and per part where it differs:
+
+```python
+d.manufacturing["print_settings"] = {"walls": 4, "top_layers": 5, "bottom_layers": 4, "infill": 0.4, "infill_pattern": "gyroid"}
+d.add("z_pedestal", shape, material="petg", meta={"print": {"infill": 1.0, "orientation": "+Z"}})
+```
+
+Keys: `line_width_mm`, `layer_height_mm`, `walls`, `top_layers`, `bottom_layers`, `infill` (0..1), `infill_pattern`,
+`orientation` (build direction in the part's frame, the same as `meta["print_up"]`). The default, when neither says:
+0.45 mm lines, 0.2 mm layers, 3 walls, 5 top / 4 bottom, 25 % gyroid, orientation open; every part on it is named in
+the info `print_settings_default` (manufacture). What follows from the settings:
+- **Mass** (`Component.mass()`, so the moving masses, the twin, bed support, ratings and the BOM weight): solid x
+  (shell + core x infill), the shell being each face's area times walls x line width (sides, holes) or layers x layer
+  height (faces square to the build direction), capped at the volume. `solid_mass()` gives the solid figure.
+  `manufacture.print_settings` lists each part's settings, solid fraction and both masses.
+- **Stiffness bounds**: bonded FEA = the materials table's solid modulus (upper); the screw-only solves of assembly
+  cases and of the bed support use the printed LOWER bound: the data sheet's printed modulus x 0.66 (across the layers)
+  x (shell + core x infill^2). Deflection limits are judged on it; a load case gives `deflection_lower_bound_mm`.
+- **Strength on the lower bound**: for a printed part the factor of safety (`fos`) is the lower bound: von Mises
+  against the printed yield along the layers, and the normal stress (tension) and shear on the layer plane against
+  the across-layer strength (PETG 14 MPa from the TDS interlayer adhesion; ABS 9.2 MPa DERIVED), both as material
+  stress = smeared stress / (shell + core x infill). With no orientation declared all three of the part's axes are
+  tried as the build direction and the worst is taken: declare it. A part that passes as solid plastic but not on
+  the lower bound is `fos_low_printed` (error); `fos_solid` is kept beside it.
+- **Local checks**: a head or washer over sparse infill (above), and `insert_in_sparse_infill` (warning) when a
+  heat-set insert's part has perimeters (walls x line width) thinner than the insert maker's minimum wall (ruthex RX:
+  M3 1.6, M4 2.1, M5 2.6 mm).
+Not modelled: the mass centre and inertia stay those of the solid shape; edges are counted twice in the shell (thin
+parts come out solid, which they are); infill pattern does not change the figures; creep and temperature are only in
+the bearing allowable; across-layer strengths for PLA and PA12 are assumed (no data sheet).
 
 ## Printers: the digital twin and the improvement loop
 

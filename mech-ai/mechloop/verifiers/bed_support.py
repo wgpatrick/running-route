@@ -66,10 +66,12 @@ NUT_BACKLASH_ASSUMED_MM = 0.1       # typical for a plain brass T8 nut (ASSUMED)
 MU_BALL, MU_PLAIN = 0.005, 0.15     # recirculating balls; plain bushing on a rod (both assumed, as in the tolerance verifier)
 RAIL_CLASS_ASSUMED = "C"
 SYNC_BELT_MM = 0.02                 # screws tied by one closed belt: pitch and tension differences (ASSUMED)
-# Lead accuracy of a rolled trapezoidal screw: +/-0.1 mm per 300 mm of travel is the usual class figure for rolled Tr
-# screws (recalled from makers' catalogues, e.g. standard-grade rolled lead screws at 0.1 mm / 300 mm; no document
-# fetched, and the catalogue's StepperOnline record lists "lead accuracy" under not_obtained). ASSUMED, and reported so.
-# A screw part that carries ratings["lead_accuracy_mm_per_300mm"] overrides it.
+# Lead accuracy of a rolled trapezoidal screw: +/-0.1 mm per 300 mm of travel. Elesa-Ganter's trapezoidal engineering
+# notes: "the max. permissible lead deviation is 0.1 mm / 300 mm movement distance" (rolled thread; practice_refs/
+# 13_ElesaGanter_trapezoidal_engineering.pdf, p. 1), and igus dryLin lists "pitch deviation 0.1/300 mm" for its lead
+# screws (13_Igus_DryLin_leadscrews.pdf, p. 8). Neither is the generic printer T8x8 four-start screw (Elesa's smallest is
+# 8 x 1.5; the StepperOnline record lists lead accuracy under not_obtained), so for that screw it is a CLASS VALUE,
+# reported as assumed. A screw part that carries ratings["lead_accuracy_mm_per_300mm"] overrides it.
 LEAD_ACCURACY_ASSUMED_MM_PER_300 = 0.1
 GUIDES_HOLD_TILT_RATIO = 0.5        # a tilt mode counts as held by the guides too when they are at least half as stiff in it as the screws
 G = 9.81
@@ -154,8 +156,9 @@ def lead_accuracy(design: Design, lay: dict) -> dict:
     if vals and all(v is not None for v in vals):
         return {"mm_per_300mm": float(max(vals)), "basis": "catalogue (ratings['lead_accuracy_mm_per_300mm'] of the screw part)", "assumed": False}
     return {"mm_per_300mm": LEAD_ACCURACY_ASSUMED_MM_PER_300, "assumed": True,
-            "basis": f"ASSUMED: +/-{LEAD_ACCURACY_ASSUMED_MM_PER_300:g} mm per 300 mm, the usual class figure for a rolled trapezoidal screw "
-                     f"(recalled; the catalogue has no lead accuracy for this screw: set ratings['lead_accuracy_mm_per_300mm'] on the part when the maker's is known)"}
+            "basis": f"ASSUMED: +/-{LEAD_ACCURACY_ASSUMED_MM_PER_300:g} mm per 300 mm, the class figure for rolled trapezoidal screws "
+                     f"(Elesa-Ganter and igus state it for their own screws, practice_refs/13_*; not for this T8 screw, whose maker gives none: set "
+                     f"ratings['lead_accuracy_mm_per_300mm'] on the part when it is known)"}
 
 
 def nut_seating(design: Design, lay: dict) -> dict:
@@ -634,6 +637,12 @@ def flexure(design: Design, lay: dict, load_point=None, r: VerifierResult | None
         if info:
             out["screwed_joints"] = len(info)
         rows, fields = {}, {}
+        from ..printsettings import is_printed
+
+        any_printed = any(is_printed(c) for c in mesh["comps"])
+        if any_printed:
+            out["printed_parts_lower_bound"] = ("the screw-only figures also take the printed parts at their lower-bound modulus "
+                                                "(print settings, across-layer knock-down)")
         for i_, (lab, pick) in enumerate(picks.items()):
             nodal = {int(n_): 1.0 / len(pick) for n_ in pick}
             res = F._asm_solve(workdir, f"bed{i_}", xyz, mesh["part_tets"], mesh["comps"], fixed_all, nodal, force, force, "bed support", None, bc=bc)
@@ -643,9 +652,9 @@ def flexure(design: Design, lay: dict, load_point=None, r: VerifierResult | None
             row["bonded_mm_per_n"], row["bonded_tilt_mm_per_n"] = read(res["U"], pick)
             row["bonded_elsewhere_mm_per_n"] = {l2: round(float(-(res["U"][p2] @ up).mean()) / 10.0, 6) for l2, p2 in picks.items()}
             fields[f"{lab}|bonded"] = res["U"]
-            if info:
-                res2 = F._asm_solve(workdir, f"bed{i_}s", xyz2, tets2, mesh["comps"], fixed_all, nodal, force, force,
-                                    "bed support (screwed joints)", None, bc=bc)
+            if info or (info is not None and any_printed):
+                res2 = F._asm_solve(workdir, f"bed{i_}s", xyz2 if info else xyz, tets2 if info else mesh["part_tets"], mesh["comps"],
+                                    fixed_all, nodal, force, force, "bed support (screwed joints)", None, bc=bc, printed_lower=True)
                 if "error" not in res2 and res2["rf"] is not None and float(np.linalg.norm(res2["rf"] + force)) / 10.0 < 0.01:
                     U2 = res2["U"][:len(xyz)]
                     row["screwed_mm_per_n"], row["screwed_tilt_mm_per_n"] = read(U2, pick)

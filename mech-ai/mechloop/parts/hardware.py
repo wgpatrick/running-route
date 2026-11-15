@@ -97,15 +97,20 @@ def bed_column_silicone(height: float = 18.0, installed: float | None = None) ->
 
 
 # ISO 7089 (normal series, DIN 125 A) and ISO 7093-1 (large series, DIN 9021): (inside d1, outside d2, thickness h), mm.
-# Generated to the standard's nominal sizes, recalled from the tables (no document fetched): `verified` stays False.
-WASHER = {"normal": {"M2.5": (2.7, 6.0, 0.5), "M3": (3.2, 7.0, 0.5), "M4": (4.3, 9.0, 0.8), "M5": (5.3, 10.0, 1.0), "M6": (6.4, 12.0, 1.6)},
-          "large": {"M3": (3.2, 9.0, 0.8), "M4": (4.3, 12.0, 1.0), "M5": (5.3, 15.0, 1.2), "M6": (6.4, 18.0, 1.6)}}
+# Nominal (min) inside diameter, nominal outside diameter, mid of the thickness limits, from a distributor's reproduction
+# of the standards' tables: vendor_cad/staging/practice_refs/06_RC_ISO_washers.pdf, page 1 (ISO 7089: M2.5 2.7-2.84 /
+# 6 / 0.45-0.55 ... M8 8.4-8.62 / 16 / 1.4-1.8) and page 3 (ISO 7093: M3 3.2 / 9 / 0.7-0.9 ... M8 8.4 / 24 / 1.8-2.2).
+# ISO 7093-1's scope starts at M3 (no large M2.5). A distributor's table, not the licensed standard.
+WASHER = {"normal": {"M2.5": (2.7, 6.0, 0.5), "M3": (3.2, 7.0, 0.5), "M4": (4.3, 9.0, 0.8), "M5": (5.3, 10.0, 1.0),
+                     "M6": (6.4, 12.0, 1.6), "M8": (8.4, 16.0, 1.6)},
+          "large": {"M3": (3.2, 9.0, 0.8), "M4": (4.3, 12.0, 1.0), "M5": (5.3, 15.0, 1.2), "M6": (6.4, 18.0, 1.6),
+                    "M8": (8.4, 24.0, 2.0)}}
 
 
 @part
 def washer_flat(size: str = "M3", series: str = "normal") -> Stock:
     """Plain flat steel washer. Local frame: axis Z, the face that bears on the part at Z=0, washer above.
-    series "normal": ISO 7089 (DIN 125 A), M2.5 to M6; "large": ISO 7093-1 (DIN 9021), M3 to M6, for slots and soft
+    series "normal": ISO 7089 (DIN 125 A), M2.5 to M8; "large": ISO 7093-1 (DIN 9021), M3 to M8, for slots and soft
     seats. Nominal sizes of the standards, generated (no vendor part number); SKU WASHER-<size>[-LARGE]."""
     if series not in WASHER or size not in WASHER[series]:
         raise ValueError(f"washer_flat: series one of {tuple(WASHER)}, size one of {tuple(WASHER.get(series, {}))}")
@@ -116,4 +121,5 @@ def washer_flat(size: str = "M3", series: str = "normal") -> Stock:
                  f"Flat washer {size}, {d2:g} x {d1:g} x {h:g} mm ({std})", math.pi * (d2 ** 2 - d1 ** 2) / 4 * h * 7.85e-6,
                  material="steel", cost_usd=0.02, ratings={"approximate": True, "screw": size},
                  interfaces={"od": d2, "bore": d1, "thickness": h},
-                 source=_source("iso_fasteners", "standard", f"{std} {size}", unverified=("dimensions (recalled from the standard's table)", "mass_kg")))
+                 source=_source("iso_fasteners", "standard", f"{std} {size}", unverified=("mass_kg",),
+                         note="dimensions: vendor_cad/staging/practice_refs/06_RC_ISO_washers.pdf (distributor's table of the standard)"))

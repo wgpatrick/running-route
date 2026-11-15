@@ -151,6 +151,20 @@ def bed_deviation(pm: PrinterMap, info: dict, gx, gy):
     return raw(gx, gy) - raw(rx, ry) + bs.get("z_ref_error_mm", 0.0)
 
 
+def judge_path_error(r, cross) -> bool:
+    """`nozzle_off_path` (error) when the nozzle is ever more than PATH_ERROR_LIMIT_MM sideways from the commanded path.
+    Whatever the cause (lost position, a command stream that does not follow the G-code), a nozzle that far off its
+    path has not printed the part: never a clean print, whatever the outline comparison says. True when flagged."""
+    cross = np.asarray(cross, dtype=float)
+    if not len(cross) or float(cross.max()) <= PATH_ERROR_LIMIT_MM:
+        return False
+    r.add("error", "nozzle_off_path",
+          f"The nozzle is up to {cross.max():.2f} mm sideways from the path the G-code asks for (limit {PATH_ERROR_LIMIT_MM:g} mm; "
+          f"RMS {float(np.sqrt((cross ** 2).mean())):.3f} mm, 99th percentile {float(np.percentile(cross, 99.0)):.3f} mm).",
+          worst_mm=round(float(cross.max()), 3), limit_mm=PATH_ERROR_LIMIT_MM)
+    return True
+
+
 def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, name: str = "part",
               dt: float = 0.001, render: bool = True, slicer_args: dict | None = None,
               accel_scale: float = 1.0, torque_scale: float = 1.0, speed_scale: float = 1.0,
@@ -387,13 +401,7 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
         rep["dynamics"]["cross_track_rms_mm"] = round(float(np.sqrt((cross ** 2).mean())), 4)
         rep["dynamics"]["cross_track_worst_mm"] = round(float(cross.max()), 4)
         rep["dynamics"]["cross_track_p99_mm"] = round(float(np.percentile(cross, 99.0)), 4)
-        if cross.max() > PATH_ERROR_LIMIT_MM:
-            # whatever the cause (lost position, a command stream that does not follow the G-code), a nozzle this far
-            # off its path has not printed the part: never a clean print, whatever the outline comparison says
-            r.add("error", "nozzle_off_path",
-                  f"The nozzle is up to {cross.max():.2f} mm sideways from the path the G-code asks for (limit {PATH_ERROR_LIMIT_MM:g} mm; "
-                  f"RMS {float(np.sqrt((cross ** 2).mean())):.3f} mm, 99th percentile {float(np.percentile(cross, 99.0)):.3f} mm).",
-                  worst_mm=round(float(cross.max()), 3), limit_mm=PATH_ERROR_LIMIT_MM)
+        judge_path_error(r, cross)
         if Qn is not Qc:      # how much of that the firmware's own smoothing of the command accounts for
             cx_, cy_ = (Qc[:, 0] - Qn[:, 0])[moving], (Qc[:, 1] - Qn[:, 1])[moving]
             cc = np.abs(cx_ * (-Vn[moving, 1] / sp[moving]) + cy_ * (Vn[moving, 0] / sp[moving]))

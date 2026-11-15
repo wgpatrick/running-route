@@ -754,14 +754,16 @@ def add_washer(design: Design, name: str, size: str, at, direction=(0, 0, 1), bo
 
 def add_screw(design: Design, name: str, size: str, length: float, at, direction=(0, 0, -1),
               body: str = "world", threads_into: str | list[str] | None = None, clamps=(),
-              tnut: bool = False, washer: bool | str = False) -> Component:
+              tnut: bool = False, washer: bool | str = False, insert: bool = False) -> Component:
     """Place a cap screw with the underside of its head at `at`, pointing along `direction`.
     Registers it as a Fastener (tool access is checked), allows the thread to overlap the
     part(s) it screws into and records that it holds them. tnut=True means it threads into
     a T-nut in that part's slot (added to the BOM).
     washer=True (or "large"): a catalogue flat washer `<name>_washer` goes under the head. `at` is then the face the
     WASHER bears on; the head sits one washer thickness higher, so the same screw reaches that much less far into its
-    thread (the engagement check sees it: choose the length with the washer in)."""
+    thread (the engagement check sees it: choose the length with the washer in).
+    insert=True: it threads into a heat-set insert in the (printed) part it threads into; the manufacture verifier checks
+    that part's perimeters against the insert maker's minimum wall (mechloop.printsettings.INSERT_WALL_MIN)."""
     st = shcs(size, length)
     dvec = Vector(*direction).normalized()
     washer_at = None
@@ -775,6 +777,9 @@ def add_screw(design: Design, name: str, size: str, length: float, at, direction
     c = place(design, name, st, loc, body=body, thread_d=SCREW[size][0],
               threads_into=[threads_into] if isinstance(threads_into, str) else list(threads_into or []),
               tnut=tnut)
+    if insert:
+        c.meta["insert"] = True
+        design.bom_extra(f"INSERT-HEATSET-{size}", 1, 0.08)
     head_top = Vector(*at) - dvec * st.interfaces["head_h"]
     design.fasteners.append(Fastener(name, tuple(-dvec), tuple(head_top),
                                      tool_diameter=st.interfaces["hex_key"] * 1.6, tool_length=50.0,

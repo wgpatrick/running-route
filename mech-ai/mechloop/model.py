@@ -46,6 +46,9 @@ MATERIALS = {
 }
 
 
+_PLASTICS = ("pla", "petg", "abs", "nylon_pa12")
+
+
 @dataclass
 class Component:
     """One part instance in the assembly."""
@@ -74,6 +77,20 @@ class Component:
             self.process = self.meta["process"]
 
     def mass(self) -> float:
+        """Mass, kg. A printed part (process "printed", or a plastic with no process stated) is its shell plus its
+        infilled core, from its print settings (mechloop.printsettings: meta["print"], else the design's
+        manufacturing["print_settings"], else the stated default); every other part is solid."""
+        if self.mass_kg is not None:
+            return self.mass_kg
+        solid = self.shape.volume * 1e-9 * MATERIALS[self.material].density
+        if not self.cots and self.material in _PLASTICS:
+            from .printsettings import solid_fraction
+
+            return solid * solid_fraction(self)
+        return solid
+
+    def solid_mass(self) -> float:
+        """Mass as if the part were solid (for a printed part, 100 % infill)."""
         if self.mass_kg is not None:
             return self.mass_kg
         return self.shape.volume * 1e-9 * MATERIALS[self.material].density
@@ -328,6 +345,9 @@ class Design:
         if any(c.name == name for c in self.components):
             raise ValueError(f"duplicate component name: {name}")
         c = Component(name, shape, **kw)
+        import weakref
+
+        object.__setattr__(c, "_design_ref", weakref.ref(self))     # the design's print settings reach the part's mass
         self.components.append(c)
         return c
 

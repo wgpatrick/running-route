@@ -137,6 +137,11 @@ def verify_manufacture(design: Design) -> VerifierResult:
             lead = dfm_edges.lead_ins(r, design, dict(_EDGE_CLASSES))
         except Exception as e:
             r.add("warning", "lead_ins_not_checked", f"Lead-ins of shafts and bores were not checked: {type(e).__name__}: {e}")
+        try:
+            printed = print_settings_report(r, design)
+        except ValueError as e:
+            r.add("error", "bad_manufacturing_declaration", f"print settings: {e}")
+            printed = None
         procs = sorted({v["process"] for v in parts.values()})
         setups = sum(v.get("setups_estimate", 0) for v in parts.values())
         cost = sum((v.get("estimate") or {}).get("cost_usd_each_qty1", 0) or 0 for v in parts.values())
@@ -156,9 +161,71 @@ def verify_manufacture(design: Design) -> VerifierResult:
                                "edge_break_declared": {k: v["edges"]["edge_break_declared_mm"] for k, v in sorted(parts.items())
                                                        if isinstance(v.get("edges"), dict) and v["edges"].get("edge_break_declared_mm")},
                                "shaft_bore_lead_ins": lead},
+                     "print_settings": printed,
                      "parts": parts if len(parts) <= 40 else {k: {kk: vv for kk, vv in v.items() if kk in ("process", "form", "setups_estimate", "up")}
                                                               for k, v in parts.items()}}
     return r
+
+
+def print_settings_report(r: VerifierResult, design: Design) -> dict | None:
+    """Print settings of every printed part (mechloop.printsettings): where they come from, the solid fraction the mass
+    is computed with, and two local checks: heat-set inserts whose perimeters are thinner than the insert maker's
+    minimum wall (`insert_in_sparse_infill`), and the info `print_settings_default` for parts printed to the default."""
+    import numpy as np
+
+    from .. import printsettings as PS
+
+    printed = [c for c in design.components if PS.is_printed(c)]
+    if not printed:
+        return None
+    rows, default = {}, []
+    for c in printed:
+        fr = PS.fractions(c)
+        st = fr["settings"]
+        rows[c.name] = {"from": fr["settings_from"], "material": c.material, "walls": st["walls"], "line_width_mm": st["line_width_mm"],
+                        "layer_height_mm": st["layer_height_mm"], "top_layers": st["top_layers"], "bottom_layers": st["bottom_layers"],
+                        "infill": st["infill"], "infill_pattern": st["infill_pattern"], "orientation": st["orientation"],
+                        "solid_fraction": fr["solid_fraction"], "mass_kg": round(c.mass(), 4), "solid_mass_kg": round(c.solid_mass(), 4)}
+        if fr["settings_from"] == "default":
+            default.append(c.name)
+    if default:
+        r.add("info", "print_settings_default",
+              f"{len(default)} printed part(s) declare no print settings and are taken as printed to the default, "
+              f"{PS.DEFAULT_NOTE}. Their mass, stiffness and strength follow from it.",
+              parts=sorted(default)[:80], count=len(default), default=PS.DEFAULT_PRINT_SETTINGS,
+              hint="Declare d.manufacturing['print_settings'] for the design and meta['print'] where a part differs (walls, infill, orientation).")
+    comps = {c.name: c for c in design.components}
+    thin = []
+    for f in design.fasteners:
+        sc = comps.get(f.name)
+        if sc is None or not sc.meta.get("insert"):
+            continue
+        d = float(sc.meta.get("thread_d") or 0)
+        need = PS.INSERT_WALL_MIN.get(d)
+        for t in sc.meta.get("threads_into") or []:
+            tc = comps.get(t)
+            if tc is None or not PS.is_printed(tc) or need is None:
+                continue
+            st = PS.fractions(tc)["settings"]
+            wall = float(st["walls"]) * float(st["line_width_mm"])
+            if wall < need - 1e-9:
+                thin.append({"screw": f.name, "part": t, "size": f"M{d:g}", "perimeters_mm": round(wall, 2), "insert_wall_min_mm": need,
+                             "walls_needed": int(np.ceil(need / float(st["line_width_mm"]) - 1e-9))})
+    if thin:
+        w = min(thin, key=lambda x: x["perimeters_mm"] / x["insert_wall_min_mm"])
+        r.add("warning", "insert_in_sparse_infill",
+              f"{len(thin)} heat-set insert(s) sit in perimeters thinner than the insert maker's minimum wall (least: {w['screw']} in {w['part']}, "
+              f"{w['perimeters_mm']:g} mm of perimeters against {w['insert_wall_min_mm']:g} mm for {w['size']}, ruthex RX data sheet): the rest "
+              f"of the boss is sparse infill, which the insert's knurl does not grip and which splits when it is pressed in.",
+              inserts=thin[:40], parts=sorted({x["part"] for x in thin}),
+              hint=f"Print those parts with at least {w['walls_needed']} walls (meta['print']['walls']), or solid round the insert.")
+    mass = sum(comps[n].mass() for n in rows)
+    solid = sum(comps[n].solid_mass() for n in rows)
+    return {"default": PS.DEFAULT_PRINT_SETTINGS, "default_note": PS.DEFAULT_NOTE, "printed_parts": len(rows),
+            "on_default_settings": len(default), "printed_mass_kg": round(mass, 3), "printed_mass_if_solid_kg": round(solid, 3),
+            "inserts_in_thin_perimeters": thin[:40], "parts": rows,
+            "model": "mass = solid x (shell + core x infill); shell = face area x (walls x line width, or top/bottom layers x layer height); "
+                     "edges counted twice, capped at the part's volume"}
 
 
 def _explain_vendor_patterns(design: Design, r: VerifierResult) -> None:

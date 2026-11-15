@@ -167,7 +167,8 @@ def check_printed(r, design, c, sm: G.Sampled, frame: np.ndarray, cyls: list, ho
                 loads.append((lc.name, f / np.linalg.norm(f)))
                 load_arm[lc.name] = _held_to_loaded(c.shape, lc)
 
-    pinned = lim.part.get("print_up") or c.meta.get("print_up")
+    pinned = lim.part.get("print_up") or c.meta.get("print_up") or (c.meta.get("print") or {}).get("orientation") \
+        or ((design.manufacturing or {}).get("print_settings") or {}).get("orientation")
     if pinned and pinned not in axes:
         raise ValueError(f"{name}: print_up {pinned!r}; use one of {sorted(axes)}")
     rows = {}

@@ -602,14 +602,16 @@ def bearing(d):
 
 
 def test_a_steel_head_on_steel_or_wrought_aluminium_at_the_class_torque_is_not_flagged():
-    """M5 at 5.9 N.m (class 8.8, assumed), K = 0.2: 5,900 N on the head's ring over a 5.5 mm hole, pi (3.91^2 - 2.75^2)
-    = 24.3 mm^2: 243 MPa. Under 6061's 276 MPa and steel's 1.5 x 250: no finding, no blanket "needs a washer"."""
+    """M5 at 5.9 N.m (Bossard's maximum for class 8.8 at mu 0.12), F = T / X with X = 0.81 mm: 7,284 N on the head's
+    ring over a 5.5 mm hole, pi (3.91^2 - 2.75^2) = 24.3 mm^2: 300 MPa. Under VDI 2230's p_G for AW-6082 (360) and S235
+    (490): no finding, no blanket "needs a washer"."""
     for mat in ("al6061", "steel"):
         m, f = bearing(seated_screw(mat))
         assert f == {} and m["seats_examined"] == 1
         w = m["worst"][0]
         assert w["seat_area_mm2"] == pytest.approx(math.pi * ((0.92 * 8.5 / 2) ** 2 - 2.76 ** 2), rel=0.02)
-        assert w["preload_n"] == 5900 and w["bearing_pressure_mpa"] == pytest.approx(243, abs=5) and "ASSUMED" in w["torque_basis"]
+        assert w["preload_n"] == round(5900 / 0.81) and w["bearing_pressure_mpa"] == pytest.approx(300, abs=6) and "Bossard" in w["torque_basis"]
+        assert w["allowable_mpa"] == {"al6061": 360.0, "steel": 490.0}[mat] and "VDI 2230" in w["allowable_basis"]
 
 
 def test_a_head_over_a_slot_or_an_oversize_hole_needs_a_washer_and_a_washer_clears_it():
@@ -638,29 +640,62 @@ def test_a_head_over_a_slot_or_an_oversize_hole_needs_a_washer_and_a_washer_clea
 
 
 def test_a_bare_head_crushes_printed_plastic_and_a_washer_or_a_stated_torque_clears_it():
-    """M3 clamping PETG (yield 45 MPa), 0.5 N.m assumed for a joint with plastic in it: 833 N on pi (2.53^2 - 1.71^2)
-    = 10.9 mm^2 = 76 MPa, above yield: error. With an ISO 7089 washer (7 mm): 29.3 mm^2, 28 MPa, under the 30 MPa
-    allowed for a sustained load (two thirds of yield): no finding. Bare, at a stated 0.15 N.m: 23 MPa, no finding;
-    at a stated 0.3 N.m: 46 MPa, between the allowance and yield... above yield here (45): error stays."""
+    """M3 clamping printed PETG, 0.5 N.m assumed for a joint with plastic in it: F = 0.5 / 0.51 mm = 980 N on
+    pi (2.53^2 - 1.71^2) = 10.9 mm^2 = 90 MPa, above the printed yield (47 MPa, Prusament TDS): error. The sustained
+    allowable is DERIVED, 0.3 x 47 = 14.1 MPa. Bare at a stated 0.04 N.m: 7 MPa, no finding; at 0.1 N.m: 18 MPa,
+    over the allowance and under yield: warning. With an ISO 7089 washer (7 mm, 29.3 mm^2) at 0.15 N.m on a part printed
+    solid: 10 MPa, no finding."""
+    solid = {"print": {"infill": 1.0}}
     m, f = bearing(seated_screw("petg", size="M3"))
-    assert f["screw_head_bearing_pressure"].severity == "error" and f["screw_head_bearing_pressure"].data["worst_mpa"] == pytest.approx(76, abs=3)
-    assert f["screw_head_bearing_pressure"].data["allowable_mpa"] == pytest.approx(30.0)
-    m, f = bearing(seated_screw("petg", size="M3", washer=True))
-    assert f == {} and m["worst"][0]["bearing_pressure_mpa"] == pytest.approx(28.4, abs=1.0)
-    assert bearing(seated_screw("petg", size="M3", torque=0.15))[1] == {}
-    m, f = bearing(seated_screw("petg", size="M3", torque=0.25))                  # 38 MPa: over the allowance, under yield
+    assert f["screw_head_bearing_pressure"].severity == "error" and f["screw_head_bearing_pressure"].data["worst_mpa"] == pytest.approx(90, abs=3)
+    assert f["screw_head_bearing_pressure"].data["allowable_mpa"] == pytest.approx(14.1) and "DERIVED" in m["worst"][0]["allowable_basis"]
+    assert bearing(seated_screw("petg", size="M3", torque=0.04))[1] == {}
+    m, f = bearing(seated_screw("petg", size="M3", torque=0.1))
     assert f["screw_head_bearing_pressure"].severity == "warning" and "declared" in m["worst"][0]["torque_basis"]
+    d = seated_screw("petg", size="M3", washer=True, torque=0.15)
+    d.get("plate").meta.update(solid)
+    m, f = bearing(d)
+    assert f == {} and m["worst"][0]["bearing_pressure_mpa"] == pytest.approx(10.0, abs=0.6)
+
+
+def test_a_washer_over_sparse_infill_carries_less_than_over_solid_plastic():
+    """The same washer (7 mm) at 0.2 N.m: 392 N on 29.3 mm^2 = 13.4 MPa. On a part printed solid that is under the
+    14.1 MPa allowance: no finding. Printed to the default (3 walls of 0.45 mm round the hole, a 1.0 mm top skin, 25 %
+    infill) the ring is 1.79 mm wide, wider than the skin: the 1.35 mm of perimeters round the hole carry their share
+    in full, the rest (31 % of the ring) bears on infill at 25 %: the allowance falls to 0.77 x 14.1 = 10.9 MPa and the
+    same joint is a warning, which says so."""
+    d = seated_screw("petg", size="M3", washer=True, torque=0.2)
+    d.get("plate").meta["print"] = {"infill": 1.0}
+    assert bearing(d)[1] == {}
+    m, f = bearing(seated_screw("petg", size="M3", washer=True, torque=0.2))
+    w = m["worst"][0]
+    a_all, a_sol = math.pi * (3.5 ** 2 - 1.71 ** 2), math.pi * (3.06 ** 2 - 1.71 ** 2)
+    assert f["screw_head_bearing_pressure"].severity == "warning" and "sparse infill" in w["over_sparse_infill"]
+    assert w["allowable_mpa"] == pytest.approx(14.1 * (a_sol + 0.25 * (a_all - a_sol)) / a_all, abs=0.2)
 
 
 def test_soft_aluminium_under_a_bare_head_is_a_warning_and_a_washer_spreads_it():
-    """M5 at the class torque on 5052-H32 sheet (yield 193 MPa): 243 MPa: warning (the seat embeds). On cast MIC-6
-    (105 MPa) likewise. With a washer the ring is pi (5^2 - 2.76^2) = 54.6 mm^2: 108 MPa, fine on 5052; still just over
-    on MIC-6, where the large series (15 mm: 152 mm^2, 39 MPa) is needed."""
+    """M5 at the class torque (7,284 N, 300 MPa bare) on 5052-H32 sheet (p_G DERIVED from AW-5083: 285 MPa): warning
+    (the seat embeds). On cast MIC-6 (p_G of cast AlSi9Cu3: 200 MPa) likewise. With an ISO 7089 washer the ring is
+    pi (5^2 - 2.76^2) = 54.6 mm^2: 133 MPa, fine on both; the large series (15 mm) spreads it to 48 MPa."""
     assert bearing(seated_screw("al5052"))[1]["screw_head_bearing_pressure"].severity == "warning"
+    assert bearing(seated_screw("al_mic6"))[1]["screw_head_bearing_pressure"].severity == "warning"
     assert bearing(seated_screw("al5052", washer=True))[1] == {}
-    assert bearing(seated_screw("al_mic6", washer=True))[1]["screw_head_bearing_pressure"].severity == "warning"
+    m, f = bearing(seated_screw("al_mic6", washer=True))
+    assert f == {} and m["worst"][0]["bearing_pressure_mpa"] == pytest.approx(5900 / 0.81 / (math.pi * (5 ** 2 - 2.76 ** 2)), rel=0.03)
     m, f = bearing(seated_screw("al_mic6", washer="large"))
-    assert f == {} and m["worst"][0]["bearing_pressure_mpa"] == pytest.approx(5900 / (math.pi * (7.5 ** 2 - 2.76 ** 2)), rel=0.03)
+    assert f == {} and m["worst"][0]["bearing_pressure_mpa"] == pytest.approx(5900 / 0.81 / (math.pi * (7.5 ** 2 - 2.76 ** 2)), rel=0.03)
+
+
+def test_washer_dimensions_are_the_tabulated_iso_7089_and_7093_sizes_m2_5_to_m8():
+    """From the distributor's reproduction of the standards (practice_refs/06_RC_ISO_washers.pdf): ISO 7089 M8 is
+    8.4 x 16 x 1.6 (thickness 1.4-1.8), ISO 7093 M8 8.4 x 24 x 2.0 (1.8-2.2); there is no ISO 7093 M2.5."""
+    from mechloop.parts.hardware import WASHER, washer_flat
+
+    assert WASHER["normal"]["M8"] == (8.4, 16.0, 1.6) and WASHER["large"]["M8"] == (8.4, 24.0, 2.0)
+    assert set(WASHER["normal"]) == {"M2.5", "M3", "M4", "M5", "M6", "M8"} and "M2.5" not in WASHER["large"]
+    st = washer_flat("M8", "large")
+    assert st.sku == "WASHER-M8-LARGE" and "06_RC_ISO_washers" in st.source.get("note", "")
 
 
 def test_a_washer_is_one_more_part_to_put_on_in_the_assembly_estimate():
@@ -861,3 +896,19 @@ def test_reports_carry_the_hash_of_the_checker_and_of_the_design_file(tmp_path):
     f.write_text(f.read_text() + "# changed\n")
     assert provenance_of(f)["design_file_sha256"] != h["design_file_sha256"]
     assert json.loads((tmp_path / "out" / "tiny" / "report_partial.json").read_text())["provenance"] == h
+
+
+def test_a_nozzle_nine_millimetres_off_its_path_is_never_a_clean_print():
+    """Review anomaly (a): shaper-on sweep rows at 10,000 and 16,000 mm/s^2 were `ok` with the nozzle 9.34 / 8.55 mm
+    sideways from its path. Any cross-track error over 1 mm is `nozzle_off_path` (error), so the print report's ok is
+    False and the sweep row with it; 0.4 mm is not flagged."""
+    from mechloop.twin import PATH_ERROR_LIMIT_MM, judge_path_error
+    from mechloop.twin.evals import summarise
+
+    r = VerifierResult("print")
+    assert not judge_path_error(r, np.array([0.01, 0.4, 0.2])) and r.ok
+    assert judge_path_error(r, np.array([0.02, 9.34, 0.3])) and not r.ok and PATH_ERROR_LIMIT_MM == 1.0
+    f = find(r, "nozzle_off_path")[0]
+    assert f.severity == "error" and f.data["worst_mm"] == 9.34
+    row = summarise({"ok": r.ok, "findings": [x.to_dict() if hasattr(x, "to_dict") else {"code": x.code, "severity": x.severity, "data": x.data} for x in r.findings]})
+    assert row["ok"] is False and row["errors"] == ["nozzle_off_path"]
