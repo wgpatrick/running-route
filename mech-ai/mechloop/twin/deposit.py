@@ -13,6 +13,15 @@ RES = 20  # pixels per mm (default; PrinterMap.raster_px_per_mm overrides per ru
 CHUNK = 0.2  # mm of path per deposited bead segment
 
 
+def melt_flow(e_drive, lag_s: float, dt: float):
+    """Filament that has left the nozzle, given the filament the drive has pushed in: a first-order lag (melt pressure
+    builds and bleeds off with time constant lag_s, an assumed value). Driving it with E + K dE/dt, which is what the
+    firmware's pressure advance commands, returns E itself when K equals lag_s."""
+    e_drive = np.asarray(e_drive, dtype=float)
+    alpha = dt / max(lag_s, dt)
+    return lfilter([alpha], [1, alpha - 1], e_drive - e_drive[0]) + e_drive[0]
+
+
 def _target_layers(stl: Path, n_layers: int, lh: float):
     import trimesh
     from shapely.geometry import Polygon
@@ -116,9 +125,8 @@ def deposit_and_compare(info, pm, moves, e, seg, frac, Qc, Qa, dt, stl, out: Pat
     dE = np.diff(Eeff, prepend=Eeff[0])
     # melt pressure follows the filament drive with a first-order lag; a retract pulls it back down,
     # so material only leaves the nozzle while the lagged position is making new ground
-    alpha = dt / max(pm.extruder_lag_s, dt)
     E_drive = E if e_cmd is None else np.asarray(e_cmd, dtype=float) - float(e_cmd[0]) + E[0]
-    E_lag = lfilter([alpha], [1, alpha - 1], E_drive - E_drive[0]) + E_drive[0]
+    E_lag = melt_flow(E_drive, pm.extruder_lag_s, dt)
     Elag_eff = np.maximum.accumulate(E_lag)
     dE_lag = np.diff(Elag_eff, prepend=Elag_eff[0])
     layer = np.round(gz_move[seg] / lh).astype(int) - 1

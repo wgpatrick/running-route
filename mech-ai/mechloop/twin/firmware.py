@@ -66,12 +66,15 @@ def run_klippy(cfg_text: str, gcode_text: str, workdir: Path) -> dict:
     msgs: dict[str, int] = {}
     for line in log.splitlines():
         m = re.match(r"(?:WARNING|ERROR):root:(.*)", line)
-        if m and "device-tree" not in line and "dmi/id" not in line:
+        # not about the print: missing host hardware files, and klippy noting that its own event loop was held up
+        # (it measures wall-clock time; in this offline mode on a busy machine that says nothing about the printer)
+        if m and "device-tree" not in line and "dmi/id" not in line and not re.search(r"Reactor .*busy", line):
             key = re.sub(r"-?\d+\.\d+", "#", m.group(1))[:160]
             msgs.setdefault(key, 0)
             msgs[key] += 1
     fatal = [ln for ln in log.splitlines() if "Config error" in ln or "Internal error" in ln or "Error in" in ln
-             or ln.startswith("configparser.") or "Unhandled exception" in ln]
+             or ln.startswith("configparser.") or "Unhandled exception" in ln
+             or re.match(r"^[\w.]*\b(error|Error|CommandError): ", ln)]      # the exception line carries the reason
     if fatal or not (workdir / "out.serial").exists():
         raise FirmwareError("Klipper stopped: " + " | ".join(fatal[:4] or log.splitlines()[-3:]))
     d = subprocess.run([str(py), str(kdir / "klippy" / "parsedump.py"), str(kdir / "out" / "klipper.dict"), "out.serial"],
@@ -82,6 +85,29 @@ def run_klippy(cfg_text: str, gcode_text: str, workdir: Path) -> dict:
     mcu = json.loads((kdir / "out" / "klipper.dict").read_text())["config"]
     return {"dump": workdir / "commands.txt", "messages": msgs, "commit": commit, "mcu": mcu.get("MCU"),
             "clock_hz": float(mcu["CLOCK_FREQ"])}
+
+
+def check_config(cfg_text: str, workdir: Path) -> dict:
+    """Have real klippy load a configuration and run a few moves on it (and load its stored bed mesh, if it has one).
+    {"ran": False, "reason"} when Klipper is not installed; otherwise {"ran": True, "ok", "error", "commit"}."""
+    try:
+        find_klipper()
+    except FirmwareNotAvailable as ex:
+        return {"ran": False, "reason": str(ex)}
+    c = _cfg(cfg_text)
+    job = "SET_KINEMATIC_POSITION X=20 Y=20 Z=5\n"
+    if c.has_section("bed_mesh default"):
+        job += "BED_MESH_PROFILE LOAD=default\n"
+    job += "G1 X30 Y30 Z1 F3000\nG1 X40 E1 F1200\nG1 E-0.5 F1800\nM400\n"
+    add = "" if "[force_move]" in cfg_text else "\n[force_move]\nenable_force_move: True\n"
+    try:
+        run = run_klippy(cfg_text + add, job, workdir)
+    except FirmwareError as ex:
+        return {"ran": True, "ok": False, "error": str(ex)}
+    except Exception as ex:
+        return {"ran": True, "ok": False, "error": f"{type(ex).__name__}: {ex}"}
+    return {"ran": True, "ok": not run["messages"], "error": "; ".join(run["messages"]) or None, "commit": run["commit"],
+            "covers": "klippy loads every section and plans moves on it; homing and probing against real switches are not exercised"}
 
 
 def _cfg(cfg_text: str):

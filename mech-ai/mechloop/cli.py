@@ -57,6 +57,9 @@ def main(argv=None) -> int:
         bad = [n for n in (only or []) if n not in known]
         if bad:
             sys.exit(f"unknown verifier(s) {bad}; choose from: {' '.join(known)}")
+        from .verifiers import electrical as _ve
+
+        _ve.OUT_ROOT = a.out      # the electrical verifier writes printer.cfg and the wiring tables under the same root
         rep = run(a.design, a.out, only, render=not a.no_render)
         print(rep.to_json(max_findings=a.max_findings))
         return 0 if rep.ok else 1
@@ -80,6 +83,12 @@ def main(argv=None) -> int:
             prev = Path("out") / printer.name / "report.json"   # belt and frame stiffness from the last verify, if any
             pm = printer_map_for(printer, json.loads(prev.read_text())["metrics"] if prev.exists() else None,
                                  layer_height=a.layer_height)
+        if a.firmware:      # a pressure-advance sweep made by `mechloop tune` with the same --out root is used if there
+            from .twin import tuning as _tuning
+
+            for root in (str(Path(a.out).parent), str(a.out)):
+                if root not in _tuning.TUNING_ROOTS:
+                    _tuning.TUNING_ROOTS.insert(0, root)
         rep = run_print(printer, shape, Path(a.out) / name, pm, name=name, render=not a.no_render,
                         accel_scale=a.accel_scale, firmware=a.firmware, trajectory=a.trajectory)
         print(json.dumps({k: v for k, v in rep.items() if k != "gcode"}, indent=1, default=float))

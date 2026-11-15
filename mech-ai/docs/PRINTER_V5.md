@@ -320,6 +320,11 @@ The lowest thing on the toolhead after the nozzle is the probe, 3.1 mm above the
    follows (slot width - 3.0)/2 - 0.2, so the slot's width along the screw is being taken as a hole
    diameter. The hexagonal blind pockets used elsewhere do not trigger it. v5 keeps 3.7 mm, which
    also leaves room for the screw tip; the four warnings are this artefact.
+   **Fixed afterwards (2026-11-15).** The hole radius was the plain distance from the screw's axis segment to the
+   part. Where the screw ends inside a slot or blind pocket, the nearest material is the wall beyond the tip, and
+   that distance runs along the screw, not across it. The check now takes the radial distance only (the part is cut
+   to the slab alongside the segment when the nearest point is end-on). v5, unedited: the four fan-screw warnings
+   are gone (tolerance 6 warnings to 2), each fan screw reads the 4.2 mm lug hole, 0.65 mm radial clearance.
 2. **Screw-only stiffness flips with 1 mm of bolt position (fea).** The hotend seats on the tool
    plate and is held by set screws in the mount (`join` kinds `clamp` and `set_screw`, as in v4, where
    the seat stayed bonded in both solutions). With the mount's through-bolts 7.4 mm from the heat
@@ -327,6 +332,13 @@ The lowest thing on the toolhead after the nozzle is the probe, 3.1 mm above the
    kept 6 nodes and released 91: 411 N/mm in Y. With the bolts 8.4 and 10.5 mm away (moved to give
    10 mm of plate between holes) the joint is not listed and the result is 646 N/mm on the same
    5 mm plate. Reproduce with `MOUNT_SCREWS` y = (24, 44) against (22, 46.5) and `T_TP = 5`.
+   **Fixed afterwards (2026-11-15).** A contact was called a screwed joint whenever any screw's axis passed within
+   1.5 head diameters of it (8.25 mm for M3), whether or not that screw held those two parts. The screw-only
+   solution now asks what each screw holds: its `clamps`, what it threads into, and the parts its shank passes
+   through. Reproduced in a scratch copy at `T_TP = 5`: 587.6 N/mm with the bolts at (24, 44) and 590.3 N/mm at
+   (22, 46.5); `tool_plate / hotend` is listed in neither. The same rule removed screws that were being credited to
+   joints they do not hold: the X beam is held to each Y plate by one M5 bolt, not three, so v5's screw-only nozzle
+   stiffness is 1,201 N/mm in Y (was 1,239) and 1,747 in X (was 1,773); v4's is 1,198 and 1,820 (was 1,260 and 1,906).
 3. **Lead-screw nut misalignment exceeds the declared float with no finding (tolerance).** v5:
    `lead_screws.z.nut_misalignment_mm_99` = 2.29 mm, v4 = 1.88 mm, declared float ±1.3 mm,
    `nut_floats: true`, no finding. Either the metric is not the quantity compared or the comparison
@@ -345,8 +357,20 @@ The lowest thing on the toolhead after the nozzle is the probe, 3.1 mm above the
 5. **`add_corner_bracket` on a part that is not an extrusion.** It declares an `m5_tnut` joint to the
    sheet back plate without complaint. The plate-side screw and nut exist only as BOM lines, so their
    access is not checked.
+   **Fixed afterwards (2026-11-15).** A leg on a part that is not a T-slot extrusion is now through-bolted with a
+   real M5 cap screw and hex nut (`bed_arm_left_bracket_screw`, `..._nut`: M5x16, head inside the casting), and
+   that bracket's simulation solid is the hollow casting instead of a filled prism, so the head and the driver are
+   checked against real metal. v5, unedited: 351 parts (was 347), 169 of 169 fasteners drivable, no interference,
+   the plate's slot is where the screw needs it. The bed-carrier case changes: bonded 503 N/mm (was 519, the
+   hollow bracket), screw-only 433 N/mm (was 368: the old distance rule had released the bracket from the arm
+   because the arm's end bolt passes 10 mm away). The design's own `bom_extra("NUT-M5", 2)` now counts those two
+   nuts twice ($0.10); the design file was not edited.
 6. **The bed's machining estimate.** $177 and 104 minutes for a 220 x 220 x 6 mm plate with four
    counterbored holes. It is now half of v5's whole machining estimate.
+   **Fixed afterwards (2026-11-15).** 102 of the 104 minutes were a finishing pass over both 220 x 220 faces, which
+   a plate cut from 6 mm stock never gets. Stock faces of a stock-thickness plate are no longer charged; the
+   estimate states the assumption. Bed: 7.9 min, $56 at one off. v5 machining estimate $360 to $209; v4 $2,381 to
+   $2,197. Basis and arithmetic in `docs/DFM.md`, "Machining time: which surfaces are charged".
 7. **Partial runs overwrite `out/<name>/report.json`.** A `--only` run on v4 replaced its full report;
    v4 was verified again in full afterwards. **Fixed afterwards:** a partial run now writes
    `report_partial.json`.

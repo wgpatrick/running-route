@@ -229,3 +229,59 @@ def test_motor_curve_feeds_the_mechanical_checks():
     assert "electrical model" in c.ratings["torque_curve_source"] and c.ratings["torque_curve_class"]
     # 50 mm/s on an 8 mm lead = 375 rpm: the 37 mH winding is voltage-limited to about 100 N*mm there
     assert 80.0 < out["x"]["motor_torque_nmm_at_speed"] < 120.0
+
+
+# ---------------------------------------------------------------- bed probe (electrical model)
+def _probe_el(output="npn_no", supply_v=24.0, internal_pullup=False, **params):
+    from mechloop.parts.electrical import inductive_probe_template
+    from mechloop.report import VerifierResult
+
+    tpl = inductive_probe_template(output=output, internal_pullup=internal_pullup)
+    el = Electrical()
+    el.add(Device("board", "board", "board", {"Z-STOP": Port("Z-STOP", "endstop_in", "JST-XH", 3.0, "PC2", 3,
+                                                               extra={"logic_v": 3.3, "pin_max_v": 3.6})}))
+    el.add(Device("probe", "probe", "probe", {"out": Port("out", "probe", "JST-XH", 1.0, None, 3)}, dict(tpl["ratings"]),
+                  dict(tpl["sources"]), {k: v for k, v in dict(supply_v=supply_v, **params).items() if v is not None}, dict(tpl["product"])))
+    el.wire("probe", "board.Z-STOP", "probe.out", 26, conductors=3)
+    r, m = VerifierResult("electrical"), {}
+    VE._probe({"el": el, "design": None}, r, m)
+    return {f.code: f.severity for f in r.findings}, m["probe"]["probe"]
+
+
+def test_probe_signal_level_depends_on_output_type_and_supply():
+    f, m = _probe_el("npn_no", 24.0, internal_pullup=False)
+    assert f == {} and m["signal_high_v_worst_case"] == 3.3 and m["needs_board_pullup"]      # open collector: the board's own pull-up
+    f, m = _probe_el("npn_no", 24.0, internal_pullup=None)
+    assert f == {"probe_pullup_unknown": "warning"} and m["signal_high_v_worst_case"] == 24.0
+    assert _probe_el("npn_no", 24.0, internal_pullup=True)[0] == {"probe_signal_over_voltage": "error"}
+    assert _probe_el("npn_no", 24.0, internal_pullup=True, series_diode=True)[0] == {}
+    assert _probe_el("pnp_no", 24.0)[0] == {"probe_signal_over_voltage": "error"}             # drives the pin to 24 V
+    assert _probe_el("pnp_no", 24.0, level_shift=True)[0] == {}
+    assert _probe_el("npn_no", 5.0)[0] == {"probe_supply_out_of_range": "error"}              # a 6-36 V sensor on 5 V
+    assert _probe_el("npn_no", None)[0] == {"probe_supply_not_declared": "error"}
+    assert E.COMPATIBLE["probe"] >= {"endstop_in"} and "thermistor_in" not in E.COMPATIBLE["probe"]
+
+
+def test_klippers_own_heater_classes_agree_with_the_port_and_are_the_ones_used():
+    from mechloop.twin import klippy_code as K
+
+    if not K.available():
+        pytest.skip("Klipper's source is not installed (tools/setup_klipper.sh)")
+    assert E.control_code()[0] is K and "ControlPID" in E.control_code()[1]
+    rng = np.random.default_rng(0)
+    cfg = {"pid": (22.2, 1.08, 114.0), "max_power": 1.0, "smooth_time": 1.0}
+    real, port = K.HeaterControl("pid", cfg), E._PID(22.2, 1.08, 114.0)
+    temp = 25.0
+    for k in range(1, 400):                     # a noisy climb toward 210 and a hold
+        temp += max(0.0, (210.0 - temp)) * 0.02 + rng.normal(0, 0.15)
+        assert abs(real.update(0.3 * k, temp, 210.0) - port.update(0.3 * k, temp, 210.0)) < 1e-12
+    bb_r, bb_p = K.HeaterControl("watermark", {"max_delta": 2.0}), E._BangBang(2.0)
+    for k, temp in enumerate(55.0 + 5.0 * np.sin(np.arange(200) / 7.0)):
+        assert bb_r.update(0.3 * k, temp, 60.0) == bb_p.update(0.3 * k, temp, 60.0)
+    # thermal-runaway check: a heater stuck at 150 with a 200 target trips at the same second in both
+    vr, vp = K.HeaterVerify("extruder", {}), E._VerifyHeater()
+    trips = []
+    for v in (vr, vp):
+        v.check(0.0, 200.0, 200.0)
+        trips.append(next(t for t in range(1, 200) if v.check(float(t), 150.0, 200.0)))
+    assert trips[0] == trips[1] and 2 <= trips[0] <= 5      # error grows 45 K per second against max_error 120

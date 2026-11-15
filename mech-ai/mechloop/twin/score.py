@@ -27,7 +27,13 @@ def firmware_block(design_path, design, pm, pm_kw, out: Path, speed: float = 2.0
         _, _, commit = fw.find_klipper()
     except fw.FirmwareNotAvailable as ex:
         return {"ran": False, "error": str(ex)}
-    on, off = {}, {"input_shaper": False, "pressure_advance": False}
+    from . import tuning
+
+    if str(out.parent.parent) not in tuning.TUNING_ROOTS:          # a sweep made with `mechloop tune --out <same root>`
+        tuning.TUNING_ROOTS.insert(0, str(out.parent.parent))
+    pa = tuning.pressure_advance(design, pm)
+    # the workers are separate processes: hand them the K the generated configuration would carry
+    on, off = {"pressure_advance": pa["value"], "bed_mesh": False}, {"input_shaper": False, "pressure_advance": False, "bed_mesh": False}
     kw = {"firmware": "klipper"}
     jobs = [("fw_nominal", "quick", dict(pm_kw), {**kw, "firmware_opts": on}, str(out)),
             ("fw_nominal_plain", "quick", dict(pm_kw), {**kw, "firmware_opts": off}, str(out))]
@@ -66,8 +72,8 @@ def firmware_block(design_path, design, pm, pm_kw, out: Path, speed: float = 2.0
             "shaper_and_pressure_advance_off": {"nominal": nominal("fw_nominal_plain"), **sweep("fw_plain_a")},
             "input_shaper": {ax: {k: sh[ax].get(k) for k in ("shaper_type", "shaper_freq", "damping_ratio", "predicted_resonance_hz",
                                                                "suggested_max_accel")} for ax in ("x", "y") if ax in sh},
-            "pressure_advance": (tun.get("pressure_advance") or {}).get("value"),
-            "assumed": sorted(set((sh.get("assumed") or []) + ((tun.get("pressure_advance") or {}).get("assumed") or [])))}
+            "pressure_advance": {k: pa.get(k) for k in ("value", "basis", "from_sweep")},
+            "assumed": sorted(set((sh.get("assumed") or []) + (pa.get("assumed") or [])))}
 
 
 def _rep(run_dir: Path) -> dict:

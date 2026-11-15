@@ -19,7 +19,9 @@ from . import PrinterMap, _axis_info, bed_deviation, printer_map_for
 from .machine import linear_axis, machine_model
 
 PA_SMOOTH_TIME = 0.04          # Klipper's default pressure_advance_smooth_time
-MESH_DEFAULTS = {"probe_count": (5, 5), "algorithm": "bicubic", "mesh_pps": (2, 2), "fade_start": 1.0, "fade_end": 10.0,
+# lagrange (Klipper's default) reproduces a plane, and with five points a bow, exactly; its bicubic does not (a plane
+# comes back up to 0.008 mm out with the default tension, see tests/test_twin.py)
+MESH_DEFAULTS = {"probe_count": (5, 5), "algorithm": "lagrange", "mesh_pps": (2, 2), "fade_start": 1.0, "fade_end": 10.0,
                  "split_delta_z": 0.01, "tension": 0.2}
 
 
@@ -61,17 +63,43 @@ def input_shaper(design, pm: PrinterMap, mm: dict | None = None) -> dict:
 
 
 # ------------------------------------------------------------------ pressure advance
-def pressure_advance(design, pm: PrinterMap) -> dict:
-    """K for the config. The design's firmware block may fix it (firmware['extruder_tuning']['pressure_advance']);
-    otherwise it is the twin's assumed melt-flow lag, which is what a sweep on the twin converges to."""
+TUNING_ROOTS = ["out"]          # where `mechloop tune` results are looked for (<root>/<design>/tune/tuning.json)
+
+
+def stored_sweep(design_name: str, lag_s: float, roots=None) -> dict | None:
+    """The last pressure-advance sweep `mechloop tune` ran for this design, if it was made with the same assumed lag."""
+    import json
+    from pathlib import Path
+
+    for root in (roots or TUNING_ROOTS):
+        f = Path(root) / design_name / "tune" / "tuning.json"
+        try:
+            sw = json.loads(f.read_text())["pressure_advance"]["sweep"]
+            if sw.get("best") is not None and abs(sw.get("assumed_extruder_lag_s", -1.0) - lag_s) < 1e-9:
+                return {**sw, "file": str(f)}
+        except Exception:
+            continue
+    return None
+
+
+def pressure_advance(design, pm: PrinterMap, roots=None) -> dict:
+    """K for the config, in this order: fixed in the design's firmware block
+    (firmware['extruder_tuning']['pressure_advance']); the best K of the last sweep on the twin (`mechloop tune`), as a
+    user takes it from a test print; else the twin's assumed melt-flow lag, the value a first-order lag calls for."""
     el = getattr(design, "electrical", None)
     fixed = ((el.firmware.get("extruder_tuning") or {}).get("pressure_advance") if el is not None else None)
+    assumed = [f"extruder lag {pm.extruder_lag_s:g} s (first-order, one value for every flow rate)"]
     if fixed is not None:
         return {"value": float(fixed), "smooth_time": PA_SMOOTH_TIME, "basis": "set in the design's firmware block", "assumed": []}
+    sw = stored_sweep(design.name, pm.extruder_lag_s, roots)
+    if sw is not None:
+        return {"value": float(sw["best"]), "smooth_time": PA_SMOOTH_TIME, "assumed": assumed, "from_sweep": sw["file"],
+                "basis": f"best of a sweep on the twin (smallest corner bulge + recess), whose melt-flow lag is an ASSUMED "
+                         f"{pm.extruder_lag_s * 1e3:.0f} ms; print a pressure-advance test on the machine"}
     return {"value": float(pm.extruder_lag_s), "smooth_time": PA_SMOOTH_TIME,
-            "basis": f"equal to the twin's ASSUMED {pm.extruder_lag_s * 1e3:.0f} ms melt-flow lag (not measured); "
+            "basis": f"equal to the twin's ASSUMED {pm.extruder_lag_s * 1e3:.0f} ms melt-flow lag (not measured, no sweep run); "
                      "print a pressure-advance test on the machine",
-            "assumed": [f"extruder lag {pm.extruder_lag_s:g} s (first-order, one value for every flow rate)"]}
+            "assumed": assumed}
 
 
 # ------------------------------------------------------------------ probe and bed mesh
@@ -105,7 +133,7 @@ def measure_mesh(design, pm: PrinterMap, pg: dict | None = None, count=None, sam
     pts = [[round(probe_at(x, y) - z0, 6) for x in xs] for y in ys]
     return {"points": pts, "min_x": float(xs[0]), "max_x": float(xs[-1]), "min_y": float(ys[0]), "max_y": float(ys[-1]),
             "mesh_x_pps": MESH_DEFAULTS["mesh_pps"][0], "mesh_y_pps": MESH_DEFAULTS["mesh_pps"][1],
-            "algo": MESH_DEFAULTS["algorithm"] if min(count) >= 4 else "lagrange", "tension": MESH_DEFAULTS["tension"],
+            "algo": MESH_DEFAULTS["algorithm"] if max(count) <= 6 else "bicubic", "tension": MESH_DEFAULTS["tension"],
             "range_mm": round(float(np.ptp(pts)), 4), "probe_samples": samples, "seed": seed,
             "basis": "probed in simulation on the twin's assumed bed surface "
                      f"{ {k: v for k, v in (pm.bed_surface or {}).items()} }, probe repeatability {sig:g} mm (assumed)",
@@ -322,9 +350,11 @@ def pm_for(design, out_root="out") -> tuple:
         prev = Path(root) / design.name / "report.json"
         if prev.exists():
             try:
-                return printer_map_for(design, json.loads(prev.read_text())["metrics"]), str(prev)
+                pm = printer_map_for(design, json.loads(prev.read_text())["metrics"])
             except Exception:
-                pass
+                continue
+            if pm.struct_stiffness or not (design.printer or {}).get("stiffness"):      # a partial run has no FEA figures
+                return pm, str(prev)
     return printer_map_for(design), None
 
 
@@ -349,6 +379,8 @@ def tune_report(design_path, out_root="out", only=None, bed=None) -> dict:
     except fw.FirmwareNotAvailable as ex:
         return {"design": design.name, "ok": False, "error": f"not run: {ex}"}
     pm, src = pm_for(design, out_root)
+    if str(out_root) not in TUNING_ROOTS:
+        TUNING_ROOTS.insert(0, str(out_root))
     res["frame_stiffness_n_per_mm"] = pm.struct_stiffness or None
     res["frame_stiffness_from"] = src or "none (no verify report found): belt stiffness only"
     try:
@@ -361,12 +393,16 @@ def tune_report(design_path, out_root="out", only=None, bed=None) -> dict:
                     "with_shaper": ringing_test(design, pm, out / f"ring_on_{a:g}", {"input_shaper": True, "pressure_advance": False}, accel_scale=a),
                     "without_shaper": ringing_test(design, pm, out / f"ring_off_{a:g}", {"input_shaper": False, "pressure_advance": False}, accel_scale=a)}
         if "pressure_advance" in only:
-            res["pressure_advance"] = {"configured": pressure_advance(design, pm), "sweep": pressure_advance_sweep(design_path, out / "pa", pm)}
+            res["pressure_advance"] = {"sweep": pressure_advance_sweep(design_path, out / "pa", pm)}
+            if res["pressure_advance"]["sweep"].get("best") is None:
+                res["ok"] = False
+            (out / "tuning.json").write_text(json.dumps(res, indent=1, default=float))      # so the next line can read it
+            res["pressure_advance"]["configured"] = pressure_advance(design, pm)
         if "bed_mesh" in only:
             b = dict(zip(("tilt_x_mm", "tilt_y_mm", "bow_mm"), bed or (0.30, 0.20, 0.15)))
             res["bed_mesh"] = bed_mesh_study(design_path, out / "mesh", pm, b)
-            if not res["bed_mesh"].get("ran"):
-                res["ok"] = False
+            if not res["bed_mesh"].get("ran") or not res["bed_mesh"]["prints"]["mesh_on"]["ok"]:
+                res["ok"] = False        # a study whose print did not run is not a result
     except (fw.FirmwareError, fw.FirmwareNotAvailable, ImportError, ValueError) as ex:
         res["ok"] = False
         res["error"] = f"{type(ex).__name__}: {ex}"

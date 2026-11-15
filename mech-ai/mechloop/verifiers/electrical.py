@@ -1194,7 +1194,31 @@ def _artifacts(ctx, r, m):
     arts = {"wiring_csv": str(out / "wiring.csv"), "wiring_md": str(out / "wiring.md"), "pin_map": str(out / "pin_map.json")}
     if el.firmware.get("kind", "klipper") == "klipper":
         sim = {hn: {"pid": h.get("pid")} for hn, h in (ctx.get("heaters") or {}).items()}
-        cfg = E.klipper_config(el, design, sim)
+        tuning, tuning_note = None, None
+        if design.printer:
+            # input shaper, pressure advance, probe and mesh settings: predictions from the twin's model of this design,
+            # with the frame stiffness of the last full verify when its report is there
+            try:
+                from ..twin import tuning as TU_
+
+                if OUT_ROOT not in TU_.TUNING_ROOTS:
+                    TU_.TUNING_ROOTS.insert(0, OUT_ROOT)
+                pm, src = TU_.pm_for(design, OUT_ROOT)
+                tuning = TU_.firmware_tuning(design, pm, {"bed_mesh": False})
+                tuning_note = {"frame_stiffness_from": src or "none: belt stiffness only",
+                               "input_shaper": {ax: {k: v for k, v in tuning["input_shaper"][ax].items() if k != "candidates"}
+                                                for ax in ("x", "y")} if tuning.get("input_shaper") else None,
+                               "selected_by": (tuning.get("input_shaper") or {}).get("selected_by"),
+                               "pressure_advance": tuning.get("pressure_advance"),
+                               "assumed": ((tuning.get("input_shaper") or {}).get("assumed") or [])
+                               + ((tuning.get("pressure_advance") or {}).get("assumed") or [])}
+            except Exception as ex:
+                tuning = {"error": f"{type(ex).__name__}: {ex}"}
+                r.add("error", "firmware_tuning_not_generated",
+                      f"Input shaper / pressure advance / probe settings could not be generated ({tuning['error']}); the printer.cfg "
+                      "was written without them.", hint="Klipper's source is needed for the shaper choice: tools/setup_klipper.sh.")
+        cfg = E.klipper_config(el, design, sim, tuning=tuning)
+        m["firmware_tuning"] = tuning_note
         (out / "printer.cfg").write_text(cfg + "\n")
         arts["printer_cfg"] = str(out / "printer.cfg")
         board_pins = set()
@@ -1209,9 +1233,23 @@ def _artifacts(ctx, r, m):
 
         problems = E.check_klipper_config(cfg, board_pins, set(THERMISTORS))
         m["klipper_config_check"] = {"problems": problems, "method": "parsed with Klipper's configparser settings and checked against "
-                                     "required options and the board's pins; NOT run through klippy (that needs an MCU dictionary from a firmware build)"}
+                                     "required options and the board's pins; then loaded by klippy itself when it is installed (see 'klippy')"}
         for pb in problems:
             r.add("error", "klipper_config_invalid", f"Generated printer.cfg: {pb}", hint="Usually a device that is not wired to a board port.")
+        if not problems and not design.printer:
+            m["klipper_config_check"]["klippy"] = {"ran": False, "reason": "the design does not declare design.printer: its "
+                                                   "configuration is not a whole printer's and klippy would refuse it for that alone"}
+        elif not problems:
+            from ..twin import firmware as FW_
+
+            kc = FW_.check_config(cfg, out / "klippy_check")
+            m["klipper_config_check"]["klippy"] = kc
+            if not kc["ran"]:
+                r.add("info", "klipper_config_not_run_through_klippy",
+                      "The generated printer.cfg was NOT loaded by klippy (Klipper is not installed): only the offline check was made.")
+            elif not kc["ok"]:
+                r.add("error", "klipper_rejects_config", f"klippy refuses the generated printer.cfg: {kc['error']}",
+                      hint="A section or option Klipper does not accept; see electrical/klippy_check/klippy.log.")
     # electrical bill of materials
     bom, cost = {}, 0.0
     for d in el.devices.values():

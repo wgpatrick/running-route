@@ -125,6 +125,12 @@ solves (about 1 wrong run in 48); the solver now runs single-threaded (200 of 20
 
 134 tests pass.
 
+- Four checker defects that v5 exposed were fixed on 2026-11-15, each with a known-answer test
+  (`tests/test_known_answers.py`): a captive-nut slot is no longer read as the screw's clearance hole; the screw-only
+  FEA bound decides which joints are screwed from what each screw holds, not from distance; `add_corner_bracket`
+  through-bolts a non-extrusion part with a real screw and nut; the machining estimate no longer finishes the stock
+  faces of a stock-thickness plate. Before and after figures are in `docs/PRINTER_V5.md` (items 1, 2, 5, 6).
+
 ## Vendor CAD (added 2026-11-14)
 
 - Catalog parts have two representations: the simulation solid and a detail model in the same frame (vendor STEP for

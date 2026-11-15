@@ -228,7 +228,8 @@ def _probe_checks(design: Design, e: dict, r: VerifierResult) -> dict:
         r.add("error", "probe_not_reached",
               f"Bed probe '{name}': at the end of Z travel the nozzle is still {end:.2f} mm above the bed; a unit at the short "
               f"end of its range does not switch until {z_lo:.2f} mm.", part=name, joint=e.get("joint"),
-              hint="Extend the Z travel toward the nozzle or lower the probe.")
+              hint="Extend the Z travel toward the nozzle or lower the probe. The same travel is what lets a bed mesh "
+                   "bring a low part of the bed up to the nozzle: with none in hand, low spots stay low.")
     if "mesh_min" in pg:
         (mx0, my0), (mx1, my1) = pg["mesh_min"], pg["mesh_max"]
         if mx1 - mx0 < 10.0 or my1 - my0 < 10.0:

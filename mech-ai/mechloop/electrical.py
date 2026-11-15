@@ -1529,7 +1529,7 @@ def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict
             L += ["# mesh bounds are probe positions: the bed inset by the probe's edge margin, cut to where the probe can reach",
                   "[bed_mesh]", f"speed: {min(100.0, vmax):g}", "horizontal_move_z: 5",
                   f"mesh_min: {pg['mesh_min'][0]:g}, {pg['mesh_min'][1]:g}", f"mesh_max: {pg['mesh_max'][0]:g}, {pg['mesh_max'][1]:g}",
-                  f"probe_count: {n[0]}, {n[1]}", f"algorithm: {bmc.get('algorithm', 'bicubic')}",
+                  f"probe_count: {n[0]}, {n[1]}", f"algorithm: {bmc.get('algorithm', 'lagrange')}",
                   f"mesh_pps: {bmc.get('mesh_pps', (2, 2))[0]}, {bmc.get('mesh_pps', (2, 2))[1]}",
                   f"fade_start: {bmc.get('fade_start', 1.0):g}", f"fade_end: {bmc.get('fade_end', 10.0):g}", "fade_target: 0",
                   f"split_delta_z: {bmc.get('split_delta_z', 0.01):g}",
@@ -1546,7 +1546,7 @@ def mesh_profile_lines(prof: dict, name: str = "default") -> list:
     pts = prof["points"]
     return [f"[bed_mesh {name}]", "version: 1", "points:"] + ["    " + ", ".join(f"{z:.6f}" for z in row) for row in pts] + [
         f"x_count: {len(pts[0])}", f"y_count: {len(pts)}", f"mesh_x_pps: {prof.get('mesh_x_pps', 2)}", f"mesh_y_pps: {prof.get('mesh_y_pps', 2)}",
-        f"algo: {prof.get('algo', 'bicubic')}", f"tension: {prof.get('tension', 0.2):g}",
+        f"algo: {prof.get('algo', 'lagrange')}", f"tension: {prof.get('tension', 0.2):g}",
         f"min_x: {prof['min_x']:g}", f"max_x: {prof['max_x']:g}", f"min_y: {prof['min_y']:g}", f"max_y: {prof['max_y']:g}"]
 
 
