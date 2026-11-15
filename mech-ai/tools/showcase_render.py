@@ -198,6 +198,7 @@ def render_view(scene: Scene, path: Path, *, q: dict, show, camera: dict, size=(
         pl2.disable_anti_aliasing()
         idimg = pl2.screenshot(None, return_img=True)
         pl2.close()
+        placed: list = []
         for k, (key, label, names) in enumerate(callouts, 1):
             mask = (idimg[:, :, 0] == k * 8) & (idimg[:, :, 2] > 250)
             mx, my = int(W * 0.035), int(H * 0.035)   # keep the callout clear of the picture's edge
@@ -212,7 +213,17 @@ def render_view(scene: Scene, path: Path, *, q: dict, show, camera: dict, size=(
             sizes = ndimage.sum(mask, lab, range(1, nlab + 1))
             big = lab == (int(np.argmax(sizes)) + 1)
             dist = ndimage.distance_transform_edt(big)
-            y, x = np.unravel_index(int(np.argmax(dist)), dist.shape)
+            # among points well inside the visible patch, take the one furthest from the pins already placed
+            ys, xs = np.nonzero(dist >= max(2.0, 0.6 * dist.max()))
+            if placed:
+                P = np.array(placed, dtype=float)
+                sep = np.min(np.hypot(xs[:, None] - P[None, :, 0], ys[:, None] - P[None, :, 1]), axis=1)
+                score = np.minimum(sep, 0.09 * W) + 0.5 * dist[ys, xs]
+            else:
+                score = dist[ys, xs]
+            i = int(np.argmax(score))
+            y, x = int(ys[i]), int(xs[i])
+            placed.append((x, y))
             out["callouts"].append({"key": key, "label": label, "visible": True, "x": round(float(x + 0.5) / W, 4),
                                     "y": round(float(y + 0.5) / H, 4), "visible_px": int(mask.sum()), "parts": list(names)})
     return out

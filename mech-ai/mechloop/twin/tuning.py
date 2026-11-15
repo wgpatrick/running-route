@@ -87,7 +87,7 @@ def stored_sweep(design_name: str, lag_s: float, roots=None) -> dict | None:
     return None
 
 
-def pressure_advance(design, pm: PrinterMap, roots=None) -> dict:
+def pressure_advance(design, pm: PrinterMap, roots=None, use_stored: bool = True) -> dict:
     """K for the config, in this order: fixed in the design's firmware block
     (firmware['extruder_tuning']['pressure_advance']); the best K of the last sweep on the twin (`mechloop tune`), as a
     user takes it from a test print; else the twin's assumed melt-flow lag, the value a first-order lag calls for."""
@@ -96,7 +96,8 @@ def pressure_advance(design, pm: PrinterMap, roots=None) -> dict:
     assumed = [f"extruder lag {pm.extruder_lag_s:g} s (first-order, one value for every flow rate; {pm.extruder_lag_basis})"]
     if fixed is not None:
         return {"value": float(fixed), "smooth_time": PA_SMOOTH_TIME, "basis": "set in the design's firmware block", "assumed": []}
-    sw = stored_sweep(design.name, pm.extruder_lag_s, roots)
+    # use_stored=False: a verify is a function of the design alone, so it never reads a sweep an earlier `mechloop tune` left
+    sw = stored_sweep(design.name, pm.extruder_lag_s, roots) if use_stored else None
     if sw is not None:
         return {"value": float(sw["best"]), "smooth_time": PA_SMOOTH_TIME, "assumed": assumed, "from_sweep": sw["file"],
                 "basis": f"best of a sweep on the twin (smallest corner bulge + recess), whose melt-flow lag is "
@@ -190,7 +191,7 @@ def firmware_tuning(design, pm: PrinterMap | None = None, opts: dict | None = No
             out["not_generated"] = [f"[input_shaper]: {ex}"]
     pa = opts.get("pressure_advance", True)
     if pa is True:
-        out["pressure_advance"] = pressure_advance(design, pm)
+        out["pressure_advance"] = pressure_advance(design, pm, use_stored=bool(opts.get("stored_sweeps", True)))
     elif pa is not False and pa is not None:
         out["pressure_advance"] = {"value": float(pa), "smooth_time": PA_SMOOTH_TIME, "basis": "value under test", "assumed": []}
     pg = probe_geometry(design)

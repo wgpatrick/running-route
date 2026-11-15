@@ -177,7 +177,7 @@ def plan(design: Design, base: str | None = None, members: list[str] | None = No
                 off = start + d * s
                 for m in mem:
                     hit, hits = cm.in_collision_single(W.mesh[m], transform=translation(off), return_names=True)
-                    for o in hits if hit else ():
+                    for o in sorted(hits) if hit else ():      # sorted: a set's order changes from run to run
                         if o in blockers or o in mem:
                             continue
                         vol = W.exact(m, o, off)
@@ -190,7 +190,7 @@ def plan(design: Design, base: str | None = None, members: list[str] | None = No
                         mid = 0.5 * (lo_s + hi_s)
                         offm = start + d * mid
                         hitm = any(W.exact(m, o, offm) > VOL_TOL and not W.allowed(m, o, W.exact(m, o, offm))
-                                   for m in mem for o in blockers)
+                                   for m in mem for o in sorted(blockers))      # sorted: any() stops early, so the order decides how many exact checks are made
                         if hitm:
                             hi_s = mid
                         else:

@@ -55,7 +55,15 @@ def process_of(c: Component) -> str:
 
 
 def tol(c: Component) -> dict:
-    return PROCESS[process_of(c)]
+    """The process table for one part. A part that names its shop (meta["dfm"]["shop"], see mechloop/shops) gets the
+    figures that shop publishes in place of the class values; meta["dfm"]["tolerance"] = {"flat": 0.02} states one itself."""
+    base = PROCESS[process_of(c)]
+    dfm = c.meta.get("dfm")
+    if dfm and (dfm.get("shop") or dfm.get("tolerance")):
+        from ..shops import process_tolerance
+
+        return process_tolerance(c, process_of(c), base)
+    return base
 
 
 # Flatness of cast aluminium tooling plate USED AS SUPPLIED (not re-machined), mm over the plate: the maker's guarantee.

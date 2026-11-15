@@ -83,6 +83,9 @@ def check_part(r: VerifierResult, design: Design, c) -> dict:
                       part=c.name, at=(fc["angled_at"] + fc["curved_at"])[:6] or None,
                       hint="Model it as a constant-thickness profile (fillet both edges of each bend: r inside, r + t outside), "
                            "or set process='machined' or 'printed'.")
+    from ..shops import check_shop_part
+
+    check_shop_part(r, design, c, row, lim)      # what the part's named shop publishes (mechloop/shops/*.json); nothing for "generic"
     return row
 
 

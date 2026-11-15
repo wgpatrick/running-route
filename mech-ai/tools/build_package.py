@@ -708,20 +708,27 @@ def analyse_part(cx: Ctx, c) -> dict:
                         ft["flags"].append(f"axle of {other}: sets the belt plane")
         cw = l2w(ft["center"])
         for o in cx.d.components:
-            if o.name == c.name or o.name in cx.fast or not o.cots or (o.sku or "").startswith(("NUT-M", "SPACER", "EXT2020", "BRKT")):
+            if o.name == c.name or o.name in cx.fast or (o.sku or "").startswith(("NUT-M", "SPACER", "EXT2020", "BRKT")):
                 continue
             bb = o.shape.bounding_box()
-            if (bb.min.X - 0.3 <= cw[0] <= bb.max.X + 0.3 and bb.min.Y - 0.3 <= cw[1] <= bb.max.Y + 0.3 and bb.min.Z - 0.3 <= cw[2] <= bb.max.Z + 0.3):
-                oc = np.array([(bb.min.X + bb.max.X) / 2, (bb.min.Y + bb.max.Y) / 2, (bb.min.Z + bb.max.Z) / 2])
-                rel = R @ (oc - cw)
-                if np.linalg.norm(rel - (rel @ ax) * ax) < 0.5 * ft["dia"] + 1.0:       # on the hole's axis
-                    ft["occupants"].append(f"{o.name} ({o.sku})")
-                    if (o.sku or "").startswith("BRG"):
-                        ft["flags"].append(f"seat of bearing {o.name}: fit")
-                    if (o.sku or "").startswith("PROBE"):
-                        ft["flags"].append("probe clamp hole: locates the probe")
-                    if (o.sku or "").startswith("NEMA"):
-                        ft["flags"].append(f"pilot of motor {o.name}")
+            cs = np.array([w2l((x_, y_, z_)) for x_ in (bb.min.X, bb.max.X) for y_ in (bb.min.Y, bb.max.Y) for z_ in (bb.min.Z, bb.max.Z)])
+            oc = 0.5 * (cs.min(0) + cs.max(0))
+            half = 0.5 * float(np.ptp(cs @ ax))
+            rel = oc - ft["center"]
+            along = float(rel @ ax)
+            perp = float(np.linalg.norm(rel - along * ax))
+            wide = 0.5 * float(max(np.ptp(cs @ u_) for u_ in np.eye(3) if abs(u_ @ ax) < 0.5))
+            # a part ON the hole's axis, inside the hole's length (or passing through it), and not far wider than the hole
+            if perp < 0.25 * ft["dia"] + 0.6 and abs(along) <= 0.5 * ft["depth"] + half + 0.3 and (wide <= 0.5 * ft["dia"] + 1.5 or half > wide or (o.sku or "").startswith("NEMA")):
+                ft["occupants"].append(f"{o.name} ({o.sku or 'custom'})")
+                if (o.sku or "").startswith("BRG"):
+                    ft["flags"].append(f"seat of bearing {o.name}: fit")
+                if (o.sku or "").startswith("PROBE"):
+                    ft["flags"].append("probe clamp hole: locates the probe")
+                if (o.sku or "").startswith("NEMA") and abs(along) <= 0.5 * ft["depth"] + 3.0:
+                    ft["flags"].append(f"pilot of motor {o.name}")
+                if (o.sku or "").startswith("T8-NUT"):
+                    ft["flags"].append(f"floating lead-screw nut {o.name}")
         ft["flags"] = sorted(set(ft["flags"]))
         k_ax = int(np.argmax(np.abs(ft["axis"])))
         ft["cb_side"] = ""
@@ -883,7 +890,7 @@ def draw_sheet(cx: Ctx, a: dict, path_svg: Path, path_pdf: Path, pdf_pages=None,
     y = 232.0
     ax.text(RX0, y, "HOLES AND SLOTS  (centre X, Y, Z in mm from datums C, B, A; red = critical, see notes)", fontsize=5.6, weight="bold", color=ink)
     y -= 3.4
-    hdr = f"{'ID':<4}{'ax':<3}{'X':>8}{'Y':>8}{'Z':>8} {'dia':>6} {'depth':<9}{'function':<17}{'pat':<4}"
+    hdr = f"{'ID':<4}{'ax':<3}{'X':>8}{'Y':>8}{'Z':>8} {'dia':>8} {'depth':<14}{'function':<15}{'pat':<3}"
     ax.text(RX0, y, hdr, fontsize=5.0, **mono)
     y -= 1.0
     ax.plot([RX0, 412], [y, y], color=ink, lw=0.3)
@@ -891,11 +898,11 @@ def draw_sheet(cx: Ctx, a: dict, path_svg: Path, path_pdf: Path, pdf_pages=None,
     shown = feats[:rows_max]
     for ft in shown:
         y -= 2.35
-        cb = (" cb%s" % "/".join(f"{d_:g}x{h_:g}" for d_, h_ in ft["steps"])) if ft["steps"] else ""
+        cb = (" cb %s" % "/".join(f"{d_:g}x{h_:g}" for d_, h_ in ft["steps"])) if ft["steps"] else ""
         dep = ("thru" if ft["through"] else f"{ft['depth']:.1f}") + cb
         diam = f"{ft['dia']:.2f}" if ft["kind"] == "hole" else f"{ft['dia']:.1f}x{ft['length']:.1f}"
         fn = ft["type"].replace("clearance ", "clr ").replace("bore / opening", "bore").replace("hole (no screw or part on its axis in the model)", "open")
-        line = f"{ft['id']:<4}{ft['axis_name'][:1]:<3}{ft['center'][0]:>8.2f}{ft['center'][1]:>8.2f}{ft['center'][2]:>8.2f} {diam:>6} {dep:<9.9}{fn:<17.17}{ft['pattern']:<4}"
+        line = f"{ft['id']:<4}{ft['axis_name'][:1]:<3}{ft['center'][0]:>8.2f}{ft['center'][1]:>8.2f}{ft['center'][2]:>8.2f} {diam:>8} {dep:<14.14}{fn:<15.15}{ft['pattern']:<3}"
         ax.text(RX0, y, line, fontsize=5.0, family="DejaVu Sans Mono", color="#c0392b" if ft["flags"] else ink)
     if len(feats) > len(shown):
         y -= 2.6
@@ -945,8 +952,9 @@ def draw_sheet(cx: Ctx, a: dict, path_svg: Path, path_pdf: Path, pdf_pages=None,
             f"Scale {('%g:1' % s) if s >= 1 else ('1:%g' % round(1 / s, 2))} on A3 - do not scale; third-angle projection; dimensions in mm"]
     if proc == "printed":
         est = dig(mp, "estimate", default={})
-        info.insert(2, f"Print: {dig(mp, 'up', default='?')} of the machine up = see STL (already turned, bed face on Z = 0); nozzle "
-                       f"{dig(cx.d.manufacturing, 'printer', 'nozzle', default='?')} mm; support area {f2(dig(mp, 'support_area_mm2'), 0)} mm2; {est.get('filament_g', '?')} g, {est.get('print_hours', '?')} h ({est.get('basis', '')[:60]})")
+        info.insert(2, f"Print with the machine's {dig(mp, 'up', default='?')} up (the STL is already turned, bed face on Z = 0); nozzle "
+                       f"{dig(cx.d.manufacturing, 'printer', 'nozzle', default='?')} mm; support needed under {f2(dig(mp, 'support_area_mm2'), 0)} mm2; "
+                       f"about {est.get('filament_g', '?')} g, {est.get('print_hours', '?')} h")
     for i, ln in enumerate(info):
         ax.text(10, 36 - 4.6 * i, ln[:150], fontsize=6.2, color=ink, va="top")
     nx = 215.0
@@ -1053,3 +1061,269 @@ def dxf_check(path: Path) -> dict:
             except Exception:
                 pass
     return {"entities": dict(n), "cut_length_mm": round(length, 1), "extent": (round(max(xs) - min(xs), 2), round(max(ys) - min(ys), 2)) if xs else None}
+
+
+# ---------------------------------------------------------------------------------- audits (washers, lead-ins)
+_TRIS = {}
+
+
+def _tris(c):
+    from mechloop.geom import to_trimesh
+
+    if c.name not in _TRIS:
+        _TRIS[c.name] = np.asarray(to_trimesh(c.shape).triangles, dtype=float)
+    return _TRIS[c.name]
+
+
+def _bearing_part(cx: Ctx, seat, dvec, r_in, r_out, skip):
+    """What a screw head or nut bears on: the part with material just beyond the seat, how much of the bearing ring it
+    covers, and how thick it is there."""
+    from mechloop.verifiers import dfm_geom as G
+
+    ref = np.array([1.0, 0, 0]) if abs(dvec[0]) < 0.9 else np.array([0, 1.0, 0])
+    u = np.cross(dvec, ref); u /= np.linalg.norm(u)
+    v = np.cross(dvec, u)
+    angs = np.linspace(0, 2 * math.pi, 24, endpoint=False)
+    ring = lambda r: np.array([seat + dvec * 0.15 + r * (math.cos(a) * u + math.sin(a) * v) for a in angs])
+    pts = np.vstack([ring(r_out - 0.2), ring(0.5 * (r_in + r_out))])
+    best = None
+    for o in cx.d.components:
+        if o.name in skip or o.name in cx.fast:
+            continue
+        bb = o.shape.bounding_box()
+        if not (bb.min.X - r_out <= seat[0] <= bb.max.X + r_out and bb.min.Y - r_out <= seat[1] <= bb.max.Y + r_out and bb.min.Z - r_out <= seat[2] <= bb.max.Z + r_out):
+            continue
+        ins = G.points_inside(_tris(o), pts)
+        cov = float(ins.mean())
+        if cov > 0.02 and (best is None or cov > best[1]):
+            best = (o, cov, ins)
+    if best is None:
+        return None
+    o, cov, ins = best
+    p0 = pts[np.argmax(ins)]
+    ss = np.arange(0.15, 40.0, 0.25)
+    thick = float(G.points_inside(_tris(o), p0 + ss[:, None] * dvec).sum() * 0.25)
+    return {"part": o, "coverage": cov, "thickness": thick}
+
+
+def washer_audit(cx: Ctx) -> list[dict]:
+    """Every screw head and nut: what it bears on. The model has no washers; this lists where one is normally wanted:
+    on a slot or oversize hole, on a printed part, on thin aluminium, on a circuit board."""
+    from mechloop.tolerance.process import process_of
+
+    rows = []
+    has_washer = any("WASHER" in (c.sku or "") for c in cx.d.components)
+
+    def judge(name, sku, kind, b):
+        if b is None:
+            return
+        o, cov, th = b["part"], b["coverage"], b["thickness"]
+        proc = process_of(o)
+        why = []
+        if cov < 0.85:
+            why.append(f"on a slot or oversize hole (only {cov:.0%} of the bearing ring has material under it)")
+        if proc == "printed":
+            why.append(f"on a printed part ({o.material})")
+        elif not o.cots and o.material.startswith("al") and th <= 5.01:
+            why.append(f"on thin aluminium ({th:.1f} mm {o.material})")
+        if o.cots and (o.sku or "").startswith(("CTRL", "HOST", "RELAY", "ENDSTOP")):
+            why.append("on a circuit board")
+        if o.cots and (o.sku or "").startswith("FAN"):
+            why.append("on a plastic fan frame")
+        if why:
+            rows.append({"fastener": name, "sku": sku, "kind": kind, "bears_on": o.name, "process": proc, "material": o.material,
+                         "thickness_mm": round(th, 1), "coverage": round(cov, 2), "why": "; ".join(why),
+                         "cast_bracket": (o.sku or "").startswith("BRKT")})
+
+    for f in cx.d.fasteners:
+        c = cx.comps[f.name]
+        i = c.meta.get("interfaces") or {}
+        dvec = -np.array(f.axis, float)
+        seat = np.array(f.head_center, float) + dvec * float(i.get("head_h", 3.0))
+        judge(f.name, c.sku, "screw head", _bearing_part(cx, seat, dvec, float(i.get("thread_d", 3.0)) / 2, float(i.get("head_d", 5.5)) / 2, {f.name}))
+    for c in cx.d.components:
+        if not (c.sku or "").startswith("NUT-M") or "placement" not in c.meta:
+            continue
+        P = np.array(c.meta["placement"], float)
+        zdir, org = P[:, 2], P[:, 3]
+        i = c.meta.get("interfaces") or {}
+        judge(c.name, c.sku, "nut", _bearing_part(cx, org, -zdir, float(i.get("thread_d", 3.0)) / 2, float(i.get("across_flats", 5.5)) / 2, {c.name}))
+    cx.has_washers = has_washer
+    return rows
+
+
+def leadin_audit(cx: Ctx, parts: dict) -> list[dict]:
+    """Bores and slots of custom parts that take another part by hand (bearing, sleeve, sensor, nut barrel, pin, axle):
+    is there any lead-in chamfer? A chamfer is a cone face; a part with no cone face has none."""
+    rows = []
+    for name, a in parts.items():
+        for ft in a["feats"]:
+            occ = [o for o in ft["occupants"] if not o.split(" (")[1].startswith(("NEMA",))]
+            axle = [fl for fl in ft["flags"] if fl.startswith("axle")]
+            if not occ and not axle:
+                continue
+            if all("SHCS" in o for o in occ) and not axle:
+                continue
+            rows.append({"part": name, "feature": ft["id"], "dia": round(ft["dia"], 2), "takes": "; ".join(occ + axle), "process": a["proc"],
+                         "chamfer_faces_on_part": a["cones"], "lead_in": "none" if a["cones"] == 0 else "part has cone faces: check this one"})
+    return rows
+
+
+def _better_than_general(cx: Ctx, a: dict) -> list[str]:
+    """Where the simulation's result needs more than the process's general tolerance, or rests on an assumption the
+    fabricator or builder must make true."""
+    c, t, mp, out = a["c"], a["tol"], a["mp"], []
+    est = mp.get("estimate") or {}
+    if a["proc"] == "machined" and est.get("stock_faces_not_machined_cm2"):
+        sf = a["stock_flat"]
+        if sf:
+            out.append(f"**Faces A and +Z are stock faces, not machined.** The stack-up gave every mating face of a machined part a flatness of "
+                       f"{t['flat']} mm (1 sd); the maker's guarantee for this plate as supplied is {sf['flatness_mm']} mm ({sf['source']}). "
+                       f"The bed-flatness figures in the report carry that {sf['flatness_mm']} mm as a reference, the tolerance stack-up does not. "
+                       f"Measure the plate on receipt; thickness tolerance of the stock: +/-{sf['thickness_tol_mm']} mm.")
+        else:
+            out.append(f"**Faces A and +Z are the plate's stock faces** ({est.get('stock_faces_not_machined_cm2')} cm2 not machined). The stack-up assumed "
+                       f"{t['flat']} mm flatness (1 sd) and the plate's thickness to the general tolerance; no stock flatness or thickness tolerance for "
+                       f"{c.material} plate is in the catalogue. Ask for the faces to be skimmed or state flatness {TOL_K * t['flat']:.2f} mm on the order.")
+    seats = [ft for ft in a["feats"] if any("bearing" in fl for fl in ft["flags"])]
+    if seats and a["proc"] == "printed":
+        ft = seats[0]
+        out.append(f"**Bearing seats {', '.join(f_['id'] for f_ in seats)}** are drawn {ft['dia']:.2f} mm for a {ft['dia'] + t['hole_bias'] - 0.25:.0f} mm bearing: the "
+                   f"fit only exists if this printer's holes come out {abs(t['hole_bias']):.2f} mm small (+/-{TOL_K * t['hole_sd']:.2f}), which is the simulation's "
+                   f"assumption, not a measurement of your printer. Print a 10 mm tall test ring of this bore first and adjust.")
+    pats = [ft for ft in a["feats"] if any(fl.startswith(("locates guide", "locates motor")) for fl in ft["flags"])]
+    if pats:
+        rc = min((ft["dia"] - float(re.sub(r"[^\d.]", "", ft["screws"][0]["size"]))) / 2 for ft in pats if ft["screws"])
+        out.append(f"**Patterns {', '.join(sorted({ft['pattern'] for ft in pats if ft['pattern']}))}** (guide block / motor): hole to hole +/-{TOL_K * t['pattern']:.2f} mm "
+                   f"is the figure the screw-pattern check used (tighter than the +/-{TOL_K * t['pos']:.2f} mm position tolerance); radial clearance on the screws "
+                   f"{rc:.2f} mm. Cut all holes of a pattern in one set-up.")
+    if any(fl.startswith(("locates motor", "axle")) for ft in a["feats"] for fl in ft["flags"]):
+        b = dig(cx.m, "tolerance", "belts", default={})
+        if b:
+            out.append("This part places a pulley or idler: its thickness and flatness are in the belt-plane result ("
+                       + "; ".join(f"{k}: {v['p_within_1mm']:.1%} of builds within 1 mm, +/-{v['p_within_1mm_standard_error']:.2%}" for k, v in b.items()) + ").")
+    for f in cx.rep.get("findings", []):
+        if f["verifier"] == "manufacture" and f["severity"] in ("warning", "error") and f["message"].startswith(c.name + ":"):
+            out.append(f"Report, manufacture `{f['code']}`: {f['message'][len(c.name) + 2:]}")
+    return out
+
+
+def write_fabrication(cx: Ctx, drawings: bool = True) -> dict:
+    from matplotlib.backends.backend_pdf import PdfPages
+    from mechloop.tolerance.process import PROCESS, process_of
+
+    d = cx.d
+    custom = [c for c in d.components if not c.cots]
+    parts, files, scales, dxfc = OrderedDict(), {}, {}, {}
+    (cx.out / "drawings").mkdir(parents=True, exist_ok=True)
+    pp = PdfPages(cx.out / "drawings" / f"{cx.name}_drawings.pdf", metadata={"CreationDate": None}) if drawings else None
+    for i, c in enumerate(custom):
+        a = analyse_part(cx, c)
+        parts[c.name] = a
+        if drawings:
+            scales[c.name] = draw_sheet(cx, a, cx.out / "drawings" / f"{c.name}.svg", cx.out / "drawings" / f"{c.name}.pdf", pp, i + 1, len(custom))
+            files[c.name] = export_part_files(cx, a)
+            if "dxf" in files[c.name]:
+                dxfc[c.name] = dxf_check(files[c.name]["dxf"])
+    if pp is not None:
+        pp.close()
+    # same or mirror-image parts (bounding box, volume and feature list agree)
+    sig = defaultdict(list)
+    for n, a in parts.items():
+        s = (a["proc"], a["c"].material, tuple(round(float(x), 2) for x in sorted(a["size"])), round(a["c"].shape.volume, 0),
+             tuple(sorted((ft["kind"], round(ft["dia"], 2)) for ft in a["feats"])))
+        sig[s].append(n)
+    twins = {n: [m for m in g if m != n] for g in sig.values() if len(g) > 1 for n in g}
+    by_proc = Counter(a["proc"] for a in parts.values())
+    man = dig(cx.m, "manufacture", default={})
+    T = [f"# Fabrication drawings: {cx.name}", "", cx.stamp(),
+         f"{len(custom)} custom parts: " + ", ".join(f"{v} {k}" for k, v in sorted(by_proc.items())) + ". One sheet per part in `drawings/` (SVG and PDF; all sheets in "
+         f"`drawings/{cx.name}_drawings.pdf`), a STEP file per part in `cad/` **in the drawing's own coordinates** (the hole table's X, Y, Z are the STEP's X, Y, Z), "
+         "a DXF of the flat profile per sheet part in `dxf/` (same origin), an STL per printed part in `stl/` already turned to its print orientation.", "",
+         "## What is automatic and what a person must add", "",
+         "Automatic, from the design's geometry and fasteners: three orthographic views and an isometric, overall dimensions, the datum scheme, a table of every round hole and "
+         "round-ended slot (position, size, depth, counterbore, what it is for, which pattern it belongs to), the tolerance block, the critical-feature list, the files.", "",
+         "**Not automatic. A person must add or check before release:**", "",
+         "- Dimensions of everything that is not a round hole or a slot: outline steps, cut-outs, windows, pockets, nut slots, inside radii. They are in the STEP / DXF only; the sheet says so.",
+         "- The datum scheme is geometric (bounding edges of the plan view). On L-shaped or notched parts choose functional datums and re-reference the table.",
+         "- Surface finish, edge condition beyond the general deburr note, plating or paint (none is in the model: every steel part is bare).",
+         "- Hole labels are placed by rule and can sit on top of each other on dense patterns; the table is authoritative.",
+         "- Thread class, tap depth beyond 'through', and any geometric tolerance frames (the block gives plus/minus values, not GD&T).",
+         "- A drawing check by someone who has made parts: these sheets have not been reviewed by a person.", "",
+         "## Tolerances: where the numbers come from", "",
+         f"`mechloop/tolerance/process.py` holds, per process, the standard deviations the tolerance verifier built its {dig(cx.m, 'tolerance', 'builds_simulated')} simulated machines "
+         f"with. The sheets hold the fabricator to +/-{TOL_K:g} standard deviations of the same figures, so a batch of parts inside the drawing tolerance is the "
+         "population that was simulated. A part AT the limit everywhere is worse than what was simulated: the limits are not a licence to sit on them.", "",
+         table(["Process", "Position to datums", "Within one pattern", "Size", "Hole diameter as made", "Mating-face flatness", "Model sd (pos / pattern / hole)"],
+               [[k, f"+/-{TOL_K * v['pos']:.2f}", f"+/-{TOL_K * v['pattern']:.2f}", f"+/-{TOL_K * v['scale'] * 100:.2f} %", f"drawn {v['hole_bias']:+.2f} +/-{TOL_K * v['hole_sd']:.2f}",
+                 f"{TOL_K * v['flat']:.2f}", f"{v['pos']} / {v['pattern']} / {v['hole_sd']}"] for k, v in PROCESS.items() if k in by_proc or k == "extrusion"]), "",
+         "The model's own comment calls these 'typical shop figures, deliberately a little pessimistic' and recalled class values: confirm them with the shop that quotes.", "",
+         "## Printing", "",
+         f"- Printer assumed by the manufacture verifier: build volume {dig(d.manufacturing, 'printer', 'build_volume')}, nozzle {dig(d.manufacturing, 'printer', 'nozzle')} mm, "
+         f"layer {dig(d.manufacturing, 'printer', 'layer', default='0.2 (the verifier default: the design does not declare one)')} mm.",
+         "- Orientation: pinned per part in the design (`print_up`), listed below; the STL is already turned so the bed face is on Z = 0.",
+         "- Walls and infill: **not declared by the design.** The verifier's mass and time estimate used: "
+         + str(next((dig(p, "estimate", "basis") for p in man.get("parts", {}).values() if p.get("process") == "printed"), "not stated")) + ".",
+         "- **The FEA load cases treat every printed part as solid, isotropic material.** A part printed at 20 % infill is not the part that was analysed. For the parts with a load "
+         "case (" + ", ".join(sorted({lc.component for lc in d.loadcases if lc.component in parts and parts[lc.component]["proc"] == "printed"})) + "), print solid or accept that the factor of safety is unverified.",
+         "- No threads in plastic, no heat-set inserts: every screw in a printed part runs into a steel nut (captive pockets and slots are in the models).",
+         "- Printed holes are drawn oversize (M3 4.2, M5 6.0) for an assumed 0.15 mm shrink; bearing seats are drawn 22.4 for a 22 mm bearing on the same assumption.", ""]
+    cx.need("print settings per printed part (layer height, wall count, infill)", "strength results assume solid material; the estimate assumed 1.2 mm walls / 20 % infill")
+    cx.need("steel grade and finish for the laser-cut steel parts", "material 'steel' is a generic entry (E 200 GPa, yield 250 MPa); no corrosion protection is specified")
+    T += ["## Parts", "",
+          table(["Part", "Process", "Material", "X x Y x Z mm", "Mass kg", "Holes / slots", "Critical features", "Same or mirror-image geometry", "Files"],
+                [[f"[{n}](#{n.replace('_', '-')})" if False else n, a["proc"], MATERIAL_WORDS.get(a["c"].material, a["c"].material),
+                  " x ".join(f2(x) for x in a["size"]), f"{a['c'].mass():.3f}" + ("*" if a["c"].mass_kg else ""),
+                  f"{sum(1 for f in a['feats'] if f['kind'] == 'hole')} / {sum(1 for f in a['feats'] if f['kind'] == 'slot')}",
+                  sum(1 for f in a["feats"] if f["flags"]), ", ".join(twins.get(n, [])) or "-",
+                  " ".join(f"[{k}]({p.relative_to(cx.out)})" for k, p in ([("svg", cx.out / 'drawings' / f'{n}.svg'), ("pdf", cx.out / 'drawings' / f'{n}.pdf')] + sorted(files.get(n, {}).items())))]
+                 for n, a in parts.items()]), "",
+          "\\* mass includes a payload mass declared on the part in the design. For flat sheet a mirror-image part is the same cut part turned over: one DXF serves both.", ""]
+    rework = _end_work(cx, [c.name for c in d.components if (c.sku or "").startswith("EXT2020")])
+    T += ["## Purchased parts that need work", "",
+          ("- " + rework.replace("; ", "\n- ") if rework != "none" else "none found"), "",
+          "- Every extrusion: saw-cut square to the lengths in BOM.md; deburr the ends.", ""]
+    holes_csv = [["part", "id", "kind", "axis", "x", "y", "z", "dia_or_width", "slot_length", "depth", "through", "counterbores_dia_x_depth", "counterbore_from",
+                  "function", "screws", "on_axis", "pattern", "critical"]]
+    for n, a in parts.items():
+        c, mp = a["c"], a["mp"]
+        est = mp.get("estimate") or {}
+        T += [f"### {n}", "", f"![{n}](drawings/{n}.svg)", "",
+              f"- Quantity 1. {MATERIAL_WORDS.get(c.material, c.material)}; {a['proc']}; {' x '.join(f2(x) for x in a['size'])} mm; {c.mass():.3f} kg."
+              + (f" Same or mirror-image geometry as {', '.join(twins[n])}." if n in twins else "")]
+        if a["proc"] == "sheet":
+            dc = dxfc.get(n, {})
+            T += [f"- Sheet {f2(mp.get('stock_mm'))} mm, {mp.get('cut_method')} cut, flat (no bends), through-cut only. Flat size {mp.get('flat_size_mm')} mm, cut length "
+                  f"{mp.get('cut_length_mm')} mm, {mp.get('pierces')} pierces (report)." + (f" DXF written here: {dc.get('entities')}, cut length {dc.get('cut_length_mm')} mm, extent {dc.get('extent')}." if dc else "")]
+        if a["proc"] == "machined":
+            T += [f"- Stock: {mp.get('stock')}; {mp.get('setups_estimate')} set-up(s), cut from {mp.get('cut_from')}; smallest wall {mp.get('min_wall_mm')} mm; "
+                  f"estimate {est.get('machining_min')} min machining ({est.get('basis', '')[:40]}...)."]
+        if a["proc"] == "printed":
+            T += [f"- Print with the machine's **{mp.get('up')}** direction up (STL already turned). Support needed under {mp.get('support_area_mm2')} mm2; longest bridge "
+                  f"{dig(mp, 'bridges', 'max_span_mm')} mm; bed contact {mp.get('bed_contact_fraction')}; thinnest wall {mp.get('min_wall_mm')} mm; {est.get('filament_g')} g, "
+                  f"{est.get('print_hours')} h (estimate). Holes opening on the bed face: {mp.get('holes_opening_on_bed', 0)} (first-layer squash makes them tight)."]
+        tapped = [ft for ft in a["feats"] if ft["type"].startswith("TAP")]
+        T += ["- Threads: " + (", ".join(f"{ft['id']} {ft['type']}" for ft in tapped) if tapped else "none") + ". Heat-set inserts: none. Reaming: "
+              + (", ".join(ft["id"] for ft in a["feats"] if any("bearing" in fl for fl in ft["flags"])) + " if the bearing does not slide in" if any("bearing" in fl for ft in a["feats"] for fl in ft["flags"]) else "none") + "."]
+        if c.material in METALS:
+            T += [f"- Drawing note, not yet in the model: {DEBURR_NOTE}."]
+        bt = _better_than_general(cx, a)
+        if bt:
+            T += ["- **Needs more than the general tolerance, or rests on an assumption:**"] + [f"  - {x}" for x in bt]
+        if a["feats"]:
+            T += ["", table(["ID", "Kind", "Axis", "X", "Y", "Z", "Dia / width", "Slot length", "Depth", "Counterbore (dia x depth, from)", "Function", "Screws", "On its axis", "Pattern", "Critical"],
+                            [[ft["id"], ft["kind"], ft["axis_name"], f2(ft["center"][0]), f2(ft["center"][1]), f2(ft["center"][2]), f2(ft["dia"]), f2(ft.get("length")) if ft["kind"] == "slot" else "-",
+                              "through" if ft["through"] else f2(ft["depth"]), ("; ".join(f"{f2(d_)} x {f2(h_)}" for d_, h_ in ft["steps"]) + ", " + ft["cb_side"]) if ft["steps"] else "-",
+                              ft["type"], ", ".join(f"{s['name']} ({s['sku']})" for s in ft["screws"]) or "-", ", ".join(ft["occupants"]) or "-",
+                              (ft["pattern"] + ": " + ", ".join(a["patterns"][ft["pattern"]])) if ft["pattern"] else "-", "; ".join(ft["flags"]) or "-"] for ft in a["feats"]])]
+        else:
+            T += ["", "No round holes or round-ended slots."]
+        T += [""]
+        for ft in a["feats"]:
+            holes_csv.append([n, ft["id"], ft["kind"], ft["axis_name"], round(ft["center"][0], 3), round(ft["center"][1], 3), round(ft["center"][2], 3), round(ft["dia"], 3),
+                              round(ft["length"], 3) if ft["kind"] == "slot" else "", round(ft["depth"], 3), ft["through"], "; ".join(f"{d_}x{h_}" for d_, h_ in ft["steps"]), ft["cb_side"],
+                              ft["type"], " ".join(s["name"] for s in ft["screws"]), " ".join(ft["occupants"]), ft["pattern"], "; ".join(ft["flags"])])
+    (cx.out / "FABRICATION.md").write_text("\n".join(T))
+    with open(cx.out / "hole_tables.csv", "w", newline="") as fh:
+        csv.writer(fh).writerows(holes_csv)
+    return {"parts": parts, "by_proc": by_proc, "dxf_check": dxfc, "twins": twins, "files": files}

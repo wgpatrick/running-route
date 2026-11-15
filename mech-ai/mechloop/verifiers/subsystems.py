@@ -415,6 +415,8 @@ def _probe_mount_checks(design: Design, name: str, r: VerifierResult) -> dict | 
     out = {"thread": mt["thread"], "shielded": mt["shielded"], "hole_dia_mm": mt["hole_dia"], "source": mt["source"]}
     bed = (design.printer or {}).get("bed")
     # ---- clamped by its two nuts in a plate
+    own_nuts: set = set()            # this sensor's nuts found on its thread, bearing on a clamp face
+    own_nut_seats: dict = {}
     cl = mt.get("clamp")
     if cl is None:
         r.add("error", "probe_mount_not_declared",
@@ -477,6 +479,8 @@ def _probe_mount_checks(design: Design, name: str, r: VerifierResult) -> dict | 
             front = [n_ for n_, (h, rad, dz) in seats.items() if abs(h - cl[0]) < 0.05 and rad < 0.05 and dz < -0.99]
             rear = [n_ for n_, (h, rad, dz) in seats.items() if abs(h - cl[1]) < 0.05 and rad < 0.05 and dz > 0.99]
             out["nuts"] = {"front": front, "rear": rear}
+            own_nuts.update(front + rear)
+            own_nut_seats.update({n_: seats[n_][0] for n_ in front + rear})
             if not front or not rear:
                 r.add("error", "probe_nuts_missing",
                       f"Bed probe '{name}' was made with nuts='separate', but "
@@ -484,13 +488,26 @@ def _probe_mount_checks(design: Design, name: str, r: VerifierResult) -> dict | 
                       + f" (clamp faces {cl[0]:g} and {cl[1]:g} mm above the sensing face).", part=name,
                       hint=f"Call add_probe_nuts(design, '{name}') after placing the probe.")
     # ---- metal-free zone of an unshielded sensor
+    # The zone is about SURROUNDING metal (OMRON's mounting drawing: the head stands l proud of the metal the sensor is
+    # mounted in, with diameter d round it clear). The sensor's own two nuts are part of the sensor as supplied: they
+    # run on its thread, which by the maker's design starts behind the face (7 mm on unshielded M12, 10 mm on M18), and
+    # the rated sensing distance is with them fitted. So a nut is left out of the zone exactly when it is one of this
+    # sensor's nuts doing its job: on the thread and bearing on a clamp face (the same test that counts it for
+    # clamping). A part merely tagged as a nut but sitting anywhere else is metal like any other.
     l, d = float(mt["head_proud_of_metal_l"]), float(mt["metal_free_dia_d"])
     out["metal_free_zone"] = {"dia_mm": d, "from_face_mm": l}
     if not mt["shielded"] and l > 0:
+        out["metal_free_zone"]["own_nuts_not_counted"] = {
+            n_: {"bearing_face_behind_sensing_face_mm": round(h_, 2), "inside_zone_depth": bool(h_ < l)} for n_, h_ in sorted(own_nut_seats.items())}
+        out["metal_free_zone"]["own_nuts_basis"] = (
+            "the sensor's own nuts, on its thread and bearing on the clamp faces, are part of its mounting as supplied: the "
+            "zone concerns the metal round the sensor (the plate it is mounted in and other parts), so they are not counted in "
+            "it; they ARE counted for clamping (probe_nuts_missing / probe_not_clamped). Reading of OMRON's mounting drawing; "
+            "the sheet gives no separate figure for the nuts")
         zone = (Pos(0, 0, l / 2) * Cylinder(d / 2, l)).moved(loc)
         hits = []
         for c in design.components:
-            if c is pc or c.name == bed or c.material not in METALS or c.meta.get("probe_nut_of") == name:
+            if c is pc or c.name == bed or c.material not in METALS or c.name in own_nuts:
                 continue
             if c.body != pc.body:
                 continue                      # what rides with the sensor is always in its zone; the rest moves
@@ -516,7 +533,7 @@ def _probe_mount_checks(design: Design, name: str, r: VerifierResult) -> dict | 
                          "nearest_to_face_mm": round(max(min(zs), 0.0), 2), "nearest_to_axis_mm": round(min(rs), 2)})
         out["metal_in_zone"] = hits
         try:
-            out["metal_near_zone_under_tolerance"] = _zone_scatter(design, pc, zone, bed, name, {h["part"] for h in hits}, r, mt)
+            out["metal_near_zone_under_tolerance"] = _zone_scatter(design, pc, zone, bed, name, {h["part"] for h in hits} | own_nuts, r, mt)
         except Exception as ex:
             out["metal_near_zone_under_tolerance"] = {"evaluated": False, "why": f"{type(ex).__name__}: {ex}"}
             r.add("warning", "probe_zone_not_evaluated",
@@ -529,7 +546,8 @@ def _probe_mount_checks(design: Design, name: str, r: VerifierResult) -> dict | 
                   f"metal, with {d:g} mm diameter round the head free of metal ({mt['source']}). In that zone: "
                   + ", ".join(f"{h['part']} ({h['material']}, from {h['nearest_to_face_mm']:g} mm behind the face, "
                               f"{h['nearest_to_axis_mm']:g} mm from the axis)" for h in sorted(hits, key=lambda h: h["nearest_to_face_mm"])[:6])
-                  + ".", part=name, metal=hits, zone_dia_mm=d, zone_depth_mm=l,
+                  + "." + (f" (The sensor's own nuts on its clamp faces, {', '.join(sorted(own_nuts))}, are part of its mounting and are "
+                           f"not counted.)" if own_nuts else ""), part=name, metal=hits, zone_dia_mm=d, zone_depth_mm=l,
                   hint=f"Clamp the sensor at least {l:g} mm behind its face (nearest metal now {worst['nearest_to_face_mm']:g} mm), keep "
                        f"other metal {d / 2:g} mm from its axis there, carry it on a plastic bracket, or use a shielded type "
                        "(flush-mountable, shorter range).")
@@ -547,7 +565,7 @@ def _zone_scatter(design, pc, zone, bed, name, already: set, r, mt) -> dict:
     near = []
     S = None
     for c in design.components:
-        if c is pc or c.name == bed or c.material not in METALS or c.meta.get("probe_nut_of") == name or c.body != pc.body:
+        if c is pc or c.name == bed or c.material not in METALS or c.body != pc.body:
             continue
         if c.name in already:
             continue

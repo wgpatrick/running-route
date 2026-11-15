@@ -246,6 +246,11 @@ SHOPS = {
         "source": "scs-minmax",
     },
 }
+# Shop profiles kept as data (mechloop/shops/*.json, each number with its page, date and the page's own words) are
+# merged in here: stock lists, the limits a shop states itself ("limits", used by Limits below) and their sources.
+from ..shops import register as _register_shops  # noqa: E402
+
+_register_shops(SHOPS, SOURCES)
 
 # ------------------------------------------------------------------------------------- reference data
 # Tap drill for ISO metric coarse threads (nominal minus pitch), and the pitch.
@@ -295,6 +300,7 @@ class Limits:
         if self.shop_name not in SHOPS:
             raise ValueError(f"unknown shop {self.shop_name!r}; known: {sorted(SHOPS)}")
         self.shop = SHOPS[self.shop_name]
+        self.shop_limits: dict = dict(self.shop.get("limits") or {})      # the shop's own figure for a rule id (mechloop/shops)
         self.over: dict = dict(man.get("limits") or {})
         if component is not None:
             self.over.update(component.meta.get("dfm", {}).get("limits") or {})
@@ -305,13 +311,17 @@ class Limits:
         self.part = (component.meta.get("dfm") or {}) if component is not None else {}
 
     def __call__(self, rule_id: str) -> float:
-        return float(self.over.get(rule_id, RULES[rule_id].limit))
+        return float(self.over.get(rule_id, self.shop_limits.get(rule_id, RULES[rule_id].limit)))
 
     def rule(self, rule_id: str) -> Rule:
         return RULES[rule_id]
 
     def source(self, rule_id: str) -> str:
-        return "design override" if rule_id in self.over else RULES[rule_id].source_text
+        if rule_id in self.over:
+            return "design override"
+        if rule_id in self.shop_limits:
+            return (self.shop.get("limit_sources") or {}).get(rule_id, self.shop_name)
+        return RULES[rule_id].source_text
 
     def severity(self, rule_id: str) -> str:
         return RULES[rule_id].severity

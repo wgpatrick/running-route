@@ -1484,7 +1484,9 @@ def _artifacts(ctx, r, m):
                 from ..twin import printer_map_for as _pm_for_design
 
                 pm, src = _pm_for_design(design), None
-                tuning = TU_.firmware_tuning(design, pm, {"bed_mesh": False}, strict=False)
+                # ... and no pressure-advance sweep a `mechloop tune` stored either: two verifies of one design, with a
+                # tune run between them, used to differ in this figure
+                tuning = TU_.firmware_tuning(design, pm, {"bed_mesh": False, "stored_sweeps": False}, strict=False)
                 for ng in tuning.get("not_generated") or []:      # an explicit skip: said in the file and here, not a pass
                     r.add("warning", "firmware_tuning_part_not_generated", f"printer.cfg was written without {ng}",
                           hint="tools/setup_klipper.sh installs Klipper; its own code chooses the input shaper.")
@@ -1494,6 +1496,8 @@ def _artifacts(ctx, r, m):
                                                 for ax in ("x", "y")} if tuning.get("input_shaper") else None,
                                "selected_by": (tuning.get("input_shaper") or {}).get("selected_by"),
                                "pressure_advance": tuning.get("pressure_advance"),
+                               "pressure_advance_note": "from the twin's assumed melt-flow lag; a sweep stored by `mechloop tune` is not "
+                                                        "read by a verify (score and print use it)",
                                "assumed": ((tuning.get("input_shaper") or {}).get("assumed") or [])
                                + ((tuning.get("pressure_advance") or {}).get("assumed") or [])}
             except Exception as ex:
