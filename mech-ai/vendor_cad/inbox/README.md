@@ -36,7 +36,14 @@ Keep each file under about 5 MB. Part numbers marked "look up" are not known wit
 | Endstop module (lever microswitch on a board) | the exact module you will buy; for the switch alone: Omron D2F-L (hinge lever, PCB terminals) | omron.com component 3D download, or the module seller | `ENDSTOP-MICRO.step` |
 | 30 mm fan 30 x 30 x 10, 24 V | look up (e.g. Sunon MF30102V1 family: look up) | fan maker | `FAN-3010.step` |
 | Direct-drive extruder with pancake motor (`extruder_direct`) | the unit you will buy (e.g. E3D Titan Aero + pancake NEMA 17: look up) | e3d-online.com | `EXTRUDER-DD.step` |
-| V6 hotend (design-local proxy in printer_v4) | E3D V6 1.75 mm 24 V | e3d-online.com (no CAD link found on the product page) | `HOTEND-V6.step` (not wired in: the hotend is not a catalogue part yet) |
+| **E3D Roto extruder (`extruder_roto()`)**: highest value, the simulation solid is boxes scaled from the drawing | E3D REVO-ROTO-COLDSIDE-AS | https://www.printables.com/model/655950-e3d-roto-reference-cad ("Roto Reference", linked from E3D's Roto data-sheet page; printables.com is outside this session's network allow-list). Needs a sidecar: origin on the lower mounting-hole axis at mid-width, motor towards +X, up +Z | `EXTRUDER-E3D-ROTO.step` |
+| E3D Revo hot side (`hotend_revo()`): HeaterCore + nozzle | E3D RC-CORE-24V-AS-SPRING + RC-NOZZLE-0400-AS-SPK | part of the Roto reference CAD above, or https://www.printables.com/model/713137-e3d-revo-voron-reference-cad (take the HeaterCore and nozzle solids). Sidecar: nozzle seat flange on Z=0, tip at Z=-22.8, leads towards +X | `HOTEND-REVO-24V-40W.step` |
+| Roto part-cooling duct (printed part, E3D's design; not a catalogue part) | - | https://www.printables.com/model/661438-e3d-revo-roto-part-cooling-fan | keep with the design |
+| Round nylon spacers (`spacer_round`) | Pololu 1970-1988 | pololu.com has no 3D files for them; plain sleeves, the generated solid is exact | not needed |
+| Aluminium spacer 10 OD x M5 (`spacer_round("M5", L, "aluminium")`) | OpenBuilds "Aluminum Spacers": look up the SKU per length | https://openbuildspartstore.com/aluminum-spacers/ (not reachable here): confirm 5.1 mm ID and the length list | `SPACER-AL-M5-10x5.1x6.step` etc. (optional) |
+| Silicone bed column 16 x 4 x 18 (`bed_column_silicone`) | the set you will buy (e.g. FYSETC solid bed mounts: look up) | seller; measure OD, bore, free height and note the hardness | `BED-COLUMN-SIL-16x18.step` |
+| GT2 pulley and idler for 9 mm belt (`gt2_pulley(20, 5, 9)`, `gt2_idler(20, 5, 9)`) | look up (Gates 2GT 9 mm; e.g. a 20-tooth 5 mm bore pulley and toothed idler sold for 9 mm belt) | pulley maker; gates.com refuses automated requests | `GT2-20T-B5-W9.step`, `GT2-IDLER-20T-B5-W9.step` |
+| E3D V6 hotend (`hotend_v6()`; a community model is shown meanwhile) | E3D V6-175-24V | e3d-online.com has no CAD link for the V6; ask E3D support (their GitHub ToolChanger repository holds printed tool parts only) | `HOTEND-V6.step` or `V6-175-24V.step` |
 | Raspberry Pi Zero 2 W | Raspberry Pi Zero 2 W | datasheets.raspberrypi.com `rpizero2/raspberry-pi-zero-2-w-step.zip`: look up (host blocked here) | `HOST-RPI-ZERO-2W.step` |
 | BIGTREETECH Relay V1.2 | Relay V1.2 | no 3D file in BIGTREETECH's repository; ask BIGTREETECH or measure | `RELAY-BTT-V1.2.step` |
 | Heated-bed MOSFET module 25 A | the module you will buy | seller | `MOSFET-BED-25A.step` |
@@ -73,3 +80,16 @@ steel hex nuts (90592A...): check each on the page before ordering. "look up" wh
 | `TNUT-2020-M5` x 71: T-nut for 2020 slot 6, M5 (not modelled as geometry; BOM only) | look up | `TNUT-2020-M5.step` |
 | `WASHER-M3` x 4: M3 washer (BOM only) | look up | `WASHER-M3.step` |
 | `WASHER-M5-STAR` x 1: M5 star washer for the earth point (BOM only) | look up | `WASHER-M5-STAR.step` |
+
+## Documents (not CAD) that would turn recalled values into vendor values
+
+Save PDFs into `vendor_docs/inbox/`; nothing reads them automatically, but each one closes a line of
+`docs/VENDOR_DATA.md` ("Still not vendor data").
+
+| what | where | closes |
+|---|---|---|
+| Roto motor inductance | ask E3D support (the Roto data-sheet page gives resistance, torque and inertia but no inductance), or measure the motor with an LCR meter | `extruder_roto()` uses an 11 mH estimate |
+| MIC-6 data sheet | Arconic / Kaiser "MIC-6 precision machined cast aluminum plate" PDF, or https://www.upmet.com/sites/default/files/datasheets/mic-6.pdf | density and modulus of `al_mic6` (recalled) |
+| ATP-5 data sheet | Vista Metals ATP-5 technical data sheet (vistametals.com) | every `al_atp5` number (recalled) |
+| Gates PowerGrip GT2 / GT3 2 mm design manual | gates.com "Light Power and Precision Drive Design Manual" (PDF) | belt stiffness and working tension per width, minimum pulley teeth, 9 mm belt part numbers |
+| OpenBuilds spacer page | https://openbuildspartstore.com/aluminum-spacers/ | SKUs and lengths of the 10 mm aluminium spacers |

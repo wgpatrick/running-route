@@ -264,6 +264,8 @@ MACHINING = {"al6061": (12.0, 8.0), "al5052": (12.0, 8.0), "brass": (10.0, 14.0)
 SHOP_RATE_USD_H = 75.0
 SETUP_MIN = 12.0            # per set-up: fixture, touch off
 PROGRAM_MIN = 20.0          # once per part number
+FINISH_MIN_PER_CM2 = 0.4    # finishing pass per cm2 of machined surface in steel (a quarter of that in aluminium and plastics);
+                            # charged on cut surfaces only: stock faces a plate keeps as supplied are not machined
 FILAMENT_USD_KG = 25.0
 PRINT_FLOW_MM3_S = 5.0      # 0.4 mm nozzle, 0.2 mm layers, about 60 mm/s
 LASER_USD_PER_M = 1.5       # cut length, thin aluminium / steel; pierces extra

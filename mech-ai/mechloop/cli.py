@@ -36,6 +36,15 @@ def main(argv=None) -> int:
     sc.add_argument("design")
     sc.add_argument("--out", default="out")
     sc.add_argument("--assembly", action="store_true", help="also run the assembly simulation (slower)")
+    sc.add_argument("--firmware", choices=["klipper"], help="also score with the real firmware planning every print from the "
+                    "generated printer.cfg (input shaper and pressure advance on, and off for comparison); reported under 'klipper'")
+    sc.add_argument("--firmware-only", action="store_true", help="with --firmware: skip the built-in planner's sweep and benchmark")
+    tu = sub.add_parser("tune", help="firmware tuning on the twin: input shaper, pressure-advance sweep, bed mesh (needs Klipper)")
+    tu.add_argument("design")
+    tu.add_argument("--out", default="out")
+    tu.add_argument("--only", nargs="*", choices=["shaper", "pressure_advance", "bed_mesh"], help="default: all three")
+    tu.add_argument("--bed", nargs=3, type=float, metavar=("TILT_X", "TILT_Y", "BOW"), default=None,
+                    help="assumed as-built bed surface for the mesh study, mm (default 0.30 0.20 0.15)")
     c = sub.add_parser("catalog", help="list off-the-shelf parts")
     c.add_argument("query", nargs="?", default="")
     a = p.parse_args(argv)
@@ -98,9 +107,22 @@ def main(argv=None) -> int:
     if a.cmd == "score":
         from .twin.score import score
 
-        res = score(a.design, a.out, assembly=a.assembly)
+        if a.firmware_only and not a.firmware:
+            sys.exit("--firmware-only needs --firmware klipper")
+        res = score(a.design, a.out, assembly=a.assembly, firmware=a.firmware, builtin=not a.firmware_only)
         print(json.dumps(res, indent=1, default=float))
-        return 0 if res.get("static_checks_ok") and res.get("nominal_print_ok") else 1
+        fw_ok = True
+        if a.firmware:      # a firmware score that did not run, or whose nominal print failed, is not a pass
+            k = res.get("klipper") or {}
+            fw_ok = bool(k.get("ran")) and bool(k.get("as_configured", {}).get("nominal", {}).get("ok"))
+        builtin_ok = res.get("nominal_print_ok") if not a.firmware_only else True
+        return 0 if res.get("static_checks_ok") and builtin_ok and fw_ok else 1
+    if a.cmd == "tune":
+        from .twin.tuning import tune_report
+
+        res = tune_report(a.design, a.out, only=a.only, bed=a.bed)
+        print(json.dumps(res, indent=1, default=float))
+        return 0 if res.get("ok") else 1
     if a.cmd == "history":
         f = Path(a.out) / a.name / "history.jsonl"
         if not f.exists():

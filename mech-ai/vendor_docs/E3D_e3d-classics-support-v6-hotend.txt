@@ -1,0 +1,160 @@
+===== e3d-classics-support-v6-hotend E3D Classics Support: V6 HotEnd 14050
+ 
+Table of Contents
+Summary
+Dimensions
+Product Specifications
+V6 Maximum Temperature Ratings
+V6 Troubleshooting
+Assembly
+Summary
+Filament diameter: 1.75mm or 2.85mm (depending on variant)
+Maximum rated temperature: 300°C (upgradeable to 500°C)
+Compatibility: V6 ecosystem
+Dimensions
+1.75mm
+2.85mm
+Product Specifications
+Mechanical Specifications
+Maximum nominal volumetric throughput (PLA print test at 220°C): 600 mm³/min*
+Maximum operation temperature with sock fitted: 260°C
+Maximum operation temperature without sock and a E3D thermistor fitted: 285°C
+Maximum operation temperature without sock and a E3D PT100: 485°C
+Electrical Specifications
+Maximum rated operating temperature of heater: 500°C
+Nominal heater power: 30W
+Maximum current draw with 12V/24V heater variants: 2.8A/3.9A
+Fan (12V): 30x30x10mm fan
+Materials
+Block: Aluminium, Copper
+Nozzle: Brass
+Heatsink: Aluminium
+Fixings: Steel
+V6 Maximum Temperature Ratings
+300°C
+The V6 comes as standard with a maximum temperature rating of 300°C.
+Temperature-limited parts:
+Aluminium HeaterBlock
+Thermistor
+Hardened steel nozzles are not suitable for use with aluminium blocks above 240°C. You will need to upgrade to a plated copper block and hot tighten at 300°C.
+500°C
+The V6 can be upgraded to reach 500°C.
+Required upgrades:
+Plated copper HeaterBlock
+PT100/ PT1000
+Options
+Filament size: 1.75mm / 3.00mm
+Nozzle size: 0.40mm
+Voltage: 12V / 24V
+V6 Troubleshooting
+Common Issues
+Inadequate cooling and filament jamming
+Misconfigured retraction settings
+Nozzle blockages
+Bad filament
+Misconfigured thermistor/temperature
+PTFE tubing was not properly inserted
+Poor extruder design
+Solutions
+Ensure proper cooling, correct slicer settings, use a high-quality filament, and configure firmware correctly.
+Assembly
+Component A-F | 
+Component G-L | 
+Component M-Q | 
+A. 1x V6 HeaterBlock | 
+G. 1x Collet clip | 
+M. 1x M3 dome head screw | 
+B. 1x PTFE tube | 
+H. 1x Collet | 
+N. 4x self-tapping screws | 
+C. 1x V6 HeatBreak | 
+I. 1x V6 Nozzle | 
+O. 1x Heater cartridge | 
+D. 1x 30 x 30 x 10 fan | 
+J. 1x V6 silicone sock | 
+P. 1x Thermistor cartridge | 
+E. 1x Thermal paste | 
+K. 1x Fan duct | 
+Q. 2x Extension cable | 
+F. 1x V6 heatsink | 
+L. 1x M3 grub screw | 
+  | 
+Step 1: Nozzle Installation
+Screw the nozzle into the heater block, ensure this is done from the side with 3 holes otherwise the assembly will fail later on.
+The above image shows the same step from different perspectives.
+Step 2: HeatBreak Installation
+Screw in the V6 HeatBreak, make sure the assembly is only finger tight at this point in time. Aim to have the top of the HeatBreak flush with the top surface of the HeaterBlock.
+Step 3: Position Verification
+Before moving onto the next step check that the nozzle and break are in the correct position as per the above images.
+Warning: If the nozzle is fastened up against the HeaterBlock at this stage you will run a significant risk of not creating a seal during the hot tightening process which will lead to molten plastic leaking from the assembly.
+Step 4: Thermistor Installation
+Slide the thermistor into the HeaterBlock fastening it with an M3 grub screw.
+Caution: Be careful not to over tighten as you will risk crushing the internal glass bead.
+Step 5: Heater Cartridge Installation
+Slide in the HeaterCartridge and fasten with the M3 Dome head screw.
+Deformation of the HeaterBlock is to be expected and ensures good surface area contact for efficient thermal transfer.
+Heater Cartridge Verification
+Before installing the heater cartridge it's a good idea to double-check you are using the correct heater for the power supply you are using. The cartridge should be engraved with both the voltage and wattage, but it's still worth double-checking with a multimeter:
+Heater Type | 
+Resistance Range (Ω) | 
+12V 30W heater cartridge | 
+4.2 - 5.7 Ω | 
+12V 40W heater cartridge | 
+3.1 - 3.8 Ω | 
+24V 30W heater cartridge | 
+16.7 - 22.6 Ω | 
+24V 40W heater cartridge | 
+12.3 - 15.1 Ω | 
+If your heater cartridge is reading out of specification contact support@e3d-online.com, do not attempt to heat up the heater cartridge if the reading is unexpected.
+Step 6: Silicone Sock Installation
+Slide the silicone sock onto the HeaterBlock.
+Step 7: Thermal Paste Application
+Apply thermal paste to the long section of the HeatBreak only.
+Important: Do not apply the paste to the hot (short) section of the HeatBreak.
+If you have run out of thermal paste or are performing maintenance, replacement paste can be purchased here. Alternatively, any CPU thermal paste can be used.
+Step 8: Heatsink Assembly
+Screw the V6 HotSide into the V6 heatsink.
+Step 9: PTFE Tube Installation
+Insert the black collet into the top of the heatsink.
+Slide in the PTFE tubing all the way down until it bottoms out on the top of the HeatBreak.
+Slide in the collet clip between the collet lip and the aluminium to lock the PTFE tube in place.
+Note: Make sure you have cut the PTFE tube square before inserting into the heatsink.
+Step 10: Fan Assembly
+Screw the x4 self-tapping plastic screws through the fan into the fan duct, this may require a lot of torque therefore using a well-fitting screwdriver will help.
+Important: Make sure the sticker side of the fan is facing towards the heatsink if the sticker is showing on the same side as the screw heads you will need to disassemble and rotate the fan.
+Clip the fan duct assembly onto the heatsink; the overhang (facing upwards in the above image) can face either up or down, depending on your setup.
+Step 11: Final Connections
+Connect the extension wires to both the thermistor and fan, this provides additional length making it easier to connect to your mainboard, whilst providing a quick release for maintenance or replacements.
+For Hot tightening guidance, please refer to the V6 Nozzle datasheets, as the guidance varies depending on the nozzle choice.
+
+LINKS:
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/Heatbreak_insertion_2.svg?v=1748956409
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/Insert_Heater_PNG.png?v=1748956535
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/Insert_thermistor_png.png?v=1748956489
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/V6_175_Sink.webp?v=1748952341
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/V6_300_Sink.webp?v=1748953136
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/apply_paste_png.png?v=1748956644
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/attach_sock_png.png?v=1748956601
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/connect_extension_wires_thicker.svg?v=1748956961
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/fan_assembly_w_border.svg?v=1748956893
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/heatbreak_nozzle_check.png?v=1748956449
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/insert_PTFE.svg?v=1748956747
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/nozzle_orientation_v2.svg?v=1748956360
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/screw_sink_hotside_border.svg?v=1748956704
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/whats_in_the_box_darker.svg?v=1748956309
+   https://e3d-beta.myshopify.com/collections/nozzles/products/v6-nozzles
+   https://e3d-beta.myshopify.com/products/collet-clips-pack-of-2?_pos=1&amp;_sid=741c32ab3&amp;_ss=r
+   https://e3d-beta.myshopify.com/products/dc-fans?_pos=7&amp;_sid=86524de10&amp;_ss=r
+   https://e3d-beta.myshopify.com/products/embedded-bowden-collet-for-metal-1-75mm?_pos=2&amp;_sid=f2f74e1aa&amp;_ss=r
+   https://e3d-beta.myshopify.com/products/fan-thermistor-molex-connector-cable?_pos=1&amp;_sid=7fcdb2390&amp;_ss=r
+   https://e3d-beta.myshopify.com/products/fixing-kit-v6
+   https://e3d-beta.myshopify.com/products/ptfe-bowden-tubing-100mm-1-75mm-filament?_pos=1&amp;_sid=ad015c582&amp;_ss=r
+   https://e3d-beta.myshopify.com/products/standard-heater-cartridge?_pos=2&amp;_sid=15a741aeb&amp;_ss=r
+   https://e3d-beta.myshopify.com/products/thermal-compound-paste?_pos=1&amp;_sid=d2bc8919d&amp;_ss=r
+   https://e3d-beta.myshopify.com/products/thermistor-cartridge?_pos=1&amp;_sid=5ec8525b7&amp;_ss=r
+   https://e3d-beta.myshopify.com/products/v6-1-75mm-heatsink-with-coupling?_pos=9&amp;_sid=37dae91d4&amp;_ss=r
+   https://e3d-beta.myshopify.com/products/v6-fan-duct?_pos=1&amp;_sid=8a6976c60&amp;_ss=r
+   https://e3d-beta.myshopify.com/products/v6-heat-break?_pos=5&amp;_sid=048a84d0e&amp;_ss=r
+   https://e3d-beta.myshopify.com/products/v6-heaterblock-for-sensor-cartridges
+   https://e3d-beta.myshopify.com/products/v6-silicone-socks-pack-of-3?_pos=3&amp;_sid=8030db0fc&amp;_ss=r
+   https://e3d-online.com/pages/v6-nozzle-datasheet

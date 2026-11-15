@@ -1,0 +1,83 @@
+{
+ "axes": {
+  "x": {
+   "point_hz": 88.6,
+   "low_hz": 64.8,
+   "median_hz": 68.5,
+   "high_hz": 71.7,
+   "stiffness_n_per_mm": {
+    "motor": 213.2,
+    "belt": 269.1,
+    "frame": 1773.0
+   },
+   "toolhead_mount_term": "linear_rail_single_block",
+   "scorecard_hz": 88.6
+  },
+  "y": {
+   "point_hz": 62.2,
+   "low_hz": 58.8,
+   "median_hz": 61.6,
+   "high_hz": 63.7,
+   "stiffness_n_per_mm": {
+    "motor": 415.9,
+    "belt": 499.0,
+    "frame": 1239.0
+   },
+   "toolhead_mount_term": null,
+   "scorecard_hz": 62.2
+  }
+ },
+ "resonance_hz": {
+  "x": [
+   64.8,
+   68.5,
+   71.7
+  ],
+  "y": [
+   58.8,
+   61.6,
+   63.7
+  ]
+ },
+ "shaper_rule_accel_mm_s2": [
+  12000.0,
+  13300.0,
+  14300.0
+ ],
+ "accel_owners_would_run_mm_s2": [
+  4800.0,
+  6600.0,
+  9300.0
+ ],
+ "scorecard_max_clean_accel_mm_s2": 10000.0,
+ "note": "max_clean_accel is where the simulated motors lose steps. On the three reference machines that limit sat 6 to 8 times above what owners run; treat it as a ceiling and the range above as the usable figure.",
+ "proposed_parameters": {
+  "belt_ea_n_per_6mm": [
+   15000.0,
+   21000.0,
+   27000.0
+  ],
+  "toolhead_mount_n_per_mm": {
+   "linear_rail_single_block": [
+    120.0,
+    170.0,
+    230.0
+   ],
+   "v_wheels": [
+    30.0,
+    40.0,
+    60.0
+   ]
+  },
+  "ringing_damping_ratio": [
+   0.03,
+   0.05,
+   0.09
+  ],
+  "used_accel_over_shaper_rule": [
+   0.4,
+   0.5,
+   0.65
+  ]
+ }
+}

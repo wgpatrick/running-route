@@ -246,6 +246,74 @@ def sensitivity(printer_path, out):
     return {"base": b, "base_ok": base["ok"], "parameters": rows}
 
 
+def score_uncertainty(printer_path, out, score: dict, toolhead_axis: str | None = "x",
+                      toolhead_mount: str = "linear_rail_single_block", speed: float = 2.0,
+                      accels=(1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6), workers: int = 4) -> dict:
+    """The scorecard's dynamic numbers as ranges instead of points.
+
+    `score` is the dict `mechloop score` printed (or a line of out/<name>/scores.jsonl). The twin is re-run
+    with the belt stiffness and toolhead-mount compliance at the low, expected and high ends of the ranges
+    the calibration study proposes (`calibration.PROPOSED`: what three real machines' measured resonances
+    allow), and each number is reported as [low, expected, high] next to the scored point value.
+    Nothing here changes the twin's defaults."""
+    from ..runner import load_design
+    from . import printer_map_for
+    from .calibration import PROPOSED, shaper_accel
+
+    design = load_design(printer_path)
+    pm = printer_map_for(design)
+    base = {k: getattr(pm, k) for k in ("x", "y", "z", "bed", "perimeter_speed", "infill_speed", "travel_speed")}
+    frame = dict(score.get("frame_stiffness_n_per_mm") or {})
+    ea, mount = PROPOSED["belt_ea_n_per_6mm"], PROPOSED["toolhead_mount_n_per_mm"][toolhead_mount]
+    sets = {}
+    for i, label in enumerate(("low", "expected", "high")):
+        st = dict(frame)
+        if toolhead_axis:
+            kf = st.get(toolhead_axis)
+            st[toolhead_axis] = mount[i] if not kf else 1.0 / (1.0 / kf + 1.0 / mount[i])
+        sets[label] = {**base, "belt_ea_n": ea[i], "struct_stiffness": st}
+    jobs = []
+    for label, kw in sets.items():
+        jobs.append((f"{label}_nominal", "quick", dict(kw), {}, str(out)))
+        jobs += [(f"{label}_a{a:g}", "quick", dict(kw), {"speed_scale": speed, "accel_scale": float(a)}, str(out)) for a in accels]
+    res = _run_all(printer_path, jobs, workers=workers)
+    a_nom = {j.name: j for j in design.joints}[pm.x].max_accel
+    per = {}
+    for label in sets:
+        first_fail = next((a for a in accels if not res[f"{label}_a{a:g}"]["ok"]), None)
+        ok = [a for a in accels if res[f"{label}_a{a:g}"]["ok"] and (first_fail is None or a < first_fail)]
+        nom = res[f"{label}_nominal"]
+        per[label] = {"belt_ea_n_per_6mm": sets[label]["belt_ea_n"], "nozzle_stiffness_n_per_mm": sets[label]["struct_stiffness"],
+                      "resonance_hz": {"x": nom["resonance_hz"][0], "y": nom["resonance_hz"][1]},
+                      "nominal_print_ok": nom["ok"], "cross_track_rms_mm": nom["cross_track_rms_mm"],
+                      "cross_track_worst_mm": nom["cross_track_worst_mm"],
+                      "max_clean_accel_mm_s2": (max(ok) * a_nom) if ok else 0.0,
+                      "first_failure": ({"accel_mm_s2": first_fail * a_nom, "errors": sorted(set(res[f"{label}_a{first_fail:g}"]["errors"]))}
+                                        if first_fail else None)}
+
+    def rng(f):
+        return [f(per[k]) for k in ("low", "expected", "high")]
+
+    u = PROPOSED["used_accel_over_shaper_rule"]
+    fmin = rng(lambda p_: min(p_["resonance_hz"].values()))
+    out_d = {"design": score.get("design"),
+             "scored": {k: score.get(k) for k in ("resonance_hz", "max_clean_accel_mm_s2", "cross_track_rms_mm", "cross_track_worst_mm")},
+             "range_low_expected_high": {
+                 "resonance_hz": {ax: rng(lambda p_, ax=ax: p_["resonance_hz"][ax]) for ax in "xy"},
+                 "max_clean_accel_mm_s2": rng(lambda p_: p_["max_clean_accel_mm_s2"]),
+                 "cross_track_rms_mm": rng(lambda p_: p_["cross_track_rms_mm"]),
+                 "cross_track_worst_mm": rng(lambda p_: p_["cross_track_worst_mm"]),
+                 "shaper_rule_accel_mm_s2": [shaper_accel(f) for f in fmin],
+                 "accel_owners_would_run_mm_s2": [round(shaper_accel(f) * u[i], -2) for i, f in enumerate(fmin)]},
+             "runs": per, "parameters": PROPOSED,
+             "reading": ("max_clean_accel is the step-loss ceiling; on three real machines that ceiling sat 6 to 8 times above "
+                         "the acceleration owners run. accel_owners_would_run is the comparable figure: the input-shaper "
+                         "smoothing rule at the lower resonance, scaled by what owners of those machines actually set.")}
+    Path(out).mkdir(parents=True, exist_ok=True)
+    (Path(out) / "score_uncertainty.json").write_text(json.dumps(out_d, indent=1, default=float))
+    return out_d
+
+
 def run_everything(printer_path, out) -> dict:
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)

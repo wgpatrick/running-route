@@ -1,0 +1,25 @@
+{
+ "retrieved": "2026-11-15",
+ "family": "Silicone heated-bed levelling columns (solid bed mounts)",
+ "vendor": "commodity (FYSETC and others)",
+ "source_level": "secondary",
+ "source_url": "https://reach.dog/shop/fysetc-official-website/products/fysetc-3d-printer-heatbed-parts-solid-bed-mounts-od-0-63-in-id-0-16-in-stable-hotbed-tool-heat-resistant-silicone-buffer-for-cr-10-ender-3-bottom-connect-4-pcs",
+ "title": "FYSETC 'solid bed mounts' reseller listing, read only through web-search result snippets",
+ "ref": "snippet: 'OD 0.63 in (16 mm), ID 0.16 in (4 mm), height: high 0.71 in (18 mm), short 0.64 in (16.2 mm)'; a second listing: OD 15.75, ID 4.00, high 18.00",
+ "why_secondary": "no seller of these parts is on this session's network allow-list",
+ "values": {
+  "od_mm": 16.0,
+  "id_mm": 4.0,
+  "heights_mm": [
+   16.2,
+   18.0
+  ],
+  "max_temperature_c_seller_claim": 200
+ },
+ "not_obtained": [
+  "Shore hardness and stiffness",
+  "mass",
+  "a maker's drawing"
+ ],
+ "used_by_catalog": true
+}

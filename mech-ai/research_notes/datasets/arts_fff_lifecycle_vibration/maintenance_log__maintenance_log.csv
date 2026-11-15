@@ -1,0 +1,30 @@
+event_id,date,cumulative_hours,event_type,raw_sample_index,wear_state,nozzle_diameter_mm,included_in_dataset,description
+1,2024-07-01,179.27,vibration_recording,1,1,0.4,TRUE,Sample_1 vibration and FFT recording; first wear state in the curated dataset
+2,2024-07-10,241.43,vibration_recording,2,2,0.4,TRUE,Sample_2 vibration and FFT recording
+3,2024-07-22,287.32,vibration_recording,3,3,0.4,TRUE,Sample_3 vibration and FFT recording
+4,2024-07-22,287.32,maintenance,,,0.4,TRUE,Printer manually leveled at this point (concurrent with Sample_3)
+5,2024-07-29,361.82,vibration_recording,4,4,0.4,TRUE,Sample_4 vibration and FFT recording
+6,2024-08-02,446.45,vibration_recording,5,5,0.4,TRUE,Sample_5 vibration and FFT recording
+7,2024-08-09,490.42,maintenance,,,0.4,TRUE,Thermal runaway issue diagnosed and fixed during this print session
+8,2024-08-14,490.42,vibration_recording,6,6,0.4,TRUE,Sample_6 vibration and FFT recording
+9,2024-09-13,563.02,vibration_recording,7,7,0.4,TRUE,Sample_7 vibration and FFT recording
+10,2024-09-25,628.68,vibration_recording,8,8,0.4,TRUE,Sample_8 vibration and FFT recording
+11,2024-10-11,701.43,vibration_recording,9,9,0.4,TRUE,Sample_9 vibration and FFT recording
+12,2024-10-16,746.15,vibration_recording,10,10,0.4,TRUE,Sample_10 vibration and FFT recording
+13,2024-10-23,802.78,vibration_recording,11,11,0.4,TRUE,Sample_11 vibration and FFT recording; final 0.4mm-nozzle recording before configuration change
+14,2024-10-28,851.83,configuration_change,,,0.6,FALSE,Nozzle changed from 0.4mm to 0.6mm; subsequent recordings excluded from the curated dataset
+15,2024-10-28,851.83,vibration_recording,12,,0.6,FALSE,Original Sample_12 recording (0.6mm nozzle); excluded from curated dataset
+16,2024-10-30,896.08,vibration_recording,13,,0.6,FALSE,Original Sample_13 recording (0.6mm nozzle); excluded
+17,2024-11-06,938.40,vibration_recording,14,,0.6,FALSE,Original Sample_14 recording (0.6mm nozzle); excluded
+18,2024-11-20,996.93,vibration_recording,15,,0.6,FALSE,Original Sample_15 recording (0.6mm nozzle); excluded
+19,2025-02-04,1052.01,vibration_recording,16,,0.6,FALSE,Original Sample_16 recording (0.6mm nozzle); excluded
+20,2025-02-21,1107.19,vibration_recording,17,,0.6,FALSE,Original Sample_17 recording (0.6mm nozzle); excluded
+21,2025-04-17,1162.62,vibration_recording,18,,0.6,FALSE,Original Sample_18 recording (0.6mm nozzle); excluded
+22,2025-05-27,1248.52,vibration_recording,19,,0.6,FALSE,Original Sample_19 recording (0.6mm nozzle); final 0.6mm-nozzle recording
+23,2025-06-26,1271.44,maintenance,,,0.6,TRUE,Nozzle physically replaced during in-progress print session
+24,2025-06-27,1322.96,configuration_change,,,0.4,TRUE,Nozzle restored to 0.4mm and dogbone slicer model reverted to original Cura configuration; subsequent recordings re-enter the curated dataset
+25,2025-07-01,1334.07,vibration_recording,20,12,0.4,TRUE,Original Sample_20 = curated wear state 12; first recording under restored 0.4mm configuration
+26,2025-07-08,1404.80,vibration_recording,21,13,0.4,TRUE,Original Sample_21 = curated wear state 13
+27,2025-07-25,1481.57,vibration_recording,22,14,0.4,TRUE,Original Sample_22 = curated wear state 14
+28,2025-08-07,1537.96,vibration_recording,23,15,0.4,TRUE,Original Sample_23 = curated wear state 15; final recording in the dataset
+29,2025-08-07,1537.96,maintenance,,,0.4,TRUE,Stock PTFE Bowden tube replaced with Capricorn tube (concurrent with Sample_23)

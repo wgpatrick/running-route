@@ -5,8 +5,8 @@ micro-controller's command dictionary, it writes the exact command stream it wou
 module runs it on the printer.cfg generated from the design, decodes the stream into step times per motor, and
 returns the commanded axis positions on the twin's time grid in place of the twin's own look-ahead planner.
 
-Real: Klipper's config validation, G-code handling, limits, look-ahead, trapezoid generation, kinematics and
-step compression (commit recorded in the result).  Simulated: everything after the step pulse (motor, belt,
+Real: Klipper's config validation, G-code handling, limits, look-ahead, trapezoid generation, kinematics, input
+shaping, pressure advance, bed-mesh compensation and step compression (commit recorded in the result).  Simulated: everything after the step pulse (motor, belt,
 frame, deposition).  Not covered: the micro-controller's own C code and timing, serial latency, driver UART
 set-up, and closed-loop heater control (the offline mode has no temperature feedback).
 
@@ -213,20 +213,106 @@ def _march(Q, P, tol=0.03):
     return go(np.ascontiguousarray(Q), np.ascontiguousarray(P), L, tol)
 
 
-def commanded(design, info, gcode_path: Path, pts: np.ndarray, dt: float, workdir: Path, cfg_text: str | None = None) -> dict:
+def _strip_tuning(cfg_text: str) -> str:
+    """The same configuration with input shaping and pressure advance off (bed mesh kept): the planned motion."""
+    out, skip = [], False
+    for ln in cfg_text.splitlines():
+        t = ln.strip()
+        if t.startswith("["):
+            skip = t.startswith("[input_shaper")
+        if skip or t.startswith("pressure_advance"):
+            continue
+        out.append(ln)
+    return "\n".join(out) + "\n"
+
+
+def _what_if(cfg_text: str, accel_scale: float, speed_scale: float) -> str:
+    """Scale [printer] max_accel / max_velocity for a what-if run (the generated file itself is not changed)."""
+    if accel_scale == 1.0 and speed_scale == 1.0:
+        return cfg_text
+    out, sec = [], ""
+    for ln in cfg_text.splitlines():
+        t = ln.strip()
+        if t.startswith("["):
+            sec = t
+        if sec == "[printer]" and t.startswith("max_accel:"):
+            ln = f"max_accel: {float(t.split(':')[1]) * accel_scale:g}"
+        elif sec == "[printer]" and t.startswith("max_velocity:"):
+            ln = f"max_velocity: {float(t.split(':')[1]) * speed_scale:g}"
+        out.append(ln)
+    return "\n".join(out) + "\n"
+
+
+def _mesh_profile(c) -> dict | None:
+    """The stored [bed_mesh default] profile of a configuration, with its fade settings, or None."""
+    if not c.has_section("bed_mesh default"):
+        return None
+    rows = [[float(v) for v in ln.split(",")] for ln in c.get("bed_mesh default", "points").strip().splitlines() if ln.strip()]
+    g = lambda k, d=None: c.get("bed_mesh default", k, fallback=d)
+    prof = {"points": rows, "min_x": float(g("min_x")), "max_x": float(g("max_x")), "min_y": float(g("min_y")), "max_y": float(g("max_y")),
+            "mesh_x_pps": int(g("mesh_x_pps", 2)), "mesh_y_pps": int(g("mesh_y_pps", 2)), "algo": g("algo", "lagrange").strip(),
+            "tension": float(g("tension", 0.2))}
+    prof["fade_start"] = c.getfloat("bed_mesh", "fade_start", fallback=1.0)
+    prof["fade_end"] = c.getfloat("bed_mesh", "fade_end", fallback=0.0)
+    if c.getfloat("bed_mesh", "fade_target", fallback=0.0) != 0.0:
+        raise FirmwareError("the twin reads bed meshes with fade_target 0 only")
+    return prof
+
+
+def remove_mesh(prof: dict, x, y, z_stepper):
+    """Undo Klipper's bed-mesh adjustment: the G-code Z that put the Z stepper at z_stepper over machine point (x, y).
+    Klipper adds factor(z) * mesh(x, y), with factor fading linearly from 1 at fade_start to 0 at fade_end."""
+    from . import klippy_code as K
+
+    m = K.mesh_z_fast(prof, x, y)
+    fs, fe = prof.get("fade_start", 1.0), prof.get("fade_end", 0.0)
+    zs = np.asarray(z_stepper, dtype=float)
+    if fe <= fs:                      # fade disabled
+        return zs - m, m
+    low = zs - m                      # below fade_start the whole adjustment applies
+    mid = (zs - fe * m / (fe - fs)) / (1.0 - m / (fe - fs))
+    zg = np.where(low <= fs, low, np.where(mid <= fe, mid, zs))
+    return zg, m
+
+
+def _run_decode(cfg_text: str, job: str, workdir: Path, c) -> dict:
+    run = run_klippy(cfg_text, job, workdir)
+    dec = decode(run["dump"], cfg_text, run["clock_hz"])
+    steps = dec["steps"]
+    if not all(k in steps and len(steps[k][0]) for k in (0, 1, 2)):
+        raise FirmwareError("Klipper produced no steps on one of X, Y, Z. Its messages: " + "; ".join(run["messages"])[:400])
+    return {"run": run, "dec": dec, "steps": steps}
+
+
+def commanded(design, info, gcode_path: Path, pts: np.ndarray, dt: float, workdir: Path, cfg_text: str | None = None,
+              pm=None, opts: dict | None = None, accel_scale: float = 1.0, speed_scale: float = 1.0,
+              mass_extra: dict | None = None) -> dict:
     """Run Klipper on the G-code and return its commanded joint positions on the twin's time grid.
 
     pts: (N+1, 3) joint positions of the G-code polyline, starting from the home pose (row 0), as run_print builds it.
-    Returns {"Qc", "Vc", "seg", "frac", "seg_t", "report"}."""
+    The configuration is the design's generated printer.cfg with the tuning `opts` selects (tuning.firmware_tuning).
+    Klipper is run once with input shaping and pressure advance off (the planned motion, which is checked against the
+    G-code path) and, when either is on, once more as configured; the two runs are lined up on the Z steps, which
+    neither feature touches.
+    Returns {"Qc" commanded joints, "Qn" planned joints, "Vc", "E" commanded filament, "seg", "frac", "seg_t", "report"}."""
     from . import from_joints
 
+    tuning = None
     if cfg_text is None:
         from ..electrical import klipper_config
+        from .tuning import firmware_tuning
 
         el = getattr(design, "electrical", None)
         if el is None:
             raise FirmwareNotAvailable("The design has no electrical model, so there is no printer.cfg to run.")
-        cfg_text = klipper_config(el, design)
+        try:
+            tuning = firmware_tuning(design, pm, opts, mass_extra)
+        except ImportError as ex:
+            raise FirmwareNotAvailable(f"Klipper's source is needed to choose the input shaper: {ex}")
+        except ValueError as ex:
+            raise FirmwareError(f"Firmware tuning could not be generated: {ex}")
+        cfg_text = klipper_config(el, design, tuning=tuning)
+    cfg_text = _what_if(cfg_text, accel_scale, speed_scale)
     c = _cfg(cfg_text)
     jr = {j.name: j.range for j in design.joints}
     spec = design.printer or {}
@@ -244,45 +330,105 @@ def commanded(design, info, gcode_path: Path, pts: np.ndarray, dt: float, workdi
         raise FirmwareError("Firmware in the loop assumes +X and +Y joint travel move the nozzle in +X and +Y.")
     start = (q_of_g0[0] - lo[0] + xk0, q_of_g0[1] - lo[1] + yk0, float(g0[2]))
     body = Path(gcode_path).read_text()
+    mesh = _mesh_profile(c)
+    shaped = c.has_section("input_shaper")
+    pa = c.getfloat("extruder", "pressure_advance", fallback=0.0) if c.has_section("extruder") else 0.0
+    # the stored mesh is loaded the way a start G-code does; Z is stated as the Z stepper's position (above the plane
+    # the firmware believes in) before the mesh is switched on
     job = (f"SET_KINEMATIC_POSITION X={start[0]:.4f} Y={start[1]:.4f} Z={start[2]:.4f}\n"
-           f"SET_GCODE_OFFSET X={off_x:.4f} Y={off_y:.4f}\n" + body + "\nM400\n")
+           + ("BED_MESH_PROFILE LOAD=default\n" if mesh else "")
+           + f"SET_GCODE_OFFSET X={off_x:.4f} Y={off_y:.4f}\n" + body + "\nM400\n")
     # the one addition to the builder's configuration: permission to state the starting position, so that the
-    # print can be run without the homing moves (homing is exercised separately by homing_check)
-    run_cfg = cfg_text if "[force_move]" in cfg_text else cfg_text + "\n[force_move]\nenable_force_move: True\n"
-    run = run_klippy(run_cfg, job, workdir)
-    dec = decode(run["dump"], cfg_text, run["clock_hz"])
-    steps = dec["steps"]
-    if not all(k in steps and len(steps[k][0]) for k in (0, 1, 2)):
-        raise FirmwareError("Klipper produced no steps on one of X, Y, Z. Its messages: " + "; ".join(run["messages"])[:400])
-    t_first = min(steps[k][0][0] for k in (0, 1, 2))
-    t_end = max(steps[k][0][-1] for k in (0, 1, 2))
-    grid = np.arange(0.0, t_end - t_first + 0.05, dt)
-    Qk = np.zeros((len(grid), 3))
+    # print can be run without the homing moves (homing against a real switch or probe is not covered)
+    add = "" if "[force_move]" in cfg_text else "\n[force_move]\nenable_force_move: True\n"
+    workdir = Path(workdir)
+    ref = _run_decode(_strip_tuning(cfg_text) + add, job, workdir / "planned" if (shaped or pa > 0) else workdir, c)
+    act = _run_decode(cfg_text + add, job, workdir, c) if (shaped or pa > 0) else ref
+    run, dec = act["run"], act["dec"]
+    rs, as_ = ref["steps"], act["steps"]
+    # ---- line the two runs up in time (Klipper's start-up delay depends on the shaper): Z is planned identically
+    shift = 0.0
+    if act is not ref:
+        tz_r, tz_a = rs[2][0], as_[2][0]
+        if len(tz_r) != len(tz_a):
+            raise FirmwareError(f"The planned and the tuned Klipper runs made different numbers of Z steps ({len(tz_r)} / {len(tz_a)}).")
+        # the tuned run's Z moves can overlap the tail of a shaped X/Y move, which defeats decode()'s search for an
+        # X/Y pause to put them in: take whole clock periods from the planned run, where that search is sound
+        wrap = (1 << 32) / run["clock_hz"]
+        d = tz_a - tz_r
+        tz_a = tz_a - np.round((d - d[0]) / wrap) * wrap
+        as_[2] = (tz_a, as_[2][1])
+        shift = float(np.median(tz_a - tz_r))
+        drift = float(np.abs(tz_a - tz_r - shift).max())
+        if drift > 2e-4:
+            raise FirmwareError(f"The planned and the tuned Klipper runs drift apart by {drift * 1e3:.2f} ms; they cannot be lined up.")
+    pad = 0.05
+    t0 = min(rs[k][0][0] for k in (0, 1, 2)) - pad
+    t_end = max(max(rs[k][0][-1] for k in (0, 1, 2)), max(as_[k][0][-1] for k in (0, 1, 2)) - shift)
+    grid = np.arange(0.0, t_end - t0 + 0.05, dt)
     secs = ["stepper_x", "stepper_y", "stepper_z"]
-    peak_rate = {}
+    # where the planned run must end, in machine coordinates; with a mesh the Z stepper ends off the G-code's Z
+    end_g = [pts[-1, 0] - lo[0] + xk0, pts[-1, 1] - lo[1] + yk0, float(from_joints(info, pts[-1])[2])]
+    Qk_ref, Qk = np.zeros((len(grid), 3)), np.zeros((len(grid), 3))
+    peak_rate, sgns = {}, []
     for k in range(3):
-        t, n = steps[k]
+        t, n = rs[k]
         mm = _mm_per_step(c, secs[k])
-        # the direction pin's sense is not in the stream: take the sign that ends where the G-code ends
-        tgt = [pts[-1, 0] - lo[0] + xk0, pts[-1, 1] - lo[1] + yk0, float(from_joints(info, pts[-1])[2])][k]
-        pos = np.interp(grid, t - t_first, n.astype(float), left=0.0, right=float(n[-1]))
-        e_plus, e_minus = abs(start[k] + n[-1] * mm - tgt), abs(start[k] - n[-1] * mm - tgt)
+        pos = np.interp(grid, t - t0, n.astype(float), left=0.0, right=float(n[-1]))
+        if k == 2 and mesh is not None:
+            cand = {s_: float(remove_mesh(mesh, Qk_ref[-1, 0], Qk_ref[-1, 1], start[2] + s_ * n[-1] * mm)[0]) for s_ in (1.0, -1.0)}
+            e_plus, e_minus = abs(cand[1.0] - end_g[2]), abs(cand[-1.0] - end_g[2])
+        else:
+            # the direction pin's sense is not in the stream: take the sign that ends where the G-code ends
+            e_plus, e_minus = abs(start[k] + n[-1] * mm - end_g[k]), abs(start[k] - n[-1] * mm - end_g[k])
         sgn = 1.0 if e_plus <= e_minus else -1.0
         if min(e_plus, e_minus) > 0.05:
             raise FirmwareError(f"Decoded {'XYZ'[k]} steps end {min(e_plus, e_minus):.3f} mm from the G-code's last position; "
                                 "the stream was not decoded correctly (a pause longer than the 67 s clock wrap?).")
-        Qk[:, k] = start[k] + sgn * pos * mm
-        if len(t) > 1:
-            peak_rate["XYZ"[k]] = float(1.0 / np.diff(t).min())
-    # back to joint values
-    Qc = np.empty_like(Qk)
-    Qc[:, 0] = Qk[:, 0] - xk0 + lo[0]
-    Qc[:, 1] = Qk[:, 1] - yk0 + lo[1]
-    Qc[:, 2] = (info["gap0"] - Qk[:, 2]) * info["sz"]
+        sgns.append(sgn)
+        Qk_ref[:, k] = start[k] + sgn * pos * mm
+        ta, na = as_[k]
+        Qk[:, k] = start[k] + sgn * np.interp(grid, ta - shift - t0, na.astype(float), left=0.0, right=float(na[-1])) * mm
+        if len(ta) > 1:
+            peak_rate["XYZ"[k]] = float(1.0 / np.diff(ta).min())
+    # ---- filament the firmware commanded (extruder steps, pressure advance included)
+    E = None
+    e_total = None
+    if 3 in as_ and len(as_[3][0]) and c.has_section("extruder"):
+        from .gcode import parse
+
+        mm_e = _mm_per_step(c, "extruder")
+        e_total = float(sum(m.e for m in parse(gcode_path)[0]))
+        te, ne = rs[3]
+        e_end = float(ne[-1]) * mm_e
+        sgn_e = 1.0 if abs(e_end - e_total) <= abs(-e_end - e_total) else -1.0
+        if abs(sgn_e * e_end - e_total) > max(0.5, 0.01 * abs(e_total)):
+            raise FirmwareError(f"Decoded extruder steps add up to {sgn_e * e_end:.2f} mm of filament; the G-code asks for {e_total:.2f}.")
+        ta, na = as_[3]
+        E = sgn_e * np.interp(grid, ta - shift - t0, na.astype(float), left=0.0, right=float(na[-1])) * mm_e
+
+    def to_joints_k(Q):
+        out = np.empty_like(Q)
+        out[:, 0] = Q[:, 0] - xk0 + lo[0]
+        out[:, 1] = Q[:, 1] - yk0 + lo[1]
+        out[:, 2] = (info["gap0"] - Q[:, 2]) * info["sz"]
+        return out
+
+    Qn, Qc = to_joints_k(Qk_ref), to_joints_k(Qk)
     Vc = np.gradient(Qc, dt, axis=0)
-    seg, frac = _march(Qc, pts)
+    # ---- the planned motion must lie on the G-code path (with the mesh adjustment taken back out of Z)
+    Qchk = Qk_ref.copy()
+    mesh_rep = None
+    if mesh is not None:
+        zg, m_at = remove_mesh(mesh, Qk_ref[:, 0], Qk_ref[:, 1], Qk_ref[:, 2])
+        Qchk[:, 2] = zg
+        mesh_rep = {"profile_points": [len(mesh["points"][0]), len(mesh["points"])], "range_mm": round(float(np.ptp(mesh["points"])), 4),
+                    "z_adjust_applied_mm": [round(float((Qk_ref[:, 2] - zg).min()), 4), round(float((Qk_ref[:, 2] - zg).max()), 4)],
+                    "fade_mm": [mesh["fade_start"], mesh["fade_end"]]}
+    Qj = to_joints_k(Qchk)
+    seg, frac = _march(Qj, pts)
     seg = np.minimum(seg, len(pts) - 2)
-    dev = np.abs(Qc - (pts[seg] + (pts[seg + 1] - pts[seg]) * frac[:, None])).max(axis=1)
+    dev = np.abs(Qj - (pts[seg] + (pts[seg + 1] - pts[seg]) * frac[:, None])).max(axis=1)
     # the approach from the home pose is one straight move in the twin's reading of the G-code and separate Z and XY
     # moves in Klipper's; compare from the first move after it
     after = seg >= 3
@@ -296,16 +442,40 @@ def commanded(design, info, gcode_path: Path, pts: np.ndarray, dt: float, workdi
     Vs = np.apply_along_axis(lambda v: np.convolve(v, np.ones(w) / w, mode="same"), 0, Vc)
     acc = np.gradient(Vs, dt, axis=0)
     limit = MCU_STEP_RATE_LIMIT.get(run["mcu"])
+    t_last = max(as_[k][0][-1] for k in (0, 1, 2)) - shift
+    msgs = dict(ref["run"]["messages"])
+    for k_, v_ in run["messages"].items():
+        msgs[k_] = max(msgs.get(k_, 0), v_)
     report = {
-        "firmware": "Klipper", "commit": run["commit"], "mcu": run["mcu"], "print_time_s": round(float(t_end - t_first), 1),
-        "steps": {"XYZE"[k]: int(len(steps[k][0])) for k in steps},
+        "firmware": "Klipper", "commit": run["commit"], "mcu": run["mcu"], "print_time_s": round(float(t_last - t0 - pad), 1),
+        "steps": {"XYZE"[k]: int(len(as_[k][0])) for k in as_},
         "peak_step_rate_hz": {k: round(v) for k, v in peak_rate.items()},
         "mcu_step_rate_limit_hz": round(limit) if limit else None,
         "peak_speed_mm_s": [round(float(x), 1) for x in np.abs(Vc).max(axis=0)],
         "peak_accel_mm_s2": [round(float(x)) for x in np.percentile(np.abs(acc), 99.9, axis=0)],
         "max_distance_from_gcode_path_mm": round(off_path, 4), "approach_differs_s": round(float((~after).sum() * dt), 1),
-        "klipper_messages": run["messages"], "other_commands": dec["other_commands"],
+        "klipper_messages": msgs, "other_commands": dec["other_commands"],
         "clock_wraps_resolved": dec["clock_wraps_resolved"],
         "gcode_offset_applied_mm": [round(off_x, 3), round(off_y, 3)],
+        "what_if": {"accel_scale": accel_scale, "speed_scale": speed_scale,
+                    "max_accel": c.getfloat("printer", "max_accel"), "max_velocity": c.getfloat("printer", "max_velocity")},
+        "klipper_runs": 1 if act is ref else 2,
+        "features": {
+            "input_shaper": ({ax: {"shaper_type": c.get("input_shaper", f"shaper_type_{ax}", fallback=None),
+                                   "shaper_freq": c.getfloat("input_shaper", f"shaper_freq_{ax}", fallback=0.0),
+                                   "damping_ratio": c.getfloat("input_shaper", f"damping_ratio_{ax}", fallback=0.1)} for ax in "xy"}
+                             if shaped else None),
+            "pressure_advance": pa if pa > 0 else None,
+            "pressure_advance_smooth_time": (c.getfloat("extruder", "pressure_advance_smooth_time", fallback=0.04) if pa > 0 else None),
+            "bed_mesh": mesh_rep,
+            "time_shift_between_runs_s": round(shift, 5) if act is not ref else None,
+            "largest_gap_between_commanded_and_planned_mm": [round(float(x), 4) for x in np.abs(Qc - Qn).max(axis=0)],
+        },
+        "filament_commanded_mm": round(float(E[-1] - E[0]), 2) if E is not None else None, "filament_in_gcode_mm": e_total,
+        "tuning": ({k_: ({kk: vv for kk, vv in v_.items() if kk not in ("candidates",)} if isinstance(v_, dict) else v_)
+                    for k_, v_ in tuning.items() if k_ in ("input_shaper", "pressure_advance")} if tuning else None),
     }
-    return {"Qc": Qc, "Vc": Vc, "seg": seg, "frac": frac, "seg_t": seg_t, "report": report}
+    if tuning and tuning.get("input_shaper"):     # keep the per-axis choice readable, without the candidate tables
+        report["tuning"]["input_shaper"] = {k_: ({kk: vv for kk, vv in v_.items() if kk != "candidates"} if isinstance(v_, dict) else v_)
+                                            for k_, v_ in tuning["input_shaper"].items()}
+    return {"Qc": Qc, "Qn": Qn, "Vc": Vc, "E": E, "seg": seg, "frac": frac, "seg_t": seg_t, "report": report}

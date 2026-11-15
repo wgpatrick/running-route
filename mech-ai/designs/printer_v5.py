@@ -46,7 +46,7 @@ from mechloop import Adjustment, AssemblyCase, Design, Joint, LoadCase, Requirem
 from mechloop.electrical import Bay, Device, Electrical, Port, Waypoint
 from mechloop.model import Belt, Cable, ThermalCase
 from mechloop.parts.electrical import (THERMISTORS, add_electrical_bom, bed_heater_pad, device_from, embedded_device,
-                                       heater_cartridge, iec_inlet_c14, mosfet_module, psu_lrs, raspberry_pi_zero2w,
+                                       heater_cartridge, iec_inlet_c14, inductive_probe_template, mosfet_module, psu_lrs, raspberry_pi_zero2w,
                                        relay_btt_v12, skr_mini_e3_v3, thermal_fuse, thermistor_cartridge)
 from mechloop.parts import (Stock, add_corner_bracket, add_nut, add_screw, clearance_hole,
                             endstop_switch, extruder_direct, extrusion_2020, fan, gt2_idler, gt2_pulley,
@@ -203,18 +203,11 @@ def bed_probe() -> Stock:
     holes = [(0.0, 0.0, 8.0), (0.0, 0.0, 28.0)]
     for _, _, z in holes:
         body -= Pos(0, 0, z) * Rot(0, 90, 0) * Cylinder(clearance_hole("M3") / 2, 18.0)
-    tpl = {"kind": "endstop", "ports": {"out": dict(kind="endstop", connector="JST-XH", max_a=1.0, conductors=3)},
-           "ratings": {"switching_distance_steel_mm": 8.0, "switching_distance_aluminium_mm": PRB_SN, "max_ambient_c": 70.0},
-           "sources": {k: "PL-08N class value, recalled (typical, unverified)" for k in
-                       ("switching_distance_steel_mm", "switching_distance_aluminium_mm", "max_ambient_c")},
-           "params": {},
-           "product": dict(product="Inductive proximity sensor, 8 mm, NPN normally open, 6-36 V (PL-08N class)",
-                           vendor="commodity", part_number=None, form="component", off_the_shelf=True, custom_pcb=False,
-                           builder_work="crimp a 3-way JST-XH; feed it from 24 V; if the sensor has an internal pull-up to "
-                                        "its supply, fit a BAT85 diode in the signal lead (stock practice, no PCB)")}
+    # electrical model of kind 'probe' (supply range, NPN open-collector output, switching distances and their spread)
+    tpl = inductive_probe_template(sn_steel_mm=8.0, sn_aluminium_mm=PRB_SN, output="npn_no")
     return Stock(body, "PROBE-INDUCTIVE-8MM", "UNVERIFIED proxy: inductive bed probe 18 x 18 x 36, 8 mm NPN NO", 0.02,
                  material="abs", cost_usd=6.0, ratings={"electrical": tpl},
-                 interfaces={"trigger": [(0.0, 0.0, -PRB_SN)], "mount_holes_m3": holes})
+                 interfaces={"trigger": [(0.0, 0.0, -PRB_SN)], "sensing_face": [(0.0, 0.0, 0.0)], "mount_holes_m3": holes})
 
 
 def round_spacer(od: float, bore: float, length: float, material: str = "nylon_pa12") -> Stock:
@@ -508,8 +501,10 @@ def build_electrical(d: Design) -> Electrical:
     el.wire("heat-sink fan", "control_board.FAN1", "hotend_fan.in", 26, via=tool)
     el.wire("part fan", "control_board.FAN0", "part_fan.in", 26, via=tool)
     el.wire("bed probe", "control_board.Z-STOP", "bed_probe.out", 26, conductors=3, insulation="silicone", via=tool,
-            note="signal and 0 V on the Z-STOP header; the sensor's + lead goes to 24 V (not modelled). Homes Z and "
-                 "probes the bed mesh: add [probe] pin ^PC2 with z_offset, [safe_z_home] and [bed_mesh] to printer.cfg")
+            note="signal and 0 V on the Z-STOP header; the sensor's + lead goes to 24 V (declared on the device, not "
+                 "routed as a wire). Homes Z and probes the bed mesh: [probe], [safe_z_home] and [bed_mesh] are generated")
+    # the probe's supply: its brown lead on the 24 V rail at the board's power terminals
+    el.devices["bed_probe"].params.update(supply_v=24.0, supply_from="24 V rail at the control board's power terminals")
     el.wire("extruder motor", "control_board.EM", "extruder.coils", 24, conductors=4, via=["tray_right", "drop_right", "top_back"])
     # ---- axes. The Y pair is on the board's doubled "Z" connectors (one driver); the Z motor is on the "Y" driver.
     el.wire("X motor", "control_board.XM", "x_motor.coils", 24, conductors=4, via=left + ["gantry"])
@@ -1099,7 +1094,7 @@ def build() -> Design:
     # ================= homing, cables, adjustments ================================
     d.endstops += [{"joint": "x", "switch": "x_endstop", "at": "min"},     # left end of the belt clamp bar
                    {"joint": "y", "switch": "y_endstop", "at": "min"},     # front edge of the X motor pad
-                   {"joint": "z", "switch": "bed_probe", "at": "max"}]     # v5: the probe senses the bed plate itself
+                   {"joint": "z", "probe": "bed_probe", "at": "max"}]      # v5: the probe senses the bed plate itself
     build_electrical(d)      # looms; their flexing spans are added to d.cables
     # Bowden tube from the extruder's outlet to the top of the hotend: 276 mm apart at the far front corners,
     # 76 mm at the back of the Y travel, so it stands up in an arc

@@ -1,0 +1,96 @@
+"""Bought small hardware as catalog parts: round unthreaded spacers and silicone bed-levelling columns.
+
+Vendor-backed: Pololu's nylon spacers for M2.5 and M3 screws (item numbers and sizes read from pololu.com). Everything
+else here was only seen through search-result snippets or is a usual size, and says so: `verified` stays False.
+See mechloop/parts/vendor/pololu_spacers.json, openbuilds_spacers.json, silicone_bed_column.json and docs/VENDOR_DATA.md.
+"""
+from __future__ import annotations
+
+import math
+
+from build123d import Cylinder, Pos
+
+from . import Stock, _source, part, vendor_data
+
+_DENSITY = {"nylon": 1.14e-6, "aluminium": 2.70e-6}          # kg/mm^3: PA66 and aluminium, typical (mass is not on any page)
+_MATERIAL = {"nylon": "nylon_pa12", "aluminium": "al6061"}   # nearest entries of the materials table
+# sizes with no source at all: usual catalogue sizes (od, id), no part number
+_GENERIC = {("M3", "aluminium"): (6.0, 3.2), ("M5", "nylon"): (10.0, 5.3), ("M4", "nylon"): (8.0, 4.3), ("M4", "aluminium"): (8.0, 4.3),
+            ("M2.5", "aluminium"): (5.0, 2.7)}
+SPACER_SIZES = ("M2.5", "M3", "M4", "M5")
+SPACER_MATERIALS = ("nylon", "aluminium")
+
+
+def spacer_lengths(size: str = "M3", material: str = "nylon") -> list[float]:
+    """Lengths a named vendor range offers for this size and material (empty when there is no sourced range)."""
+    if material == "nylon" and size in vendor_data("pololu_spacers")["ranges"]:
+        return sorted(float(k) for k in vendor_data("pololu_spacers")["ranges"][size]["items"])
+    if material == "aluminium" and size == "M5":
+        v = vendor_data("openbuilds_spacers")["values"]
+        return sorted(v["lengths_seen_in_snippets_mm"] + v["lengths_recalled_mm"])
+    return []
+
+
+@part
+def spacer_round(size: str = "M3", length: float = 6.0, material: str = "nylon") -> Stock:
+    """Round unthreaded spacer (a plain sleeve a screw passes through). Local frame: axis Z, bottom at Z=0.
+    nylon M2.5 (4 OD x 2.7 ID) and M3 (5 OD x 3.3 ID): Pololu items 1970-1988 in the lengths of `spacer_lengths()`,
+    vendor-backed. aluminium M5 (10 OD x 5.1 ID): OpenBuilds range, known only from search snippets. Any other
+    size/material or length: a usual size with no part number, unverified."""
+    if size not in SPACER_SIZES or material not in SPACER_MATERIALS:
+        raise ValueError(f"spacer_round: size one of {SPACER_SIZES}, material one of {SPACER_MATERIALS}")
+    src, pn, note = {}, None, ""
+    stock_len = float(length) in spacer_lengths(size, material)
+    if material == "nylon" and size in vendor_data("pololu_spacers")["ranges"]:
+        r = vendor_data("pololu_spacers")["ranges"][size]
+        od, bore = r["od_mm"], r["id_mm"]
+        if stock_len:
+            it = r["items"][f"{length:g}"]
+            pn = f"Pololu {it['pololu_item']}"
+            src = _source("pololu_spacers", "vendor", pn, f"https://www.pololu.com/product/{it['pololu_item']}",
+                          unverified=("mass_kg (from the volume at 1.14 g/cm^3)", "nylon grade"), note=f"sold in packs of {it['pack']}")
+        else:
+            src = _source("pololu_spacers", "partial", None, unverified=("length",),
+                          note=f"{length:g} mm is not a length of the Pololu range {spacer_lengths(size, material)}: cut one down or pick a stock length")
+    elif material == "aluminium" and size == "M5":
+        v = vendor_data("openbuilds_spacers")["values"]
+        od, bore = v["od_mm"], v["id_mm"]
+        src = _source("openbuilds_spacers", "secondary", None, unverified=("part number", "mass_kg") + (() if stock_len else ("length",)),
+                      note="OpenBuilds 10 mm OD x M5 aluminium spacers, seen only in search-result snippets (3, 6 and 13.2 mm confirmed there)"
+                           + ("" if stock_len else f"; {length:g} mm is not a known length of the range"))
+    else:
+        od, bore = _GENERIC[(size, material)]
+        note = "usual size, no vendor range recorded"
+    body = Pos(0, 0, length / 2) * (Cylinder(od / 2, length) - Cylinder(bore / 2, length))
+    mass = math.pi * (od ** 2 - bore ** 2) / 4 * length * _DENSITY[material]
+    tag = {"nylon": "NYLON", "aluminium": "AL"}[material]
+    return Stock(body, f"SPACER-{tag}-{size}-{od:g}x{bore:g}x{length:g}",
+                 f"Round {material} spacer for {size}, {od:g} OD x {bore:g} ID x {length:g} mm" + (f" ({pn})" if pn else ""), mass,
+                 material=_MATERIAL[material], cost_usd={"nylon": 0.07, "aluminium": 0.6}[material],
+                 ratings={"approximate": True, "screw": size, **({"vendor_part": pn} if pn else {}), **({"note": note} if note else {})},
+                 interfaces={"od": od, "bore": bore, "length": float(length), "top": [(0.0, 0.0, float(length))]}, source=src)
+
+
+@part
+def bed_column_silicone(height: float = 18.0, installed: float | None = None) -> Stock:
+    """Silicone bed-levelling column (solid bed mount that replaces a spring): 16 OD x 4 bore, 18 mm (high) or 16.2 mm
+    (short) free height. Local frame: axis Z, bottom at Z=0. `installed` draws it at its compressed height (the solid
+    keeps its diameter). Sizes are from reseller listings seen in search snippets only; stiffness is not sourced.
+    Material is the table's belt rubber (E = 50 MPa): real silicone is several times softer."""
+    v = vendor_data("silicone_bed_column")["values"]
+    if height not in v["heights_mm"]:
+        raise ValueError(f"bed_column_silicone height must be one of {v['heights_mm']}")
+    h = float(installed) if installed is not None else float(height)
+    if not 0.6 * height <= h <= height:
+        raise ValueError("bed_column_silicone: installed height must be between 60 % and 100 % of the free height")
+    od, bore = v["od_mm"], v["id_mm"]
+    body = Pos(0, 0, h / 2) * (Cylinder(od / 2, h) - Cylinder(bore / 2, h))
+    mass = math.pi * (od ** 2 - bore ** 2) / 4 * height * 1.15e-6       # silicone about 1.15 g/cm^3, typical
+    return Stock(body, f"BED-COLUMN-SIL-16x{height:g}", f"Silicone bed levelling column 16 OD x 4 bore x {height:g} mm", mass,
+                 material="rubber_gt2", cost_usd=0.6,
+                 ratings={"approximate": True, "free_height_mm": float(height), "installed_height_mm": h,
+                          "max_temp_c_seller_claim": v["max_temperature_c_seller_claim"]},
+                 interfaces={"od": od, "bore": bore, "free_height": float(height), "top": [(0.0, 0.0, h)]},
+                 source=_source("silicone_bed_column", "secondary", None,
+                                unverified=("stiffness / hardness", "mass_kg", "max temperature (seller claim)", "maker"),
+                                note="16 x 4 x 18 / 16.2 mm from two reseller listings seen in search snippets; no maker's drawing"))

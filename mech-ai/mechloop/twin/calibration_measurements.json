@@ -1,0 +1,525 @@
+{
+ "_note": "RECORDED 2026-11-15T00:45Z, after the blind predictions were frozen (research_notes/calibration/FREEZE.md). Input-shaper frequencies and limits that owners of these machines saved in public Klipper configs on GitHub (code search for shaper_freq_x, 998 files fetched as data, classified by kinematics, travel and names; one entry per distinct (x, y) pair so forks count once). 'autosaved' = the value sits in Klipper's SAVE_CONFIG block, i.e. it was written by SHAPER_CALIBRATE from an accelerometer run. A shaper frequency is the tuner's fit to the measured spectrum, close to but not identical with the resonance peak. Every entry with its URL: research_notes/calibration/measured_configs.json. Scripts: research_notes/calibration/scripts/.",
+ "_blind_machine_map": {
+  "voron0": "voron0",
+  "trident250": "trident250",
+  "ender3": "ender3"
+ },
+ "machines": {
+  "ender3": {
+   "configs": 42,
+   "x_hz": {
+    "n": 42,
+    "p10": 36.9,
+    "p25": 41.0,
+    "median": 50.6,
+    "p75": 68.2,
+    "p90": 88.9
+   },
+   "y_hz": {
+    "n": 42,
+    "p10": 35.8,
+    "p25": 38.5,
+    "median": 45.0,
+    "p75": 54.8,
+    "p90": 67.8
+   },
+   "x_hz_autosaved": {
+    "n": 17,
+    "p10": 47.8,
+    "p25": 48.0,
+    "median": 50.6,
+    "p75": 54.0,
+    "p90": 79.8
+   },
+   "y_hz_autosaved": {
+    "n": 17,
+    "p10": 37.2,
+    "p25": 44.4,
+    "median": 50.6,
+    "p75": 66.4,
+    "p90": 68.5
+   },
+   "max_accel_mm_s2": {
+    "n": 42,
+    "p10": 2820.0,
+    "p25": 3000.0,
+    "median": 3000.0,
+    "p75": 4000.0,
+    "p90": 4770.0
+   },
+   "run_current_x_a": {
+    "n": 9,
+    "p10": 0.56,
+    "p25": 0.58,
+    "median": 0.58,
+    "p75": 0.58,
+    "p90": 0.64
+   },
+   "damping_ratio_x": null,
+   "damping_ratio_y": null,
+   "shaper_types_x": {
+    "2hump_ei": 3,
+    "3hump_ei": 2,
+    "None": 0,
+    "ei": 7,
+    "mzv": 14,
+    "zv": 9
+   },
+   "shaper_types_y": {
+    "2hump_ei": 14,
+    "3hump_ei": 1,
+    "None": 0,
+    "ei": 9,
+    "mzv": 12,
+    "zv": 1
+   }
+  },
+  "ender3_s1_or_sprite": {
+   "configs": 20,
+   "x_hz": {
+    "n": 20,
+    "p10": 40.5,
+    "p25": 61.3,
+    "median": 69.6,
+    "p75": 78.1,
+    "p90": 85.5
+   },
+   "y_hz": {
+    "n": 20,
+    "p10": 32.8,
+    "p25": 37.3,
+    "median": 42.1,
+    "p75": 45.0,
+    "p90": 52.8
+   },
+   "x_hz_autosaved": {
+    "n": 9,
+    "p10": 42.6,
+    "p25": 65.2,
+    "median": 71.6,
+    "p75": 79.0,
+    "p90": 88.4
+   },
+   "y_hz_autosaved": {
+    "n": 9,
+    "p10": 32.3,
+    "p25": 39.2,
+    "median": 41.6,
+    "p75": 44.0,
+    "p90": 51.4
+   },
+   "max_accel_mm_s2": {
+    "n": 20,
+    "p10": 2360.0,
+    "p25": 2500.0,
+    "median": 3250.0,
+    "p75": 5000.0,
+    "p90": 5280.0
+   },
+   "run_current_x_a": {
+    "n": 4,
+    "p10": 0.58,
+    "p25": 0.58,
+    "median": 0.58,
+    "p75": 0.64,
+    "p90": 0.73
+   },
+   "damping_ratio_x": null,
+   "damping_ratio_y": null,
+   "shaper_types_x": {
+    "2hump_ei": 2,
+    "3hump_ei": 3,
+    "None": 0,
+    "ei": 4,
+    "mzv": 9
+   },
+   "shaper_types_y": {
+    "2hump_ei": 4,
+    "None": 0,
+    "ei": 2,
+    "mzv": 12
+   }
+  },
+  "ender3_v3_family": {
+   "configs": 10,
+   "x_hz": {
+    "n": 10,
+    "p10": 48.9,
+    "p25": 56.8,
+    "median": 60.6,
+    "p75": 65.0,
+    "p90": 81.2
+   },
+   "y_hz": {
+    "n": 10,
+    "p10": 34.7,
+    "p25": 35.6,
+    "median": 39.2,
+    "p75": 43.9,
+    "p90": 49.5
+   },
+   "x_hz_autosaved": {
+    "n": 3,
+    "p10": 57.0,
+    "p25": 58.0,
+    "median": 59.6,
+    "p75": 60.6,
+    "p90": 61.2
+   },
+   "y_hz_autosaved": {
+    "n": 3,
+    "p10": 31.7,
+    "p25": 33.6,
+    "median": 36.8,
+    "p75": 43.0,
+    "p90": 46.7
+   },
+   "max_accel_mm_s2": {
+    "n": 10,
+    "p10": 2440.0,
+    "p25": 2575.0,
+    "median": 3600.0,
+    "p75": 4000.0,
+    "p90": 5000.0
+   },
+   "run_current_x_a": {
+    "n": 8,
+    "p10": 0.6,
+    "p25": 0.6,
+    "median": 0.6,
+    "p75": 0.6,
+    "p90": 0.6
+   },
+   "damping_ratio_x": null,
+   "damping_ratio_y": null,
+   "shaper_types_x": {
+    "2hump_ei": 1,
+    "3hump_ei": 1,
+    "mzv": 8
+   },
+   "shaper_types_y": {
+    "2hump_ei": 2,
+    "ei": 3,
+    "mzv": 5
+   }
+  },
+  "trident250": {
+   "configs": 11,
+   "x_hz": {
+    "n": 11,
+    "p10": 57.2,
+    "p25": 62.5,
+    "median": 64.6,
+    "p75": 74.0,
+    "p90": 85.2
+   },
+   "y_hz": {
+    "n": 11,
+    "p10": 41.4,
+    "p25": 44.2,
+    "median": 48.6,
+    "p75": 50.8,
+    "p90": 66.8
+   },
+   "x_hz_autosaved": {
+    "n": 6,
+    "p10": 59.3,
+    "p25": 62.2,
+    "median": 64.4,
+    "p75": 69.1,
+    "p90": 81.9
+   },
+   "y_hz_autosaved": {
+    "n": 6,
+    "p10": 46.8,
+    "p25": 48.0,
+    "median": 49.6,
+    "p75": 50.9,
+    "p90": 68.0
+   },
+   "max_accel_mm_s2": {
+    "n": 11,
+    "p10": 4000.0,
+    "p25": 4850.0,
+    "median": 5000.0,
+    "p75": 7650.0,
+    "p90": 12000.0
+   },
+   "run_current_x_a": {
+    "n": 11,
+    "p10": 0.8,
+    "p25": 0.8,
+    "median": 0.8,
+    "p75": 0.82,
+    "p90": 1.2
+   },
+   "damping_ratio_x": {
+    "n": 2,
+    "p10": 0.052,
+    "p25": 0.054,
+    "median": 0.058,
+    "p75": 0.061,
+    "p90": 0.064
+   },
+   "damping_ratio_y": {
+    "n": 2,
+    "p10": 0.031,
+    "p25": 0.035,
+    "median": 0.041,
+    "p75": 0.048,
+    "p90": 0.051
+   },
+   "shaper_types_x": {
+    "2hump_ei": 2,
+    "ei": 1,
+    "mzv": 6,
+    "zv": 2
+   },
+   "shaper_types_y": {
+    "2hump_ei": 1,
+    "3hump_ei": 2,
+    "ei": 1,
+    "mzv": 7
+   }
+  },
+  "trident300": {
+   "configs": 55,
+   "x_hz": {
+    "n": 55,
+    "p10": 50.5,
+    "p25": 53.2,
+    "median": 58.8,
+    "p75": 64.6,
+    "p90": 87.7
+   },
+   "y_hz": {
+    "n": 55,
+    "p10": 38.2,
+    "p25": 40.3,
+    "median": 43.6,
+    "p75": 49.8,
+    "p90": 60.5
+   },
+   "x_hz_autosaved": {
+    "n": 31,
+    "p10": 49.6,
+    "p25": 52.0,
+    "median": 56.2,
+    "p75": 64.3,
+    "p90": 74.6
+   },
+   "y_hz_autosaved": {
+    "n": 31,
+    "p10": 38.0,
+    "p25": 39.9,
+    "median": 42.8,
+    "p75": 49.8,
+    "p90": 64.4
+   },
+   "max_accel_mm_s2": {
+    "n": 55,
+    "p10": 3400.0,
+    "p25": 5150.0,
+    "median": 8200.0,
+    "p75": 11000.0,
+    "p90": 15000.0
+   },
+   "run_current_x_a": {
+    "n": 54,
+    "p10": 0.8,
+    "p25": 0.8,
+    "median": 0.88,
+    "p75": 1.27,
+    "p90": 1.65
+   },
+   "damping_ratio_x": {
+    "n": 9,
+    "p10": 0.059,
+    "p25": 0.062,
+    "median": 0.068,
+    "p75": 0.075,
+    "p90": 0.094
+   },
+   "damping_ratio_y": {
+    "n": 9,
+    "p10": 0.054,
+    "p25": 0.061,
+    "median": 0.065,
+    "p75": 0.071,
+    "p90": 0.073
+   },
+   "shaper_types_x": {
+    "2hump_ei": 1,
+    "3hump_ei": 2,
+    "None": 0,
+    "ei": 3,
+    "mzv": 43,
+    "zv": 5
+   },
+   "shaper_types_y": {
+    "2hump_ei": 4,
+    "3hump_ei": 2,
+    "ei": 3,
+    "mzv": 42,
+    "zv": 4
+   }
+  },
+  "trident350": {
+   "configs": 8,
+   "x_hz": {
+    "n": 8,
+    "p10": 51.8,
+    "p25": 55.2,
+    "median": 60.4,
+    "p75": 63.5,
+    "p90": 65.8
+   },
+   "y_hz": {
+    "n": 8,
+    "p10": 36.9,
+    "p25": 40.4,
+    "median": 44.7,
+    "p75": 58.2,
+    "p90": 65.4
+   },
+   "x_hz_autosaved": {
+    "n": 3,
+    "p10": 52.4,
+    "p25": 53.8,
+    "median": 56.2,
+    "p75": 58.2,
+    "p90": 59.4
+   },
+   "y_hz_autosaved": {
+    "n": 3,
+    "p10": 57.8,
+    "p25": 60.2,
+    "median": 64.2,
+    "p75": 66.2,
+    "p90": 67.4
+   },
+   "max_accel_mm_s2": {
+    "n": 8,
+    "p10": 3700.0,
+    "p25": 4000.0,
+    "median": 6500.0,
+    "p75": 8500.0,
+    "p90": 10600.0
+   },
+   "run_current_x_a": {
+    "n": 8,
+    "p10": 0.77,
+    "p25": 0.8,
+    "median": 0.8,
+    "p75": 0.89,
+    "p90": 1.03
+   },
+   "damping_ratio_x": {
+    "n": 1,
+    "p10": 0.052,
+    "p25": 0.052,
+    "median": 0.052,
+    "p75": 0.052,
+    "p90": 0.052
+   },
+   "damping_ratio_y": {
+    "n": 1,
+    "p10": 0.056,
+    "p25": 0.056,
+    "median": 0.056,
+    "p75": 0.056,
+    "p90": 0.056
+   },
+   "shaper_types_x": {
+    "mzv": 8
+   },
+   "shaper_types_y": {
+    "2hump_ei": 2,
+    "3hump_ei": 1,
+    "mzv": 5
+   }
+  },
+  "voron0": {
+   "configs": 91,
+   "x_hz": {
+    "n": 91,
+    "p10": 68.8,
+    "p25": 74.0,
+    "median": 79.2,
+    "p75": 88.6,
+    "p90": 103.0
+   },
+   "y_hz": {
+    "n": 91,
+    "p10": 52.6,
+    "p25": 62.8,
+    "median": 73.8,
+    "p75": 92.2,
+    "p90": 105.0
+   },
+   "x_hz_autosaved": {
+    "n": 48,
+    "p10": 68.6,
+    "p25": 74.2,
+    "median": 78.3,
+    "p75": 83.3,
+    "p90": 97.6
+   },
+   "y_hz_autosaved": {
+    "n": 48,
+    "p10": 55.6,
+    "p25": 62.9,
+    "median": 73.6,
+    "p75": 95.6,
+    "p90": 115.2
+   },
+   "max_accel_mm_s2": {
+    "n": 91,
+    "p10": 2000.0,
+    "p25": 6000.0,
+    "median": 10000.0,
+    "p75": 15000.0,
+    "p90": 20000.0
+   },
+   "run_current_x_a": {
+    "n": 91,
+    "p10": 0.5,
+    "p25": 0.5,
+    "median": 0.7,
+    "p75": 1.0,
+    "p90": 1.06
+   },
+   "damping_ratio_x": {
+    "n": 14,
+    "p10": 0.035,
+    "p25": 0.042,
+    "median": 0.05,
+    "p75": 0.057,
+    "p90": 0.063
+   },
+   "damping_ratio_y": {
+    "n": 13,
+    "p10": 0.033,
+    "p25": 0.036,
+    "median": 0.042,
+    "p75": 0.052,
+    "p90": 0.084
+   },
+   "shaper_types_x": {
+    "2hump_ei": 7,
+    "3hump_ei": 2,
+    "ei": 13,
+    "mzv": 61,
+    "zv": 8
+   },
+   "shaper_types_y": {
+    "2hump_ei": 6,
+    "3hump_ei": 6,
+    "ei": 23,
+    "mzv": 47,
+    "zv": 9
+   }
+  }
+ }
+}

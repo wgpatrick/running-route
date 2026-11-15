@@ -1,0 +1,131 @@
+{
+ "retrieved": "2026-11-15",
+ "family": "E3D Revo hotside: HeaterCore (40 W, 104NT) and Revo brass nozzle",
+ "vendor": "E3D-Online Ltd.",
+ "source_url": "https://e3d-online.com/pages/revo-support-40w-104nt-heatercore",
+ "title": "Revo Support: 40W 104NT HeaterCore (E3D data-sheet page)",
+ "ref": "sections Summary, Power Vs Temperature, Firmware Considerations, Connectors, Materials",
+ "local_copy": "vendor_docs/E3D_revo-support-40w-104nt-heatercore.txt",
+ "heatercore": {
+  "part_number": {
+   "24": "RC-CORE-24V-AS-SPRING",
+   "12": "RC-CORE-12V-AS-SPRING"
+  },
+  "part_number_source": {
+   "source_url": "https://e3d-online.com/products/revo-heatercore",
+   "ref": "variant SKUs (products.json)"
+  },
+  "values": {
+   "watts": 40,
+   "max_printing_temperature_c": 300,
+   "sensor": "Semitec 104NT-4-R025H42G",
+   "klipper_sensor_type": "ATC Semitec 104NT-4-R025H42G",
+   "marlin_sensor": 5,
+   "resistance_24v_40w_at_23c_ohm": 14.4,
+   "resistance_24v_60w_at_23c_ohm": 9.5,
+   "temp_coefficient_per_c": 0.002078,
+   "temp_coefficient_of_a_40w_heater_cartridge_per_c": 0.0004,
+   "connector_heater": "Molex Micro-Fit 3.0, 2 pin",
+   "connector_sensor": "Molex Micro-Fit 3.0, 2 pin",
+   "materials": "alumina, bronze; silicone sock",
+   "lead_lengths_mm": [
+    115,
+    130
+   ]
+  },
+  "ptc_statement": {
+   "source_url": "https://e3d-online.com/products/revo-heatercore",
+   "text": "a positive temperature coefficient (PTC) means power reduces as it gets hotter, reducing hazards in the event of a thermal runaway"
+  },
+  "power_graph": {
+   "source_url": "https://e3d-online.com/cdn/shop/files/graph-1679392483249_480x480.webp",
+   "local_copy": "vendor_docs/E3D_Revo_HeaterCore_power_vs_temperature.png",
+   "note": "E3D's model curves: 40 W HeaterCore about 42 W at 0 degC, about 25 W at 300 degC"
+  },
+  "drawing": {
+   "source_url": "https://e3d-online.com/cdn/shop/files/heatercore-drg-1679070111320.svg",
+   "local_copy": "vendor_docs/E3D_Revo_HeaterCore_drawing.svg",
+   "dimensioned": {
+    "lead_lengths_mm": [
+     115,
+     130
+    ]
+   },
+   "scaled_from_drawing_mm": {
+    "note": "only the lead lengths are dimensioned; body scaled at 12.0 px/mm, +/-0.5 mm",
+    "body_dia": 16.3,
+    "body_length": 11.9,
+    "lead_sleeve_length": 22.0,
+    "lead_sleeve_height": 4.6
+   }
+  },
+  "derived": {
+   "mass_g": 9,
+   "mass_note": "157 g (Roto with hotside and nozzle) - 140 g (Roto) - 8 g (nozzle); includes the spring"
+  }
+ },
+ "nozzle": {
+  "source_url": "https://e3d-online.com/pages/revo-support-brass-nozzle",
+  "title": "Revo Support: Brass Nozzle",
+  "local_copy": "vendor_docs/E3D_revo-support-brass-nozzle.txt",
+  "part_number": {
+   "0.4": "RC-NOZZLE-0400-AS-SPK",
+   "0.25": "RC-NOZZLE-0250-AS-SPK",
+   "0.6": "RC-NOZZLE-0600-AS-SPK",
+   "0.8": "RC-NOZZLE-0800-AS-SPK",
+   "0.15": "RC-NOZZLE-0150-AS-SPK"
+  },
+  "values": {
+   "mass_g": 8,
+   "filament_diameter_mm": 1.75,
+   "max_temperature_c": 300,
+   "max_flow_mm3_s": {
+    "0.4": {
+     "PLA 220": 13,
+     "PETG 240": 17,
+     "ASA 260": 15
+    }
+   }
+  },
+  "drawing": {
+   "source_url": "https://e3d-online.com/cdn/shop/files/new-drg-1678364035460.svg",
+   "local_copy": "vendor_docs/E3D_Revo_Nozzle_drawing.svg",
+   "dimensioned": {
+    "overall_length_mm": 41.1,
+    "seat_flange_to_tip_mm": 22.8,
+    "seat_flange_to_tip_tolerance_mm": 0.2,
+    "block_dia_mm": 13.0,
+    "bore_mm": 2.0
+   },
+   "scaled_from_drawing_mm": {
+    "note": "26.2 px/mm, +/-0.3 mm",
+    "block_height": 4.8,
+    "block_bottom_above_tip": 2.2,
+    "tube_dia_below_flange": 6.0
+   }
+  }
+ },
+ "thermal_estimates": {
+  "note": "NOT vendor data. Estimated for the electrical model from the masses and the drawings; replace with a measured step response.",
+  "block_capacity_j_k": 6.5,
+  "block_capacity_basis": "8 g brass nozzle x 0.38 J/gK + 9 g HeaterCore (alumina/bronze, about 0.4 J/gK); the cold end of the nozzle tube is not heated",
+  "block_area_m2": 0.0009,
+  "block_area_basis": "cylinder 16.3 dia x 11.9 plus the 13 mm nozzle block",
+  "block_height_m": 0.017
+ },
+ "hardware_over_temperature_cut_off": {
+  "finding": "No off-the-shelf hotend with a built-in one-shot cut-off, and no thermal fuse rated to sit on a 250-300 degC heater block, was found on a reachable host. The HeaterCore's PTC winding is the real product feature that limits a stuck-on heater: at 24 V it delivers 40 W at 23 degC and 24^2 / (14.4 x (1 + 0.002078 x (T - 23))) W at T: 27.2 W at 250 degC, 25.4 W at 300 degC, 20.7 W at 450 degC. It reduces fault power; it does not remove it.",
+  "options_not_verified": [
+   "axial thermal cut-offs (SEFUSE SF-E class) stop at about 240 degC rated functioning temperature: recalled; they cannot sit on the block",
+   "a bimetal disc thermostat (KSD301 class, ceramic body, normally closed, 250-300 degC) is the usual hardware answer but is 16 mm across and has no seat on a Revo or V6 hot side: recalled",
+   "a thermal cut-off clamped to the heat sink (trips when the cold side overheats) with the PSU relay the design already has: indirect"
+  ],
+  "hosts_not_reachable": [
+   "www.schott.com",
+   "www.littelfuse.com",
+   "www.cantherm.com",
+   "www.sensata.com"
+  ]
+ },
+ "used_by_catalog": true
+}

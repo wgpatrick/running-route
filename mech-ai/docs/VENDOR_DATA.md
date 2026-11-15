@@ -128,3 +128,163 @@ verifier was not run here; printer v3's X and Z force margins should be rechecke
 
 `examples/gantry.py` fails before and after with the same five errors (two `screws_may_not_align`,
 `rails_not_parallel`, two `no_cable_to_moving_electrics`); nothing new.
+
+---
+
+# Parts added for printer_v6 (retrieved 2026-11-15)
+
+printer_v5 carried 27 `uncatalogued_cots` warnings: 20 bought spacers, 4 silicone bed columns, the hotend, the bed probe
+(the fans were already catalogue parts). These are now catalogue parts, except the probe (added separately).
+Code: `mechloop/parts/toolhead.py`, `mechloop/parts/hardware.py`. Tests: `tests/test_vendor.py` (from
+"parts added for printer_v6").
+
+## Network reach this time
+
+Reachable: `e3d-online.com` (product data, support pages and, through `e3d-online.com/cdn/shop/files/...`, the
+drawings on E3D's CDN), `www.pololu.com`, `raw.githubusercontent.com` and git over HTTPS to github.com, plus the hosts
+used on 2026-11-14. Refused by the session's network policy (CONNECT 403 / no DNS): `www.orbiterprojects.com`,
+`ldomotors.com`, `docs.ldomotors.com`, `www.bondtech.se`, `www.printables.com`, `cdn.shopify.com`, `www.gates.com`
+(HTTP 403 from the site), `www.keyelco.com`, `www.essentracomponents.com`, `www.mcmaster.com`,
+`openbuildspartstore.com`, `www.fysetc.com`, `www.matweb.com`, `www.alcoa.com`, `www.arconic.com`,
+`www.kaiseraluminum.com`, `www.vistametalsinc.com`, `www.upmet.com`, `en.wikipedia.org`, `www.schott.com`,
+`www.littelfuse.com`, `www.slice.engineering`, `www.phaetus.com`, `www.sunon.com`, and every distributor tried
+(digikey, mouser, rs-online, farnell, tme, lcsc, misumi). Where a maker's site could not be read, web-search result
+snippets were used and the entry is `secondary` (not vendor-backed), or the value is recalled and listed as such.
+
+## The extruder: comparison and choice
+
+Wanted: a direct-drive extruder for a toolhead of about 0.40 kg, 24 V, Klipper, TMC2209 on the SKR Mini E3 V3,
+1.75 mm filament.
+
+| | E3D Roto (chosen) | LDO Orbiter v2.0 | Annex Sherpa Mini | Bondtech LGX Lite | E3D Hemera XS |
+|---|---|---|---|---|---|
+| Mass with motor | **140 g, heat sink and fan included; 157 g with hot side and nozzle** | about 140 g, no hotend | 115-136 g by kit, no hotend | 141 g, no hotend | motor alone 160 g |
+| Gear ratio | 11.262:1 | 7.5:1 | 50:8 / 50:10 | 44:10 x 37:17 | direct 3.32:1 (recalled) |
+| Rotation distance | 26.8937 per hobb turn (2.388 per motor turn), 0.9 deg motor | 4.637 (recalled) | 22.68 with gear ratio (recalled) | 55 with gear ratio, or 5.7 | 397 steps/mm at 16x |
+| Motor current | 0.318-0.424 A rms (0.45-0.6 A peak) | 1.0 A rated | 1.0 A rated | 0.45-0.60 A recommended | 0.99 A rms |
+| Motor R / L / torque | 7.5 ohm / **not published** / 75 mNm, rotor 7 gcm2 | not reached | not reached | not reached | 2.3 ohm / - / 180 mNm |
+| Extrusion force | 70 N+ | 9.4 kg (snippet) | - | - | - |
+| Mounting | 2 x 3.3 mm holes, dimensioned drawing | not reached | printed housing | not reached | T-slot faces |
+| Nozzle position | dimensioned to the mounting holes | - | - | - | drawing on the page |
+| Hotend | Revo, built in | separate | separate | separate | Revo, built in |
+| Source reached | **E3D data-sheet page and drawing** | reseller snippets only | reseller snippets only | maker's page via snippets only | E3D data-sheet page |
+| Real CAD | Printables only (not reachable): wish list | not reached | STEP on GitHub (reachable) | not reached | not looked for |
+
+Chosen: **E3D Roto** (`extruder_roto()`), with the Revo hot side (`hotend_revo()`).
+
+- Lightest complete answer: 157 g for extruder, motor, heat sink, heat-sink fan, heater, sensor and nozzle. Each
+  alternative is about 140 g before a hotend (a V6 adds about 65 g and a fan).
+- The only candidate whose maker's own data could be read: mass, gearing, steps/mm, current limits, winding
+  resistance, holding torque, rotor inertia, service temperatures, a dimensioned drawing with the mounting holes and the
+  nozzle tip, and a Klipper block.
+- Its low current (0.32-0.42 A rms) is easy for the board's TMC2209 and for a thin toolhead loom.
+- Costs to accept: the heat-sink fan is **5 V** (0.14 A): on this 24 V machine it needs E3D's regulator board
+  (REVO-MICRO-BOARD-REG) or the board's 5 V rail; the motor is **0.9 degree** (400 steps), so the Klipper block needs
+  `full_steps_per_rotation: 400`; winding **inductance is not published** (11 mH is this catalogue's estimate, flagged);
+  ambient limit 40 degC with PLA (no heated chamber); nozzles are Revo only.
+
+Key figures of the catalogue entry, all from
+`https://e3d-online.com/pages/revo-support-roto-standard-sensored` (copy: `vendor_docs/E3D_revo-support-roto-standard-sensored.txt`)
+unless said otherwise:
+
+| Figure | Value | Source / status |
+|---|---|---|
+| Part number | REVO-ROTO-COLDSIDE-AS | E3D shop data, variant "Standard" |
+| Mass | 0.140 kg; 0.157 kg with hot side and nozzle | "Summary" |
+| Gear ratio, rotation distance | 11.262:1; 26.8937 mm; 2682 steps/mm at 16x | "Summary" |
+| Motor | NEMA 14, 0.9 deg, 50 g, 7.5 ohm +/-10 %, 75 mNm holding, 5 mNm detent, rotor 7 gcm2, 4.5 V rated | "Motor Specification" |
+| Current | 0.45 A peak (0.318 rms) minimum recommended, 0.6 A peak (0.424 rms) maximum | "Summary" |
+| Inductance | 11 mH | **estimate** (7.5 ohm x 1.5 ms), not published |
+| Motor connector | Molex 43025-0400 (Micro-Fit 3.0, 4-way) | wiring image on the page |
+| Fan | 35 x 35 x 7, 5 V, 0.14 A, 7 g | "Fan Specification"; size from the spare-part SKU |
+| Mounting | 2 x dia 3.3 +/-0.08 holes at (0, 0) and (6.8, 30.5) | drawing `vendor_docs/E3D_Roto_Dim.svg` |
+| Nozzle tip | (-9.05 +/-0.26, -33.55 +0.46/-0.36) from the lower hole; 15.18 +/-0.41 from one side face of the 38.5 width | same drawing |
+| Envelope | X -25.25..31.85, Z -11.45..44.15, width 38.5 | same drawing (reference dimensions) |
+| Body top, motor, fan, lever, ears | boxes | **scaled from the drawing, +/-1 mm** |
+| Side of the 4.07 mm lateral nozzle offset | -Y | **assumed** from the view layout |
+
+**E3D's Klipper block is inconsistent with its own summary.** It prints `rotation_distance: 26.8937`,
+`full_steps_per_rotation: 400`, `microsteps: 16` and no `gear_ratio`. That is 238 steps/mm; the summary says 2682.
+The figures agree only if 26.8937 is per turn of the hobb: 26.8937 / 11.262 = 2.388 mm per motor turn, 6400 / 2.388 =
+2680 steps/mm. The catalogue records 26.8937 with `gear_ratio 11.262:1` and 400 steps, and gives
+`rotation_distance_200_steps_no_gear_ratio` = 1.194 for a config writer that can emit only `rotation_distance`
+(`mechloop/electrical.py` today). Confirm on the machine with a 100 mm extrusion test.
+
+How the catalogue exposes it (same places as the old `extruder_direct()` plus the new data):
+
+- `ratings["electrical"]`: a `stepper` template (`device_from(el, d, "extruder")` uses it directly; nothing in
+  `mechloop/parts/electrical.py` had to change). Ratings `rated_current_a` 0.424 (rms, the unit of `run_current`),
+  `phase_resistance_ohm`, `phase_inductance_mh` (estimate), `holding_torque_nmm`; params `rotation_distance`,
+  `gear_ratio`, `full_steps_per_rotation`, `run_current` 0.45 (E3D's block).
+- `ratings["rotation_distance"]`, `["gear_ratio"]`, `["full_steps_per_rotation"]`, `["rotation_distance_per_motor_rev"]`,
+  `["rotation_distance_200_steps_no_gear_ratio"]`, `["fan"]`.
+- `interfaces`: `mount_holes_m3` (two points on the hole axes at mid-width), `mount_hole_axis` (0, 1, 0),
+  `filament_axis` (two points), `filament_entry`, `hotend_seat` (= `filament_exit`), `nozzle_tip`, `lever_top`, `port:coils`.
+
+Hooks needed outside `mechloop/parts/` (not edited here):
+
+1. `mechloop/electrical.py`, `[extruder]` writer: emit `full_steps_per_rotation` and `gear_ratio` when the firmware
+   entry (or the motor device's params) has them. Until then use `rotation_distance: 1.194` in the design's firmware
+   dict.
+2. The same file's heater plant is constant-power. The Revo heater is PTC: use
+   `P(T) = V^2 / (r_ohm_23c * (1 + tempco_per_c * (T - 23)))` from the heater device's `params["ptc"]` (or
+   `ratings["resistance_ohm_23c"]`, `["resistance_tempco_per_c"]`). With it, the stuck-MOSFET fault settles lower
+   than a 40 W constant source would.
+3. A 5 V fan: the fan output must switch the 5 V rail (regulator board in the BOM), not 24 V.
+4. Tables keyed by material name do not know `al_mic6` / `al_atp5`: `ALPHA` in `verifiers/fea.py` (23.6e-6),
+   `MACHINING` in `verifiers/dfm_rules.py` (as al6061), `THREAD_FACTOR` in `verifiers/interference.py` (1.5 or more:
+   cast plate is soft, 2.0 is safer), the earth-bond material list in `verifiers/electrical.py`.
+
+## What is vendor-backed now (added)
+
+| Part | Source | Vendor-verified | Recalled / estimated / scaled |
+|---|---|---|---|
+| `extruder_roto()` = E3D REVO-ROTO-COLDSIDE-AS | E3D Roto data-sheet page and drawing | table above | inductance; outlines scaled from the drawing; side of the lateral offset; hole depth; cost |
+| `hotend_revo(40, 24.0, 0.4)` = E3D RC-CORE-24V-AS-SPRING + RC-NOZZLE-0400-AS-SPK | `e3d-online.com/pages/revo-support-40w-104nt-heatercore`, `.../revo-support-brass-nozzle`, nozzle drawing | 40 W; 14.4 ohm at 23 degC; temperature coefficient 0.002078 /degC (27.2 W at 250 degC); max 300 degC; Klipper sensor "ATC Semitec 104NT-4-R025H42G"; Micro-Fit connectors; nozzle 8 g, 41.1 long, 22.8 +/-0.2 seat to tip, 13 mm block | HeaterCore 16.3 dia x 11.9 (scaled from its drawing); HeaterCore mass 9 g (157 - 140 - 8); thermal capacity 6.5 J/K and area (estimates); sensor response 2 s |
+| `hotend_v6()` = E3D V6-175-24V | `e3d-online.com/pages/e3d-classics-support-v6-hotend` and its dimension drawing | 62.55 mm tip to heat-sink top, groove mount 16 / 12 / 16 mm (3.0, 6.0, 3.7 high), heat-sink radius 11.15, block bottom 4.8 above the tip; 300 degC rated, 285 with E3D thermistor, 260 with sock; 30 W heater, 24 V 30 W resistance 16.7-22.6 ohm; Semitec 104NT-4-R025H42G | mass 65 g (recalled); heater block 23 x 16 x 11.5 and bore positions (community model) |
+| `spacer_round("M3", L)` nylon, 5 OD x 3.3 ID, L in 2, 4, 6, 8, 10, 12, 15, 20, 25 | Pololu items 1980-1988 (`pololu.com/category/93/spacers`, item 1982 page) | OD, ID, length, item number, pack size | mass (from volume), nylon grade |
+| `spacer_round("M2.5", L)` nylon, 4 OD x 2.7 ID, L in 2, 4, 6, 8, 10, 12, 15, 20, 22, 25 | Pololu items 1970-1979 | same | same |
+
+## Recorded but not vendor-backed (added)
+
+| Part | What was found | Status |
+|---|---|---|
+| `spacer_round("M5", L, "aluminium")`, 10 OD x 5.1 ID | OpenBuilds "Aluminum Spacers": M5 ID, 10 mm OD, 10-pack; 3 mm, 6 mm and 13.2 mm seen; 5.1 mm ID from a reseller. Search snippets only | `secondary`; no SKU; other lengths recalled |
+| `spacer_round` in any other size / material (`M3` aluminium 6 x 3.2, `M4` 8 x 4.3, `M5` nylon 10 x 5.3) or a non-stock length | nothing | usual sizes, no part number, "typical, unverified" (`partial` for an off-list length of a Pololu size) |
+| `bed_column_silicone(18.0 or 16.2, installed=None)` | reseller listings (FYSETC "solid bed mounts" and one more): OD 16, bore 4, 18 high / 16.2 short; "200 degC" seller claim. Snippets only | `secondary`; no stiffness or hardness. printer_v5's proxy was 12 OD x 20: that size was not found anywhere |
+| `MATERIALS["al_mic6"]` 2800 kg/m3, 71 GPa, 0.33, yield 105 MPa | distributor data in snippets: yield 15 ksi, tensile 24 ksi, Brinell 65, expansion 13.1 uin/in-degF (23.6e-6 /K) | density and modulus recalled (0.101 lb/in3, 10.3 Msi) |
+| `MATERIALS["al_atp5"]` 2660 kg/m3, 70.3 GPa, 0.33, yield 124 MPa | snippets: cast 5083-type, about 5 % lighter than MIC-6 | every number recalled |
+| `gt2_pulley(t, bore, 9)`, `gt2_idler(t, bore, 9)` | nothing from Gates. The functions always took a belt width (geometry and `belt_center` follow it; `Belt.width` drives the twin's belt stiffness), but the SKU did not carry it | SKU and rating now carry the width for new widths: `GT2-20T-B5-W9`, `belt_width_mm`. 6 and 12 mm keep their old names so printer_v4 / v5 BOMs do not change. Still "typical, unverified" |
+
+`fan(30)` / `fan(40)` were not proxies in printer_v5 (community CAD, typical ratings): left as they are. E3D lists a
+30 x 30 x 10 24 V fan (E-FAN-30-30-10-24V-BK) with no data on its page.
+
+## The hotend's hardware over-temperature cut-off
+
+The electrical verifier's open warning stands: **no off-the-shelf product that closes it was found.**
+
+- No hotend on a reachable site has a built-in one-shot cut-off. E3D's Revo HeaterCore has the nearest real feature: a
+  PTC winding ("power reduces as it gets hotter, reducing hazards in the event of a thermal runaway"). From E3D's
+  figures: 40 W at 23 degC, 27.2 W at 250 degC, 25.4 W at 300 degC, about 20.7 W at 450 degC (extrapolated past E3D's
+  graph, which ends at 300 degC). It limits a stuck-on heater; it does not switch it off. Recorded in
+  `hotend_revo().ratings["electrical"]` (`resistance_ohm_23c`, `resistance_tempco_per_c`, `power_w_at_c`).
+- Axial thermal cut-offs of the kind already in the catalogue (`thermal_fuse`) stop at about 240 degC functioning
+  temperature (recalled; schott.com not reachable), below a hot block's working temperature.
+- A ceramic bimetal disc thermostat (KSD301 class, normally closed, 250-300 degC) is the usual hardware part for this
+  but is about 16 mm across and has no seat on a Revo or V6 hot side (recalled; no vendor reached). Not added: it
+  would be an invented part.
+- What a design can really do with stock parts: keep the PSU relay (already catalogued) so the firmware can drop the
+  supply, and add a thermal cut-off on the *heat sink* in series with the heater (it trips when the cold side
+  overheats, an indirect but independent signal). E3D sells a Roto heat-sink thermistor kit for the firmware side of
+  the same idea.
+
+## Still not vendor data (hand downloads that would fix it)
+
+See `vendor_cad/inbox/README.md` ("Documents"): Roto inductance, MIC-6 and ATP-5 data sheets, Gates 2 mm design
+manual, OpenBuilds spacer page.
+
+## Effect on existing designs
+
+None. `printer_v5` `--only ratings`: the same 27 `uncatalogued_cots` warnings and the same findings before and after
+(the design still uses its own proxies). No existing part's shape, SKU or ratings changed; `tests/test_vendor.py`
+checks the 6 and 12 mm pulley and idler names.

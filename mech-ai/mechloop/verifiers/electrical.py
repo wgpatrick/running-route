@@ -18,7 +18,7 @@ from ..geom import forward_kinematics
 from ..model import Design
 from ..report import VerifierResult, timed
 
-ELECTRIC_SKU = ("NEMA", "FAN", "ENDSTOP", "EXTRUDER", "CTRL", "PSU", "HEATER", "THERMISTOR", "INLET", "RELAY", "HOST", "MOSFET", "TCO")
+ELECTRIC_SKU = ("NEMA", "FAN", "ENDSTOP", "PROBE", "EXTRUDER", "CTRL", "PSU", "HEATER", "THERMISTOR", "INLET", "RELAY", "HOST", "MOSFET", "TCO")
 OUT_ROOT = "out"
 
 
@@ -33,6 +33,7 @@ def verify_electrical(design: Design) -> VerifierResult:
         ctx: dict = {"design": design, "el": el}
         E.axis_motors(el, design)
         for name, fn in (("completeness", _completeness), ("off_the_shelf", _off_the_shelf), ("circuit", _circuit), ("wires", _wires), ("mains", _mains),
+                         ("probe", _probe),
                          ("steppers", _steppers), ("heaters", _heaters), ("physical", _physical), ("thermal", _bay_and_motors),
                          ("artifacts", _artifacts)):
             try:
@@ -89,7 +90,8 @@ def _completeness(ctx, r, m):
             r.add("error", "port_used_twice", f"Port {ref} has {len(ws)} wires on it: {ws}.", port=ref, wires=ws,
                   hint="One wire per port; use another output, or a port declared for several lugs (a stud or bus).")
     # every load, sensor and switch is wired to something that can drive / read it
-    need = {"stepper": "stepper_out", "heater": "heater_out", "thermistor": "thermistor_in", "fan": "fan_out", "endstop": "endstop_in"}
+    need = {"stepper": "stepper_out", "heater": "heater_out", "thermistor": "thermistor_in", "fan": "fan_out", "endstop": "endstop_in",
+            "probe": ("endstop_in", "probe_in")}
     wired_to_board = {}
     for d in el.devices.values():
         if d.kind not in need:
@@ -97,11 +99,12 @@ def _completeness(ctx, r, m):
         pn = next((p.name for p in d.ports.values() if p.kind == d.kind), None)
         wires, series, src = E.trace_supply(el, f"{d.name}.{pn}") if pn else ([], [], None)
         sp = el.port(src)[1] if src else None
-        if sp is None or sp.kind != need[d.kind]:
+        want = need[d.kind] if isinstance(need[d.kind], tuple) else (need[d.kind],)
+        if sp is None or sp.kind not in want:
             r.add("error", "device_not_wired",
-                  f"{d.kind.capitalize()} '{d.name}' is not wired to a {need[d.kind]} port"
+                  f"{d.kind.capitalize()} '{d.name}' is not wired to a {' / '.join(want)} port"
                   + (f" (it ends at {src})." if src else "."), device=d.name,
-                  hint=f"Add el.wire(name, '<board>.<{need[d.kind]} port>', '{d.name}.{pn}', awg, via=[looms]).")
+                  hint=f"Add el.wire(name, '<board>.<{want[0]} port>', '{d.name}.{pn}', awg, via=[looms]).")
         else:
             wired_to_board[d.name] = src
     m["connections"] = wired_to_board
@@ -154,6 +157,14 @@ def _completeness(ctx, r, m):
         e = homed.get(jn)
         if e is None:
             r.add("error", "axis_without_endstop", f"Axis {jn} has neither an endstop nor sensorless homing declared.", joint=jn)
+        elif e.get("probe"):
+            d = next((x for x in el.devices.values() if x.kind == "probe" and x.component == e["probe"]), None)
+            if d is None:
+                r.add("error", "probe_not_a_probe_device",
+                      f"Axis {jn} homes on '{e['probe']}', but no electrical device of kind 'probe' represents that part.", joint=jn,
+                      hint="Give the part ratings={'electrical': inductive_probe_template(...)} and add it with device_from().")
+            elif d.name not in wired_to_board:
+                r.add("error", "endstop_not_wired", f"Axis {jn}: probe '{e['probe']}' is not wired to an endstop/probe input.", joint=jn)
         elif not e.get("sensorless"):
             d = sw_dev.get(e.get("switch"))
             if d is None or d.name not in wired_to_board:
@@ -175,6 +186,88 @@ def _completeness(ctx, r, m):
                   hint="Add a host (raspberry_pi_zero2w) and wire it to the board's serial header, or choose firmware that runs on the board alone.")
     m["devices"] = {k: sum(1 for d in el.devices.values() if d.kind == k) for k in sorted({d.kind for d in el.devices.values()})}
     m["wires"] = len(el.wires)
+
+
+# ====================================================================== bed probe: supply, output type, signal level
+def _probe(ctx, r, m):
+    """A three-wire proximity probe on a board input: is it fed inside its supply range, and what voltage does its
+    output put on the board pin? NPN (open collector) only pulls the pin to 0 V, so the pin sees the board's own
+    pull-up unless the sensor has an internal pull-up to its supply; PNP drives the pin to the supply voltage."""
+    el, design = ctx["el"], ctx["design"]
+    out = {}
+    for d in el.devices.values():
+        if d.kind != "probe":
+            continue
+        rt, src = d.ratings, d.sources
+        row = {"output": rt.get("output"), "supply_range_v": [rt.get("supply_v_min"), rt.get("supply_v_max")]}
+        out[d.name] = row
+        vs = d.params.get("supply_v")
+        row["supply_v"], row["supply_from"] = vs, d.params.get("supply_from")
+        if vs is None:
+            r.add("error", "probe_supply_not_declared",
+                  f"Probe '{d.name}' is a powered sensor ({rt.get('supply_v_min')}-{rt.get('supply_v_max')} V) but the design does not "
+                  "say what feeds its + lead.", device=d.name,
+                  hint="el.devices[name].params.update(supply_v=24.0, supply_from='...') for the rail its supply lead lands on.")
+        elif rt.get("supply_v_min") is not None and not (rt["supply_v_min"] <= vs <= rt.get("supply_v_max", 1e9)):
+            r.add("error", "probe_supply_out_of_range",
+                  f"Probe '{d.name}' is fed {vs:g} V; it is rated {rt['supply_v_min']:g}-{rt.get('supply_v_max'):g} V "
+                  f"({src.get('supply_v_min', 'source not stated')}).", device=d.name, supply_v=vs,
+                  hint="A 5 V rail does not run a 6-36 V sensor reliably; feed it from the 12/24 V rail.")
+        pn = next((p.name for p in d.ports.values() if p.kind == "probe"), None)
+        _, _, bsrc = E.trace_supply(el, f"{d.name}.{pn}") if pn else ([], [], None)
+        bp = el.port(bsrc)[1] if bsrc else None
+        if bp is None or vs is None:
+            continue
+        w = next(iter(el.wires_at(f"{d.name}.{pn}")), None)
+        row["wire_conductors"] = w.conductors if w else None
+        logic, pin_max = bp.extra.get("logic_v"), bp.extra.get("pin_max_v")
+        row["board_input"] = {"port": bsrc, "pin": bp.pin, "logic_v": logic, "pin_max_v": pin_max}
+        kind = str(rt.get("output", "")).lower()
+        if pin_max is None or logic is None:
+            r.add("error", "probe_signal_not_checked",
+                  f"Probe '{d.name}' is on {bsrc}, whose logic level and voltage limit are not in the board's catalog entry: the "
+                  "signal level was NOT checked.", device=d.name, port=bsrc)
+            continue
+        protected = bool(d.params.get("series_diode") or d.params.get("level_shift"))
+        row["protection"] = "series diode" if d.params.get("series_diode") else ("level shifter" if d.params.get("level_shift") else None)
+        if kind.startswith("npn"):
+            pull = rt.get("internal_pullup")
+            high = logic if (pull is False or protected) else vs      # worst case when the pull-up is present or not known
+            row.update({"needs_board_pullup": True, "signal_low_v": 0.0, "signal_high_v_worst_case": high,
+                        "internal_pullup": pull})
+            if pull is True and not protected and vs > pin_max:
+                r.add("error", "probe_signal_over_voltage",
+                      f"Probe '{d.name}' (NPN, internal pull-up to its {vs:g} V supply) holds {bsrc} near {vs:g} V when not "
+                      f"switched; the pin's limit is {pin_max:g} V.", device=d.name, port=bsrc,
+                      hint="Fit a small-signal diode in the signal lead (cathode to the sensor) and declare params['series_diode']=True.")
+            elif pull is None and not protected and vs > pin_max:
+                r.add("warning", "probe_pullup_unknown",
+                      f"Probe '{d.name}' is NPN open-collector on a {vs:g} V supply. If this unit has an internal pull-up to its "
+                      f"supply, {bsrc} (limit {pin_max:g} V, assumed) sees up to {vs:g} V when the probe is not switched; whether it "
+                      "has one is not known for this part.", device=d.name, port=bsrc,
+                      hint="Measure signal-to-0V with the sensor powered and nothing else connected; if it reads the supply "
+                           "voltage, fit a BAT85-class diode in the signal lead and declare params['series_diode']=True.")
+        elif kind.startswith("pnp"):
+            row.update({"needs_board_pullup": False, "signal_low_v": "floating (needs a pull-down)", "signal_high_v_worst_case": vs})
+            if not protected and vs > pin_max:
+                r.add("error", "probe_signal_over_voltage",
+                      f"Probe '{d.name}' is PNP: it drives {bsrc} to its {vs:g} V supply when switched; the pin's limit is "
+                      f"{pin_max:g} V.", device=d.name, port=bsrc,
+                      hint="Use an NPN sensor, or a divider / optocoupler module and declare params['level_shift']=True.")
+        else:
+            r.add("error", "probe_output_unknown", f"Probe '{d.name}' does not say whether its output is NPN or PNP.", device=d.name)
+        amb = rt.get("max_ambient_c")
+        hot = [(k, (v["temp"] if isinstance(v, dict) else v)) for k, v in (el.hot_parts or {}).items()]
+        bed_t = next((t for k, t in hot if k == "bed"), None)
+        if amb is not None and bed_t is not None and bed_t > amb:
+            row["max_ambient_c"], row["bed_temp_c"] = amb, bed_t
+            r.add("warning", "probe_near_hot_bed",
+                  f"Probe '{d.name}' is rated for {amb:g} degC ambient ({src.get('max_ambient_c', 'source not stated')}) and its "
+                  f"face works a few mm above a bed that runs up to {bed_t:g} degC. Its temperature there is not simulated; an "
+                  "inductive sensor's switching distance also drifts with temperature (not modelled).", device=d.name,
+                  hint="Probe at one fixed bed temperature and keep the probe off the bed between probing moves.")
+    if out:
+        m["probe"] = out
 
 
 # ====================================================================== off the shelf: no custom PCBs
@@ -549,6 +642,7 @@ def heater_report(el, design, circuit, quick: bool = False) -> dict:
             cfg["pid"] = tuple(hc["pid"]) if hc.get("pid") else E.autotune_pid(plant, cfg, float(hc.get("tune_at", max(reachable))))
             out["pid"] = cfg["pid"]
             out["pid_source"] = "design" if hc.get("pid") else "simulated PID_CALIBRATE (relay autotune on the model)"
+        out["control_code"] = E.control_code()[1]
         out["cfg"] = cfg
         out["closed_loop"] = {}
         last = None

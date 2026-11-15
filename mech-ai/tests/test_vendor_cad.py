@@ -8,7 +8,8 @@ import pytest
 from build123d import Box, Cylinder, Location, Pos, Rot
 
 from mechloop import Design
-from mechloop.parts import (corner_bracket_2020, control_board, endstop_switch, extrusion_2020, fan, gt2_idler, hex_nut,
+from mechloop.parts import (corner_bracket_2020, control_board, endstop_switch, extrusion_2020, extruder_roto, fan, gt2_idler, hex_nut,
+                            hotend_revo, hotend_v6,
                             leadscrew_nut_t8, mgn12_rail, mgn12h_carriage, nema17, place, psu_24v, shaft_coupler, shcs)
 from mechloop.parts import vendor_cad as vc
 from mechloop.parts.electrical import psu_lrs, skr_mini_e3_v3
@@ -20,6 +21,7 @@ WITH_CAD = [
     lambda: gt2_idler(20, 5.0, 6.0), leadscrew_nut_t8, endstop_switch, lambda: fan(30), lambda: fan(40),
     control_board, skr_mini_e3_v3, lambda: psu_lrs("LRS-350-24"), lambda: psu_24v(350),
     lambda: shcs("M3", 8), lambda: shcs("M5", 35), lambda: shcs("M2.5", 12), lambda: hex_nut("M3"), lambda: hex_nut("M5"),
+    hotend_v6,
 ]
 
 
@@ -56,6 +58,8 @@ def test_parts_without_cad_say_proxy():
     st = shaft_coupler(5.0, 8.0)
     assert st.detail is None and st.model["kind"] == "proxy"
     assert gt2_idler(20, belt_width=12.0).model["kind"] == "proxy"      # only the 6 mm idler has a model
+    for st in (extruder_roto(), hotend_revo()):                        # E3D's reference CAD is on a host this session cannot reach
+        assert st.detail is None and st.model["kind"] == "proxy" and st.model["inbox"]
 
 
 def test_wrong_proxy_is_caught():

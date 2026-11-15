@@ -1,0 +1,22 @@
+===== e3d-classics-support-104nt-thermistor E3D Classics Support: 104NT Thermistor 662
+Summary
+Wire length  | 
+50mm | 
+Wire colour | 
+Blue | 
+Cartridge Length  | 
+15mm | 
+Cartridge Diameter | 
+3mm | 
+Cartridge material  | 
+Stainless steel (current) Brass (past) | 
+Connector  | 
+Molex Microfit 3.0 | 
+Sensor element  | 
+Semitec 104NT-4- R025H42G | 
+max rating  | 
+300°C | 
+Resistance table
+
+LINKS:
+   https://atcsemitec.co.uk/wp-content/uploads/2019/01/Semitec-NT-4-Glass-NTC-Thermistor.pdf

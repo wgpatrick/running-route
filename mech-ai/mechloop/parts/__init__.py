@@ -265,6 +265,24 @@ def linear_rod(diameter: float, length: float) -> Stock:
 
 
 # ----------------------------------------------------------- transmission
+# Belt width in the SKU. The 6 and 12 mm parts were catalogued before the width was part of the name and existing designs
+# and BOMs use those names, so they keep them; every other width (9 mm) carries it: "GT2-20T-B5-W9", with the rating
+# belt_width_mm. Nothing about GT2 belts or pulleys is vendor data here (gates.com refuses automated requests).
+_GT2_LEGACY_WIDTHS = (6.0, 12.0)
+
+
+def _gt2_width_tag(w: float) -> str:
+    return "" if float(w) in _GT2_LEGACY_WIDTHS else f"-W{w:g}"
+
+
+def _gt2_width_text(w: float) -> str:
+    return "" if float(w) in _GT2_LEGACY_WIDTHS else f", {w:g} mm belt"
+
+
+def _gt2_width_rating(w: float) -> dict:
+    return {} if float(w) in _GT2_LEGACY_WIDTHS else {"belt_width_mm": float(w)}
+
+
 @part
 def gt2_pulley(teeth: int = 20, bore: float = 5.0, belt_width: float = 6.0) -> Stock:
     """GT2 timing pulley with hub. Local frame: axis along Z, hub bottom at Z=0."""
@@ -277,9 +295,9 @@ def gt2_pulley(teeth: int = 20, bore: float = 5.0, belt_width: float = 6.0) -> S
              + Pos(0, 0, h_hub + 1.5 * h_fl + belt_width + 1) * Cylinder(od / 2 + 1.5, h_fl))
     total = h_hub + 2 * h_fl + belt_width + 1
     shape -= Pos(0, 0, total / 2) * Cylinder(bore / 2, total)
-    return Stock(shape, f"GT2-{teeth}T-B{bore:g}", f"GT2 pulley {teeth} teeth, {bore:g} mm bore", 0.008 + 0.0004 * teeth,
-                 material="al6061",
-                 ratings={"pitch_diameter_mm": pd, "teeth": teeth, "belt_pitch_mm": 2.0},
+    return Stock(shape, f"GT2-{teeth}T-B{bore:g}{_gt2_width_tag(belt_width)}", f"GT2 pulley {teeth} teeth, {bore:g} mm bore{_gt2_width_text(belt_width)}",
+                 0.008 + 0.0004 * teeth, material="al6061",
+                 ratings={"pitch_diameter_mm": pd, "teeth": teeth, "belt_pitch_mm": 2.0, **_gt2_width_rating(belt_width)},
                  interfaces={"bore": bore, "height": total, "belt_center_z": h_hub + h_fl + (belt_width + 1) / 2,
                              "belt_center": [(0.0, 0.0, h_hub + h_fl + (belt_width + 1) / 2)]},
                  cost_usd=2.5)
@@ -295,9 +313,9 @@ def gt2_idler(teeth: int = 20, bore: float = 5.0, belt_width: float = 6.0) -> St
     shape = (Pos(0, 0, 0.5) * Cylinder(fl, 1) + Pos(0, 0, h / 2) * Cylinder(od / 2, h)
              + Pos(0, 0, h - 0.5) * Cylinder(fl, 1)) - Pos(0, 0, h / 2) * Cylinder(bore / 2, h)
     detail, model = details.gt2_idler(teeth, bore, belt_width)
-    return Stock(shape, f"GT2-IDLER-{teeth}T-B{bore:g}", f"GT2 idler {teeth} teeth, {bore:g} mm bore", 0.007,
+    return Stock(shape, f"GT2-IDLER-{teeth}T-B{bore:g}{_gt2_width_tag(belt_width)}", f"GT2 idler {teeth} teeth, {bore:g} mm bore{_gt2_width_text(belt_width)}", 0.007,
                  detail=detail, model=model,
-                 ratings={"pitch_diameter_mm": pd, "teeth": teeth, "belt_pitch_mm": 2.0},
+                 ratings={"pitch_diameter_mm": pd, "teeth": teeth, "belt_pitch_mm": 2.0, **_gt2_width_rating(belt_width)},
                  interfaces={"bore": bore, "height": h, "belt_center_z": h / 2, "belt_center": [(0.0, 0.0, h / 2)],
                              "flange_dia": 2 * fl},
                  cost_usd=2.0)
@@ -583,14 +601,85 @@ def corner_bracket_2020() -> Stock:
     return Stock(tri, "BRKT-2020", "2020 corner bracket", 0.012, material="al6061", cost_usd=0.6, detail=detail, model=model)
 
 
-def add_corner_bracket(design: Design, name: str, a: str, b: str, corner, u, v, body: str = "world") -> Component:
-    """Brace two perpendicular extrusions: bracket's inside corner at `corner`, legs along
-    unit directions u (lying on part a) and v (lying on part b). Its two M5 screws and
-    T-nuts are added to the BOM and recorded as the joint."""
-    c = place(design, name, corner_bracket_2020(), Location(Plane(origin=corner, x_dir=u, z_dir=Vector(*u).cross(Vector(*v)))),
-              body=body)
-    design.join(name, a, "m5_tnut")
-    design.join(name, b, "m5_tnut")
-    design.bom_extra("SHCS-M5x8", 2, 0.08)
-    design.bom_extra("TNUT-2020-M5", 2, 0.15)
+def add_corner_bracket(design: Design, name: str, a: str, b: str, corner, u, v, body: str = "world",
+                       screw_offset: float = 11.5) -> Component:
+    """Brace two perpendicular members: bracket's inside corner at `corner`, legs along
+    unit directions u (lying on part a) and v (lying on part b).
+
+    On a T-slot extrusion the leg's M5 screw and T-nut are added to the BOM and recorded as the joint
+    (they sit in the slot and are not drawn).
+
+    On anything else (a plate, a printed part) there is no slot and no T-nut, so the leg is through-bolted
+    and the hardware is real: an M5 cap screw `<name>_screw` (`_screw_a` on the first leg) with its head
+    inside the casting, through the casting's slot and the part, and a hex nut `<name>_nut` on the far
+    side. They are components, so interference, driver access, thread and assembly order are checked.
+    The part needs its own M5 clearance hole `screw_offset` mm from the corner along the leg (the
+    casting's slot runs from 7 to 16 mm; with cap screws in both legs keep one of them at 12.3 mm or
+    more so the heads clear each other). For such a bracket the simulation solid is the casting as it
+    is (3 mm legs, 2.5 mm side webs, slotted, open between the webs) instead of the filled prism,
+    because the screw head and the driver go where the prism has metal and the casting has none.
+    Raises ValueError if the leg does not lie on the part or the part is too thick to through-bolt."""
+    import dataclasses
+
+    from build123d import Polygon, extrude
+
+    uv, vv = Vector(*u).normalized(), Vector(*v).normalized()
+    origin = Vector(*corner)
+    is_slot = {p: "slot_width" in (design.get(p).meta.get("interfaces") or {}) for p in (a, b)}
+    stock = corner_bracket_2020()
+    LEG_T, WEB_IN, SLOT = 3.0, 6.0, (7.0, 16.0, 3.0)      # from the casting's CAD model (details.corner_bracket_2020)
+    if not all(is_slot.values()):
+        if not 7.0 <= screw_offset <= 16.0:
+            raise ValueError(f"add_corner_bracket('{name}'): screw_offset {screw_offset} mm is outside the casting's slot (7 to 16 mm).")
+        solid = stock.shape - extrude(Polygon((LEG_T, LEG_T), (20 - LEG_T, LEG_T), (LEG_T, 20 - LEG_T), align=None), WEB_IN, both=True)
+        s0, s1, sr = SLOT
+        along_x = (Pos((s0 + s1) / 2, 0, 0) * Box(s1 - s0, 2 * LEG_T, 2 * sr) + Pos(s0, 0, 0) * Rot(90, 0, 0) * Cylinder(sr, 2 * LEG_T)
+                   + Pos(s1, 0, 0) * Rot(90, 0, 0) * Cylinder(sr, 2 * LEG_T))
+        along_y = (Pos(0, (s0 + s1) / 2, 0) * Box(2 * LEG_T, s1 - s0, 2 * sr) + Pos(0, s0, 0) * Rot(0, 90, 0) * Cylinder(sr, 2 * LEG_T)
+                   + Pos(0, s1, 0) * Rot(0, 90, 0) * Cylinder(sr, 2 * LEG_T))
+        if not is_slot[a]:
+            solid -= along_x
+        if not is_slot[b]:
+            solid -= along_y
+        stock = dataclasses.replace(stock, shape=solid)
+    c = place(design, name, stock, Location(Plane(origin=corner, x_dir=u, z_dir=uv.cross(vv))), body=body)
+    # (part, along its leg, out of the part's face, screw suffix, nut suffix)
+    for part_name, along, out, s_sfx, n_sfx in ((a, uv, vv, "_screw_a", "_nut_a"), (b, vv, uv, "_screw", "_nut")):
+        if is_slot[part_name]:
+            design.join(name, part_name, "m5_tnut")
+            design.bom_extra("SHCS-M5x8", 1, 0.08)
+            design.bom_extra("TNUT-2020-M5", 1, 0.15)
+            continue
+        # how thick is the part under the leg, measured around the screw axis from the face the leg lies on
+        foot = origin + along * screw_offset
+        probe = Plane(origin=tuple(foot), z_dir=tuple(-out)) * Pos(0, 0, 20.0) * Cylinder(6.0, 40.0)
+        under = design.get(part_name).shape & probe
+        depths = []
+        for so in (under.solids() if under is not None else []):
+            bb = so.bounding_box()
+            ext = [-(Vector(x, y, z) - foot).dot(out) for x in (bb.min.X, bb.max.X) for y in (bb.min.Y, bb.max.Y)
+                   for z in (bb.min.Z, bb.max.Z)]
+            if min(ext) < 0.05:
+                depths.append(max(ext))
+        if not depths:
+            raise ValueError(f"add_corner_bracket('{name}'): the leg along {tuple(along)} does not lie on '{part_name}' at "
+                             f"{tuple(round(x, 2) for x in foot)}; '{part_name}' is not an extrusion, so the leg is bolted "
+                             f"through it there and needs material (and an M5 clearance hole) under it.")
+        thick = max(depths)
+        nut_h = NUT["M5"][1]
+        length = next((L for L in (8, 10, 12, 16, 20, 25, 30) if L >= LEG_T + thick + nut_h), None)
+        if length is None:
+            raise ValueError(f"add_corner_bracket('{name}'): '{part_name}' is {thick:.1f} mm thick under the leg, too thick to "
+                             f"through-bolt with a nut. It is not a T-slot extrusion, so there is no T-nut either: tap it and "
+                             f"fasten the bracket yourself with add_screw(threads_into='{part_name}'), or use an extrusion.")
+        add_screw(design, name + s_sfx, "M5", length, at=tuple(foot + out * LEG_T), direction=tuple(-out), body=body,
+                  clamps=(name, part_name))
+        add_nut(design, name + n_sfx, "M5", at=tuple(foot - out * thick), direction=tuple(-out), body=body,
+                screw=name + s_sfx)
+        design.join(name, part_name, "m5_through_bolt")
     return c
+
+
+# ----------------------------------------------------- more catalog parts (registered on import)
+from .hardware import bed_column_silicone, spacer_lengths, spacer_round  # noqa: E402,F401
+from .toolhead import extruder_roto, hotend_revo, hotend_v6  # noqa: E402,F401

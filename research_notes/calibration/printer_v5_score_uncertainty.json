@@ -1,0 +1,155 @@
+{
+ "design": "printer_v5",
+ "scored": {
+  "resonance_hz": {
+   "x": 88.6,
+   "y": 62.2
+  },
+  "max_clean_accel_mm_s2": 10000.0,
+  "cross_track_rms_mm": 0.0114,
+  "cross_track_worst_mm": 0.1133
+ },
+ "range_low_expected_high": {
+  "resonance_hz": {
+   "x": [
+    60.8,
+    68.4,
+    74.7
+   ],
+   "y": [
+    57.2,
+    61.6,
+    64.5
+   ]
+  },
+  "max_clean_accel_mm_s2": [
+   8000.0,
+   10000.0,
+   12000.0
+  ],
+  "cross_track_rms_mm": [
+   0.0201,
+   0.0157,
+   0.0131
+  ],
+  "cross_track_worst_mm": [
+   0.153,
+   0.1216,
+   0.1127
+  ],
+  "shaper_rule_accel_mm_s2": [
+   11400.0,
+   13300.0,
+   14700.0
+  ],
+  "accel_owners_would_run_mm_s2": [
+   4600.0,
+   6600.0,
+   9600.0
+  ]
+ },
+ "runs": {
+  "low": {
+   "belt_ea_n_per_6mm": 15000.0,
+   "nozzle_stiffness_n_per_mm": {
+    "x": 112.39302694136293,
+    "y": 1239.0
+   },
+   "resonance_hz": {
+    "x": 60.8,
+    "y": 57.2
+   },
+   "nominal_print_ok": true,
+   "cross_track_rms_mm": 0.0201,
+   "cross_track_worst_mm": 0.153,
+   "max_clean_accel_mm_s2": 8000.0,
+   "first_failure": {
+    "accel_mm_s2": 10000.0,
+    "errors": [
+     "lost_steps",
+     "print_layer_shift",
+     "print_outline_defect",
+     "print_outline_poor"
+    ]
+   }
+  },
+  "expected": {
+   "belt_ea_n_per_6mm": 21000.0,
+   "nozzle_stiffness_n_per_mm": {
+    "x": 155.12609366958313,
+    "y": 1239.0
+   },
+   "resonance_hz": {
+    "x": 68.4,
+    "y": 61.6
+   },
+   "nominal_print_ok": true,
+   "cross_track_rms_mm": 0.0157,
+   "cross_track_worst_mm": 0.1216,
+   "max_clean_accel_mm_s2": 10000.0,
+   "first_failure": {
+    "accel_mm_s2": 12000.0,
+    "errors": [
+     "lost_steps",
+     "print_layer_shift",
+     "print_outline_defect",
+     "print_outline_poor"
+    ]
+   }
+  },
+  "high": {
+   "belt_ea_n_per_6mm": 27000.0,
+   "nozzle_stiffness_n_per_mm": {
+    "x": 203.58961557663505,
+    "y": 1239.0
+   },
+   "resonance_hz": {
+    "x": 74.7,
+    "y": 64.5
+   },
+   "nominal_print_ok": true,
+   "cross_track_rms_mm": 0.0131,
+   "cross_track_worst_mm": 0.1127,
+   "max_clean_accel_mm_s2": 12000.0,
+   "first_failure": {
+    "accel_mm_s2": 14000.0,
+    "errors": [
+     "lost_steps",
+     "print_layer_shift",
+     "print_outline_defect",
+     "print_outline_poor"
+    ]
+   }
+  }
+ },
+ "parameters": {
+  "belt_ea_n_per_6mm": [
+   15000.0,
+   21000.0,
+   27000.0
+  ],
+  "toolhead_mount_n_per_mm": {
+   "linear_rail_single_block": [
+    120.0,
+    170.0,
+    230.0
+   ],
+   "v_wheels": [
+    30.0,
+    40.0,
+    60.0
+   ]
+  },
+  "ringing_damping_ratio": [
+   0.03,
+   0.05,
+   0.09
+  ],
+  "used_accel_over_shaper_rule": [
+   0.4,
+   0.5,
+   0.65
+  ]
+ },
+ "reading": "max_clean_accel is the step-loss ceiling; on three real machines that ceiling sat 6 to 8 times above the acceleration owners run. accel_owners_would_run is the comparable figure: the input-shaper smoothing rule at the lower resonance, scaled by what owners of those machines actually set."
+}

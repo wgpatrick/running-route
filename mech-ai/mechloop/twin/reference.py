@@ -5,6 +5,12 @@ Machine: Voron 2.4 (350 mm), CoreXY. Sources and confidence for every input are 
 research_notes/"Voron reference data for twin validation.md". Inputs that are uncertain
 are sampled over their plausible range, so each prediction is a range.
 
+This comparison is NOT blind: the twin's belt stiffness default (22 kN per 6 mm) was set to the middle
+of the range that reproduces these Voron 2.4 resonances. The blind study against three other machines
+(inputs frozen before their measurements were looked up) is in `calibration.py`; its result is that the
+Y range below is supported and the X agreement here owes something to the tuning: on axes that carry only
+the toolhead the untuned model reads 18 to 70 % high.
+
 This checks the axis dynamics (masses, motor stiffness, belt compliance, torque-speed
 behaviour). It does not check deposition, and it treats CoreXY as two motors acting
 together on each axis, which is exact only for axis-aligned moves.

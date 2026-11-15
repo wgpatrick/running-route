@@ -1,0 +1,65 @@
+===== revo-support-40w-104nt-heatercore Revo Support: 40W 104NT HeaterCore 5643
+ 
+Table of Contents
+Summary
+Volumes & Dimensions
+Power Vs Temperature
+Firmware Considerations
+Connectors
+Wiring Best Practice
+Materials
+FAQ's
+Summary
+Temperature sensor type: Thermistor, Semitec 104NT-4-R025H42G
+Max Printing Temperature: 300°C
+Wattage: 40W
+Thermistor wire colour: Blue (Early units may have a white thermistor cable)
+Volumes & Dimensions
+Power Vs Temperature
+Initial Resistance of a 40W, 24V heater at 23°C: 14.4Ω
+Initial Resistance of a 60W, 24V heater at 23°C: 9.5Ω
+Temp Coefficient of a 40W Heater Cartridge: 0.0004 °C^(-1)
+Temp Coefficient of a 40W HeaterCore: 0.002078 °C^(-1)
+Temp Coefficient of a 60W HeaterCore: 0.002078 °C^(-1)
+Firmware Considerations
+Marlin
+Temperature Sensor:
+// 5 is 100K thermistor - ATC Semitec 104GT-2 (Used in ParCan & J-Head) (4.7k pullup)
+Rep Rap
+See Duet3D Documentation
+Klipper
+Temperature Sensor:
+"ATC Semitec 104NT-4-R025H42G"
+Connectors
+Heater: Molex Micro-Fit 3.0, 2 pin horizontal receptacle
+Temperature sensor: Molex Micro-Fit 3.0, 2 pin horizontal receptacle
+Wiring Best Practice
+To avoid putting strain on the HeaterCore cables when the printer is in motion, leave some slack in the wires. Repeated pulling on the HeaterCore cables may result in damage to the HeaterCore.
+Do not have tight bends in the wires immediately before the connectors. Tight bends near the Molex connectors can damage the crimps.
+Avoid messy or tangled wires with lots of sharp bends.
+Avoid sharp bends in close proximity to the connectors.
+Use the stock Molex connectors unless otherwise specified in an official E3D Upgrade Guide. Please note: As using butt splices is specified in the upgrade guide, Revo CR is exempt from this point
+If you experience temperature fluctuations, check your crimps at the connector to ensure they have not opened up. It's a subtle difference, but it can lead to an intermittent connection, so it needs to be correct.
+Good Crimps
+Bad Crimps
+If they have opened up, you can attempt to close them. A pair of tweezers or a very small flathead screwdriver can work.
+If there are tight bends in your wiring, especially near the connectors, consider using our printable connector clips. These clips help to prevent movement at the joints between the HeaterCore and Extension cables, which can lead to sudden temperature fluctuations. You will need some cable ties to secure them.
+STL files: https://www.printables.com/model/275040-connector-clips-for-heatercore-wiring
+Materials
+HeaterCore: Alumina, Bronze
+Sock: Silicone
+FAQ's
+Where can I find the HeaterCore Serial Number?
+
+LINKS:
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/Bend_in_wiring_bad_240x240.svg?v=1740482875
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/Bend_in_wiring_less_bad_240x240.svg?v=1740482938
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/Close_crimps_240x240.svg?v=1740483194
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/MicrosoftTeams-image_100_480x480.png?v=1740483498
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/Open_Crimps_240x240.svg?v=1740483194
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/connectors_highlights_240x240.svg?v=1740483700
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/graph-1679392483249_480x480.webp?v=1739452406
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/heatercore-drg-1679070111320_480x480.svg?v=1739452362
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/inline-241431145.png?v=1740997274
+   https://docs.duet3d.com/User_manual/Connecting_hardware/Temperature_connecting_thermistors_PT1000
+   https://www.printables.com/model/275040-connector-clips-for-heatercore-wiring

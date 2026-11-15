@@ -1,0 +1,61 @@
+{
+ "_note": "FROZEN 2026-11-15T00:45Z, before any measured resonance of these three machines was looked up or recorded for this study. Design data only: CAD measurements (research_notes/trade_study/measurements.json), stock firmware configs and the community motor database. Triples are [low, nominal, high]. Do not edit after the freeze; recalibration proposals live in calibration.py (PROPOSED), not here.",
+ "_sources": {
+  "cad": "research_notes/trade_study/measurements.json (STEP assemblies of VoronDesign/Voron-0 a0d5d1bc, VoronDesign/Voron-Trident 7fcb3257, Creality3DPrinting/Ender-3 88c7758c; masses are solid volume x assumed density)",
+  "voron0_cfg": "https://raw.githubusercontent.com/VoronDesign/Voron-0/Voron0.2r1/Firmware/bigtreetech-skr-mini-e3-v3.0.cfg",
+  "trident_cfg": "https://raw.githubusercontent.com/VoronDesign/Voron-Trident/main/Firmware/Octopus/Trident_Octopus_Config.cfg",
+  "ender3_cfg": "https://raw.githubusercontent.com/Klipper3d/klipper/master/config/printer-creality-ender3-2018.cfg",
+  "motor_db": "https://raw.githubusercontent.com/andrewmcgr/klipper_tmc_autotune/main/motor_database.cfg (community transcription of datasheets: R, L, holding torque, rated current, step angle)"
+ },
+ "machines": {
+  "voron0": {
+   "label": "Voron 0.2r1 (120 mm CoreXY)",
+   "kinematics": "corexy",
+   "volts": 24.0,
+   "travel_per_rev_mm": 40.0,
+   "motor": {"name": "LDO-35STH52-1504AH (NEMA 14, 1.8 deg)", "hold_nm": 0.37, "i_rated": 1.5, "L_h": 0.0038, "R": 2.8, "poles": 50, "rotor_gcm2": 20.0},
+   "motor_note": "R, L, torque, current: motor_db. Rotor inertia is a class value for a 52 mm NEMA 14 (assumed; it does not enter the resonance prediction).",
+   "current_rms": [0.5, 0.69, 0.85],
+   "current_note": "The stock config leaves run_current blank and says: 60-70 % of 0.707 x rated. 0.65 x 0.707 x 1.5 A = 0.69 A. Range covers users at 0.5 A and the 1.68 A kit motor at 70 %.",
+   "stock": {"speed": 200.0, "accel": 2000.0},
+   "axes": {
+    "x": {"moves": "toolhead", "mass_kg": [0.22, 0.247, 0.31], "belt_length_mm": [911, 1004, 1098], "belt_width_mm": 6.0, "belts": 2, "motors": 2},
+    "y": {"moves": "X rail, joints and toolhead", "mass_kg": [0.39, 0.432, 0.54], "belt_length_mm": [911, 1004, 1098], "belt_width_mm": 6.0, "belts": 2, "motors": 2}
+   },
+   "mass_note": "CAD estimate -10 % / +25 %: the CAD masses leave out belts, wiring, the umbilical and most fasteners, so the range is skewed up."
+  },
+  "trident250": {
+   "label": "Voron Trident 250 (CoreXY)",
+   "kinematics": "corexy",
+   "volts": 24.0,
+   "travel_per_rev_mm": 40.0,
+   "motor": {"name": "LDO-42STH48-2004AC (NEMA 17, 1.8 deg)", "hold_nm": 0.59, "i_rated": 2.0, "L_h": 0.003, "R": 1.6, "poles": 50, "rotor_gcm2": 82.0},
+   "motor_note": "The stock config is written for 1.8 deg motors (full_steps_per_rotation 200). Many kits ship the 0.9 deg LDO-42STH48-2004MAH (0.44 N m, 1.4 ohm, 2.0 mH); that variant is reported as an alternative. Rotor inertia: class value for a 48 mm NEMA 17, as in reference.py.",
+   "current_rms": [0.7, 0.8, 1.2],
+   "current_note": "Stock config run_current 0.8; tuned machines run higher.",
+   "stock": {"speed": 300.0, "accel": 3000.0},
+   "axes": {
+    "x": {"moves": "toolhead", "mass_kg": [0.35, 0.393, 0.49], "belt_length_mm": [1503, 1650, 1798], "belt_width_mm": 6.0, "belts": 2, "motors": 2},
+    "y": {"moves": "X beam, rail, joints and toolhead", "mass_kg": [1.04, 1.153, 1.44], "belt_length_mm": [1503, 1650, 1798], "belt_width_mm": 6.0, "belts": 2, "motors": 2}
+   },
+   "mass_note": "CAD estimate -10 % / +25 %, as for the Voron 0."
+  },
+  "ender3": {
+   "label": "Creality Ender 3 (bed slinger, V-wheels)",
+   "kinematics": "cartesian_bed_slinger",
+   "volts": 24.0,
+   "travel_per_rev_mm": 40.0,
+   "motor": {"name": "Creality 42-34 (NEMA 17, 1.8 deg)", "hold_nm": 0.4, "i_rated": 1.0, "L_h": 0.006, "R": 6.0, "poles": 50, "rotor_gcm2": 38.0},
+   "motor_note": "R, L, torque, current: motor_db (the 0.4 N m at 1.0 A entry is itself a community figure). Rotor inertia: class value for a 34 mm NEMA 17 (assumed).",
+   "current_rms": [0.4, 0.58, 0.7],
+   "current_note": "Not in any config (the drivers are set by a trim pot). 0.58 A RMS is the commonly quoted factory setting, recalled, low confidence.",
+   "stock": {"speed": 300.0, "accel": 3000.0},
+   "stock_note": "300 / 3000 are the limits in the Klipper example config, not Creality's Marlin defaults (500 mm/s^2).",
+   "axes": {
+    "x": {"moves": "toolhead on the X beam (Bowden)", "mass_kg": [0.24, 0.266, 0.33], "belt_length_mm": [794, 830, 866], "belt_width_mm": 6.0, "belts": 1, "motors": 1},
+    "y": {"moves": "bed, carriage plate, wheels", "mass_kg": [0.9, 0.973, 1.45], "belt_length_mm": [741, 796, 851], "belt_width_mm": 6.0, "belts": 1, "motors": 1}
+   },
+   "mass_note": "X: CAD -10 % / +25 %. Y: the CAD bed is a bare 3 mm aluminium plate on its carriage; real machines add a build surface (sticker 0.05 kg to glass 0.45 kg), so the range runs far up. Nothing printed on the bed."
+  }
+ }
+}

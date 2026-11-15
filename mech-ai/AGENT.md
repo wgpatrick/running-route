@@ -109,7 +109,10 @@ def build():
 - Orienting catalog parts: `Location((x, y, z), (rx, ry, rz))` (degrees) or
   `Location(Plane(origin=..., x_dir=..., z_dir=...))`. Each catalog function's docstring gives its
   local frame; `part.meta["interfaces"]` holds its hole positions in world coordinates after `place`.
-- Other helpers: `add_corner_bracket`, `design.bom_extra(sku, qty, cost)`, `design.tool_point`,
+- `add_corner_bracket(design, name, a, b, corner, u, v)`: a leg on a 2020 extrusion takes a T-nut (BOM only). A leg on
+  anything else (a plate, a printed part) is through-bolted with a real M5 screw `<name>_screw` and nut `<name>_nut`,
+  which are checked like any other fastener: draw the M5 clearance hole 11.5 mm from the corner (`screw_offset=`).
+- Other helpers: `design.bom_extra(sku, qty, cost)`, `design.tool_point`,
   `belt_length(teeth_a, teeth_b, center)`, program steps `{"to": {...}, "speed": v}` / `{"to": {}, "dwell": s}`.
 - `add_screw(design, name, size, length, at=<underside of head>, direction=<thread direction>,
   threads_into=..., tnut=False)` adds the screw, its driver-access check and the joint.

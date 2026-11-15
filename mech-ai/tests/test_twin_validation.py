@@ -157,3 +157,68 @@ def test_voron_reference_predictions():
     assert rows["X resonance"]["verdict"] != "inconsistent"
     assert rows["Y resonance"]["verdict"] != "inconsistent"
     assert all(r["verdict"] == "consistent" for q, r in rows.items() if q.startswith("no step loss"))
+
+
+# ---------------------------------------------------------------- blind study against three real machines
+def test_blind_inputs_are_still_the_frozen_ones():
+    """The three machines' parameters were frozen before their measured resonances were looked up
+    (research_notes/calibration/FREEZE.md). Changing them afterwards would make the study worthless."""
+    from mechloop.twin.calibration import frozen_hash
+
+    assert frozen_hash() == "4561db2df882dafed988b5aa936d412a7cf222bd984e070ca477691f235dd7bf"
+
+
+def test_blind_predictions_against_measured_resonances():
+    """What the blind study found, pinned so that a change to the axis model shows up here.
+    Gantry and bed axes (belts carry the compliance) land within 20 % of the owners' median;
+    axes that carry only the toolhead are over-predicted, by 15 to 75 %, because the twin has no
+    compliance between the belt and the nozzle unless a design's FEA case supplies it."""
+    from mechloop.twin.calibration import compare
+
+    c = compare(n=100, step_loss=False)
+    rows = {(r["machine"], r["axis"]): r for r in c["rows"]}
+    assert len(rows) == 6
+    for r in rows.values():
+        if r["kind"] == "gantry or bed":
+            assert abs(r["error_pct"]) < 20.0, r
+            assert r["inside_measured_iqr"], r
+        else:
+            assert 15.0 < r["error_pct"] < 75.0, r
+    # the belt stiffness each gantry / bed axis implies stays inside the proposed range
+    from mechloop.twin.calibration import PROPOSED
+
+    lo, _, hi = PROPOSED["belt_ea_n_per_6mm"]
+    for r in rows.values():
+        if r["kind"] == "gantry or bed":
+            assert lo - 500 <= r["implied"]["belt_ea_n_per_6mm"] <= hi + 500, r
+
+
+def test_proposed_ranges_cover_the_measurements():
+    """With the proposed parameter ranges, every measured median lies inside the predicted range."""
+    from mechloop.twin.calibration import PROPOSED, machines, measurements, resonance
+
+    ea = PROPOSED["belt_ea_n_per_6mm"]
+    for key, mach in machines().items():
+        mount = PROPOSED["toolhead_mount_n_per_mm"]["v_wheels" if key == "ender3" else "linear_rail_single_block"]
+        for axis in "xy":
+            f = [resonance(mach, axis, ea_per_mm=ea[i] / 6.0, frame=mount[i] if axis == "x" else None) for i in (0, 2)]
+            m = measurements()[key][f"{axis}_hz"]["median"]
+            assert f[0] * 0.97 <= m <= f[1] * 1.03, (key, axis, f, m)
+
+
+def test_shaper_rule_matches_the_klipper_documentation_example():
+    """Klipper's documented example: MZV at 34.6 Hz -> max_accel <= 3500, ZV at 34.4 -> 4500, EI at 41.4 -> 3200."""
+    from mechloop.twin.calibration import shaper_accel
+
+    for kind, f, a in (("mzv", 34.6, 3500.0), ("zv", 34.4, 4500.0), ("ei", 41.4, 3200.0)):
+        assert abs(shaper_accel(f, kind) - a) / a < 0.10
+
+
+def test_axis_range_brackets_the_point_value():
+    from mechloop.twin.calibration import axis_range
+
+    r = axis_range(1.66, 0.40, 416.0, 499.0, 1239.0)
+    assert r["low_hz"] < r["median_hz"] < r["high_hz"]
+    assert r["low_hz"] < r["point_hz"] < r["high_hz"] * 1.02          # the default (22 kN) sits inside the proposed range
+    soft = axis_range(0.446, 0.086, 213.0, 269.0, 1773.0, toolhead_mount="linear_rail_single_block")
+    assert soft["high_hz"] < soft["point_hz"]                         # a toolhead axis rings lower than the scored point

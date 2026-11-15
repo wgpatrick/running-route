@@ -1,0 +1,57 @@
+{
+ "retrieved": "2026-11-15",
+ "family": "Cast aluminium tooling plate (MIC-6, ATP-5)",
+ "vendor": "Arconic / Kaiser (MIC-6), Vista Metals (ATP-5)",
+ "source_level": "secondary",
+ "source_url": "https://www.upmet.com/sites/default/files/datasheets/mic-6.pdf",
+ "title": "United Performance Metals MIC-6 data sheet and retailer listings, read only through web-search result snippets",
+ "why_secondary": "every metals supplier and data site tried (alcoa, arconic, kaiser, vistametals, upmet, matweb, makeitfrom, onlinemetals, midweststeelsupply, wikipedia) is outside this session's network allow-list",
+ "materials": {
+  "al_mic6": {
+   "density_kg_m3": 2800,
+   "E_mpa": 71000,
+   "nu": 0.33,
+   "yield_mpa": 105,
+   "tensile_mpa": 166,
+   "brinell": 65,
+   "cte_per_k_20_100c": 2.36e-05,
+   "cte_per_k_20_200c": 2.45e-05,
+   "confirmed_by_snippet": {
+    "yield_mpa": "15 ksi (two retailer listings)",
+    "tensile_mpa": "24 ksi",
+    "brinell": "65",
+    "cte": "13.1 uin/in-degF 20-100 degC, 13.6 for 20-200 degC (upmet listing)"
+   },
+   "recalled": [
+    "density_kg_m3 (0.101 lb/in^3)",
+    "E_mpa (10.3 Msi)",
+    "nu (typical for aluminium)"
+   ]
+  },
+  "al_atp5": {
+   "density_kg_m3": 2660,
+   "E_mpa": 70300,
+   "nu": 0.33,
+   "yield_mpa": 124,
+   "tensile_mpa": 283,
+   "cte_per_k_20_100c": 2.38e-05,
+   "confirmed_by_snippet": {
+    "alloy": "cast in AA 5083-type alloy (magnesium the main alloying element); about 5 % lighter than MIC-6-type plate"
+   },
+   "recalled": [
+    "density_kg_m3",
+    "E_mpa",
+    "nu",
+    "yield_mpa (18 ksi)",
+    "tensile_mpa (41 ksi)",
+    "cte"
+   ]
+  }
+ },
+ "not_obtained": [
+  "either maker's data sheet",
+  "thermal conductivity and specific heat",
+  "flatness and thickness tolerances (MIC-6: recalled +/-0.005 in thickness, 0.015 in flatness under 3/4 in)"
+ ],
+ "used_by_catalog": true
+}

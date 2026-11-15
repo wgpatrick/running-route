@@ -58,6 +58,8 @@ def skr_mini_e3_v3() -> Stock:
 
     up, edge = (0, 0, 1), (0, -1, 0)
     xh = dict(connector="JST-XH", max_a=3.0)
+    # endstop inputs: MCU pins on the 3.3 V rail. pin_max_v is a conservative assumption (see sources)
+    es = dict(logic_v=3.3, pin_max_v=3.6)
     drv = lambda step, dir_, en, addr: {"step": step, "dir": dir_, "enable": en, "uart": "PC11", "tx": "PC10", "uart_address": addr}
     ports = {
         "POWER": dict(kind="power_in", connector="screw-5.08", max_a=20.0, at=v(8.3, 3.5), dir=edge),
@@ -66,10 +68,10 @@ def skr_mini_e3_v3() -> Stock:
         "FAN2": dict(kind="fan_out", pin="PB15", at=v(45.1, 3.4), dir=up, **xh),
         "FAN0": dict(kind="fan_out", pin="PC6", at=v(53.1, 3.4), dir=up, **xh),
         "FAN1": dict(kind="fan_out", pin="PC7", at=v(53.1, 16.5), dir=up, **xh),
-        "X-STOP": dict(kind="endstop_in", pin="PC0", at=v(61.3, 3.4), dir=up, **xh),
-        "Y-STOP": dict(kind="endstop_in", pin="PC1", at=v(69.6, 3.4), dir=up, **xh),
-        "Z-STOP": dict(kind="endstop_in", pin="PC2", at=v(77.9, 3.4), dir=up, **xh),
-        "E0-STOP": dict(kind="endstop_in", pin="PC15", at=v(74.5, 16.5), dir=up, **xh),
+        "X-STOP": dict(kind="endstop_in", **es, pin="PC0", at=v(61.3, 3.4), dir=up, **xh),
+        "Y-STOP": dict(kind="endstop_in", **es, pin="PC1", at=v(69.6, 3.4), dir=up, **xh),
+        "Z-STOP": dict(kind="endstop_in", **es, pin="PC2", at=v(77.9, 3.4), dir=up, **xh),
+        "E0-STOP": dict(kind="endstop_in", **es, pin="PC15", at=v(74.5, 16.5), dir=up, **xh),
         "THB": dict(kind="thermistor_in", pin="PC4", at=v(86.2, 3.4), dir=up, pullup_ohm=4700.0, adc_bits=12, **xh),
         "TH0": dict(kind="thermistor_in", pin="PA0", at=v(94.4, 3.4), dir=up, pullup_ohm=4700.0, adc_bits=12, **xh),
         "XM": dict(kind="stepper_out", pin=drv("PB13", "!PB12", "PB14", 0), group="X", conductors=4, at=v(13.2, 66.9), dir=up, **xh),
@@ -100,7 +102,10 @@ def skr_mini_e3_v3() -> Stock:
         "logic_w": TU, "rail_5v_max_a": f"MP1584EN buck, 3 A device limit ([BTT] schematic part number; rating {TU})",
         "thermistor_pullup_ohm": "[BTT] schematic 4.7K on TH0/THB; [KLIP] default pullup 4700",
         "adc_bits": f"STM32G0B1 12-bit ADC ({TU}; Klipper sums 8 samples, not modelled)",
-        "max_ambient_c": TU, "mass": TU, "cost": TU}
+        "max_ambient_c": TU, "mass": TU, "cost": TU,
+        "endstop logic_v / pin_max_v": "3.3 V MCU inputs (recalled). 3.6 V = VDD + 0.3 V is ASSUMED as the limit: many STM32G0 "
+                                       "pins are 5 V tolerant, but that was not checked for PC0-PC2/PC15 or for the parts between "
+                                       "the header and the pin"}
     from . import details
 
     detail, model = details.skr_mini_e3_v3()
@@ -356,6 +361,37 @@ def _ots(product, vendor, part_number, form, work) -> dict:
     return dict(product=product, vendor=vendor, part_number=part_number, form=form, off_the_shelf=True, custom_pcb=False, builder_work=work)
 
 
+def inductive_probe_template(sn_steel_mm: float = 8.0, sn_aluminium_mm: float | None = None, output: str = "npn_no",
+                             supply_v=(6.0, 36.0), internal_pullup=None) -> dict:
+    """Electrical template (kind 'probe') for a three-wire inductive proximity sensor of the PL-08N class used as a bed
+    probe. Give it to a part as ratings={"electrical": inductive_probe_template(...)}; the part also needs a
+    'sensing_face' interface (centre of the face that looks at the bed).
+
+    EVERY figure here is a recalled class value, not read from a data sheet: nominal switching distance on steel, the
+    reduction factor on aluminium (0.4 if sn_aluminium_mm is not given), 6-36 V supply, 70 degC ambient, and the
+    IEC 60947-5-2 allowance of +/-10 % on the real switching distance. Repeatability is assumed.
+    output: 'npn_no', 'npn_nc', 'pnp_no', 'pnp_nc'. internal_pullup: True/False if known, None = not known."""
+    rec = "PL-08N class value, recalled (typical, unverified)"
+    al = sn_aluminium_mm if sn_aluminium_mm is not None else round(0.4 * sn_steel_mm, 2)
+    return {"kind": "probe",
+            "ports": {"out": dict(kind="probe", connector="JST-XH", max_a=1.0, conductors=3)},
+            "ratings": {"switching_distance_steel_mm": sn_steel_mm, "switching_distance_aluminium_mm": al,
+                        "switching_distance_tolerance_frac": 0.10, "repeatability_mm": 0.01,
+                        "supply_v_min": float(supply_v[0]), "supply_v_max": float(supply_v[1]), "output": output,
+                        "internal_pullup": internal_pullup, "output_max_a": 0.2, "supply_current_a": 0.015, "max_ambient_c": 70.0},
+            "sources": {"switching_distance_steel_mm": rec, "switching_distance_aluminium_mm": rec + "; steel value x 0.4 unless given",
+                        "switching_distance_tolerance_frac": "IEC 60947-5-2 real switching distance 0.9-1.1 x nominal, recalled; "
+                                                             "temperature and supply drift come on top and are not included",
+                        "repeatability_mm": "ASSUMED 0.01 mm (one standard deviation); hobby measurements of such probes at a "
+                                            "steady temperature are of this order, no data sheet figure",
+                        "supply_v_min": rec, "supply_v_max": rec, "output": rec, "output_max_a": rec, "supply_current_a": rec,
+                        "max_ambient_c": rec, "internal_pullup": "not known for an unbranded part"},
+            "params": {},
+            "product": _ots("Inductive proximity sensor, 8 mm, NPN normally open, 6-36 V (PL-08N class)", "commodity", None, "component",
+                            "crimp a 3-way JST-XH; feed its + lead from the supply rail; if the sensor has an internal pull-up to "
+                            "its supply, fit a BAT85 diode in the signal lead (stock practice, no PCB)")}
+
+
 def _template_for(c) -> dict | None:
     sku = c.sku or ""
     one = lambda kind, conn, n=2, max_a=3.0: {"x": dict(kind=kind, connector=conn, max_a=max_a, conductors=n)}
@@ -415,7 +451,7 @@ def device_from(el: Electrical, design, component: str, name: str | None = None,
             d = None
         ports[pn] = Port(pn, p["kind"], p.get("connector", ""), p.get("max_a"), p.get("pin"), p.get("conductors", 2), at, d,
                          p.get("group"), p.get("multi", False),
-                         {"body": c.body, **{k: v for k, v in p.items() if k in ("pullup_ohm", "adc_bits")}})
+                         {"body": c.body, **{k: v for k, v in p.items() if k in ("pullup_ohm", "adc_bits", "logic_v", "pin_max_v")}})
     dev = Device(name or component, tpl["kind"], component, ports, dict(tpl.get("ratings", {})), dict(tpl.get("sources", {})),
                  {**tpl.get("params", {}), **params}, dict(tpl.get("product", {})))
     return el.add(dev)

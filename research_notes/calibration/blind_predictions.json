@@ -1,0 +1,193 @@
+{
+ "params": {
+  "belt_ea_n_per_mm_width": 3666.6666666666665,
+  "frame_n_per_mm": null,
+  "belt_factor": 4.0
+ },
+ "frozen_machines_sha256": "4561db2df882dafed988b5aa936d412a7cf222bd984e070ca477691f235dd7bf",
+ "machines": {
+  "voron0": {
+   "label": "Voron 0.2r1 (120 mm CoreXY)",
+   "axes": {
+    "x": {
+     "resonance_hz": 112.6,
+     "resonance_hz_5_95": [
+      101.1,
+      117.1
+     ],
+     "stiffness_n_per_mm": {
+      "motor": 420.0,
+      "belt": 175.3,
+      "frame": null,
+      "total": 123.7
+     },
+     "shaper_accel_mm_s2": {
+      "zv": 56600.0,
+      "mzv": 47000.0,
+      "ei": 29700.0
+     },
+     "shaper_accel_mzv_5_95": [
+      37700.0,
+      51000.0
+     ],
+     "step_loss_accel_mm_s2": 400000.0,
+     "step_loss_at_speed_mm_s": 200.0,
+     "force_limit_accel_mm_s2": {
+      "standstill": 154700.0,
+      "at_stock_speed": 154700.0
+     }
+    },
+    "y": {
+     "resonance_hz": 85.2,
+     "resonance_hz_5_95": [
+      77.1,
+      88.5
+     ],
+     "stiffness_n_per_mm": {
+      "motor": 420.0,
+      "belt": 175.3,
+      "frame": null,
+      "total": 123.7
+     },
+     "shaper_accel_mm_s2": {
+      "zv": 31600.0,
+      "mzv": 26300.0,
+      "ei": 16500.0
+     },
+     "shaper_accel_mzv_5_95": [
+      21400.0,
+      28500.0
+     ],
+     "step_loss_accel_mm_s2": 84900.0,
+     "step_loss_at_speed_mm_s": 200.0,
+     "force_limit_accel_mm_s2": {
+      "standstill": 100800.0,
+      "at_stock_speed": 100800.0
+     }
+    }
+   }
+  },
+  "trident250": {
+   "label": "Voron Trident 250 (CoreXY)",
+   "axes": {
+    "x": {
+     "resonance_hz": 76.2,
+     "resonance_hz_5_95": [
+      70.9,
+      80.2
+     ],
+     "stiffness_n_per_mm": {
+      "motor": 582.3,
+      "belt": 106.7,
+      "frame": null,
+      "total": 90.2
+     },
+     "shaper_accel_mm_s2": {
+      "zv": 25100.0,
+      "mzv": 20900.0,
+      "ei": 13000.0
+     },
+     "shaper_accel_mzv_5_95": [
+      17900.0,
+      23200.0
+     ],
+     "step_loss_accel_mm_s2": 83900.0,
+     "step_loss_at_speed_mm_s": 300.0,
+     "force_limit_accel_mm_s2": {
+      "standstill": 92900.0,
+      "at_stock_speed": 92900.0
+     }
+    },
+    "y": {
+     "resonance_hz": 44.5,
+     "resonance_hz_5_95": [
+      41.1,
+      46.7
+     ],
+     "stiffness_n_per_mm": {
+      "motor": 582.3,
+      "belt": 106.7,
+      "frame": null,
+      "total": 90.2
+     },
+     "shaper_accel_mm_s2": {
+      "zv": 7900.0,
+      "mzv": 6600.0,
+      "ei": 4000.0
+     },
+     "shaper_accel_mzv_5_95": [
+      5500.0,
+      7300.0
+     ],
+     "step_loss_accel_mm_s2": 32900.0,
+     "step_loss_at_speed_mm_s": 300.0,
+     "force_limit_accel_mm_s2": {
+      "standstill": 47600.0,
+      "at_stock_speed": 47600.0
+     }
+    }
+   }
+  },
+  "ender3": {
+   "label": "Creality Ender 3 (bed slinger, V-wheels)",
+   "axes": {
+    "x": {
+     "resonance_hz": 85.8,
+     "resonance_hz_5_95": [
+      78.1,
+      88.5
+     ],
+     "stiffness_n_per_mm": {
+      "motor": 286.2,
+      "belt": 106.0,
+      "frame": null,
+      "total": 77.4
+     },
+     "shaper_accel_mm_s2": {
+      "zv": 32200.0,
+      "mzv": 26800.0,
+      "ei": 16800.0
+     },
+     "shaper_accel_mzv_5_95": [
+      22000.0,
+      28500.0
+     ],
+     "step_loss_accel_mm_s2": 76100.0,
+     "step_loss_at_speed_mm_s": 300.0,
+     "force_limit_accel_mm_s2": {
+      "standstill": 101300.0,
+      "at_stock_speed": 101300.0
+     }
+    },
+    "y": {
+     "resonance_hz": 45.6,
+     "resonance_hz_5_95": [
+      38.7,
+      46.4
+     ],
+     "stiffness_n_per_mm": {
+      "motor": 286.2,
+      "belt": 110.6,
+      "frame": null,
+      "total": 79.7
+     },
+     "shaper_accel_mm_s2": {
+      "zv": 8300.0,
+      "mzv": 7000.0,
+      "ei": 4300.0
+     },
+     "shaper_accel_mzv_5_95": [
+      4900.0,
+      7200.0
+     ],
+     "step_loss_accel_mm_s2": 18900.0,
+     "step_loss_at_speed_mm_s": 300.0,
+     "force_limit_accel_mm_s2": {
+      "standstill": 34200.0,
+      "at_stock_speed": 34200.0
+     }
+    }
+   }
+  }
+ }
+}

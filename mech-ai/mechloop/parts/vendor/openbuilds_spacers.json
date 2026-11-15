@@ -1,0 +1,33 @@
+{
+ "retrieved": "2026-11-15",
+ "family": "OpenBuilds aluminium spacers, 10 mm OD, M5",
+ "vendor": "OpenBuilds Part Store",
+ "source_level": "secondary",
+ "source_url": "https://openbuildspartstore.com/aluminum-spacers/",
+ "title": "Aluminum Spacers (product page), read only through web-search result snippets",
+ "ref": "snippets: 'M5 ID, 10mm OD, aluminum, various lengths, 10 pack'; a reseller gives the ID as 5.1 mm; separate listings for 3 mm and 6 mm; a review names 13.2 mm",
+ "why_secondary": "openbuildspartstore.com is outside this session's network allow-list; no page of the maker was read",
+ "values": {
+  "od_mm": 10.0,
+  "id_mm": 5.1,
+  "material": "aluminium",
+  "lengths_seen_in_snippets_mm": [
+   3.0,
+   6.0,
+   13.2
+  ],
+  "lengths_recalled_mm": [
+   9.0,
+   20.0,
+   35.0,
+   40.0
+  ]
+ },
+ "not_obtained": [
+  "part numbers / SKUs",
+  "the full length list",
+  "alloy",
+  "mass"
+ ],
+ "used_by_catalog": true
+}

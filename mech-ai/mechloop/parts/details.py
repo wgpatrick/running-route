@@ -327,3 +327,24 @@ def hex_nut(size: str):
         return vc.cached(f"hex_nut:{size}", [], build), rec
     except Exception:
         return None, {}
+
+
+# ------------------------------------------------------------------ toolhead
+def hotend_v6(tip_z: float):
+    """Community V6-style hotend (FreeCAD-library hotend-3d-printer.step: heat sink, groove mount, heater block and
+    nozzle as one solid; no fan or duct). File: axis Z, top of the groove mount at Z=3.7, nozzle tip at Z=-59.1 (62.8
+    long; E3D's drawing: 62.55), heater block towards -X. Part: file Z - 3.7 (top of the groove mount on Z=0)."""
+    f = _file("hotend_v6_style")
+    rec = _rec("community CAD", "hotend_v6_style.step",
+               f"{FCL}: Electrical Parts/Hotend/hotend-3d-printer.step (a V6-style hotend drawn by a community author; "
+               "not E3D's model)", inbox=["V6-175-24V", "HOTEND-V6"], no_auto_features=True,
+               features=[hole_feature("groove_dia", (0, 0, -6.7), 12.0, (0, 0, 1), tol_dia=0.1),
+                         hole_feature("flange_dia", (0, 0, -1.8), 16.0, (0, 0, 1), tol_dia=0.1)],
+               protrusions={"zmin": (0.3, "the community model is 62.8 mm long, E3D's drawing 62.55")},
+               tolerance={"volume_ratio": (0.4, 2.3), "mass_ratio": (0.1, 3.0), "bbox": 1.6},
+               notes=["volume: the community model has real fins, the simulation solid is the finned envelope",
+                      "community model: lower groove flange 2.0 mm thick (E3D drawing 3.0), heater block 11.5 high",
+                      f"nozzle tip in the simulation solid: Z={tip_z:g} (E3D drawing)"])
+    if f is None:
+        return None, rec
+    return vc.cached("hotend_v6", [f], lambda: vc.frame(vc.solids_of(vc.load_step(f)), pos=(0, 0, -3.7))), rec

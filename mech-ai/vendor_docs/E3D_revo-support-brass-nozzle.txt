@@ -1,0 +1,100 @@
+===== revo-support-brass-nozzle Revo Support: Brass Nozzle 4654
+
+Contents
+Summary
+Volumes & Dimensions
+Nozzle Identification
+Nozzle Cleaning Guidelines
+Maximum Volumetric Flow Rates
+Summary
+ Compatible with: Revo Hemera XS, Revo Hemera, Revo Micro, Revo Six, Revo Voron, Revo CR, Revo Prusa MK3, Revo Prusa Mini, Revo Micro LGX, Revo Biqu H2V2, Revo Microswiss NG, BIQU Revo Panda 
+Mass: 8g
+Filament diameter: 1.75mm
+Volumes & Dimensions
+Nozzle Identification
+Diameter (mm) | 
+Sock colour | 
+Max temperature °C | 
+Abrasion resistant? | 
+Nozzle Colour | 
+0.15 | 
+Pink | 
+300 | 
+No | 
+Brass Yellow | 
+0.25 | 
+Yellow | 
+300 | 
+No | 
+Brass Yellow | 
+0.40 | 
+Red | 
+300 | 
+No | 
+Brass Yellow | 
+0.60 | 
+Blue | 
+300 | 
+No | 
+Brass Yellow | 
+0.80 | 
+Green | 
+300 | 
+No | 
+Brass Yellow
+ | 
+Nozzle Cleaning Guidelines
+Recommended cleaning methods:
+Nylon cleaning filament (internal cleaning method)
+Warm pull (internal cleaning method)
+Cold pull (internal cleaning method)
+Brass brush (external cleaning method)
+Non-recommended cleaning methods
+Needle (internal cleaning)
+Steel wire brushes (external cleaning methods)
+Blow torch (internal/ external cleaning method)
+Maximum Volumetric Flow Rates
+ Nozzle Diameter (mm) | 
+Filament & Temp (°C)
+ | 
+Volumetric Flow Rate (mm³/s)
+ | 
+0.40 | 
+PLA 220 | 
+13 | 
+0.60 | 
+PLA 220 | 
+14 | 
+0.80 | 
+PLA 220 | 
+17 | 
+ | 
+ | 
+ | 
+0.40 | 
+PETG 240 | 
+17 | 
+0.60 | 
+PETG 240 | 
+18 | 
+0.80 | 
+PETG 240 | 
+20 | 
+ | 
+ | 
+ | 
+0.40 | 
+ASA 260 | 
+15 | 
+0.60 | 
+ASA 260 | 
+16 | 
+0.80 | 
+ASA 260 | 
+17 | 
+
+LINKS:
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/new-drg-1678364035460_240x240.svg?v=1740671073
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/new-drg-1678364035460_480x480.svg?v=1740671073
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/standard_engraving-01-01_4fb38d12-2cfc-4bae-bef7-efb20f60800d.svg?v=1740671134
+   https://e3d-online.com/products/hotend-cleaning-filament-1-75mm-0-1kg

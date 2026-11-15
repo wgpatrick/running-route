@@ -594,16 +594,22 @@ def _asm_solve(workdir: Path, job: str, xyz, part_tets, comps, fixed_nodes, noda
     return res
 
 
-def _unbond_away_from_screws(design: Design, mesh: dict, names) -> tuple:
-    """A lower bound on joint stiffness: where two parts are screwed together, keep them joined only
-    within the pressure cone around each screw and let the rest of the interface separate freely.
-    (The truth lies between this and fully bonded: a real interface also carries compression.)
-    Returns (xyz, part_tets, description of what was done)."""
-    xyz = mesh["xyz"].copy()
-    part_tets = [t.copy() for t in mesh["part_tets"]]
+def _screw_stacks(design: Design, names) -> list:
+    """For every screw: the parts it holds together, from what is declared about it, not from what happens
+    to be near it. That is the parts named in `clamps`, the parts it threads into (`threads_into`, or a
+    thread/T-nut join to the screw) and, because most screws are placed without `clamps`, the parts its
+    shank passes through: a part counts when the screw's axis runs inside the part's extent and the
+    material around the axis is closer than the head's radius (a hole the head can bear on).
+    A part that merely sits beside a screw is not in its stack.
+    Returns [(under-head point, tip, head diameter, screw name, set of part names)]."""
+    from build123d import Edge
+
     comps = {c.name: c for c in design.components}
-    idx_of = {n: i for i, n in enumerate(names)}
-    screws = []
+    boxes = {}
+    for n in names:
+        bb = comps[n].shape.bounding_box()
+        boxes[n] = (np.array([bb.min.X, bb.min.Y, bb.min.Z]), np.array([bb.max.X, bb.max.Y, bb.max.Z]))
+    out = []
     for f in design.fasteners:
         c = comps.get(f.name)
         if c is None or not c.meta.get("thread_d"):
@@ -612,8 +618,56 @@ def _unbond_away_from_screws(design: Design, mesh: dict, names) -> tuple:
         bb = c.shape.bounding_box()
         L = float(np.dot([bb.size.X, bb.size.Y, bb.size.Z], np.abs(ax)))
         head = np.array(f.head_center, dtype=float)
-        hd = c.meta.get("interfaces", {}).get("head_d", 2 * c.meta["thread_d"])
-        screws.append((head, head - ax * L, hd, f.name))
+        tip = head - ax * L
+        iface = c.meta.get("interfaces", {})
+        hd = iface.get("head_d", 2 * c.meta["thread_d"])
+        held = set(f.clamps) | set(c.meta.get("threads_into", []))
+        for key, kind in design.joins.items():
+            if len(key) == 2 and f.name in key and any(w in str(kind) for w in ("thread", "tnut")):
+                held |= set(key) - {f.name}
+        under = head - ax * iface.get("head_h", 0.0)        # shank only: from under the head to the tip
+        for n in names:
+            if n in held or n == f.name or comps[n].meta.get("thread_d"):
+                continue
+            lo, hi = boxes[n]
+            # the stretch of shank inside this part's box (slab clipping)
+            t0, t1 = 0.0, 1.0
+            seg = tip - under
+            inside = True
+            for k in range(3):
+                if abs(seg[k]) < 1e-12:
+                    if not (lo[k] - 1e-6 <= under[k] <= hi[k] + 1e-6):
+                        inside = False
+                        break
+                    continue
+                ta, tb = sorted(((lo[k] - under[k]) / seg[k], (hi[k] - under[k]) / seg[k]))
+                t0, t1 = max(t0, ta), min(t1, tb)
+            if not inside or (t1 - t0) * np.linalg.norm(seg) < 0.3:
+                continue
+            try:
+                gap = comps[n].shape.distance_to(Edge.make_line(tuple(under + t0 * seg), tuple(under + t1 * seg)))
+            except Exception:
+                continue
+            if gap < hd / 2:
+                held.add(n)
+        out.append((head, tip, hd, f.name, held))
+    return out
+
+
+def _unbond_away_from_screws(design: Design, mesh: dict, names) -> tuple:
+    """A lower bound on joint stiffness: where two parts are screwed together, keep them joined only
+    within the pressure cone around each screw and let the rest of the interface separate freely.
+    (The truth lies between this and fully bonded: a real interface also carries compression.)
+
+    Which interfaces are screwed joints follows the fasteners, not distance: a screw holds the interface
+    between two parts only if both are in its stack (see `_screw_stacks`) and it crosses that interface.
+    A screw that merely passes near a third part's contact face does not turn that contact into a screwed
+    joint; a contact held some other way (clamp, set screw, press fit, declared bond) stays joined.
+    Returns (xyz, part_tets, description of what was done)."""
+    xyz = mesh["xyz"].copy()
+    part_tets = [t.copy() for t in mesh["part_tets"]]
+    comps = {c.name: c for c in design.components}
+    screws = _screw_stacks(design, names)
     new_nodes, info = [], []
     for i, j, nodes in mesh["ifaces"]:
         a, b = names[i], names[j]
@@ -622,12 +676,14 @@ def _unbond_away_from_screws(design: Design, mesh: dict, names) -> tuple:
         P = xyz[nodes]
         keep = np.zeros(len(nodes), dtype=bool)
         used = []
-        for p0, p1, hd, sname in screws:
+        for p0, p1, hd, sname, held in screws:
+            if a not in held or b not in held:
+                continue    # this screw does not hold these two parts together
             seg = p1 - p0
             t = np.clip(((P - p0) @ seg) / (seg @ seg), 0, 1)
             dist = np.linalg.norm(P - (p0 + t[:, None] * seg), axis=1)
             near = dist <= hd                      # pressure cone radius at the interface ~ head diameter
-            if dist.min() <= hd * 1.5:
+            if dist.min() <= hd * 1.5:             # the screw crosses this face (two parts can also touch elsewhere)
                 if not near.any():
                     near[np.argsort(dist)[:3]] = True
                 keep |= near

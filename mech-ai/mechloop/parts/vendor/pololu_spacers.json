@@ -1,0 +1,108 @@
+{
+ "retrieved": "2026-11-15",
+ "family": "Pololu round nylon spacers (unthreaded)",
+ "vendor": "Pololu Corporation (brand: generic)",
+ "source_url": "https://www.pololu.com/category/93/spacers",
+ "title": "Pololu category 'Spacers' (product list)",
+ "ref": "product titles: 'Nylon Spacer: <L>mm Length, <OD>mm OD, <ID>mm ID (<n>-Pack)'; item 1982's page read in full",
+ "local_copy": "vendor_docs/Pololu_nylon_spacers_category_93.txt",
+ "ranges": {
+  "M2.5": {
+   "od_mm": 4.0,
+   "id_mm": 2.7,
+   "material": "nylon",
+   "items": {
+    "2": {
+     "pololu_item": 1970,
+     "pack": 50
+    },
+    "4": {
+     "pololu_item": 1971,
+     "pack": 50
+    },
+    "6": {
+     "pololu_item": 1972,
+     "pack": 50
+    },
+    "8": {
+     "pololu_item": 1973,
+     "pack": 50
+    },
+    "10": {
+     "pololu_item": 1974,
+     "pack": 25
+    },
+    "12": {
+     "pololu_item": 1975,
+     "pack": 25
+    },
+    "15": {
+     "pololu_item": 1976,
+     "pack": 25
+    },
+    "20": {
+     "pololu_item": 1977,
+     "pack": 10
+    },
+    "22": {
+     "pololu_item": 1978,
+     "pack": 10
+    },
+    "25": {
+     "pololu_item": 1979,
+     "pack": 10
+    }
+   }
+  },
+  "M3": {
+   "od_mm": 5.0,
+   "id_mm": 3.3,
+   "material": "nylon",
+   "items": {
+    "2": {
+     "pololu_item": 1980,
+     "pack": 50
+    },
+    "4": {
+     "pololu_item": 1981,
+     "pack": 50
+    },
+    "6": {
+     "pololu_item": 1982,
+     "pack": 50
+    },
+    "8": {
+     "pololu_item": 1983,
+     "pack": 50
+    },
+    "10": {
+     "pololu_item": 1984,
+     "pack": 25
+    },
+    "12": {
+     "pololu_item": 1985,
+     "pack": 25
+    },
+    "15": {
+     "pololu_item": 1986,
+     "pack": 25
+    },
+    "20": {
+     "pololu_item": 1987,
+     "pack": 10
+    },
+    "25": {
+     "pololu_item": 1988,
+     "pack": 10
+    }
+   },
+   "fits": "#2, #4, #6, M2 and M3 screws (item 1982 page)"
+  }
+ },
+ "not_obtained": [
+  "mass per spacer",
+  "the nylon grade and its temperature limit",
+  "length tolerance"
+ ],
+ "used_by_catalog": true
+}

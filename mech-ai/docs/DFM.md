@@ -185,6 +185,58 @@ Assumptions behind the estimates (our own, in `dfm_rules.py`): roughing 12 cm³/
 stainless; 12 min per set-up; 20 min programming; $75/h; stock $3-14/kg; printing 5 mm³/s with 1.2 mm walls and 20%
 infill; laser $1.50 per metre of cut. They are for comparing two versions of a design, not for quoting.
 
+### Machining time: which surfaces are charged (changed 2026-11-15)
+
+Machining time = chips / roughing rate + finished surface x finishing rate (0.4 min/cm² in steel, 0.1 in aluminium
+and plastics, `FINISH_MIN_PER_CM2`) + 0.3 min a hole + 0.6 min a tapped hole. The finished surface used to be the
+part's whole skin. For a plate that is wrong: a plate whose thickness is a stock thickness is cut from stock plate of
+that thickness and its two faces are never touched by a cutter. The estimate now leaves those two faces out, and says so:
+
+- `estimate.assumes` states the case in words ("cut from plate 6 mm of the part's own thickness: the two plate faces
+  (966 cm2) stay as supplied and are not machined ..."), and `finished_area_cm2` / `stock_faces_not_machined_cm2`
+  give the split. Pocket floors, counterbores, steps, hole walls and the outline are still charged.
+- A plate that is **not** a stock thickness is unchanged (`non_stock_thickness` warning, both faces machined, whole
+  surface charged). So are blocks (sawn 2 mm oversize, six sides machined) and turned parts.
+- The assumption has a consequence the design must accept: flatness and finish of the two faces are whatever the
+  stock has. A print bed that needs better than rolled plate should be specified as cast tooling plate (not in the
+  material table) or have a facing operation added by hand; neither is in the estimate.
+
+The case that showed the error: printer_v5's bed, 220 x 220 x 6 mm aluminium with four counterbored M3 holes, was
+104.5 min and $177 at one off, 102 minutes of it a finishing pass over 968 cm² of stock face. It is now 7.9 min and
+$56 ($20 each at ten off). The arithmetic, which is also the known-answer test
+(`tests/test_known_answers.py::test_stock_plate_estimate_does_not_machine_the_stock_faces`, a 200 x 100 x 6 plate
+with four 5 mm holes: 5.8 min, $50):
+
+| Item | Bed plate |
+|---|---|
+| Chips: blank 224 x 224 x 6 less the part, 10.8 cm³ at 12 cm³/min | 0.9 min |
+| Finishing: outline 880 mm x 6 mm = 52.8 cm², counterbores and hole walls 4.8 cm², at 0.1 min/cm² | 5.8 min |
+| Four holes at 0.3 min | 1.2 min |
+| Machining | 7.9 min |
+| Set-up 12 min + programming 20 min | 32 min |
+| 39.9 min at $75/h | $49.90 |
+| Stock 0.81 kg at $8/kg | $6.50 |
+| One off | $56 |
+
+Basis for calling that sensible. Nothing was fetched for this (no network use was allowed), so the outside figures
+are the author's recollection of published instant-quote behaviour and are **unverified**:
+
+- Bottom-up: 880 mm of outline in 6 mm aluminium with a 6 mm end mill at about 600 mm/min, two depth passes and
+  a finishing pass, is 4 to 5 minutes; four drilled and counterbored holes are 1 to 2 minutes. 7.9 minutes of
+  spindle time is consistent with that; 104 minutes is not consistent with any way of making this part.
+- The cost is therefore almost all set-up and programming (32 of 40 minutes), which is how a one-off simple part is
+  priced in practice: online CNC services quote a simple prismatic aluminium part of this size at roughly
+  $30 to $60 from overseas suppliers and $80 to $150 from US instant-quote services at one off, falling steeply
+  with quantity. $56 falling to $20 at ten off sits inside that band at the low end.
+- A 2D cutting service (laser or waterjet, the `sheet` process here) cuts the same outline and holes in 6 mm
+  aluminium for about $20 to $35 at one off but does not counterbore; the machined figure should be above that, and is.
+- Known low side: stock is priced by weight at a bulk rate ($8/kg, $6.50 here). A single cut-to-size plate bought
+  retail costs two to three times that, and there is no minimum-order charge, shipping or finish (anodising) in the
+  estimate. For one-off parts read the figure as a floor.
+
+Effect on the designs: printer_v5 machining estimate $360 to $209 (bed $177 to $56, the two Y plates $68/$59 to
+$55/$50, tool plate $56 to $48); printer_v4 $2,381 to $2,197 (its carrier, a block, is unchanged at $561).
+
 ## How each thing is measured
 
 - **Part frame**: the direction carrying the most flat area is the part's Z; six tool / build directions follow.
@@ -276,5 +328,6 @@ Speed: 1.4 to 4.6 s for the manufacture verifier on these designs (0.1 to 0.5 s 
   halved); T-slots and dovetails open at both ends pass the line-of-sight test although they need a special cutter;
   counterbore side is not used to fix the hole's set-up; surface finish and tolerances; turned parts get only basic
   checks; inch drills are accepted only as fractions.
-- **Cost**: the time and cost figures are coarse estimates from volume removed and set-up count, with assumed rates.
+- **Cost**: the time and cost figures are coarse estimates from volume removed, cut surface and set-up count, with assumed rates
+  (see "Machining time: which surfaces are charged"). No facing of stock plate, minimum order charge, finish or shipping.
 - **Castings, moulding, welding, other printing technologies**: not covered.

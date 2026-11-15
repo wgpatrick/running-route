@@ -14,7 +14,7 @@ import math
 import numpy as np
 
 from . import dfm_geom as G
-from .dfm_rules import MACHINING, PLASTICS, PROGRAM_MIN, SETUP_MIN, SHOP_RATE_USD_H, Limits, standard_drill
+from .dfm_rules import FINISH_MIN_PER_CM2, MACHINING, PLASTICS, PROGRAM_MIN, SETUP_MIN, SHOP_RATE_USD_H, Limits, standard_drill
 from .dfm_sheet import plate_of
 
 ROUND_BAR_MM = (6, 8, 10, 12, 16, 20, 25, 30, 35, 40, 45, 50, 60, 70, 80, 90, 100, 120, 150, 200)
@@ -85,6 +85,7 @@ def check_machined(r, design, c, sm: G.Sampled, frame: np.ndarray, cyls: list, h
             st = up or math.ceil(t + 1)
         else:
             st = near
+        row["_stock_thickness_plate"] = bool(abs(near - t) <= 0.05)
         stock_vol = (others[0] + 4) * (others[1] + 4) * st
         row["stock"] = f"plate {st:g} mm, blank {others[0] + 4:.0f} x {others[1] + 4:.0f} mm"
         row["could_be_cut_2d"] = bool(not plate["steps"] and not plate["countersinks"])
@@ -357,15 +358,42 @@ def check_machined(r, design, c, sm: G.Sampled, frame: np.ndarray, cyls: list, h
     rho = MATERIALS[c.material].density if c.material in MATERIALS else 2700.0
     chips_cm3 = max(stock_vol - float(shape.volume), 0.0) / 1000.0
     setups = row.get("setups_estimate", 1)
-    cut_min = chips_cm3 / mrr + float(sm.mesh.area) / 100.0 * 0.4 / (4.0 if c.material.startswith("al") or plastic else 1.0) \
-        + 0.3 * len(holes) + 0.6 * len(tapped)
+    # Finishing time goes with the area the cutter actually finishes. A plate cut from stock of its own thickness
+    # keeps the mill's two faces as supplied: only its outline, holes, counterbores and pockets are cut. (Charging
+    # a finishing pass over both faces made a 220 x 220 x 6 mm plate with four counterbored holes 104 minutes and $177.)
+    finish_rate = FINISH_MIN_PER_CM2 / (4.0 if c.material.startswith("al") or plastic else 1.0)
+    total_area = float(sm.mesh.area)
+    stock_faces = 0.0
+    if row.pop("_stock_thickness_plate", False):
+        k = plate["k"]
+        tri = np.asarray(sm.tris, dtype=float)                       # exact, from the surface triangles
+        pk, nk = (tri.mean(axis=1) @ frame.T)[:, k], (np.asarray(sm.tri_n) @ frame.T)[:, k]
+        as_supplied = ((nk > 0.98) & (np.abs(pk - hi[k]) < 0.05)) | ((nk < -0.98) & (np.abs(pk - lo[k]) < 0.05))
+        tri_area = 0.5 * np.linalg.norm(np.cross(tri[:, 1] - tri[:, 0], tri[:, 2] - tri[:, 0]), axis=1)
+        stock_faces = float(tri_area[as_supplied].sum())
+    finished_area = max(total_area - stock_faces, 0.0)
+    cut_min = chips_cm3 / mrr + finished_area / 100.0 * finish_rate + 0.3 * len(holes) + 0.6 * len(tapped)
     setup_min = SETUP_MIN * setups
     stock_usd = stock_vol * 1e-9 * rho * usd_kg
+    if stock_faces > 0:
+        assumes = (f"cut from {row['stock'].split(',')[0]} of the part's own thickness: the two plate faces "
+                   f"({stock_faces / 100:.0f} cm2) stay as supplied and are not machined, so their flatness and finish are the "
+                   f"stock's; time covers the outline, holes, counterbores and pockets ({finished_area / 100:.0f} cm2)")
+    elif row.get("form") == "plate":
+        assumes = "not a stock thickness: both plate faces are machined, and the whole surface is charged a finishing pass"
+    elif row.get("form") == "turned":
+        assumes = "turned from round bar: the whole surface is charged a finishing pass"
+    else:
+        assumes = "cut from a sawn block 2 mm oversize: all six sides are machined, and the whole surface is charged a finishing pass"
     row["estimate"] = {"machining_min": round(cut_min, 1), "setup_min": round(setup_min, 0),
                        "stock_usd": round(stock_usd, 2),
                        "cost_usd_each_qty1": round((cut_min + setup_min + PROGRAM_MIN) / 60 * SHOP_RATE_USD_H + stock_usd, 0),
                        "cost_usd_each_qty10": round((cut_min + (setup_min + PROGRAM_MIN) / 10) / 60 * SHOP_RATE_USD_H + stock_usd, 0),
-                       "basis": f"estimate, not a quote: {mrr:g} cm3/min roughing, {SETUP_MIN:g} min per set-up, {PROGRAM_MIN:g} min programming, "
+                       "finished_area_cm2": round(finished_area / 100, 1),
+                       "stock_faces_not_machined_cm2": round(stock_faces / 100, 1),
+                       "assumes": assumes,
+                       "basis": f"estimate, not a quote: {mrr:g} cm3/min roughing, {finish_rate:g} min per cm2 of finished surface, "
+                                f"{SETUP_MIN:g} min per set-up, {PROGRAM_MIN:g} min programming, "
                                 f"${SHOP_RATE_USD_H:g}/h, stock ${usd_kg:g}/kg"}
     drivers = []
     if setups > 2:

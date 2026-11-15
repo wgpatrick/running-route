@@ -18,6 +18,7 @@ the frame it is placed in, is `mechloop/parts/details.py`. See `docs/VENDOR_CAD.
 | `fan_40x40x10.step` | 40 mm axial fan (`fan(40)`) | FreeCAD-library `Electrical Parts/fans/fan-40x40mm.step` | commit f5ca01cd | CC-BY 3.0 | community-made |
 | `voron0_3010_axial_fan.step` | 30 mm axial fan (`fan(30)`) | https://github.com/VoronDesign/Voron-0 `CAD/V0.2R1_Master_Assembly_STEP.zip`, part "3010 DC Axial Fan" extracted from the assembly and re-exported | commit a0d5d1bc91d1b3bc0af6109384d8704f2bf97d10 | GPL-3.0 (Voron-0 repository) | community-made |
 | `microswitch_spdt_lever.step` | lever microswitch of the endstop module (`endstop_switch`; the 20 x 12.5 mm board under it is generated) | FreeCAD-library `Electronics Parts/Switch/Limit switch/Microswitch_SPDT_Horizontal_L.step` | commit f5ca01cd | CC-BY 3.0 | community-made |
+| `hotend_v6_style.step` | V6-style hotend: heat sink with groove mount, heater block, nozzle (`hotend_v6`; no fan or duct) | FreeCAD-library `Electrical Parts/Hotend/hotend-3d-printer.step`, unchanged (retrieved 2026-11-15) | commit f5ca01cd | CC-BY 3.0 | community-made (not E3D's model) |
 
 Not files: socket head cap screws and hex nuts are generated to ISO 4762 / ISO 4032 by the `bd_warehouse` package
 (Apache-2.0) at run time; nothing is stored.

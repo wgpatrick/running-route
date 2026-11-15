@@ -157,3 +157,16 @@ shared the machine. The previous full run took 343 s in all.
 - Connector positions were compared with the vendor CAD for the SKR's motor connectors and the PSU strip only.
 - Automatic alignment of an inbox file picks among the 24 axis-aligned orientations and centres bounding boxes; a
   file with a cable or a different origin needs the JSON sidecar.
+
+## Added 2026-11-15 (parts for printer_v6)
+
+| Catalog part | Model kind | Source | Result |
+|---|---|---|---|
+| `hotend_v6()` | community CAD | FreeCAD-library `Electrical Parts/Hotend/hotend-3d-printer.step` (CC-BY 3.0): heat sink, groove mount, block and nozzle as one solid, no fan | The simulation solid is built from E3D's dimension drawing (62.55 mm tip to top; groove mount 16 / 12 / 16). The community model agrees on the groove mount diameters and the 3.7 mm top flange, is 62.8 mm long (0.25 mm more, declared) and draws the lower flange 2.0 mm thick (E3D: 3.0). `proxy_mismatch` passes with the volume ratio declared (finned model vs. envelope). This is the model the 2026-11-14 pass set aside because the design-local proxy was 60 mm long; the catalogue part now has the real length. |
+| `extruder_roto()` | proxy | E3D's "Roto Reference" CAD is published on printables.com (model 655950), outside this session's network allow-list; E3D's own CDN carries the drawings but not the STEP | Simulation solid: boxes and a motor cylinder to the dimensioned envelope of E3D's drawing, internal outlines scaled from it (+/-1 mm). First on the wish list. |
+| `hotend_revo()` | proxy | same (also in "Revo Voron Reference CAD", printables 713137) | Cylinders to E3D's nozzle drawing (22.8, 41.1, 13 mm) and the HeaterCore outline scaled from its drawing. |
+| `spacer_round()`, `bed_column_silicone()` | proxy | plain sleeves; no maker publishes a model | The generated solid is the part. |
+| `gt2_pulley(.., 9)`, `gt2_idler(.., 9)` | proxy | no model found for 9 mm belt | as for the 12 mm parts |
+
+Tried and not used: github.com/e3donline/ToolChanger (E3D's repository; printed tool parts only, no hotend or extruder
+model); github.com/Annex-Engineering/Sherpa_Mini-Extruder (has STEP files, but the Sherpa Mini was not chosen).

@@ -1,0 +1,207 @@
+===== revo-support-roto-standard-sensored Revo Support: Roto (Standard & Sensored) 16328
+
+ Table of Contents
+ Summary
+ Performance Characteristics
+ Service Temperatures
+ Fan Specification
+ Motor Specification & Diagrams
+ Heatsink Thermistor
+ Filament Sensor
+ Filament Sensor Wiring
+ Maintenance
+ Materials
+ Volumes & Dimensions
+ Assembly Guide
+ Upgrade Guides
+ Firmware/Printer Config
+ Reference CAD
+ Compliance
+Summary
+Drive type: Dual drive
+Mass: 140g (157g including Revo hotside and nozzle)
+Nominal steps per mm (16x microstepping): 2682
+Rotation distance (including the gear ratio): 26.8937
+Extrusion force: 70N+
+Gear ratio: 11.262:1
+Minimum recommended current: 0.45A Peak (0.318A RMS)
+Maximum current: 0.6A Peak (0.424A RMS)
+Temperature sensor type: Thermistor, Semitec 104NT-4-R025H42G
+Motor voltage: 24V
+Fan voltage: 5V (12V/24V regulator boards available)
+Filament Diameter: 1.75mm
+Performance Characteristics
+Maximum ambient printing temperature (PLA): 40°C
+Service Temperatures
+Note, these are maximum service temperatures of the components used and not a guaranteed operating temperature of the system
+Fan: 70°C (ambient temperature)
+Motor: 80°C (surface temperature)
+Gearbox: 85°C (surface temperature)
+Idler: 85°C (ambient temperature)
+Fan Specification
+2 wire fan
+Wire Length: 130mm
+Rated Voltage: 5 VDC
+Rated Current: 0.14 A + 10% Max
+Noise Level: 33.6 dB (A)
+Weight: 7g
+Black Wire: Ground
+Red Wire: Positive
+3 wire fan
+Wire Length: 130mm
+Rated Voltage: 5 VDC
+Rated Current: 0.14 A + 10% Max
+Noise Level: 33.6 dB (A)
+Weight: 7g
+Black Wire: Ground
+Red Wire: Positive
+Motor Specification & Diagrams
+Motor mass: 50 g
+Motor wire length: 40mm
+Phase number: 2 phases
+Rated voltage: 4.5 VDC
+Minimum recommended motor current: 0.45A Peak (0.318A RMS). Do not exceed 0.6A Peak (0.424A RMS).
+Resistance (20 °C): 7.5±10% Ω / Phase
+Holding torque: 75 mNm
+Detent torque: 5 mNm
+Rotate direction: ABCDA CW
+Step angle: 0.9°
+Rotor inertia: 7 gcm²
+Heatsink Thermistor
+Cartridge length: 10mm
+Cartridge diameter: 3mm
+Thermistor wire length: 70mm
+Temperature sensor type: Thermistor, Semitec 104NT-4-R025H42G
+Filament Sensor
+Weight ≈ 14.4g
+Connector: JST SH SM04B-SRSS-TB(LF)(SN)
+Filament runout sensor
+Programmable action button
+Bi-color LED to show status:
+Red - no filament detected
+No Light - filament present
+Blue - action button is pressed
+Filament Sensor Wiring
+Green wire - Action Button
+Blue Wire - Filament Sensor
+Red - VCC (3.3V-5V)
+Black - GND
+Maintenance
+Do not remove the grease from the drive gears.
+Use a brush or compressed air to dislodge filament debris from hobb teeth.
+Materials
+Heatsink: Aluminium
+Gearbox: Steel, POM
+Idler: POM
+Bushings: Oilite
+Fixings: Steel
+Volumes & Dimensions
+Roto
+Roto Sensored
+Roto Bowden
+Assembly Guide
+Your upgrade kit will have the following components:
+1 x Roto extruder assembly
+1 x Roto fixings kit
+1 x 3 or 2-wire 5V fan.
+1 x filament sensor (Optional)
+1 x Heatsink thermistor (Optional)
+1 x Bowdapter (Optional)
+1 x Extension cable kit
+During this upgrade, you will need:
+1 x 2.0mm hex key
+1 x 1.5mm hex key
+Identify the M3x30 screw holding the heatsink, and unscrew it using a 2.0mm hex key.
+Keep the screw for later usage.
+Carefully detach the Roto heatsink from the gearbox.
+Place the filament sensor in its allocated place on the heatsink. (skip if using standard or Bowden variants)
+Be mindful of the orientation!
+Identify the heatsink thermistor, and insert it all the way in its allocated place. (skip if using standard or Bowden variants)
+Secure the heatsink's thermistor by tightening the M3x3 grub screw
+Reattach the heatsink. Make sure that the heatsink is flush with the gearbox and there is no gap between them.
+If the gap between the heatsink and the gearbox still exists, make sure that the gears are well alligned!
+Secure the heatsink by tightening the M3x30 screw using a 2.0mm hex key.
+The thermistor cables should go through the gap located at the bottom of the heatsink.
+Zip-tie the heatsink's thermistor to the heatercore's cables to provide strain relief for the thermistor.
+Make sure that the Revo spring is attached to the top of the heatercore.
+This step is valid for both Roto and Roto Sensored.
+Attach the hotside to the heatsink.
+Screw the nozzle through the hotside and into the heatsink using only your fingers.
+Place the 2/3-wire fan on the heatsink as shown below, and tighten it using M3x35 screws.
+3-wire fan goes with the Sensored Roto, and the 2-wire fan goes with the standard Roto.
+This step is valid for both 2 and 3-wire fans.
+Be mindful of the fan's orientation, the sticker should be placed towards the heatsink!
+Mount the fan at a preferred angle, ensuring that its cables are positioned nearest to the wiring loom.
+Screw in the bowdaptor at the bottom of the heatsink (bowden variant only)
+Upgrade Guides
+Official Voron Stealthburner Mount
+Firmware/Printer Config
+Klipper Config
+Add this to your printer.cfg file:
+[extruder]
+step_pin: PD15
+dir_pin: PD14
+enable_pin: !PC7
+rotation_distance: 26.8937 # Roto high precision measured value
+microsteps: 16
+full_steps_per_rotation: 400
+nozzle_diameter: 0.4
+filament_diameter: 1.75
+heater_pin: PB3
+sensor_type: PT1000
+sensor_pin: PA2
+min_temp: 0
+max_temp: 300
+max_extrude_only_distance: 99999
+pressure_advance: 0.04
+pressure_advance_smooth_time: 0.04
+control: pid
+pid_kp: 14.01
+pid_ki: 0.59
+pid_kd: 84.06
+[tmc2209 extruder]
+uart_pin: PC6
+interpolate: True
+run_current: 0.45
+sense_resistor: 0.110
+stealthchop_threshold: 0
+RepRap and Marlin Firmware
+For RepRap firmware, use:
+Nominal steps per mm (16x microstepping): 2682
+Rotation distance (including the gear ratio): 26.8937
+Reference CAD
+Roto Reference
+Roto Part Cooling Duct
+Roto Bowden Washers
+Compliance
+Roto complies with the following standards:
+CE Marking
+RoHS Compliant
+REACH Compliant
+
+LINKS:
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/Action_button-01.png?v=1741093826
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/E-SEMITEC-MOLEX-ROTO_datasheet_1-01.png?v=1741099015
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/E_fan_cable_2_wires_FV.png?v=1741098824
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/E_fan_cable_3_wires_FV.png?v=1741098879
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/Fan_mount_32ac147a-d29b-49a6-8d93-014b670dbbde.svg?v=1741101488
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/Filament_sensor_wiring.webp?v=1741093933
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/Motor_specs_V3_2.png?v=1741611947
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/Place_sensor_4_2fc5a152-a17c-47b1-bb83-9d0bedb7e1f1.svg?v=1741101059
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/Roto_Bowden_Dim._af180054-60da-420d-8258-1af330b3028d.svg?v=1741099303
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/Roto_Dim._4597be30-801d-420f-8b0b-63149c77e7c3.svg?v=1741099235
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/Roto_Smart_Dim._08e34d88-a55d-4fc2-b2bf-f77c88f6ce01.svg?v=1741099271
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/attach_hotside._fb275fe8-f8f7-4cef-8508-587922a6b7e4.svg?v=1741101405
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/detach_heatsink_1cedaa5b-4aff-4cb7-b840-f39c445a1048.svg?v=1741101020
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/grub_screw_d2806ac4-11a3-43e7-9b1e-0ba82c419dfd.svg?v=1741101212
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/heatsink_screw_77ced0d1-28f8-47ba-9d72-624c16216bd5.svg?v=1741100658
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/insert_heatsink_thermistor_ff4dc4e0-2f3f-4d05-8a27-5a734beff52f.svg?v=1741101114
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/insert_spring_core_fa905813-2efa-4781-b378-98257d971827.svg?v=1741101359
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/place_bowdapter_6c6b1cc3-fcef-47e3-9fcc-bde0bd30b4ac.svg?v=1741101548
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/place_sink_back_7aa3e348-f104-425f-9463-e04a2160373f.svg?v=1741101247
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/screw_nozzle_0c2feef0-bf29-4c17-9e30-85531c2ad300.svg?v=1741101443
+   https://cdn.shopify.com/s/files/1/0259/1948/8059/files/tighten_heatsink_214dffcf-de50-47a9-9a55-89fe1be179e1.svg?v=1741101301
+   https://www.printables.com/model/655950-e3d-roto-reference-cad
+   https://www.printables.com/model/661438-e3d-revo-roto-part-cooling-fan
+   https://www.printables.com/model/703284-roto-bowden-washers
+   www.printables.com/model/670693-e3d-roto-voron-stealthburner-upgrade

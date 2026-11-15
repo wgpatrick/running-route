@@ -6,8 +6,9 @@ Modelled: G-code from a real slicer, look-ahead planning with the machine's own
 speed/acceleration limits, axis masses from the CAD, motor torque curves, step
 loss, extruder lag, bead width from extruded volume, machine collisions along
 the print.
-Not modelled: heat (melting, cooling, warping, bed adhesion), pressure advance,
-ooze and stringing, belt stretch, frame flex, vibration of the printed part.
+Not modelled: heat (melting, cooling, warping, bed adhesion), ooze and stringing, vibration of the printed part.
+With firmware="klipper" the motion, input shaping, pressure advance and bed-mesh compensation are whatever real
+Klipper puts in its step stream (firmware.py, tuning.py); the built-in planner has none of the three.
 """
 from __future__ import annotations
 
@@ -53,6 +54,10 @@ class PrinterMap:
     backlash_mm: dict = field(default_factory=dict)  # lost motion per axis (slack belt, loose pulley)
     spring_damping_ratio: float = 0.05  # of belt/frame vibration (assumed)
     raster_px_per_mm: int = 20
+    # the bed surface as built, relative to the flat plane the firmware assumes (all assumed inputs, mm):
+    # {"tilt_x_mm": rise across the bed's width, "tilt_y_mm": across its depth, "bow_mm": centre above the corners,
+    #  "ref_xy": bed-centred point where Z was referenced (homing/probe point), "z_ref_error_mm": error of that reference}
+    bed_surface: dict = field(default_factory=dict)
 
 
 def _axis_info(design: Design, pm: PrinterMap):
@@ -111,11 +116,29 @@ def from_joints(info: dict, q):
     return gx, gy, gz
 
 
+def bed_deviation(pm: PrinterMap, info: dict, gx, gy):
+    """Height of the real bed surface above the plane the firmware believes in, at bed-centred (gx, gy), given that Z
+    was referenced at pm.bed_surface["ref_xy"]. Zero everywhere for a flat bed (the default)."""
+    bs = pm.bed_surface or {}
+    if not bs:
+        return np.zeros_like(np.asarray(gx, dtype=float))
+    W, D = info["bed_size"]
+
+    def raw(x, y):
+        u, v = np.asarray(x, dtype=float) / W, np.asarray(y, dtype=float) / D
+        return (bs.get("tilt_x_mm", 0.0) * u + bs.get("tilt_y_mm", 0.0) * v
+                - bs.get("bow_mm", 0.0) * 2.0 * (u * u + v * v))       # bow: centre this much above the corners
+
+    rx, ry = bs.get("ref_xy", (0.0, 0.0))
+    return raw(gx, gy) - raw(rx, ry) + bs.get("z_ref_error_mm", 0.0)
+
+
 def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, name: str = "part",
               dt: float = 0.001, render: bool = True, slicer_args: dict | None = None,
               accel_scale: float = 1.0, torque_scale: float = 1.0, speed_scale: float = 1.0,
               at: tuple = (0.0, 0.0), z_datum_error: float = 0.0, mass_extra: dict | None = None,
-              gcode_edit=None, collisions: bool = True, firmware: str | None = None, trajectory: bool = False) -> dict:
+              gcode_edit=None, collisions: bool = True, firmware: str | None = None, trajectory: bool = False,
+              firmware_opts: dict | None = None) -> dict:
     """Print `part` (a build123d shape sitting on Z=0, centred on XY) on `design`.
     Returns a report dict and writes artefacts into `out`. accel_scale multiplies the
     joints' acceleration limits and torque_scale the motor torque (e.g. reduced driver current)
@@ -125,6 +148,9 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
     gcode_edit(moves) -> moves lets a test tamper with the program.
     firmware="klipper" has the real Klipper host software plan the motion from the design's generated printer.cfg
     (see firmware.py) in place of the twin's own planner; if Klipper is not installed the print is an error, not a pass.
+    firmware_opts (Klipper only): {"input_shaper": True|False|{"x": {...}, "y": {...}}, "pressure_advance": True|False|K,
+    "bed_mesh": True|False} choose what the generated printer.cfg turns on (default: input shaper and pressure
+    advance on, bed mesh on when the design has a probe and pm.bed_surface is given). See tuning.py.
     trajectory=True saves the simulated nozzle path to <name>_trajectory.npz for replay."""
     from build123d import export_stl
 
@@ -217,12 +243,14 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
         try:
             if gcode_edit is not None:
                 raise fw.FirmwareError("gcode_edit cannot be combined with firmware in the loop")
-            res_fw = fw.commanded(design, info, gpath, pts, dt, out / "firmware")
+            res_fw = fw.commanded(design, info, gpath, pts, dt, out / "firmware", pm=pm, opts=firmware_opts,
+                                  accel_scale=accel_scale, speed_scale=speed_scale, mass_extra=mass_extra)
         except (fw.FirmwareNotAvailable, fw.FirmwareError) as ex:
             r.add("error", "firmware_not_run" if isinstance(ex, fw.FirmwareNotAvailable) else "firmware_error", str(ex),
                   hint="tools/setup_klipper.sh installs Klipper for these runs." if isinstance(ex, fw.FirmwareNotAvailable) else "")
             return finish()
         Qc, Vc, seg, frac, seg_t = (res_fw[k] for k in ("Qc", "Vc", "seg", "frac", "seg_t"))
+        Qn, e_cmd = res_fw["Qn"], res_fw["E"]
         rep["firmware"] = res_fw["report"]
         for msg, n in res_fw["report"]["klipper_messages"].items():
             r.add("error", "firmware_rejected_move", f"Klipper: {msg} ({n} times)")
@@ -234,11 +262,16 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
             return finish()
     else:
         Qc, Vc, seg, frac, seg_t = plan(pts, feeds, vmax, amax, dt, dwell=dwell)
+        Qn, e_cmd = Qc, None
     n_settle = int(0.3 / dt)
+    planned_is_commanded = Qn is Qc
     Qc = np.vstack([Qc, np.repeat(Qc[-1:], n_settle, 0)])
     Vc = np.vstack([Vc, np.zeros((n_settle, 3))])
     seg = np.concatenate([seg, np.full(n_settle, len(moves) - 1)])
     frac = np.concatenate([frac, np.ones(n_settle)])
+    Qn = Qc if planned_is_commanded else np.vstack([Qn, np.repeat(Qn[-1:], n_settle, 0)])
+    if e_cmd is not None:
+        e_cmd = np.concatenate([e_cmd, np.full(n_settle, e_cmd[-1])])
     rep["plan"] = {"print_time_s": round(float(seg_t.sum()), 1), "samples": len(Qc),
                    "peak_speed_mm_s": [round(float(x), 1) for x in np.abs(Vc).max(axis=0)],
                    "accel_limits_mm_s2": amax.tolist()}
@@ -255,71 +288,18 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
         except Exception as ex:
             rep["plan"]["heatup_error"] = f"{type(ex).__name__}: {ex}"
     # ---- machine dynamics
-    import mujoco
+    from .machine import drive_force, machine_model
 
-    from ..verifiers.motion import build_mujoco
-    from ..verifiers.ratings import _torque_at
-
-    model = build_mujoco(design)
-    data = mujoco.MjData(model)
-    mujoco.mj_forward(model, data)
-    M = np.zeros((model.nv, model.nv))
-    mujoco.mj_fullM(model, data, M)
-    dof = [model.joint(j.name).dofadr[0] for j in jl]
-    data.qvel[:] = 0
-    data.qacc[:] = 0
-    mujoco.mj_inverse(model, data)  # force each axis must supply to hold still = gravity load
-    comps = {c.name: c for c in design.components}
-    mass, bias, tpr, fmax = [], [], [], np.zeros((len(Qc), 3))
-    for k, j in enumerate(jl):
-        dr = getattr(j, "drive_resolved", None)
-        if not dr:
-            r.add("error", "twin_setup", f"Joint {j.name} has no resolved drive (motor + transmission).")
-            return finish()
-        mass.append(M[dof[k], dof[k]] + j.reflected_inertia + (mass_extra or {}).get("xyz"[k], 0.0))
-        bias.append(-float(data.qfrc_inverse[dof[k]]))
-        tpr.append(dr["travel_per_rev"])
-        rpm = np.abs(Vc[:, k]) / dr["travel_per_rev"] * 60.0
-        curve = comps[dr["motors"][0]].ratings.get("torque_curve_rpm_frac") or [(0, 0.7), (1e6, 0.7)]
-        xs, ys = zip(*curve)
-        torque = sum(comps[m].ratings["holding_torque_nmm"] for m in dr["motors"]) * np.interp(rpm, xs, ys)
-        fmax[:, k] = 2 * math.pi * torque * dr["efficiency"] / dr["travel_per_rev"] * torque_scale
-    off = M[np.ix_(dof, dof)] - np.diag(np.diag(M[np.ix_(dof, dof)]))
-    if np.abs(off).max() > 1e-6:
+    try:
+        mm = machine_model(design, pm, mass_extra)
+    except ValueError as ex:
+        r.add("error", "twin_setup", str(ex))
+        return finish()
+    mass, bias, tpr, series, motor_mass, belts_used, fric, back = (mm[k_] for k_ in (
+        "mass", "bias", "tpr", "series", "motor_mass", "belts_used", "fric", "back"))
+    fmax = drive_force(mm, Vc, torque_scale)
+    if mm["coupled"]:
         r.add("warning", "axes_coupled", "Axis inertias are coupled; the twin treats them as independent.")
-    fric = [pm.friction_n.get(a, 2.0) for a in "xyz"]
-    # series compliance: belt stretch (from the belt's routed length) in series with frame flex (from FEA)
-    series, motor_mass, belts_used = [], [], {}
-    for k, (j, ax) in enumerate(zip(jl, "xyz")):
-        ks = None
-        dr = j.drive_resolved
-        if pm.compliant and dr["kind"] == "belt":
-            from ..verifiers.belts import route
-
-            # every belt that runs round one of this joint's drive pulleys pulls on the axis, in parallel
-            pul = (j.drive or {}).get("pulley")
-            pulleys = set([pul] if isinstance(pul, str) else (pul or []))
-            is_pulley = {c.name for c in design.components if "pitch_diameter_mm" in c.ratings}
-            for pair in design.joins:
-                if len(pair) == 2 and (set(pair) & set(dr["motors"])):
-                    pulleys |= set(pair) & is_pulley
-            T_home = forward_kinematics(design, {})
-            kb, used = 0.0, []
-            for b in design.belts:
-                if any(n[0] == "pulley" and n[1] in pulleys for n in b.path):
-                    L = route(design, b, T_home)["length"]
-                    ea = pm.belt_ea_n * b.width / 6.0  # stiffness scales with belt width
-                    kb += 4.0 * ea / L  # two runs in parallel, carriage at mid-travel
-                    used.append({"belt": b.name, "width_mm": b.width, "n_per_mm": round(4.0 * ea / L, 1)})
-            if kb > 0:
-                ks = kb
-                belts_used[ax] = used
-        if pm.compliant and ax in pm.struct_stiffness:
-            kst = float(pm.struct_stiffness[ax])
-            ks = kst if ks is None else 1.0 / (1.0 / ks + 1.0 / kst)
-        series.append(ks)
-        motor_mass.append(j.reflected_inertia)
-    back = [pm.backlash_mm.get(a, 0.0) for a in "xyz"]
     Qa, worst, sinfo = simulate(Qc, Vc, np.array(mass), fmax, np.array(tpr), np.array(bias), np.array(fric), dt,
                                 damping_ratio=pm.damping_ratio, motor_mass=np.array(motor_mass),
                                 series_stiffness=series, backlash=back,
@@ -342,15 +322,23 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
                        "rms_lag_mm": [round(float(x), 4) for x in np.sqrt((lag ** 2).mean(axis=0))],
                        "worst_motor_error_mm": [round(float(x), 4) for x in mlag.max(axis=0)],
                        "final_position_error_mm": [round(float(x), 4) for x in final_err]}
-    # vibration that shows on the part: how far the nozzle is from the commanded PATH (sideways),
-    # as opposed to merely being late along it
-    sp = np.hypot(Vc[:, 0], Vc[:, 1])
+    # vibration that shows on the part: how far the nozzle is sideways from the path the G-code asked for (the
+    # planned trajectory before any input shaping), as opposed to merely being late along it. Without firmware
+    # shaping the planned and the commanded trajectory are the same thing.
+    Vn = Vc if Qn is Qc else np.gradient(Qn, dt, axis=0)
+    sp = np.hypot(Vn[:, 0], Vn[:, 1])
     moving = sp > 5.0
     if moving.any():
-        ex, ey = (Qa[:, 0] - Qc[:, 0])[moving], (Qa[:, 1] - Qc[:, 1])[moving]
-        cross = np.abs(ex * (-Vc[moving, 1] / sp[moving]) + ey * (Vc[moving, 0] / sp[moving]))
+        ex, ey = (Qa[:, 0] - Qn[:, 0])[moving], (Qa[:, 1] - Qn[:, 1])[moving]
+        cross = np.abs(ex * (-Vn[moving, 1] / sp[moving]) + ey * (Vn[moving, 0] / sp[moving]))
         rep["dynamics"]["cross_track_rms_mm"] = round(float(np.sqrt((cross ** 2).mean())), 4)
         rep["dynamics"]["cross_track_worst_mm"] = round(float(cross.max()), 4)
+        rep["dynamics"]["cross_track_p99_mm"] = round(float(np.percentile(cross, 99.0)), 4)
+        if Qn is not Qc:      # how much of that the firmware's own smoothing of the command accounts for
+            cx_, cy_ = (Qc[:, 0] - Qn[:, 0])[moving], (Qc[:, 1] - Qn[:, 1])[moving]
+            cc = np.abs(cx_ * (-Vn[moving, 1] / sp[moving]) + cy_ * (Vn[moving, 0] / sp[moving]))
+            rep["dynamics"]["command_smoothing_worst_mm"] = round(float(cc.max()), 4)
+            rep["dynamics"]["command_smoothing_rms_mm"] = round(float(np.sqrt((cc ** 2).mean())), 4)
     for k, (j, ax) in enumerate(zip(jl, "XYZ")):
         if final_err[k] > quarter[k]:
             i_slip = int(np.argmax(mlag[:, k] > 2 * quarter[k]))
@@ -397,8 +385,8 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
     rep["machine_collisions"] = len(hits) if hits is not None else "not checked"
     # ---- deposition and comparison with the intended part
     try:
-        res = dep.deposit_and_compare(info, pm, moves, e, seg, frac, Qc, Qa, dt, stl, out, name, r,
-                                      at=at, z_datum_error=z_datum_error)
+        res = dep.deposit_and_compare(info, pm, moves, e, seg, frac, Qn, Qa, dt, stl, out, name, r,
+                                      at=at, z_datum_error=z_datum_error, e_cmd=e_cmd)
         rep["print"] = res
     except Exception as ex:
         r.add("error", "deposition_failed", f"Deposition/comparison did not run: {type(ex).__name__}: {ex}")
@@ -416,7 +404,7 @@ def printer_map_for(design: Design, metrics: dict | None = None, **overrides) ->
     """PrinterMap for a design that declares `design.printer`, with the simulations coupled:
     belt stiffness from the belts' width, frame stiffness at the nozzle from the design's own FEA."""
     spec = design.printer or {}
-    kw = {k: spec[k] for k in ("x", "y", "z", "bed", "layer_height", "nozzle") if k in spec}
+    kw = {k: spec[k] for k in ("x", "y", "z", "bed", "layer_height", "nozzle", "bed_surface") if k in spec}
     for k_, f_ in (("perimeter", "perimeter_speed"), ("infill", "infill_speed"), ("travel", "travel_speed")):
         if k_ in (spec.get("speeds") or {}):
             kw[f_] = float(spec["speeds"][k_])

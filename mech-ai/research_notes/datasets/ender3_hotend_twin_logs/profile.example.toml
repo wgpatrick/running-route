@@ -1,0 +1,29 @@
+# What you know about your printer's hardware. Copy this file to profile.toml and edit it.
+# The twin starts from these values; calibration.json (from a calibration print) and online learning refine
+# the rest. Values below: the author's Ender 3 (40 W cartridge, 5015 part fan, 24 V supply). See PROFILE_DESIGN.md.
+profile_version = 1
+name = "Ender 3, direct drive, all-metal hotend, 5015 part fan"
+
+# Room temperature (C). A fixed assumption; the learned loss factor k absorbs a few degrees of difference.
+room_c = 25
+
+[hotend]
+heater_power_w = 40          # cartridge power at the supply voltage (30 / 40 / 50 / 60 W are common)
+# Not sure? It is printed on the cartridge or in the hotend's documentation. Or measure the cartridge resistance R
+# (printer off, unplugged at the board) and use V^2 / R: 24 V and 14.4 ohm -> 40 W. A 10 % error is absorbed by the
+# calibration print; a wrong voltage (12 V cartridge on 24 V) is not, and is unsafe anyway.
+filament_diameter_mm = 1.75  # used by the offline tools; the live twin reads it from Klipper ([extruder] filament_diameter)
+
+[part_fan]
+threshold = 0.191            # fan PWM below which the blower does not cool the nozzle (0-1)
+exponent = 0.508             # cooling ~ ((pwm - threshold) / (1 - threshold)) ** exponent
+# Leave both as they are if you do not know them: the calibration print measures the threshold (and the strength)
+# of your fan. Typical thresholds: 5015 blower 0.15-0.20, 4010 axial 0.10-0.20. The exponent ~0.5 is physics
+# (forced convection grows with the square root of air speed) and rarely needs changing.
+
+[power]
+bed_sag = 0.042              # supply sag with the bed on: heater power x (1 - bed_sag x bed_pwm); 0 if separate supplies
+# or unknown (the twin then sees a little extra 'missing power' while the bed heats, well below the alarm threshold)
+
+[bed]
+heater_power_w = 220         # bed heater power at the supply voltage (Ender 3: 220 W at 24 V); bed twin only

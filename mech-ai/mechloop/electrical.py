@@ -31,7 +31,8 @@ SOURCES = {
     "grouping": "bundle derating factors as in IEC 60364-5-52 table B.52.17 (bunched in air): recalled, typical, unverified",
     "insulation": "PVC hook-up wire 80 degC (UL 1007), silicone 200 degC (UL 3135), PTFE/FEP 200 degC (UL 1332), "
                   "glass-fibre sleeved heater leads 300 degC: typical, unverified",
-    "klipper": "control laws ported from Klipper klippy/extras heaters.py, verify_heater.py, pid_calibrate.py, "
+    "klipper": "heater control: Klipper's own heaters.py / verify_heater.py / pid_calibrate.py classes are called when its source is "
+               "installed (see heaters.<name>.control_code in the metrics); otherwise control laws ported from them. Also ported: "
                "thermistor.py, adc_temperature.py, tmc2208.py (github.com/Klipper3d/klipper, master, fetched 2026-11-14)",
     "convection": "natural convection: horizontal plate, hot side up Nu = 0.54 Ra^1/4 (Ra < 1e7) or 0.15 Ra^1/3; hot side "
                   "down Nu = 0.27 Ra^1/4; vertical/compact body Churchill-Chu (Incropera, Fundamentals of Heat and Mass "
@@ -57,13 +58,14 @@ COMPATIBLE = {
     "stepper_out": {"stepper"}, "stepper": {"stepper_out"},
     "fan_out": {"fan"}, "fan": {"fan_out"},
     "thermistor_in": {"thermistor"}, "thermistor": {"thermistor_in"},
-    "endstop_in": {"endstop"}, "endstop": {"endstop_in"},
+    "endstop_in": {"endstop", "probe"}, "endstop": {"endstop_in"},
+    "probe": {"endstop_in", "probe_in"}, "probe_in": {"probe"},
     "mains_out": {"mains_in", "series"}, "mains_in": {"mains_out", "series"},
     "pe": {"pe"},
     "signal_out": {"signal_in"}, "signal_in": {"signal_out"},
     "host": {"host"},
 }
-LOW_CURRENT = {"thermistor", "thermistor_in", "endstop", "endstop_in", "signal_out", "signal_in"}
+LOW_CURRENT = {"thermistor", "thermistor_in", "endstop", "endstop_in", "probe", "probe_in", "signal_out", "signal_in"}
 
 INSULATION_MAX_C = {"pvc": 80.0, "pvc105": 105.0, "silicone": 200.0, "ptfe": 200.0, "fiberglass": 300.0}
 INSULATION_WALL_MM = {"pvc": 0.4, "pvc105": 0.8, "silicone": 0.6, "ptfe": 0.25, "fiberglass": 0.5}
@@ -119,7 +121,7 @@ class Port:
 @dataclass
 class Device:
     name: str
-    kind: str      # board psu inlet relay mosfet heater thermistor thermal_fuse fan stepper endstop host earth_point
+    kind: str      # board psu inlet relay mosfet heater thermistor thermal_fuse fan stepper endstop probe host earth_point
     component: Optional[str] = None        # CAD part that represents it
     ports: dict = field(default_factory=dict)
     ratings: dict = field(default_factory=dict)
@@ -522,6 +524,22 @@ class HeaterPlant:
     basis: dict = field(default_factory=dict)
 
 
+def control_code() -> tuple:
+    """(module, description) of the heater control code in use: Klipper's own classes when its source is installed
+    (mechloop.twin.klippy_code), else None and the line-for-line port below. MECHLOOP_HEATER_CONTROL=port forces the port."""
+    import os
+
+    if os.environ.get("MECHLOOP_HEATER_CONTROL", "").lower() != "port":
+        try:
+            from .twin import klippy_code as K
+
+            if K.available():
+                return K, K.source() + ": heaters.ControlPID / ControlBangBang, verify_heater.HeaterCheck, pid_calibrate.ControlAutoTune"
+        except Exception:
+            pass
+    return None, "port of Klipper's control laws in mechloop.electrical (Klipper's source is not installed, or the port was asked for)"
+
+
 class _PID:      # Klipper ControlPID
     def __init__(self, kp, ki, kd, max_power=1.0, smooth_time=1.0):
         self.Kp, self.Ki, self.Kd = kp / 255.0, ki / 255.0, kd / 255.0
@@ -611,15 +629,26 @@ def simulate_heater(plant: HeaterPlant, cfg: dict, target: float, t_end: float, 
     sensor = float(T[isn])
     dt = PWM_CYCLE
     n = int(round(t_end / dt))
-    ctl = None
+    ctl = tuner = None
+    K, code = control_code()
     if duty_override is None and not autotune:
-        if cfg.get("control", "pid") == "pid":
+        kind = "pid" if cfg.get("control", "pid") == "pid" else "watermark"
+        if K is not None:
+            ctl = K.HeaterControl(kind, cfg, report_time=REPORT_TIME)
+        elif kind == "pid":
             kp, ki, kd = cfg["pid"]
             ctl = _PID(kp, ki, kd, cfg.get("max_power", 1.0), cfg.get("smooth_time", 1.0))
         else:
             ctl = _BangBang(cfg.get("max_delta", 2.0), cfg.get("max_power", 1.0))
+    elif autotune and K is not None:
+        tuner = K.HeaterControl("autotune", cfg, target=target, report_time=REPORT_TIME)
     vh_cfg = cfg.get("verify_heater", {}) if duty_override is None else None
-    vh = _VerifyHeater(**vh_cfg) if vh_cfg is not None else None
+    if vh_cfg is None:
+        vh = None
+    elif K is not None:
+        vh = K.HeaterVerify(plant.name, vh_cfg)
+    else:
+        vh = _VerifyHeater(**vh_cfg)
     smooth, inv_smooth = sensor, 1.0 / cfg.get("smooth_time", 1.0)
     duty, shutdown, shutdown_reason, t_shutdown = 0.0, False, "", None
     out_of_range = 0
@@ -663,7 +692,11 @@ def simulate_heater(plant: HeaterPlant, cfg: dict, target: float, t_end: float, 
                 shutdown, shutdown_reason, t_shutdown = True, "ADC out of range (min_temp/max_temp)", t
             smooth += (temp - smooth) * min(REPORT_TIME * inv_smooth, 1.0)
             if not shutdown:
-                if autotune:
+                if tuner is not None:            # Klipper's ControlAutoTune decides when to switch and when it is done
+                    duty = tuner.update(t, temp, target)
+                    if not tuner.tuning():
+                        break
+                elif autotune:
                     if heating_at and temp >= tune_target:
                         heating_at = False
                         peaks.append((peak_time, peak)); peak = -9999999.0
@@ -716,7 +749,10 @@ def simulate_heater(plant: HeaterPlant, cfg: dict, target: float, t_end: float, 
                 settled_since = None
     res = {"t": np.array(tr_t), "T": np.array(tr_T), "sensor": np.array(tr_s), "duty": np.array(tr_d),
            "state": T, "shutdown": shutdown, "shutdown_reason": shutdown_reason, "t_shutdown": t_shutdown,
-           "fuse_opened_at": t_fuse, "relay_opened_at": t_relay, "peaks": peaks}
+           "fuse_opened_at": t_fuse, "relay_opened_at": t_relay, "peaks": tuner.peaks() if tuner is not None else peaks,
+           "control_code": code}
+    if tuner is not None and len(res["peaks"]) >= 6:
+        res["autotune_pid"] = tuner.final_pid()
     return res
 
 
@@ -727,6 +763,8 @@ def autotune_pid(plant: HeaterPlant, cfg: dict, target: float) -> tuple:
     pk = r["peaks"]
     if len(pk) < 6:
         raise RuntimeError(f"autotune of {plant.name} did not oscillate ({len(pk)} peaks): target not reachable?")
+    if "autotune_pid" in r:      # Klipper's own calc_final_pid on the peaks its ControlAutoTune recorded
+        return tuple(round(float(x), 3) for x in r["autotune_pid"])
 
     def calc(pos):
         amp = 0.5 * abs(pk[pos][1] - pk[pos - 1][1])
@@ -1210,8 +1248,119 @@ def _board_port_of(el: Electrical, dev_name: str, port: str = None):
     return None
 
 
-def klipper_config(el: Electrical, design, sim: dict | None = None) -> str:
-    """printer.cfg from the pin map, the design's transmissions and joints, and the heater simulation."""
+# Assumed where the probe's own ratings do not say (IEC 60947-5-2 class figures, recalled, unverified):
+PROBE_DEFAULTS = {
+    "switching_distance_tolerance_frac": 0.10,   # unit-to-unit spread of the real sensing distance about nominal
+    "repeatability_mm": 0.01,                    # trigger-point scatter probe to probe at one spot (assumed)
+    "edge_margin_mm": None,                      # keep the sensing face this far inside the plate edge; default = face size
+}
+
+
+def probe_of(design):
+    """(endstop entry, component) of the design's bed probe, or (None, None). A probe is declared as
+    design.endstops += [{"joint": <z joint>, "probe": <part>}]; its part carries an electrical template of kind 'probe'."""
+    comps = {c.name: c for c in design.components}
+    for e in getattr(design, "endstops", []):
+        if e.get("probe"):
+            return e, comps.get(e["probe"])
+    return None, None
+
+
+def probe_geometry(design) -> dict | None:
+    """Where the bed probe is and what it can do, from the CAD and the probe's ratings. None when the design has no
+    probe. Lengths in mm. Machine coordinates are the firmware's: X and Y count from the low end of each joint's
+    travel, Z is the nozzle's height above the bed. Raises ValueError when the declaration cannot be used."""
+    from .geom import forward_kinematics
+
+    e, pc = probe_of(design)
+    if e is None:
+        return None
+    if pc is None:
+        raise ValueError(f"the probe part '{e.get('probe')}' is not in the design")
+    pr = design.printer or {}
+    joints = {j.name: j for j in design.joints}
+    if design.tool_point is None or pr.get("bed") is None:
+        raise ValueError("a bed probe needs design.tool_point and design.printer['bed']")
+    tpl = pc.ratings.get("electrical") if isinstance(pc.ratings.get("electrical"), dict) else {}
+    rt = dict(tpl.get("ratings", {}))
+    src = dict(tpl.get("sources", {}))
+    itf = pc.meta.get("interfaces", {})
+    if "sensing_face" not in itf:
+        raise ValueError(f"probe part '{pc.name}' has no 'sensing_face' interface (centre of the face that looks at the bed)")
+    T0 = forward_kinematics(design, {})
+    tb, tp = design.tool_point
+    noz = (T0[tb] @ np.array([*tp, 1.0]))[:3]
+    face = (T0[pc.body] @ np.array([*itf["sensing_face"][0], 1.0]))[:3] if pc.body in T0 else np.array(itf["sensing_face"][0])
+    bed = design.get(pr["bed"])
+    bb = bed.shape.bounding_box()
+    mat = (bed.material or "").lower()
+    target = "aluminium" if mat.startswith("al") else ("steel" if "steel" in mat else None)
+    sn = rt.get(f"switching_distance_{target}_mm") if target else None
+    tol = rt.get("switching_distance_tolerance_frac", PROBE_DEFAULTS["switching_distance_tolerance_frac"])
+    rep = rt.get("repeatability_mm", PROBE_DEFAULTS["repeatability_mm"])
+    jx, jy, jz = (joints.get(pr.get(a, a)) for a in "xyz")
+    out = {"probe": pc.name, "joint": e.get("joint"), "on_body": pc.body, "rides_with_nozzle": pc.body == tb,
+           "bed_material": bed.material, "target": target, "sensing_distance_mm": sn,
+           "sensing_distance_tolerance_frac": tol, "repeatability_mm": rep,
+           "assumed": [k for k, v in (("sensing_distance_tolerance_frac", "switching_distance_tolerance_frac" not in rt),
+                                      ("repeatability_mm", "repeatability_mm" not in rt)) if v],
+           "sources": {k: src.get(k, "not stated") for k in rt if k.startswith("switching_distance") or k == "repeatability_mm"},
+           "x_offset": round(float(face[0] - noz[0]), 3), "y_offset": round(float(face[1] - noz[1]), 3),
+           "face_above_nozzle_mm": round(float(face[2] - noz[2]), 3)}
+    if sn is None:
+        out["z_offset"] = None
+        return out
+    # the firmware's z_offset: nozzle height above the bed at the moment the probe switches
+    z_off = sn - (face[2] - noz[2])
+    out["z_offset"] = round(float(z_off), 3)
+    out["z_offset_range_mm"] = [round(float(z_off - tol * sn), 3), round(float(z_off + tol * sn), 3)]
+    gap0 = float(noz[2] - bb.max.Z)
+    out["nozzle_above_bed_at_home_pose_mm"] = round(gap0, 3)
+    if jz is not None:   # how close to the nozzle the Z travel can bring the bed (firmware Z at the joint's upper end)
+        out["nozzle_above_bed_at_end_of_z_travel_mm"] = round(gap0 - jz.range[1], 3)
+    if jx is None or jy is None:
+        return out
+    # machine coordinates: nozzle at X = q - lo; the bed's centre and extent in the same frame
+    off = [float(face[0] - noz[0]), float(face[1] - noz[1])]
+    trav = [jx.range[1] - jx.range[0], jy.range[1] - jy.range[0]]
+    bmin = [bb.min.X - noz[0] - jx.range[0], bb.min.Y - noz[1] - jy.range[0]]
+    bmax = [bb.max.X - noz[0] - jx.range[0], bb.max.Y - noz[1] - jy.range[0]]
+    size = pc.shape.bounding_box().size
+    margin = rt.get("edge_margin_mm") or PROBE_DEFAULTS["edge_margin_mm"] or round(max(min(size.X, size.Y), 2.0 * sn), 1)
+    area = [[max(0.0, bmin[k]), min(trav[k], bmax[k])] for k in (0, 1)]              # where the nozzle can print
+    mesh = [[max(bmin[k] + margin, off[k]), min(bmax[k] - margin, trav[k] + off[k])] for k in (0, 1)]   # where the probe can sense
+    centre = [(bmin[k] + bmax[k]) / 2 for k in (0, 1)]
+    home = [min(max(centre[k] - off[k], 0.0), trav[k]) for k in (0, 1)]              # nozzle position that puts the probe mid-bed
+    out.update({"edge_margin_mm": margin, "bed_min": [round(v, 3) for v in bmin], "bed_max": [round(v, 3) for v in bmax],
+                "travel": [round(v, 3) for v in trav],
+                "print_area": [[round(v, 3) for v in a] for a in area], "mesh_min": [round(mesh[0][0], 2), round(mesh[1][0], 2)],
+                "mesh_max": [round(mesh[0][1], 2), round(mesh[1][1], 2)],
+                "home_xy": [round(v, 2) for v in home], "home_probe_xy": [round(home[k] + off[k], 2) for k in (0, 1)],
+                "bed_centre": [round(v, 3) for v in centre],
+                "unprobed_strip_mm": {"x_low": round(max(0.0, mesh[0][0] - area[0][0]), 2), "x_high": round(max(0.0, area[0][1] - mesh[0][1]), 2),
+                                      "y_low": round(max(0.0, mesh[1][0] - area[1][0]), 2), "y_high": round(max(0.0, area[1][1] - mesh[1][1]), 2)}})
+    return out
+
+
+def _probe_pin(el: Electrical, design) -> tuple:
+    """(pin string with pull-up and inversion as Klipper wants it, device, board port) for the design's probe."""
+    _, pc = probe_of(design)
+    dev = next((d for d in el.devices.values() if d.kind == "probe" and (pc is None or d.component == pc.name)), None)
+    if dev is None:
+        return None, None, None
+    bp = _board_port_of(el, dev.name)
+    if bp is None:
+        return None, dev, None
+    out = str(dev.ratings.get("output", "npn_no")).lower()
+    # open-collector NPN needs the board's pull-up ('^'); normally-open NPN pulls the pin low when it switches ('!')
+    pre = ("^" if out.startswith("npn") else "") + ("!" if out in ("npn_no", "pnp_nc") else "")
+    return f"{pre}{bp.pin}", dev, bp
+
+
+def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict | None = None) -> str:
+    """printer.cfg from the pin map, the design's transmissions and joints, the heater simulation and the twin's
+    tuning (mechloop.twin.tuning.firmware_tuning: input shaper, pressure advance, probe and bed mesh). With
+    tuning=None the tuning is computed from the design alone (belt stiffness only, no FEA frame stiffness)."""
     from .verifiers.ratings import resolve_drives
 
     resolve_drives(design)
@@ -1219,9 +1368,23 @@ def klipper_config(el: Electrical, design, sim: dict | None = None) -> str:
     axis_motors(el, design)
     joints = {j.name: j for j in design.joints}
     pr = design.printer or {}
+    if tuning is None and pr:
+        try:
+            from .twin.tuning import firmware_tuning
+
+            tuning = firmware_tuning(design)
+        except Exception as ex:      # the config is still written; the missing sections are named in it
+            tuning = {"error": f"{type(ex).__name__}: {ex}"}
+    tuning = tuning or {}
     L = [f"# printer.cfg for {design.name}: GENERATED by mechloop from the electrical model. Do not edit by hand;",
          "# change the design and regenerate. Directions (dir_pin '!') and the extruder rotation_distance must be",
-         "# confirmed on the machine; PID values come from a simulated PID_CALIBRATE and should be re-run on the real heater.", ""]
+         "# confirmed on the machine; PID values come from a simulated PID_CALIBRATE and should be re-run on the real heater.",
+         "# Input shaper, pressure advance and probe offsets below are PREDICTIONS from the simulation, each resting on",
+         "# assumed values named beside it: re-measure on the machine (SHAPER_CALIBRATE, a pressure-advance test print,",
+         "# PROBE_CALIBRATE, BED_MESH_CALIBRATE)."]
+    if tuning.get("error"):
+        L += [f"# TUNING NOT GENERATED ({tuning['error']}): no [input_shaper], pressure_advance or mesh settings below."]
+    L += [""]
     board = next((d for d in el.devices.values() if d.kind == "board"), None)
     host = next((d for d in el.devices.values() if d.kind == "host"), None)
     L += ["[mcu]", f"serial: {fw.get('serial', '/dev/ttyAMA0' if host else '/dev/serial/by-id/usb-Klipper')}", "restart_method: command", ""]
@@ -1234,6 +1397,8 @@ def klipper_config(el: Electrical, design, sim: dict | None = None) -> str:
     L += [""]
     ends = {e["joint"]: e for e in design.endstops}
     sw_dev = {d.component: d for d in el.devices.values() if d.kind == "endstop"}
+    pg = tuning.get("probe")
+    probe_pin, probe_dev, _ = _probe_pin(el, design)
     for ax in ("x", "y", "z"):
         jn = pr.get(ax, ax)
         j = joints.get(jn)
@@ -1251,6 +1416,8 @@ def klipper_config(el: Electrical, design, sim: dict | None = None) -> str:
               f"microsteps: {st.get('microsteps', 16)}", f"rotation_distance: {dr.get('travel_per_rev', 40):g}"]
         if e.get("sensorless"):
             L += [f"endstop_pin: tmc2209_stepper_{ax}:virtual_endstop"]
+        elif e.get("probe"):
+            L += ["endstop_pin: probe:z_virtual_endstop" if probe_pin else "# endstop_pin: PROBE NOT WIRED"]
         else:
             ep = _board_port_of(el, sw_dev[e["switch"]].name) if e.get("switch") in sw_dev else None
             L += [f"endstop_pin: ^{ep.pin}" if ep else "# endstop_pin: NOT WIRED"]
@@ -1261,8 +1428,14 @@ def klipper_config(el: Electrical, design, sim: dict | None = None) -> str:
                 gap = design.tool_point[1][2] - bb.max.Z
             at_max = e.get("at", "min") == "max"
             z_end = (gap - hi) if (gap is not None and at_max) else 0.0
-            L += [f"position_endstop: {z_end:.3f}", f"position_min: {min(0.0, z_end) - 0.5:.3f}",
-                  f"position_max: {(gap - lo) if gap is not None else hi - lo:.3f}", "homing_speed: 5", "second_homing_speed: 1"]
+            zmax = (gap - lo) if gap is not None else hi - lo
+            if e.get("probe"):     # Z = 0 comes from the probe's z_offset; travel may go below it by what the joint has
+                z_low = (gap - hi) if gap is not None else -2.0
+                L += [f"position_min: {min(0.0, z_low):.3f}", f"position_max: {zmax:.3f}", "homing_speed: 5", "second_homing_speed: 1",
+                      "homing_retract_dist: 3"]
+            else:
+                L += [f"position_endstop: {z_end:.3f}", f"position_min: {min(0.0, z_end) - 0.5:.3f}",
+                      f"position_max: {zmax:.3f}", "homing_speed: 5", "second_homing_speed: 1"]
         else:
             at_max = e.get("at", "min") == "max"
             L += [f"position_endstop: {(hi - lo) if at_max else 0:g}", "position_min: 0", f"position_max: {hi - lo:g}",
@@ -1288,6 +1461,14 @@ def klipper_config(el: Electrical, design, sim: dict | None = None) -> str:
               f"heater_pin: {hp.pin if hp else 'NOT WIRED'}", f"sensor_type: {sd.params.get('sensor_type', 'Generic 3950') if sd else '?'}",
               f"sensor_pin: {sp.pin if sp else 'NOT WIRED'}"]
         L += _heater_lines(hx, (sim or {}).get("extruder"))
+        # filament-only moves (retract, purge, load): limits from the design's firmware block or Klipper-style defaults
+        xo = ex.get("extrude_only") or {}
+        L += [f"max_extrude_only_distance: {xo.get('distance', 100.0):g}", f"max_extrude_only_velocity: {xo.get('velocity', 60.0):g}",
+              f"max_extrude_only_accel: {xo.get('accel', 3000.0):g}"]
+        pa = tuning.get("pressure_advance")
+        if pa and pa.get("value") is not None:
+            L += [f"# pressure advance: {pa.get('basis', '')}",
+                  f"pressure_advance: {pa['value']:.4f}", f"pressure_advance_smooth_time: {pa.get('smooth_time', 0.04):g}"]
         L += [""]
         if port is not None:
             L += ["[tmc2209 extruder]", f"uart_pin: {pins['uart']}", f"tx_pin: {pins['tx']}", f"uart_address: {pins['uart_address']}",
@@ -1321,7 +1502,52 @@ def klipper_config(el: Electrical, design, sim: dict | None = None) -> str:
             bp = _board_port_of(el, d.name, "ctrl")
             L += ["# mains relay ahead of the 24 V supply: energised while the firmware runs, dropped on any shutdown",
                   "[output_pin ps_on]", f"pin: {bp.pin if bp else 'NOT WIRED'}", "value: 1", "shutdown_value: 0", ""]
+    # ---- input shaper (Klipper shapes its own step stream; nothing else in the config changes)
+    sh = tuning.get("input_shaper")
+    if sh:
+        L += [f"# input shaper: {sh.get('basis', '')}"]
+        L += ["[input_shaper]"]
+        for ax in ("x", "y"):
+            if ax in sh:
+                L += [f"shaper_type_{ax}: {sh[ax]['shaper_type']}", f"shaper_freq_{ax}: {sh[ax]['shaper_freq']:g}",
+                      f"damping_ratio_{ax}: {sh[ax]['damping_ratio']:.3f}"]
+        L += [""]
+    # ---- probe, Z homing over the bed, bed mesh
+    if pg and probe_pin and pg.get("z_offset") is not None:
+        L += [f"# probe: offsets from the CAD; z_offset from the probe's nominal switching distance on {pg.get('target')} "
+              f"({pg.get('sensing_distance_mm')} mm, recalled class value) - set it on the machine with PROBE_CALIBRATE",
+              "[probe]", f"pin: {probe_pin}", f"x_offset: {pg['x_offset']:g}", f"y_offset: {pg['y_offset']:g}",
+              f"z_offset: {pg['z_offset']:.3f}", "speed: 5", "lift_speed: 10", "samples: 3", "samples_result: median",
+              "sample_retract_dist: 2", f"samples_tolerance: {max(0.02, 4 * pg.get('repeatability_mm', 0.01)):g}",
+              "samples_tolerance_retries: 3", ""]
+        if "home_xy" in pg:
+            L += ["# Z homes with the probe over the middle of the bed",
+                  "[safe_z_home]", f"home_xy_position: {pg['home_xy'][0]:g}, {pg['home_xy'][1]:g}", f"speed: {min(100.0, vmax):g}",
+                  "z_hop: 5", "z_hop_speed: 5", ""]
+            bmc = tuning.get("bed_mesh") or {}
+            n = bmc.get("probe_count", (5, 5))
+            L += ["# mesh bounds are probe positions: the bed inset by the probe's edge margin, cut to where the probe can reach",
+                  "[bed_mesh]", f"speed: {min(100.0, vmax):g}", "horizontal_move_z: 5",
+                  f"mesh_min: {pg['mesh_min'][0]:g}, {pg['mesh_min'][1]:g}", f"mesh_max: {pg['mesh_max'][0]:g}, {pg['mesh_max'][1]:g}",
+                  f"probe_count: {n[0]}, {n[1]}", f"algorithm: {bmc.get('algorithm', 'bicubic')}",
+                  f"mesh_pps: {bmc.get('mesh_pps', (2, 2))[0]}, {bmc.get('mesh_pps', (2, 2))[1]}",
+                  f"fade_start: {bmc.get('fade_start', 1.0):g}", f"fade_end: {bmc.get('fade_end', 10.0):g}", "fade_target: 0",
+                  f"split_delta_z: {bmc.get('split_delta_z', 0.01):g}",
+                  f"zero_reference_position: {pg['home_probe_xy'][0]:g}, {pg['home_probe_xy'][1]:g}", ""]
+            prof = bmc.get("profile")
+            if prof:
+                L += [f"# stored mesh: {prof.get('basis', 'measured by the twin on its as-built bed')}"]
+                L += mesh_profile_lines(prof) + [""]
     return "\n".join(L)
+
+
+def mesh_profile_lines(prof: dict, name: str = "default") -> list:
+    """A saved bed mesh as Klipper's SAVE_CONFIG writes it ([bed_mesh <name>]); rows are Y ascending, X along the row."""
+    pts = prof["points"]
+    return [f"[bed_mesh {name}]", "version: 1", "points:"] + ["    " + ", ".join(f"{z:.6f}" for z in row) for row in pts] + [
+        f"x_count: {len(pts[0])}", f"y_count: {len(pts)}", f"mesh_x_pps: {prof.get('mesh_x_pps', 2)}", f"mesh_y_pps: {prof.get('mesh_y_pps', 2)}",
+        f"algo: {prof.get('algo', 'bicubic')}", f"tension: {prof.get('tension', 0.2):g}",
+        f"min_x: {prof['min_x']:g}", f"max_x: {prof['max_x']:g}", f"min_y: {prof['min_y']:g}", f"max_y: {prof['max_y']:g}"]
 
 
 def _heater_lines(hc: dict, sim: dict | None) -> list:
@@ -1344,6 +1570,8 @@ KLIPPER_REQUIRED = {   # section prefix -> options klippy refuses to start witho
     "heater_bed": ["heater_pin", "sensor_type", "sensor_pin", "control", "min_temp", "max_temp"],
     "tmc2209": ["uart_pin", "run_current"], "printer": ["kinematics", "max_velocity", "max_accel"], "mcu": ["serial"],
     "fan": ["pin"], "heater_fan": ["pin"], "controller_fan": ["pin"], "output_pin": ["pin"], "verify_heater": [],
+    "input_shaper": [], "probe": ["pin", "z_offset"], "safe_z_home": ["home_xy_position"],
+    "bed_mesh": [],     # [bed_mesh] itself is checked below; [bed_mesh <name>] is a stored profile
 }
 
 
@@ -1373,12 +1601,37 @@ def check_klipper_config(text: str, board_pins: set, sensor_types: set) -> list:
             for opt in ("pid_kp", "pid_ki", "pid_kd"):
                 if not cp.has_option(sec, opt):
                     problems.append(f"[{sec}]: control pid without {opt}")
+        if sec == "bed_mesh":
+            for opt in ("mesh_min", "mesh_max"):
+                if not cp.has_option(sec, opt):
+                    problems.append(f"[{sec}]: missing {opt}")
+            if not cp.has_section("probe"):
+                problems.append("[bed_mesh] without a [probe]")
+            elif cp.has_option(sec, "mesh_min") and cp.has_option(sec, "mesh_max"):
+                lo_, hi_ = ([float(v) for v in cp.get(sec, o).split(",")] for o in ("mesh_min", "mesh_max"))
+                if not (lo_[0] < hi_[0] and lo_[1] < hi_[1]):
+                    problems.append(f"[bed_mesh]: empty mesh area {lo_} .. {hi_} (the probe cannot reach the bed)")
+                for k_, ax_ in enumerate("xy"):      # the nozzle must be able to carry the probe to every mesh point
+                    if cp.has_section(f"stepper_{ax_}"):
+                        off_ = cp.getfloat("probe", f"{ax_}_offset", fallback=0.0)
+                        a0, a1 = cp.getfloat(f"stepper_{ax_}", "position_min", fallback=0.0), cp.getfloat(f"stepper_{ax_}", "position_max")
+                        if lo_[k_] - off_ < a0 - 1e-6 or hi_[k_] - off_ > a1 + 1e-6:
+                            problems.append(f"[bed_mesh]: mesh {ax_.upper()} {lo_[k_]:g}..{hi_[k_]:g} needs the nozzle at "
+                                            f"{lo_[k_] - off_:g}..{hi_[k_] - off_:g}, outside its travel {a0:g}..{a1:g}")
+        if sec == "input_shaper":
+            for ax_ in "xy":
+                if cp.has_option(sec, f"shaper_freq_{ax_}") and not (0.0 < cp.getfloat(sec, f"shaper_freq_{ax_}") <= 200.0):
+                    problems.append(f"[input_shaper]: shaper_freq_{ax_} out of range")
+        if sec == "extruder" and cp.has_option(sec, "pressure_advance") and not (0.0 <= cp.getfloat(sec, "pressure_advance") <= 2.0):
+            problems.append("[extruder]: pressure_advance out of range")
         if cp.has_option(sec, "sensor_type") and cp.get(sec, "sensor_type") not in sensor_types:
             problems.append(f"[{sec}]: sensor_type '{cp.get(sec, 'sensor_type')}' is not a Klipper built-in")
         for opt, val in cp.items(sec):
             if not opt.endswith("_pin") and opt != "pin":
                 continue
             if "virtual_endstop" in val:
+                if val.strip().startswith("probe:") and not cp.has_section("probe"):
+                    problems.append(f"[{sec}] {opt}: homes on the probe but there is no [probe] section")
                 continue
             pin = re.sub(r"^[\^~!]+", "", val.strip())
             if "NOT WIRED" in val or pin not in board_pins:

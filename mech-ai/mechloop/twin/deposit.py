@@ -96,8 +96,11 @@ def _draw_layers(gx, gy, vol, layer, ext_mask, n_layers, lh, x0, y0, w, h, nozzl
 
 
 def deposit_and_compare(info, pm, moves, e, seg, frac, Qc, Qa, dt, stl, out: Path, name, r,
-                        at=(0.0, 0.0), z_datum_error: float = 0.0) -> dict:
-    from . import from_joints
+                        at=(0.0, 0.0), z_datum_error: float = 0.0, e_cmd=None) -> dict:
+    """e_cmd: filament position the firmware actually commanded at each sample (mm, from its extruder steps), when
+    there is one. It then drives the melt-flow lag in place of the G-code's E, so whatever the firmware adds (pressure
+    advance) reaches the nozzle model. The bed's as-built surface comes from pm.bed_surface."""
+    from . import bed_deviation, from_joints
 
     global RES
     RES = int(pm.raster_px_per_mm)
@@ -114,7 +117,8 @@ def deposit_and_compare(info, pm, moves, e, seg, frac, Qc, Qa, dt, stl, out: Pat
     # melt pressure follows the filament drive with a first-order lag; a retract pulls it back down,
     # so material only leaves the nozzle while the lagged position is making new ground
     alpha = dt / max(pm.extruder_lag_s, dt)
-    E_lag = lfilter([alpha], [1, alpha - 1], E - E[0]) + E[0]
+    E_drive = E if e_cmd is None else np.asarray(e_cmd, dtype=float) - float(e_cmd[0]) + E[0]
+    E_lag = lfilter([alpha], [1, alpha - 1], E_drive - E_drive[0]) + E_drive[0]
     Elag_eff = np.maximum.accumulate(E_lag)
     dE_lag = np.diff(Elag_eff, prepend=Elag_eff[0])
     layer = np.round(gz_move[seg] / lh).astype(int) - 1
@@ -122,6 +126,7 @@ def deposit_and_compare(info, pm, moves, e, seg, frac, Qc, Qa, dt, stl, out: Pat
     ax, ay, az = from_joints(info, Qa)
     cx, cy, ax, ay = cx - at[0], cy - at[1], ax - at[0], ay - at[1]   # compare in the part's own frame
     az = az + z_datum_error                                            # where the nozzle really is
+    surf = bed_deviation(pm, info, ax + at[0], ay + at[1])             # the real bed under it, above the assumed plane
     polys, mesh = _target_layers(stl, n_layers, lh)
     lo, hi = mesh.bounds
     pad = 6.0
@@ -221,8 +226,14 @@ def deposit_and_compare(info, pm, moves, e, seg, frac, Qc, Qa, dt, stl, out: Pat
               layer=worst_ov["layer"], hint="Re-orient the part, add supports in the slicer, or redesign the feature (teardrop holes, chamfers).")
     first = ext & (layer == 0)
     if first.any():
-        h1 = float(np.median(az[first]))
+        gap = (az - surf)[first]                # nozzle above the real bed surface while laying the first layer
+        h1 = float(np.median(gap))
         res["first_layer_nozzle_height_mm"] = round(h1, 3)
+        err = gap - lh
+        res["first_layer_gap_error_mm"] = {"rms": round(float(np.sqrt((err ** 2).mean())), 4), "worst": round(float(np.abs(err).max()), 4),
+                                           "mean": round(float(err.mean()), 4), "min_gap": round(float(gap.min()), 4),
+                                           "max_gap": round(float(gap.max()), 4),
+                                           "fraction_outside_half_layer": round(float((np.abs(err) > 0.5 * lh).mean()), 4)}
         if h1 <= 0.03:
             r.add("error", "nozzle_in_bed",
                   f"On the first layer the nozzle is {h1:.2f} mm above the bed (commanded {lh:.2f}): it drags on "
@@ -233,6 +244,12 @@ def deposit_and_compare(info, pm, moves, e, seg, frac, Qc, Qa, dt, stl, out: Pat
                   f"On the first layer the nozzle is {h1:.2f} mm above the bed where {lh:.2f} mm was commanded; "
                   f"{'the bead is not pressed onto the bed and will not stick' if h1 > lh else 'the bead is over-squashed'}.",
                   height=h1, hint="Correct the Z offset / bed datum.")
+        elif pm.bed_surface and float((np.abs(err) > 0.5 * lh).mean()) > 0.1:
+            r.add("error", "first_layer_uneven",
+                  f"Over the first layer the nozzle-to-bed gap runs from {gap.min():.2f} to {gap.max():.2f} mm where {lh:.2f} mm "
+                  f"was commanded ({(np.abs(err) > 0.5 * lh).mean():.0%} of it more than half a layer out): the bed is not "
+                  f"level or flat under the part and nothing compensates for it.", min_gap=float(gap.min()), max_gap=float(gap.max()),
+                  hint="Level the bed, or probe a bed mesh and let the firmware follow it.")
     empty = [x["layer"] for x in rows if x["dx"] is None]
     if empty:
         r.add("error", "layer_missing", f"Nothing was deposited on layers {empty[:8]} where the part exists.")
@@ -251,7 +268,8 @@ def deposit_and_compare(info, pm, moves, e, seg, frac, Qc, Qa, dt, stl, out: Pat
         elif res["max_bulge_mm"] > 0.3:
             r.add("warning", "corner_bulge",
                   f"Corners and seams bulge up to {res['max_bulge_mm']:.2f} mm (material keeps flowing while the "
-                  f"nozzle slows; size depends on the assumed {pm.extruder_lag_s * 1e3:.0f} ms extruder lag).")
+                  f"nozzle slows; size depends on the assumed {pm.extruder_lag_s * 1e3:.0f} ms extruder lag"
+                  + ("" if e_cmd is None else " and on the firmware's pressure advance") + ").")
         if res["layer_shift_mm_worst"] > 0.25:
             bad = max(good, key=lambda x: x["shift"])
             r.add("error", "print_layer_shift",

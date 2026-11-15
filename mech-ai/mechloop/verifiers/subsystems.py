@@ -13,7 +13,7 @@ from ..model import Design
 from ..report import VerifierResult, timed
 from .motion import sample_poses
 
-ELECTRIC_SKU = ("NEMA", "HOTEND", "FAN", "ENDSTOP", "EXTRUDER", "CTRL", "PSU")
+ELECTRIC_SKU = ("NEMA", "HOTEND", "FAN", "ENDSTOP", "PROBE", "EXTRUDER", "CTRL", "PSU")
 
 
 def _is_electric(c) -> bool:
@@ -38,6 +38,9 @@ def verify_subsystems(design: Design) -> VerifierResult:
                 continue
             if e.get("sensorless"):
                 homed[jn] = "sensorless"
+                continue
+            if e.get("probe"):
+                homed[jn] = _probe_checks(design, e, r)
                 continue
             sw = comps.get(e.get("switch"))
             if sw is None or "trigger" not in sw.meta.get("interfaces", {}):
@@ -170,6 +173,82 @@ def verify_subsystems(design: Design) -> VerifierResult:
                       hint="Wire two motors of one axis to one driver (note it), or use a board with more drivers.")
         r.metrics = m
     return r
+
+
+def _probe_checks(design: Design, e: dict, r: VerifierResult) -> dict:
+    """A bed probe homing Z: its real sensing distance against the bed and nozzle geometry. The probe must switch
+    before the nozzle touches (for every unit within the sensing-distance spread), the Z travel must bring the bed
+    within range, and the probe must be over the plate wherever it is asked to measure."""
+    from ..electrical import probe_geometry
+
+    name = e.get("probe")
+    try:
+        pg = probe_geometry(design)
+    except ValueError as ex:
+        r.add("error", "probe_not_usable", f"Bed probe '{name}': {ex}.", part=name,
+              hint="Give the probe part a 'sensing_face' interface and an electrical template of kind 'probe' "
+                   "(mechloop.parts.electrical.inductive_probe_template), and set design.tool_point and printer['bed'].")
+        return {"probe": name, "checked": False}
+    out = {"probe": name, "checked": True, **{k: pg.get(k) for k in (
+        "target", "sensing_distance_mm", "sensing_distance_tolerance_frac", "repeatability_mm", "x_offset", "y_offset",
+        "face_above_nozzle_mm", "z_offset", "z_offset_range_mm", "nozzle_above_bed_at_end_of_z_travel_mm", "edge_margin_mm",
+        "mesh_min", "mesh_max", "home_xy", "home_probe_xy", "print_area", "unprobed_strip_mm", "assumed", "sources")}}
+    if not pg["rides_with_nozzle"]:
+        r.add("error", "probe_not_on_toolhead", f"Bed probe '{name}' is on body '{pg['on_body']}', not on the body that carries the "
+              "nozzle: its offset from the nozzle is not fixed.", part=name)
+    if pg["sensing_distance_mm"] is None:
+        r.add("error", "probe_cannot_sense_bed",
+              f"Bed probe '{name}' has no switching distance for the bed's material ('{pg['bed_material']}'): an inductive probe "
+              "senses metal only, and its range depends on which.", part=name,
+              hint="Use a metal bed plate (or a steel sheet on it) and give the probe a switching_distance_<steel|aluminium>_mm rating.")
+        return out
+    sn, tol = pg["sensing_distance_mm"], pg["sensing_distance_tolerance_frac"]
+    z_off, (z_lo, z_hi) = pg["z_offset"], pg["z_offset_range_mm"]
+    what = (f"switching distance {sn:g} mm on {pg['target']} ({pg['sources'].get('switching_distance_' + pg['target'] + '_mm', 'not stated')}), "
+            f"+/-{tol:.0%} unit to unit ({'assumed' if 'sensing_distance_tolerance_frac' in pg['assumed'] else 'from its ratings'})")
+    if z_off <= 0.0:
+        r.add("error", "probe_triggers_after_nozzle_touches",
+              f"Bed probe '{name}': its sensing face is {pg['face_above_nozzle_mm']:.2f} mm above the nozzle tip and it switches "
+              f"{sn:g} mm from the bed, so the nozzle reaches the bed {-z_off:.2f} mm before the probe switches.", part=name,
+              z_offset=z_off, hint="Mount the probe lower (face above the nozzle by less than its switching distance, with margin).")
+    elif z_lo <= 0.0:
+        r.add("error", "probe_trigger_margin",
+              f"Bed probe '{name}' switches with the nozzle only {z_off:.2f} mm above the bed ({what}). A unit at the short end "
+              f"of that spread switches at {z_lo:+.2f} mm, i.e. the nozzle is on the bed first; the firmware's z_offset cannot "
+              f"correct that, it can only be positive.", part=name, z_offset=z_off, z_offset_range=[z_lo, z_hi],
+              needed_margin_mm=round(tol * sn, 3),
+              hint=f"Lower the probe so it switches at least {tol * sn + 0.3:.1f} mm before the nozzle touches (1-2 mm is usual), "
+                   "or mount it on a slot so its height can be set on the machine.")
+    if pg["face_above_nozzle_mm"] < 1.0:
+        r.add("warning", "probe_face_near_nozzle_plane",
+              f"Bed probe '{name}': its face is {pg['face_above_nozzle_mm']:.2f} mm above the nozzle tip; a curled print edge "
+              "will hit it.", part=name)
+    end = pg.get("nozzle_above_bed_at_end_of_z_travel_mm")
+    if end is not None and end > z_lo:
+        r.add("error", "probe_not_reached",
+              f"Bed probe '{name}': at the end of Z travel the nozzle is still {end:.2f} mm above the bed; a unit at the short "
+              f"end of its range does not switch until {z_lo:.2f} mm.", part=name, joint=e.get("joint"),
+              hint="Extend the Z travel toward the nozzle or lower the probe.")
+    if "mesh_min" in pg:
+        (mx0, my0), (mx1, my1) = pg["mesh_min"], pg["mesh_max"]
+        if mx1 - mx0 < 10.0 or my1 - my0 < 10.0:
+            r.add("error", "probe_cannot_reach_bed",
+                  f"Bed probe '{name}': the area where it is both over the plate (inset {pg['edge_margin_mm']:g} mm) and within "
+                  f"X/Y travel is {max(mx1 - mx0, 0):.0f} x {max(my1 - my0, 0):.0f} mm.", part=name)
+        hx, hy = pg["home_probe_xy"]
+        m_ = pg["edge_margin_mm"]
+        if not (pg["bed_min"][0] + m_ <= hx <= pg["bed_max"][0] - m_ and pg["bed_min"][1] + m_ <= hy <= pg["bed_max"][1] - m_):
+            r.add("error", "probe_off_bed_when_homing",
+                  f"Bed probe '{name}': with the nozzle at the Z-homing position {pg['home_xy']} the probe is at ({hx:g}, {hy:g}), "
+                  "not over the plate.", part=name)
+        strips = {k: v for k, v in pg["unprobed_strip_mm"].items() if v > 1.0}
+        if strips:
+            r.add("warning", "bed_mesh_does_not_cover_print_area",
+                  f"Bed probe '{name}' is offset ({pg['x_offset']:g}, {pg['y_offset']:g}) mm from the nozzle and kept "
+                  f"{pg['edge_margin_mm']:g} mm inside the plate edge, so strips of the printable area are never probed: {strips} "
+                  "(mm wide). The firmware holds the nearest measured value there.", part=name, strips=strips,
+                  hint="Acceptable if the bed is flat at the edges; otherwise move the probe closer to the nozzle or shrink the print area.")
+    return out
 
 
 def _under(design: Design, body: str, ancestor: str) -> bool:

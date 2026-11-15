@@ -1,0 +1,228 @@
+{
+ "retrieved": "2026-11-15",
+ "family": "E3D Roto Extruder (Revo Roto coldside, standard)",
+ "vendor": "E3D-Online Ltd.",
+ "source_url": "https://e3d-online.com/pages/revo-support-roto-standard-sensored",
+ "title": "Revo Support: Roto (Standard & Sensored) - E3D's data-sheet page (page updated 2025-08-07)",
+ "ref": "sections Summary, Service Temperatures, Fan Specification, Motor Specification & Diagrams, Volumes & Dimensions, Firmware/Printer Config",
+ "local_copy": "vendor_docs/E3D_revo-support-roto-standard-sensored.txt",
+ "part_number": "REVO-ROTO-COLDSIDE-AS",
+ "part_number_source": {
+  "source_url": "https://e3d-online.com/products/roto-extruder",
+  "ref": "variant 'Standard' SKU (products.json)"
+ },
+ "values": {
+  "drive_type": "dual drive",
+  "mass_g": 140,
+  "mass_with_revo_hotside_and_nozzle_g": 157,
+  "steps_per_mm_16x": 2682,
+  "rotation_distance_mm": 26.8937,
+  "gear_ratio": 11.262,
+  "full_steps_per_rotation": 400,
+  "extrusion_force_n": 70,
+  "filament_diameter_mm": 1.75,
+  "motor_voltage_v": 24,
+  "current_min_recommended_a_peak": 0.45,
+  "current_min_recommended_a_rms": 0.318,
+  "current_max_a_peak": 0.6,
+  "current_max_a_rms": 0.424,
+  "heatsink_sensor_type": "ATC Semitec 104NT-4-R025H42G",
+  "max_ambient_c_pla": 40,
+  "service_temp_c": {
+   "fan_ambient": 70,
+   "motor_surface": 80,
+   "gearbox_surface": 85,
+   "idler_ambient": 85
+  },
+  "motor": {
+   "mass_g": 50,
+   "wire_length_mm": 40,
+   "phases": 2,
+   "rated_voltage_v": 4.5,
+   "phase_resistance_ohm": 7.5,
+   "phase_resistance_tolerance": "+/-10 % at 20 degC",
+   "holding_torque_nmm": 75,
+   "detent_torque_nmm": 5,
+   "step_angle_deg": 0.9,
+   "rotor_inertia_gcm2": 7,
+   "connector": "Molex 43025-0400 (Micro-Fit 3.0, 4 circuits)",
+   "connector_source": "motor wiring image Motor_specs_V3_2.png on the same page",
+   "frame": "NEMA 14 (product page 'Roto Motor', ROTO-MOTOR-AS)",
+   "phase_inductance_mh": null
+  },
+  "fan": {
+   "size_mm": [
+    35,
+    35,
+    7
+   ],
+   "size_source": "spare part SKU E-FAN-35-35-7-5V-2WIRE-INC-CABLE (https://e3d-online.com/products/2-wire-roto-fan-kit)",
+   "rated_voltage_v": 5,
+   "rated_current_a": 0.14,
+   "rated_current_note": "+10 % max",
+   "noise_dba": 33.6,
+   "mass_g": 7,
+   "wire_length_mm": 130,
+   "regulator_for_12_24v": "REVO-MICRO-BOARD-REG (https://e3d-online.com/products/5v-regulator-board)"
+  },
+  "materials": {
+   "heatsink": "aluminium (SLM printed)",
+   "gearbox": "steel, POM",
+   "idler": "POM",
+   "bushings": "Oilite",
+   "fixings": "steel"
+  },
+  "fixings_kit": "M-FIX-ROTO: 1x M3x12 LSHCS, 1x M3x30 LSHCS, 2x M3x3 grub, 4x M3x12 BHCS, 4x M4x12 BHCS, 2x M3x35 BHCS, 4x self-tap 4x12 (https://e3d-online.com/products/roto-fixings-kit)"
+ },
+ "drawing": {
+  "source_url": "https://e3d-online.com/cdn/shop/files/Roto_Dim._4597be30-801d-420f-8b0b-63149c77e7c3.svg",
+  "title": "Roto dimensional drawing (section 'Volumes & Dimensions', Roto)",
+  "local_copy": "vendor_docs/E3D_Roto_Dim.svg",
+  "datum": "lower mounting hole axis; side view: horizontal towards the motor is +, vertical up is +",
+  "dimensioned": {
+   "mount_holes": "2 x dia 3.3 +/-0.08 through holes",
+   "lower_hole_xz_mm": [
+    0.0,
+    0.0
+   ],
+   "upper_hole_xz_mm": [
+    6.8,
+    30.5
+   ],
+   "upper_hole_tolerance_mm": [
+    0.11,
+    0.2
+   ],
+   "nozzle_tip_xz_mm": [
+    -9.05,
+    -33.55
+   ],
+   "nozzle_tip_tolerance_mm": {
+    "x": 0.26,
+    "z": [
+     -0.36,
+     0.46
+    ]
+   },
+   "body_bottom_z_mm": -11.45,
+   "lever_top_z_mm": 44.15,
+   "x_min_fan_screw_heads_mm": -25.25,
+   "x_fan_face_mm": -23.6,
+   "x_heatsink_face_mm": -16.8,
+   "x_max_motor_rear_mm": 31.85,
+   "width_mm": 38.5,
+   "width_tolerance_mm": 0.2,
+   "nozzle_axis_from_side_face_mm": 15.18,
+   "nozzle_axis_from_side_face_tolerance_mm": 0.41
+  },
+  "scaled_from_drawing_mm": {
+   "note": "not dimensioned: measured on the drawing at 11.1 px/mm, +/-1 mm",
+   "body_top_z": 27.2,
+   "motor_x": [
+    16.0,
+    31.85
+   ],
+   "motor_dia": 36.9,
+   "motor_centre_z": 7.8,
+   "fan_z": [
+    -9.7,
+    25.4
+   ],
+   "fan_half_width": 17.5,
+   "lever_x": [
+    -21.6,
+    3.4
+   ],
+   "lever_y_from_centre": [
+    2.9,
+    6.1
+   ],
+   "upper_ear_z_top": 33.9,
+   "upper_ear_x": [
+    3.4,
+    10.2
+   ],
+   "upper_ears_y_abs": [
+    12.25,
+    19.25
+   ]
+  },
+  "assumed": [
+   "which side face the 15.18 mm is measured from in 3D (taken: the face on the viewer's right when looking at the fan, i.e. -Y in the catalogue frame)",
+   "whether the two 3.3 mm holes run through the whole 38.5 mm width (the upper one passes through two ears)"
+  ]
+ },
+ "klipper": {
+  "source_url": "https://e3d-online.com/pages/revo-support-roto-standard-sensored",
+  "ref": "section Firmware/Printer Config, Klipper Config",
+  "as_published": {
+   "rotation_distance": 26.8937,
+   "microsteps": 16,
+   "full_steps_per_rotation": 400,
+   "run_current": 0.45,
+   "sense_resistor": 0.11,
+   "stealthchop_threshold": 0,
+   "interpolate": true,
+   "pressure_advance": 0.04,
+   "pressure_advance_smooth_time": 0.04,
+   "max_extrude_only_distance": 99999,
+   "max_temp": 300
+  },
+  "inconsistency": "The page's summary gives 2682 steps/mm at 16x and 'Rotation distance (including the gear ratio): 26.8937' with gear ratio 11.262:1. 400 x 16 / 2682 = 2.386 mm of filament per MOTOR revolution = 26.8937 / 11.262. The published [extruder] block has rotation_distance 26.8937 and no gear_ratio line, which alone would give 238 steps/mm. So 26.8937 is per revolution of the hobb: Klipper needs 'gear_ratio: 11.262:1' with it, or rotation_distance 2.388 without. Check with a 100 mm extrusion test.",
+  "derived": {
+   "mm_per_motor_rev": 2.388,
+   "rotation_distance_for_200_steps_no_gear_ratio": 1.194,
+   "note": "26.8937 / 11.262 = 2.38800; halved for a generator that cannot write full_steps_per_rotation: 400"
+  }
+ },
+ "not_obtained": [
+  "motor phase inductance (not on the page)",
+  "rated motor current as such: E3D gives a rated voltage (4.5 V) and a 0.6 A peak limit; 4.5 V / 7.5 ohm = 0.6 A",
+  "STEP file: 'Roto Reference' CAD is on printables.com (model 655950), which this session cannot reach",
+  "depth and counterbore of the mounting holes",
+  "torque-speed curve"
+ ],
+ "alternatives_considered": {
+  "note": "Only e3d-online.com could be reached of the candidates' own sites. The other rows are web-search snippets of reseller pages (secondary), or recalled where marked; none of them was read from the maker's document.",
+  "LDO Orbiter v2.0": {
+   "mass_g": "about 140 (reseller snippet; 135 recalled)",
+   "gear_ratio": "7.5:1 (reseller snippet)",
+   "motor": "LDO-36STH20-1004AHG, 1 A (reseller snippet)",
+   "rotation_distance": "4.637 (recalled, not confirmed)",
+   "push_force": "9.4 kg (reseller snippet)",
+   "hosts_refused": [
+    "www.orbiterprojects.com",
+    "ldomotors.com",
+    "docs.ldomotors.com"
+   ],
+   "cad": "not reached"
+  },
+  "Annex Sherpa Mini": {
+   "mass_g": "115 to 136 depending on the kit (reseller snippets)",
+   "gear_ratio": "50:8 or 50:10 (reseller snippet)",
+   "rotation_distance": "22.67895 with gear_ratio (recalled, not confirmed)",
+   "form": "printed housing or third-party CNC kit: not one vendor's finished product",
+   "cad": "STEP in github.com/Annex-Engineering/Sherpa_Mini-Extruder (reachable; not fetched because it was not chosen)"
+  },
+  "Bondtech LGX Lite": {
+   "mass_g": "141 with motor (Bondtech page via search snippet)",
+   "gear_ratio": "44:10, 37:17",
+   "rotation_distance": "55 with gear_ratio, or 5.7 (snippet)",
+   "motor": "36 mm round, 20 mm long, 1.0 A max, 0.45-0.60 A recommended (snippet)",
+   "hosts_refused": [
+    "www.bondtech.se"
+   ],
+   "cad": "not reached"
+  },
+  "E3D Hemera XS": {
+   "source_url": "https://e3d-online.com/pages/revo-support-hemera-xs",
+   "motor_mass_g": 160,
+   "steps_per_mm_16x": 397,
+   "current_a_peak": 1.4,
+   "phase_resistance_ohm": 2.3,
+   "holding_torque_nmm": 180,
+   "note": "vendor page read; the motor alone weighs more than the whole Roto"
+  }
+ },
+ "used_by_catalog": true
+}
