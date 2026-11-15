@@ -503,3 +503,242 @@ Judgement:
 - Zenodo: machine masses, belt data and firmware acceleration settings in every set; raw time histories (5747732),
   camera data (22770610) and all measurement files (22716165) were not downloaded.
 - SOURCES.txt does not yet list the four batch 3 PDFs, so their download addresses are not recorded.
+
+---
+
+# Fourth batch (added later on 2026-11-15)
+
+Four PDFs, one text note and 19 STEP files (MANIFEST.md, "Batch 4"). Same rules. Because another agent is editing the
+parts and verifier code, everything from this batch went into **new** JSON files that nothing reads; no existing JSON
+file, no code and no design was touched. `tests/test_vendor.py` source checks pass on the new files. Effects on
+printer_v6 are hand arithmetic from `out/printer_v6/report.json` as it stood.
+
+Added in `mech-ai/mechloop/parts/vendor/`: `omron_e2e.json`, `sunon_mf30101v2.json`, `schurter_dd11.json`,
+`bigtreetech_relay_v12.json`, `silicone_bed_column_dims.json`, `mcmaster_fasteners.json`.
+Copied to `mech-ai/vendor_docs/`: `BED-PROBE_datasheet.pdf`, `FAN-3010_datasheet.pdf`,
+`INLET-C14-SW-FUSE-T8A_datasheet.pdf`, `RELAY-BTT-V1.2_datasheet.pdf`, `BED-COLUMN-SIL-16x18_dims.txt`.
+
+## Answer in brief
+
+| Document | Headline | Against what we assume |
+|---|---|---|
+| Bed probe (Omron E2E family; the pick is E2E-X8MD1 2M) | An M12 threaded barrel, unshielded, 8 mm ±10 % on iron, **DC two-wire**, normally open, 10 to 30 V, −25 to 70 °C. On aluminium about 2.8 to 3.2 mm (chart, reference values) | **Contradicts v6's stand-in on wiring and shape.** v6 models an NPN three-wire block with a BAT85 diode. A two-wire sensor leaves up to 3 V across itself when on, so that arrangement cannot pull a 3.3 V input low. Sensing distance on aluminium is 0 to 12 % below the assumed 3.2 mm; 70 °C and ±10 % are confirmed |
+| Fan (Sunon MF30101V2-1000U-A99) | **It is a 12 V fan** (6 to 13.8 V), 32 mA, 0.39 W, 8,600 rpm, 4.6 CFM, 35 Pa, 20 dB(A), 7.8 g, three Ø3.2 holes on 24 mm | **Contradicts the label it was collected under ("24V") and the design**, which runs the part fan from a 24 V output. Geometry agrees with `fan(30)` |
+| Inlet (Schurter DD11) | 10 A 250 VAC, C14, 2-pole switch, 5 × 20 fuseholder (1- or 2-pole), cut-out 47.1 × 28.1, screws 56 apart (version A) or 37 (B), 4.8 mm terminals | Ratings confirmed. **Geometry differs**: our cut-out is 43 × 28 with screws 50 apart and 6.3 mm terminals. The variant is not pinned and the fuse drawer and fuse are separate items |
+| Relay (BIGTREETECH V1.2 manual) | Board 80.32 × 36.19, holes 74.17 × 29.21. Terminals LIN, N, LOT: it switches the live only and **powers itself from mains through N**. Logic 3.3 to 5 V. No contact rating | Outline and the "opens the live on the PS-ON signal" assumption confirmed. **The catalogue part has no N terminal and v6 runs no neutral to the relay**: as wired the module has no supply |
+| Bed column note | about 16 OD, 18 high, bore about 4; hardness not stated | Confirms `bed_column_silicone`; adds nothing on stiffness |
+| McMaster STEP files | 13 distinct screws and 3 nuts, each one solid with a modelled thread. Heads, lengths and sockets equal ISO 4762. **M5 nut is 4.0 mm thick (DIN 934)**; ours is 4.7 (ISO 4032) | Confirms the generated screws. One real difference (M5 nut). `SHCS-M3x6.step` is the M3x12 file |
+| `LRS-350-24.step` | Byte-identical to `vendor_cad/meanwell_LRS-350.stp` | Already in use |
+
+## Proposed changes from this batch (numbering continues from 16; none applied)
+
+| # | Change | Where | Expected effect on printer_v6 |
+|---|---|---|---|
+| 17 | **Choose the probe before modelling it.** The E2E-X8MD1 as picked needs either (a) replacing by a three-wire NPN type, for which v6's diode arrangement is right (the same data sheet's E2E-X[]ME1 types have an internal 1.5 to 3 mA pull-up to +V; M12 is only 5 mm, M18 is 10 mm), or (b) an interface for a two-wire sensor (a load of at least 3 mA from 24 V and a level stage such as an opto-coupler) | `designs/printer_v6.py` `bed_probe()` and its wiring; `inductive_probe_template` | With the E2E-X8MD1 as it is: the probe's electrical check should fail (signal low is up to 3 V at a 3.3 V pin; the model has no two-wire kind yet). The mount must change from two M3 cross screws to a 12 mm hole with two nuts, and an unshielded M12 wants 40 mm of metal-free diameter round the head and the head 15 mm proud of its mounting metal: the tool plate tab and the Roto 6.8 mm away break that. Trigger height: nozzle 1.2 mm (0.88 to 1.52) above the bed becomes about 0.8 mm (0.52 to 1.08) at 2.8 mm on aluminium, or 0.24 to 1.36 with the sheet's ±10 % temperature term added. The nozzle still does not touch first. `probe_near_hot_bed` stays (70 °C is now the maker's figure). Repeatability stays assumed: the sheet has none |
+| 18 | **Do not buy this fan for a 24 V output.** Record the right 24 V part (same family, voltage digit 2) and fetch its sheet; or feed the part fan 12 V | BOM / `fan(30)` source | No check changes (the catalogue fan stays a generic 24 V, 0.05 A part). The collected part on FAN0 at 24 V would be at twice its 13.8 V limit. If a 12 V fan is used, 0.032 A replaces 0.05 A in the budget |
+| 19 | **Relay: add the N terminal and a neutral wire** inlet N → relay N | `relay_btt_v12()` ports; v6 wiring table | One more mains wire and ferrule. No check fails today because the model does not know the module needs neutral; the real machine would not switch on |
+| 20 | Inlet to the DD11 drawing: cut-out 47.1 × 28.1 with R1 corners, two Ø3.4 holes 56 apart (version A), flange 65 × 30.5, 4.8 × 0.8 mm quick-connects; name the order number, the fuse drawer and the fuse-link | `iec_inlet_c14()`; v6 `inlet_panel` | Cut-out 4.1 mm longer, screw holes 3 mm further out each side. **`holes_too_close` on `inlet_panel` stays**: the web between cut-out and screw hole goes from 1.8 to 2.75 mm against the 3.0 mm wanted in 3 mm sheet. That web is Schurter's own pattern; it passes only in sheet of 2.5 mm or thinner, so the warning should be accepted with that reason or the panel thinned. Receptacles in the wiring table change from 6.3 to 4.8 mm |
+| 21 | M5 nut height 4.7 → 4.0 mm if the McMaster 90591A260 (DIN 934) is what is bought; or buy ISO 4032 nuts | `NUT["M5"]`, `iso_fasteners.json` | v6 has 5 M5 nuts (idler bolts). 0.7 mm more thread shows past each nut; no check is expected to change |
+| 22 | Fasteners: keep the generated ISO solids as simulation and detail models; record McMaster part numbers and dimensions (now in `mcmaster_fasteners.json`) | `details.shcs`, `details.hex_nut`: no change | None. See section 19 |
+
+## 14. Bed probe: Omron E2E (`BED-PROBE_datasheet.pdf`, 35 pages)
+
+The file is the whole E2E family sheet. SOURCES.txt names the pick: **E2E-X8MD1 2M**. Decoded from the sheet: cylindrical
+inductive sensor, 8 mm, unshielded (M), DC two-wire normally open with polarity (D1), 2 m cable.
+
+| Quantity | v6 stand-in (`bed_probe()`, `inductive_probe_template`; all "recalled") | E2E-X8MD1 (page) | Difference |
+|---|---|---|---|
+| Maker, model | none: "PL-08N class" | OMRON E2E-X8MD1 2M (p.7) | — |
+| Principle | inductive | inductive, for ferrous metal (p.13) | same |
+| Output | NPN, normally open, three-wire | **DC two-wire**, normally open; brown +V, blue 0 V; load on either side (p.13, p.20) | **different kind of sensor** |
+| Supply | 6 to 36 V | 12 to 24 V rated, 10 to 30 V operating, ripple 10 % max (p.13) | narrower; 24 V is inside |
+| Output current | 0.2 A max, 15 mA own consumption | load 3 to 100 mA; leakage 0.8 mA max when off; residual voltage 3 V max when on (p.13) | a minimum load now exists |
+| Sensing distance | 8 mm on steel | 8 mm ±10 % on iron 30 × 30 × 1; set distance 0 to 6.4 mm (p.13) | same |
+| On aluminium | 3.2 mm (factor 0.4) | chart p.17, reference values, 1 mm plate: 3.2 mm at 10 to 15 mm side, 3.05 at 30, **2.8 at 50 and still falling**. Brass 3.5, stainless 5.4, copper 2.4 | 0 to 12 % lower; the bed is larger than the chart goes |
+| Tolerance | ±10 % | ±10 % (p.13) | same |
+| Temperature drift | not modelled | ±10 % of sensing distance over −25 to 70 °C (p.13) | new |
+| Hysteresis | not modelled | differential travel 10 % max: up to 0.28 mm on aluminium | new |
+| Repeatability | 0.01 mm, assumed | **not in the sheet** | stays assumed |
+| Temperature rating | 70 °C | −25 to 70 °C operating (p.13) | confirmed |
+| Body | block 18 × 18 × 36, two M3 cross holes | M12 × 1 barrel, 33 threaded, 38 to the cable boot plus 9; Ø9 × 7 unthreaded head; two nuts 17 A/F (21 over corners), 30 N·m max (p.26, p.28) | **different shape and mounting** |
+| Clear space | none | unshielded M12: head 15 mm proud of mounting metal, 40 mm diameter free of metal, 20 mm to facing metal (p.25) | new constraint |
+| Cable, mass | 3 conductors; 20 g | Ø4 vinyl, 2 × 0.3 mm², 2 m; about 70 g packed (p.13, p.28) | heavier with its cable |
+| Response | — | 0.8 kHz (p.13) | — |
+
+What changes in v6's probe checks is in change 17. On the BAT85 diode specifically: it protects a 3.3 V input from a
+sensor output that is pulled up to 24 V inside the sensor. That is the three-wire circuit (the sheet's E2E-X[]E types
+show exactly such a pull-up, 1.5 to 3 mA). A two-wire sensor has no separate output; with the diode it would hold the
+input at up to 3 V plus the diode drop when "on".
+
+## 15. Fan: Sunon MF30101V2-1000U-A99 (`FAN-3010_datasheet.pdf`, 14 pages)
+
+| Quantity | Catalogue (`fan(30)`; electrical template for `FAN-3010`) | Sheet (page) | Difference |
+|---|---|---|---|
+| Voltage | 24 V | **12 VDC rated, 6 to 13.8 V operating**, starts at 6 V (p.3); model code digit "1" = 12 V (p.2) | **wrong voltage for the design** |
+| Current, power | 0.05 A (1.2 W), unverified | 32 mA (37 max), 0.39 W (0.45 max) (p.3) | lower |
+| Speed | — | 8,600 rpm ±15 % (p.4) | new |
+| Air flow, pressure | — | 4.6 CFM (0.13 m³/min) free; 0.14 inch-H2O (35 Pa) shut-off; curve p.5 | new |
+| Noise | — | 20.0 dB(A) at 1 m (p.4) | new |
+| Size | 30 × 30 × 10 | 30 ±0.5 square, 10 +0.5 / 0 thick (p.6) | agrees |
+| Holes | four Ø3.2 on 24 mm | **three** Ø3.2 ±0.3 on 24 ±0.3; the lead leaves at the fourth corner (p.3, p.6) | v6 uses two screws: keep the lead corner off them |
+| Screw | M3 through | sheet recommends M2.5 pan head, 1 to 2 kgf·cm (p.6) | a note |
+| Bearing, life | — | Vapo (MagLev); 70,000 h at 40 °C (p.3, p.4) | new |
+| Temperature | — | −10 to 70 °C operating (p.3) | new |
+| Mass | 8 g | 7.8 g (p.3) | agrees |
+| Leads | JST-XH to be crimped | 28 AWG, red / black, 145 ±10 mm (p.6) | short: the loom needs an extension |
+| Protection | — | locked-rotor auto-restart, polarity protection (p.4) | new |
+
+## 16. Inlet: Schurter DD11 (`INLET-C14-SW-FUSE-T8A_datasheet.pdf`, 6 pages)
+
+Which variant: not pinned. The sheet lists 19 order numbers; SOURCES.txt gives none. "T8A" is the fuse-link, which is
+not part of any DD11 number. Nearest to the catalogue part (one fuse, plain rocker, ears either side): DD11.0111.1110
+or .1111. The fuse drawer is a required accessory ordered separately (4301.1405 or 4301.1407 for one pole).
+
+| Quantity | Catalogue (`iec_inlet_c14()`, "typical, unverified") | Sheet (page) | Difference |
+|---|---|---|---|
+| Rating | 10 A 250 V | 10 A 250 VAC, IEC and UL (p.1) | none |
+| Switch | 2-pole rocker | 2-pole, IEC 61058-1; lit or unlit (p.1) | none |
+| Fuse | one 5 × 20, time-lag | 5 × 20, 1- or 2-pole holder; accepts 2 W per fuse (1-pole) or 1.6 W (2-pole) at 23 °C, less when warm (p.1, p.4) | a T8 A fuse-link's dissipation should be checked against 2 W |
+| Cut-out | 28 × 43 | 28.1 ±0.1 × 47.1 ±0.1, corner radius 1 (p.3) | 4.1 mm longer |
+| Screws | two M3, 50 apart | two Ø3.4 holes, 56 ±0.15 apart (A) or 37 apart across the short side (B) (p.3, p.4) | 6 mm further apart (A) |
+| Flange | 50 × 60 × 3 | 65 × 30.5 (A) or 50 × 46 (B), 2.5 thick | different outline |
+| Depth | 30 behind the panel | 30 behind the panel, 5 in front (p.3) | none |
+| Terminals | 6.3 mm quick-connect | 4.8 × 0.8 mm quick-connect (p.1) | smaller receptacles |
+| Panel | 3 mm | up to 8 mm; screw torque 0.5 N·m max | fine |
+| Temperature | — | −25 to 85 °C | new |
+| Leakage | — | none stated: there is no filter in this module | — |
+| Approvals | — | VDE, UL, CCC; suitable for IEC 62368-1 and 60335-1 unattended use | new |
+
+The `holes_too_close` warning carried since v4: with our numbers the web between cut-out and screw hole is
+25 − 21.5 − 1.7 = 1.8 mm. With Schurter's own pattern it is 28 − 23.55 − 1.7 = 2.75 mm (the same for version B). The
+rule wants one sheet thickness, 3 mm. So the real part improves it but does not clear it; the pattern is the maker's.
+
+## 17. Relay: BIGTREETECH Relay V1.2 manual (`RELAY-BTT-V1.2_datasheet.pdf`, 8 pages)
+
+| Quantity | Catalogue (`relay_btt_v12()`) and the electrical model | Manual (page) | Difference |
+|---|---|---|---|
+| Board, holes | 80.32 × 36.19; four holes on 74.17 × 29.21 | the same (p.3); hole diameter and height not given | none |
+| Mains side | ports LIN and LOT, in series with the supply's live | terminals **LOT, N, LIN**: live out, neutral in, live in (p.3) | **N missing in the model** |
+| What it opens | the live to the supply | the live only; neutral is not switched (one relay drawn) | as assumed |
+| Own supply | 0.5 W, unverified | on-board converter, "INPUT 85-265VAC, OUTPUT DC5V/3W", fed from LIN and N (p.3) | it is mains-powered, not fed from the control board |
+| Contact rating | 10 A, unverified | **not stated** | stays unverified; the supply's inrush is 60 A |
+| Control | PS-ON, three-conductor lead | signal and ground, 3.3 to 5 V logic (p.2); Marlin `PSU_ACTIVE_HIGH true` (p.5): high keeps the supply on | agrees |
+| Auto power-off | firmware drops the relay on a thermal fault | cuts power on the shutdown signal after a print; also at once if the board's 5 V is shorted, when the jumper is fitted (p.2, p.4) | supports the design's use |
+| Other connectors | — | 5V_IN / GND for short-circuit detection, a second S / G pair for power-loss detection, reset pins, firmware-upload pins (p.3, p.5) | unused by the designs |
+| State at power-up, behaviour if the signal wire breaks | assumed to cut the supply when told | **not stated** | open |
+| AC range | 265 V max | p.2: 85 to 265 VAC; note 7 on p.8: 125 to 250 VAC | the manual disagrees with itself; 230 V is inside both, 115 V is not inside the second |
+
+Does it open the mains side as the design assumes? Yes for the live conductor, on the firmware's signal. It is not a
+two-pole disconnect, and the design's own inlet switch is what isolates both poles. The `cutoff_depends_on_mcu` warning
+is untouched: the relay acts only when the controller tells it to.
+
+## 18. Bed column note (`BED-COLUMN-SIL-16x18_dims.txt`)
+
+A collector's note from a seller listing, not a drawing: OD about 16, height 18 (a 16 mm short variant exists), bore
+about 4.0, hardness not stated. `bed_column_silicone(18.0)` has 16 × 4 × 18: agrees. The catalogue's short height is
+16.2 from another listing; this note says 16. Stiffness is still unsourced.
+
+## 19. McMaster fastener models
+
+**`SHCS-M3x6.step` is the wrong file**: byte-identical to `SHCS-M3x12.step`, product 91290A500, 12 mm long. It is not
+91290A111. Not used.
+
+Each of the other 16 files is one valid solid with the thread modelled (a helix built from half-turn pieces, from
+0.2 mm under the head to the tip). **Every length is fully threaded**, the M3x30 and M5x35 included.
+
+| SKU | McMaster part | Faces | Head Ø × height | Length under head | Catalogue (ISO 4762) | Triangles at 0.1 mm |
+|---|---|---|---|---|---|---|
+| SHCS-M2.5x12 | 91290A008 | 198 | 4.5 × 2.5 | 12.0 | 4.5 × 2.5 | 7,578 |
+| SHCS-M3x6 | 91290A111 | wrong file | | | | |
+| SHCS-M3x8 | 91290A400 | 187 | 5.5 × 3.0 | 8.0 | 5.5 × 3.0 | 5,030 |
+| SHCS-M3x10 | 91290A115 | 485 | 5.5 × 3.0 | 10.0 | same | not meshed |
+| SHCS-M3x12 | 91290A500 | 221 | 5.5 × 3.0 | 12.0 | same | 7,030 |
+| SHCS-M3x14 | 91290A600 | 217 | 5.5 × 3.0 | 14.0 | same | not meshed |
+| SHCS-M3x16 | 91290A120 | 503 | 5.5 × 3.0 | 16.0 | same | 11,666 |
+| SHCS-M3x30 | 91290A171 | 767 | 5.5 × 3.0 | 30.0 | same | 22,144 |
+| SHCS-M4x6 | 91290A139 | 456 | 7.0 × 4.0 | 6.0 | 7.0 × 4.0 | 6,556 |
+| SHCS-M5x6 | 91290A221 | 466 | 8.5 × 5.0 | 6.0 | 8.5 × 5.0 | not meshed |
+| SHCS-M5x8 | 91290A222 | 471 | 8.5 × 5.0 | 8.0 | same | 7,126 |
+| SHCS-M5x10 | 91290A224 | 458 | 8.5 × 5.0 | 10.0 | same | not meshed |
+| SHCS-M5x30 | 91290A194 | 711 | 8.5 × 5.0 | 30.0 | same | 21,488 |
+| SHCS-M5x35 | 91290A195 | 731 | 8.5 × 5.0 | 35.0 | same | 22,932 |
+
+| Nut | McMaster part | Faces | Across flats / corners | Thickness | Catalogue (ISO 4032) | Triangles |
+|---|---|---|---|---|---|---|
+| NUT-M2.5 | 90591A270 | 179 | 5.0 / 5.75 | 2.0 | 5.0, 2.0 | 1,742 |
+| NUT-M3 | 90591A250 | 193 | 5.5 / 6.33 | 2.4 | 5.5, 2.4 | 1,844 |
+| NUT-M5 | 90591A260 | 174 | 8.0 / 9.2 | **4.0** | 8.0, **4.7** | 1,866 |
+
+- Sockets: M3 2.5 across flats, 1.5 deep; M5 4.0 across flats, 2.5 deep: equal to the catalogue's `hex_key`. The M2.5
+  and M4 socket sizes could not be read off (the hexagon is not aligned with the file's axes); the M2.5 socket is 1.25 deep and the M4
+  depth was not resolved either.
+- Thread crest diameter is the nominal size in every file, as in the simulation solid.
+- Head: McMaster draws a plain 5.5 / 8.5 head. The simulation solid has the same. The generated detail model has the
+  knurled-head maximum (5.68 / 8.72), 0.09 to 0.11 mm per side larger, so the generated one is the more cautious for
+  counterbores.
+- **Where McMaster differs in a way that matters: only the M5 nut**, 4.0 mm (DIN 934) against 4.7 mm (ISO 4032).
+  Nothing differs for clearance holes, counterbores or wrench access. Full threading of the long screws matters only
+  to anyone who assumed a plain shank; the catalogue does not.
+
+Cost of using them as detail models, measured:
+
+| | Generated M3x30 (`details.shcs`) | McMaster M3x30 |
+|---|---|---|
+| Faces | 15 | 767 |
+| Triangles at 0.1 mm deflection | 696 | 22,144 (64,872 at 0.02 mm) |
+| Meshing time | 0.008 s | 0.35 s (1.5 s at 0.02 mm) |
+| STEP size, time to read | generated in memory | 3.9 MB, 5.3 s |
+
+printer_v6's bill has 240 screws and nuts with geometry (53 M3x8, 73 M5x8, 29 M3x16, 20 M3x6, 31 M3 nuts and so on;
+109 T-nuts besides). At the measured rates that is about **1.7 million triangles** as McMaster models against about
+0.15 million generated. printer_v4's whole viewer export is 0.27 million triangles and already at 8.5 of about 12 MB.
+The assembly STEP would grow by a comparable factor, and the detail-envelope check would run its booleans on 700-face
+solids instead of 15-face ones.
+
+**Recommendation: (c).** Keep the generated ISO solids as both simulation and detail models and record the McMaster
+part numbers and dimensions (done in `mcmaster_fasteners.json`). The McMaster models add nothing the checks use and
+cost about ten times the triangles. Option (b), a defeatured copy with the thread replaced by a cylinder at the major
+diameter, would look the same as what is generated now, so it is not worth the work unless a close-up render needs the
+real head. Also: four lengths v6 uses are not in the folder as usable files (M3x6, M3x25, M3x45, M5x16).
+
+## 20. `LRS-350-24.step`
+
+Byte-identical (same SHA-256) to `vendor_cad/meanwell_LRS-350.stp`, which is already the detail model of the LRS-350.
+Nothing to do. SOURCES.txt confirms the origin as MEAN WELL's `LRS-350(N2).stp`.
+
+## 21. What is still missing, and whether it matters
+
+From MISSING.txt, plus what these four batches left open.
+
+| Missing | Matters to the simulation? | Why |
+|---|---|---|
+| Omron D2F-L STEP | No | The data sheet gave body, holes, lever and operating position; the catalogue's trigger error is fixed from numbers, not from CAD |
+| T8 lead screw and nut STEP | CAD: no | A cylinder and the community nut follow the dimensions. What is unsourced and does matter is data: screw efficiency / friction (0.5 and 0.4 are assumed) |
+| GT2 pulley and idler STEP | Mostly no | The toothed profile is cosmetic. One thing matters: flange diameter, hub and belt-centre height of the pulley actually bought. Three sources already differ by up to 2.4 mm on the flange; a drawing or a caliper settles it, a STEP is not needed |
+| Roto motor inductance | A little | It sets extruder torque at speed; 11 mH is an estimate. Extruder speeds are low, so the effect is small. E3D does not publish it; an LCR meter reading closes it |
+| Misumi extrusion, bracket, T-nut CAD | CAD: no | Outlines follow the standard section. The section's stiffness (6,900 mm⁴ in use, 7,419 from a community section) is data that still lacks a maker's figure and feeds the frame FEA by a few percent |
+| Raspberry Pi STEP | No | Outline and holes are confirmed; only component heights for clearance are unverified |
+| Relay STEP | No | Outline and holes are confirmed. Its **contact rating** and power-up state are the missing items, and they are data |
+| MOSFET module (CAD and data sheet) | Data: yes, modestly | A generic 25 A module with no maker: its current rating and on-resistance in the bed circuit are unverified. CAD is cosmetic |
+| Inlet STEP | No | The DD11 drawing gives everything the panel needs |
+| Fan STEP | No | The drawing suffices. What is missing is the data sheet of the right (24 V) fan |
+| Bed column STEP | CAD: no | A ring. Its stiffness is unsourced and bears a little on bed levelling and the bed's tilt |
+| Hiwin rail CAD | No | The catalogue already generates rails from the Hiwin table |
+| McMaster M3x6, M3x25, M3x45, M5x16, T-nuts, washers | No | Generated to ISO; part numbers only |
+| MIC-6 data sheet (empty file, batch 1) | A little | v6's bed material: density and modulus are still recalled |
+| Probe repeatability | Yes, for first-layer accuracy | Not in Omron's sheet; 0.01 mm stays an assumption |
+| Zenodo large files | See section 13 | None would supply the commanded-motion data set |
+
+So the view to check holds: the CAD still missing is cosmetic. Every item that still matters is a number, not a model:
+screw efficiency, relay contact rating, MOSFET rating, probe repeatability, the 24 V fan's sheet, extrusion section
+stiffness, column stiffness, MIC-6 properties, Roto inductance.
+
+## What this batch did not contain
+
+- Probe: repeatability; a sensing distance on a large or thick aluminium plate; anything on the two-wire sensor driving
+  a logic input.
+- Fan: a 24 V version; a P-Q table (only the curve).
+- Inlet: which order number is meant; the fuse drawer and fuse; a leakage figure (none applies).
+- Relay: contact rating, relay part number, hole diameter, height, power-up state, own power draw in service.
+- Bed column: hardness, stiffness, temperature rating.
+- McMaster: a correct M3x6 file; M3x25, M3x45, M5x16; material or strength data (the STEP files carry geometry only).

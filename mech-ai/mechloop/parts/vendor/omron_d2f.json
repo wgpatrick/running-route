@@ -7,8 +7,8 @@
  "source_url_note": "maker's component site; the PDF itself was hand-collected by the owner (Drive folder, batch 3, fetched 2026-11-15; vendor_cad/staging/MANIFEST.md); SOURCES.txt does not list the batch 3 files, so the download URL is not recorded",
  "title": "OMRON D2F Ultra Subminiature Basic Switch, data sheet, 6 pages",
  "document_file": "vendor_docs/ENDSTOP-MICRO_datasheet.pdf",
- "used_by_catalog": false,
- "_label": "added 2026-11-15. Nothing reads this file: endstop_switch() keeps its interfaces (mechloop/parts/details.py ENDSTOP). Proposed use: reports/Vendor documents - what they change.md, 'Second and third batch'",
+ "used_by_catalog": true,
+ "_label": "added 2026-11-15. Read since 2026-11-15 by mechloop/parts/details.py ENDSTOP (hinge_lever_models: operating position 6.8 +/-1.5 mm, overtravel, movement differential, operating force, free position) and hence endstop_switch() and the subsystems verifier's endstop check",
  "variants_covered": {
   "ref": "p.1 model number legend, p.2 list of models",
   "ratings": {

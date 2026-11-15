@@ -8,8 +8,8 @@
  "title": "Gates, Light Power and Precision Drive Design Manual (112 PDF pages)",
  "document_file": "vendor_docs/Gates_GT2_design_manual.pdf",
  "page_numbering": "pages are quoted as PRINTED page numbers; PDF page = printed page + 2",
- "used_by_catalog": false,
- "_label": "added 2026-11-15. Nothing in the code reads this file yet: gt2_pulley / gt2_idler and the twin's belt stiffness keep their values. Proposed use: reports/Vendor documents - what they change.md",
+ "used_by_catalog": true,
+ "_label": "added 2026-11-15. Read since 2026-11-15 by: the ratings verifier (belt.installation_tension.minimum_tst_n, the default installation tension of a Belt, for the motor shaft-load check); gt2_pulley / gt2_idler (belt.stock_widths_mm, for their 'not Gates stock' source text); mechloop/twin/fitted_parameters.json cites belt.converted for the belt stiffness (19 kN per 6 mm)",
  "belt": {
   "construction": {
    "ref": "p.13, p.14",

@@ -16,21 +16,27 @@ def axis(flag_x, yz=(0.0, 30.0)):
     d.add("rail", Box(200, 10, 10))
     d.add("car", Pos(0, 0, 15) * Box(30, 30, 20), body="car")
     d.add("flag", Pos(flag_x, yz[0], yz[1]) * Box(4, 10, 10), body="car")
-    # switch on a post at the -X end, trigger facing +X: rotate so its -Y push direction points along -X
+    # switch on a post at the -X end, lever facing +X: turned so that its -Y push direction points along -X
+    # (until 2026-11-15 this rig had the switch the other way round, lever pressed towards +X, and still passed)
     d.add("post", Pos(-80, 0, 20) * Box(10, 20, 50))
-    sw = place(d, "sw", endstop_switch(), Location((-70.0, 0, 26), (90, 0, 90)))
+    sw = place(d, "sw", endstop_switch(), Location((-70.0, 0, 26), (90, 0, -90)))
     d.joints.append(Joint("x", "slide", "world", "car", (1, 0, 0), range=(-50, 50), max_effort=10))
     d.endstops.append({"joint": "x", "switch": "sw", "at": "min"})
-    return d, sw.meta["interfaces"]["trigger"][0]
+    return d, sw.meta["interfaces"]
 
 
 def test_endstop_is_pressed_only_when_the_flag_reaches_it():
-    d, trig = axis(0)
-    # put the flag so its -X face is at the trigger point when the carriage is at -50
+    d, itf = axis(0)
+    trig, latest = itf["trigger"][0], itf["trigger_latest"][0]
+    assert latest[0] == trig[0] - 1.5                 # the lever is pressed along -X; a late unit operates 1.5 mm further in
+    # put the flag so its -X face is at the switch's LATEST operating position when the carriage is at -50
     # (the trigger is the lever's operating position at its tip, which is off the switch's centre line)
-    d, _ = axis(trig[0] + 50 + 2.0, trig[1:])
+    d, _ = axis(latest[0] + 50 + 2.0, trig[1:])
     assert errs(verify_subsystems(d)) == []
-    d, _ = axis(trig[0] + 50 + 12.0, trig[1:])       # flag 10 mm short: never pressed
+    d, _ = axis(trig[0] + 50 + 2.0, trig[1:])         # flag at the nominal operating position: late units are never pressed
+    r = verify_subsystems(d)
+    assert errs(r) == ["endstop_not_reached"] and abs(r.metrics["homing"]["x"]["short_of_latest_operating_position_mm"] - 1.5) < 0.01
+    d, _ = axis(trig[0] + 50 + 12.0, trig[1:])        # flag 10 mm short: never pressed
     assert errs(verify_subsystems(d)) == ["endstop_not_reached"]
 
 

@@ -336,3 +336,18 @@ third batch".
 
 The three Zenodo folders in staging are data sets, not vendor documents; they are assessed in the report (none is the
 commanded-motion-plus-response set that `Datasets and models for fitting the twin.md` asks for).
+
+## Fourth batch (2026-11-15)
+
+Same rules. Everything went into new JSON files that nothing reads (another agent was editing the parts code at the
+time). Details and effects: the same report, section "Fourth batch".
+
+| File in `vendor_docs/` | What it is | Recorded in (new file) | What it now backs | What it does not contain |
+|---|---|---|---|---|
+| `BED-PROBE_datasheet.pdf` (8.9 MB) | OMRON E2E proximity sensor family sheet, 35 pages; the pick is E2E-X8MD1 2M | `omron_e2e.json` | M12 unshielded, 8 mm +/-10 % on iron, about 2.8 to 3.2 mm on aluminium (chart), **DC two-wire** NO, 10-30 V, 3-100 mA load, 3 V residual, 0.8 mA leakage, -25 to 70 degC, dimensions, clearances. **Not the NPN three-wire block that printer_v6's stand-in models** | Repeatability |
+| `FAN-3010_datasheet.pdf` (4.4 MB) | Sunon MF30101V2-1000U-A99 specification, 14 pages | `sunon_mf30101v2.json` | 30 x 30 x 10, three 3.2 mm holes on 24 mm, 7.8 g, 8,600 rpm, 4.6 CFM, 35 Pa, 20 dB(A), 70,000 h. **It is a 12 V fan (6-13.8 V), not 24 V** | The 24 V version |
+| `INLET-C14-SW-FUSE-T8A_datasheet.pdf` | Schurter DD11 power entry module, 6 pages | `schurter_dd11.json` | 10 A 250 VAC, 2-pole switch, 5 x 20 fuseholder, cut-out 47.1 x 28.1, screws 56 apart (version A), 4.8 mm terminals, -25 to 85 degC. The catalogue inlet's cut-out (43 x 28), hole pitch (50) and terminals (6.3) differ | Which order number; fuse drawer and fuse are separate |
+| `RELAY-BTT-V1.2_datasheet.pdf` | BIGTREETECH Relay V1.2 operating instruction, 8 pages | `bigtreetech_relay_v12.json` | Outline and holes as in the catalogue; terminals LIN / N / LOT; switches the live only; powers itself from mains (needs N, which the catalogue part lacks); 3.3-5 V logic | Contact rating, power-up state, height |
+| `BED-COLUMN-SIL-16x18_dims.txt` | collector's note from a seller listing | `silicone_bed_column_dims.json` | 16 OD x 18 x 4 bore, as in the catalogue | Hardness, stiffness |
+| (staging only) 17 distinct McMaster STEP files | 91290A-series cap screws, 90591A-series nuts | `mcmaster_fasteners.json` | Part numbers; heads, lengths, sockets equal ISO 4762; M5 nut 4.0 mm thick (DIN 934) against the catalogue's 4.7 (ISO 4032). `SHCS-M3x6.step` is the M3x12 file. Recommendation: keep the generated solids (a McMaster M3x30 is 767 faces and 22,144 triangles against 15 and 696) | M3x6, M3x25, M3x45, M5x16 |
+| (staging only) `LRS-350-24.step` | byte-identical to `vendor_cad/meanwell_LRS-350.stp` | — | already the detail model | — |

@@ -88,6 +88,14 @@ def build():
   `Joint(min_drive_margin=1.5)` is the required available/required ratio; rotor inertia is included.
 - `guides="<joint>"` on carriage blocks, nuts and bearings: loads and overhung moments are checked
   against ratings, and blocks/nuts must stay on their rail/screw over the whole travel.
+- `mgn12h_carriage(preload="Z0" | "Z1" | "ZF")`: Hiwin's preload class of the block you will buy. It sets the block's
+  radial rigidity (63 N/um at Z0, 81 at Z1; none is published for the clearance class ZF, which falls back to an
+  assumed 40) and how far out of parallel two rails may be (9 um at ZF / Z0, 5 um at Z1). Left out, Z0 is assumed and
+  the metrics say "assumed". The carriage's M3 threads are 3.5 mm deep (Hiwin): a screw that goes deeper is
+  `thread_bottoms_out`.
+- `shaft_coupler(5, 8)`: its bores are short. A shaft may enter `interfaces["max_insertion_a"]` (5 mm side, 12.05 mm)
+  or `["max_insertion_b"]` (8 mm side, 8.6 mm) before it meets the elastomer spider; the hub clamps 7.5 mm. Deeper is
+  an `interference` and a `shaft_too_deep_in_coupler` error with the excess.
 - `Requirement(name, check)`: `check(design)` or `check(design, metrics)` returns `(ok, detail)`;
   `metrics[verifier]` is that verifier's metrics from this run, e.g.
   `metrics["motion"]["drives"]["x"]["margin"]`.
@@ -103,6 +111,23 @@ def build():
   engaged, a closed loop matches `stock_length`, and no straight run passes through a part. Pulley centre
   heights are in `part.meta["interfaces"]["belt_center"]`. A belt-driven joint without a `Belt` is not
   checked for routing; add one.
+- Belt tension: `Belt(..., tension=<N per span>)` is the installation tension the tensioner is set to. Left out, it is
+  Gates' minimum recommended installation tension for the width (6.2 / 9.3 / 14.2 / 18.7 N for 4 / 6 / 9 / 12 mm).
+  The ratings verifier works out the pull on every pulley that sits on a motor shaft (two spans: 2 x tension for a half
+  turn of wrap) and compares it with the motor's radial shaft-load limit, carried to the belt plane (`nema17(48)`:
+  21 N at 20 mm from the face, read from one terse drawing line; the other motors have no figure and are not judged).
+  Over the limit is a warning, `motor_shaft_radial_load`, with the numbers. Remedies: an outboard support bearing on
+  the shaft end (a catalog `bearing()` on the motor's axis beyond the pulley, declared with
+  `Belt(..., outboard_support=("<pulley part>",))`), the pulley closer to the motor face, a lower tension (say so if
+  it is below Gates' minimum), or a motor with a higher limit. 12 mm belt and 5 mm-bore 20-tooth pulleys are generic
+  parts, not Gates stock (the BOM source text says so).
+- Over-travel: `Joint(..., range=(lo, hi), overtravel=(past_lo, past_hi))`. `range` is the WORKING range (programs,
+  prints, firmware coordinates); the joint can physically move `overtravel` mm further at each end
+  (`joint.mechanical_range`). Collisions, guide run-off, belts, cables and endstops are checked over the mechanical
+  range. For a printer's Z joint, end the working range where the bed meets the nozzle plane and declare what the bed
+  can rise beyond it as over-travel: there the bed meeting the nozzle tip is not a collision (the bed meeting anything
+  else still is), the probe must switch first, and the generated `position_min` is negative by that amount, which is
+  what a probe's z_offset and a bed mesh need. Do not extend `range` past the nozzle plane.
 - Composing: `design.include(other_design, Location(...), prefix="z_")` brings a whole sub-assembly in
   (parts, bodies, joints, fasteners, joins, belts), moved and renamed. Its requirements, program and (when
   moved) load cases are not copied; restate them.
@@ -199,6 +224,11 @@ put fasteners on one side; reduce screw sizes to one or two; make bench sub-asse
 `design.subassemblies["name"] = [part names]` (the group is built separately and installed as one
 unit); split or open up a part that traps another.
 
+The assemblability verifier honours the same declaration: with `design.subassemblies` set, each group is checked as
+built on the bench (its screws need driver access among its own parts only) and then as one unit going straight into
+the main assembly. A result that is not complete lists every unit that was not placed and why, in the main assembly
+and inside each sub-assembly (`not_placed`, in the verifier's metrics and in `mechloop assemble`).
+
 ## Will it fit when it is really made? Tolerances, adjustment, binding
 
 The **tolerance** verifier builds the machine thousands of times with every part made only as
@@ -227,8 +257,17 @@ d.adjustments += [
 ```
 
 An adjustment must be real: model the slot, spring, jack screw or oversize hole that provides the
-range (the Z axis also needs that much extra travel), and say in a comment how it is set. The
-verifier reports how much adjustment each one needs (`*_needed_mm_99`) against what you declared.
+range (the Z axis also needs that much extra travel: declare it as `overtravel` on the Z joint), and say in a comment
+how it is set. The verifier reports how much adjustment each one needs (`*_needed_mm_99`) against what you declared.
+
+The simulation is repeatable: fixed seed, fixed order of draws, so an identical run gives identical numbers. Every
+percentage comes with its sampling error (`..._standard_error`, sqrt(p(1-p)/builds), about 0.3 % at 97 % over 3000
+builds), and a result within two standard errors of the limit it is judged against is flagged
+(`within_sampling_error_of_the_limit`): do not claim a margin smaller than that. Parts that overlap in the model
+(without `allow_overlap` or a `join`) are a clash, not a seat: they are left out of the stack-up and listed
+(`clash_in_stackup`), so a clash can never improve a figure. The two-rail figure is judged against the maker's
+allowable (Hiwin MG_12: 9 um, 5 um at preload Z1); cast-plate beds get the maker's stock flatness beside the bed
+figures as a reference (0.381 mm for plate up to 12.7 mm thick).
 
 ## Can each part be made? (the manufacture verifier)
 
@@ -271,17 +310,36 @@ their sources are in `mechloop/verifiers/dfm_rules.py` and `docs/DFM.md`. Every 
 ## Everything else a machine needs (the subsystems verifier)
 
 - Homing: `d.endstops.append({"joint": "x", "switch": "<endstop part>", "at": "min"})` with a catalog
-  `endstop_switch()`; something on the other body must reach the switch's trigger point at that end of
-  travel (`part.meta["interfaces"]["trigger"]`: the lever's operating position at its tip, 9 mm to one side of
-  the switch centre). The seat needs a clearance hole at each of `interfaces["pin_holes"]` (the terminals stand
-  2.6 mm out of the board). Or `{"joint": "x", "sensorless": True}`.
+  `endstop_switch()`. `part.meta["interfaces"]["trigger"]` is the lever's NOMINAL operating position at its tip (9 mm
+  to one side of the switch centre, 6.8 mm from the switch's mounting-hole line: Y = 8.4 in the part frame; it was
+  10.6 until 2026-11-15, which was the lever's free position). Unit to unit the operating position is anywhere
+  within +/-1.5 mm of that, so at the end of the joint's mechanical travel the striker must have pushed the lever to
+  `interfaces["trigger_latest"]` (1.5 mm further in, Y = 6.9), or `endstop_not_reached` says how far short it is; and
+  it must stop before `interfaces["case_limit"]` (Y = 6.65, 0.25 mm further), or `endstop_overtravel`. A unit at the
+  early end switches up to 3 mm before the end of travel: the axis homes there, so allow for that at the far end.
+  Either place the switch so the end of `range` is at `trigger_latest`, or put the nominal trigger at the end of
+  `range` and declare 1.5 mm of `overtravel` on the joint if the axis really has it. The seat needs a clearance hole
+  at each of `interfaces["pin_holes"]` (the terminals stand 2.6 mm out of the board; that row is the generated carrier
+  board's, not a bought module's: re-check it when the module is known). Buy the gold-contact low-current switch
+  (OMRON D2F-01L type) for a logic-level input.
+- Sensorless homing: `{"joint": "x", "sensorless": True}` (X or Y on a belt). The generated printer.cfg gets the
+  TMC2209 virtual endstop, `diag_pin`, a starting `driver_SGTHRS` (tune it on the machine; override with
+  `el.firmware["sensorless"] = {"x": {"sgthrs": 90}}`), `homing_retract_dist: 0` and half a motor turn per second, and
+  klippy loads it. On the SKR Mini E3 V3.0 the driver's DIAG output reaches the MCU only through a jumper on the
+  board's X-DIAG / Y-DIAG header and shares the axis's endstop pin, so leave that endstop connector empty
+  (`sensorless_pin_shared` otherwise). Stall detection itself is not simulated.
   A bed probe that homes Z is declared the same way: `d.endstops.append({"joint": "z", "probe": "<probe part>", "at": "max"})`.
   The probe part rides on the toolhead, has a `sensing_face` interface (centre of the face that looks at the bed) and
   an electrical template of kind `probe` (`mechloop.parts.electrical.inductive_probe_template(...)`). The verifier
   checks that it switches before the nozzle touches for every unit within the sensing-distance spread, that Z travel
   brings the bed within range, and reports the strip of bed it cannot reach. See `designs/printer_v5.py`.
 - Cables: `d.cables.append(Cable("toolhead loom", ("xbody", clamp_xyz), ("world", clamp_xyz), length=450))`.
-  Every moving body that carries something electrical needs one; its length is checked over the travel.
+  Every moving body that carries something electrical needs one; its length is checked over the travel. Each clamp
+  point must be within 3.0 mm of the surface of a part on its body (true distance to the surface, measured to the
+  part's CAD model where it has one; `cable_clamp_in_air` gives the distance and the nearest part).
+- Print area: `d.printer["print_area"] = (x, y)` in mm, centred on the bed plate. The bed-mesh coverage check then
+  judges the probe against that area, not against the whole XY travel (travel added so the probe can reach is not
+  print area); a declared area the nozzle cannot reach is `print_area_not_reachable`.
 - A printer also needs an extruder (`extruder_direct()` on the toolhead, or
   `design.printer["extruder"] = "bowden"`), a `fan(30)` on the toolhead, a `control_board()` and a
   `psu_24v()` on the frame, and enough stepper drivers for its motors.
@@ -313,7 +371,13 @@ el.sync_cables(d); add_electrical_bom(el, d)                      # flexing span
   `custom_pcb` or not `off_the_shelf` is an error; if the board cannot carry a load, add a stock module
   (`mosfet_module`, `relay_btt_v12`), never a custom board.
 - Every heater needs a thermistor, a firmware entry and an independent cut-off (thermal fuse in series, and/or a
-  relay ahead of the supply). Every motor needs a `run_current`. Mains needs an inlet with fuse, and earth wires to
+  relay ahead of the supply). A `thermal_fuse` sits thermally where its device says: `device_from(el, d, "<tco>",
+  node=...)`, by default the plate of a bed heater and the HEAT SINK of a hotend (`node="heat_sink"`; `"block"` is the
+  alternative). A cut-off on the heat sink follows the sink, which stays near 45 degC while its fan runs: the heater
+  check simulates the heater stuck on with the fan running and with it stopped and reports both
+  (`cutoff_on_heat_sink_needs_fan_failure` when it opens only once the fan has stopped: it then guards against heat
+  creep, not against a stuck-on heater). The heat-sink figures are assumed; override them with
+  `device_from(..., heat_sink={"fan_on_w_k": ..., "fan_off_w_k": ..., "capacity_j_k": ...})`. Every motor needs a `run_current`. Mains needs an inlet with fuse, and earth wires to
   the supply and to an `earth_point` on the frame.
 - Limits live in `mechloop.electrical.DEFAULT_REQUIREMENTS`; override one in `el.requirements` only if the brief
   allows, and say so.
@@ -357,7 +421,7 @@ el.sync_cables(d); add_electrical_bom(el, d)                      # flexing span
 | interference | overlaps, required gaps, floating parts, unfastened parts | move, pocket, add screws/joins |
 | ratings | drive force from the real motor, guide loads, BOM and cost | change motor, ratio, speed |
 | motion | collisions through full joint travel, guide run-off, belt routing, force needed vs available (with rotor inertia), forward simulation of `program` (tracking, collisions on the path) | shorten travel, move parts, lower accel |
-| assemblability | a build order exists in which each part goes on in a straight line onto something already there, parts go on before the screws that hold them, and every screw has driver access when it is installed (home pose only) | split parts, add access holes, reorder |
+| assemblability | a build order exists in which each part (or declared bench sub-assembly) goes on in a straight line onto something already there, parts go on before the screws that hold them, and every screw has driver access when it is installed (home pose only) | split parts, add access holes, reorder, declare a sub-assembly |
 | tolerance | fits, stack-ups and binding over thousands of imperfect builds; adjustment needed against adjustment provided | open clearances, add adjustment, locate from one part |
 | manufacture | each custom part against its process (sheet, printed, machined), with the limit and its source on every finding | radius corners, stock thickness, move holes off edges and bends, split blocks, re-orient prints |
 | subsystems | homing, cables, extruder, cooling, electronics | add the parts and declare them |
@@ -368,8 +432,9 @@ el.sync_cables(d); add_electrical_bom(el, d)                      # flexing span
 ## Not checked (say this in your report)
 
 Bolt preload and contact (stiffness is bracketed, not predicted), fatigue, buckling, the
-thermal behaviour of a part while it prints (warping is a rule of thumb only), belt tension
-and tooth load, cable paths (only lengths), tolerance stack-up, over-constraint and binding, axial
+thermal behaviour of a part while it prints (warping is a rule of thumb only), belt tooth load and what belt
+tension does to belt stiffness (only the pull on a motor shaft is checked), stall detection in sensorless homing,
+cable paths (only lengths), tolerance stack-up, over-constraint and binding, axial
 retention of bearings, closed kinematic loops, curved insertion paths, cables,
 real manufacturing cost (the estimate is rough) and tolerances a process can hold on a feature. FEA is linear static with idealised
 fixtures and no self-weight; assemblies are bonded, which overstates stiffness.

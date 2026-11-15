@@ -7,8 +7,8 @@
  "source_url_note": "maker's data-sheet site; the PDF itself was hand-collected by the owner (Drive folder, batch 3, fetched 2026-11-15; vendor_cad/staging/MANIFEST.md); SOURCES.txt does not list the batch 3 files, so the download URL is not recorded",
  "title": "Raspberry Pi Zero 2 W product brief, published April 2024, 6 pages",
  "document_file": "vendor_docs/HOST-RPI-ZERO-2W_datasheet.pdf",
- "used_by_catalog": false,
- "_label": "added 2026-11-15. Nothing reads this file: raspberry_pi_zero2w() in mechloop/parts/electrical.py keeps its values",
+ "used_by_catalog": true,
+ "_label": "added 2026-11-15. raspberry_pi_zero2w() in mechloop/parts/electrical.py carries the operating temperature (-20 to 70 degC) from this file as min_ambient_c / max_ambient_c since 2026-11-15; the 0.60 A draw stays unverified (not in the brief)",
  "values": {
   "ref": "p.3 'Specification', p.4 'Physical specification'",
   "form_factor_mm": [

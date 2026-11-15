@@ -1,0 +1,103 @@
+{
+ "retrieved": "2026-11-15",
+ "family": "Schurter DD11 power entry module: IEC C14 inlet with 2-pole line switch and 5 x 20 mm fuseholder, no filter",
+ "vendor": "SCHURTER AG",
+ "source_level": "vendor",
+ "source_url": "https://www.schurter.com/en/datasheet/typ_dd11.pdf",
+ "title": "SCHURTER DD11 data sheet, dated 01.09.2025, 6 pages",
+ "document_file": "vendor_docs/INLET-C14-SW-FUSE-T8A_datasheet.pdf",
+ "which_variant": {
+  "status": "NOT PINNED. The sheet covers 19 order numbers and SOURCES.txt names none. 'T8A' in our SKU is the fuse-link, which Schurter does not include",
+  "nearest_to_the_catalogue_part": "1-pole fuseholder, non-illuminated, rocker marked 0-I, screw version A: DD11.0111.1110 or DD11.0111.1111 (the last digit follows the cover / V-Lock columns of the table on p.5). 2-pole fuseholder: DD11.0121.1110 / .1111",
+  "must_be_ordered_separately": "fuse drawer (required accessory): 4301.1405 fingergrip 1-pole, 4301.1407 extra-safe 1-pole, 4301.1401 / 4301.1403 2-pole; and the fuse-link"
+ },
+ "ratings": {
+  "ref": "p.1 Technical Data",
+  "current_a": 10,
+  "voltage_vac": 250,
+  "inlet": "C14 to IEC 60320-1, protection class I, pin temperature 70 degC",
+  "switch": "rocker, 2-pole, non-illuminated or illuminated, IEC 61058-1",
+  "fuseholder": "5 x 20 mm, 1- or 2-pole, shock-safe category PC2, IEC 60127-6",
+  "fuse_power_acceptance_w_at_23c": {
+   "1_pole": 2.0,
+   "2_pole_per_pole": 1.6
+  },
+  "fuse_derating": "p.4 curves: falls with ambient, to zero at about 85 degC at rated current",
+  "dielectric_kvac": {
+   "L_N": 2.5,
+   "LN_PE": 3.0
+  },
+  "operating_temp_c": [
+   -25,
+   85
+  ],
+  "ip_front": "IP40",
+  "terminals": "quick-connect 4.8 x 0.8 mm",
+  "housing": "thermoplastic, black, UL 94V-0",
+  "approvals": "VDE 40046933, UL E93617, CCC; suitable for IEC/UL 62368-1, IEC 60601-1, IEC 60335-1 (unattended use, glow wire)",
+  "leakage_current": "not applicable / not stated (no line filter)",
+  "circuit": "p.4: L - fuse F1 - switch - L'; N - (F2 on 2-pole versions) - switch - N'; PE straight through"
+ },
+ "dimensions_mm": {
+  "ref": "p.3 (screw version A) and p.4 (screw version B)",
+  "front_body": [
+   46.7,
+   27.7
+  ],
+  "depth_behind_panel": 30.0,
+  "flange_thickness": 2.5,
+  "front_projection": 5.0,
+  "version_A": {
+   "flange": [
+    65.0,
+    30.5
+   ],
+   "hole_pitch": 56.0,
+   "hole_dia_in_part": 3.25,
+   "ears": "left and right of the long side"
+  },
+  "version_B": {
+   "flange": [
+    50.0,
+    46.0
+   ],
+   "hole_pitch": 37.0,
+   "hole_dia_in_part": 3.25,
+   "ears": "above and below"
+  },
+  "panel_cutout": {
+   "length": 47.1,
+   "width": 28.1,
+   "tol": 0.1,
+   "corner_radius": 1.0,
+   "corner_radius_tol": 0.05,
+   "screw_hole_dia": 3.4,
+   "screw_pitch_A": 56.0,
+   "screw_pitch_B": 37.0,
+   "pitch_tol": 0.15
+  },
+  "panel_thickness_max": 8.0,
+  "mounting_screw_torque_nm_max": 0.5,
+  "rear_terminal_positions": "L, N and PE as drawn on p.3 (10.6, 29.8 and 6 from the edges)"
+ },
+ "compared_with_catalogue": {
+  "iec_inlet_c14()": "flange 50 x 60 x 3, body 27 x 42 x 30, two M3 holes 50 apart, cut-out 28 x 43, 6.3 mm faston terminals, 10 A 250 V, 2-pole rocker, one 5 x 20 fuse: 'typical, unverified'",
+  "agree": [
+   "10 A 250 V",
+   "2-pole switch",
+   "5 x 20 fuse",
+   "30 mm behind the panel",
+   "body width 27 to 28"
+  ],
+  "differ": {
+   "cut-out length": "47.1 (catalogue 43)",
+   "hole pitch": "56 (A) or 37 (B); catalogue 50",
+   "flange": "65 x 30.5 (A) or 50 x 46 (B); catalogue 50 x 60",
+   "terminals": "4.8 x 0.8 mm quick-connect; catalogue 6.3 mm",
+   "panel hole": "3.4 mm; catalogue M3 clearance 3.4: agree",
+   "corner radius": "1.0; design cuts 2.0"
+  }
+ },
+ "used_by_catalog": false,
+ "_label": "added 2026-11-15 (batch 4). NOTHING READS THIS FILE: no catalogue part, verifier or design takes a value from it. Proposed use: reports/Vendor documents - what they change.md, 'Fourth batch'"
+}

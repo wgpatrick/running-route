@@ -137,13 +137,18 @@ def test_coupler_matches_stepperonline():
     assert not parts.shaft_coupler(5.0, 5.0).verified  # other bores were not sourced
 
 
-def test_mgn12_matches_recorded_table_but_is_not_called_verified():
+def test_mgn12_matches_recorded_table_and_hiwins_own_catalogue():
     d = vendor_data("hiwin_mgn12")
-    assert d["source_level"] == "secondary"
     b, r = d["parts"]["MGN12H_block"]["values"], d["parts"]["MGNR12_rail"]["values"]
     car, rail = parts.mgn12h_carriage(), parts.mgn12_rail(300)
-    assert not car.verified and not rail.verified and car.source["level"] == "secondary"
-    assert car.ratings["approximate"] is True
+    # since 2026-11-15 the values are confirmed by Hiwin's own catalogue (block `catalogue`): vendor-backed
+    assert car.verified and rail.verified and car.source["level"] == "vendor" and "approximate" not in car.ratings
+    cat = d["catalogue"]["block_dimensions"]["MGN12H"]
+    assert (cat["H_mm"], cat["H1_mm"], cat["W_mm"], cat["L_mm"], cat["B_mm"], cat["C_mm"], cat["L1_mm"]) == (
+        b["assembly_height_H_mm"], b["clearance_H1_mm"], b["width_W_mm"], b["length_L_mm"], b["hole_spacing_B_mm"],
+        b["hole_spacing_C_mm"], b["L1_mm"])
+    cd, c0 = d["catalogue"]["load_ratings"]["MGN12H"][:2]
+    assert (cd, c0) == (b["dynamic_load_C_kN"] * 1000, b["static_load_C0_kN"] * 1000)
     assert _size(car) == pytest.approx((b["length_L_mm"], b["width_W_mm"], b["assembly_height_H_mm"] - b["clearance_H1_mm"]))
     assert car.interfaces["top_z"] == b["assembly_height_H_mm"]
     assert car.shape.bounding_box().min.Z == pytest.approx(b["clearance_H1_mm"])
@@ -217,8 +222,8 @@ def test_ratings_verifier_lists_only_unverified_parts():
     r = verify_ratings(d)
     f = [f for f in r.findings if f.code == "approximate_ratings"]
     assert len(f) == 1 and f[0].severity == "info"
-    assert f[0].data["parts"] == ["BRG-608", "MGN12H"]
-    assert "NEMA17-48" not in f[0].message and "MGN12H" in f[0].message
+    assert f[0].data["parts"] == ["BRG-608"]                    # the MGN12H is vendor-backed since Hiwin's catalogue was read
+    assert "NEMA17-48" not in f[0].message and "MGN12H" not in f[0].message and "MGN12H" in r.metrics["vendor_backed_parts"]
 
 
 # ----------------------------------------------------------------- parts added for printer_v6 (2026-11-15)

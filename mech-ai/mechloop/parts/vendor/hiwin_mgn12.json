@@ -2,7 +2,7 @@
  "retrieved": "2026-11-14",
  "family": "Hiwin MGN12 miniature linear guideway (rail MGNR12, block MGN12H)",
  "vendor": "HIWIN Technologies Corp.",
- "source_level": "secondary",
+ "source_level": "vendor",
  "source_url": "https://raw.githubusercontent.com/JamelHammoud/basecase/main/src/data/motionTables.ts",
  "sources": [
   {
@@ -71,7 +71,7 @@
   "dimensional tolerances of H and N"
  ],
  "catalogue": {
-  "_label": "PRIMARY SOURCE, added 2026-11-15. Read from HIWIN's own catalogue. Nothing in the catalogue code reads this block; the values the code reads are still the ones under 'parts' (secondary transcription). Proposed use: reports/Vendor documents - what they change.md",
+  "_label": "PRIMARY SOURCE, added 2026-11-15. Read from HIWIN's own catalogue. Since 2026-11-15 mgn12h_carriage() reads radial_rigidity_n_per_um, block_dimensions.MGN12H.L1_mm and mounting_surface.max_parallelism_of_two_rails_um from this block; the dimensions and load ratings in use are still those under 'parts', which this block confirms",
   "document": "HIWIN GmbH, Linear guideways, section 3.5 MG series (MGN / MGW), catalogue GW-11-5-EN-2207-K, printed pages 92-105",
   "document_file": "vendor_docs/Hiwin_MG_catalogue.pdf",
   "pdf_page_of_printed_page": "PDF page = printed page - 91 (14 PDF pages)",
@@ -623,7 +623,7 @@
     "static moments": "catalogue 38.2 / 36.3 / 36.3 N.m (one decimal); recorded 38.22 / 36.26 / 36.26",
     "rail screw": "catalogue 'assembly screw for rail' M3 x 10; recorded M3x8"
    },
-   "consequence": "the secondary values are confirmed by the primary catalogue; 'not_obtained' above is now obtained (this block). source_level stays 'secondary' until the catalogue code is switched over"
+   "consequence": "the secondary values are confirmed by the primary catalogue; the entry is vendor-backed since 2026-11-15 (source_level 'vendor')"
   }
  },
  "community_step_second_copy": {
@@ -643,5 +643,6 @@
   },
   "against_catalogue_table_3_79": "W 27, L 45.4, H 13, H1 3, B 20, C 20, thread depth 3.5: all agree. Not drawn: end caps (so no L1 32.4), oil hole Gn, H2, threads (plain 3.0 holes)",
   "frame": "length along Z from 0 to 45.4, width X, height Y; needs the rotation and shift already in details.mgn12h (rot (90, 0, 90), pos (-22.7, 0, 0))"
- }
+ },
+ "source_level_note": "since 2026-11-15: mgn12_rail() and mgn12h_carriage() are marked vendor-backed because block 'catalogue' (HIWIN's own catalogue) confirms the values under 'parts' (earlier third-party transcriptions, still the ones read for dimensions and load ratings). The carriage also reads 'catalogue' directly for radial rigidity by preload class (Table 3.77), L1 (Table 3.79) and the allowable parallelism of two rails (Table 3.88)"
 }

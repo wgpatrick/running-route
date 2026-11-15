@@ -1,0 +1,10 @@
+BED-COLUMN-SIL-16x18 - solid silicone heated-bed mount column (item 33)
+No STEP exists for this commodity part; spec fallback = measured dims.
+
+Source: seller spec (tronic.lk MT0500, matching the common 16x18 silicone column)
+- Outer diameter: ~16 mm
+- Height: 18 mm (standard column); a 16 mm short variant exists for the
+  strain-relief corner on Ender-3-style beds
+- Inner bore: ~4.0 mm (fits M3/M4 bed screws)
+- Hardness: not stated numerically by sellers surveyed; described as firm /
+  high-durometer heat-resistant silicone

@@ -1,0 +1,70 @@
+{
+ "retrieved": "2026-11-15",
+ "family": "BIGTREETECH Relay V1.2 mains relay module",
+ "vendor": "Shenzhen Big Tree Technology Co., Ltd.",
+ "source_level": "vendor",
+ "source_url": "https://github.com/bigtreetech/BIGTREETECH-Relay-V1.2",
+ "title": "BIGTREETECH Relay V1.2 Operating Instruction (user manual), 8 pages",
+ "document_file": "vendor_docs/RELAY-BTT-V1.2_datasheet.pdf",
+ "values": {
+  "ref": "p.2 parameters, p.3 dimensional drawing and wiring diagram, p.4-5 function description, p.8 notes",
+  "ac_input_vac": [
+   85,
+   265
+  ],
+  "ac_input_note": "p.2 says 85-265 VAC; note 7 on p.8 says 125-250 VAC 50-60 Hz; the on-board converter is printed 'INPUT 85-265VAC 50-60Hz, OUTPUT DC5V/3W'",
+  "logic_input_v": [
+   3.3,
+   5.0
+  ],
+  "mains_terminals": {
+   "LIN": "AC live in",
+   "N": "neutral in",
+   "LOT": "AC live out"
+  },
+  "what_it_switches": "the live conductor only, between LIN and LOT (one relay, single pole as drawn). The neutral terminal feeds the module's own AC-DC converter; neutral to the load is not switched",
+  "own_supply": "from the mains through the on-board 5 V / 3 W AC-DC module; it needs both LIN and N connected",
+  "contact_rating": null,
+  "contact_rating_note": "not stated anywhere in the manual; no relay part number is legible",
+  "low_voltage_connectors": {
+   "5V_IN / GND": "short-circuit detection of the motherboard's 5 V (enabled by a jumper cap)",
+   "S / G (first)": "print-finished shutdown signal (to the board's PS-ON pin)",
+   "S / G (second)": "power-loss (outage) detection output",
+   "5V / RST": "reset and restart pins",
+   "GND TX RX 5V": "firmware upload"
+  },
+  "mcu_pins": {
+   "P3.2": "shutdown signal input",
+   "P5.5": "relay control",
+   "P3.3": "short-circuit detection",
+   "P5.4": "reset and restart"
+  },
+  "firmware_side": "Marlin PSU_CONTROL with PSU_ACTIVE_HIGH true and a PS_ON pin; M81 at the end of the print switches the supply off",
+  "behaviour": "cuts the power after printing (on the shutdown signal); cuts it at once if the motherboard's 5 V is shorted (with the jumper fitted); can be restarted with the reset pin",
+  "state_at_power_up_and_on_loss_of_signal": null,
+  "state_note": "the manual does not say whether the relay is closed at power-up or what it does if the signal wire breaks",
+  "board_mm": [
+   80.32,
+   36.19
+  ],
+  "hole_pattern_mm": [
+   74.17,
+   29.21
+  ],
+  "hole_dia_mm": null,
+  "height_mm": null,
+  "mass": null
+ },
+ "compared_with_catalogue": {
+  "relay_btt_v12()": "80.32 x 36.19, holes 74.17 x 29.21: agree. Ports LIN, LOT and ctrl; contact 10 A (unverified), supply 0.5 W (unverified)",
+  "missing_in_catalogue": "the N terminal. Without neutral the module's converter has no supply and the relay cannot operate",
+  "confirmed": "it opens the mains live to the supply on the firmware's PS-ON signal, as the designs assume; logic 3.3 V is accepted",
+  "still_unverified": [
+   "contact rating against the supply's 60 A inrush",
+   "power-up state",
+   "the 0.5 W own consumption (converter is a 3 W type)"
+  ]
+ },
+ "used_by_catalog": false,
+ "_label": "added 2026-11-15 (batch 4). NOTHING READS THIS FILE: no catalogue part, verifier or design takes a value from it. Proposed use: reports/Vendor documents - what they change.md, 'Fourth batch'"
+}

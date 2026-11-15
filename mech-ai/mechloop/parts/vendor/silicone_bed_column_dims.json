@@ -1,0 +1,37 @@
+{
+ "retrieved": "2026-11-15",
+ "family": "Silicone heated-bed column 16 x 18 (seller-stated dimensions)",
+ "vendor": "commodity (seller tronic.lk, item MT0500)",
+ "source_level": "secondary",
+ "source_url": "https://tronic.lk/product/silicone-spacer-column-heat-resistant-for-3d-printer-be",
+ "title": "BED-COLUMN-SIL-16x18_dims.txt: dimensions noted by the collector from a seller's listing (no STEP exists)",
+ "document_file": "vendor_docs/BED-COLUMN-SIL-16x18_dims.txt",
+ "values": {
+  "od_mm": 16,
+  "od_note": "'about 16'",
+  "height_mm": 18,
+  "short_variant_height_mm": 16,
+  "bore_mm": 4.0,
+  "bore_note": "'about 4.0', fits M3 / M4 bed screws",
+  "hardness": null,
+  "hardness_note": "not stated numerically by the sellers surveyed; 'firm / high-durometer heat-resistant silicone'"
+ },
+ "compared_with_bed_column_silicone": {
+  "agree": [
+   "16 OD",
+   "4 bore",
+   "18 high"
+  ],
+  "differ": {
+   "short variant": "16 here; the catalogue records 16.2 (0.64 in) from another listing"
+  },
+  "still_missing": [
+   "Shore hardness / stiffness",
+   "mass",
+   "a maker's drawing",
+   "a temperature rating in this note"
+  ]
+ },
+ "used_by_catalog": false,
+ "_label": "added 2026-11-15 (batch 4). NOTHING READS THIS FILE: no catalogue part, verifier or design takes a value from it. Proposed use: reports/Vendor documents - what they change.md, 'Fourth batch'"
+}

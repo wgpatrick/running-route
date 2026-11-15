@@ -1,0 +1,85 @@
+{
+ "retrieved": "2026-11-15",
+ "family": "Sunon MagLev 30 x 30 x 10 mm axial fan MF30101V2-1000U-A99",
+ "vendor": "Sunonwealth Electric Machine Industry Co., Ltd.",
+ "source_level": "vendor",
+ "source_url": "https://www.sunon.com/PROSEARCH_FILES/(D03033610G-01)-1.pdf",
+ "title": "SUNON Specification for Approval, MF30101V2-1000U-A99, spec no. D03033610G-01, edition 1, revised 05.05.2021, 14 pages",
+ "document_file": "vendor_docs/FAN-3010_datasheet.pdf",
+ "warning": "THIS IS A 12 V FAN. SOURCES.txt calls it '30x30x10, 24V'. The model code (p.2: voltage digit 1 = 12 VDC, 2 = 24 VDC) and the specification (p.3: rated 12 VDC, operating 6 to 13.8 VDC) both say 12 V. The 24 V part of the same family would be MF30102V...",
+ "values": {
+  "ref": "p.2 model numbering, p.3 mechanical and electrical, p.4 performance, p.5 curve, p.6 drawing",
+  "rated_voltage_v": 12.0,
+  "operating_voltage_v": [
+   6.0,
+   13.8
+  ],
+  "starting_voltage_v": 6.0,
+  "rated_current_a": 0.032,
+  "current_max_a": 0.037,
+  "rated_power_w": 0.39,
+  "power_max_w": 0.45,
+  "safety_power_w": 0.7,
+  "speed_rpm": 8600,
+  "speed_tol_frac": 0.15,
+  "air_flow_cfm": 4.6,
+  "air_flow_m3_min": 0.13,
+  "static_pressure_inh2o": 0.14,
+  "static_pressure_pa": 34.9,
+  "noise_dba": 20.0,
+  "noise_condition": "1 m from the intake, free air",
+  "motor": "single-phase 4-pole brushless DC",
+  "bearing": "Vapo (MagLev)",
+  "speed_code": "V2: medium",
+  "life_h": 70000,
+  "life_condition": "40 degC, 65 % humidity, 90 % confidence",
+  "operating_temp_c": [
+   -10,
+   70
+  ],
+  "storage_temp_c": [
+   -40,
+   70
+  ],
+  "protection": "locked-rotor shutdown with automatic restart within 10 s; polarity protection",
+  "insulation": "UL class A",
+  "size_mm": [
+   30,
+   30,
+   10
+  ],
+  "size_tol_mm": {
+   "square": 0.5,
+   "thickness": [
+    0,
+    0.5
+   ]
+  },
+  "mount_holes": {
+   "count": 3,
+   "dia_mm": 3.2,
+   "dia_tol_mm": 0.3,
+   "pitch_mm": 24.0,
+   "pitch_tol_mm": 0.3,
+   "note": "three holes, not four: the lead leaves at the fourth corner"
+  },
+  "recommended_screw": "M2.5 pan-head machine screw, 1 to 2 kgf.cm",
+  "weight_g": 7.8,
+  "frame_and_blade": "PBT, UL 94V-0",
+  "leads": "UL1571 28 AWG, red + / black -, 145 +/-10 mm, 5 mm stripped",
+  "safety": "UL / cUR E77551, TUV, CE, UKCA"
+ },
+ "compared_with_catalogue": {
+  "fan(30) geometry": "30 x 30 x 10, holes on 24 mm, 3.2 mm: agree; the catalogue draws four holes, the sheet has three; mass 8 g against 7.8 g",
+  "electrical": "catalogue template for FAN-3010: 24 V, 0.05 A (1.2 W), 'typical, unverified'. This part: 12 V, 0.032 A (0.39 W)",
+  "not_modelled_in_catalogue": [
+   "air flow",
+   "static pressure",
+   "noise",
+   "life",
+   "temperature range"
+  ]
+ },
+ "used_by_catalog": false,
+ "_label": "added 2026-11-15 (batch 4). NOTHING READS THIS FILE: no catalogue part, verifier or design takes a value from it. Proposed use: reports/Vendor documents - what they change.md, 'Fourth batch'"
+}

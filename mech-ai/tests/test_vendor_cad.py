@@ -59,7 +59,7 @@ def test_every_file_has_a_sources_entry_and_nothing_else_is_in_the_folder():
 
 
 def test_parts_without_cad_say_proxy():
-    st = shaft_coupler(5.0, 8.0)
+    st = shaft_coupler(6.35, 8.0)                               # the 5 x 8 mm coupler has StepperOnline's STEP; other bores have none
     assert st.detail is None and st.model["kind"] == "proxy"
     assert gt2_idler(20, belt_width=12.0).model["kind"] == "proxy"      # only the 6 mm idler has a model
 
@@ -139,7 +139,9 @@ def test_endstop_trigger_is_the_lever_operating_position():
     top = vc.bbox6(sw.detail)[4]
     assert abs(top - free[1]) < 0.05                         # the lever tip in the CAD is the free position
     assert sw.shape.bounding_box().max.Y < trig[1] < free[1]  # operating position: between the case and the free position
-    assert sw.interfaces["overtravel"] > 1.0
+    # OMRON: 6.8 mm from the hole line, 0.55 mm of overtravel guaranteed; the lever meets the case 1.75 mm below nominal
+    assert trig[1] == 8.4 and sw.interfaces["overtravel"] == 0.55
+    assert abs(trig[1] - sw.shape.bounding_box().max.Y - 1.75) < 1e-6
 
 
 def test_export_and_placement_use_the_detail_model():
@@ -147,7 +149,7 @@ def test_export_and_placement_use_the_detail_model():
 
     d = Design("m", base="motor")
     c = place(d, "motor", nema17(48), Location((10, 20, 30), (90, 0, 0)))
-    assert c.detail is not None and c.meta["model"]["kind"] == "community CAD"
+    assert c.detail is not None and c.meta["model"]["kind"] == "vendor CAD"        # StepperOnline's own STEP since 2026-11-15
     assert abs(_labelled(c).volume - c.detail.volume) < 1e-6 and abs(c.detail.volume - c.shape.volume) > 100
     a, b = vc.bbox6(c.shape), vc.bbox6(c.detail)
     assert abs(a - b).max() < 0.6                           # moved together

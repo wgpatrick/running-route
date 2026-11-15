@@ -1,0 +1,258 @@
+{
+ "retrieved": "2026-11-15",
+ "family": "McMaster-Carr socket head cap screws (91290A series, black-oxide alloy steel, class 12.9) and hex nuts (90591A series, class 8, DIN 934)",
+ "vendor": "McMaster-Carr",
+ "source_level": "vendor CAD (first inspection only)",
+ "source_url": "https://www.mcmaster.com/91290A400/",
+ "title": "18 STEP files in vendor_cad/staging (SHCS-*.step, NUT-*.step); part numbers and pages from vendor_cad/staging/SOURCES.txt",
+ "part_numbers": {
+  "SHCS-M3x6": "91290A111",
+  "SHCS-M3x8": "91290A400",
+  "SHCS-M3x10": "91290A115",
+  "SHCS-M3x12": "91290A500",
+  "SHCS-M3x14": "91290A600",
+  "SHCS-M3x16": "91290A120",
+  "SHCS-M3x30": "91290A171",
+  "SHCS-M5x6": "91290A221",
+  "SHCS-M5x8": "91290A222",
+  "SHCS-M5x10": "91290A224",
+  "SHCS-M5x30": "91290A194",
+  "SHCS-M5x35": "91290A195",
+  "SHCS-M2.5x12": "91290A008",
+  "SHCS-M4x6": "91290A139",
+  "NUT-M2.5": "90591A270",
+  "NUT-M3": "90591A250",
+  "NUT-M5": "90591A260"
+ },
+ "pages": "https://www.mcmaster.com/<part number>/",
+ "wrong_file": {
+  "SHCS-M3x6.step": "byte-identical to SHCS-M3x12.step (same SHA-256); it carries product 91290A500 and is 12 mm long. It is NOT 91290A111. Do not use; fetch again"
+ },
+ "screws": {
+  "SHCS-M2.5x12": {
+   "mcmaster_pn": "91290A008",
+   "faces": 198,
+   "bounding_box_mm": [
+    4.5,
+    4.5,
+    14.5
+   ],
+   "volume_mm3": 83.2,
+   "head_dia_mm": 4.5,
+   "head_height_mm": 2.5,
+   "triangles_at_0.1mm_deflection": 7578
+  },
+  "SHCS-M3x8": {
+   "mcmaster_pn": "91290A400",
+   "faces": 187,
+   "bounding_box_mm": [
+    5.5,
+    5.5,
+    11.0
+   ],
+   "volume_mm3": 106.9,
+   "head_dia_mm": 5.5,
+   "head_height_mm": 3.0,
+   "triangles_at_0.1mm_deflection": 5030
+  },
+  "SHCS-M3x10": {
+   "mcmaster_pn": "91290A115",
+   "faces": 485,
+   "bounding_box_mm": [
+    5.5,
+    5.5,
+    13.0
+   ],
+   "volume_mm3": 115.0,
+   "head_dia_mm": 5.5,
+   "head_height_mm": 3.0,
+   "triangles_at_0.1mm_deflection": null
+  },
+  "SHCS-M3x12": {
+   "mcmaster_pn": "91290A500",
+   "faces": 221,
+   "bounding_box_mm": [
+    5.5,
+    5.5,
+    15.0
+   ],
+   "volume_mm3": 129.3,
+   "head_dia_mm": 5.5,
+   "head_height_mm": 3.0,
+   "triangles_at_0.1mm_deflection": 7030
+  },
+  "SHCS-M3x14": {
+   "mcmaster_pn": "91290A600",
+   "faces": 217,
+   "bounding_box_mm": [
+    5.5,
+    5.5,
+    17.0
+   ],
+   "volume_mm3": 141.2,
+   "head_dia_mm": 5.5,
+   "head_height_mm": 3.0,
+   "triangles_at_0.1mm_deflection": null
+  },
+  "SHCS-M3x16": {
+   "mcmaster_pn": "91290A120",
+   "faces": 503,
+   "bounding_box_mm": [
+    5.5,
+    5.5,
+    19.0
+   ],
+   "volume_mm3": 149.6,
+   "head_dia_mm": 5.5,
+   "head_height_mm": 3.0,
+   "triangles_at_0.1mm_deflection": 11666
+  },
+  "SHCS-M3x30": {
+   "mcmaster_pn": "91290A171",
+   "faces": 767,
+   "bounding_box_mm": [
+    5.5,
+    5.5,
+    33.0
+   ],
+   "volume_mm3": 234.5,
+   "head_dia_mm": 5.5,
+   "head_height_mm": 3.0,
+   "triangles_at_0.1mm_deflection": 22144
+  },
+  "SHCS-M4x6": {
+   "mcmaster_pn": "91290A139",
+   "faces": 456,
+   "bounding_box_mm": [
+    7.0,
+    7.0,
+    10.0
+   ],
+   "volume_mm3": 186.9,
+   "head_dia_mm": 7.0,
+   "head_height_mm": 4.0,
+   "triangles_at_0.1mm_deflection": 6556
+  },
+  "SHCS-M5x6": {
+   "mcmaster_pn": "91290A221",
+   "faces": 466,
+   "bounding_box_mm": [
+    8.5,
+    8.5,
+    11.0
+   ],
+   "volume_mm3": 316.2,
+   "head_dia_mm": 8.5,
+   "head_height_mm": 5.0,
+   "triangles_at_0.1mm_deflection": null
+  },
+  "SHCS-M5x8": {
+   "mcmaster_pn": "91290A222",
+   "faces": 471,
+   "bounding_box_mm": [
+    8.5,
+    8.5,
+    13.0
+   ],
+   "volume_mm3": 347.9,
+   "head_dia_mm": 8.5,
+   "head_height_mm": 5.0,
+   "triangles_at_0.1mm_deflection": 7126
+  },
+  "SHCS-M5x10": {
+   "mcmaster_pn": "91290A224",
+   "faces": 458,
+   "bounding_box_mm": [
+    8.5,
+    8.5,
+    15.0
+   ],
+   "volume_mm3": 379.5,
+   "head_dia_mm": 8.5,
+   "head_height_mm": 5.0,
+   "triangles_at_0.1mm_deflection": null
+  },
+  "SHCS-M5x30": {
+   "mcmaster_pn": "91290A194",
+   "faces": 711,
+   "bounding_box_mm": [
+    8.5,
+    8.5,
+    35.0
+   ],
+   "volume_mm3": 724.4,
+   "head_dia_mm": 8.5,
+   "head_height_mm": 5.0,
+   "triangles_at_0.1mm_deflection": 21488
+  },
+  "SHCS-M5x35": {
+   "mcmaster_pn": "91290A195",
+   "faces": 731,
+   "bounding_box_mm": [
+    8.5,
+    8.5,
+    40.0
+   ],
+   "volume_mm3": 798.3,
+   "head_dia_mm": 8.5,
+   "head_height_mm": 5.0,
+   "triangles_at_0.1mm_deflection": 22932
+  }
+ },
+ "screws_common": {
+  "solids": 1,
+  "thread": "modelled: a helical thread built from half-turn segments, from about 0.2 mm under the head to the tip on EVERY length (M3x30 and M5x35 included: fully threaded)",
+  "crest_dia": "nominal (2.5, 3.0, 4.0, 5.0)",
+  "length_under_head": "nominal in every file",
+  "socket": "hex; M3 2.5 across flats, 1.5 deep; M5 4.0 across flats, 2.5 deep; M2.5 1.25 deep; M4 and M2.5 across-flats not resolved (socket not aligned with the file axes)",
+  "head": "plain cylinder with a small chamfer, no knurl"
+ },
+ "nuts": {
+  "NUT-M2.5": {
+   "mcmaster_pn": "90591A270",
+   "faces": 179,
+   "across_flats_mm": 5.0,
+   "across_corners_mm": 5.75,
+   "thickness_mm": 2.0,
+   "volume_mm3": 34.4,
+   "triangles_at_0.1mm_deflection": 1742
+  },
+  "NUT-M3": {
+   "mcmaster_pn": "90591A250",
+   "faces": 193,
+   "across_flats_mm": 5.5,
+   "across_corners_mm": 6.33,
+   "thickness_mm": 2.4,
+   "volume_mm3": 47.6,
+   "triangles_at_0.1mm_deflection": 1844
+  },
+  "NUT-M5": {
+   "mcmaster_pn": "90591A260",
+   "faces": 174,
+   "across_flats_mm": 8.0,
+   "across_corners_mm": 9.2,
+   "thickness_mm": 4.0,
+   "volume_mm3": 151.6,
+   "triangles_at_0.1mm_deflection": 1866
+  }
+ },
+ "against_generated_iso_solids": {
+  "screws": "head diameter, head height, thread diameter, length and socket size equal the ISO 4762 values in iso_fasteners.json on every file. The generated detail head is the knurled maximum (5.68 for M3, 8.72 for M5); McMaster's is the plain 5.5 / 8.5, the same as the simulation solid",
+  "nuts": "M2.5 and M3 equal ISO 4032 (5.0 x 2.0, 5.5 x 2.4). **M5 differs: 4.0 mm thick (DIN 934) against 4.7 mm (ISO 4032) in the catalogue**; across flats 8.0 both",
+  "cost": {
+   "generated_detail_M3x30": "15 faces, 696 triangles at 0.1 mm",
+   "mcmaster_M3x30": "767 faces, 22,144 triangles at 0.1 mm (64,872 at 0.02 mm), 3.9 MB STEP, 5 s to read",
+   "printer_v6_fasteners_with_geometry": 240,
+   "estimate_all_mcmaster": "about 1.7 million triangles for v6's screws and nuts, against about 0.15 million generated (printer_v4's whole viewer export is 0.27 million)"
+  },
+  "recommendation": "(c) keep the generated ISO solids as simulation and detail models; record the McMaster part numbers and these dimensions. Consider (b), a defeatured copy with the thread replaced by a cylinder, only if a close-up render ever needs the real head",
+  "not_in_staging_but_used_by_printer_v6": [
+   "SHCS-M3x6 (wrong file)",
+   "SHCS-M3x25",
+   "SHCS-M3x45",
+   "SHCS-M5x16"
+  ]
+ },
+ "used_by_catalog": false,
+ "_label": "added 2026-11-15 (batch 4). NOTHING READS THIS FILE: no catalogue part, verifier or design takes a value from it. Proposed use: reports/Vendor documents - what they change.md, 'Fourth batch'"
+}

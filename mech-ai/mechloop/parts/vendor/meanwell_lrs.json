@@ -224,7 +224,7 @@
     }
    },
    "staging_copy_2026_11_15": {
-    "_label": "added 2026-11-15. Not read by the code. The hand-collected vendor_cad/staging/LRS-350-24_datasheet.pdf is byte-for-byte the file already stored as vendor_docs/LRS-350-SPEC.PDF (same SHA-256), so no second copy was made; this block records what that file says beyond 'values' above",
+    "_label": "added 2026-11-15. Since 2026-11-15 psu_lrs('LRS-350-24') carries leakage_current_ma_max (2 mA at 240 VAC) and the input-voltage derating (80 % at 90 VAC) from this block as ratings. The hand-collected vendor_cad/staging/LRS-350-24_datasheet.pdf is byte-for-byte the file already stored as vendor_docs/LRS-350-SPEC.PDF (same SHA-256), so no second copy was made; this block records what that file says beyond 'values' above",
     "document_file": "vendor_docs/LRS-350-SPEC.PDF",
     "document": "MEAN WELL LRS-350 series, file LRS-350-SPEC 2025-09-12, 4 pages",
     "p2_specification_24v": {
