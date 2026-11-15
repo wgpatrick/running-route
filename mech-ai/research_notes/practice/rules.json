@@ -1,6 +1,6 @@
 {
  "rules": {
-  "version": 1,
+  "version": 2,
   "date": "2026-11-15",
   "categories": {
    "FST": "threaded fasteners",
@@ -23,13 +23,14 @@
     "id": "FST-001",
     "cat": "FST",
     "rule": "Declare the property class of every screw and nut; do not design to 12.9 strength when commodity 8.8 / A2-70 will be bought",
-    "criterion": "each fastener SKU carries a class (8.8, 10.9, 12.9, A2-70); ratings use that class's proof load",
+    "criterion": "each fastener SKU carries a class; preload and ratings use that class (Bossard, mu 0.14, max: M5 8.8 7.0 kN, 10.9 10.3 kN, 12.9 12.0 kN; M3 8.8 2436 N, 12.9 4111 N): the catalogue's 12.9 proof loads overstate a commodity 8.8 or A2-70 screw by 40 % or more",
     "applies": "all screws",
     "severity": "warning: catalogue proof loads are class 12.9 while the SKU names no class",
     "src": [
-     "RECALLED"
+     "RECALLED",
+     "BOSS_TQ.table"
     ],
-    "basis": "recalled",
+    "basis": "document",
     "conf": "high",
     "status": "not",
     "auto": "catalogue field; compare required preload with the class",
@@ -41,42 +42,48 @@
     "id": "FST-002",
     "cat": "FST",
     "rule": "Size the screw to the joint: preload must exceed the working load with margin; prefer a longer clamp length",
-    "criterion": "0.75 x proof load x n >= 2 x separating load; clamped length >= 3 d where vibration matters (longer bolts keep preload after embedding)",
+    "criterion": "0.75 x proof x n >= 2 x separating load; material under the head 1 to 3 d thick and bolt spacing 3 to 5 d (Slocum); self-loosening moment about preload x pitch / 2 (NASA-STD-5020B)",
     "applies": "loaded joints",
     "severity": "info: few printer joints are strength-limited",
     "src": [
      "RECALLED",
-     "BOSSARD.basis"
+     "BOSSARD.basis",
+     "SLOCUM9.thickness",
+     "NASA5020.tfsr16"
     ],
-    "basis": "recalled",
+    "basis": "document",
     "conf": "med",
     "status": "not",
     "where": "AGENT.md: 'Bolt preload and contact' not checked",
     "auto": "joint force from FEA reactions / load cases against n x preload",
     "needs": "loads per joint",
     "fa": "M",
-    "effort": "L"
+    "effort": "L",
+    "correction": "clamped length >= 3 d where vibration matters (recalled) -> material under the head 1 to 3 d (Slocum 9-10)"
    },
    {
     "id": "FST-010",
     "cat": "FST",
     "rule": "Minimum thread engagement by tapped material",
-    "criterion": "steel >= 1.0 d; aluminium >= 2.0 d (Nord-Lock; Tameson 2.0-2.5 d; mechloop uses 1.5 d); brass / cast iron 1.5-2.0 d; plastic >= 2 d or use an insert; a standard nut = full strength",
+    "criterion": "Bossard (coarse thread, 8.8 / 10.9 / 12.9): S235 steel 1.0 / 1.25 / 1.4 d; grey iron GJL 250 1.0 / 1.25 / 1.4 d; AlMgSi1 F32 (Rm > 330) 1.4 / 1.6 d / not tabulated; AlMg3 F18 (Rm > 180) 2 d (VDI formula 3 d); standard nut = full strength. Proposed checks: 6061 / 6082 (Rm about 290 to 310, just under F32's 330): ERROR below 1.5 d, WARNING 1.5 to 2 d on load-bearing or frequently removed joints and for 10.9 / 12.9 screws (no Bossard row for 12.9 in aluminium); soft aluminium (6063 extrusion, cast plate MIC-6 / ATP-5, 5052): ERROR below 2 d; plastic: 2 d or an insert; a catalogue part's own tapped hole follows its maker",
     "applies": "screws into tapped holes; T-nuts and catalogue tapped holes exempt",
     "severity": "error: stripped threads",
     "src": [
      "NORDLOCK.engagement",
      "TAMESON.ranges",
-     "HUBSCNC.thread"
+     "HUBSCNC.thread",
+     "BOSS_TE.table",
+     "SLOCUM9.engagement"
     ],
-    "basis": "snippet",
+    "basis": "document",
     "conf": "high",
     "status": "checked",
     "where": "interference: thread_engagement, thread_bottoms_out (1 d steel, 1.5 d aluminium, 2 d plastic)",
     "auto": "already; consider 2 d for aluminium and 1.5 d for brass",
     "fa": "L",
     "effort": "S",
-    "note": "SOURCES DISAGREE on aluminium: 1.5 d (mechloop, common shop rule) vs 2 d (Nord-Lock) vs 2-2.5 d (Tameson)"
+    "note": "Bossard's trials cover M6 to M16 (6g / 6H); not validated for M2.5 to M5 (MISSING.txt 5). Slocum: engagement of 1 d already matches bolt tensile strength in a same-strength section. SOURCES DISAGREE: Nord-Lock 2 d and Tameson 2 to 2.5 d for 'aluminium' (snippets) vs Bossard 1.4 d for strong Al and 2 d for soft Al. The extrusion alloy of the 2020 profile is not in the repo's vendor record.",
+    "correction": "aluminium 2.0 d (Nord-Lock snippet; mechloop 1.5 d) -> by alloy strength per Bossard: 6061/6082 error < 1.5 d, warning 1.5 to 2 d; soft Al (6063, MIC-6, 5052) error < 2 d"
    },
    {
     "id": "FST-011",
@@ -101,7 +108,8 @@
     "applies": "blind tapped holes",
     "severity": "error if the screw bottoms (no clamp), warning for run-out",
     "src": [
-     "HUBSCNC.blind"
+     "HUBSCNC.blind",
+     "SPIROL.depth"
     ],
     "basis": "fetched",
     "conf": "high",
@@ -117,7 +125,8 @@
     "severity": "warning: thread wears out",
     "src": [
      "RP1228.inserts",
-     "CNCK.why"
+     "CNCK.why",
+     "SPIROL.flush"
     ],
     "basis": "fetched",
     "conf": "high",
@@ -132,59 +141,72 @@
     "id": "FST-020",
     "cat": "FST",
     "rule": "Clearance holes to ISO 273; choose the class deliberately",
-    "criterion": "fine / medium / coarse: M2.5 2.7/2.9/3.1, M3 3.2/3.4/3.6, M4 4.3/4.5/4.8, M5 5.3/5.5/5.8, M6 6.4/6.6/7.0, M8 8.4/9.0/10.0; larger than coarse needs a washer (FST-031); patterns of 4+ screws or printed parts: medium or coarse",
+    "criterion": "ISO 273 fine / medium / coarse: M2.5 2.7/2.9/3.1, M3 3.2/3.4/3.6, M4 4.3/4.5/4.8, M5 5.3/5.5/5.8, M6 6.4/6.6/7, M8 8.4/9/10 (H12 / H13 / H14); Bossard's torque and pressure tables assume medium; larger than coarse => washer (FST-031); chamfer the hole edge under the head (MMCC note)",
     "applies": "clearance holes in made parts",
     "severity": "info (class), warning (under fine, or over coarse without a washer)",
     "src": [
      "ISO273.scope",
-     "RECALLED"
+     "RECALLED",
+     "MMCC273.table",
+     "BOSS_TQ.basis"
     ],
-    "basis": "recalled",
+    "basis": "document",
     "conf": "high",
     "status": "partly",
     "where": "tolerance: pattern start (p_all_start); parts.clearance_hole() gives one 'close' value, unverified",
     "auto": "measure each hole around each screw (tools/practice_audit.py does)",
     "fa": "L",
-    "effort": "S"
+    "effort": "S",
+    "correction": "table values recalled -> confirmed unchanged from the MMCC ISO 273 table (read from the scan)"
    },
    {
     "id": "FST-030",
     "cat": "FST",
     "rule": "Keep the pressure under the head and the nut below what the clamped material can carry",
-    "criterion": "preload / bearing area <= limiting surface pressure (use yield of the clamped part if no figure); bearing area = pi/4 (dw^2 - dh^2)",
+    "criterion": "p = FM max / Ap <= pG. pG (VDI 2230:2015, short-term, room temperature): S235 mild steel 490 MPa (1986 table: St 37 260), stainless X5CrNiMo 630, AW-6082 T6 (Rm 290) 360 -> used for 6061-T6 (mapped), AW-5083 325, cast GK-AlSi9Cu3 (Rm 160) 200 -> used for MIC-6 cast plate (mapped, derived), 70 % of pG where no indentation is permitted; power screwdriver up to -25 %, chamfered hole up to +25 % (steels). FM max from Bossard at mu 0.14 for the declared class (8.8 assumed when none: M3 2436 N, M5 7.0 kN)",
     "applies": "all clamped parts",
     "severity": "warning: embedding and preload loss",
     "src": [
      "PLASTCREEP.pressure",
-     "BOSSARD.basis"
+     "BOSSARD.basis",
+     "BOSS_SP.vdi2015",
+     "BOSS_SP.vdi1986",
+     "BOSS_SP.no_indent",
+     "BOSS_SP.shcs",
+     "BOSS_TQ.table"
     ],
-    "basis": "snippet",
+    "basis": "document",
     "conf": "med",
     "status": "not",
     "auto": "preload from class torque, area from head and measured hole",
     "needs": "torque or class",
     "fa": "M",
     "effort": "M",
-    "note": "limit values per material are recalled / assumed"
+    "note": "SOURCES DISAGREE: VDI 2230 1986 (St 37 260) vs 2015 (S235 490): both recorded, 2015 used. MIC-6 and 6061 are not in the table: the mapping to the nearest alloy by tensile strength is ours, labelled derived.",
+    "correction": "limit = yield of the clamped part (6061 276, MIC-6 105, steel 250); preload = recalled torque / (0.2 d) (M3 2167 N, M5 5700 N) -> limit = VDI 2230:2015 pG (6061 360 mapped, MIC-6 200 mapped, mild steel 490); preload = Bossard FM max, 8.8, mu 0.14 (M3 2436 N, M5 7000 N)"
    },
    {
     "id": "FST-031",
     "cat": "FST",
     "rule": "Plain washer under any head or nut that sits on a slot, an oversize hole, a soft or painted surface",
-    "criterion": "slot or hole > ISO 273 coarse, or head face supported < 80 % => ISO 7089 washer (M3 3.2x7x0.5, M4 4.3x9x0.8, M5 5.3x10x1.0); large slots: ISO 7093 wide series",
+    "criterion": "slot or hole larger than ISO 273 coarse, or head face supported < 80 % => washer. ISO 7089 (ID min / OD max / t): M3 3.2 / 7 / 0.5, M4 4.3 / 9 / 0.8, M5 5.3 / 10 / 1.0; ISO 7093 large: M3 3.2 / 9 / 0.8, M4 4.3 / 12 / 1.0, M5 5.3 / 15 / 1.2; ISO 7090 starts at M5, ISO 7093-1 at M3",
     "applies": "slots, oversize holes, printed and thin parts",
     "severity": "warning: head digs in, adjustment creeps, joint loosens",
     "src": [
      "ISO7089.table",
-     "RECALLED"
+     "RECALLED",
+     "RC_WASH.iso7089",
+     "RC_WASH.iso7093",
+     "SLOCUM9.washer"
     ],
-    "basis": "recalled",
+    "basis": "document",
     "conf": "high",
     "status": "not",
     "auto": "supported fraction of the head annulus on the first clamped part",
     "needs": "washer catalogue part",
     "fa": "L",
-    "effort": "S"
+    "effort": "S",
+    "correction": "ISO 7089 dims from FreeCAD CSV; ISO 7093 not fetched -> ISO 7089 confirmed (RC); ISO 7093 added (M3 9 mm, M5 15 mm OD)"
    },
    {
     "id": "FST-032",
@@ -222,37 +244,45 @@
     "id": "FST-034",
     "cat": "FST",
     "rule": "Leave enough floor under a counterbored head",
-    "criterion": "floor under the head >= 0.6 d in aluminium (recalled); check FST-030 on the floor",
+    "criterion": "material under a head (counterbore floor, thin flange) typically 1 to 3 d thick (Slocum); below 1 d check FST-030 on the floor",
     "applies": "counterbores",
     "severity": "warning",
     "src": [
-     "RECALLED"
+     "RECALLED",
+     "SLOCUM9.thickness"
     ],
-    "basis": "recalled",
-    "conf": "low",
+    "basis": "document",
+    "conf": "med",
     "status": "partly",
     "where": "manufacture: cnc floor / wall minimums (0.5-0.8 mm only)",
     "auto": "thickness of the first clamped interval when the head is recessed",
     "fa": "M",
-    "effort": "S"
+    "effort": "S",
+    "correction": "floor >= 0.6 d (recalled) -> >= 1 d (Slocum, 'typically')"
    },
    {
     "id": "FST-040",
     "cat": "FST",
     "rule": "State a tightening torque for every structural joint; derive it from class, friction and the weakest clamped material",
-    "criterion": "reference: 90 % of yield at mu 0.14 (Bossard F.047 basis); class 8.8 about M3 1.3, M4 2.9, M5 5.7 N.m (recalled); reduce to the FST-030 limit on soft parts",
+    "criterion": "torque from Bossard (VDI 2230:2015, 90 % of yield, max, no safety factor) at mu 0.14 (zinc-plated, the lower end of 0.14 to 0.24): class 8.8 M2.5 0.81, M3 1.41, M4 3.3, M5 6.5 N.m; 12.9 M3 2.37, M5 11.2 N.m; at mu 0.10: M3 8.8 1.12, M5 8.8 5.2 N.m; minimum preload = FM max / alphaA, alphaA 1.6 to 2.0 for a hand torque wrench; reduce to the FST-030 / PRT-030 limit on soft parts; rail bolts per Hiwin (M3 0.98 N.m in aluminium)",
     "applies": "all screws",
     "severity": "info: documentation",
     "src": [
      "BOSSARD.basis",
-     "RECALLED"
+     "RECALLED",
+     "BOSS_TQ.table",
+     "BOSS_TQ.friction",
+     "BOSS_TQ.alpha",
+     "HIWIN_INST.torque"
     ],
-    "basis": "recalled",
-    "conf": "med",
+    "basis": "document",
+    "conf": "high",
     "status": "not",
     "auto": "generate a torque table per screw group into BUILD.md",
     "fa": "L",
-    "effort": "M"
+    "effort": "M",
+    "correction": "8.8 torques M2.5 0.7, M3 1.3, M4 2.9, M5 5.7 N.m (recalled, mu about 0.14) -> M2.5 0.81, M3 1.41, M4 3.3, M5 6.5 N.m (Bossard mu 0.14); preload taken directly from the table, not from T / 0.2 d",
+    "note": "Friction: the screws' finish is not declared (black-oxide socket screws are not in the Bossard example); 0.14 is used as the lowest practical value Bossard tells the user to assume. SEW (snippet) uses 0.09 for 10.9 / 12.9."
    },
    {
     "id": "FST-041",
@@ -264,7 +294,8 @@
     "bearing preloads": null,
     "severity": "info",
     "src": [
-     "RP1228.preload_accuracy"
+     "RP1228.preload_accuracy",
+     "BOSS_TQ.alpha"
     ],
     "basis": "fetched",
     "conf": "high",
@@ -276,11 +307,13 @@
     "id": "FST-050",
     "cat": "FST",
     "rule": "Edge distance and pitch of fastener holes",
-    "criterion": "hole centre to edge: nominal 2 d, minimum 1.5 d; pitch nominal 4 d",
+    "criterion": "hole centre to edge: nominal 2 d, minimum 1.5 d (NASA RP-1228); Bossard's recommended minimum edge distance c: M4 6, M5 7.5 mm (= 1.5 d); pitch 4 d nominal (NASA), 3 to 5 d (Slocum)",
     "applies": "metal parts; plastics want more (>= 2 d, recalled)",
     "severity": "warning: tear-out, bulged edge",
     "src": [
-     "RP1228.edge_distance"
+     "RP1228.edge_distance",
+     "BOSS_SP.edge",
+     "SLOCUM9.thickness"
     ],
     "basis": "fetched",
     "conf": "high",
@@ -294,15 +327,16 @@
     "id": "FST-051",
     "cat": "FST",
     "rule": "A joint needs two fasteners, or one fastener plus a feature that stops rotation",
-    "criterion": "parts joined by one screw must also share a pin, key, shoulder, rib-in-slot or a second screw",
+    "criterion": "parts joined by one screw also share a pin, key, shoulder, rib-in-slot or a second screw: 'To resist rotation, a moment, or two forces acting as a couple, is required' (Slocum); one screw is one force on a line",
     "applies": "all joints except pivots / axles",
     "severity": "warning: the part swings on its screw under vibration",
     "src": [
      "RECALLED",
-     "BOLTSCI.slip"
+     "BOLTSCI.slip",
+     "SLOCUMFP.exact"
     ],
-    "basis": "recalled",
-    "conf": "high",
+    "basis": "document",
+    "conf": "med",
     "status": "not",
     "auto": "screws per part pair; then look for a second contact that blocks rotation about the screw axis (or a declared join)",
     "needs": "'axle' / 'keyed' join kinds exist",
@@ -318,7 +352,8 @@
     "severity": "warning: slip is what loosens screws",
     "src": [
      "BOLTSCI.slip",
-     "RP1228.preload_accuracy"
+     "RP1228.preload_accuracy",
+     "SLOCUM9.shear"
     ],
     "basis": "fetched",
     "conf": "med",
@@ -332,56 +367,65 @@
     "id": "FST-060",
     "cat": "FST",
     "rule": "Nuts and tapped parts must sit on the threaded part of a partially threaded screw; the plain shank must be shorter than the grip",
-    "criterion": "ISO 4762 thread length b = 2 d + 12 (M3 18, M4 20, M5 22, M6 24 mm); screws up to about M3x20, M4x25, M5x25, M6x30 are threaded to the head; every nut / tapped interval must start >= (L - b) below the head",
+    "criterion": "ISO 4762 / DIN 912 thread length b: M2.5 17, M3 18, M4 20, M5 22, M6 24, M8 28 mm (Westfield); fully threaded up to M3 x 20, M4 x 25, M5 x 25, M6 x 30, M8 x 35 and partly threaded above, with lg max = l - b (Aramfix DIN 912 matrix); every nut / tapped interval must start at least lg below the head",
     "applies": "long cap screws, studs made from screws",
     "severity": "error: cannot be assembled as drawn",
     "src": [
      "ISO4762.thread_length",
-     "RECALLED"
+     "RECALLED",
+     "WESTFIELD.b",
+     "ARAMFIX.matrix"
     ],
-    "basis": "repo",
+    "basis": "document",
     "conf": "high",
     "status": "not",
     "auto": "thread zone per screw against each threaded target's interval along the axis",
     "needs": "b per size in the catalogue (already in vendor_docs CSV)",
     "fa": "L",
-    "effort": "S"
+    "effort": "S",
+    "correction": "b and full-thread lengths recalled / from the FreeCAD CSV -> confirmed unchanged (Westfield b; Aramfix full-thread rows)"
    },
    {
     "id": "FST-061",
     "cat": "FST",
     "rule": "Use stocked lengths and sizes",
-    "criterion": "length in the preferred series (4 5 6 8 10 12 16 20 25 30 35 40 45 50 60 ...) and inside the product standard's range for the diameter (ISO 4762: M3 5-30, M5 8-50); otherwise confirm a supplier",
+    "criterion": "length in the preferred series; for lengths beyond the DIN 912 matrix rows (M3 > 30, M5 > 50) name a supplier: Lederer stocks stainless A2 / A4 M3 to 60 and M5 to 100 mm (M3 x 50, M5 x 90 included), in class 70 / 80, not 12.9",
     "applies": "all screws",
     "severity": "warning: lead time, substitution",
     "src": [
-     "ISO4762.thread_length"
+     "ISO4762.thread_length",
+     "ARAMFIX.matrix",
+     "LEDERER.stock"
     ],
-    "basis": "repo",
+    "basis": "document",
     "conf": "med",
     "status": "partly",
     "where": "interference STANDARD_LENGTHS_MM (used for bottoming only); ratings BOM",
     "auto": "table lookup",
     "fa": "L",
-    "effort": "S"
+    "effort": "S",
+    "correction": "M3 x 50 and M5 x 90 'outside ISO 4762's range (M3 5-30, M5 8-50)': warning -> beyond the DIN 912 matrix but stocked in A2 / A4 (Lederer): info, with the strength class to declare",
+    "note": "A definitive ISO 4762 length range is not verified (MISSING.txt 3)."
    },
    {
     "id": "FST-062",
     "cat": "FST",
     "rule": "Thread should show past a nut, but not far",
-    "criterion": "protrusion >= 1 pitch (2 pitches in aerospace practice, recalled) and <= about 3 d unless it is an adjuster",
+    "criterion": "thread through a prevailing-torque (self-locking) nut: at least two threads (NASA-STD-5020B); through a plain nut: at least one pitch (recalled); not more than about 3 d unless an adjuster",
     "applies": "screw + nut joints",
     "severity": "info / warning (flush or short: nut not fully engaged)",
     "src": [
-     "RECALLED"
+     "RECALLED",
+     "NASA5020.nuts"
     ],
-    "basis": "recalled",
-    "conf": "med",
+    "basis": "document",
+    "conf": "high",
     "status": "partly",
     "where": "interference: nut counted full strength once the screw passes through",
     "auto": "tip position against the nut's far face",
     "fa": "L",
-    "effort": "S"
+    "effort": "S",
+    "correction": "1 pitch (2 in aerospace practice, recalled) -> 2 threads for self-locking nuts (NASA-STD-5020B p.86); 1 pitch for plain nuts stays recalled"
    },
    {
     "id": "FST-063",
@@ -400,24 +444,45 @@
     "effort": "M"
    },
    {
+    "id": "FST-064",
+    "cat": "FST",
+    "rule": "A screw threads into one part only",
+    "criterion": "'Both parts should NEVER have threaded holes because the threads will not be in phase' (Slocum): at most one tapped part (or one nut) per screw",
+    "applies": "all screws",
+    "severity": "warning: the joint cannot clamp",
+    "src": [
+     "SLOCUM9.threads"
+    ],
+    "basis": "document",
+    "conf": "high",
+    "status": "not",
+    "auto": "threads_into lists more than one non-nut part, or the core probe finds material of two parts",
+    "fa": "L",
+    "effort": "S"
+   },
+   {
     "id": "FST-070",
     "cat": "FST",
     "rule": "Every fastener on a vibrating or moving assembly has a declared locking provision",
-    "criterion": "one of: prevailing-torque nut (nyloc), thread adhesive (medium strength, removable), serrated-flange screw / nut, or a joint shown not to slip (FST-052); plain nut + plain screw alone is not a provision",
+    "criterion": "every fastener on a moving or vibrating assembly has a locking feature that does not depend on preload: prevailing-torque nut (nyloc / all-metal) or thread adhesive (NASA-STD-5020B TFSR 16 states it for spaceflight; adopted here as practice). Serrated flanges and jam nuts depend on preload: accepted only where preload is assured (metal seats), never as the only feature on plastic seats",
     "applies": "screws on moving bodies, motors, pulleys, bed, anything that sets an adjustment",
     "severity": "warning: a printer vibrates for thousands of hours",
     "src": [
      "BOLTSCI.slip",
      "BOLTSCI.categories",
-     "RP1228.adhesive"
+     "RP1228.adhesive",
+     "NASA5020.tfsr16",
+     "NASA5020.serrated",
+     "SLOCUM9.vibration"
     ],
-    "basis": "fetched",
+    "basis": "document",
     "conf": "high",
     "status": "not",
     "auto": "per screw: body is moving or a motor is in the joint, and no locking attribute",
     "needs": "add_screw(..., locking='nyloc'|'adhesive'|'serrated'|None) and nyloc / serrated catalogue parts",
     "fa": "M",
-    "effort": "S"
+    "effort": "S",
+    "correction": "serrated flange listed as a full locking provision -> serrated / free-spinning features depend on preload (NASA): not accepted alone where the seat creeps"
    },
    {
     "id": "FST-071",
@@ -428,7 +493,9 @@
     "severity": "warning",
     "src": [
      "RP1228.lockwasher",
-     "BOLTSCI.spring_washer"
+     "BOLTSCI.spring_washer",
+     "NASA5020.serrated",
+     "NASA5020.split"
     ],
     "basis": "fetched",
     "conf": "high",
@@ -481,7 +548,8 @@
     "applies": "all",
     "severity": "info",
     "src": [
-     "RP1228.tooth_washer"
+     "RP1228.tooth_washer",
+     "NASA5020.serrated"
     ],
     "basis": "fetched",
     "conf": "high",
@@ -549,20 +617,26 @@
     "id": "FST-091",
     "cat": "FST",
     "rule": "Heat-set inserts: hole, depth and wall",
-    "criterion": "straight (not tapered) hole to the insert maker's diameter (M3 brass insert: 4.0 mm, test-print 4.0-4.4); blind hole about 1 mm deeper than the insert; wall around the hole >= 0.5 x insert OD (>= 1.6-2.0 mm for M2-M3); no chamfer needed",
+    "criterion": "straight hole to the insert maker's figure (ruthex RX-M3x5,7: 4.0 mm, wall W min 1.6; RX-M5x9,5: 6.4 mm, W 2.6); blind depth insert length + 2 pitches (SPIROL) (CNC Kitchen: about 1 mm deeper); boss 2 to 3 x insert diameter (SPIROL); install flush (subflush = jack-out)",
     "applies": "inserts in printed parts",
     "severity": "warning",
     "src": [
      "CNCK.rules",
-     "INSERTS.m3"
+     "INSERTS.m3",
+     "RUTHEX.table",
+     "SPIROL.depth",
+     "SPIROL.boss",
+     "SPIROL.flush"
     ],
-    "basis": "snippet",
+    "basis": "document",
     "conf": "med",
     "status": "not",
     "auto": "insert catalogue part with hole / wall data; measure the boss",
     "needs": "heat_set_insert() part",
     "fa": "L",
-    "effort": "M"
+    "effort": "M",
+    "correction": "M3 hole 4.0 (snippet), wall >= 0.5 x insert OD (snippet), depth +1 mm -> ruthex hole and W min per size; depth +2 pitches (SPIROL)",
+    "note": "SOURCES DISAGREE on boss size: ruthex's minimum wall (M3: 4.6 + 2 x 1.6 = 7.8 mm boss, 1.7 x d1) vs SPIROL's optimum 2 to 3 x (9.2 to 13.8 mm). SPIROL strength data are for nylon test plastics and its own inserts; not ratings for printed PETG / ABS (MISSING.txt 7)."
    },
    {
     "id": "FST-092",
@@ -573,7 +647,9 @@
     "nut traps": null,
     "severity": "warning: pull-out",
     "src": [
-     "RECALLED"
+     "RECALLED",
+     "SPIROL.flush",
+     "SPIROL.depth"
     ],
     "basis": "recalled",
     "conf": "high",
@@ -641,19 +717,21 @@
     "id": "FST-102",
     "cat": "FST",
     "rule": "Tapped extrusion ends: tap the core hole to depth, deburr, and back the joint with a bracket where it carries moment",
-    "criterion": "end tap M5 in the 2020 core hole, engagement >= 2 d in 6063; a blind butt joint on one screw also needs an anti-rotation feature (bracket, plate)",
+    "criterion": "end tap M5 in the 2020 core hole: engagement >= 2 d if the profile is 6063-class (Bossard AlMg3 F18 row, Rm > 180, mapped); a blind butt joint on one screw also needs an anti-rotation feature",
     "applies": "extrusion butt joints",
     "severity": "info",
     "src": [
-     "RECALLED"
+     "RECALLED",
+     "BOSS_TE.table"
     ],
-    "basis": "recalled",
+    "basis": "document",
     "conf": "med",
     "status": "partly",
     "where": "interference thread_engagement; fea AssemblyCase lower bound",
     "auto": "FST-051 on extrusion ends",
     "fa": "L",
-    "effort": "S"
+    "effort": "S",
+    "correction": "2 d in 6063 (recalled) -> 2 d by Bossard's soft-aluminium row (mapping derived)"
    },
    {
     "id": "FST-110",
@@ -683,10 +761,11 @@
     "severity": "error if a PE path relies on anodised contact",
     "src": [
      "RECALLED",
-     "IEC60204.bonding"
+     "IEC60204.bonding",
+     "IEC_JMF.continuity"
     ],
-    "basis": "recalled",
-    "conf": "high",
+    "basis": "document",
+    "conf": "med",
     "status": "partly",
     "where": "electrical: earth_point; builder_work text",
     "auto": "PE continuity graph over metal parts with joint conductivity flags",
@@ -698,15 +777,16 @@
     "id": "LOC-001",
     "cat": "LOC",
     "rule": "Exact constraint: count what holds each body; make every redundant constraint compliant, floating or adjusted",
-    "criterion": "per moving body: constraints from guides, screws, nuts = 6 - DOF; each extra one needs a declared float / flexure / adjustment",
+    "criterion": "per body: bearing reaction points = 6 - DOF (Slocum 3-36); each extra one needs a declared float / flexure / adjustment, or deliberate elastic averaging",
     "applies": "axes",
     "bed supports": null,
     "severity": "warning: binding, wear",
     "src": [
      "SLOCUM.ld",
-     "RECALLED"
+     "RECALLED",
+     "SLOCUMFP.exact"
     ],
-    "basis": "recalled",
+    "basis": "document",
     "conf": "high",
     "status": "partly",
     "where": "fea.bed_support constraint / z_over_constrained; tolerance two-rail and screw-to-rail checks",
@@ -749,13 +829,15 @@
     "id": "LOC-004",
     "cat": "LOC",
     "rule": "Screws clamp, they do not locate: use dowels, shoulders, ribs-in-slots or a tight pattern where position matters",
-    "criterion": "a position requirement tighter than the hole clearance (M3 medium: +/-0.2 mm) across a screwed joint needs a locating feature or an adjustment",
+    "criterion": "screws clamp; 'Bolts and screws DO NOT themselves take shear loads, unless you use a shoulder bolt' (Slocum); a position requirement tighter than the clearance (M3 medium 3.4 - 3.0: +/-0.2 mm) needs a locating feature or an adjustment",
     "applies": "joints in a tolerance chain",
     "severity": "info",
     "src": [
-     "RECALLED"
+     "RECALLED",
+     "SLOCUM9.shear",
+     "MMCC273.table"
     ],
-    "basis": "recalled",
+    "basis": "document",
     "conf": "high",
     "status": "partly",
     "where": "tolerance: joint play of screws is simulated; adjustments credited",
@@ -804,14 +886,15 @@
     "id": "LOC-007",
     "cat": "LOC",
     "rule": "Allow thermal growth: one fixed point, the rest free to slide or flex",
-    "criterion": "alpha dT L (aluminium 23.6e-6: 0.3 mm on 220 mm at 60 K) must be taken by slots / flexures, not by clamped screws",
+    "criterion": "alpha dT L (aluminium plate 23.6e-6 /K per mechloop/parts/vendor/cast_tooling_plate.json: 0.3 mm on 220 mm at 60 K) taken by slots / flexures; 'an exactly constrained design has no chance of deforming [...] by thermal expansion' (Slocum)",
     "applies": "heated beds",
     "long aluminium on steel": null,
     "severity": "warning",
     "src": [
-     "RECALLED"
+     "RECALLED",
+     "SLOCUMFP.exact"
     ],
-    "basis": "recalled",
+    "basis": "repo",
     "conf": "high",
     "status": "partly",
     "where": "fea ThermalCase (bow, gap); AGENT.md 'fixed at one point and free to grow at the others'",
@@ -827,9 +910,10 @@
     "applies": "carriages",
     "severity": "info",
     "src": [
-     "SLOCUM.abbe"
+     "SLOCUM.abbe",
+     "SLOCUMFP.abbe"
     ],
-    "basis": "snippet",
+    "basis": "document",
     "conf": "high",
     "status": "partly",
     "where": "twin: toolhead tilt spring from block spacing and nozzle distance; fea.bed_support screw offset",
@@ -840,20 +924,22 @@
     "id": "LOC-009",
     "cat": "LOC",
     "rule": "Bearing spacing against overhang (Saint-Venant / 'golden' proportion)",
-    "criterion": "spacing of guide points along the travel / distance to the load >= 1 (jam risk below), about 1.6 good, 3 ideal; for plain bushings 2:1 minimum",
+    "criterion": "linear guides: spacing / width L/D > 1 (below it machines jam), 1.6 very good, 3 'awesome' (Slocum 3-7)",
     "applies": "carriages on one rail",
     "cantilevers": null,
     "severity": "warning below 1",
     "src": [
-     "SLOCUM.ld"
+     "SLOCUM.ld",
+     "SLOCUMFP.stvenant"
     ],
-    "basis": "snippet",
-    "conf": "med",
+    "basis": "document",
+    "conf": "high",
     "status": "partly",
     "where": "ratings: cantilever_on_guide_blocks; fea z_guides_bind",
     "auto": "ratio from block positions and tool point",
     "fa": "M",
-    "effort": "S"
+    "effort": "S",
+    "correction": "L/D 1 / 1.6 / 3 (snippet) -> same, from the document"
    },
    {
     "id": "LOC-010",
@@ -888,19 +974,22 @@
     "id": "BRG-010",
     "cat": "BRG",
     "rule": "Fit by load direction: the ring that sees a rotating load gets the tight fit",
-    "criterion": "inner ring rotating under a fixed-direction load: shaft j5-k5 (light press), housing H7 (slide); state the fit of both seats",
+    "criterion": "rotating inner ring under a stationary load: inner ring interference fit, outer ring loose (SKF table 1); shaft up to 17 mm under light load js5 (h5), normal load up to 10 mm js5 (SKF table 2); housing H7-class loose",
     "applies": "rolling bearings",
     "severity": "info",
     "src": [
-     "RECALLED"
+     "RECALLED",
+     "SKFINST.table1",
+     "SKFINST.shaft"
     ],
-    "basis": "recalled",
+    "basis": "document",
     "conf": "high",
     "status": "partly",
     "where": "tolerance: shaft_bore_pairs, design.join(a, b, 'press')",
     "auto": "require a declared fit for each ring",
     "fa": "L",
-    "effort": "S"
+    "effort": "S",
+    "correction": "shaft j5-k5, housing H7 (recalled) -> js5 (h5) for an 8 mm shaft under light load (SKF)"
    },
    {
     "id": "BRG-011",
@@ -911,7 +1000,9 @@
     "severity": "warning",
     "src": [
      "RECALLED",
-     "PLASTCREEP.creep"
+     "PLASTCREEP.creep",
+     "PETGCREEP.creep",
+     "SKFINST.floating"
     ],
     "basis": "recalled",
     "conf": "med",
@@ -929,9 +1020,11 @@
     "severity": "warning (error when a declared axial load has no path)",
     "src": [
      "BEARARR.arrangement",
-     "RECALLED"
+     "RECALLED",
+     "SKFINST.floating",
+     "SLOCUMFP.exact"
     ],
-    "basis": "snippet",
+    "basis": "document",
     "conf": "high",
     "status": "not",
     "where": "AGENT.md 'axial retention of bearings' not checked",
@@ -947,9 +1040,11 @@
     "applies": "two-bearing shafts",
     "severity": "info",
     "src": [
-     "BEARARR.arrangement"
+     "BEARARR.arrangement",
+     "SLOCUMFP.exact",
+     "SKFINST.floating"
     ],
-    "basis": "snippet",
+    "basis": "document",
     "conf": "high",
     "status": "not",
     "auto": "from BRG-020 results per shaft",
@@ -960,54 +1055,81 @@
     "id": "BRG-022",
     "cat": "BRG",
     "rule": "Axial load on a deep-groove ball bearing stays a fraction of its static rating",
-    "criterion": "Fa <= 0.5 C0 (<= 0.25 C0 for small / light-series bearings); 608: C0 1370 N -> about 340 N",
+    "criterion": "pure axial load <= 0.5 C0; small bearings (bore up to about 12 mm) and light series <= 0.25 C0 (SKF). 608: C0 1.37 kN -> 342 N",
     "applies": "ball bearings used as thrust",
     "severity": "info",
     "src": [
-     "RECALLED"
+     "RECALLED",
+     "SKFCAT.axial",
+     "SKF608.data"
     ],
-    "basis": "recalled",
-    "conf": "med",
+    "basis": "document",
+    "conf": "high",
     "status": "partly",
     "where": "ratings: guide loads against catalogue ratings ('typical')",
     "auto": "axial share of the joint load per bearing",
     "fa": "L",
     "effort": "S",
-    "note": "the 0.5 / 0.25 C0 figures were searched for and not confirmed today"
+    "note": "SKF's basic ratings are not permissible service loads without life, speed, fit and lubrication checks (README).",
+    "correction": "0.5 / 0.25 C0 recalled, unconfirmed -> confirmed: 608 is a 'small bearing', 0.25 C0 = 342 N"
    },
    {
     "id": "BRG-023",
     "cat": "BRG",
     "rule": "Axial load goes through a shoulder, collar or circlip, not through set-screw friction or a press fit",
-    "criterion": "every axial load path element is a positive stop; a set-screwed hub in the path is a warning",
+    "criterion": "axial load through a shoulder, collar, circlip or nut; a set-screwed hub in the path is a warning. Capacity of a cup-point set screw on a plain steel shaft (Rc 15 to 35 / HRB 80 to 100): M3 0.71 kN (Unbrako, 0.87 N.m) to 0.88 kN (Holo-Krome, 1.0 N.m), +/-30 %; on a thread or a soft shaft no data",
     "applies": "lead screws",
     "vertical shafts": null,
     "severity": "warning: slips in service, slowly",
     "src": [
      "RECALLED",
-     "MDSET.flat"
+     "MDSET.flat",
+     "HOLO.table",
+     "UNBRAKO.table"
     ],
-    "basis": "recalled",
-    "conf": "high",
+    "basis": "document",
+    "conf": "med",
     "status": "not",
     "auto": "axial path from nut to frame: joins of kind set_screw / press on it",
     "fa": "L",
-    "effort": "M"
+    "effort": "M",
+    "note": "The capacity on a proper shaft is large against a printer's loads; the objection is the seat (thread, unhardened stainless) and creep of the hub's preload, not the number."
+   },
+   {
+    "id": "BRG-024",
+    "cat": "BRG",
+    "rule": "What abuts a bearing ring stays inside that ring's abutment diameters",
+    "criterion": "608: parts on the shaft side abut between da min 10 mm and the inner ring's shoulder d1 about 12.15 mm (ra max 0.3); housing side up to Da max 20 mm (SKF); a pulley hub, collar (Ruland MCL-8 18 mm OD) or nut wider than d1 rubs the shields / cage: put an 8 x 12 shim washer between",
+    "applies": "anything seated on a bearing ring",
+    "severity": "warning: rubbing shield, preload on the wrong ring",
+    "src": [
+     "SKF608.data",
+     "RULAND.mcl8"
+    ],
+    "basis": "document",
+    "conf": "high",
+    "status": "not",
+    "auto": "diameter of the contact annulus between each ring face and the abutting part (practice_audit measures it)",
+    "needs": "abutment data in the bearing catalogue",
+    "fa": "L",
+    "effort": "S"
    },
    {
     "id": "SHF-010",
     "cat": "BRG",
     "rule": "Set screws bear on a flat (or dimple), two at 90 degrees, and are locked",
-    "criterion": "hub on a shaft by set screws: flat or spot on the shaft under at least one screw; two screws at 90 deg (Gates stock pulleys: 2 above 16 grooves); thread adhesive",
+    "criterion": "hub on a shaft by set screws: M3 cup point at 0.87 to 1.0 N.m holds 0.71 to 0.88 kN axially, torsionally that x shaft radius (8 mm shaft: 2.8 N.m, Unbrako); two screws at 90 deg (Gates stock pulleys); flat or spot on the shaft for repeatable seating; thread adhesive",
     "applies": "pulleys",
     "collars": null,
     "severity": "warning: the classic printer failure (layer shift)",
     "src": [
      "GATES.set_screws",
      "MDSET.flat",
-     "MDSET.second"
+     "MDSET.second",
+     "HOLO.table",
+     "UNBRAKO.table"
     ],
-    "basis": "repo",
+    "basis": "document",
     "conf": "high",
     "status": "not",
     "where": "v8 docstring: 'pulley set screws' not modelled",
@@ -1015,26 +1137,30 @@
     "needs": "shaft flat on nema17(); set screw count on gt2_pulley",
     "fa": "L",
     "effort": "S",
-    "note": "Machine Design (snippet): a flat adds only about 6 % torsional holding power; its value is repeatable seating and no burr locking the hub on"
+    "note": "MISSING.txt 10: no controlled with-flat vs without-flat comparison; Machine Design's 6 % (snippet) remains the only figure. A flat-point screw (0.92 x cup) is not a flat on the shaft."
    },
    {
     "id": "SHF-011",
     "cat": "BRG",
     "rule": "Never seat a set screw or a bearing on a thread",
-    "criterion": "bearing bores and hub set screws need a plain turned journal; a T8 thread crest is not a journal (undersize, 4 line contacts, set screw ruins the thread)",
+    "criterion": "bearing seats, set screws, circlips and collars need a plain journal: SKF js5 / h5 for an 8 mm seat; a DIN 471 ring needs a 7.6 mm groove 0.9 mm wide (impossible across a trapezoidal thread whose minor diameter is about 6 mm); a thread crest is neither",
     "applies": "lead screws",
     "threaded rod": null,
     "severity": "warning: runout and a hub that cannot hold",
     "src": [
-     "RECALLED"
+     "RECALLED",
+     "SKFINST.shaft",
+     "DIN471.d8",
+     "ELESA.family"
     ],
-    "basis": "recalled",
+    "basis": "document",
     "conf": "high",
     "status": "not",
     "auto": "bearing or set-screw hub whose shaft part is a lead screw without a 'journal' interface",
     "needs": "leadscrew end-machining option",
     "fa": "L",
-    "effort": "S"
+    "effort": "S",
+    "correction": "principle recalled -> document-backed (SKF fit, DIN 471 groove)"
    },
    {
     "id": "SHF-012",
@@ -1077,15 +1203,17 @@
     "severity": "warning with the derated rating; error under 2 teeth or when the derated rating is below the load",
     "src": [
      "GATES.teeth",
-     "SDPSI.teeth"
+     "SDPSI.teeth",
+     "GATES_GT2L.teeth"
     ],
-    "basis": "repo",
+    "basis": "document",
     "conf": "high",
     "status": "partly",
     "where": "motion: belt_low_wrap, but only for the pulley named in a joint's drive",
     "auto": "apply to every non-idler pulley on the path; compare derated rating with the pulley's torque",
     "fa": "L",
-    "effort": "S"
+    "effort": "S",
+    "note": "Same rule and KTM table in the legacy GT2 manual (document) and the current GT3-era manual (repo)."
    },
    {
     "id": "BLT-011",
@@ -1095,9 +1223,10 @@
     "applies": "loaded pulleys",
     "severity": "warning",
     "src": [
-     "GATES.wrap"
+     "GATES.wrap",
+     "GATES_GT2L.wrap"
     ],
-    "basis": "repo",
+    "basis": "document",
     "conf": "high",
     "status": "not",
     "auto": "route() already returns wraps",
@@ -1134,9 +1263,10 @@
     "src": [
      "GATES.idler_side",
      "GATES.table9",
-     "SDPSI.idlers"
+     "SDPSI.idlers",
+     "GATES_GT2L.idlers"
     ],
-    "basis": "repo",
+    "basis": "document",
     "conf": "high",
     "status": "not",
     "auto": "wrap sense of each idler against the belt's tooth side; idler SKU toothed or smooth",
@@ -1148,21 +1278,23 @@
     "id": "BLT-031",
     "cat": "BLT",
     "rule": "Idler diameters",
-    "criterion": "2MGT: backside idler OD >= 12.7 mm (0.50 in), and at least 30 % larger than the minimum inside sprocket; inside idler >= 12 grooves; SDP/SI: idler diameter must exceed the smallest drive pulley",
+    "criterion": "current GT3-era table 9 (2MGT GT3): backside idler OD >= 12.7 mm (0.50 in), inside idler >= 12 grooves, inside flat >= 25.4 mm; legacy GT2 manual: backside idler not smaller than 1.3 x the smallest recommended inside sprocket (12 grooves, 7.64 mm PD, if the GT3 minimum applies: 9.9 mm); SDP/SI: larger than the smallest drive pulley",
     "applies": "idlers",
     "severity": "warning",
     "src": [
      "GATES.table9",
      "GATES.backside_30",
-     "SDPSI.idlers"
+     "SDPSI.idlers",
+     "GATES_GT2L.idlers"
     ],
-    "basis": "repo",
-    "conf": "high",
+    "basis": "document",
+    "conf": "med",
     "status": "not",
     "auto": "idler OD from the catalogue",
     "fa": "L",
     "effort": "S",
-    "note": "Gates' two statements differ: table 9 gives 0.50 in; '30 % larger than the minimum inside sprocket' (12 grooves, 7.6 mm PD) gives about 10 mm. SDP/SI is stricter (larger than the smallest drive pulley)."
+    "note": "SOURCES DISAGREE three ways; the legacy GT2 manual's 2 mm minimum sprocket was not found in its text (MISSING.txt 12), so the 9.9 mm figure borrows the GT3 table's 12 grooves.",
+    "correction": "12.7 mm (GT3 table, labelled as GT2) -> 12.7 mm (current GT3 table) or 9.9 mm (legacy GT2 rule with a 12-groove minimum)"
    },
    {
     "id": "BLT-032",
@@ -1173,9 +1305,10 @@
     "severity": "info",
     "src": [
      "GATES.slack",
-     "SDPSI.idlers"
+     "SDPSI.idlers",
+     "GATES_GT2L.idlers"
     ],
-    "basis": "repo",
+    "basis": "document",
     "conf": "high",
     "status": "not",
     "auto": "for a reversing drive both spans are tight in turn: report only",
@@ -1277,7 +1410,8 @@
     "severity": "info",
     "src": [
      "GATES.shear",
-     "SDPSI.frame"
+     "SDPSI.frame",
+     "GATES_GT2L.fixed_center"
     ],
     "basis": "repo",
     "conf": "med",
@@ -1295,7 +1429,8 @@
     "applies": "lead screws",
     "severity": "info at printer Z speeds (12 mm/s on 2 mm lead = 360 rpm)",
     "src": [
-     "RECALLED"
+     "RECALLED",
+     "ELESA.speed"
     ],
     "basis": "recalled",
     "conf": "med",
@@ -1303,7 +1438,8 @@
     "auto": "formula with catalogue root diameter and declared end fixity",
     "needs": "end fixity",
     "fa": "L",
-    "effort": "S"
+    "effort": "S",
+    "note": "Elesa gives n max = nk x fk x safety factor with nk from a diagram that is not readable as text; the formula's constants stay recalled."
    },
    {
     "id": "LSC-011",
@@ -1313,7 +1449,8 @@
     "applies": "screws pushing a load",
     "severity": "info",
     "src": [
-     "RECALLED"
+     "RECALLED",
+     "ELESA.speed"
     ],
     "basis": "recalled",
     "conf": "high",
@@ -1328,18 +1465,20 @@
     "id": "LSC-012",
     "cat": "LSC",
     "rule": "Support the driven end of a screw so that it cannot whip or lift; a free far end is acceptable for short Z screws",
-    "criterion": "driven end: two bearings spaced >= 3 x shaft diameter (or one double-row), retained per BRG-020; free length / diameter reported",
+    "criterion": "a screw held only at its driven end (top free) acts as a cantilever: its two bearings need spacing / diameter L/D > 3 (Slocum 3-7: 'L/D > 3 if the bearings are to act to constrain the shaft like a cantilever'), retained per BRG-020",
     "applies": "lead screws",
     "severity": "warning",
     "src": [
-     "RECALLED"
+     "RECALLED",
+     "SLOCUMFP.stvenant"
     ],
-    "basis": "recalled",
-    "conf": "med",
+    "basis": "document",
+    "conf": "high",
     "status": "not",
     "auto": "bearing spacing on the screw / diameter",
     "fa": "L",
-    "effort": "S"
+    "effort": "S",
+    "correction": "bearing spacing >= 3 x shaft diameter (recalled) -> L/D > 3 (Slocum)"
    },
    {
     "id": "LSC-013",
@@ -1364,12 +1503,35 @@
     "applies": "vertical axes",
     "severity": "warning",
     "src": [
-     "RECALLED"
+     "RECALLED",
+     "ELESA.multistart"
     ],
-    "basis": "recalled",
-    "conf": "high",
+    "basis": "document",
+    "conf": "med",
     "status": "not",
     "auto": "catalogue efficiency of the screw",
+    "fa": "L",
+    "effort": "S"
+   },
+   {
+    "id": "LSC-015",
+    "cat": "LSC",
+    "rule": "Several screws driving one body: budget their lead difference",
+    "criterion": "rolled trapezoidal screws: lead deviation up to 0.1 mm / 300 mm, straightness 0.3 mm / 300 mm (Elesa GN 103; igus DryLin TR, same figures). Two screws tied by a belt can differ in height by up to 2 x 0.1 x travel / 300 over the travel; the support must tolerate it (float, compliance) or the firmware must re-level",
+    "applies": "multi-screw Z",
+    "severity": "warning",
+    "src": [
+     "ELESA.lead",
+     "ELESA.straight",
+     "IGUS_DRYLIN.lead"
+    ],
+    "basis": "document",
+    "conf": "med",
+    "note": "Maker figures for their own screws; no figure exists for generic T8 screws (MISSING.txt 13), which are unlikely to be better.",
+    "status": "not",
+    "where": "fea.bed_support screw_synchronisation assumes 0.02 mm",
+    "auto": "replace the assumed 0.02 mm by the maker's lead deviation over the declared travel",
+    "needs": "lead accuracy on leadscrew_t8()",
     "fa": "L",
     "effort": "S"
    },
@@ -1381,9 +1543,10 @@
     "applies": "rails / blocks against shoulders",
     "severity": "warning",
     "src": [
-     "HIWIN.shoulders"
+     "HIWIN.shoulders",
+     "HIWIN_INST.shoulders"
     ],
-    "basis": "repo",
+    "basis": "document",
     "conf": "high",
     "status": "not",
     "auto": "geometry of the part beside the rail foot",
@@ -1394,20 +1557,22 @@
     "id": "LIN-011",
     "cat": "LIN",
     "rule": "Mounting surface flat and stiff enough for the rail",
-    "criterion": "flatness about 0.05 / 200 mm for MG12 (snippet); an extrusion face is not catalogued for straightness",
+    "criterion": "mounting surface flatness MG_12: 0.050 / 200 mm (ZF, Z0), tighter for Z1 or two rails on one surface (Hiwin table 3.90); an extrusion face's straightness is not catalogued",
     "applies": "rail seats",
     "severity": "info",
     "src": [
-     "HIWIN_SNIP.flatness"
+     "HIWIN_SNIP.flatness",
+     "HIWIN_MGCAT.flatness"
     ],
-    "basis": "snippet",
-    "conf": "low",
+    "basis": "document",
+    "conf": "high",
     "status": "not",
     "where": "AGENT.md: extrusion straightness not catalogued",
     "auto": "process flatness class of the seat part",
     "needs": "straightness of extrusions",
     "fa": "M",
-    "effort": "M"
+    "effort": "M",
+    "correction": "0.05 / 200 (snippet) -> confirmed (Hiwin table 3.90)"
    },
    {
     "id": "LIN-012",
@@ -1431,19 +1596,21 @@
     "id": "LIN-013",
     "cat": "LIN",
     "rule": "Rail and block bolts torqued to the maker's figure",
-    "criterion": "M3: about 1.9 N.m in iron, 1.0 N.m in aluminium (snippet, row not confirmed for MGN12); block threads 3.5 mm deep: screw length = plate + 3 mm",
+    "criterion": "rail bolts tightened sequentially with a torque wrench: M3 1.86 N.m into iron, 1.27 into castings, 0.98 into aluminium (Hiwin table 11); block-to-carriage torque not verified (MISSING.txt 9); block threads 3.5 mm deep",
     "applies": "guides",
     "severity": "info",
     "src": [
      "HIWIN_SNIP.torque",
-     "HIWIN.rail"
+     "HIWIN.rail",
+     "HIWIN_INST.torque"
     ],
-    "basis": "snippet",
-    "conf": "low",
+    "basis": "document",
+    "conf": "high",
     "status": "partly",
     "where": "interference: thread_bottoms_out on the block",
     "auto": "torque table (FST-040)",
-    "effort": "S"
+    "effort": "S",
+    "correction": "about 1.9 / 1.0 N.m (snippet, row uncertain) -> 1.86 / 1.27 / 0.98 N.m (Hiwin table 11, rail bolts only)"
    },
    {
     "id": "LIN-014",
@@ -1471,9 +1638,10 @@
     "applies": "rails",
     "severity": "info",
     "src": [
-     "HIWIN_SNIP.edge"
+     "HIWIN_SNIP.edge",
+     "HIWIN_INST.master"
     ],
-    "basis": "snippet",
+    "basis": "document",
     "conf": "med",
     "status": "human"
    },
@@ -1805,7 +1973,10 @@
     "severity": "warning",
     "src": [
      "ISO13715.scope",
-     "RECALLED"
+     "RECALLED",
+     "ISO13715M.symbols",
+     "ISO13715M.conflict",
+     "MMCC273.table"
     ],
     "basis": "recalled",
     "conf": "high",
@@ -1813,7 +1984,8 @@
     "auto": "sharp convex edge length per part (tools/practice_audit.py does) or a declared edge note",
     "needs": "edge_break field",
     "fa": "L",
-    "effort": "S"
+    "effort": "S",
+    "note": "ISO 13715 notation (+ passing, - undercut, +/- with size) is now documented; no universal edge-break size is given, and the maker summary's example B.7 is inconsistent (0.1-0.5 vs 0.1-0.3 mm). The 0.2-0.5 mm figure stays recalled."
    },
    {
     "id": "PRT-010",
@@ -1839,9 +2011,10 @@
     "applies": "printed holes",
     "severity": "info",
     "src": [
-     "HUBSFDM.holes"
+     "HUBSFDM.holes",
+     "STRATFDM.holes"
     ],
-    "basis": "fetched",
+    "basis": "document",
     "conf": "high",
     "status": "partly",
     "where": "tolerance: printed holes 0.15 mm small",
@@ -1903,14 +2076,17 @@
     "id": "PRT-020",
     "cat": "PRT",
     "rule": "Enough plastic around holes, inserts and nuts",
-    "criterion": "wall around a screw hole or insert >= 1 d (>= 2 perimeters + infill anchoring); >= 3 perimeters around bearing seats",
+    "criterion": "minimum wall 4 x layer height (Stratasys: 0.25 mm layers -> 1.0 mm); around inserts the maker's W min (ruthex M3 1.6 mm); bosses supported by ribs / gussets; around screw holes >= 1 d stays recalled",
     "applies": "prints",
     "severity": "warning",
     "src": [
      "CNCK.rules",
-     "RECALLED"
+     "RECALLED",
+     "STRATFDM.wall",
+     "RUTHEX.table",
+     "STRATFDM.bosses"
     ],
-    "basis": "recalled",
+    "basis": "document",
     "conf": "med",
     "status": "checked",
     "where": "manufacture: fdm.thread_wall_d_ratio, wall_too_thin_to_print"
@@ -1919,39 +2095,50 @@
     "id": "PRT-030",
     "cat": "PRT",
     "rule": "Plastic creeps under a clamped screw: spread the load and do not rely on preload",
-    "criterion": "screw head / nut on printed plastic => washer (ISO 7089, wide series on PETG / PLA) or metal sleeve (compression limiter) through the plastic; sustained bearing pressure <= about 0.3 x yield (recalled); or reduce the torque and lock the screw (FST-070)",
+    "criterion": "screw head / nut on printed plastic => washer AND, where preload matters, a metal sleeve (compression limiter) so the clamp load goes through metal. DERIVED sustained bearing limit for printed PETG / ABS: 5 MPa at up to 40 degC, 2.5 MPa from 40 to 60 degC, no sustained clamp above 60 degC or above HDT - 15 K. Derivation: PETG's linear viscoelastic region ends at 5.3 to 8.0 MPa (Romeijn, DMA, mean 6.5); the ABS creep study held 5 MPa to stay under 2 % strain; PETG creep compliance rises about 2.5-fold over 10 years at 23 degC; PETG's creep model is valid only to 60 degC",
     "applies": "every screw through a printed part",
     "severity": "warning: joints go slack over weeks, faster when warm",
     "src": [
      "PLASTCREEP.creep",
-     "PLASTCREEP.pressure"
+     "PLASTCREEP.pressure",
+     "PETGCREEP.lvr",
+     "PETGCREEP.creep",
+     "ABSCREEP.creep",
+     "PRUSA_PETG.strength",
+     "ABSM30.strength"
     ],
-    "basis": "snippet",
-    "conf": "high",
+    "basis": "derived",
+    "conf": "med",
     "status": "not",
     "auto": "first clamped part under head / nut is plastic and no washer or sleeve part (tools/practice_audit.py does)",
     "needs": "washer part; optional 'limiter' sleeve",
     "fa": "L",
-    "effort": "S"
+    "effort": "S",
+    "correction": "0.3 x yield, sustained (recalled): PETG about 14, ABS about 12 MPa -> 5 MPa derived (2.5 MPa between 40 and 60 degC)",
+    "note": "NO VALIDATED ALLOWABLE for printed PETG / ABS was found (Bossard's VDI tables are metals only; MISSING.txt 4 and 14). The 5 MPa figure is ours, labelled derived: it keeps the plastic in the linear range so creep stays predictable; it is not a strength. Test plastics differ: pellet-extruded PETG (not Prusament), Z-ABS (not ABS-M30)."
    },
    {
     "id": "PRT-031",
     "cat": "PRT",
     "rule": "Keep sustained load and heat off low-temperature plastics",
-    "criterion": "part temperature <= HDT - 15 K under load (PLA about 55, PETG about 70, ABS about 95 degC: recalled); motor mounts, bed parts, hotend parts not in PLA",
+    "criterion": "sustained-load parts at <= HDT - 15 K: Prusament PETG HDT 68 degC at 0.45 and 1.80 MPa -> 53 degC; Stratasys ABS-M30 99.9 (1.82 MPa) to 103.8 degC (0.45 MPa) -> 85 degC; HDT is a short-term deflection temperature, not a creep allowable",
     "applies": "prints near heat",
     "severity": "warning",
     "src": [
-     "RECALLED"
+     "RECALLED",
+     "PRUSA_PETG.hdt",
+     "ABSM30.hdt"
     ],
-    "basis": "recalled",
-    "conf": "med",
+    "basis": "document",
+    "conf": "high",
     "status": "partly",
     "where": "electrical thermal estimates (probe); v8 chose PETG / ABS by hand",
     "auto": "material table with HDT against el.hot_parts and motor case temperature",
     "needs": "HDT per material",
     "fa": "M",
-    "effort": "M"
+    "effort": "M",
+    "correction": "PETG about 70, ABS about 95 degC (recalled) -> PETG 68 (Prusament), ABS-M30 99.9 to 103.8 (Stratasys)",
+    "note": "Generic ABS filament is not ABS-M30; the design names 'abs'. PLA not covered."
    },
    {
     "id": "PRT-032",
@@ -2158,19 +2345,22 @@
     "id": "ELE-010",
     "cat": "ELE",
     "rule": "Protective bonding of every exposed conductive part that can become live",
-    "criterion": "PE from the inlet to supply case, frame and each separately anodised metal sub-assembly near mains; continuity verified (test current 0.2-10 A, older edition); green-yellow, own terminal",
+    "criterion": "protective bonding of exposed conductive parts; a protective conductor that is not part of a cable and not in a common enclosure with the line conductor >= 2.5 mm2 Cu if mechanically protected, >= 4 mm2 if not; metal frames used as protective conductors need continuity 'assured by construction or by suitable connection' against electrochemical deterioration; continuity verified (18.2.2 Test 1)",
     "applies": "mains-powered machines",
     "severity": "error",
     "src": [
      "IEC60204.bonding",
-     "RECALLED"
+     "RECALLED",
+     "IEC_JMF.pe_size",
+     "IEC_JMF.continuity"
     ],
-    "basis": "snippet",
+    "basis": "document",
     "conf": "med",
     "status": "partly",
     "where": "electrical: earth wires to supply and earth_point",
     "auto": "FST-111 continuity graph",
-    "effort": "L"
+    "effort": "L",
+    "correction": "no conductor size (recalled continuity test current only) -> 2.5 / 4 mm2 Cu for separate PE conductors (IEC 60204-1 8.2.2 via IDEC)"
    },
    {
     "id": "ELE-011",
@@ -2193,14 +2383,15 @@
     "id": "ELE-012",
     "cat": "ELE",
     "rule": "Segregate mains from low voltage; cover live terminals",
-    "criterion": "mains conductors routed apart from signal looms, double insulation or barrier; finger-safe covers on supply terminals",
+    "criterion": "mains conductors apart from signal looms; live parts inside enclosures of at least IP2X / IPXXB (IEC 60204-1 6.2.2, web excerpt)",
     "applies": "mains wiring",
     "severity": "error",
     "src": [
-     "RECALLED"
+     "RECALLED",
+     "IEC_IP2X.ip2x"
     ],
-    "basis": "recalled",
-    "conf": "high",
+    "basis": "document",
+    "conf": "med",
     "status": "partly",
     "where": "electrical: mains safety checks",
     "effort": "M"
@@ -2323,15 +2514,17 @@
     "id": "DOC-010",
     "cat": "DOC",
     "rule": "Edge-break note on every made metal part",
-    "criterion": "'break all sharp edges 0.2-0.5' or ISO 13715 symbol; deburr note on sheet DXF orders",
+    "criterion": "edge note on every made metal part in ISO 13715 form: '-' for a required undercut / break (e.g. -0.3 at every external edge), '+' for a permitted burr; the size is the designer's (no universal value in the documents)",
     "applies": "made parts",
     "severity": "warning",
     "src": [
      "ISO13715.scope",
-     "RECALLED"
+     "RECALLED",
+     "ISO13715M.symbols",
+     "ISO13715M.conflict"
     ],
-    "basis": "recalled",
-    "conf": "high",
+    "basis": "document",
+    "conf": "med",
     "status": "not",
     "auto": "field present; written into the part's fabrication sheet",
     "needs": "edge_break",
@@ -2387,7 +2580,161 @@
     "where": "manufacture knows the threads each screw needs",
     "effort": "M"
    }
-  ]
+  ],
+  "corrections": [
+   {
+    "id": "FST-002",
+    "old": "clamped length >= 3 d where vibration matters (recalled)",
+    "new": "material under the head 1 to 3 d (Slocum 9-10)",
+    "effect": "none flagged directly; supports FST-034 (v8 has 2 mm under M5 heads in the bed plate, 0.4 d)"
+   },
+   {
+    "id": "FST-010",
+    "old": "aluminium 2.0 d (Nord-Lock snippet; mechloop 1.5 d)",
+    "new": "by alloy strength per Bossard: 6061/6082 error < 1.5 d, warning 1.5 to 2 d; soft Al (6063, MIC-6, 5052) error < 2 d",
+    "effect": "v8: bed_arm_left/right_fbolt (M5x12 into the 2020 arm ends) 1.8 d: passes mechloop's 1.5 d, FAILS the soft-aluminium 2 d rule if the profile is 6063 (warning if treated as 6061); tool_plate M3 2.33 d passes"
+   },
+   {
+    "id": "FST-020",
+    "old": "table values recalled",
+    "new": "confirmed unchanged from the MMCC ISO 273 table (read from the scan)",
+    "effect": "none: the audit's classes stand"
+   },
+   {
+    "id": "FST-030",
+    "old": "limit = yield of the clamped part (6061 276, MIC-6 105, steel 250); preload = recalled torque / (0.2 d) (M3 2167 N, M5 5700 N)",
+    "new": "limit = VDI 2230:2015 pG (6061 360 mapped, MIC-6 200 mapped, mild steel 490); preload = Bossard FM max, 8.8, mu 0.14 (M3 2436 N, M5 7000 N)",
+    "effect": "bed_post heads on MIC-6: 235 MPa vs 105 -> about 290 MPa vs 200 (still over; also over 140 = 70 %); bed_tie M3 heads: 196 vs 105 -> about 220 vs 200 (marginal over). No metal seat on 6061 or steel now exceeds its pG at 8.8 torque"
+   },
+   {
+    "id": "FST-031",
+    "old": "ISO 7089 dims from FreeCAD CSV; ISO 7093 not fetched",
+    "new": "ISO 7089 confirmed (RC); ISO 7093 added (M3 9 mm, M5 15 mm OD)",
+    "effect": "torque limits with a washer now also computed for ISO 7093 large washers"
+   },
+   {
+    "id": "FST-034",
+    "old": "floor >= 0.6 d (recalled)",
+    "new": ">= 1 d (Slocum, 'typically')",
+    "effect": "bed_plate counterbore floors (2 mm under M5, 0.4 d) fail by either figure"
+   },
+   {
+    "id": "FST-040",
+    "old": "8.8 torques M2.5 0.7, M3 1.3, M4 2.9, M5 5.7 N.m (recalled, mu about 0.14)",
+    "new": "M2.5 0.81, M3 1.41, M4 3.3, M5 6.5 N.m (Bossard mu 0.14); preload taken directly from the table, not from T / 0.2 d",
+    "effect": "preloads used by the audit rise 12 % (M3) and 23 % (M5): every bearing-pressure figure rises by the same share; ranking unchanged"
+   },
+   {
+    "id": "FST-060",
+    "old": "b and full-thread lengths recalled / from the FreeCAD CSV",
+    "new": "confirmed unchanged (Westfield b; Aramfix full-thread rows)",
+    "effect": "the bed-post finding stands: M5 x 90 has lg max 68 mm, thread only over the last 22 mm"
+   },
+   {
+    "id": "FST-061",
+    "old": "M3 x 50 and M5 x 90 'outside ISO 4762's range (M3 5-30, M5 8-50)': warning",
+    "new": "beyond the DIN 912 matrix but stocked in A2 / A4 (Lederer): info, with the strength class to declare",
+    "effect": "the 6 FST-061 flags (bed posts, extruder screws) drop from warning to info; FST-001 gains them (A2-70 / A4-80 instead of the catalogue's 12.9)"
+   },
+   {
+    "id": "FST-062",
+    "old": "1 pitch (2 in aerospace practice, recalled)",
+    "new": "2 threads for self-locking nuts (NASA-STD-5020B p.86); 1 pitch for plain nuts stays recalled",
+    "effect": "any nyloc added on the four flush screws (bed_tie_screw_0/1, part_fan_screw_0/1) needs a screw 2 mm longer"
+   },
+   {
+    "id": "FST-070",
+    "old": "serrated flange listed as a full locking provision",
+    "new": "serrated / free-spinning features depend on preload (NASA): not accepted alone where the seat creeps",
+    "effect": "no change to v8's count (no serrated parts); matters for the remedy: on printed seats use nylocs or adhesive, not serrated flanges"
+   },
+   {
+    "id": "FST-091",
+    "old": "M3 hole 4.0 (snippet), wall >= 0.5 x insert OD (snippet), depth +1 mm",
+    "new": "ruthex hole and W min per size; depth +2 pitches (SPIROL)",
+    "effect": "none in v8 (no inserts)"
+   },
+   {
+    "id": "FST-102",
+    "old": "2 d in 6063 (recalled)",
+    "new": "2 d by Bossard's soft-aluminium row (mapping derived)",
+    "effect": "bed_arm_*_fbolt 1.8 d: see FST-010"
+   },
+   {
+    "id": "LOC-009",
+    "old": "L/D 1 / 1.6 / 3 (snippet)",
+    "new": "same, from the document",
+    "effect": "none"
+   },
+   {
+    "id": "BRG-010",
+    "old": "shaft j5-k5, housing H7 (recalled)",
+    "new": "js5 (h5) for an 8 mm shaft under light load (SKF)",
+    "effect": "sharpens SHF-011: a rolled T8 thread is not a js5 journal"
+   },
+   {
+    "id": "BRG-022",
+    "old": "0.5 / 0.25 C0 recalled, unconfirmed",
+    "new": "confirmed: 608 is a 'small bearing', 0.25 C0 = 342 N",
+    "effect": "v8's Z screws (10 to 20 N axial each) pass by a factor of about 20"
+   },
+   {
+    "id": "SHF-011",
+    "old": "principle recalled",
+    "new": "document-backed (SKF fit, DIN 471 groove)",
+    "effect": "the set-screw / seat finding (section 4.2, item 5) unchanged in kind"
+   },
+   {
+    "id": "BLT-031",
+    "old": "12.7 mm (GT3 table, labelled as GT2)",
+    "new": "12.7 mm (current GT3 table) or 9.9 mm (legacy GT2 rule with a 12-groove minimum)",
+    "effect": "z_idler OD 12.0 mm: fails the GT3 table, passes the legacy GT2 rule; the toothed-on-back objection (BLT-030) stands in both"
+   },
+   {
+    "id": "LSC-012",
+    "old": "bearing spacing >= 3 x shaft diameter (recalled)",
+    "new": "L/D > 3 (Slocum)",
+    "effect": "v8's screws: 608 pair 37 mm apart on 8 mm: L/D 4.6, passes"
+   },
+   {
+    "id": "LIN-011",
+    "old": "0.05 / 200 (snippet)",
+    "new": "confirmed (Hiwin table 3.90)",
+    "effect": "none computed: extrusion straightness still unknown"
+   },
+   {
+    "id": "LIN-013",
+    "old": "about 1.9 / 1.0 N.m (snippet, row uncertain)",
+    "new": "1.86 / 1.27 / 0.98 N.m (Hiwin table 11, rail bolts only)",
+    "effect": "torque table for v8's rail screws: 0.98 N.m (into T-nuts in aluminium extrusion)"
+   },
+   {
+    "id": "PRT-030",
+    "old": "0.3 x yield, sustained (recalled): PETG about 14, ABS about 12 MPa",
+    "new": "5 MPa derived (2.5 MPa between 40 and 60 degC)",
+    "effect": "all 36 plastic seats exceed it 70- to 160-fold at 8.8 torque; with an ISO 7089 washer an M5 may carry about 250 N (0.23 N.m), with ISO 7093 740 N (0.69 N.m); an M3 with ISO 7089 about 120 N (0.07 N.m); on the 41 degC Z mount half that. Conclusion: screws through printed parts in v8 cannot be preloaded without a metal sleeve"
+   },
+   {
+    "id": "PRT-031",
+    "old": "PETG about 70, ABS about 95 degC (recalled)",
+    "new": "PETG 68 (Prusament), ABS-M30 99.9 to 103.8 (Stratasys)",
+    "effect": "v8: no PETG part is near the 80 degC bed; z_drive_mount carries the Z motor at a 41 degC case (12 K under the 53 degC line, and into PRT-030's 40 to 60 degC band); ABS parts near the hotend and bed pass"
+   },
+   {
+    "id": "ELE-010",
+    "old": "no conductor size (recalled continuity test current only)",
+    "new": "2.5 / 4 mm2 Cu for separate PE conductors (IEC 60204-1 8.2.2 via IDEC)",
+    "effect": "v8 (reading): 'earth to frame' is a single AWG 18 (0.82 mm2) wire to the frame stud; unless it runs in a common sheath / enclosure with the line conductors it is under the 2.5 mm2 minimum"
+   }
+  ],
+  "evidence_levels": {
+   "fetched": "web document downloaded and read 2026-11-15",
+   "repo": "document or vendor record already in the repository",
+   "document": "owner-delivered reference file (vendor_cad/staging/practice_refs), quoted with file and page",
+   "derived": "our own derivation from documents, labelled as such",
+   "snippet": "web-search summary only",
+   "recalled": "memory, no document"
+  }
  },
  "sources": {
   "RP1228": {
@@ -2418,7 +2765,7 @@
    }
   },
   "GATES": {
-   "title": "Gates, Light Power and Precision Drive Design Manual (PowerGrip GT3 / 2MGT), section 'V. Idler Usage' and belt drive design notes",
+   "title": "Gates, Light Power and Precision Drive Design Manual (CURRENT, GT3-era: 2MGT GT3 belts on GT2 sprockets); the repo file vendor_docs/Gates_GT2_design_manual.pdf is this manual, also delivered as 12_Gates_light_power_precision.pdf (idlers p.70 [68], tensions p.67 [65])",
    "url": "repo: vendor_docs/Gates_GT2_design_manual.pdf (record mechloop/parts/vendor/gates_gt2.json; origin https://www.gates.com/drivedesign)",
    "level": "repo",
    "quotes": {
@@ -2651,6 +2998,317 @@
    "title": "Recalled engineering practice (Machinery's Handbook, Shigley, Slocum, Blanding 'Exact Constraint', Gelbart's prototyping talks, VDI 2230, ISO 898-1, SKF catalogue, igus, Thomson, ISO 12100 / 13857 / 13732-1): no document consulted",
    "url": null,
    "level": "recalled"
+  },
+  "BOSS_TQ": {
+   "title": "Bossard, Preload and tightening torques (VDI 2230:2015 basis), 01-2025",
+   "url": "vendor_cad/staging/practice_refs/01_Bossard_preload_torque.pdf",
+   "level": "document",
+   "quotes": {
+    "basis": "p.2 [60/61]: 'The values are based on 90 % utilisation of yield point ReL /0.2 % yield strength Rp0.2. Clearance holes for bolts and screws acc. ISO 273-medium.' 'The listed values are maximum values and do not include a safety factor.'",
+    "friction": "p.1 [60]: 'Fasteners used are electro zinc plated, Friction coefficient muK = muG = 0,14 - 0,24, lower friction coefficient muK = muG = 0,14'; 'the lowest possible practical friction coefficient [...] must be selected'",
+    "alpha": "p.1 [60]: 'For installations with commercial, modern torque wrenches, tightened in a uniform, uninterrupted fashion, with an estimated friction coefficient, a tightening factor alphaA = 1,6 to 2,0 must be applied.'",
+    "table": "p.3 [61], mu 0,14, FM max / MA max: M2,5 8.8 1625 N / 81 Ncm; M3 8.8 2436 N / 141 Ncm, 10.9 3426 N / 198 Ncm, 12.9 4111 N / 237 Ncm; M4 8.8 4.3 kN / 3.3 Nm; M5 8.8 7.0 kN / 6.5 Nm, 10.9 10.3 kN / 9.5 Nm, 12.9 12.0 kN / 11.2 Nm. At mu 0,10: M3 8.8 2582 N / 112 Ncm; M5 8.8 7.4 kN / 5.2 Nm"
+   }
+  },
+  "MMCC273": {
+   "title": "Metric & Multistandard Components Corp., Clearance hole information (ref. ISO 273-1979), page 10-1040 (scan, read visually)",
+   "url": "vendor_cad/staging/practice_refs/02_MetricMCC_ISO273_clearance.pdf",
+   "level": "document",
+   "quotes": {
+    "table": "p.1, fine / medium / coarse: 2.5: 2.7 / 2.9 / 3.1; 3: 3.2 / 3.4 / 3.6; 4: 4.3 / 4.5 / 4.8; 5: 5.3 / 5.5 / 5.8; 6: 6.4 / 6.6 / 7; 8: 8.4 / 9 / 10. 'tolerance symbols [...] H 12, H 13, H 14'. 'NOTE: To avoid interference between the edge of the hole and the bolt underhead, a chamfer is recommended.'"
+   }
+  },
+  "WESTFIELD": {
+   "title": "Westfield Fasteners, Socket head cap screws (DIN 912 / ISO 4762) dimension table",
+   "url": "vendor_cad/staging/practice_refs/03_Westfield_socket_head_cap_screw.pdf",
+   "level": "document",
+   "quotes": {
+    "b": "p.1: d / b: M2.5 17, M3 18, M4 20, M5 22, M6 24, M8 28"
+   }
+  },
+  "ARAMFIX": {
+   "title": "Aramfix ISO 4762 data sheet, table 1 'according to DIN 912' (length matrix with ls / lg)",
+   "url": "vendor_cad/staging/practice_refs/03_Aramfix_ISO4762_dimensions.pdf",
+   "level": "document",
+   "quotes": {
+    "matrix": "p.2: 'full thread' up to l = 20 for M3 and up to l = 25 for M4 and M5; first partly threaded rows: M3 x 25 ls 4,5 / lg 7; M4 x 30 ls 6,5 / lg 10; M5 x 30 ls 4 / lg 8; M6 x 35 ls 6 / lg 11. Rows end at M3 x 30 (ls 9,5 / lg 12) and M5 x 50 (ls 24 / lg 28). (lg max = l - b.) Caveat from the index: labelled DIN 912, not a verified ISO 4762 length schedule."
+   }
+  },
+  "LEDERER": {
+   "title": "Lederer, DIN 912 / ISO 4762 stainless (A2 / A4) availability matrix",
+   "url": "vendor_cad/staging/practice_refs/03_Lederer_ISO4762.pdf",
+   "level": "document",
+   "quotes": {
+    "stock": "p.1: M3 rows to l = 60 (M3 x 50 'ab' = A2 and A4 stocked); M5 rows to l = 100 (M5 x 90 'ab'). Example 'ISO 4762 - A2 - M 4 x 12'. A catalogue's availability, not the standard's range."
+   }
+  },
+  "BOSS_SP": {
+   "title": "Bossard, Surface pressure when mounted (VDI 2230 1986 and 2015 tables), 01-2025",
+   "url": "vendor_cad/staging/practice_refs/04_Bossard_surface_pressure.pdf",
+   "level": "document",
+   "quotes": {
+    "vdi2015": "p.1 [53], VDI 2230:2015 limiting surface pressure pG: S235 JRG1 Rm 340 -> 490 N/mm2; X5CrNiMo 17 12 2 -> 630; AlMgSi 1 F31 (AW-6082) Rm 290 -> 360; AlMgSi 1 F28 -> 325; AlMg4.5Mn F27 (AW-5083) -> 325; GK-AlSi9Cu3 Rm 160 -> 200; GK-AlSi7Mg wa Rm 250 -> 310. 'All numerical values are short-term values at room temperature and have to be considered as guide values.'",
+    "vdi1986": "p.1 [53], VDI 2230:1986: St 37 Rm 370 -> 260; X 5 CrNiMo 18 10 -> 210; GK MgAl 9 -> 140",
+    "no_indent": "p.1 footnote 1: 'If an indentation is not permissible [...] it is recommended to use a maximum of 70 % of the table reference value.'",
+    "conditions": "p.1: 'Chamfers at the hole [...] can for steels result in permitted values for surface pressure up to 25 % higher'; 'When tightening using a power screwdriver, for steels the permissible limiting value of surface pressure can be up to 25 % lower!'",
+    "edge": "p.2 [54]: 'Rec. minimum edge distance c [mm]': M4 6, M5 7,5, M6 9, M8 12",
+    "shcs": "p.2 [54], socket head cap screw DIN 912 (ISO 4762), hole ISO 273 medium: M5 dw min 8,03, dh 5,5, Ap 26,9 mm2, pressure under the head 268 N/mm2 (8.8), 394 (10.9), at 90 % yield and muG 0,12; M4 Ap 17,6, 250 N/mm2 (8.8)"
+   }
+  },
+  "BOSS_TE": {
+   "title": "Bossard, Length of engaged thread (recommended minimum, trial values M6 to M16)",
+   "url": "vendor_cad/staging/practice_refs/05_Bossard_thread_engagement.pdf",
+   "level": "document",
+   "quotes": {
+    "table": "p.1 [52], coarse thread, screw class 8.8 / 10.9 / 12.9: S235 (Rm > 360) 1,0 d / 1,25 d / 1,4 d; E295 0,9 / 1,0 / 1,2 d; GJL 250 1,0 / 1,25 / 1,4 d; Al 99,5 (Rm > 180) - / 2,0 d / -; AlMg3 F18 (Rm > 180) 2 d [3 d] / - / -; AlMgSi1 F32 (Rm > 330) 1,4 d / 1,6 d / -; AlMg4,5Mn F28 1,4 / 1,6 / -. 'Values in brackets are based on the formula from VDI 2230'. Title: 'based on trail values M6 to M16'."
+   }
+  },
+  "RC_WASH": {
+   "title": "RC Fasteners, metric flat washers: ISO 7089 (normal), ISO 7093 (large)",
+   "url": "vendor_cad/staging/practice_refs/06_RC_ISO_washers.pdf",
+   "level": "document",
+   "quotes": {
+    "iso7089": "p.1: ID min / OD max / T min-max: M2.5 2.7 / 6 / 0.45-0.55; M3 3.2 / 7 / 0.45-0.55; M4 4.3 / 9 / 0.7-0.9; M5 5.3 / 10 / 0.9-1.1; M6 6.4 / 12 / 1.4-1.8; M8 8.4 / 16 / 1.4-1.8. 'Flat washers are used to improve stress distribution, and to span large clearance holes.'",
+    "iso7093": "p.3: M3 3.2 / 9 / 0.7-0.9; M4 4.3 / 12 / 0.9-1.1; M5 5.3 / 15 / 1-1.4; M6 6.4 / 18 / 1.4-1.8"
+   }
+  },
+  "STEPHENS7090": {
+   "title": "Stephens, ISO 7090 chamfered washer dimensions (from M5)",
+   "url": "vendor_cad/staging/practice_refs/06_Stephens_ISO7090.pdf",
+   "level": "document",
+   "quotes": {
+    "m5": "M5: d1 5.3-5.48, d2 9.64-10, h 0.9-1.1 (series starts at M5)"
+   }
+  },
+  "RUTHEX": {
+   "title": "ruthex RX series heat-set inserts, product data sheet (status 15.08.2022)",
+   "url": "vendor_cad/staging/practice_refs/07_Ruthex_RX_insert_data.pdf",
+   "level": "document",
+   "quotes": {
+    "table": "p.1: RX-M3x5,7: d1 4,6, d2 3,9, L 5,7, W min 1,6, hole 4,0; RX-M3x5x4: 5,0 / 4,25 / 4,0 / W 1,3 / hole 4,4; RX-M4x8,1: 6,3 / 5,5 / 8,1 / W 2,1 / hole 5,6; RX-M5x9,5: 7,1 / 6,3 / 9,5 / W 2,6 / hole 6,4"
+   }
+  },
+  "SPIROL": {
+   "title": "SPIROL, Inserts for plastics design guide, 'Design guidelines for the plastic component'",
+   "url": "vendor_cad/staging/practice_refs/07_SPIROL_inserts_design_guide.pdf",
+   "level": "document",
+   "quotes": {
+    "depth": "p.7 [5]: 'For other Inserts, the recommended minimum depth is the Insert length plus two (2) Insert thread pitches. The assembly screw should never bottom out in the hole, as jack-out would result.'",
+    "boss": "p.7 [5]: 'Generally the optimum boss diameter is two (2) to three (3) times the Insert diameter with the relative multiple decreasing as the Insert diameter increases.'",
+    "flush": "p.7 [5]: 'a subflush installation presents a jack-out condition'; 'Correct hole size is critical. Larger holes decrease performance, while smaller holes induce undesirable stresses and potential cracks'"
+   }
+  },
+  "SKF608": {
+   "title": "SKF 608 product data (generated from skf.com 2023-12-05)",
+   "url": "vendor_cad/staging/practice_refs/08_SKF_608_product_data.pdf",
+   "level": "document",
+   "quotes": {
+    "data": "p.1-2: d 8, D 22, B 7 mm; C 3.45 kN, C0 1.37 kN; d1 ~12.15 (shoulder diameter); D2 ~19.2; abutment da min 10 mm, Da max 20 mm, ra max 0.3 mm; radial internal clearance CN"
+   }
+  },
+  "SKFCAT": {
+   "title": "SKF general catalogue, deep groove ball bearings, axial load carrying capacity",
+   "url": "vendor_cad/staging/practice_refs/08_SKF_deep_groove_general_catalogue.pdf",
+   "level": "document",
+   "quotes": {
+    "axial": "p.14 [299]: 'If deep groove ball bearings are subjected to purely axial load, this axial load should generally not exceed the value of 0,5 C0. Small bearings (bore diameter up to approx. 12 mm) and light series bearings (Diameter Series 8, 9, 0, and 1) should not be subjected to an axial load greater than 0,25 C0. Excessive axial loads can lead to a considerable reduction in bearing service life.'"
+   }
+  },
+  "SKFINST": {
+   "title": "SKF bearing installation and maintenance guide, selecting fits",
+   "url": "vendor_cad/staging/practice_refs/08_SKF_installation_maintenance.pdf",
+   "level": "document",
+   "quotes": {
+    "table1": "pp.56-61, table 1: rotating inner ring, stationary outer ring, stationary load ('belt-driven'): inner ring interference fit, outer ring loose fit",
+    "shaft": "table 2: light loads, shaft <= 17 mm: js5 (h5); normal to heavy loads, <= 10 mm: js5",
+    "floating": "'If a non-separable bearing is used as the non-locating bearing, it is imperative that [...] in addition to having a loose fit in the housing bore, [the outer ring can] slide axially (i.e. no housing shoulders near the bearing outer ring).'"
+   }
+  },
+  "HIWIN_INST": {
+   "title": "HIWIN linear guideway installation instructions G99UE02-2506",
+   "url": "vendor_cad/staging/practice_refs/09_HIWIN_installation.pdf",
+   "level": "document",
+   "quotes": {
+    "shoulders": "p.14 [13], table 10, MG series: MGN12(-O): r1 max 0.3, r2 max 0.4, H1 1.7, H2 4 mm",
+    "torque": "p.15 [14], table 11 'Recommended Mounting Torque of Rail Bolts': M3x0.5P: 186 N-cm iron, 127 casting, 98 aluminium; M4: 392 / 274 / 206; M5: 883 / 588 / 441. 'To ensure the straightness of rail, please tighten the mounting bolts sequentially with a torque wrench to the specified torque.'",
+    "master": "p.? 'The accuracy of the master guide's datum plane is better than the subsidiary's and it can be a reference side for installation. There is a mark MA marked on the rail'"
+   }
+  },
+  "HIWIN_MGCAT": {
+   "title": "HIWIN MG series catalogue, table 3.90",
+   "url": "vendor_cad/staging/practice_refs/09_HIWIN_MG_catalogue.pdf",
+   "level": "document",
+   "quotes": {
+    "flatness": "p.13 [104], table 3.90 'Required flatness of the mounting surface': MG_12 0.050/200 (ZF and Z0; tighter for Z1 or more than one rail on the same surface)"
+   }
+  },
+  "HOLO": {
+   "title": "Holo-Krome metric handbook, table 61, axial holding power of cup point set screws",
+   "url": "vendor_cad/staging/practice_refs/10_HoloKrome_metric_handbook.pdf",
+   "level": "document",
+   "quotes": {
+    "table": "p.35 [88]: M3, 1.5 key, 1.0 N.m -> 880 N; M4 2.1 N.m -> 1570 N; M5 4.7 N.m -> 2400 N. 'steel collars to cold finished steel bars (Rockwell B 80-100) [...] .125 mm movement [...] values may vary as much as +/-30 percent'. 'a flat point or dog point 0.92'. 'For torsional holding power, multiply the axial holding power value by the shaft radius.'"
+   }
+  },
+  "UNBRAKO": {
+   "title": "Unbrako metric socket set screws, torsional and axial holding power",
+   "url": "vendor_cad/staging/practice_refs/10_Unbrako_metric_set_screws.pdf",
+   "level": "document",
+   "quotes": {
+    "table": "p.3: M3 seating torque 0.87 N.m, axial 0.71 kN, torsional on an 8 mm shaft 2.8 N.m; M4 2.2 N.m, 1.7 kN; shaft hardness Rc 15 to 35. 'typical strengths and should be used accordingly, with specific safety factors'"
+   }
+  },
+  "DIN471": {
+   "title": "Maedler, DIN 471 external retaining rings",
+   "url": "vendor_cad/staging/practice_refs/11_Maedler_DIN471.pdf",
+   "level": "document",
+   "quotes": {
+    "d8": "8 mm shaft: ring s 0,8; groove d2 7,6, m 0,9 H13, n min 0,6"
+   }
+  },
+  "RULAND": {
+   "title": "Ruland MCL metric one-piece clamp collars (distributor table)",
+   "url": "vendor_cad/staging/practice_refs/11_Ruland_metric_collars.pdf",
+   "level": "document",
+   "quotes": {
+    "mcl8": "MCL-8: bore 8, OD 18, width 9 mm, M3x8 clamp screw (dimensions only, no holding rating)"
+   }
+  },
+  "GATES_GT2L": {
+   "title": "Gates PowerGrip GT2 drive design manual (legacy GT2), section 'Use of Idlers' and 'Minimum Belt Wrap and Tooth Engagement'",
+   "url": "vendor_cad/staging/practice_refs/12_Gates_GT2_drive_design.pdf",
+   "level": "document",
+   "quotes": {
+    "teeth": "printed p.134-135: 'Horsepower ratings listed in this catalog are based on a minimum of six teeth in mesh [...] 20% of the horsepower rating must be subtracted for each tooth less than six not in full contact'; KTM: 6 or more 1.00, 5 0.80, 4 0.60, 3 0.40, 2 0.20",
+    "wrap": "'each loaded sprocket in the drive system should have an arc of contact or belt wrap angle of at least 60 degrees. Non-loaded idler sprockets do not have tooth meshing or wrap angle requirements.'",
+    "idlers": "'Use of idlers should be restricted to those cases in which they are functionally necessary. [...] Idlers should be located on the slack side span of the belt drive. For inside idlers, grooved sprockets are recommended up to 40 grooves. [...] Outside or backside idlers should be flat and uncrowned; flanges may or may not be necessary. Diameters should not be smaller than 1.3 times the smallest recommended inside sprocket size.'",
+    "fixed_center": "'When considering a fixed center design, the center distance must be held as accurately as possible, typically within 0.002 - 0.003 in (0.05 - 0.08 mm).'"
+   }
+  },
+  "ELESA": {
+   "title": "Elesa+Ganter, Trapezoidal lead screws GN 103, technical information (4/2024)",
+   "url": "vendor_cad/staging/practice_refs/13_ElesaGanter_trapezoidal_engineering.pdf",
+   "level": "document",
+   "quotes": {
+    "lead": "p.1: 'For trapezoidal lead screws, the max. permissible lead deviation is 0.1 mm / 300 mm movement distance.'",
+    "straight": "p.2: 'For spindles with rolled thread, the straightness is typically 0.3 mm / 300 mm length.'",
+    "multistart": "p.2: 'Multi-start threads are used when greater adjustment travel per revolution is to be achieved or no self-locking is required.'",
+    "speed": "p.4: 'n max = n k x fk x v' with the critical speed read from a diagram by load case (diagram not readable as text)",
+    "family": "smallest family 8 x 1.5 (flank d2 7.013-7.183, minor d3 5.921-6.2): not the generic T8x2 / T8x8"
+   }
+  },
+  "IGUS_DRYLIN": {
+   "title": "igus DryLin TR lead screw drives catalogue",
+   "url": "vendor_cad/staging/practice_refs/13_Igus_DryLin_leadscrews.pdf",
+   "level": "document",
+   "quotes": {
+    "lead": "'DryLin precision spindles [...] Pitch deviation 0.1/300 mm, straightness 0.3/300 mm'"
+   }
+  },
+  "PRUSA_PETG": {
+   "title": "Prusament PETG technical datasheet v1.1 (16-02-2022)",
+   "url": "vendor_cad/staging/practice_refs/14_Prusament_PETG_TDS.pdf",
+   "level": "document",
+   "quotes": {
+    "hdt": "'Heat Deflection Temperature (0.45 MPa) [C] 68'; '(1.80 MPa) 68' (ISO 75)",
+    "strength": "printed specimens: tensile yield 47 +/-2 (horizontal), 50 +/-1 (vertical xz) MPa; 'Interlayer Adhesion [MPa] 18 +/- 4'"
+   }
+  },
+  "ABSM30": {
+   "title": "Stratasys ABS-M30 data sheet",
+   "url": "vendor_cad/staging/practice_refs/14_Stratasys_ABSM30_TDS.pdf",
+   "level": "document",
+   "quotes": {
+    "hdt": "p.5, table 4: 'HDT @ 66 psi 103.8 C', 'HDT @ 264 psi 99.9 C', Tg 105.2 C",
+    "strength": "table 5: tensile yield 30.8 MPa (XZ), 27.5 MPa (ZX)"
+   }
+  },
+  "PETGCREEP": {
+   "title": "T. Romeijn et al., Instantaneous and long-term mechanical properties of PETG additively manufactured by pellet-based material extrusion, Additive Manufacturing 2022 (accepted manuscript)",
+   "url": "vendor_cad/staging/practice_refs/14_PETG_creep_UTS_research.pdf",
+   "level": "document",
+   "quotes": {
+    "lvr": "Table 10 (DMA results): 'End of the LVR: Stress (MPa)': 5.32, 6.43, 8.03, 6.08; average 6.46, CoV 15.25 %",
+    "creep": "Figure 24: creep compliance at 23 C rises from about 7e-4 /MPa (seconds) to about 1.9e-3 /MPa at 10 years (read from the graph); 'the application of the TTSP creep methodology was limited by the creep test temperature, 60 C'"
+   }
+  },
+  "ABSCREEP": {
+   "title": "Numerical and Experimental Investigations of Polymer Viscoelastic Materials Obtained by 3D Printing, Polymers 2021, 13, 3276",
+   "url": "vendor_cad/staging/practice_refs/14_ABS_creep_MDPI_research.pdf",
+   "level": "document",
+   "quotes": {
+    "creep": "p.11: 'Creep test with constant load (sigma_o = 5 MPa)'; 'we also chose stress values so that the total deformation does not exceed 2%'; relaxation tests at 40, 50 and 60 C"
+   }
+  },
+  "STRATFDM": {
+   "title": "Stratasys Direct, FDM design guide (July 2025)",
+   "url": "vendor_cad/staging/practice_refs/15_Stratasys_FDM_design_guide.pdf",
+   "level": "document",
+   "quotes": {
+    "holes": "p.5: 'Holes, including those found in bosses, are generally fractionally undersized. [...] If requested or the drawing indicates critical feature tolerances, holes will be bored or reamed during post-processing'",
+    "wall": "p.5: 'Recommended minimum wall thickness is generally 4x the layer or slice thickness' (0.25 mm layers: 1.00 mm)",
+    "bosses": "p.7: 'It is important to use gussets or ribs to support the bosses in FDM parts'"
+   }
+  },
+  "ISO13715M": {
+   "title": "Modulus Metal summary of ISO 13715 (maker article snapshot, not the standard)",
+   "url": "vendor_cad/staging/practice_refs/16_ISO13715_Modulus_maker_summary.pdf",
+   "level": "document",
+   "quotes": {
+    "symbols": "'The symbol element + (plus) indicates permitted excess material, i.e. passing. The symbol element - (minus) indicates required material removal, i.e. undercut. The symbol element +/- [...] can only be used with an indication of size'",
+    "conflict": "chart B.7 (p.6): notation and diagram show 0.1 to 0.5 mm, explanation text says 0.1 to 0.3 mm (flagged by the collector)"
+   }
+  },
+  "IEC_JMF": {
+   "title": "IDEC presentation on IEC 60204-1:2016 (hosted by JMF), clause 8.2",
+   "url": "vendor_cad/staging/practice_refs/17_JMF_IEC60204_summary.pdf",
+   "level": "document",
+   "quotes": {
+    "pe_size": "slides 23-24 (8.2.1 / 8.2.2): 'The cross-sectional area of every protective conductor which does not form part of a cable or which is not in a common enclosure with the line conductor shall be not less than 2,5 mm2 Cu or 16 mm2 Al if protection against mechanical damage is provided, 4 mm2 Cu or 16 mm2 Al if protection against mechanical damage is not provided.'",
+    "continuity": "8.2.2: metal frames used as protective conductors: 'their electrical continuity shall be assured by construction or by suitable connection so as to ensure protection against mechanical, chemical or electrochemical deterioration'; 18.2.2 Test 1 'verifies the continuity of the protective bonding circuit'"
+   }
+  },
+  "IEC_IP2X": {
+   "title": "GT Engineering excerpt of IEC 60204-1 clause 6.2.2 (web excerpt)",
+   "url": "vendor_cad/staging/practice_refs/17_IEC60204_IP2X_source_excerpt.pdf",
+   "level": "document",
+   "quotes": {
+    "ip2x": "'Live parts shall be located inside enclosures that provide protection against contact with live parts of at least IP2X or IPXXB.'"
+   }
+  },
+  "SLOCUM9": {
+   "title": "A. Slocum, Topic 9 (bolted joints), MIT",
+   "url": "vendor_cad/staging/practice_refs/18_Slocum_Topic9.pdf",
+   "level": "document",
+   "quotes": {
+    "thickness": "printed 9-10: 'Typically, the thickness of the material under a bolt head should be from one to three bolt diameters, and bolts' center distances should be spaced from three to five bolt diameters apart.'",
+    "threads": "'Both parts should NEVER have threaded holes because the threads will not be in phase.'",
+    "shear": "'A bolt is really just a means to clamp a joint together, and the bolt itself does NOT withstand any shear loads.' 'Bolts and screws DO NOT themselves take shear loads - Unless you use a shoulder bolt'",
+    "washer": "'Washers are used to keep hex-nut edges from chewing up the surface'",
+    "vibration": "'In high vibration applications, use a thread-locking lubricant'",
+    "engagement": "'When a bolt is threaded into a section whose thickness equals the bolt diameter, the tensile strength of the bolt will equal the shear strength of the threads.'"
+   }
+  },
+  "SLOCUMFP": {
+   "title": "A. Slocum, Fundamental principles lecture (MIT, 2022)",
+   "url": "vendor_cad/staging/practice_refs/18_Slocum_fundamental_principles.pdf",
+   "level": "document",
+   "quotes": {
+    "exact": "printed 3-36: 'For a body to have N degrees of freedom free to move, there must be 6-N bearing reaction points!' 'To resist rotation, a moment, or two forces acting as a couple, is required!' 'Do not constrain a shaft with more than 2 bearings, unless it is very long'",
+    "stvenant": "printed 3-7: 'Saint-Venant: Linear Bearings: Make friction low and L/D > 1, 1.6:1 very good, 3:1 awesome. Every year some students try L/D < 1 and their machines jam!' 'Rotary Bearings: L/D > 3 if the bearings are to act to constrain the shaft like a cantilever'",
+    "abbe": "'When an angular error is amplified by a distance, e.g., to create an error in a machine's position, the strict definition of the error is a sine or cosine error'"
+   }
+  },
+  "NASA5020": {
+   "title": "NASA-STD-5020B, Requirements for Threaded Fastening Systems in Spaceflight Hardware (2021, revalidated 2026-01-05)",
+   "url": "vendor_cad/staging/practice_refs/19_NASA_STD5020B_revalidated2026.pdf",
+   "level": "document",
+   "quotes": {
+    "tfsr16": "p.37, 4.6.1 [TFSR 16]: 'each threaded fastening system in spaceflight hardware shall incorporate a minimum of one locking feature that does not depend upon preload to function.' 'Devices such as jam nuts may not be suitable locking features'. 'An estimate for the self-loosening moment can be calculated as the product of the preload times the thread pitch divided by 2.'",
+    "nuts": "p.86, B.4: '(1) Not using self-locking nuts on an axis of rotation. (2) Ensuring external thread extends at least two threads through nut.'",
+    "serrated": "p.86: 'free spinning locking devices such as fasteners with serrated bearing surfaces perform comparatively well, but their function is dependent on preload [...] serrations can damage joint bearing surfaces. Free spinning split lock and tooth lock washers provide minimal, if any, locking.'",
+    "split": "p.96: 'Split lock washers should not be used for secondary locking features.'"
+   }
   }
  }
 }

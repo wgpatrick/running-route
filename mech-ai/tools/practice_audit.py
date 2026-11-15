@@ -46,20 +46,32 @@ from mechloop.verifiers.belts import route  # noqa: E402
 PLASTICS = {"pla", "petg", "abs", "nylon_pa12"}
 # ---- rule data (ids refer to research_notes/practice/rules.yaml) -------------------------------------------------
 ISO273 = {"M2.5": (2.7, 2.9, 3.1), "M3": (3.2, 3.4, 3.6), "M4": (4.3, 4.5, 4.8), "M5": (5.3, 5.5, 5.8),
-          "M6": (6.4, 6.6, 7.0), "M8": (8.4, 9.0, 10.0)}                    # fine, medium, coarse (FST-020, recalled)
-ISO4762_B = {"M2.5": 17.0, "M3": 18.0, "M4": 20.0, "M5": 22.0, "M6": 24.0, "M8": 28.0}   # thread length b (FreeCAD FastenersWB iso4762def.csv, in vendor_docs)
-ISO4762_FULL = {"M2.5": 20.0, "M3": 20.0, "M4": 25.0, "M5": 25.0, "M6": 30.0, "M8": 35.0}  # threaded to the head up to this length (recalled)
-ISO4762_RANGE = {"M3": (5, 30), "M5": (8, 50)}                               # length range rows of the same CSV
+          "M6": (6.4, 6.6, 7.0), "M8": (8.4, 9.0, 10.0)}                    # fine, medium, coarse (FST-020: MMCC ISO 273 table, read from the scan)
+ISO4762_B = {"M2.5": 17.0, "M3": 18.0, "M4": 20.0, "M5": 22.0, "M6": 24.0, "M8": 28.0}   # thread length b (Westfield table; FastenersWB CSV agrees)
+ISO4762_FULL = {"M2.5": 20.0, "M3": 20.0, "M4": 25.0, "M5": 25.0, "M6": 30.0, "M8": 35.0}  # 'full thread' rows of the Aramfix DIN 912 matrix
+ISO4762_RANGE = {"M3": (5, 30), "M5": (8, 50)}                               # rows of the Aramfix DIN 912 matrix (not a verified ISO 4762 range)
+STOCKED_BEYOND = {"M3": 60, "M5": 100}                                       # Lederer stocks A2 / A4 to these lengths
 PITCH = {"M2.5": 0.45, "M3": 0.5, "M4": 0.7, "M5": 0.8, "M6": 1.0, "M8": 1.25}
 STD_LENGTHS = (4, 5, 6, 8, 10, 12, 16, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 80, 90, 100)
 ISO7089 = {"M2.5": (2.7, 6.0, 0.5), "M3": (3.2, 7.0, 0.5), "M4": (4.3, 9.0, 0.8), "M5": (5.3, 10.0, 1.0),
-           "M6": (6.4, 12.0, 1.6), "M8": (8.4, 16.0, 1.6)}                   # d1, d2, h (FastenersWB iso7089def.csv, fetched)
-TORQUE_88 = {"M2.5": 0.7, "M3": 1.3, "M4": 2.9, "M5": 5.7, "M6": 9.9, "M8": 24.0}   # N.m, class 8.8, mu about 0.14 (recalled, FST-040)
-ENGAGE = {"steel": 1.0, "stainless304": 1.0, "brass": 1.5, "al6061": 1.5, "al5052": 1.5, "al_mic6": 2.0, "al_atp5": 2.0}  # x d; plastics 2.0
+           "M6": (6.4, 12.0, 1.6), "M8": (8.4, 16.0, 1.6)}                   # d1, d2, h (ISO 7089: RC Fasteners table; FastenersWB agrees)
+ISO7093 = {"M3": (3.2, 9.0, 0.8), "M4": (4.3, 12.0, 1.0), "M5": (5.3, 15.0, 1.2), "M6": (6.4, 18.0, 1.6)}  # large series (RC Fasteners p.3)
+# FM max [N] and MA max [N.m], class 8.8, mu 0.14, 90 % of yield (Bossard F.047 / VDI 2230:2015, p.61). No class is declared in the design.
+BOSSARD_88 = {"M2.5": (1625, 0.81), "M3": (2436, 1.41), "M4": (4300, 3.3), "M5": (7000, 6.5), "M6": (9900, 11.3), "M8": (18100, 27.3)}
+# thread engagement (x d) by tapped material, error / warning (FST-010 from Bossard's table; 2020 extrusions treated as soft aluminium)
+ENGAGE = {"steel": (1.0, 1.0), "stainless304": (1.0, 1.0), "brass": (1.5, 1.5), "al6061": (1.5, 2.0), "al5052": (2.0, 2.0),
+          "al_mic6": (2.0, 2.0), "al_atp5": (2.0, 2.0), "extrusion": (2.0, 2.0)}
+# limiting surface pressure pG [MPa], VDI 2230:2015 via Bossard p.53; 6061 mapped to AW-6082 F31, MIC-6 to GK-AlSi9Cu3, ATP-5 / 5052 to AW-5083
+PG = {"steel": 490.0, "stainless304": 630.0, "al6061": 360.0, "al5052": 325.0, "al_atp5": 325.0, "al_mic6": 200.0}
 YIELD_FALLBACK = 100.0
-PLASTIC_SUSTAINED = 0.3      # share of yield a plastic carries under a screw head for years (recalled rule of thumb, PRT-030)
+# printed plastic: DERIVED sustained bearing limit (PRT-030): 5 MPa to 40 degC, 2.5 MPa to 60 degC (PETG LVR end 5.3-8.0 MPa, Romeijn 2022; ABS creep at 5 MPa)
+def plastic_limit(temp_c):
+    return 5.0 if temp_c <= 40.0 else 2.5 if temp_c <= 60.0 else 0.0
+PART_TEMP = {"z_drive_mount": 41.0}       # degC, from docs/PRINTER_V8.md ('Motor case 41 degC, so the mount is PETG'): a reading, not computed
 GATES_2MGT = {"teeth_full_rating": 6, "min_wrap_deg": 60.0, "backside_idler_od_mm": 12.7, "inside_idler_grooves": 12,
-              "inside_flat_idler_od_mm": 25.4}                               # Gates LP&P manual, "V. Idler Usage", table 9
+              "inside_flat_idler_od_mm": 25.4, "legacy_backside_od_mm": 1.3 * 12 * 2.0 / math.pi}   # current GT3 table 9; legacy GT2 1.3 x 12-groove PD
+BRG_ABUT = {"BRG-608": {"da_min": 10.0, "d1": 12.15, "Da_max": 20.0}}       # SKF 608 product data
+LEAD_DEV = 0.1 / 300.0                    # mm per mm of travel: Elesa GN 103 and igus DryLin TR (maker figures, not the generic T8)
 
 
 class Probe:
@@ -171,8 +183,9 @@ def fastener_schedule(design, pr: Probe):
             row["flags"].append(f"length {L:g} mm is not a preferred length")
         rng = ISO4762_RANGE.get(size)
         if rng and not rng[0] <= L <= rng[1]:
-            row["flags"].append(f"FST-061: {size} x {L:g} is outside ISO 4762's length range for {size} ({rng[0]} to {rng[1]} mm): "
-                                "a commercial DIN 912 size at best, check stock")
+            stocked = L <= STOCKED_BEYOND.get(size, 0)
+            row["flags"].append(f"FST-061i: {size} x {L:g} is beyond the DIN 912 matrix rows ({rng[0]} to {rng[1]} mm)"
+                                + (": stocked in A2 / A4 stainless (Lederer), declare that class" if stocked else ": no stock source found"))
         b = ISO4762_B.get(size)
         thr0 = 0.0 if L <= ISO4762_FULL.get(size, 0) else L - b      # thread starts this far under the head
         row["thread_starts_mm_under_head"] = round(thr0, 1)
@@ -185,13 +198,16 @@ def fastener_schedule(design, pr: Probe):
             ss = seen_core.get(n, [])
             nut = (cc.sku or "").startswith("NUT-")
             length = len([s for s in ss if s <= L]) * STEP
-            need = (cc.meta.get("interfaces", {}).get("height", 0.8 * d) / d) if nut else (
-                2.0 if cc.material in PLASTICS else ENGAGE.get(cc.material, 1.5))
+            kind = "extrusion" if (cc.sku or "").startswith("EXT") else cc.material
+            need_err, need_warn = (cc.meta.get("interfaces", {}).get("height", 0.8 * d) / d,) * 2 if nut else (
+                (2.0, 2.0) if cc.material in PLASTICS else ENGAGE.get(kind, (1.5, 2.0)))
+            need = need_err
             depth = cc.meta.get("interfaces", {}).get("thread_depth")
             if depth and not nut:                      # a catalogue part's own tapped hole: its maker's depth is the most there is
-                need = min(need, (depth - 0.3) / d)
+                need = need_warn = min(need, (depth - 0.3) / d)
             e = {"into": n, "material": cc.material, "nut": nut, "engaged_mm": round(length, 2), "engaged_d": round(length / d, 2),
-                 "rule_d": round(need, 2), "ok": bool(c.meta.get("tnut")) or length / d >= need - 0.08}
+                 "rule_d": round(need, 2), "warn_below_d": round(need_warn, 2), "basis": kind,
+                 "ok": bool(c.meta.get("tnut")) or length / d >= need - 0.08}
             if c.meta.get("tnut"):
                 e["note"] = "T-nut in the slot (not drawn): engagement is the T-nut's thickness, not measured"
             if ss:
@@ -207,9 +223,14 @@ def fastener_schedule(design, pr: Probe):
                     if L - e["to_mm"] > 3 * d and not any("FST-060" in x for x in row["flags"]):
                         row["flags"].append(f"FST-062: {L - e['to_mm']:.0f} mm of thread stands past {n} (snag / reach hazard, more than 3 d)")
             if not e["ok"]:
-                row["flags"].append(f"FST-010: {e['engaged_d']:.2f} d of thread in {n} ({cc.material}), rule {need:g} d")
+                row["flags"].append(f"FST-010: {e['engaged_d']:.2f} d of thread in {n} ({kind}), rule {need:g} d")
+            elif not c.meta.get("tnut") and length / d < need_warn - 0.08:
+                row["flags"].append(f"FST-010w: {e['engaged_d']:.2f} d of thread in {n} ({kind}): in the 1.5 to 2 d warning band")
             eng.append(e)
         row["engagement"] = eng
+        tapped = [n for n in threads_into if n in comps and not (comps[n].sku or "").startswith("NUT-")]
+        if len(tapped) > 1:
+            row["flags"].append(f"FST-064: threads into {len(tapped)} parts ({', '.join(tapped)}): only one may be tapped")
         # ---- what the head bears on ----------------------------------------------------------------------------
         first = next((e for e in stack if e["from_mm"] < 0.5), None)
         if first:
@@ -219,20 +240,34 @@ def fastener_schedule(design, pr: Probe):
             pts = [p for r in np.linspace(dh / 2 + 0.05, dw / 2, 4) for p in _ring(under + tdir * 0.1, u, v, r, 16)]
             frac = sum(pr.inside(first["part"], p) for p in pts) / len(pts)
             area = math.pi / 4 * (dw ** 2 - dh ** 2) * frac
-            preload = TORQUE_88[size] / (0.2 * d) * 1000.0             # N, at the usual class 8.8 torque (recalled)
+            preload, torque = BOSSARD_88[size]                          # N, N.m: class 8.8, mu 0.14, maximum (Bossard)
             plastic = cc.material in PLASTICS
-            limit = _yield(design, cc) * (PLASTIC_SUSTAINED if plastic else 1.0)
+            temp = PART_TEMP.get(cc.name, 23.0)
+            limit = plastic_limit(temp) if plastic else PG.get(cc.material, _yield(design, cc))
             w = ISO7089[size]
             area_w = math.pi / 4 * (w[1] ** 2 - max(dh, w[0]) ** 2)
+            wl = ISO7093.get(size)
+            area_wl = math.pi / 4 * (wl[1] ** 2 - max(dh, wl[0]) ** 2) if wl else None
             head = {"on": first["part"], "material": cc.material, "plastic": plastic, "slot": first.get("slot", False),
                     "hole_mm": first.get("hole_mm"), "supported_fraction": round(frac, 2), "bearing_area_mm2": round(area, 1),
                     "preload_at_8.8_torque_n": round(preload), "pressure_mpa": round(preload / max(area, 0.1)),
-                    "limit_mpa": round(limit), "limit_basis": "0.3 x yield, sustained (recalled)" if plastic else "yield of the clamped part",
+                    "limit_mpa": round(limit, 1), "part_temp_c": temp,
+                    "limit_basis": (f"derived sustained limit for printed plastic at {temp:g} degC (PRT-030)" if plastic else
+                                    "VDI 2230:2015 pG (Bossard)" + (" mapped" if cc.material in ("al6061", "al_mic6", "al_atp5", "al5052") else "")
+                                    if cc.material in PG else "yield (no pG)"),
                     "pressure_with_iso7089_washer_mpa": round(preload / area_w),
-                    "max_torque_bare_head_nm": round(limit * area * 0.2 * d / 1000.0, 2),
-                    "max_torque_with_washer_nm": round(limit * area_w * 0.2 * d / 1000.0, 2)}
+                    "max_preload_bare_head_n": round(limit * area), "max_preload_iso7089_n": round(limit * area_w),
+                    "max_preload_iso7093_n": round(limit * area_wl) if area_wl else None,
+                    "max_torque_bare_head_nm": round(torque * limit * area / preload, 2),
+                    "max_torque_with_washer_nm": round(torque * limit * area_w / preload, 2),
+                    "max_torque_with_large_washer_nm": round(torque * limit * area_wl / preload, 2) if area_wl else None}
             thin = (not plastic) and cc.material.startswith("al") and first["thickness_mm"] < 3.1
             head["thin_aluminium"] = thin
+            head["material_under_head_d"] = round(first["thickness_mm"] / d, 2)
+            if not cc.cots and not plastic and first["thickness_mm"] < d - 0.05 and first.get("hole_mm") and \
+                    any(e["role"] == "clamped" and e["part"] == first["part"] for e in stack) and first["from_mm"] < 0.1 and \
+                    _counterbored(pr, first["part"], under, a, u, v, hd):
+                row["flags"].append(f"FST-034: {first['thickness_mm']:.1f} mm of {first['part']} under the counterbored head ({first['thickness_mm'] / d:.2f} d; Slocum: 1 to 3 d)")
             if cc.sku and (cc.sku.startswith("SPACER") or "WASHER" in cc.sku):
                 head["note"] = "bears on a bought spacer / washer"
             elif cc.cots:
@@ -240,11 +275,11 @@ def fastener_schedule(design, pr: Probe):
             else:
                 if plastic:
                     row["flags"].append(f"PRT-030: head bears directly on printed {cc.material} ({first['part']}): {head['pressure_mpa']} MPa "
-                                        f"at the usual torque against about {head['limit_mpa']} MPa sustained; no washer")
+                                        f"at class 8.8 torque against {head['limit_mpa']} MPa (derived sustained limit); no washer, no sleeve")
                 if first.get("slot"):
                     row["flags"].append(f"FST-031: head bears on a slot in {first['part']} with no washer (supported {frac:.0%} of the head face)")
                 elif head["pressure_mpa"] > head["limit_mpa"] and not plastic:
-                    row["flags"].append(f"FST-030: head pressure {head['pressure_mpa']} MPa on {first['part']} ({cc.material}, limit {head['limit_mpa']})")
+                    row["flags"].append(f"FST-030: head pressure {head['pressure_mpa']} MPa on {first['part']} ({cc.material}, pG {head['limit_mpa']:g})")
             row["head"] = head
         # ---- what the nut bears on -------------------------------------------------------------------------------
         for i, e in enumerate(stack):
@@ -267,6 +302,12 @@ def fastener_schedule(design, pr: Probe):
         row["moving"] = c.body != "world"
         rows.append(row)
     return rows
+
+
+def _counterbored(pr: Probe, part, under, a, u, v, hd):
+    """True when the part has material beside the head (the head sits in a counterbore of that part)."""
+    pts = _ring(under + a * 1.0, u, v, 0.5 * hd + 0.6, 12)
+    return sum(pr.inside(part, p) for p in pts) >= 9
 
 
 def _hole(pr: Probe, part, cen, u, v, d):
@@ -356,7 +397,10 @@ def belts(design):
             if backside:
                 p["flags"].append("BLT-030: a TOOTHED idler runs on the belt's smooth back; Gates: back-side idlers should be flat and uncrowned")
                 if od < GATES_2MGT["backside_idler_od_mm"]:
-                    p["flags"].append(f"BLT-031: back-side idler OD {od:.1f} mm is under Gates' minimum for 2MGT, 12.7 mm (0.50 in)")
+                    leg = od >= GATES_2MGT["legacy_backside_od_mm"]
+                    p["flags"].append(f"BLT-031: back-side idler OD {od:.1f} mm is under the current Gates (GT3) table's 12.7 mm (0.50 in); "
+                                      + (f"it meets the legacy GT2 rule (1.3 x a 12-groove sprocket, {GATES_2MGT['legacy_backside_od_mm']:.1f} mm)" if leg
+                                         else "and under the legacy GT2 rule"))
             elif idler and teeth and teeth < GATES_2MGT["inside_idler_grooves"]:
                 p["flags"].append("BLT-031: inside idler under 12 grooves")
             if loaded and mesh is not None:
@@ -395,6 +439,14 @@ def bearings(design, pr: Probe):
                         hit[n] += 1
             return [n for n, k in hit.items() if k >= 6]
         half = itf["width"] / 2
+
+        def contact_od(n, off):
+            """Largest diameter, inside the outer ring's bore, at which part n lies against the face (0.4 mm off it)."""
+            best = 0.0
+            for r in np.arange(itf["bore"] / 2 + 0.25, itf["od"] / 2 - 0.25, 0.25):
+                if sum(pr.inside(n, p) for p in _ring(cen + a * off, u, v, r, 12)) >= 9:
+                    best = 2 * r
+            return round(best, 2)
         e = {"bearing": c.name, "sku": c.sku, "axis": "xyz"[ax], "centre": [round(float(x), 2) for x in cen],
              "outer_ring": {"above": who(r_outer, half + 0.4), "below": who(r_outer, -half - 0.4), "seat": who(itf["od"] / 2 + 0.6, 0.0)},
              "inner_ring": {"above": who(r_inner, half + 0.4), "below": who(r_inner, -half - 0.4), "shaft": who(itf["bore"] / 2 - 0.5, 0.0)},
@@ -404,6 +456,19 @@ def bearings(design, pr: Probe):
             for side in ("above", "below"):
                 if not e[ring][side]:
                     e["flags"].append(f"BRG-020: {ring.replace('_', ' ')} has nothing {side} it (no shoulder, circlip or cover)")
+        ab = BRG_ABUT.get(c.sku)
+        if ab:
+            e["abutment"] = {}
+            for side, off in (("above", half + 0.4), ("below", -half - 0.4)):
+                for n in e["inner_ring"][side]:
+                    od = contact_od(n, off)
+                    e["abutment"][f"{n} ({side})"] = od
+                    if od > ab["Da_max"] - 0.5:
+                        e["flags"].append(f"BRG-024: {n} lies against BOTH rings' faces (contact out to {od:.1f} mm, outer ring abutment Da max "
+                                          f"{ab['Da_max']} mm): the inner ring turns with the shaft and drags on it")
+                    elif od > ab["d1"] + 0.3:
+                        e["flags"].append(f"BRG-024: {n} bears on the inner ring face out to {od:.1f} mm diameter, past the ring's shoulder "
+                                          f"(d1 about {ab['d1']} mm, SKF): it reaches the shield / cage; fit an 8 x 12 shim washer")
         out.append(e)
     return out
 
@@ -494,6 +559,25 @@ def joints(rows):
     return {"joints": len(by), "screws_per_joint": dict(collections.Counter(len(v) for v in by.values())), "single_screw_joints": single}
 
 
+def lead_screw_sync(design):
+    """LSC-015: height difference between belt-tied screws from the makers' lead deviation (hand estimate)."""
+    out = []
+    for j in design.joints:
+        dr = j.drive or {}
+        if dr.get("kind") == "leadscrew" and isinstance(dr.get("screw"), list) and len(dr["screw"]) > 1:
+            lo, hi = j.range
+            ot = getattr(j, "overtravel", (0.0, 0.0))
+            travel = (hi - lo) + ot[0] + ot[1]
+            diff = 2 * LEAD_DEV * travel
+            # PRINTER_V8.md (layout d): a 0.02 mm height difference between screws gives 0.017 mm tilt and 2.8 N on a nut (linear)
+            out.append({"joint": j.name, "screws": dr["screw"], "sync": dr.get("sync"), "travel_mm": round(travel, 1),
+                        "lead_deviation": "0.1 mm / 300 mm (Elesa GN 103, igus DryLin TR; generic T8 unknown)",
+                        "max_height_difference_mm": round(diff, 3), "assumed_by_mechloop_mm": 0.02,
+                        "tilt_mm_scaled": round(0.017 * diff / 0.02, 3), "nut_force_n_scaled": round(2.8 * diff / 0.02, 1),
+                        "nut_seating_weight_n": 14, "basis": "scaled linearly from docs/PRINTER_V8.md trade-study figures for layout (d): a hand estimate, not computed"})
+    return out
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("design")
@@ -506,11 +590,13 @@ def main(argv=None):
     rep = {"design": d.name, "file": a.design, "generated": time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime()),
            "method": {"probing": "point-in-solid on the B-rep at the home pose; stack stations every 0.25 mm, hole radius in 0.05 mm steps refined by bisection, "
                                  "edge distance in 0.25 mm steps over 16 directions",
-                      "preload": "class 8.8 tightening torque (recalled table) / (0.2 d); property class is not declared in the design",
-                      "recalled_thresholds": ["ISO 273 classes", "ISO 4762 full-thread lengths", "class 8.8 torques", "plastic sustained bearing limit 0.3 x yield"]},
+                      "preload": "Bossard FM max, class 8.8, mu 0.14 (zinc-plated lower bound; finish not declared); property class is not declared in the design",
+                      "limits": "metal seats: VDI 2230:2015 pG via Bossard (6061 and MIC-6 mapped to the nearest tabulated alloy); printed plastic: DERIVED 5 MPa (2.5 MPa from 40 to 60 degC)",
+                      "rules_version": 2},
            "parts": len(d.components), "fasteners": rows, "standardisation": standardisation(d, rows), "joints": joints(rows),
            "belts": belts(d), "bearings": bearings(d, pr), "set_screws": set_screws(d), "edges": edges(d, pr), "tnuts": tnuts(d, rows),
            "adjustments": [{"name": x.name, "kind": x.kind, "range_mm": x.range_mm, "joint": x.joint, "lock_declared": None} for x in d.adjustments]}
+    rep["lead_screws"] = lead_screw_sync(d)
     flags = collections.Counter()
     for r in rows:
         for f in r["flags"]:

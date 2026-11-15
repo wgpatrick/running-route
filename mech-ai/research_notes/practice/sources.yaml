@@ -3,59 +3,75 @@
 #        repo     = a document or vendor record already in this repository (vendor_docs/, mechloop/parts/vendor/);
 #        snippet  = seen only through a web-search summary of the named page: wording NOT verified against the page;
 #        recalled = from memory, no document consulted today. Never present a recalled figure as sourced.
+# Unreachable or unusable today: see docs/PRACTICE_RULES.md section 7.
+#        document = owner-delivered reference file (vendor_cad/staging/practice_refs), quoted with file name and page; derived = our derivation from documents.
 RP1228:
-  title: "NASA Reference Publication 1228, Fastener Design Manual (R. T. Barrett, 1990)"
-  url: https://ntrs.nasa.gov/api/citations/19900009424/downloads/19900009424.pdf
+  title: NASA Reference Publication 1228, Fastener Design Manual (R. T. Barrett, 1990)
+  url: "https://ntrs.nasa.gov/api/citations/19900009424/downloads/19900009424.pdf"
   level: fetched
   quotes:
-    lockwasher: "The lockwasher serves as a spring while the bolt is being tightened. However, the washer is normally flat by the time the bolt is fully torqued. At this time it is equivalent to a solid flat washer, and its locking ability is nonexistent. In summary, a lockwasher of this type is useless for locking."
-    preload_accuracy: "Preload measuring method / accuracy, percent: Feel (operator's judgment) +/-35; Torque wrench +/-25; Turn of the nut +/-15; Load-indicating washers +/-10; Fastener elongation +/-3 to 5; Strain gages +/-1"
-    edge_distance: "Common design practice is to use a nominal edge distance of 2D from the fastener hole centerline, where D is the fastener diameter. The minimum edge distance should not be less than 1.5D. The nominal distance between fasteners is 4D, but the thickness of the materials being joined can be a significant factor."
+    lockwasher: "The lockwasher serves as a spring while the bolt is being tightened. However, the washer is normally flat by the time the bolt is fully torqued. At this time it is equivalent to a solid\
+      \ flat washer, and its locking ability is nonexistent. In summary, a lockwasher of this type is useless for locking."
+    preload_accuracy: "Preload measuring method / accuracy, percent: Feel (operator's judgment) +/-35; Torque wrench +/-25; Turn of the nut +/-15; Load-indicating washers +/-10; Fastener elongation +/-3\
+      \ to 5; Strain gages +/-1"
+    edge_distance: "Common design practice is to use a nominal edge distance of 2D from the fastener hole centerline, where D is the fastener diameter. The minimum edge distance should not be less than\
+      \ 1.5D. The nominal distance between fasteners is 4D, but the thickness of the materials being joined can be a significant factor."
     nylon: "The main drawback of this pellet is that its maximum operating temperature is approximately 250 F. The nylon pellet will also be damaged quickly by reassembly."
     tooth_washer: "Although this washer does provide some locking action, it damages the mating surfaces. These scratches can cause crack formation in highly stressed fasteners, in mating parts, or both"
-    grip: "Standard design practice is to choose a grip length such that the threads are never in bearing (shear). Where an exact grip length is not available, the thickness of the washers used under the nut or bolthead can be varied enough to allow proper grip."
-    inserts: "An insert is a special type of device that is threaded on its inside diameter and locked with threads or protrusions on its outside diameter [...] such as plastic and nonferrous materials, as well as to repair stripped threads in a tapped hole."
+    grip: "Standard design practice is to choose a grip length such that the threads are never in bearing (shear). Where an exact grip length is not available, the thickness of the washers used under the\
+      \ nut or bolthead can be varied enough to allow proper grip."
+    inserts: "An insert is a special type of device that is threaded on its inside diameter and locked with threads or protrusions on its outside diameter [...] such as plastic and nonferrous materials,\
+      \ as well as to repair stripped threads in a tapped hole."
     shear: "Whenever possible, bolts in shear should have a higher shear strength than the bearing yield strength of the materials they go through."
     galvanic: "The contact of dissimilar materials can create galvanic corrosion, which can become a major problem."
-    adhesive: "Loctite 242 is for removable fasteners [...] the best adhesives will function at 450 F"
+    adhesive: Loctite 242 is for removable fasteners [...] the best adhesives will function at 450 F
 BOLTSCI:
-  title: "Bolt Science, Self-Loosening of Bolts and Nuts (vibration loosening)"
-  url: https://www.boltscience.com/pages/vibloose.htm
+  title: Bolt Science, Self-Loosening of Bolts and Nuts (vibration loosening)
+  url: "https://www.boltscience.com/pages/vibloose.htm"
   level: fetched
   quotes:
-    slip: "By far the most frequent cause of loosening is side sliding of the nut or bolt head relative to the joint, resulting in relative motion occurring in the threads. If this does not occur, then the bolts will not loosen, even if the joint is subjected to severe vibration."
+    slip: "By far the most frequent cause of loosening is side sliding of the nut or bolt head relative to the joint, resulting in relative motion occurring in the threads. If this does not occur, then\
+      \ the bolts will not loosen, even if the joint is subjected to severe vibration."
     spring_washer: "conventional spring lock washers are no longer specified, because it has been shown that they actually aid self loosening rather than prevent it."
     categories: "three basic locking fastener categories have been established. They are: free spinning, friction locking, and chemical locking."
 GATES:
-  title: "Gates, Light Power and Precision Drive Design Manual (PowerGrip GT3 / 2MGT), section 'V. Idler Usage' and belt drive design notes"
+  title: "Gates, Light Power and Precision Drive Design Manual (CURRENT, GT3-era: 2MGT GT3 belts on GT2 sprockets); the repo file vendor_docs/Gates_GT2_design_manual.pdf is this manual, also delivered as\
+    \ 12_Gates_light_power_precision.pdf (idlers p.70 [68], tensions p.67 [65])"
   url: "repo: vendor_docs/Gates_GT2_design_manual.pdf (record mechloop/parts/vendor/gates_gt2.json; origin https://www.gates.com/drivedesign)"
   level: repo
   quotes:
-    teeth: "The designer should be sure that at least 6 belt teeth are in mesh on load carrying sprockets. For every tooth in mesh less than this (with a minimum of 2), 20% of the belt torque rating must be subtracted."
-    wrap: "In order to minimize the potential for belt ratcheting, each loaded sprocket in the system should also have a wrap angle of at least 60 deg. [...] Non-loaded idler sprockets do not have tooth meshing or wrap angle restrictions."
-    idler_side: "Inside idlers are generally preferred over backside idlers from a belt fatigue standpoint. [...] Inside idlers should be sprockets, but can be flat if the O.D. is equivalent to the pitch diameter of a 40 groove sprocket. Backside idlers should be flat and uncrowned."
+    teeth: "The designer should be sure that at least 6 belt teeth are in mesh on load carrying sprockets. For every tooth in mesh less than this (with a minimum of 2), 20% of the belt torque rating must\
+      \ be subtracted."
+    wrap: "In order to minimize the potential for belt ratcheting, each loaded sprocket in the system should also have a wrap angle of at least 60 deg. [...] Non-loaded idler sprockets do not have tooth\
+      \ meshing or wrap angle restrictions."
+    idler_side: "Inside idlers are generally preferred over backside idlers from a belt fatigue standpoint. [...] Inside idlers should be sprockets, but can be flat if the O.D. is equivalent to the pitch\
+      \ diameter of a 40 groove sprocket. Backside idlers should be flat and uncrowned."
     slack: "Idlers should be placed on the slack (or non-load carrying) side if possible. [...] If spring loaded idlers are used, they should never be placed on the tight side"
     table9: "Table 9 - Idler Size Recommendations: 2MGT GT3: minimum inside idler 12 grooves; minimum backside idler 0.50 in O.D.; minimum inside flat idler 1.00 in O.D."
     backside_30: "Flat backside idlers should be used with diameters at least 30% larger than the minimum recommended inside sprocket size."
-    shear: "Proper belt installation tension and rigid drive bracketry and framework is essential in preventing belt tooth jumping under peak torque loads. It is also helpful to design with more than the normal minimum of 6 belt teeth in mesh to ensure adequate belt tooth shear strength."
-    set_screws: "12-16 Groove pulleys have 1 set screw, all others have 2 at 90 degrees"
-    idler_flange: "Flanging of idlers is generally not necessary."
+    shear: "Proper belt installation tension and rigid drive bracketry and framework is essential in preventing belt tooth jumping under peak torque loads. It is also helpful to design with more than the\
+      \ normal minimum of 6 belt teeth in mesh to ensure adequate belt tooth shear strength."
+    set_screws: 12-16 Groove pulleys have 1 set screw, all others have 2 at 90 degrees
+    idler_flange: Flanging of idlers is generally not necessary.
 SDPSI:
   title: "SDP/SI, Timing Belt Design and Installation Suggestions: General Guide Lines"
-  url: https://www.sdp-si.com/resources/beltdesignsuggestions.php
+  url: "https://www.sdp-si.com/resources/beltdesignsuggestions.php"
   level: fetched
   quotes:
     teeth: "In order to deliver the rated horsepower, a belt must have six or more teeth in mesh with the grooves of the smaller pulley."
-    width: "The pulley diameter should never be smaller than the width of the belt."
-    flange: "Because of a slight side thrust of synchronous belts in motion, at least one pulley in the drive must be flanged. When the center distance between the shafts is 8 or more times the diameter of the smaller pulley, or when the drive is operating on vertical shafts, both pulleys should be flanged."
-    idlers: "Idlers, either of the inside or outside type, are not recommended and should not be used except for power takeoff or functional use. When an idler is necessary, it should be on the slack side of the belt. Inside idlers must be grooved, unless their diameters are greater than an equivalent 40-groove pulley. Flat idlers must not be crowned (use edge flanges). Idler diameters must exceed the smallest diameter drive pulley. Idler arc of contact should be held to a minimum."
+    width: The pulley diameter should never be smaller than the width of the belt.
+    flange: "Because of a slight side thrust of synchronous belts in motion, at least one pulley in the drive must be flanged. When the center distance between the shafts is 8 or more times the diameter\
+      \ of the smaller pulley, or when the drive is operating on vertical shafts, both pulleys should be flanged."
+    idlers: "Idlers, either of the inside or outside type, are not recommended and should not be used except for power takeoff or functional use. When an idler is necessary, it should be on the slack side\
+      \ of the belt. Inside idlers must be grooved, unless their diameters are greater than an equivalent 40-groove pulley. Flat idlers must not be crowned (use edge flanges). Idler diameters must exceed\
+      \ the smallest diameter drive pulley. Idler arc of contact should be held to a minimum."
     tension: "a belt, when installed with a snug fit (that is, not too taut) assures longer life, less bearing wear and quieter operation. Preloading (often the cause of premature failure) is not necessary."
     adjust: "provision should be made for some center distance adjustment for ease in installing and removing belts. Do not force belt over flange of pulley."
     frame: "A nonrigid frame causes variation in center distance and resulting belt slackness. This, in turn, can lead to jumping of teeth"
-    align: "Be sure that shafts are parallel and pulleys are in alignment."
+    align: Be sure that shafts are parallel and pulleys are in alignment.
 GATESMEC:
-  title: "Gates Mectrol, Belt Sizing Guide (polyurethane timing belts)"
-  url: https://www.gates.com/content/dam/documents-library/installation-guides/BeltSizingGuide.pdf
+  title: Gates Mectrol, Belt Sizing Guide (polyurethane timing belts)
+  url: "https://www.gates.com/content/dam/documents-library/installation-guides/BeltSizingGuide.pdf"
   level: fetched
   quotes:
     pretension: "Ti = (1.0,...,1.2) Te [fixed centre linear positioners]; check against the minimum number of pulley teeth zmin for the selected pitch given in Table 1 or Table 2"
@@ -64,20 +80,21 @@ HIWIN:
   url: "repo: mechloop/parts/vendor/hiwin_mgn12.json"
   level: repo
   quotes:
-    shoulders: "Table 3.91 Shoulder heights and edge roundings, MGN12: max r1 0.3, max r2 0.4, shoulder height H1 1.7, H2 4 mm. 'Inaccurate shoulder heights and edge roundings of mounting surfaces impair accuracy and may conflict with the block or rail profile.'"
+    shoulders: "Table 3.91 Shoulder heights and edge roundings, MGN12: max r1 0.3, max r2 0.4, shoulder height H1 1.7, H2 4 mm. 'Inaccurate shoulder heights and edge roundings of mounting surfaces impair\
+      \ accuracy and may conflict with the block or rail profile.'"
     parallel: "max parallelism of two rails, MG 12: 9 / 9 / 5 um (ZF / Z0 / Z1)"
     rail: "MGNR12: hole pitch P 25 mm, end distance E 10 mm, bolt M3x8; MGN12H block thread M3, depth 3.5 mm"
 HIWIN_SNIP:
   title: "Hiwin MG catalogue / assembly manual, via search summary (torque table row and flatness not verified)"
-  url: https://motioncontrolsystems.hiwin.com/Asset/Linear-Guideway-Assembly-Manual-HIWIN-Corp.pdf
+  url: "https://motioncontrolsystems.hiwin.com/Asset/Linear-Guideway-Assembly-Manual-HIWIN-Corp.pdf"
   level: snippet
   quotes:
     torque: "M3x0.5Px8L: 186 N-cm (iron), 98 N-cm (aluminium) [row seen for MGN9; MGN12 row not confirmed]"
     flatness: "flatness of the mounting surface, MG12: 0.050/200"
     edge: "place the rail carefully on the bed and align it with the reference edge; tighten the push screws sequentially to ensure close contact between the rail and the side datum plane"
 HUBSCNC:
-  title: "Hubs (Protolabs Network), How to design parts for CNC machining"
-  url: https://www.hubs.com/knowledge-base/how-design-parts-cnc-machining/
+  title: Hubs (Protolabs Network), How to design parts for CNC machining
+  url: "https://www.hubs.com/knowledge-base/how-design-parts-cnc-machining/"
   level: fetched
   quotes:
     corner: "Recommended: 1/3 times cavity depth (or larger)"
@@ -85,51 +102,58 @@ HUBSCNC:
     wall: "Recommended: 0.8 mm (metals), 1.5 mm (plastics). Feasible: 0.5 mm (metals), 1.0 mm (plastics)"
     thread: "The majority of the load applied to a thread is taken by the few first teeth (up to 1.5 times the nominal diameter). Threads longer than 3 times the nominal diameter are thus unnecessary."
     blind: "For threads in blind holes cut with taps (i.e. all threads smaller than M6), add an unthreaded length equal to 1.5 times the nominal diameter at the bottom of the hole."
-    setups: "This is often acceptable if the part needs to be rotated up to three or four times, but anything above this limit is excessive. [...] To achieve maximum relative positional accuracy, two features must be machined in the same setup."
+    setups: "This is often acceptable if the part needs to be rotated up to three or four times, but anything above this limit is excessive. [...] To achieve maximum relative positional accuracy, two features\
+      \ must be machined in the same setup."
     tolerance: "Our tolerances are either 2768 medium or fine. If tolerances are not specified, manufacturing partners will use the selected 2768 grade."
     drawing: "you'll have to include a 2D technical drawing if your model includes threaded holes or shafts and/or dimensions with tolerances tighter than the selected 2768 grade."
     drill: "Recommended: standard drill bit [...] Holes with a non-standard diameter must be machined with an end mill tool."
 HUBSFDM:
-  title: "Hubs (Protolabs Network), How to design parts for FDM 3D printing"
-  url: https://www.hubs.com/knowledge-base/how-design-parts-fdm-3d-printing/
+  title: Hubs (Protolabs Network), How to design parts for FDM 3D printing
+  url: "https://www.hubs.com/knowledge-base/how-design-parts-fdm-3d-printing/"
   level: fetched
   quotes:
-    holes: "FDM often prints undersized vertical-axis holes. [...] If the diameter of the vertical axis hole is critical, the recommendation is to print it undersized and then drill the hole to the correct diameter."
+    holes: "FDM often prints undersized vertical-axis holes. [...] If the diameter of the vertical axis hole is critical, the recommendation is to print it undersized and then drill the hole to the correct\
+      \ diameter."
     chamfer: "If assembly or overall dimensions are critical to the function of an FDM part, include a 45 deg chamfer or radius on all edges touching the build plate."
-    pins: "If your design contains pins smaller than 5mm in diameter, add a small fillet at the base of the pin. If function is critical, consider including a hole in your design in the location of the pin, drill the hole to the correct size and insert an off-the-shelf pin."
-    overhang: "an overhang can usually be printed up to 45 deg without compromising quality"
+    pins: "If your design contains pins smaller than 5mm in diameter, add a small fillet at the base of the pin. If function is critical, consider including a hole in your design in the location of the\
+      \ pin, drill the hole to the correct size and insert an off-the-shelf pin."
+    overhang: an overhang can usually be printed up to 45 deg without compromising quality
     bridge: "sagging or marks from support material are to some extent always present unless the bridge is less than 5mm"
-    anisotropy: "FDM components are inherently weaker in one direction due to layer orientation. [...] the joints between each layer are actually small valleys. This creates a stress concentration with a tendency to crack."
+    anisotropy: "FDM components are inherently weaker in one direction due to layer orientation. [...] the joints between each layer are actually small valleys. This creates a stress concentration with\
+      \ a tendency to crack."
 PROTOSHEET:
-  title: "Protolabs, Sheet metal fabrication design guidelines"
-  url: https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/
+  title: Protolabs, Sheet metal fabrication design guidelines
+  url: "https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/"
   level: fetched
   quotes:
-    holes: "Holes and slots should be a minimum of material thickness in diameter. If a material is 0.036 in. (0.914mm) or thinner, the hole should be 0.062 in. (1.574mm) from the material edge; if the material is thicker than 0.036 in. (0.914mm), the hole should be at least 0.125 in. (3.175mm) from the material edge to avoid distortion."
+    holes: "Holes and slots should be a minimum of material thickness in diameter. If a material is 0.036 in. (0.914mm) or thinner, the hole should be 0.062 in. (1.574mm) from the material edge; if the\
+      \ material is thicker than 0.036 in. (0.914mm), the hole should be at least 0.125 in. (3.175mm) from the material edge to avoid distortion."
     flange: "It is recommended to use the same radii across all bends, and flange length must be at least 4 times the material thickness."
-    hardware: "In situations where hardware inserts are close to bend lines, [...] any hardware hole deformation (due to material stretching in the press brake) may affect the functionality of the insert itself."
+    hardware: "In situations where hardware inserts are close to bend lines, [...] any hardware hole deformation (due to material stretching in the press brake) may affect the functionality of the insert\
+      \ itself."
 SCS:
-  title: "SendCutSend, Bending guidelines"
-  url: https://sendcutsend.com/guidelines/bending/
+  title: SendCutSend, Bending guidelines
+  url: "https://sendcutsend.com/guidelines/bending/"
   level: fetched
   quotes:
-    relief: "Bend relief notches reduce stress on inner radii and prevent corner tearing or bulging."
-    holes: "All holes and cutouts are at least 50% material thickness for laser cut parts"
+    relief: Bend relief notches reduce stress on inner radii and prevent corner tearing or bulging.
+    holes: All holes and cutouts are at least 50% material thickness for laser cut parts
     contact: "Flanges need to meet the minimum flange length for at least ~50-60% of the bend's length on both sides to provide enough press brake support."
     radius: "Bend radius and K factor are set per material thickness. [...] we don't offer custom bend radii."
     deburr: "Deburred Mild Steel is more prone to rusting, and is not recommended for outdoor use unless it's coated. [deburring is a separate, optional service: https://sendcutsend.com/services/deburring/]"
 CNCK:
   title: "CNC Kitchen, Threaded inserts in 3D prints: tips and tricks"
-  url: https://www.cnckitchen.com/blog/tipps-amp-tricks-fr-gewindeeinstze-im-3d-druck-3awey
+  url: "https://www.cnckitchen.com/blog/tipps-amp-tricks-fr-gewindeeinstze-im-3d-druck-3awey"
   level: fetched
   quotes:
-    rules: "A blind hole should be slightly deeper than the length of the insert (approx. 1 mm). Through holes do not need to be longer than the insert. To ensure strength you should make sure to stick to the minimum wall thickness. Holes should be straight (not tapered). Normally, no chamfer is required at the hole edge."
+    rules: "A blind hole should be slightly deeper than the length of the insert (approx. 1 mm). Through holes do not need to be longer than the insert. To ensure strength you should make sure to stick\
+      \ to the minimum wall thickness. Holes should be straight (not tapered). Normally, no chamfer is required at the hole edge."
     why: "Each time you screw the parts together, the material gets plastically deformed at the threads, which eventually leaves you with nothing but a ragged hole"
     overtighten: "If a screw gets turned directly into the plastic and is slightly overtightened, the threads in the plastic will often shear off"
     note: "the page's hole-diameter and wall-thickness table is an image; its numbers were not read (image caption: 'M3 hole diameter test part in CAD, with holes from 4.0 to 4.4 mm')"
 ISO7089:
   title: "ISO 7089 plain washer dimensions as tabulated in FreeCAD Fasteners Workbench (iso7089def.csv)"
-  url: https://raw.githubusercontent.com/shaise/FreeCAD_FastenersWB/master/FsData/iso7089def.csv
+  url: "https://raw.githubusercontent.com/shaise/FreeCAD_FastenersWB/master/FsData/iso7089def.csv"
   level: fetched
   quotes:
     table: "Dia, d1_min, d2_max, h: M2.5 2.7 6.0 0.5; M3 3.2 7.0 0.5; M4 4.3 9.0 0.8; M5 5.3 10.0 1.0; M6 6.4 12.0 1.6; M8 8.4 16.0 1.6"
@@ -141,77 +165,358 @@ ISO4762:
     thread_length: "b (thread length): M3 18.0, M5 22.0; length range rows: M3 5 to 30, M5 8 to 50"
 NORDLOCK:
   title: "Nord-Lock, The Experts: Thread engagement in a tapped hole"
-  url: https://www.nord-lock.com/insights/bolting-tips/2015/the-experts-thread-engagement-in-a-tapped-hole/
+  url: "https://www.nord-lock.com/insights/bolting-tips/2015/the-experts-thread-engagement-in-a-tapped-hole/"
   level: snippet
   quotes:
-    engagement: "the minimum recommended thread engagement to make a strong connection for a component with a tapped hole is approximately 1 times the nominal diameter in steel and 2 times the nominal diameter in aluminum"
+    engagement: "the minimum recommended thread engagement to make a strong connection for a component with a tapped hole is approximately 1 times the nominal diameter in steel and 2 times the nominal diameter\
+      \ in aluminum"
 TAMESON:
-  title: "Tameson, Thread Engagement Chart"
-  url: https://tameson.com/pages/thread-engagement-chart
+  title: Tameson, Thread Engagement Chart
+  url: "https://tameson.com/pages/thread-engagement-chart"
   level: snippet
   quotes:
-    ranges: "Steel 1.0 to 1.5 x base diameter; cast iron, brass 1.5 to 2.0 x; aluminum 2.0 to 2.5 x"
+    ranges: Steel 1.0 to 1.5 x base diameter; cast iron, brass 1.5 to 2.0 x; aluminum 2.0 to 2.5 x
 BOSSARD:
   title: "Bossard technical information F.047, Preload and tightening torques (reference values, VDI 2230:2015 basis)"
-  url: https://media.bossard.com/en/assembly-technology-expert/technical-information-and-tools/technical-resources/preload-and-tightening-torques/how-to-use-reference-values/
+  url: "https://media.bossard.com/en/assembly-technology-expert/technical-information-and-tools/technical-resources/preload-and-tightening-torques/how-to-use-reference-values/"
   level: snippet
   quotes:
     basis: "friction coefficient 0.14 (range 0.14 to 0.24), maximum torque at 90 % utilisation of the yield point; tightening factor 1.6 to 2.0 for commercial torque wrenches"
 MDSET:
-  title: "Machine Design, Setscrews"
-  url: https://www.machinedesign.com/fastening-joining/article/21834719/setscrews
+  title: Machine Design, Setscrews
+  url: "https://www.machinedesign.com/fastening-joining/article/21834719/setscrews"
   level: snippet
   quotes:
     flat: "About 6% more torsional holding power can be expected when a screw seats on a flat surface. Axial holding power is the same."
     second: "Holding power is approximately doubled when the second screw is installed in an axial line with the first but is only about 30% greater when the screws are diametrically opposed."
 SLOCUM:
-  title: "A. Slocum, FUNdaMENTALS of Design, Topic 3 Fundamental Principles (MIT 2.75 / OCW)"
-  url: https://ocw.mit.edu/courses/2-75-precision-machine-design-fall-2001/78ed54010cbeebb5a27af05d734a26ad_topic3fundamentalprinciples.pdf
+  title: A. Slocum, FUNdaMENTALS of Design, Topic 3 Fundamental Principles (MIT 2.75 / OCW)
+  url: "https://ocw.mit.edu/courses/2-75-precision-machine-design-fall-2001/78ed54010cbeebb5a27af05d734a26ad_topic3fundamentalprinciples.pdf"
   level: snippet
   quotes:
     ld: "linear bearings: a length-to-diameter (spacing-to-width) ratio of about 1.6:1 is very good, about 3:1 ideal; below 1:1 risks jamming"
     abbe: "angular errors are amplified by the distance from the source; cosine error about L eps^2 / 2"
-    stvenant: "to avoid feeling a load's local effects, be several characteristic dimensions away"
+    stvenant: to avoid feeling a load's local effects, be several characteristic dimensions away
 BEARARR:
   title: "NSK, Choosing bearing and arrangement (technical insight); Schaeffler medias, Design of bearing arrangements"
-  url: https://www.nsk.com/content/dam/nsk/eu/en_gb/documents/bearings-europe/P_TI-0104_EN.pdf
+  url: "https://www.nsk.com/content/dam/nsk/eu/en_gb/documents/bearings-europe/P_TI-0104_EN.pdf"
   level: snippet
   quotes:
-    arrangement: "a locating bearing fixes the shaft axially; the non-locating bearing only absorbs radial forces and allows for axial displacement (thermal length change); a loose fit between one bearing ring and its seat provides the freedom"
+    arrangement: "a locating bearing fixes the shaft axially; the non-locating bearing only absorbs radial forces and allows for axial displacement (thermal length change); a loose fit between one bearing\
+      \ ring and its seat provides the freedom"
 PLASTCREEP:
   title: "Fastener + Fixing Magazine technical article (bolted joints in polymers); hexagon.de review of VDI 2230; mechanicalc bolted joint analysis"
-  url: https://fastenerandfixing.com/media/31886/ffm-technical-ffm981603-128.pdf
+  url: "https://fastenerandfixing.com/media/31886/ffm-technical-ffm981603-128.pdf"
   level: snippet
   quotes:
     creep: "polymers begin to creep under even a relatively low clamp load [...] this leads to a decrease of the clamp load and finally the parts are no longer clamped together"
     pressure: "the limiting surface pressure of the material should not be exceeded in order to avoid preload loss due to creep (VDI 2230 check under head and nut)"
     relax: "a preload loss allowance of approximately 10 % is sufficient as a general rule (metal joints)"
 INSERTS:
-  title: "Heat-set insert hole charts (Accu, vendor brochures), via search summary"
-  url: https://accu-components.com/p/488-threaded-insert-hole-size-charts-for-3d-printing-pla-petg-resin
+  title: Heat-set insert hole charts (Accu, vendor brochures), via search summary
+  url: "https://accu-components.com/p/488-threaded-insert-hole-size-charts-for-3d-printing-pla-petg-resin"
   level: snippet
   quotes:
     m3: "4.0 mm (-0/+0.1) hole for a non-flanged M3 brass insert; minimum plastic wall at least 0.5 x insert outer diameter (rule of thumb); one brochure: M2 3.2 hole / 1.6 wall, M3 4.0 hole / 2.0 wall"
 ISO13715:
   title: "ISO 13715:2017 Technical product documentation, Edges of undefined shape, Indication and dimensioning (catalogue entry only)"
-  url: https://www.iso.org/standard/61328.html
+  url: "https://www.iso.org/standard/61328.html"
   level: snippet
   quotes:
     scope: "specifies rules for the indication and dimensioning of undefined edges; last reviewed and confirmed in 2024. Signed limits (burr / undercut sizes) were not readable: recalled."
 ISO273:
   title: "ISO 273:1979 Fasteners, Clearance holes for bolts and screws (catalogue entry only; table values recalled)"
-  url: https://www.iso.org/standard/4183.html
+  url: "https://www.iso.org/standard/4183.html"
   level: snippet
   quotes:
     scope: "fine, medium and coarse series for thread diameters 1 to 150 mm; tolerances H12 / H13 / H14 (third-party summary)"
 IEC60204:
   title: "IEC 60204-1 Safety of machinery, Electrical equipment of machines (preview / contents only)"
-  url: https://webstore.iec.ch/p-preview/info_iec60204-1%7Bed5.0%7Db.pdf
+  url: "https://webstore.iec.ch/p-preview/info_iec60204-1%7Bed5.0%7Db.pdf"
   level: snippet
   quotes:
-    bonding: "clause 8.2: the protective bonding circuit is the interconnection of the PE terminal(s) with the protective conductors in the machine's equipment, including sliding and trailing cables; continuity verified with a current between at least 0.2 A and approximately 10 A (older edition)"
+    bonding: "clause 8.2: the protective bonding circuit is the interconnection of the PE terminal(s) with the protective conductors in the machine's equipment, including sliding and trailing cables; continuity\
+      \ verified with a current between at least 0.2 A and approximately 10 A (older edition)"
 RECALLED:
-  title: "Recalled engineering practice (Machinery's Handbook, Shigley, Slocum, Blanding 'Exact Constraint', Gelbart's prototyping talks, VDI 2230, ISO 898-1, SKF catalogue, igus, Thomson, ISO 12100 / 13857 / 13732-1): no document consulted"
+  title: "Recalled engineering practice (Machinery's Handbook, Shigley, Slocum, Blanding 'Exact Constraint', Gelbart's prototyping talks, VDI 2230, ISO 898-1, SKF catalogue, igus, Thomson, ISO 12100 / 13857\
+    \ / 13732-1): no document consulted"
   url: null
   level: recalled
-# Unreachable or unusable today: see docs/PRACTICE_RULES.md section 7.
+BOSS_TQ:
+  title: "Bossard, Preload and tightening torques (VDI 2230:2015 basis), 01-2025"
+  url: vendor_cad/staging/practice_refs/01_Bossard_preload_torque.pdf
+  level: document
+  quotes:
+    basis: "p.2 [60/61]: 'The values are based on 90 % utilisation of yield point ReL /0.2 % yield strength Rp0.2. Clearance holes for bolts and screws acc. ISO 273-medium.' 'The listed values are maximum\
+      \ values and do not include a safety factor.'"
+    friction: "p.1 [60]: 'Fasteners used are electro zinc plated, Friction coefficient muK = muG = 0,14 - 0,24, lower friction coefficient muK = muG = 0,14'; 'the lowest possible practical friction coefficient\
+      \ [...] must be selected'"
+    alpha: "p.1 [60]: 'For installations with commercial, modern torque wrenches, tightened in a uniform, uninterrupted fashion, with an estimated friction coefficient, a tightening factor alphaA = 1,6\
+      \ to 2,0 must be applied.'"
+    table: "p.3 [61], mu 0,14, FM max / MA max: M2,5 8.8 1625 N / 81 Ncm; M3 8.8 2436 N / 141 Ncm, 10.9 3426 N / 198 Ncm, 12.9 4111 N / 237 Ncm; M4 8.8 4.3 kN / 3.3 Nm; M5 8.8 7.0 kN / 6.5 Nm, 10.9 10.3\
+      \ kN / 9.5 Nm, 12.9 12.0 kN / 11.2 Nm. At mu 0,10: M3 8.8 2582 N / 112 Ncm; M5 8.8 7.4 kN / 5.2 Nm"
+MMCC273:
+  title: "Metric & Multistandard Components Corp., Clearance hole information (ref. ISO 273-1979), page 10-1040 (scan, read visually)"
+  url: vendor_cad/staging/practice_refs/02_MetricMCC_ISO273_clearance.pdf
+  level: document
+  quotes:
+    table: "p.1, fine / medium / coarse: 2.5: 2.7 / 2.9 / 3.1; 3: 3.2 / 3.4 / 3.6; 4: 4.3 / 4.5 / 4.8; 5: 5.3 / 5.5 / 5.8; 6: 6.4 / 6.6 / 7; 8: 8.4 / 9 / 10. 'tolerance symbols [...] H 12, H 13, H 14'.\
+      \ 'NOTE: To avoid interference between the edge of the hole and the bolt underhead, a chamfer is recommended.'"
+WESTFIELD:
+  title: Westfield Fasteners, Socket head cap screws (DIN 912 / ISO 4762) dimension table
+  url: vendor_cad/staging/practice_refs/03_Westfield_socket_head_cap_screw.pdf
+  level: document
+  quotes:
+    b: "p.1: d / b: M2.5 17, M3 18, M4 20, M5 22, M6 24, M8 28"
+ARAMFIX:
+  title: Aramfix ISO 4762 data sheet, table 1 'according to DIN 912' (length matrix with ls / lg)
+  url: vendor_cad/staging/practice_refs/03_Aramfix_ISO4762_dimensions.pdf
+  level: document
+  quotes:
+    matrix: "p.2: 'full thread' up to l = 20 for M3 and up to l = 25 for M4 and M5; first partly threaded rows: M3 x 25 ls 4,5 / lg 7; M4 x 30 ls 6,5 / lg 10; M5 x 30 ls 4 / lg 8; M6 x 35 ls 6 / lg 11.\
+      \ Rows end at M3 x 30 (ls 9,5 / lg 12) and M5 x 50 (ls 24 / lg 28). (lg max = l - b.) Caveat from the index: labelled DIN 912, not a verified ISO 4762 length schedule."
+LEDERER:
+  title: Lederer, DIN 912 / ISO 4762 stainless (A2 / A4) availability matrix
+  url: vendor_cad/staging/practice_refs/03_Lederer_ISO4762.pdf
+  level: document
+  quotes:
+    stock: "p.1: M3 rows to l = 60 (M3 x 50 'ab' = A2 and A4 stocked); M5 rows to l = 100 (M5 x 90 'ab'). Example 'ISO 4762 - A2 - M 4 x 12'. A catalogue's availability, not the standard's range."
+BOSS_SP:
+  title: Bossard, Surface pressure when mounted (VDI 2230 1986 and 2015 tables), 01-2025
+  url: vendor_cad/staging/practice_refs/04_Bossard_surface_pressure.pdf
+  level: document
+  quotes:
+    vdi2015: "p.1 [53], VDI 2230:2015 limiting surface pressure pG: S235 JRG1 Rm 340 -> 490 N/mm2; X5CrNiMo 17 12 2 -> 630; AlMgSi 1 F31 (AW-6082) Rm 290 -> 360; AlMgSi 1 F28 -> 325; AlMg4.5Mn F27 (AW-5083)\
+      \ -> 325; GK-AlSi9Cu3 Rm 160 -> 200; GK-AlSi7Mg wa Rm 250 -> 310. 'All numerical values are short-term values at room temperature and have to be considered as guide values.'"
+    vdi1986: "p.1 [53], VDI 2230:1986: St 37 Rm 370 -> 260; X 5 CrNiMo 18 10 -> 210; GK MgAl 9 -> 140"
+    no_indent: "p.1 footnote 1: 'If an indentation is not permissible [...] it is recommended to use a maximum of 70 % of the table reference value.'"
+    conditions: "p.1: 'Chamfers at the hole [...] can for steels result in permitted values for surface pressure up to 25 % higher'; 'When tightening using a power screwdriver, for steels the permissible\
+      \ limiting value of surface pressure can be up to 25 % lower!'"
+    edge: "p.2 [54]: 'Rec. minimum edge distance c [mm]': M4 6, M5 7,5, M6 9, M8 12"
+    shcs: "p.2 [54], socket head cap screw DIN 912 (ISO 4762), hole ISO 273 medium: M5 dw min 8,03, dh 5,5, Ap 26,9 mm2, pressure under the head 268 N/mm2 (8.8), 394 (10.9), at 90 % yield and muG 0,12;\
+      \ M4 Ap 17,6, 250 N/mm2 (8.8)"
+BOSS_TE:
+  title: Bossard, Length of engaged thread (recommended minimum, trial values M6 to M16)
+  url: vendor_cad/staging/practice_refs/05_Bossard_thread_engagement.pdf
+  level: document
+  quotes:
+    table: "p.1 [52], coarse thread, screw class 8.8 / 10.9 / 12.9: S235 (Rm > 360) 1,0 d / 1,25 d / 1,4 d; E295 0,9 / 1,0 / 1,2 d; GJL 250 1,0 / 1,25 / 1,4 d; Al 99,5 (Rm > 180) - / 2,0 d / -; AlMg3 F18\
+      \ (Rm > 180) 2 d [3 d] / - / -; AlMgSi1 F32 (Rm > 330) 1,4 d / 1,6 d / -; AlMg4,5Mn F28 1,4 / 1,6 / -. 'Values in brackets are based on the formula from VDI 2230'. Title: 'based on trail values M6\
+      \ to M16'."
+RC_WASH:
+  title: "RC Fasteners, metric flat washers: ISO 7089 (normal), ISO 7093 (large)"
+  url: vendor_cad/staging/practice_refs/06_RC_ISO_washers.pdf
+  level: document
+  quotes:
+    iso7089: "p.1: ID min / OD max / T min-max: M2.5 2.7 / 6 / 0.45-0.55; M3 3.2 / 7 / 0.45-0.55; M4 4.3 / 9 / 0.7-0.9; M5 5.3 / 10 / 0.9-1.1; M6 6.4 / 12 / 1.4-1.8; M8 8.4 / 16 / 1.4-1.8. 'Flat washers\
+      \ are used to improve stress distribution, and to span large clearance holes.'"
+    iso7093: "p.3: M3 3.2 / 9 / 0.7-0.9; M4 4.3 / 12 / 0.9-1.1; M5 5.3 / 15 / 1-1.4; M6 6.4 / 18 / 1.4-1.8"
+STEPHENS7090:
+  title: Stephens, ISO 7090 chamfered washer dimensions (from M5)
+  url: vendor_cad/staging/practice_refs/06_Stephens_ISO7090.pdf
+  level: document
+  quotes:
+    m5: "M5: d1 5.3-5.48, d2 9.64-10, h 0.9-1.1 (series starts at M5)"
+RUTHEX:
+  title: ruthex RX series heat-set inserts, product data sheet (status 15.08.2022)
+  url: vendor_cad/staging/practice_refs/07_Ruthex_RX_insert_data.pdf
+  level: document
+  quotes:
+    table: "p.1: RX-M3x5,7: d1 4,6, d2 3,9, L 5,7, W min 1,6, hole 4,0; RX-M3x5x4: 5,0 / 4,25 / 4,0 / W 1,3 / hole 4,4; RX-M4x8,1: 6,3 / 5,5 / 8,1 / W 2,1 / hole 5,6; RX-M5x9,5: 7,1 / 6,3 / 9,5 / W 2,6\
+      \ / hole 6,4"
+SPIROL:
+  title: SPIROL, Inserts for plastics design guide, 'Design guidelines for the plastic component'
+  url: vendor_cad/staging/practice_refs/07_SPIROL_inserts_design_guide.pdf
+  level: document
+  quotes:
+    depth: "p.7 [5]: 'For other Inserts, the recommended minimum depth is the Insert length plus two (2) Insert thread pitches. The assembly screw should never bottom out in the hole, as jack-out would\
+      \ result.'"
+    boss: "p.7 [5]: 'Generally the optimum boss diameter is two (2) to three (3) times the Insert diameter with the relative multiple decreasing as the Insert diameter increases.'"
+    flush: "p.7 [5]: 'a subflush installation presents a jack-out condition'; 'Correct hole size is critical. Larger holes decrease performance, while smaller holes induce undesirable stresses and potential\
+      \ cracks'"
+SKF608:
+  title: SKF 608 product data (generated from skf.com 2023-12-05)
+  url: vendor_cad/staging/practice_refs/08_SKF_608_product_data.pdf
+  level: document
+  quotes:
+    data: "p.1-2: d 8, D 22, B 7 mm; C 3.45 kN, C0 1.37 kN; d1 ~12.15 (shoulder diameter); D2 ~19.2; abutment da min 10 mm, Da max 20 mm, ra max 0.3 mm; radial internal clearance CN"
+SKFCAT:
+  title: SKF general catalogue, deep groove ball bearings, axial load carrying capacity
+  url: vendor_cad/staging/practice_refs/08_SKF_deep_groove_general_catalogue.pdf
+  level: document
+  quotes:
+    axial: "p.14 [299]: 'If deep groove ball bearings are subjected to purely axial load, this axial load should generally not exceed the value of 0,5 C0. Small bearings (bore diameter up to approx. 12\
+      \ mm) and light series bearings (Diameter Series 8, 9, 0, and 1) should not be subjected to an axial load greater than 0,25 C0. Excessive axial loads can lead to a considerable reduction in bearing\
+      \ service life.'"
+SKFINST:
+  title: SKF bearing installation and maintenance guide, selecting fits
+  url: vendor_cad/staging/practice_refs/08_SKF_installation_maintenance.pdf
+  level: document
+  quotes:
+    table1: "pp.56-61, table 1: rotating inner ring, stationary outer ring, stationary load ('belt-driven'): inner ring interference fit, outer ring loose fit"
+    shaft: "table 2: light loads, shaft <= 17 mm: js5 (h5); normal to heavy loads, <= 10 mm: js5"
+    floating: "'If a non-separable bearing is used as the non-locating bearing, it is imperative that [...] in addition to having a loose fit in the housing bore, [the outer ring can] slide axially (i.e.\
+      \ no housing shoulders near the bearing outer ring).'"
+HIWIN_INST:
+  title: HIWIN linear guideway installation instructions G99UE02-2506
+  url: vendor_cad/staging/practice_refs/09_HIWIN_installation.pdf
+  level: document
+  quotes:
+    shoulders: "p.14 [13], table 10, MG series: MGN12(-O): r1 max 0.3, r2 max 0.4, H1 1.7, H2 4 mm"
+    torque: "p.15 [14], table 11 'Recommended Mounting Torque of Rail Bolts': M3x0.5P: 186 N-cm iron, 127 casting, 98 aluminium; M4: 392 / 274 / 206; M5: 883 / 588 / 441. 'To ensure the straightness of\
+      \ rail, please tighten the mounting bolts sequentially with a torque wrench to the specified torque.'"
+    master: "p.? 'The accuracy of the master guide's datum plane is better than the subsidiary's and it can be a reference side for installation. There is a mark MA marked on the rail'"
+HIWIN_MGCAT:
+  title: HIWIN MG series catalogue, table 3.90
+  url: vendor_cad/staging/practice_refs/09_HIWIN_MG_catalogue.pdf
+  level: document
+  quotes:
+    flatness: "p.13 [104], table 3.90 'Required flatness of the mounting surface': MG_12 0.050/200 (ZF and Z0; tighter for Z1 or more than one rail on the same surface)"
+HOLO:
+  title: Holo-Krome metric handbook, table 61, axial holding power of cup point set screws
+  url: vendor_cad/staging/practice_refs/10_HoloKrome_metric_handbook.pdf
+  level: document
+  quotes:
+    table: "p.35 [88]: M3, 1.5 key, 1.0 N.m -> 880 N; M4 2.1 N.m -> 1570 N; M5 4.7 N.m -> 2400 N. 'steel collars to cold finished steel bars (Rockwell B 80-100) [...] .125 mm movement [...] values may vary\
+      \ as much as +/-30 percent'. 'a flat point or dog point 0.92'. 'For torsional holding power, multiply the axial holding power value by the shaft radius.'"
+UNBRAKO:
+  title: Unbrako metric socket set screws, torsional and axial holding power
+  url: vendor_cad/staging/practice_refs/10_Unbrako_metric_set_screws.pdf
+  level: document
+  quotes:
+    table: "p.3: M3 seating torque 0.87 N.m, axial 0.71 kN, torsional on an 8 mm shaft 2.8 N.m; M4 2.2 N.m, 1.7 kN; shaft hardness Rc 15 to 35. 'typical strengths and should be used accordingly, with specific\
+      \ safety factors'"
+DIN471:
+  title: Maedler, DIN 471 external retaining rings
+  url: vendor_cad/staging/practice_refs/11_Maedler_DIN471.pdf
+  level: document
+  quotes:
+    d8: "8 mm shaft: ring s 0,8; groove d2 7,6, m 0,9 H13, n min 0,6"
+RULAND:
+  title: Ruland MCL metric one-piece clamp collars (distributor table)
+  url: vendor_cad/staging/practice_refs/11_Ruland_metric_collars.pdf
+  level: document
+  quotes:
+    mcl8: "MCL-8: bore 8, OD 18, width 9 mm, M3x8 clamp screw (dimensions only, no holding rating)"
+GATES_GT2L:
+  title: "Gates PowerGrip GT2 drive design manual (legacy GT2), section 'Use of Idlers' and 'Minimum Belt Wrap and Tooth Engagement'"
+  url: vendor_cad/staging/practice_refs/12_Gates_GT2_drive_design.pdf
+  level: document
+  quotes:
+    teeth: "printed p.134-135: 'Horsepower ratings listed in this catalog are based on a minimum of six teeth in mesh [...] 20% of the horsepower rating must be subtracted for each tooth less than six not\
+      \ in full contact'; KTM: 6 or more 1.00, 5 0.80, 4 0.60, 3 0.40, 2 0.20"
+    wrap: "'each loaded sprocket in the drive system should have an arc of contact or belt wrap angle of at least 60 degrees. Non-loaded idler sprockets do not have tooth meshing or wrap angle requirements.'"
+    idlers: "'Use of idlers should be restricted to those cases in which they are functionally necessary. [...] Idlers should be located on the slack side span of the belt drive. For inside idlers, grooved\
+      \ sprockets are recommended up to 40 grooves. [...] Outside or backside idlers should be flat and uncrowned; flanges may or may not be necessary. Diameters should not be smaller than 1.3 times the\
+      \ smallest recommended inside sprocket size.'"
+    fixed_center: "'When considering a fixed center design, the center distance must be held as accurately as possible, typically within 0.002 - 0.003 in (0.05 - 0.08 mm).'"
+ELESA:
+  title: Elesa+Ganter, Trapezoidal lead screws GN 103, technical information (4/2024)
+  url: vendor_cad/staging/practice_refs/13_ElesaGanter_trapezoidal_engineering.pdf
+  level: document
+  quotes:
+    lead: "p.1: 'For trapezoidal lead screws, the max. permissible lead deviation is 0.1 mm / 300 mm movement distance.'"
+    straight: "p.2: 'For spindles with rolled thread, the straightness is typically 0.3 mm / 300 mm length.'"
+    multistart: "p.2: 'Multi-start threads are used when greater adjustment travel per revolution is to be achieved or no self-locking is required.'"
+    speed: "p.4: 'n max = n k x fk x v' with the critical speed read from a diagram by load case (diagram not readable as text)"
+    family: "smallest family 8 x 1.5 (flank d2 7.013-7.183, minor d3 5.921-6.2): not the generic T8x2 / T8x8"
+IGUS_DRYLIN:
+  title: igus DryLin TR lead screw drives catalogue
+  url: vendor_cad/staging/practice_refs/13_Igus_DryLin_leadscrews.pdf
+  level: document
+  quotes:
+    lead: '''DryLin precision spindles [...] Pitch deviation 0.1/300 mm, straightness 0.3/300 mm'''
+PRUSA_PETG:
+  title: Prusament PETG technical datasheet v1.1 (16-02-2022)
+  url: vendor_cad/staging/practice_refs/14_Prusament_PETG_TDS.pdf
+  level: document
+  quotes:
+    hdt: '''Heat Deflection Temperature (0.45 MPa) [C] 68''; ''(1.80 MPa) 68'' (ISO 75)'
+    strength: "printed specimens: tensile yield 47 +/-2 (horizontal), 50 +/-1 (vertical xz) MPa; 'Interlayer Adhesion [MPa] 18 +/- 4'"
+ABSM30:
+  title: Stratasys ABS-M30 data sheet
+  url: vendor_cad/staging/practice_refs/14_Stratasys_ABSM30_TDS.pdf
+  level: document
+  quotes:
+    hdt: "p.5, table 4: 'HDT @ 66 psi 103.8 C', 'HDT @ 264 psi 99.9 C', Tg 105.2 C"
+    strength: "table 5: tensile yield 30.8 MPa (XZ), 27.5 MPa (ZX)"
+PETGCREEP:
+  title: "T. Romeijn et al., Instantaneous and long-term mechanical properties of PETG additively manufactured by pellet-based material extrusion, Additive Manufacturing 2022 (accepted manuscript)"
+  url: vendor_cad/staging/practice_refs/14_PETG_creep_UTS_research.pdf
+  level: document
+  quotes:
+    lvr: "Table 10 (DMA results): 'End of the LVR: Stress (MPa)': 5.32, 6.43, 8.03, 6.08; average 6.46, CoV 15.25 %"
+    creep: "Figure 24: creep compliance at 23 C rises from about 7e-4 /MPa (seconds) to about 1.9e-3 /MPa at 10 years (read from the graph); 'the application of the TTSP creep methodology was limited by\
+      \ the creep test temperature, 60 C'"
+ABSCREEP:
+  title: "Numerical and Experimental Investigations of Polymer Viscoelastic Materials Obtained by 3D Printing, Polymers 2021, 13, 3276"
+  url: vendor_cad/staging/practice_refs/14_ABS_creep_MDPI_research.pdf
+  level: document
+  quotes:
+    creep: "p.11: 'Creep test with constant load (sigma_o = 5 MPa)'; 'we also chose stress values so that the total deformation does not exceed 2%'; relaxation tests at 40, 50 and 60 C"
+STRATFDM:
+  title: Stratasys Direct, FDM design guide (July 2025)
+  url: vendor_cad/staging/practice_refs/15_Stratasys_FDM_design_guide.pdf
+  level: document
+  quotes:
+    holes: "p.5: 'Holes, including those found in bosses, are generally fractionally undersized. [...] If requested or the drawing indicates critical feature tolerances, holes will be bored or reamed during\
+      \ post-processing'"
+    wall: "p.5: 'Recommended minimum wall thickness is generally 4x the layer or slice thickness' (0.25 mm layers: 1.00 mm)"
+    bosses: "p.7: 'It is important to use gussets or ribs to support the bosses in FDM parts'"
+ISO13715M:
+  title: Modulus Metal summary of ISO 13715 (maker article snapshot, not the standard)
+  url: vendor_cad/staging/practice_refs/16_ISO13715_Modulus_maker_summary.pdf
+  level: document
+  quotes:
+    symbols: "'The symbol element + (plus) indicates permitted excess material, i.e. passing. The symbol element - (minus) indicates required material removal, i.e. undercut. The symbol element +/- [...]\
+      \ can only be used with an indication of size'"
+    conflict: "chart B.7 (p.6): notation and diagram show 0.1 to 0.5 mm, explanation text says 0.1 to 0.3 mm (flagged by the collector)"
+IEC_JMF:
+  title: "IDEC presentation on IEC 60204-1:2016 (hosted by JMF), clause 8.2"
+  url: vendor_cad/staging/practice_refs/17_JMF_IEC60204_summary.pdf
+  level: document
+  quotes:
+    pe_size: "slides 23-24 (8.2.1 / 8.2.2): 'The cross-sectional area of every protective conductor which does not form part of a cable or which is not in a common enclosure with the line conductor shall\
+      \ be not less than 2,5 mm2 Cu or 16 mm2 Al if protection against mechanical damage is provided, 4 mm2 Cu or 16 mm2 Al if protection against mechanical damage is not provided.'"
+    continuity: "8.2.2: metal frames used as protective conductors: 'their electrical continuity shall be assured by construction or by suitable connection so as to ensure protection against mechanical,\
+      \ chemical or electrochemical deterioration'; 18.2.2 Test 1 'verifies the continuity of the protective bonding circuit'"
+IEC_IP2X:
+  title: GT Engineering excerpt of IEC 60204-1 clause 6.2.2 (web excerpt)
+  url: vendor_cad/staging/practice_refs/17_IEC60204_IP2X_source_excerpt.pdf
+  level: document
+  quotes:
+    ip2x: "'Live parts shall be located inside enclosures that provide protection against contact with live parts of at least IP2X or IPXXB.'"
+SLOCUM9:
+  title: A. Slocum, Topic 9 (bolted joints), MIT
+  url: vendor_cad/staging/practice_refs/18_Slocum_Topic9.pdf
+  level: document
+  quotes:
+    thickness: "printed 9-10: 'Typically, the thickness of the material under a bolt head should be from one to three bolt diameters, and bolts' center distances should be spaced from three to five bolt\
+      \ diameters apart.'"
+    threads: '''Both parts should NEVER have threaded holes because the threads will not be in phase.'''
+    shear: "'A bolt is really just a means to clamp a joint together, and the bolt itself does NOT withstand any shear loads.' 'Bolts and screws DO NOT themselves take shear loads - Unless you use a shoulder\
+      \ bolt'"
+    washer: '''Washers are used to keep hex-nut edges from chewing up the surface'''
+    vibration: '''In high vibration applications, use a thread-locking lubricant'''
+    engagement: "'When a bolt is threaded into a section whose thickness equals the bolt diameter, the tensile strength of the bolt will equal the shear strength of the threads.'"
+SLOCUMFP:
+  title: A. Slocum, Fundamental principles lecture (MIT, 2022)
+  url: vendor_cad/staging/practice_refs/18_Slocum_fundamental_principles.pdf
+  level: document
+  quotes:
+    exact: "printed 3-36: 'For a body to have N degrees of freedom free to move, there must be 6-N bearing reaction points!' 'To resist rotation, a moment, or two forces acting as a couple, is required!'\
+      \ 'Do not constrain a shaft with more than 2 bearings, unless it is very long'"
+    stvenant: "printed 3-7: 'Saint-Venant: Linear Bearings: Make friction low and L/D > 1, 1.6:1 very good, 3:1 awesome. Every year some students try L/D < 1 and their machines jam!' 'Rotary Bearings: L/D\
+      \ > 3 if the bearings are to act to constrain the shaft like a cantilever'"
+    abbe: "'When an angular error is amplified by a distance, e.g., to create an error in a machine's position, the strict definition of the error is a sine or cosine error'"
+NASA5020:
+  title: "NASA-STD-5020B, Requirements for Threaded Fastening Systems in Spaceflight Hardware (2021, revalidated 2026-01-05)"
+  url: vendor_cad/staging/practice_refs/19_NASA_STD5020B_revalidated2026.pdf
+  level: document
+  quotes:
+    tfsr16: "p.37, 4.6.1 [TFSR 16]: 'each threaded fastening system in spaceflight hardware shall incorporate a minimum of one locking feature that does not depend upon preload to function.' 'Devices such\
+      \ as jam nuts may not be suitable locking features'. 'An estimate for the self-loosening moment can be calculated as the product of the preload times the thread pitch divided by 2.'"
+    nuts: "p.86, B.4: '(1) Not using self-locking nuts on an axis of rotation. (2) Ensuring external thread extends at least two threads through nut.'"
+    serrated: "p.86: 'free spinning locking devices such as fasteners with serrated bearing surfaces perform comparatively well, but their function is dependent on preload [...] serrations can damage joint\
+      \ bearing surfaces. Free spinning split lock and tooth lock washers provide minimal, if any, locking.'"
+    split: "p.96: 'Split lock washers should not be used for secondary locking features.'"
