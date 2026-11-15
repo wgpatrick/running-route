@@ -210,9 +210,9 @@ def pressure_advance_sweep(printer_path, out, pm: PrinterMap, values=(0.0, 0.01,
 
 
 def ringing_test(design, pm: PrinterMap, out, opts: dict | None = None, travel_mm: float = 40.0, speed_mm_s: float | None = None,
-                 dwell_s: float = 0.4, accel_scale: float = 1.0, dt: float = 0.0005) -> dict:
-    """Residual vibration, measured directly: Klipper moves X then Y by `travel_mm` at the machine's travel speed and
-    acceleration and stops; the twin's axes follow its steps; what the nozzle still does after the planned motion has
+                 dwell_s: float = 0.25, accel_scale: float = 1.0, dt: float = 0.0005) -> dict:
+    """Residual vibration, measured directly: Klipper moves X, then Y, back and forth over seven distances up to
+    `travel_mm` at the machine's travel speed and acceleration, stopping after each; the twin's axes follow its steps; what the nozzle still does after the planned motion has
     ended is the ringing. Returns the largest and RMS excursion per axis over the dwells."""
     from pathlib import Path
 
@@ -226,10 +226,15 @@ def ringing_test(design, pm: PrinterMap, out, opts: dict | None = None, travel_m
     out.mkdir(parents=True, exist_ok=True)
     joints, info = _axis_info(design, pm)
     v = float(speed_mm_s or pm.travel_speed)
-    h, f, p = travel_mm / 2, v * 60.0, int(dwell_s * 1000)
-    lines = ["G90", "G1 Z2 F600", f"G1 X{-h:g} Y{-h:g} F{f:g}", f"G1 X{-h:g} Y{-h + 1:g} F600", f"G1 X{-h:g} Y{-h:g} F600", f"G4 P{p}"]
-    for x, y in ((h, -h), (h, h), (-h, h), (-h, -h)):
-        lines += [f"G1 X{x:g} Y{y:g} F{f:g}", f"G4 P{p}"]
+    f, p = v * 60.0, int(dwell_s * 1000)
+    # moves of several lengths, so that no one lucky timing of the acceleration and braking pulses decides the result
+    lengths = [travel_mm * k for k in (0.12, 0.2, 0.31, 0.45, 0.6, 0.78, 1.0)]
+    x0 = y0 = -travel_mm / 2
+    lines = ["G90", "G1 Z2 F600", f"G1 X{x0:g} Y{y0:g} F{f:g}", f"G1 X{x0:g} Y{y0 + 1:g} F600", f"G1 X{x0:g} Y{y0:g} F600", f"G4 P{p}"]
+    for ax in "XY":
+        for L in lengths:
+            lines += [f"G1 {ax}{x0 + L:g} F{f:g}", f"G4 P{p}", f"G1 {ax}{x0:g} F{f:g}", f"G4 P{p}"]
+    n_test = 4 * len(lengths)
     gpath = out / "ringing.gcode"
     gpath.write_text("\n".join(lines) + "\n")
     moves, _ = parse(gpath)
@@ -249,14 +254,23 @@ def ringing_test(design, pm: PrinterMap, out, opts: dict | None = None, travel_m
                             backlash=mm["back"], spring_damping_ratio=pm.spring_damping_ratio)
     # dwells: the planned trajectory is at rest (after the four test moves; the approach is not counted)
     Vn = np.gradient(Qn, dt, axis=0)
-    still = (np.abs(Vn[:, :2]).max(axis=1) < 0.5)      # steps are interpolated, so a dwell creeps by one step at most
-    still[: int(np.argmax(np.concatenate([seg, [seg[-1]] * n_settle]) >= len(pts) - 5))] = False
+    # at rest = neither the plan nor the (shaped, slightly longer) command is moving; steps are interpolated, so a
+    # dwell creeps by one step at most
+    still = (np.abs(Vn[:, :2]).max(axis=1) < 0.5) & (np.abs(Vc[:, :2]).max(axis=1) < 0.5)
+    still[: int(np.argmax(np.concatenate([seg, [seg[-1]] * n_settle]) >= len(pts) - 1 - n_test))] = False
     err = (Qa - Qn)[:, :2]
     out_d = {"speed_mm_s": v, "accel_mm_s2": float(res["report"]["what_if"]["max_accel"]), "travel_mm": travel_mm,
              "input_shaper": res["report"]["features"]["input_shaper"], "samples_at_rest": int(still.sum())}
+    # one window per dwell; within it, ringing is the excursion about where the axis finally comes to rest (rail
+    # friction leaves a small standing offset that is not vibration; it is reported separately)
+    idx = np.flatnonzero(still)
+    wins = [w for w in np.split(idx, np.flatnonzero(np.diff(idx) > 1) + 1) if len(w) > int(0.1 / dt)]
+    out_d["dwells"] = len(wins)
     for k, ax in enumerate("xy"):
-        e = err[still, k]
-        out_d[ax] = {"residual_peak_mm": round(float(np.abs(e).max()), 4), "residual_rms_mm": round(float(np.sqrt((e ** 2).mean())), 4)}
+        osc = np.concatenate([err[w, k] - err[w[-int(0.02 / dt):], k].mean() for w in wins]) if wins else np.zeros(1)
+        rest = [float(err[w[-int(0.02 / dt):], k].mean()) for w in wins] or [0.0]
+        out_d[ax] = {"residual_peak_mm": round(float(np.abs(osc).max()), 4), "residual_rms_mm": round(float(np.sqrt((osc ** 2).mean())), 4),
+                     "standing_offset_worst_mm": round(float(np.abs(rest).max()), 4)}
     return out_d
 
 
@@ -338,8 +352,11 @@ def tune_report(design_path, out_root="out", only=None, bed=None) -> dict:
         if "shaper" in only:
             sh = input_shaper(design, pm)
             res["input_shaper"] = sh
-            res["ringing_test"] = {"with_shaper": ringing_test(design, pm, out / "ring_on", {"input_shaper": True, "pressure_advance": False}),
-                                   "without_shaper": ringing_test(design, pm, out / "ring_off", {"input_shaper": False, "pressure_advance": False})}
+            res["ringing_test"] = {}
+            for a in (1.0, 3.0):      # at the design's own acceleration and at three times it
+                res["ringing_test"][f"accel_x{a:g}"] = {
+                    "with_shaper": ringing_test(design, pm, out / f"ring_on_{a:g}", {"input_shaper": True, "pressure_advance": False}, accel_scale=a),
+                    "without_shaper": ringing_test(design, pm, out / f"ring_off_{a:g}", {"input_shaper": False, "pressure_advance": False}, accel_scale=a)}
         if "pressure_advance" in only:
             res["pressure_advance"] = {"configured": pressure_advance(design, pm), "sweep": pressure_advance_sweep(design_path, out / "pa", pm)}
         if "bed_mesh" in only:
