@@ -113,7 +113,8 @@ def leadscrew_axial_loads(design) -> dict:
         if drv.get("kind") != "leadscrew" or j.kind != "slide":
             continue
         motors = [drv["motor"]] if isinstance(drv.get("motor"), str) else list(drv.get("motor") or [])
-        screws = [n for n in ({drv.get("screw")} | set(motors)) if n in comps and
+        scr_named = [drv["screw"]] if isinstance(drv.get("screw"), str) else list(drv.get("screw") or [])     # one screw, or a list of them
+        screws = [n for n in (set(scr_named) | set(motors)) if n in comps and
                   ("axial_load_rating_status" in comps[n].ratings or comps[n].ratings.get("axial_load_rating_n"))]
         if not screws:
             continue

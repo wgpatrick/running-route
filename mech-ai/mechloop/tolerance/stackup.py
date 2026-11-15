@@ -101,19 +101,46 @@ class Build:
         have = {frozenset(p_) for p_ in pairs}
         clash_keys = {frozenset(c_["parts"]) for c_ in self.clashes}
         screwed: dict = {}
+
+        def _small(k):      # nuts, washers and spacers carry a chain; they are not what a designer means by "the two parts"
+            return (comps[k].sku or "").startswith(("NUT", "WASHER", "SPACER"))
+
         for f in (design.fasteners if SCREWED_JOINTS else ()):
-            held = [k for k in dict.fromkeys(list(f.clamps) + list((comps[f.name].meta.get("threads_into") or []) if f.name in comps else []))
-                    if k in box]
-            if len(held) < 2 or f.name not in comps:
+            if f.name not in comps:
+                continue
+            held = [k for k in dict.fromkeys(list(f.clamps) + list(comps[f.name].meta.get("threads_into") or [])) if k in box]
+            if len(held) < 2:
                 continue
             ax = np.array(f.axis, dtype=float)
             ax /= max(np.linalg.norm(ax), 1e-12)
-            # order the held parts along the screw; each locates the next
-            held.sort(key=lambda k: float(np.dot(self.centroid[k], ax)))
-            # only consecutive solid parts: a nut or spacer between two plates touches both and carries the chain itself
-            for a, b in zip(held[:-1], held[1:]):
-                key = frozenset((a, b))
-                if key in clash_keys:
+            # Groups of the screw's parts that already locate each other (touching, or a declared join): a nut on a
+            # plate, a spacer between two plates. Only two GROUPS with nothing between them are held apart by the screw
+            # alone; they get one joint, between the main (largest, not a nut / washer / spacer) part of each.
+            group = {k: k for k in held}
+
+            def root(k):
+                while group[k] != k:
+                    k = group[k]
+                return k
+
+            for i_, a_ in enumerate(held):
+                for b_ in held[i_ + 1:]:
+                    if frozenset((a_, b_)) in have:
+                        group[root(a_)] = root(b_)
+            groups: dict = {}
+            for k in held:
+                groups.setdefault(root(k), []).append(k)
+            if len(groups) < 2:
+                continue
+            mains = []
+            for members in groups.values():
+                main = max(members, key=lambda k: (not _small(k), float(comps[k].shape.volume), k))
+                if _small(main):
+                    continue          # a nut on its own at the end of the screw: placed by what it touches, as before
+                mains.append((min(float(np.dot(box[m_][0], ax)) for m_ in members), main))
+            mains.sort()
+            for (_, a), (_, b) in zip(mains[:-1], mains[1:]):
+                if frozenset((a, b)) in clash_keys:
                     continue
                 screwed.setdefault(tuple(sorted((a, b))), []).append(f.name)
         self.screwed_apart = []
