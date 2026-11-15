@@ -540,7 +540,7 @@ NOT_IN_MODEL = [
     "Dial indicator with a stand, feeler gauges, a 1 kg mass, a straight edge and a square (commissioning and alignment).",
     "Thread-locking compound for pulley set screws and the bed posts' jam nuts; grease for the rails and lead screws.",
     "Filament path: spool holder, guide or PTFE tube. None is in the design.",
-    "Feet or pads under the frame. None is in the design: the bottom extrusions and the bracket screws' heads sit on the bench.",
+    "Feet or pads under the frame. None is in the design: the bottom extrusions sit directly on the bench.",
     "Covers for the mains terminals (relay module, inlet tabs, supply terminal block). None is in the design.",
     "Adhesive / cleaning materials for bonding the heater pad, thermal cut-off and magnetic sheet to the plate; high-temperature tape for the cut-off.",
     "Crimp tools for JST-XH, Micro-Fit, ferrules and quick-connects.",

@@ -1,0 +1,125 @@
+fastener,sku,kind,bears_on,process,material,thickness_mm,coverage,why,cast_bracket
+z_carriage_left_hi_screw_0,SHCS-M3x8,screw head,back_plate,sheet,al6061,4.8,1.0,on thin aluminium (4.8 mm al6061),False
+z_carriage_left_hi_screw_1,SHCS-M3x8,screw head,back_plate,sheet,al6061,4.8,1.0,on thin aluminium (4.8 mm al6061),False
+z_carriage_left_hi_screw_2,SHCS-M3x8,screw head,back_plate,sheet,al6061,4.8,1.0,on thin aluminium (4.8 mm al6061),False
+z_carriage_left_hi_screw_3,SHCS-M3x8,screw head,back_plate,sheet,al6061,4.8,1.0,on thin aluminium (4.8 mm al6061),False
+z_carriage_right_hi_screw_0,SHCS-M3x8,screw head,back_plate,sheet,al6061,4.8,1.0,on thin aluminium (4.8 mm al6061),False
+z_carriage_right_hi_screw_1,SHCS-M3x8,screw head,back_plate,sheet,al6061,4.8,1.0,on thin aluminium (4.8 mm al6061),False
+z_carriage_right_hi_screw_2,SHCS-M3x8,screw head,back_plate,sheet,al6061,4.8,1.0,on thin aluminium (4.8 mm al6061),False
+z_carriage_right_hi_screw_3,SHCS-M3x8,screw head,back_plate,sheet,al6061,4.8,1.0,on thin aluminium (4.8 mm al6061),False
+bed_arm_left_bolt,SHCS-M5x16,screw head,back_plate,sheet,al6061,4.8,1.0,on thin aluminium (4.8 mm al6061),False
+bed_arm_left_bracket_screw,SHCS-M5x16,screw head,bed_arm_left_bracket,purchased,al6061,2.8,0.33,on a slot or oversize hole (only 33% of the bearing ring has material under it),True
+bed_arm_left_fbracket_screw,SHCS-M5x12,screw head,bed_arm_left_fbracket,purchased,al6061,2.8,0.33,on a slot or oversize hole (only 33% of the bearing ring has material under it),True
+bed_arm_right_bolt,SHCS-M5x16,screw head,back_plate,sheet,al6061,4.8,1.0,on thin aluminium (4.8 mm al6061),False
+bed_arm_right_bracket_screw,SHCS-M5x16,screw head,bed_arm_right_bracket,purchased,al6061,2.8,0.33,on a slot or oversize hole (only 33% of the bearing ring has material under it),True
+bed_arm_right_fbracket_screw,SHCS-M5x12,screw head,bed_arm_right_fbracket,purchased,al6061,2.8,0.33,on a slot or oversize hole (only 33% of the bearing ring has material under it),True
+nut_block_bolt_0,SHCS-M3x16,screw head,back_plate,sheet,al6061,4.8,1.0,on thin aluminium (4.8 mm al6061),False
+nut_block_bolt_1,SHCS-M3x16,screw head,back_plate,sheet,al6061,4.8,1.0,on thin aluminium (4.8 mm al6061),False
+nut_block_bolt_2,SHCS-M3x16,screw head,back_plate,sheet,al6061,4.8,1.0,on thin aluminium (4.8 mm al6061),False
+nut_block_bolt_3,SHCS-M3x16,screw head,back_plate,sheet,al6061,4.8,1.0,on thin aluminium (4.8 mm al6061),False
+nut_pin,SHCS-M3x16,screw head,nut_block,printed,abs,9.8,0.29,on a slot or oversize hole (only 29% of the bearing ring has material under it); on a printed part (abs),False
+nut_pin_fl,SHCS-M3x16,screw head,nut_block_fl,printed,abs,9.8,0.29,on a slot or oversize hole (only 29% of the bearing ring has material under it); on a printed part (abs),False
+nut_pin_fr,SHCS-M3x16,screw head,nut_block_fr,printed,abs,9.8,0.29,on a slot or oversize hole (only 29% of the bearing ring has material under it); on a printed part (abs),False
+bed_post_0,SHCS-M5x90,screw head,bed_plate,machined,al_mic6,1.8,1.0,on thin aluminium (1.8 mm al_mic6),False
+bed_post_1,SHCS-M5x90,screw head,bed_plate,machined,al_mic6,1.8,1.0,on thin aluminium (1.8 mm al_mic6),False
+bed_post_2,SHCS-M5x90,screw head,bed_plate,machined,al_mic6,1.8,1.0,on thin aluminium (1.8 mm al_mic6),False
+bed_post_3,SHCS-M5x90,screw head,bed_plate,machined,al_mic6,1.8,1.0,on thin aluminium (1.8 mm al_mic6),False
+bed_tie_screw_0,SHCS-M3x16,screw head,bed_plate,machined,al_mic6,3.8,1.0,on thin aluminium (3.8 mm al_mic6),False
+bed_tie_screw_1,SHCS-M3x16,screw head,bed_plate,machined,al_mic6,3.8,1.0,on thin aluminium (3.8 mm al_mic6),False
+bed_tie_bracket_screw_a,SHCS-M5x10,screw head,bed_tie_bracket,purchased,al6061,2.8,0.33,on a slot or oversize hole (only 33% of the bearing ring has material under it),True
+bed_tie_bracket_screw,SHCS-M5x16,screw head,bed_tie_bracket,purchased,al6061,2.8,0.33,on a slot or oversize hole (only 33% of the bearing ring has material under it),True
+z_drive_mount_bolt_0,SHCS-M5x16,screw head,z_drive_mount,printed,petg,7.8,1.0,on a printed part (petg),False
+z_drive_mount_bolt_1,SHCS-M5x16,screw head,z_drive_mount,printed,petg,7.8,1.0,on a printed part (petg),False
+z_motor_screw_0,SHCS-M3x8,screw head,z_drive_mount,printed,petg,4.8,1.0,on a printed part (petg),False
+z_motor_screw_1,SHCS-M3x8,screw head,z_drive_mount,printed,petg,4.8,1.0,on a printed part (petg),False
+z_motor_screw_2,SHCS-M3x8,screw head,z_drive_mount,printed,petg,4.8,1.0,on a printed part (petg),False
+z_motor_screw_3,SHCS-M3x8,screw head,z_drive_mount,printed,petg,4.8,1.0,on a printed part (petg),False
+z_pedestal_fl_bolt_0,SHCS-M5x16,screw head,z_pedestal_fl,printed,petg,7.8,1.0,on a printed part (petg),False
+z_pedestal_fl_bolt_1,SHCS-M5x16,screw head,z_pedestal_fl,printed,petg,7.8,1.0,on a printed part (petg),False
+z_pedestal_fr_bolt_0,SHCS-M5x16,screw head,z_pedestal_fr,printed,petg,7.8,1.0,on a printed part (petg),False
+z_pedestal_fr_bolt_1,SHCS-M5x16,screw head,z_pedestal_fr,printed,petg,7.8,1.0,on a printed part (petg),False
+z_idler_bolt,SHCS-M5x25,screw head,z_drive_mount,printed,petg,4.8,0.5,on a slot or oversize hole (only 50% of the bearing ring has material under it); on a printed part (petg),False
+beam_bolt_left,SHCS-M5x8,screw head,y_plate_left,sheet,steel,2.8,0.58,on a slot or oversize hole (only 58% of the bearing ring has material under it),False
+beam_bolt_left_1,SHCS-M5x8,screw head,y_plate_left,sheet,steel,2.8,0.58,on a slot or oversize hole (only 58% of the bearing ring has material under it),False
+beam_bolt_right,SHCS-M5x8,screw head,y_plate_right,sheet,steel,2.8,0.58,on a slot or oversize hole (only 58% of the bearing ring has material under it),False
+beam_bolt_right_1,SHCS-M5x8,screw head,y_plate_right,sheet,steel,2.8,0.58,on a slot or oversize hole (only 58% of the bearing ring has material under it),False
+tool_screw_0,SHCS-M3x6,screw head,tool_plate,machined,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+tool_screw_1,SHCS-M3x6,screw head,tool_plate,machined,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+tool_screw_2,SHCS-M3x6,screw head,tool_plate,machined,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+tool_screw_3,SHCS-M3x6,screw head,tool_plate,machined,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+extruder_screw_0,SHCS-M3x50,screw head,probe_mount,printed,abs,4.2,1.0,on a printed part (abs),False
+extruder_screw_1,SHCS-M3x50,screw head,probe_mount,printed,abs,4.2,1.0,on a printed part (abs),False
+part_fan_screw_0,SHCS-M3x16,screw head,part_fan,purchased,abs,9.8,1.0,on a plastic fan frame,False
+part_fan_screw_1,SHCS-M3x16,screw head,part_fan,purchased,abs,9.8,1.0,on a plastic fan frame,False
+x_belt_block_screw_0,SHCS-M3x16,screw head,tool_plate,machined,al6061,3.8,1.0,on thin aluminium (3.8 mm al6061),False
+x_belt_block_screw_1,SHCS-M3x16,screw head,tool_plate,machined,al6061,3.8,1.0,on thin aluminium (3.8 mm al6061),False
+x_tension_anchor_bolt,SHCS-M5x16,screw head,x_tension_anchor,printed,petg,11.8,1.0,on a printed part (petg),False
+x_endstop_screw_0,SHCS-M3x12,screw head,y_plate_left,sheet,steel,2.8,0.5,on a slot or oversize hole (only 50% of the bearing ring has material under it),False
+x_endstop_screw_1,SHCS-M3x12,screw head,y_plate_left,sheet,steel,2.8,0.5,on a slot or oversize hole (only 50% of the bearing ring has material under it),False
+y_tension_anchor_bolt,SHCS-M5x16,screw head,y_tension_anchor,printed,petg,11.8,1.0,on a printed part (petg),False
+y_tension_anchor_l_bolt,SHCS-M5x16,screw head,y_tension_anchor_l,printed,petg,11.8,1.0,on a printed part (petg),False
+tray_bolt_0,SHCS-M5x8,screw head,electronics_tray,sheet,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+tray_bolt_1,SHCS-M5x8,screw head,electronics_tray,sheet,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+tray_bolt_2,SHCS-M5x8,screw head,electronics_tray,sheet,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+tray_bolt_3,SHCS-M5x8,screw head,electronics_tray,sheet,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+psu_screw_0,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+psu_screw_1,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+psu_screw_2,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+psu_screw_3,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+control_board_screw_0,SHCS-M3x16,screw head,control_board,purchased,abs,1.5,1.0,on a circuit board,False
+control_board_screw_1,SHCS-M3x16,screw head,control_board,purchased,abs,1.5,1.0,on a circuit board,False
+control_board_screw_2,SHCS-M3x16,screw head,control_board,purchased,abs,1.5,1.0,on a circuit board,False
+control_board_screw_4,SHCS-M3x16,screw head,control_board,purchased,abs,1.5,0.98,on a circuit board,False
+host_screw_0,SHCS-M2.5x12,screw head,host,purchased,abs,1.2,1.0,on a circuit board,False
+host_screw_3,SHCS-M2.5x12,screw head,host,purchased,abs,1.2,1.0,on a circuit board,False
+psu_relay_screw_0,SHCS-M3x16,screw head,psu_relay,purchased,abs,1.5,1.0,on a circuit board,False
+psu_relay_screw_1,SHCS-M3x16,screw head,psu_relay,purchased,abs,1.5,1.0,on a circuit board,False
+psu_relay_screw_2,SHCS-M3x16,screw head,psu_relay,purchased,abs,1.5,1.0,on a circuit board,False
+inlet_panel_bolt_0,SHCS-M5x8,screw head,inlet_panel,sheet,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+inlet_panel_bolt_1,SHCS-M5x8,screw head,inlet_panel,sheet,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+bed_arm_left_bracket_nut,NUT-M5,nut,back_plate,sheet,al6061,4.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it); on thin aluminium (4.8 mm al6061),False
+bed_arm_left_fbracket_nut,NUT-M5,nut,front_plate,sheet,steel,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),False
+bed_arm_right_bracket_nut,NUT-M5,nut,back_plate,sheet,al6061,4.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it); on thin aluminium (4.8 mm al6061),False
+bed_arm_right_fbracket_nut,NUT-M5,nut,front_plate,sheet,steel,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),False
+nut_block_nut_0,NUT-M3,nut,nut_block,printed,abs,5.8,1.0,on a printed part (abs),False
+nut_block_nut_1,NUT-M3,nut,nut_block,printed,abs,5.8,1.0,on a printed part (abs),False
+nut_block_nut_2,NUT-M3,nut,nut_block,printed,abs,5.8,1.0,on a printed part (abs),False
+nut_block_nut_3,NUT-M3,nut,nut_block,printed,abs,5.8,1.0,on a printed part (abs),False
+nut_block_fl_nut_0,NUT-M3,nut,nut_block_fl,printed,abs,5.8,1.0,on a printed part (abs),False
+nut_block_fl_nut_1,NUT-M3,nut,nut_block_fl,printed,abs,5.8,1.0,on a printed part (abs),False
+nut_block_fl_nut_2,NUT-M3,nut,nut_block_fl,printed,abs,5.8,1.0,on a printed part (abs),False
+nut_block_fl_nut_3,NUT-M3,nut,nut_block_fl,printed,abs,5.8,1.0,on a printed part (abs),False
+nut_block_fr_nut_0,NUT-M3,nut,nut_block_fr,printed,abs,5.8,1.0,on a printed part (abs),False
+nut_block_fr_nut_1,NUT-M3,nut,nut_block_fr,printed,abs,5.8,1.0,on a printed part (abs),False
+nut_block_fr_nut_2,NUT-M3,nut,nut_block_fr,printed,abs,5.8,1.0,on a printed part (abs),False
+nut_block_fr_nut_3,NUT-M3,nut,nut_block_fr,printed,abs,5.8,1.0,on a printed part (abs),False
+bed_post_0_nut_top,NUT-M5,nut,bed_plate,machined,al_mic6,1.8,1.0,on thin aluminium (1.8 mm al_mic6),False
+bed_post_1_nut_top,NUT-M5,nut,bed_plate,machined,al_mic6,1.8,1.0,on thin aluminium (1.8 mm al_mic6),False
+bed_post_2_nut_top,NUT-M5,nut,bed_plate,machined,al_mic6,1.8,1.0,on thin aluminium (1.8 mm al_mic6),False
+bed_post_3_nut_top,NUT-M5,nut,bed_plate,machined,al_mic6,1.8,1.0,on thin aluminium (1.8 mm al_mic6),False
+bed_tie_bracket_nut_a,NUT-M5,nut,bed_tie,sheet,steel,1.2,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),False
+bed_tie_bracket_nut,NUT-M5,nut,back_plate,sheet,al6061,4.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it); on thin aluminium (4.8 mm al6061),False
+part_duct_nut_0,NUT-M3,nut,part_duct,printed,abs,2.2,1.0,on a printed part (abs),False
+part_duct_nut_1,NUT-M3,nut,part_duct,printed,abs,2.2,1.0,on a printed part (abs),False
+part_fan_nut_0,NUT-M3,nut,part_duct,printed,abs,3.2,1.0,on a printed part (abs),False
+part_fan_nut_1,NUT-M3,nut,part_duct,printed,abs,3.2,1.0,on a printed part (abs),False
+x_belt_block_nut_0,NUT-M3,nut,x_belt_block,printed,abs,5.2,1.0,on a printed part (abs),False
+x_belt_block_nut_1,NUT-M3,nut,x_belt_block,printed,abs,5.2,1.0,on a printed part (abs),False
+x_tension_nut,NUT-M3,nut,x_tension_anchor,printed,petg,11.2,1.0,on a printed part (petg),False
+x_endstop_nut_0,NUT-M3,nut,x_endstop,purchased,abs,1.5,0.98,on a circuit board,False
+x_endstop_nut_1,NUT-M3,nut,x_endstop,purchased,abs,1.5,0.98,on a circuit board,False
+y_tension_nut,NUT-M3,nut,y_tension_anchor,printed,petg,11.2,1.0,on a printed part (petg),False
+y_tension_nut_l,NUT-M3,nut,y_tension_anchor_l,printed,petg,11.2,1.0,on a printed part (petg),False
+y_endstop_nut_0,NUT-M3,nut,y_endstop,purchased,abs,1.5,0.98,on a circuit board,False
+y_endstop_nut_1,NUT-M3,nut,y_endstop,purchased,abs,1.5,0.98,on a circuit board,False
+control_board_nut_0,NUT-M3,nut,electronics_tray,sheet,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+control_board_nut_1,NUT-M3,nut,electronics_tray,sheet,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+control_board_nut_2,NUT-M3,nut,electronics_tray,sheet,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+control_board_nut_4,NUT-M3,nut,electronics_tray,sheet,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+host_nut_0,NUT-M2.5,nut,electronics_tray,sheet,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+host_nut_3,NUT-M2.5,nut,electronics_tray,sheet,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+psu_relay_nut_0,NUT-M3,nut,electronics_tray,sheet,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+psu_relay_nut_1,NUT-M3,nut,electronics_tray,sheet,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+psu_relay_nut_2,NUT-M3,nut,electronics_tray,sheet,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+inlet_nut_0,NUT-M3,nut,inlet_panel,sheet,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
+inlet_nut_1,NUT-M3,nut,inlet_panel,sheet,al6061,2.8,1.0,on thin aluminium (2.8 mm al6061),False
