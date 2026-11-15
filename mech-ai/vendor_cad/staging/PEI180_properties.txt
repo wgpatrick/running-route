@@ -1,0 +1,16 @@
+TRONXY PEI180 - 180 x 180 mm spring-steel PEI sheet with magnetic base
+Checked 2026-11-15. Source (official product page):
+https://www.tronxy3d.com/products/pei-sheet-build-plate-magnetic-base-hot-bed-sticker-180-180mm
+
+Size: 180 x 180 mm. Includes spring-steel PEI sheet and magnetic base.
+Steel thickness: seller describes PEI sprayed on spring steel "with 0.4MM thickness".
+  Read as steel substrate thickness, not confirmed total coated-stack thickness.
+Magnetic base temperature: seller claims up to 130 C for extended use.
+Mass: not published. Do not substitute shipping weight.
+Exact steel grade: not published; "spring steel" is not an alloy designation.
+Magnet/base thickness and total installed thickness: not published.
+PEI coating thickness: not independently specified.
+No independent thermal qualification or temperature-versus-holding-force data found.
+
+This is a real size-matched candidate, not a fully specified engineering selection.
+No CAD was generated. Licence/reuse terms not stated on product page.

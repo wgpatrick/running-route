@@ -1,0 +1,31 @@
+LATEST V6 DATA/CAD BATCH - 2026-11-15
+All files delivered in this batch are less than 10,000,000 bytes.
+No CAD parts were generated. Existing vendor geometry was downloaded, checked,
+and where noted separated or losslessly packaged.
+
+1. Exact 17E19S1684MB4-300RS PDF + STEP + properties text delivered.
+   350 g vs 454 g source conflict and official axial-load gap remain explicit.
+2. PEI180 size-matched candidate properties delivered, but grade/mass/stack gaps
+   remain. 0.4 mm steel, seller magnet temperature claim 130 C.
+3. CG3010U24 official 24 V 30x30x10 mm fan PDF delivered: 0.07 A,
+   5.45 CFM, 8.01 mm H2O. Prior Sunon 12 V PDF renamed, not reused as 24 V.
+4. MANTA M5P official manual/drawing, five-socket/current notes, and original CAD
+   delivered. Download all three MANTA-M5P.step.gz.part files and run
+   REASSEMBLE_MANTA.py in their folder. SHA256 verifies original unmodified
+   134,685,571-byte STEP. Reassembled file exceeds 10 MB, delivery chunks do not.
+5. MH2025-5-8 missing angular/parallel/axial-stiffness values documented;
+   55 Nm/rad is torsional stiffness, not axial.
+6. BTT Relay V1.2 official photo + contact-marking text delivered. Relay says
+   10 A at 250/125 VAC and 30/28 VDC; not a board/inrush certification.
+7. MIC6 plain-text properties + readable Alcoa brochure + labelled secondary
+   thermal report delivered. Do not mix conflicting density sources silently.
+8. SHCS-M3x6.step replaced in place with 91290A111. 6 mm under-head length checked.
+9. LiMo 150 mm MGN15H assembly delivered unchanged as VENDOR-EQUIVALENT,
+   NOT HIWIN CAD. Also separate existing rail/block geometry. README records
+   58.8 x 32 mm overall block, 43.4 mm body, 16 mm installed height,
+   25x25 mm mounting pattern and M3 x 4 mm depth. Use HIWIN catalogue for
+   load/stiffness, per Will. Reference Rat Rig only; v8 uses MGN12.
+
+SOURCES.txt has per-file URLs and terms. MISSING.txt retains unresolved fields
+and the separate earlier Misumi/Zenodo decisions. This batch does not resume
+large Zenodo downloads or change their delivery choice.

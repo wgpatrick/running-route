@@ -1,0 +1,36 @@
+MIC6 cast aluminum tooling plate - plain-text properties
+Checked 2026-11-15. Values are reference data, not a material certificate.
+
+PRIMARY: Alcoa MIC6 brochure, specifications table on PDF page 8.
+https://www.howardprecision.com/wp-content/uploads/2017/12/mic-6-4-2016.pdf
+The saved file is MIC6_Alcoa_brochure_readable.pdf. Table inspected visually.
+Tensile strength, typical: 166 MPa (24 ksi)
+Yield strength, typical: 105 MPa (15 ksi)
+Elongation: 3 percent
+Brinell hardness: 65
+Elastic modulus: 71,000 MPa (71 GPa; 10.3 million psi)
+Thermal conductivity: 142 W/(m K)
+Mean thermal expansion, 20-100 C: 23.6 x 10^-6 /K
+Mean thermal expansion, 20-200 C: 24.5 x 10^-6 /K
+Electrical conductivity: 36 percent IACS
+Surface smoothness, maximum: 0.50 micrometre (20 microinch) each side
+Thickness tolerance: +/-0.127 mm (+/-0.005 inch)
+Flatness maximum deviation, 1/4 to 5/8 inch plate: 0.381 mm (0.015 inch)
+Flatness maximum deviation, 3/4 inch and thicker: 0.127 mm (0.005 inch)
+See brochure conditions for measurement and properly cut blanks.
+
+SECONDARY: NOVA Integration Solutions, Thermal Analysis Report - ATR Chassis,
+Table 1 on PDF page 5, used these MIC-6 simulation inputs:
+Density: 2,800 kg/m^3
+Specific heat: 880 J/(kg K)
+Thermal conductivity: 142 W/(m K)
+https://novaintegration.com/wp-content/uploads/2014/09/NASA_ATR_FEA.pdf
+These are report input assumptions, not manufacturer guarantees. The manufacturer
+brochure table above does not specify density or specific heat. Howard Precision's
+product page says 2.7 g/cm^3 and 0.101 lb/in^3, which are not mutually consistent;
+no single density is certified here. Request a lot/material certificate for mass-
+critical work instead of silently mixing these sources.
+
+Do not substitute 6061/ATP5 properties for MIC6. The earlier UPMet PDF had blank
+numeric tables on visual inspection; this readable source and text replace it for
+property lookup. Brochure reuse licence not stated; manufacturer copyright applies.

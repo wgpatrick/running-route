@@ -1,0 +1,12 @@
+STEPPERONLINE MH2025-5-8 flexible jaw coupling
+Source checked 2026-11-15:
+https://www.omc-stepperonline.com/5mm-8mm-flexible-jaw-coupling-20x25mm-cnc-stepper-motor-shaft-coupler-mh2025-5-8
+
+Bores 5 and 8 mm; nominal outside diameter 20 mm, length 25 mm.
+Angular misalignment rating: not published on checked exact-model page/drawing.
+Parallel misalignment rating: not published on checked exact-model page/drawing.
+Axial stiffness: not published on checked exact-model page/drawing.
+The published 55 N m/rad is TORSIONAL stiffness, not axial stiffness (N/mm).
+No values were borrowed from larger MH45-series couplings or generic charts.
+Existing vendor STEP and dimensional PDF remain in this folder.
+Licence/reuse terms not stated.

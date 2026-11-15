@@ -1,4 +1,4 @@
-SOURCES - V6 Toolhead CAD and Datasheets (as of 2026-11-14 22:15 PT)
+SOURCES - V6 Toolhead CAD and Datasheets (as of 2026-11-15 11:05 PT)
 One line per file: filename | page URL | licence/terms stated there
 
 E3D_Roto_reference.step | https://www.printables.com/model/655950-e3d-roto-reference-cad | CC BY-NC-ND 4.0 (stated on model page)
@@ -51,7 +51,7 @@ NUT-M5.step | https://www.mcmaster.com/90591A260/ | not stated
 --- update 2026-11-14 21:02 PT ---
 LRS-350-24.step | https://www.meanwell.com/webapp/product/search.aspx?prod=LRS-350 (3D OUTLINE > LRS-350-3D.zip; official Mean Well series model LRS-350(N2).stp) | not stated
 INLET-C14-SW-FUSE-T8A_datasheet.pdf | https://www.schurter.com/en/datasheet/typ_dd11.pdf (official Schurter DD11) | not stated
-FAN-3010_datasheet.pdf | https://www.sunon.com/PROSEARCH_FILES/(D03033610G-01)-1.pdf (official Sunon MF30101V2-1000U-A99, 30x30x10, 24V) | not stated
+MF30101V2-1000U-A99_12V_datasheet.pdf | https://www.sunon.com/PROSEARCH_FILES/(D03033610G-01)-1.pdf (official Sunon MF30101V2-1000U-A99, 30x30x10, 12V) | not stated
 BED-COLUMN-SIL-16x18_dims.txt | https://tronic.lk/product/silicone-spacer-column-heat-resistant-for-3d-printer-be (measured dims fallback per spec; no STEP exists) | not stated
 zenodo-5747732/Dataset Descriptions.pdf | https://zenodo.org/records/5747732 | CC BY 4.0 (record licence; README/manifest are accompanying delivery notes)
 zenodo-5747732/RMS Acceleration by Layer.zip | https://zenodo.org/records/5747732 | CC BY 4.0 (record licence; README/manifest are accompanying delivery notes)
@@ -65,3 +65,36 @@ zenodo-22770610/FILE_MANIFEST.txt | https://zenodo.org/records/22770610 | CC BY 
 zenodo-22716165/README.txt | https://zenodo.org/records/22716165 | CC BY 4.0 (record licence; README/manifest are accompanying delivery notes)
 zenodo-22716165/FILE_MANIFEST.txt | https://zenodo.org/records/22716165 | CC BY 4.0 (record licence; README/manifest are accompanying delivery notes)
 zenodo-22716165/benchy_6_temp_230_08_02_01_27_55.parquet | https://zenodo.org/records/22716165 | CC BY 4.0; MD5 79ca81f01c9f1ef15119abce84eb70ea verified
+
+--- update 2026-11-15 11:05 PT: latest nine-item batch ---
+CORRECTION: SHCS-M3x6.step was erroneously a copy of the M3x12 file. Replaced in-place with exact 91290A111; header and geometry checked (9 mm overall, 6 mm under-head).
+CORRECTION: prior FAN-3010 PDF is MF30101V2, a 12 V fan. Renamed to identify its true model/voltage; use CG3010U24 for latest 24 V requirement.
+MIC6_datasheet.pdf note: UPMet numeric tables were visually blank; use MIC6_properties.txt and readable Alcoa brochure below.
+
+17E19S1684MB4-300RS.step | https://files.omc-stepperonline.com/17E19S1684MB4-300RS.STEP | not stated; original vendor STEP
+17E19S1684MB4-300RS_datasheet.pdf | https://files.omc-stepperonline.com/17E19S1684MB4-300RS.pdf | not stated; original vendor drawing
+17E19S1684MB4-300RS_properties.txt | https://www.omc-stepperonline.com/nema-17-external-trapezoidal-linear-stepper-motor-1-68a-48mm-stack-screw-lead-8mm-0-31496-lead-length-300mm-17e19s1684mb4-300rs ; https://www.osmtec.com/nema-17-external-acme-linear-stepper-motor-1-68a-48mm-stack-screw-lead-8mm-0-31496-lead-length-300mm-17e19s1684mb4-300rs | sourced text summary; source reuse terms not stated; preserves mass conflict and secondary-only thrust
+PEI180_properties.txt | https://www.tronxy3d.com/products/pei-sheet-build-plate-magnetic-base-hot-bed-sticker-180-180mm | sourced text summary; terms not stated; mass/grade gaps explicit
+CG3010U24_datasheet.pdf | https://cdn.shopify.com/s/files/1/0447/3693/files/CG3010U24_840556077889_-_Shopify.pptx.pdf?v=1755901637 | not stated; original Coolerguys 24 V fan PDF
+MANTA-M5P_properties.txt | https://github.com/bigtreetech/Manta-M5P ; https://neo.bttwiki.com/en/docs/accessories-docs/tmc-driver/tmc-2209/ | sourced text summary; no licence declared in Manta repo
+BIGTREETECH MANTA M5P V1.0 User Manual.pdf | https://raw.githubusercontent.com/bigtreetech/Manta-M5P/master/BIGTREETECH%20MANTA%20M5P%20V1.0%20User%20Manual.pdf | no licence declared in repository
+BIGTREETECH MANTA M5P V1.0-SIZE-top.pdf | https://raw.githubusercontent.com/bigtreetech/Manta-M5P/master/Hardware/BIGTREETECH%20MANTA%20M5P%20V1.0-SIZE-top.pdf | no licence declared in repository
+MANTA-M5P.step.gz.part01 | https://raw.githubusercontent.com/bigtreetech/Manta-M5P/master/3D/BIGTREETECH%20MANTA%20M5P-step.rar | no licence declared; lossless gzip/split of original STEP, no geometry changes
+MANTA-M5P.step.gz.part02 | https://raw.githubusercontent.com/bigtreetech/Manta-M5P/master/3D/BIGTREETECH%20MANTA%20M5P-step.rar | no licence declared; lossless gzip/split of original STEP, no geometry changes
+MANTA-M5P.step.gz.part03 | https://raw.githubusercontent.com/bigtreetech/Manta-M5P/master/3D/BIGTREETECH%20MANTA%20M5P-step.rar | no licence declared; lossless gzip/split of original STEP, no geometry changes
+MANTA-M5P_CAD_README.txt | https://github.com/bigtreetech/Manta-M5P | delivery instructions/checksums/reassembly utility prepared for this collection; underlying CAD licence undeclared
+REASSEMBLE_MANTA.py | https://github.com/bigtreetech/Manta-M5P | delivery instructions/checksums/reassembly utility prepared for this collection; underlying CAD licence undeclared
+SHA256SUMS.txt | https://github.com/bigtreetech/Manta-M5P | delivery instructions/checksums/reassembly utility prepared for this collection; underlying CAD licence undeclared
+MH2025-5-8_spec_gaps.txt | https://www.omc-stepperonline.com/5mm-8mm-flexible-jaw-coupling-20x25mm-cnc-stepper-motor-shaft-coupler-mh2025-5-8 | sourced gap summary; source terms not stated
+BTT_Relay_V1.2_contact_rating.txt | https://github.com/bigtreetech/BIGTREETECH-Relay-V1.2 | sourced text of official-photo component markings, not board assembly rating; terms not stated
+Relay_V1.2_official_photo.jpg | https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-Relay-V1.2/master/BIGTREETECH%20Relay%20V1.2/BIGTREETECH%20Relay%20V1.2/Hardware/01.jpg | not stated
+MIC6_properties.txt | https://www.howardprecision.com/wp-content/uploads/2017/12/mic-6-4-2016.pdf ; https://novaintegration.com/wp-content/uploads/2014/09/NASA_ATR_FEA.pdf | sourced text; density/cp secondary simulation inputs explicitly labelled
+MIC6_Alcoa_brochure_readable.pdf | https://www.howardprecision.com/wp-content/uploads/2017/12/mic-6-4-2016.pdf | Alcoa manufacturer brochure mirrored by distributor; no reuse licence stated
+MIC6_thermal_reference_NOVA.pdf | https://novaintegration.com/wp-content/uploads/2014/09/NASA_ATR_FEA.pdf | NOVA analysis report; no reuse licence stated
+SHCS-M3x6.step | https://www.mcmaster.com/91290A111/ | McMaster CAD terms; exact 91290A111, corrected 2026-11-15
+MGN15H-150mm-assembly_LiMo-vendor-equivalent.step | https://limobearing.com/miniature-linear-guideway ; https://drive.google.com/file/d/1IwbFXDElQr-C3kqqETgqVulcb9-YP-hv/view?usp=drive_link | LiMo permits personal/commercial/educational use, copying/modification/distribution with attribution and no endorsement; no warranty. Vendor-equivalent, NOT HIWIN CAD. Assembly unchanged; separate files only extract existing geometry.
+MGN15-rail-150_LiMo-reference.step | https://limobearing.com/miniature-linear-guideway ; https://drive.google.com/file/d/1IwbFXDElQr-C3kqqETgqVulcb9-YP-hv/view?usp=drive_link | LiMo permits personal/commercial/educational use, copying/modification/distribution with attribution and no endorsement; no warranty. Vendor-equivalent, NOT HIWIN CAD. Assembly unchanged; separate files only extract existing geometry.
+MGN15H-block_LiMo-reference.step | https://limobearing.com/miniature-linear-guideway ; https://drive.google.com/file/d/1IwbFXDElQr-C3kqqETgqVulcb9-YP-hv/view?usp=drive_link | LiMo permits personal/commercial/educational use, copying/modification/distribution with attribution and no endorsement; no warranty. Vendor-equivalent, NOT HIWIN CAD. Assembly unchanged; separate files only extract existing geometry.
+MGN15H_LiMo_README.txt | https://limobearing.com/miniature-linear-guideway ; https://drive.google.com/file/d/1IwbFXDElQr-C3kqqETgqVulcb9-YP-hv/view?usp=drive_link | LiMo permits personal/commercial/educational use, copying/modification/distribution with attribution and no endorsement; no warranty. Vendor-equivalent, NOT HIWIN CAD. Assembly unchanged; separate files only extract existing geometry.
+V6_BATCH2_STATUS.txt | source URLs embedded in each listed properties/README file | status summary prepared for this collection
+CG3010U24_properties.txt | https://www.coolerguys.com/products/coolerguys-30mm-30x30x10mm-24v-dc-2pin-ultra-high-speed-fan-cg3010u24-with-4-inch-wire-length | sourced text summary; source licence not stated

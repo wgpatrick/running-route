@@ -1,0 +1,32 @@
+STEPPERONLINE 17E19S1684MB4-300RS - verified specifications, 2026-11-15
+Exact model: non-encoder external trapezoidal leadscrew stepper.
+Source PDF: https://files.omc-stepperonline.com/17E19S1684MB4-300RS.pdf
+Product page: https://www.omc-stepperonline.com/nema-17-external-trapezoidal-linear-stepper-motor-1-68a-48mm-stack-screw-lead-8mm-0-31496-lead-length-300mm-17e19s1684mb4-300rs
+
+Holding torque: 0.44 N m (3.89 lb-in)
+Rated current: 1.68 A per phase, bipolar
+Resistance: 1.65 ohm per phase +/-10%, at 25 C
+Inductance: 2.80 mH per phase +/-20%, at 1 kHz
+Rotor inertia: 68.00 g cm^2 (6.8e-6 kg m^2, unit conversion)
+Mass: PDF says 0.35 kg / 0.77 lb. Product page says 454 g.
+  These conflict. Neither is independently weighed; do not treat 454 g as confirmed.
+Step angle: 1.80 degrees; step accuracy +/-5% non-accumulating
+Screw: Tr8x8, nominal 8 mm diameter, 8 mm travel per revolution, 300 +/-1 mm length
+Linear travel per full step: 0.04 mm
+Motor envelope: 42.3 mm max square, body length 48 mm max
+Mounting: 31 +/-0.1 mm square hole spacing, 4 x M3 depth 4.5 mm minimum
+Pilot: diameter 22 +/-0.052 mm, projection 2 mm
+Cable: 500 +/-10 mm. Connector and nut dimensions are on the PDF drawing.
+
+Axial thrust rating: NOT STATED on the official product page or full datasheet.
+No torque/thrust curve is offered on the product page. Do not infer safe axial
+load from holding torque: nut friction and bearing axial-load limits are unknown.
+
+The accompanying STEP is the vendor's original 6,233,545-byte file, unmodified.
+The PDF is an image-based drawing; specifications above were read from its pixels.
+Licence/terms for these downloads: not stated on the product page.
+
+Secondary exact-model OSM source reports "Minimal Thrust(N) @300pps": 7.6.
+https://www.osmtec.com/nema-17-external-acme-linear-stepper-motor-1-68a-48mm-stack-screw-lead-8mm-0-31496-lead-length-300mm-17e19s1684mb4-300rs
+This is a speed-specific output-thrust claim, NOT a permissible bearing axial-load
+rating, thrust curve, or substitute for a manufacturer axial-load limit.

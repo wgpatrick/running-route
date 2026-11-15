@@ -1,0 +1,26 @@
+BIGTREETECH MANTA M5P V1.0 controller
+Official sources checked 2026-11-15:
+https://github.com/bigtreetech/Manta-M5P
+https://neo.bttwiki.com/en/docs/board-docs/manta-series/manta-m5p/manta-m5p-hardware
+https://neo.bttwiki.com/en/docs/accessories-docs/tmc-driver/tmc-2209/
+
+Stepper driver count: FIVE independent plug-in driver sockets (M1-M5).
+Bare board is not five included drivers; modules are selected separately.
+Driver modes: UART, SPI, STEP/DIR. Supported modules depend on configuration.
+Example BTT TMC2209 module: official rating up to 2 A RMS / 2.8 A peak,
+maximum motor voltage 29 V. Actual continuous usable current depends on cooling,
+module selection and configuration. Do not apply the board's HV input to TMC2209.
+
+Board input: DC 12/24 V; separate motor HV input DC 24-56 V selectable per socket.
+Heated bed output: 10 A continuous, 11 A instantaneous per manual.
+Heater outputs: 5.5 A continuous, 6 A instantaneous per manual.
+Fan outputs: 1 A per interface, combined fan current less than 2.5 A.
+PCB drawing: 137.39 x 95 mm; mounting pattern 128.39 x 86 mm.
+Manual rounds board size to 137.5 x 95 mm. Use drawing for mounting.
+
+Original vendor STEP is 134,685,571 bytes. Delivered losslessly compressed and
+split into three <9 MB chunks with Python reassembly and SHA256 checksums.
+The chunks are not individually importable. Reassembled STEP exceeds 10 MB.
+Original STEP imported successfully with 3,839 solids. No geometry generated.
+The repository has no license file and GitHub metadata reports no declared licence;
+public download availability is not a grant of unrestricted reuse.

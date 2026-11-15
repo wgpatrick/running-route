@@ -1,0 +1,20 @@
+BIGTREETECH Relay V1.2 contact-current evidence
+Checked 2026-11-15.
+Official repository:
+https://github.com/bigtreetech/BIGTREETECH-Relay-V1.2
+Official hardware photo (included as Relay_V1.2_official_photo.jpg):
+https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-Relay-V1.2/master/BIGTREETECH%20Relay%20V1.2/BIGTREETECH%20Relay%20V1.2/Hardware/01.jpg
+
+The relay visible in this official photo is SONGLE SRD-05VDC-SL-C.
+Casing contact markings read:
+10 A 250 VAC
+10 A 125 VAC
+10 A 30 VDC
+10 A 28 VDC
+
+These are component markings for the photographed revision, NOT a verified
+continuous-current rating for the complete BTT PCB, terminals, wiring or enclosure.
+The operating instructions do not publish a separate board current rating.
+Do not treat 10 A as a guaranteed capacitive PSU-inrush or inductive-load rating.
+Confirm the actual fitted relay and load class before switching mains power.
+Licence/reuse terms not stated in the checked source.

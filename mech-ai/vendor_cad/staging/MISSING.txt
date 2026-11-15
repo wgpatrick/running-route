@@ -1,4 +1,4 @@
-MISSING - current state, 2026-11-14 22:17 PT
+MISSING - current state, 2026-11-15 11:05 PT
 Only unresolved deliverables and user-provided exceptions are listed below.
 No agent-generated CAD is included.
 
@@ -8,10 +8,10 @@ TIER 1
   the official-file hunt. Earlier generated stand-ins were removed.
   Tried before that decision: Hiwin Taiwan/US CAD pages, Hiwin support portal,
   Hiwin Germany, xemstudio, step.parts and a Printables lead.
-10. Coupler angular-misalignment rating: not found for MH2025-5-8.
+10. Coupler angular/parallel misalignment and axial stiffness: not found for MH2025-5-8.
   STEP and dimensional datasheet are delivered. The StepperOnline product page
   and drawing give dimensions, torque and torsional stiffness, but no angular
-  or parallel misalignment rating. Do not substitute torsional stiffness.
+  or parallel misalignment rating, or axial stiffness. Do not substitute torsional stiffness.
 
 TIER 2
 13. ENDSTOP-MICRO.step (Omron D2F-L): datasheet delivered, STEP not obtained.
@@ -47,8 +47,9 @@ TIER 3
   account-gated GrabCAD files.
 31. INLET-C14-SW-FUSE-T8A.step: Schurter DD11 datasheet delivered. CAD routes
   through Component Search Engine, DigiKey and SnapEDA required accounts.
-32. FAN-3010.step: no MF30 STEP found on Sunon or Sunon USA. Official datasheet
-  for MF30101V2-1000U-A99 (30 x 30 x 10 mm, 24 V) delivered.
+32. FAN-3010.step: no MF30 STEP found on Sunon or Sunon USA. Prior MF30101V2
+  PDF is 12 V, now renamed accordingly. Verified 24 V Coolerguys CG3010U24
+  datasheet delivered for latest request; exact Sunon MF30102V2 not verified.
 33. BED-COLUMN-SIL-16x18.step: no matching STEP found. The requested dimensions
   fallback is delivered as BED-COLUMN-SIL-16x18_dims.txt. Hardness remains
   unspecified in the checked seller source; not a measured hardness value.
@@ -61,3 +62,33 @@ DATASETS
   MD5/ZIP-integrity verified, but its upload was rejected. Camera ZIP delivery
   and the larger parquet files await a delivery choice. See each record's
   README and file manifest for exact status and download links.
+
+LATEST NINE-ITEM BATCH - remaining factual gaps
+1. 17E19S1684MB4-300RS: official PDF/page omit allowable axial bearing load and
+   thrust curve. Secondary OSM exact-model page says minimum thrust 7.6 N at
+   300 pps; not an allowable axial-load limit. Mass conflict remains: PDF 350 g,
+   product page 454 g. Both recorded, not silently reconciled.
+2. Tronxy PEI180 180x180 mm sheet/base: exact alloy grade, mass, base thickness,
+   coating thickness and total stack thickness not published on checked official
+   page. Page describes 0.4 mm steel and claims magnet suitable up to 130 C.
+   Also checked Start3DPrint, Energetic and Bambu candidates; no complete,
+   consistent size-matched spec found. No mass calculated or package weight reused.
+5. Exact MH2025-5-8 ratings still missing as above; generic larger MH45 charts
+   were not substituted.
+6. Relay contact marks found (10 A), but separate BTT assembly/inrush current
+   rating not published in checked manual. Component marking is not that rating.
+7. MIC6 manufacturer density/specific heat absent from brochure. Secondary NOVA
+   report inputs labelled separately; no certified density inferred.
+
+LATEST BATCH DELIVERY NOTES (not missing geometry)
+3. 24 V fan alternative CG3010U24 delivered. Sunon example remains unverified.
+4. Manta M5P CAD delivered in three sub-9 MB lossless transport chunks plus
+   reassembly script/checksums; rebuilt original STEP is 134.7 MB. Chunks alone
+   are not importable. Five driver sockets; module current depends on modules.
+8. Corrected M3x6 STEP delivered and measured; other 16 local fastener headers
+   match their expected PNs (not a dimensional audit of every thread).
+9. User accepted 150 mm LiMo vendor-equivalent assembly unchanged. Original and
+   rail/block extracts delivered. Interface dimensions checked against CAD and
+   HIWIN catalogue; load/stiffness figures remain from HIWIN catalogue only.
+   HIWIN original CAD not obtained: support portal/configurator require signup.
+   Low priority reference Rat Rig only; v8 uses MGN12.

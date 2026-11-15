@@ -1,0 +1,16 @@
+Coolerguys CG3010U24 - official 24 V axial fan
+Source: https://www.coolerguys.com/products/coolerguys-30mm-30x30x10mm-24v-dc-2pin-ultra-high-speed-fan-cg3010u24-with-4-inch-wire-length
+PDF: https://cdn.shopify.com/s/files/1/0447/3693/files/CG3010U24_840556077889_-_Shopify.pptx.pdf?v=1755901637
+Checked 2026-11-15; both PDF pages visually inspected.
+Dimensions: 30 x 30 x 10 mm
+Rated voltage: 24 V DC
+Rated current: 0.07 A
+Airflow: 5.45 CFM
+Static pressure: 8.01 mm H2O
+Speed: 13,400 rpm
+Noise: 31.5 dBA
+Mass: 8 g
+Airflow and static-pressure maxima are not simultaneous operating points.
+Use the manufacturer's pressure-flow curve for operating-point selection.
+This is the example-permitted 24 V alternative, not a Sunon MF30102V2.
+Source reuse licence not stated.
