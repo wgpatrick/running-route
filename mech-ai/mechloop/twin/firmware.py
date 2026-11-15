@@ -418,7 +418,7 @@ def commanded(design, info, gcode_path: Path, pts: np.ndarray, dt: float, workdi
     if act is not ref:
         tz_r, tz_a = rs[2][0], as_[2][0]
         if len(tz_r) != len(tz_a):
-            raise FirmwareError(f"The planned and the tuned Klipper runs made different numbers of Z steps ({len(tz_r)} / {len(tz_a)}).")
+            raise FirmwareNotDecoded(f"The planned and the tuned Klipper runs made different numbers of Z steps ({len(tz_r)} / {len(tz_a)}).")
         # the tuned run's Z moves can overlap the tail of a shaped X/Y move, which defeats decode()'s search for an
         # X/Y pause to put them in: take whole clock periods from the planned run, where that search is sound
         wrap = (1 << 32) / run["clock_hz"]
@@ -428,7 +428,7 @@ def commanded(design, info, gcode_path: Path, pts: np.ndarray, dt: float, workdi
         shift = float(np.median(tz_a - tz_r))
         drift = float(np.abs(tz_a - tz_r - shift).max())
         if drift > 2e-4:
-            raise FirmwareError(f"The planned and the tuned Klipper runs drift apart by {drift * 1e3:.2f} ms; they cannot be lined up.")
+            raise FirmwareNotDecoded(f"The planned and the tuned Klipper runs drift apart by {drift * 1e3:.2f} ms; they cannot be lined up.")
     pad = 0.05
     t0 = min(rs[k][0][0] for k in (0, 1, 2)) - pad
     t_end = max(max(rs[k][0][-1] for k in (0, 1, 2)), max(as_[k][0][-1] for k in (0, 1, 2)) - shift)

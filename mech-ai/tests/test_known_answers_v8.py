@@ -394,6 +394,26 @@ def test_klipper_output_cut_short_is_rerun_and_if_it_stays_cut_the_print_is_not_
     assert not rep["ok"] and calls["n"] == fw.STREAM_ATTEMPTS
     assert [f["code"] for f in rep["findings"]] == ["firmware_not_decoded"] and rep["not_run"]["reason"] == "firmware_not_decoded"
     assert "NOT RUN" in rep["findings"][0]["message"] and summarise(rep)["not_run"]["reason"] == "firmware_not_decoded"
+    # second line of defence: the CONFIGURED run (input shaper on) cut short while the planned run is whole, and the
+    # cut-short test switched off. Its motion then stops millimetres from where the planned run ends; that used to pass
+    # as "command smoothing" with a 9 mm cross-track error and ok: true. Now: not run.
+    monkeypatch.setattr(fw, "stream_cut_short", lambda *a, **k: None)
+    calls.update(n=0, cut=0)
+
+    def cut_second(cfg_text, gcode_text, workdir):
+        run = real(cfg_text, gcode_text, workdir)
+        calls["n"] += 1
+        if calls["n"] == 2:
+            lines = Path(run["dump"]).read_text().splitlines()
+            keep = max(i for i, ln in enumerate(lines[:-3000]) if ln.startswith("queue_step"))
+            Path(run["dump"]).write_text("\n".join(lines[:keep + 1]) + "\n")
+        return run
+
+    monkeypatch.setattr(fw, "run_klippy", cut_second)
+    rep = run_print(d, Pos(0, 0, 1) * Box(10, 10, 2), tmp_path / "c", printer_map_for(d), name="chip", render=False, collisions=False,
+                    firmware="klipper")
+    assert calls["n"] == 2 and not rep["ok"] and rep["not_run"]["reason"] == "firmware_not_decoded"
+    assert "configured Klipper run ends" in rep["findings"][0]["message"] or "different numbers of Z steps" in rep["findings"][0]["message"]
 
 
 # ===================================================================== 8. a verify is a function of the design alone
@@ -739,15 +759,24 @@ def test_a_shaft_meeting_its_bore_edge_to_edge_has_no_lead_in_and_a_chamfer_on_e
 
 
 # ===================================================================== bed-support FEA: every declared support must hold
-def seated_bed(screws=THREE, lift=None):
-    """bed_machine with what each nut sits in drawn: a 30 x 30 aluminium pad under the bed plate, resting on the nut's
-    top face (bonded to the plate). lift: the name of one nut whose pad is drawn 0.5 mm clear of it."""
+OUTSIDE = ((-115.0, -60.0), (115.0, -60.0), (0.0, 120.0))        # three screws just outside the plate's outline
+
+
+def seated_bed(screws=OUTSIDE, lift=None):
+    """bed_machine with what each nut sits in drawn: an aluminium bracket bonded under the plate's edge with a shelf
+    that lies against the nut's lower face (the plate hangs on the three nuts by its brackets). lift: the name of one
+    nut whose shelf is drawn 0.5 mm clear of it."""
     d = floating(bed_machine(screws=screws, blocks_per_rail=1, sync="belt" if len(screws) > 1 else None))
     parts = ["bed"] + [c.name for c in d.components if c.name.startswith("blk")]
     for i, (x, y) in enumerate(screws):
-        top = d.get(f"nut{i}").shape.bounding_box().max.Z
-        z0 = top + (0.5 if lift == f"nut{i}" else 0.0)
-        d.add(f"pad{i}", Pos(x, y, (z0 + 100.0) / 2) * (Box(30, 30, 100.0 - z0) - Cylinder(5.0, 100.0 - z0)), material="al6061", body="zb")
+        low = d.get(f"nut{i}").shape.bounding_box().min.Z
+        top = low - (0.5 if lift == f"nut{i}" else 0.0)
+        shelf = Pos(x, y, (86.0 + top) / 2) * (Box(30, 30, top - 86.0) - Cylinder(5.0, top - 86.0))
+        if abs(x) > 1:           # a side screw: the riser stands under the plate's side edge
+            riser = Pos(x - math.copysign(23.0, x), y, 93.0) * Box(16, 30, 14)
+        else:                    # the rear screw: under the rear edge
+            riser = Pos(x, y - 27.0, 93.0) * Box(30, 24, 14)
+        d.add(f"pad{i}", shelf + riser, material="al6061", body="zb")
         d.join(f"pad{i}", "bed", "bond")
         parts.append(f"pad{i}")
     d.printer["bed_support"] = {"parts": parts}
@@ -755,9 +784,9 @@ def seated_bed(screws=THREE, lift=None):
 
 
 def test_every_declared_support_holds_nodes_and_a_support_that_holds_none_is_an_error_not_a_figure():
-    """A plate on three screws (one pad under the plate on each nut) and one guide block per rail. All three seats hold
+    """A plate on three screws (a bracket under the plate's edge on each nut) and one guide block per rail. All three seats hold
     nodes: evaluated, with the node count per support, the five print points each loaded in turn, and the worst taken
-    from those. With one pad drawn 0.5 mm clear of its nut that seat holds nothing: before, the FEA ran on the two that
+    from those. With one bracket's shelf drawn 0.5 mm clear of its nut that seat holds nothing: before, the FEA ran on the two that
     were found and reported the lot as held; now it is `bed_support_not_held_in_fea` (error) and no figure. And
     un-holding a support does change the answer: the same plate on TWO screws (the rear one removed from the drive)
     sinks several times further at the rear corners than on three."""
@@ -786,7 +815,7 @@ def test_every_declared_support_holds_nodes_and_a_support_that_holds_none_is_an_
     assert "total_bonded_mm" not in m2["print_weight"]                    # no flexure figure is reported for a model that is not held
 
     r3 = VerifierResult("fea")
-    m3 = BS.bed_support(seated_bed(screws=THREE[:2]), r3)                  # the rear screw taken away: the rear edge hangs
+    m3 = BS.bed_support(seated_bed(screws=OUTSIDE[:2]), r3)                # the rear screw taken away: the rear edge hangs
     rear3 = max(m["print_weight"]["by_point_mm"][k]["total_bonded_mm"] for k in ("corner -x +y", "corner +x +y"))
     rear2 = max(m3["print_weight"]["by_point_mm"][k]["total_bonded_mm"] for k in ("corner -x +y", "corner +x +y"))
     assert m3["flexure"]["evaluated"] and rear2 > 3.0 * rear3

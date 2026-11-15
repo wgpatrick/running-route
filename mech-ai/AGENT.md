@@ -386,6 +386,12 @@ A verify is a function of the design alone: two runs of one design give the same
 named `seconds` / `*_seconds`, the seconds in each summary line) and file paths; `mechloop.report.without_timings`
 strips those for a comparison. It reads nothing an earlier run, `tune` or `score` left on disk (the pressure advance
 in a verify's printer.cfg is the twin's assumed value; `tune`, `score` and `print` use a stored sweep).
+Every report.json carries `provenance`: a hash of the mechloop package (its source and data files) and of the design
+file, so a result can be tied to what produced it (print reports carry the package hash).
+An adjustment that covers what the builds need by less than a tenth of its range (more than 90 % used at the 99.7th
+percentile) is `adjustment_margin_thin` (warning; rail alignment, nut float, Z offset, bed levelling, endstop setting):
+that percentile rests on a handful of builds, and nothing is left for what the stack-up does not model.
+`levelling_needed_mm_99` is half of `bed_out_of_level_mm_99` by definition (a +/- adjustment at each corner).
 The simulation is repeatable: fixed seed, fixed order of draws, so an identical run gives identical numbers. Every
 percentage comes with its sampling error (`..._standard_error`, sqrt(p(1-p)/builds), about 0.3 % at 97 % over 3000
 builds), and a result within two standard errors of the limit it is judged against is flagged
@@ -641,6 +647,20 @@ three-point one:
 - FEA parts: `d.printer["bed_support"] = {"parts": [...]}`, else those of your AssemblyCase that contains the bed and
   its guide blocks, plus what the nut sits in. Without either, `bed_flexure_not_evaluated` (warning) and the figures
   are the supports' only.
+- EVERY declared support must hold nodes of that FEA model. A nut's seat is found by geometry: the faces of the part
+  the nut sits in that lie against the nut (true distance, not face centres) and square to the screw; the nodes of
+  those faces under the nut are held along the screw. A guide block is held across the rail on its faces against the
+  rail. `flexure.constrained_nodes` gives the count per support. If any declared nut or block holds none, the result
+  is `bed_support_not_held_in_fea` (error) and NO flexure figure: a support that holds nothing lets that part of the
+  structure ride as a rigid body (this happened: two of three nut seats were silently unheld). So the part a nut sits
+  in needs a flat face against the nut. Only when nothing at all touches any nut are the blocks fully fixed instead,
+  with the warning `bed_support_idealised`.
+- The load is put on each of FIVE print points in turn (the four corners of the print area and its centre), bonded and
+  screw-only; `hand_load` and `print_weight` are judged at the worst of them (`worst_point`, `by_point_mm`), taken from
+  the FEA results plus the support compliance there, not from the rigid pre-model. `flexure.by_point` also gives how
+  far every other point moves under each load. The displacement fields are saved to
+  `<out>/<design>/fea/bed_support_fields.npz` (corner nodes, their part, and U for each point and joint bound) for
+  rendering. Ten solves instead of two: a few minutes more on a full machine.
 - `moving_mass_on_guides`: distance between the screw's line of action and the moving mass centre, the moment the
   guides carry, each block's force and moment against its static ratings (`guide_overloaded_by_screw_offset`), the
   friction that adds (`z_guide_friction_from_screw_offset`; `z_guides_bind` when it reaches the weight, which plain
@@ -744,6 +764,11 @@ from the design's generated printer.cfg (needs `tools/setup_klipper.sh` once). T
 Klipper raised nothing, but its command stream could not be read back (its batch mode can leave the output file a few
 seconds short on a loaded machine; the run is repeated up to three times). That print was NOT RUN: it is neither a
 pass nor a failed print (`not_run` in the print report). In `score --firmware klipper` such a point is left out of
-"highest clean" and of "first failure", listed under `not_run` with a warning, and printed on stderr. Add `--trajectory` to save the
+"highest clean" and of "first failure", listed under `not_run` with a warning, and printed on stderr. Both of Klipper's
+runs (planned, and as configured) are checked: the configured run must end where the planned one ends. Independently,
+a print whose nozzle is ever more than 1 mm sideways from its commanded path is `nozzle_off_path` (error), whatever
+the outline comparison says. `dynamics.axis_mass_kg` is the EFFECTIVE mass (carried mass plus the rotors' inertia
+reflected through the drive, tens of kg behind a 2 mm lead screw); `axis_carried_mass_kg` and
+`axis_reflected_rotor_mass_kg` give the two parts. Add `--trajectory` to save the
 nozzle path, then `python tools/export_viewer.py <printer.py> --no-assembly --print <print folder>` to replay it
 in `viewer/`. See `docs/FIRMWARE_IN_THE_LOOP.md` for what is and is not real.

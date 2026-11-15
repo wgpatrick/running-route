@@ -173,7 +173,8 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
                 need_support = False  # stuck: allow a step that leaves something unsupported, and report it
             progress = False
             # fasteners first, then small parts: mirrors how things are actually taken apart
-            cands = sorted(remaining - {base}, key=lambda n: (n not in fast_axis, comps[n].shape.volume))
+            # ties (identical parts) are broken by name: a set's order changes from run to run
+            cands = sorted(remaining - {base}, key=lambda n: (n not in fast_axis, round(comps[n].shape.volume, 3), n))
             for name in cands:
                 if name not in fast_axis and held_by(name):
                     continue  # still screwed down: its fasteners come out first
