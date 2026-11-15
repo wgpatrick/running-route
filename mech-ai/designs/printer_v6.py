@@ -151,7 +151,7 @@ Z_XL = XD_Z - PR               # lower (anchored) run of the X belt, pitch line
 BLK_Z0 = Z_BEAM + 14.0         # underside of the belt block (0.5 above the guide block)
 BLK_Z1 = Z_BEAM + 30.0         # its top (the belt's upper run passes 6.6 mm above)
 # Y drives: vertical belt planes outboard of both top side rails (v6: both sides alike)
-Y_SP = 9.0                     # Y idler spacers (bought, aluminium; the same 9 mm part as the X idler's)
+Y_SP = 6.0                     # Y idler spacers (bought, aluminium): the shortest that lets the pulley hub clear the motor's boss
 YB_X = FX / 2 + MT_Y + Y_SP + I_H(BWY) / 2       # Y belt plane (+/-)
 YM_Y, YI_Y = FY / 2 + 24.0, -156.0      # Y motor pulley (behind the frame) and Y idler (front, beyond the Y rails' ends)
 Z_YA = Z_PLATE + T_YP + 0.7    # upper (anchored) run of each Y belt lies on its Y plate
@@ -159,6 +159,7 @@ Z_YC = Z_YA - PR
 BELT_ADJ = 3.0                 # +/- travel of each belt tensioner
 PH3, PH5 = 4.2, 6.0            # clearance holes in PRINTED parts (they come out about 0.15 mm small): M3, M5
 SH3 = 3.6                      # M3 clearance in laser-cut sheet where four screws must start at once (ISO 273 coarse)
+YH3 = 3.5                      # ... in the Y plates, whose play on the guide blocks moves the Y belt anchors sideways
 NUT_POCKET = 2.6               # depth of a captive M3 nut pocket
 NUT_SLOT = 3.7                 # nut slot width along the screw
 CB = 3.2                       # counterbore depth for an M3 cap head
@@ -181,7 +182,7 @@ NB_BOLTS = [(sx * 23.0, Z_TAB + dz) for sx in (-1, 1) for dz in (0.0, 20.0)]
 # Y endstop (lever switch): the trigger is the lever's operating position at its tip, 10.6 from the switch origin
 # along the stroke and 9 to one side
 ES_TRIG, ES_SIDE = 10.6, 9.0
-LAND_X, LAND_Y1 = (-(RAIL_X - 9.0), -(RAIL_X - 29.5)), 32.5     # left Y plate: land behind the beam for the X endstop
+LAND_X, LAND_Y1 = (-(RAIL_X - 9.0), -(RAIL_X - 29.5)), 34.0     # left Y plate: land behind the beam for the X endstop
 ES_SP = 4.0                                       # bought spacers under the switch boards (their terminals stand 2.6 mm out)
 X_ES_Y = 30.2                                     # where the X switch's lever meets the left edge of the tool plate's tab
 # bed probe: inductive, sensing face PRB_H above the nozzle tip. With 3.2 mm on aluminium +/-10 % it switches with
@@ -385,6 +386,10 @@ def tool_plate_shape():
             tp -= Pos(x, y1 - CB / 2, Z_BEAM + z) * ycyl(3.0, CB)
     for x, z in FC_SCREWS:
         tp -= Pos(x, yc, Z_BEAM + z) * ycyl(clearance_hole("M3") / 2, T_TP)
+    # the four tapped holes (Roto, probe) are drilled and tapped right through: tap-drill holes
+    for x, z in ([(h[0], h[2] - Z_BEAM) for h in (ROTO_O, (ROTO_O[0] + ROTO_H2[0], 0.0, ROTO_O[2] + ROTO_H2[2]))]
+                 + [(PRB_X, z - Z_BEAM) for z in PRB_SCREW_Z]):
+        tp -= Pos(x, yc, Z_BEAM + z) * ycyl(2.5 / 2, T_TP)
     for x, z in BLK_SCREWS:      # belt block screws: from the rear too, heads sunk under the Roto's side face
         tp -= Pos(x, yc, Z_BEAM + z) * ycyl(clearance_hole("M3") / 2, T_TP)
         tp -= Pos(x, y1 - CB / 2, Z_BEAM + z) * ycyl(3.0, CB)
@@ -708,7 +713,7 @@ def build() -> Design:
             plate -= slot_z(sx * YB_X, PC + dy, 0.0, (BWY + 1.0 - SLOT_W) / 2, SLOT_W, zp0, zp1)
         for x in (-10, 10):
             for y in (-10, 10):
-                plate -= Pos(sx * RAIL_X + x, YB0 + y, Z_PLATE + T_YP / 2) * Cylinder(SH3 / 2, T_YP)
+                plate -= Pos(sx * RAIL_X + x, YB0 + y, Z_PLATE + T_YP / 2) * Cylinder(YH3 / 2, T_YP)
         x_bolt = sx * (RAIL_X - 25)
         plate -= Pos(x_bolt, YB0, Z_PLATE + T_YP / 2) * Cylinder(clearance_hole("M5") / 2, T_YP)
         if sx < 0:
@@ -899,7 +904,7 @@ def build() -> Design:
         d.join(f"y_pulley{tag}", f"y_motor{tag}", "set_screw")
         tensioner(sg, tag, rail)
         # idler mount at the front, in front of the Y plate's sweep: flat plate; the idler runs on an M5 through-bolt
-        # with a bought 9 mm aluminium spacer and a nut on the inside face
+        # with a bought 6 mm aluminium spacer and a nut on the inside face
         xa, xb = sorted((sg * xf, sg * (xf + MT)))
         xm = (xa + xb) / 2
         im = bx(xa, xb, YI_Y - 17.0, YI_Y + 15.0, FZ - 10.0, Z_YC + 9.0)
@@ -909,7 +914,7 @@ def build() -> Design:
         if sg > 0:
             # Y endstop (v6): on the inner face of the right idler mount, which is taller at its rear end for it; the
             # front edge of the right Y plate presses the lever at y = -TY. Lever switch on two bought 4 mm spacers,
-            # M3x16 and nuts on the outside.
+            # M3x16 from the outside (their heads stay clear of the belt), nuts on the board.
             ysw = place(d, "y_endstop", endstop_switch(),
                         Location(Plane(origin=(xf - ES_SP, YB0 + PL_Y0 - TY - ES_TRIG, Z_PLATE + T_YP / 2 + ES_SIDE),
                                        x_dir=(0, 0, 1), z_dir=(-1, 0, 0))))
@@ -932,9 +937,9 @@ def build() -> Design:
         d.join(f"y_idler_spacer{tag}", f"y_idler_mount{tag}", "clamp")
     for i, (hx, hy, hz) in enumerate(ys_holes):
         place(d, f"y_endstop_spacer_{i}", spacer_round("M3", ES_SP), Location(Plane(origin=(xf, hy, hz), x_dir=(0, 1, 0), z_dir=(-1, 0, 0))))
-        add_screw(d, f"y_endstop_screw_{i}", "M3", 16, at=(hx - 1.6, hy, hz), direction=(1, 0, 0),
-                  clamps=("y_endstop", f"y_endstop_spacer_{i}", "y_idler_mount"))
-        add_nut(d, f"y_endstop_nut_{i}", "M3", at=(xf + MT, hy, hz), direction=(1, 0, 0), screw=f"y_endstop_screw_{i}")
+        add_screw(d, f"y_endstop_screw_{i}", "M3", 16, at=(xf + MT, hy, hz), direction=(-1, 0, 0),
+                  clamps=("y_idler_mount", f"y_endstop_spacer_{i}", "y_endstop"))
+        add_nut(d, f"y_endstop_nut_{i}", "M3", at=(hx - 1.6, hy, hz), direction=(-1, 0, 0), screw=f"y_endstop_screw_{i}")
     # ================= electronics bay: tray across the bottom rails =============
     tray = Pos(0, (TRAY_Y0 + TRAY_Y1) / 2, 20 + T_TRAY / 2) * Box(FX, TRAY_Y1 - TRAY_Y0, T_TRAY)
     grp = ["electronics_tray"]
