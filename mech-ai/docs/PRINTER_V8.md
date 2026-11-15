@@ -49,7 +49,8 @@ reported, not optimised. They came out well above what the owner said they accep
 Four layouts were built as verifiable models from one file (`Z_LAYOUT` and `Z_BLOCKS` in `designs/printer_v8.py`;
 study files in `designs/studies/`). All four have the same bed (8 mm plate on four posts, below), the same frame
 and the same gantry, so the differences are the support. Variants (a), (b) and (c) were run through geometry,
-interference, ratings, tolerance and fea (all pass, 0 errors); (a) and (b) also through `assemble`. They are not
+interference, ratings, tolerance and fea on the final file (all pass, 0 errors); (a) and (b) also through
+`assemble`. They are not
 finished machines: motion, electrical and assembly checks were not run on them, variant (b) has no tie for the
 plate and no worked-out belt route.
 
@@ -67,9 +68,9 @@ plate and no worked-out belt route.
 | Nut off the screw's axis (99 %) / float provided | 1.4 / 2.2 mm | 1.8 / 2.2 mm | 1.8 / 2.2 mm | 1.9 / 2.2 mm |
 | Bed level needed (99 %) / provided | 0.96 / 4.0 mm | 1.00 / 4.0 mm | 0.82 / 4.0 mm | 0.79 / 4.0 mm |
 | Hot plate (60 K): gap change / bow | -0.04 / 0.06 mm | -0.08 / 0.04 mm | -0.06 / 0.04 mm | -0.07 / 0.03 mm |
-| Parts | 355 | 350 | 398 | 386 |
+| Parts | 367 | 362 | 398 | 386 |
 | Bill of materials | $776 | $786 | $810 | $787 |
-| Assembly estimate | 77.4 min | 77.1 min | not run | 84.7 min |
+| Assembly estimate | 78.9 min | 79.2 min | not run | 84.7 min |
 | Drivers needed | 4 | 4 | 4 | 4 |
 
 A fourth idea, belt-driven Z, was not modelled: with a 2 mm lead the screws are self-locking and need no brake,
@@ -89,9 +90,9 @@ which a belt-hung bed would.
    and tilts the bed 0.017 mm: all three nuts stay seated and the screws really set the plane.
 3. (d) keeps v7's rear rails and frees the sides (the toolhead loom, the mains inlet and the supply are where
    (b)'s uprights and cross arms go).
-4. (a) is the cheapest (31 fewer parts, $11, about 7 minutes) and exactly constrained. It is the fallback if
-   the owner prefers fewer parts over a five times stiffer hand-load figure: 0.022 mm against 0.008 mm, 0.045
-   against 0.016 mm.
+4. (a) is the cheapest, by little: 19 fewer parts, $11, about 6 minutes. It is exactly constrained and is the
+   fallback if the owner prefers the simplest drive: 0.022 mm against 0.008 mm under 1 kg, 0.045 against
+   0.016 mm under a hand.
 
 One motor and a closed belt rather than three motors: the catalogue board has four drivers and Y already takes
 two motors on one; a belt cannot lose synchronisation at power-up (independent motors: two full steps, 0.02 mm
@@ -259,7 +260,8 @@ plate, two more nut blocks, with their screws and nuts); bed posts, tabs and tie
 columns and four screws were 8); endstops +3; print sheet and magnet +2; probe -1; Z guides and carrier -12
 (two blocks and their screws fewer).
 What it bought: the bed figures above, a probe that covers the print area, and no gap that can close. The
-stiffened cantilever (a) would save 31 parts and about 7 minutes and give a quarter of the stiffness.
+stiffened cantilever (a) would save 19 parts and about 6 minutes and give a third of the stiffness: most of the
+added parts and time are in the bed mount, the probe travel and the endstops, which every variant has.
 
 ### What got worse than v7
 
@@ -347,7 +349,8 @@ after the first full verify.
    soft vertically by design. Declaring `d.join("bed_plate", "bed_post_tab_i", ...)` (true: the post and its
    nuts hold the plate on the tab) gives 0.79 mm. Reproduce: in `designs/printer_v8.py` delete the line
    `d.join("bed_plate", f"bed_post_tab_{i}", "post with jam nuts")` and run `--only tolerance`:
-   `adjustment_too_small ... bed is up to 8.26 mm out of level`. With the tie also removed the bed is "a part
+   `adjustment_too_small ... bed is up to 8.50 mm out of level` and `nozzle-to-bed gap is off by up to 3.52 mm`
+   (with the line: 1.59 and 0.99). With the tie also removed the bed is "a part
    that nothing ties to the base" although four screws clamp it. A screw that clamps two parts which do not
    touch is not seen as a joint.
 2. **Three screws with one block per rail are judged as a cantilever.** `ratings.cantilever_on_guide_blocks`
@@ -384,7 +387,7 @@ after the first full verify.
 ## Decisions the owner should confirm
 
 1. **Three screws on one belt with one guide block per rail**, at 77 more parts than v7. The alternative is
-   the stiffened cantilever (a): 31 fewer parts, 0.022 mm per kg.
+   the stiffened cantilever (a): 19 fewer parts, 0.022 mm per kg.
 2. **Tramming once by hand** on the bed posts' nuts; no `[z_tilt]`.
 3. **Bed on four M5 flexure posts and a tie**, no springs or silicone. The bed cannot be re-levelled with
    thumb screws; the mesh takes the rest.
