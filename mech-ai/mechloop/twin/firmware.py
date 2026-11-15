@@ -458,6 +458,14 @@ def commanded(design, info, gcode_path: Path, pts: np.ndarray, dt: float, workdi
         Qk[:, k] = start[k] + sgn * np.interp(grid, ta - shift - t0, na.astype(float), left=0.0, right=float(na[-1])) * mm
         if len(ta) > 1:
             peak_rate["XYZ"[k]] = float(1.0 / np.diff(ta).min())
+    # the configured (shaped) run must end where the planned run ends: input shaping and pressure advance move nothing in
+    # the end position. If it does not, its stream was not read back whole (the planned run was checked against the
+    # G-code above); a difference of millimetres here used to pass as "command smoothing".
+    if act is not ref:
+        end_gap = float(np.abs(Qk[-1] - Qk_ref[-1]).max())
+        if end_gap > 0.05:
+            raise FirmwareNotDecoded(f"The configured Klipper run ends {end_gap:.3f} mm from where the planned run ends; its stream "
+                                     "was not decoded correctly (cut short?). The print was NOT RUN.")
     # ---- filament the firmware commanded (extruder steps, pressure advance included)
     E = None
     e_total = None

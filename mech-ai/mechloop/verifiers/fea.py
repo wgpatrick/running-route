@@ -1015,6 +1015,10 @@ def verify_fea(design: Design, keep_dir: Path | None = None) -> VerifierResult:
             try:
                 from .bed_support import bed_support
 
+                from . import bed_support as _BS
+                from . import electrical as _VE
+
+                _BS.FIELD_DIR = Path(_VE.OUT_ROOT) / design.name / "fea"      # the displacement fields, for rendering
                 bs = bed_support(design, r)
                 if bs is not None:
                     r.metrics["bed_support"] = bs

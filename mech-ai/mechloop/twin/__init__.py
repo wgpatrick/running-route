@@ -75,6 +75,9 @@ class PrinterMap:
     bed_surface: dict = field(default_factory=dict)
 
 
+PATH_ERROR_LIMIT_MM = 1.0      # a nozzle further than this sideways from its commanded path is never a clean print (mechloop's own line:
+                               # 2.5 nozzle widths; ringing on a sound machine is hundredths of a millimetre)
+
 def _axis_info(design: Design, pm: PrinterMap):
     from ..verifiers.ratings import resolve_drives
 
@@ -373,6 +376,13 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
         rep["dynamics"]["cross_track_rms_mm"] = round(float(np.sqrt((cross ** 2).mean())), 4)
         rep["dynamics"]["cross_track_worst_mm"] = round(float(cross.max()), 4)
         rep["dynamics"]["cross_track_p99_mm"] = round(float(np.percentile(cross, 99.0)), 4)
+        if cross.max() > PATH_ERROR_LIMIT_MM:
+            # whatever the cause (lost position, a command stream that does not follow the G-code), a nozzle this far
+            # off its path has not printed the part: never a clean print, whatever the outline comparison says
+            r.add("error", "nozzle_off_path",
+                  f"The nozzle is up to {cross.max():.2f} mm sideways from the path the G-code asks for (limit {PATH_ERROR_LIMIT_MM:g} mm; "
+                  f"RMS {float(np.sqrt((cross ** 2).mean())):.3f} mm, 99th percentile {float(np.percentile(cross, 99.0)):.3f} mm).",
+                  worst_mm=round(float(cross.max()), 3), limit_mm=PATH_ERROR_LIMIT_MM)
         if Qn is not Qc:      # how much of that the firmware's own smoothing of the command accounts for
             cx_, cy_ = (Qc[:, 0] - Qn[:, 0])[moving], (Qc[:, 1] - Qn[:, 1])[moving]
             cc = np.abs(cx_ * (-Vn[moving, 1] / sp[moving]) + cy_ * (Vn[moving, 0] / sp[moving]))

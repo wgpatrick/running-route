@@ -444,11 +444,31 @@ def _tilt_mm(th, lay) -> float:
     return float(abs(th[1]) * ex + abs(th[0]) * ey)
 
 
-def flexure(design: Design, lay: dict, load_point, r: VerifierResult | None = None) -> dict:
-    """FEA of the bed's carrying parts for a unit load at `load_point` on the print surface. Returns per-newton
-    deflection and tilt, bonded and screw-only, or {"evaluated": False, "why": ...}."""
-    from build123d import Vertex
+FIELD_DIR = None        # set by the fea verifier's caller: where the displacement fields of the bed-support cases are saved
 
+
+def print_points(lay: dict) -> dict:
+    """The five places the bed is judged at: the four corners of the print area and its centre."""
+    ex, ey = lay["print_area"]
+    t = lay["top"]
+    pts = {f"corner {'-+'[sx > 0]}x {'-+'[sy > 0]}y": t + np.array([sx * ex / 2, sy * ey / 2, 0.0]) for sx in (-1, 1) for sy in (-1, 1)}
+    pts["centre"] = t.copy()
+    return pts
+
+
+def flexure(design: Design, lay: dict, load_point=None, r: VerifierResult | None = None, points: dict | None = None) -> dict:
+    """FEA of the bed's carrying parts, held across the rail at every guide block and along the screw at every nut seat,
+    for a unit load at each of `points` ({label: xyz on the print surface}; default: the four corners of the print area
+    and its centre; `load_point` alone gives the old single case). Returns, per point, the deflection there per newton
+    and the tilt of the print area, bonded and screw-only, and the deflection of every other point under that load.
+
+    Every declared support must really hold nodes of the mesh. The seat of a nut is found by geometry: the faces of
+    the part the nut sits in that lie against the nut (true face-to-solid distance, not the face's centre: a seat
+    face much larger than the nut has its centre far from it) and square to the screw; of their nodes, those under the
+    nut's footprint are held along the screw. A guide block is held across the rail on its faces that lie against the
+    rail. If ANY declared nut or guide block ends up holding no node, nothing is reported as evaluated
+    (`unheld_supports`): a support that holds nothing would let that part of the structure ride as a rigid body and
+    the figures would be for a different machine. The number of nodes held per support is in the result."""
     from . import fea as F
 
     if not shutil.which("ccx"):
@@ -471,7 +491,7 @@ def flexure(design: Design, lay: dict, load_point, r: VerifierResult | None = No
         want, basis = list(case.components), f"the parts of AssemblyCase '{case.name}'"
     names = [n for n in want if n in comps]
     fast = {f.name for f in design.fasteners}
-    # what the nut sits in: parts of the moving body that touch a nut
+    # what each nut sits in: parts of the moving body that touch it
     seats = []
     for nn in lay["nuts"]:
         nut = comps[nn]
@@ -505,11 +525,15 @@ def flexure(design: Design, lay: dict, load_point, r: VerifierResult | None = No
     if not rails:
         return {"evaluated": False, "why": "none of the bed's guide blocks is among the parts"}
 
-    def near(shape, tol_):
+    def against(shape, tol_, square_to=None):
+        """Faces that lie against `shape` (true distance between the face and the solid)."""
         def pred(f):
-            c = f.center()
             try:
-                return shape.distance_to(Vertex(c.X, c.Y, c.Z)) <= tol_
+                if square_to is not None:
+                    n_ = f.normal_at(f.center())
+                    if abs(abs(float(np.array([n_.X, n_.Y, n_.Z]) @ square_to)) - 1.0) > 0.02:
+                        return False
+                return shape.distance_to(f) <= tol_
             except Exception:
                 return False
         return pred
@@ -524,10 +548,11 @@ def flexure(design: Design, lay: dict, load_point, r: VerifierResult | None = No
             return False
         return abs(float(np.array([n_.X, n_.Y, n_.Z]) @ up) - 1.0) < 1e-6 and abs(float(np.array(tuple(f.center())) @ up) - top_z) < 1e-3
 
-    sel = {"load": [(bed.name, top_face)], "guides": [(b, near(rl.shape, 0.35)) for b, rl in rails.items()]}
-    seat_sel = [(c, near(comps[nn].shape, 0.05)) for c, nn in seats]
-    if seat_sel:
-        sel["seat"] = seat_sel
+    sel = {"load": [(bed.name, top_face)]}
+    for b, rl in rails.items():
+        sel[f"guide:{b}"] = [(b, against(rl.shape, 0.35))]
+    for c, nn in seats:
+        sel.setdefault(f"seat:{nn}", []).append((c, against(comps[nn].shape, 0.05, square_to=a)))
     workdir = Path(tempfile.mkdtemp(prefix="mechloop_bed_"))
     try:
         try:
@@ -535,61 +560,130 @@ def flexure(design: Design, lay: dict, load_point, r: VerifierResult | None = No
         except Exception as e:
             return {"evaluated": False, "why": f"meshing failed: {type(e).__name__}: {e}", "parts": names}
         xyz = mesh["xyz"]
-        g_nodes = np.unique(mesh["sel_tris"]["guides"]) if len(mesh["sel_tris"]["guides"]) else np.array([], dtype=int)
-        s_nodes = np.unique(mesh["sel_tris"]["seat"]) if "seat" in mesh["sel_tris"] and len(mesh["sel_tris"]["seat"]) else np.array([], dtype=int)
-        if not len(g_nodes):
-            return {"evaluated": False, "why": "no face of a guide block was found on its rail", "parts": names}
         perp = [d + 1 for d in range(3) if d != k_ax]
-        if len(s_nodes):
-            bc = [(g_nodes, d) for d in perp] + [(s_nodes, k_ax + 1)]
-            support = "held across the rail at the guide blocks and along the screw at the nut seat"
-        else:
-            bc = [(g_nodes, d) for d in (1, 2, 3)]
-            support = ("IDEAL: fully fixed at the guide blocks (no nut seat among the parts: the vertical load is taken at the "
-                       "blocks, which overstates stiffness)")
+        held: dict = {}
+        bc = []
+        for b in rails:
+            nodes = np.unique(mesh["sel_tris"][f"guide:{b}"]) if len(mesh["sel_tris"][f"guide:{b}"]) else np.array([], dtype=int)
+            held[b] = int(len(nodes))
+            bc += [(nodes, d) for d in perp] if len(nodes) else []
+        for b in blocks:
+            held.setdefault(b, 0)                       # a declared guide block that is not among the parts, or has no rail
+        seat_of = {}
+        for nn in lay["nuts"]:
+            lab = f"seat:{nn}"
+            nodes = np.unique(mesh["sel_tris"][lab]) if lab in mesh["sel_tris"] and len(mesh["sel_tris"][lab]) else np.array([], dtype=int)
+            if len(nodes):
+                # of the seat faces' nodes, those under the nut: within the nut's own radius of its axis (plus a mesh's worth)
+                nb = comps[nn].shape.bounding_box()
+                cen = _center(comps[nn])
+                rad = 0.5 * max(s_ for s_, ax_ in zip((nb.size.X, nb.size.Y, nb.size.Z), range(3)) if ax_ != k_ax)
+                rel = xyz[nodes] - cen
+                rel[:, k_ax] = 0.0
+                under = nodes[np.linalg.norm(rel, axis=1) <= rad + 0.5]
+                nodes = under if len(under) >= 3 else nodes[np.argsort(np.linalg.norm(rel, axis=1))[:6]]
+            held[nn] = int(len(nodes))
+            seat_of[nn] = [c for c, n2 in seats if n2 == nn]
+            if len(nodes):
+                bc.append((nodes, k_ax + 1))
+        out = {"parts": names, "parts_from": basis, "nodes": int(len(xyz)), "constrained_nodes": dict(sorted(held.items())),
+               "nut_seat": [f"{c} under {nn}" for c, nn in seats] or None, "unit_load_n": 10.0}
+        unheld = sorted(k_ for k_, v_ in held.items() if v_ == 0)
+        ideal = not seats and all(held[b] > 0 for b in blocks)
+        if ideal:
+            # the design draws nothing that any nut sits in: the old, declared idealisation (and it is said, loudly)
+            bc = [(np.unique(mesh["sel_tris"][f"guide:{b}"]), d) for b in rails for d in (1, 2, 3)]
+        elif unheld:
+            return {**out, "evaluated": False, "unheld_supports": unheld,
+                    "why": "declared support(s) " + ", ".join(unheld) + " hold no node of the FEA model ("
+                           + "; ".join((f"{u}: no face of {' / '.join(seat_of.get(u) or ['any part of the moving body'])} lies against it, square to the screw"
+                                        if u in lay["nuts"] else f"{u}: not among the parts, or no face of it lies against a rail") for u in unheld)
+                           + "): the structure would ride there as a rigid body, so no figure is reported"}
+        support = ("IDEAL: fully fixed at the guide blocks (no part of the moving body touches any nut, so no nut seat is among the "
+                   "parts: the vertical load is taken at the blocks, which overstates stiffness)" if ideal else
+                   "held across the rail at every guide block and along the screw at every nut seat")
+        out["idealised"] = bool(ideal)
         top_nodes = np.unique(mesh["sel_tris"]["load"])
         if not len(top_nodes):
-            return {"evaluated": False, "why": "the bed's top face was not found in the mesh", "parts": names}
-        lp = np.asarray(load_point, dtype=float)
-        dist = np.linalg.norm(xyz[top_nodes] - lp, axis=1)
-        pick = top_nodes[dist <= 10.0]
-        if len(pick) < 3:
-            pick = top_nodes[np.argsort(dist)[:6]]
+            return {**out, "evaluated": False, "why": "the bed's top face was not found in the mesh"}
+        pts = dict(points) if points else ({"load point": np.asarray(load_point, dtype=float)} if load_point is not None else print_points(lay))
         force = -up * 10.0
-        nodal = {int(n_): 1.0 / len(pick) for n_ in pick}
         fixed_all = np.unique(np.concatenate([b_[0] for b_ in bc]))
-        out = {"evaluated": True, "parts": names, "parts_from": basis, "supports": support, "nodes": int(len(xyz)),
-               "nut_seat": [f"{c} under {nn}" for c, nn in seats] or None, "unit_load_n": 10.0}
-
+        out.update({"evaluated": True, "supports": support})
         ex, ey = lay["print_area"]
         rel = xyz[top_nodes] - lay["top"]
         inside = top_nodes[(np.abs(rel[:, 0]) <= ex / 2 + 1e-6) & (np.abs(rel[:, 1]) <= ey / 2 + 1e-6)]
+        picks = {}
+        for lab, lp in pts.items():
+            dist = np.linalg.norm(xyz[top_nodes] - np.asarray(lp, dtype=float), axis=1)
+            pick = top_nodes[dist <= 10.0]
+            picks[lab] = pick if len(pick) >= 3 else top_nodes[np.argsort(dist)[:6]]
 
-        def read(U, pts):
-            d_load = float(-(U[pick] @ up).mean())
-            A = np.column_stack([pts[inside][:, 0], pts[inside][:, 1], np.ones(len(inside))])
+        def read(U, pick):
+            A = np.column_stack([xyz[inside][:, 0], xyz[inside][:, 1], np.ones(len(inside))])
             coef = np.linalg.lstsq(A, U[inside] @ up, rcond=None)[0]
-            return d_load / 10.0, float(abs(coef[0]) * ex + abs(coef[1]) * ey) / 10.0
+            return float(-(U[pick] @ up).mean()) / 10.0, float(abs(coef[0]) * ex + abs(coef[1]) * ey) / 10.0
 
-        res = F._asm_solve(workdir, "bed", xyz, mesh["part_tets"], mesh["comps"], fixed_all, nodal, force, force, "bed support", None, bc=bc)
-        if "error" in res:
-            return {"evaluated": False, "why": f"solver: {res['error']}", "parts": names}
-        out["bonded_mm_per_n"], out["bonded_tilt_mm_per_n"] = read(res["U"], xyz)
         try:
             xyz2, tets2, info = F._unbond_away_from_screws(design, mesh, names)
+        except Exception as e:
+            xyz2, tets2, info = None, None, None
+            out["screwed_note"] = f"screw-only model not run: {type(e).__name__}: {e}"
+        if info is not None and not info:
+            out["screwed_note"] = "no screwed joint among the parts: the screw-only bound equals the bonded one"
+        if info:
+            out["screwed_joints"] = len(info)
+        rows, fields = {}, {}
+        for i_, (lab, pick) in enumerate(picks.items()):
+            nodal = {int(n_): 1.0 / len(pick) for n_ in pick}
+            res = F._asm_solve(workdir, f"bed{i_}", xyz, mesh["part_tets"], mesh["comps"], fixed_all, nodal, force, force, "bed support", None, bc=bc)
+            if "error" in res:
+                return {**out, "evaluated": False, "why": f"solver ({lab}): {res['error']}"}
+            row = {}
+            row["bonded_mm_per_n"], row["bonded_tilt_mm_per_n"] = read(res["U"], pick)
+            row["bonded_elsewhere_mm_per_n"] = {l2: round(float(-(res["U"][p2] @ up).mean()) / 10.0, 6) for l2, p2 in picks.items()}
+            fields[f"{lab}|bonded"] = res["U"]
             if info:
-                res2 = F._asm_solve(workdir, "bed_screwed", xyz2, tets2, mesh["comps"], fixed_all, nodal, force, force,
+                res2 = F._asm_solve(workdir, f"bed{i_}s", xyz2, tets2, mesh["comps"], fixed_all, nodal, force, force,
                                     "bed support (screwed joints)", None, bc=bc)
                 if "error" not in res2 and res2["rf"] is not None and float(np.linalg.norm(res2["rf"] + force)) / 10.0 < 0.01:
-                    out["screwed_mm_per_n"], out["screwed_tilt_mm_per_n"] = read(res2["U"], xyz2[:len(xyz)])
-                    out["screwed_joints"] = len(info)
+                    U2 = res2["U"][:len(xyz)]
+                    row["screwed_mm_per_n"], row["screwed_tilt_mm_per_n"] = read(U2, pick)
+                    row["screwed_elsewhere_mm_per_n"] = {l2: round(float(-(U2[p2] @ up).mean()) / 10.0, 6) for l2, p2 in picks.items()}
+                    fields[f"{lab}|screwed"] = U2
                 else:
                     out["screwed_note"] = "the screw-only model did not solve cleanly (a part came free): only the bonded figure is given"
-            else:
-                out["screwed_note"] = "no screwed joint among the parts: the screw-only bound equals the bonded one"
-                out["screwed_mm_per_n"], out["screwed_tilt_mm_per_n"] = out["bonded_mm_per_n"], out["bonded_tilt_mm_per_n"]
-        except Exception as e:
-            out["screwed_note"] = f"screw-only model not run: {type(e).__name__}: {e}"
+            elif info is not None:
+                row["screwed_mm_per_n"], row["screwed_tilt_mm_per_n"] = row["bonded_mm_per_n"], row["bonded_tilt_mm_per_n"]
+            row["at"] = [round(float(x), 1) for x in pts[lab]]
+            rows[lab] = row
+        out["by_point"] = rows
+        key = "screwed_mm_per_n" if all("screwed_mm_per_n" in v for v in rows.values()) else "bonded_mm_per_n"
+        worst = max(rows, key=lambda l_: rows[l_][key])
+        out["worst_point"] = worst
+        for k_ in ("bonded_mm_per_n", "bonded_tilt_mm_per_n", "screwed_mm_per_n", "screwed_tilt_mm_per_n"):
+            if k_ in rows[worst]:
+                out[k_] = rows[worst][k_]              # the old single-case keys: the worst point of the FEA field
+        if FIELD_DIR is not None:
+            try:
+                fd = Path(FIELD_DIR)
+                fd.mkdir(parents=True, exist_ok=True)
+                surf = np.unique(np.concatenate([np.unique(t_[:, :4]) for t_ in mesh["part_tets"] if len(t_)]))      # corner nodes only
+                part_of = np.full(len(xyz), -1, dtype=np.int16)
+                for i, t_ in enumerate(mesh["part_tets"]):
+                    if len(t_):
+                        part_of[np.unique(t_[:, :4])] = i
+                np.savez_compressed(fd / "bed_support_fields.npz", xyz=xyz[surf].astype(np.float32),
+                                    part=part_of[surf],
+                                    parts=np.array(names), unit_load_n=10.0, print_points=np.array([pts[l_] for l_ in picks]),
+                                    print_point_labels=np.array(list(picks)),
+                                    **{("U_" + k_.replace("|", "__").replace(" ", "_").replace("+", "p").replace("-", "m")): v_[surf].astype(np.float32)
+                                       for k_, v_ in fields.items()})
+                out["displacement_fields"] = str(fd / "bed_support_fields.npz")
+                out["displacement_fields_note"] = ("corner nodes of the mesh (xyz, mm; part = index into parts) and their displacement (mm) for a 10 N load at each "
+                                                   "print point, bonded and screw-only: arrays U_<point>__<bonded|screwed>")
+            except Exception as e:
+                out["displacement_fields"] = f"not saved: {type(e).__name__}: {e}"
         return out
     finally:
         shutil.rmtree(workdir, ignore_errors=True)
@@ -682,43 +776,69 @@ def bed_support(design: Design, r: VerifierResult, with_fea: bool = True) -> dic
         return out
     out["evaluated"] = True
     up = lay["up"]
-    # ---- worst point of the print area for a downward load (by the support model), and the corners
+    # ---- the five print points (four corners and the centre); the worst is taken from the totals, FEA field included
     pts = _grid(lay)
     sag = [float(-(respond(model, -up, p)["at"](p) @ up)) for p in pts]
     worst = pts[int(np.argmax(sag))]
     ex, ey = lay["print_area"]
-    corners = [lay["top"] + np.array([sx * ex / 2, sy * ey / 2, 0.0]) for sx in (-1, 1) for sy in (-1, 1)]
+    ppts = print_points(lay)
+    corners = [v for k, v in ppts.items() if k != "centre"]
     csag = [float(-(respond(model, -up, p)["at"](p) @ up)) for p in corners]
     wc = corners[int(np.argmax(csag))]
-    flex = flexure(design, lay, wc, r) if with_fea else {"evaluated": False, "why": "FEA not requested"}
+    flex = flexure(design, lay, None, r, points=ppts) if with_fea else {"evaluated": False, "why": "FEA not requested"}
     out["flexure"] = flex
-    if not flex.get("evaluated"):
+    if flex.get("unheld_supports"):
+        r.add("error", "bed_support_not_held_in_fea",
+              f"Bed support: {flex['why']}. Nodes held per declared support: {flex.get('constrained_nodes')}.",
+              unheld=flex["unheld_supports"], constrained_nodes=flex.get("constrained_nodes"),
+              hint="The part a nut sits in needs a flat face against the nut, square to the screw, and must be in the bed-support "
+                   "parts; every guide block must be among the parts and lie against its rail.")
+    elif flex.get("idealised"):
+        r.add("warning", "bed_support_idealised",
+              "Bed support: no part of the moving body touches a lead-screw nut, so the FEA has no nut seat to hold: the parts were "
+              "fully fixed at the guide blocks instead. That takes the vertical load where the machine does not and overstates "
+              "stiffness; the flexure figures are an upper bound on stiffness, not the machine's.",
+              hint="Draw what each nut sits in (in contact with the nut) and put it among the bed-support parts.")
+    if not flex.get("evaluated") and not flex.get("unheld_supports"):
         r.add("warning", "bed_flexure_not_evaluated",
               f"Bed support: the flexure of the parts that carry the bed was NOT evaluated ({flex.get('why')}). The deflections "
               f"below contain the guides' and the nut's compliance only and are a lower bound.")
     w_print = PRINT_MASS_KG * G
 
-    def case(load_n, point, label):
+    def one(load_n, point, fl):
         res = respond(model, -up * load_n, point)
         sup_mm = float(-(res["at"](point) @ up))
         sup_tilt = _tilt_mm(res["theta"], lay)
         row = {"load_n": round(load_n, 2), "at": [round(float(x), 1) for x in point],
                "support_compliance_mm": round(sup_mm, 4), "support_compliance_tilt_mm": round(sup_tilt, 4)}
-        if flex.get("evaluated"):
+        if fl is not None:
             for key in ("bonded", "screwed"):
-                if f"{key}_mm_per_n" in flex:
-                    row[f"flexure_{key}_mm"] = round(flex[f"{key}_mm_per_n"] * load_n, 4)
-                    row[f"total_{key}_mm"] = round(flex[f"{key}_mm_per_n"] * load_n + sup_mm, 4)
-                    row[f"tilt_across_print_area_{key}_mm"] = round(flex[f"{key}_tilt_mm_per_n"] * load_n + sup_tilt, 4)
-            row["range_note"] = "bonded: every touching face joined (stiff bound); screwed: joints held only round their screws (soft bound)"
+                if f"{key}_mm_per_n" in fl:
+                    row[f"flexure_{key}_mm"] = round(fl[f"{key}_mm_per_n"] * load_n, 4)
+                    row[f"total_{key}_mm"] = round(fl[f"{key}_mm_per_n"] * load_n + sup_mm, 4)
+                    row[f"tilt_across_print_area_{key}_mm"] = round(fl[f"{key}_tilt_mm_per_n"] * load_n + sup_tilt, 4)
         else:
             row["total_supports_only_mm"] = round(sup_mm, 4)
         row["judged_mm"] = row.get("total_screwed_mm", row.get("total_bonded_mm", sup_mm))
         return row
 
+    def case(load_n, point, label):
+        if flex.get("evaluated"):
+            # the load is put on each of the five print points in turn; the judged figure is the worst of them
+            rows = {lab: one(load_n, ppts[lab], flex["by_point"][lab]) for lab in flex["by_point"]}
+            wl = max(rows, key=lambda l_: rows[l_]["judged_mm"])
+            row = dict(rows[wl])
+            row["worst_point"] = wl
+            row["by_point_mm"] = {lab: {k: v for k, v in rw.items() if k in ("total_bonded_mm", "total_screwed_mm", "support_compliance_mm", "judged_mm")}
+                                  for lab, rw in rows.items()}
+            row["range_note"] = "bonded: every touching face joined (stiff bound); screwed: joints held only round their screws (soft bound)"
+            return row
+        return one(load_n, point, None)
+
     out["hand_load"] = case(HAND_LOAD_N, wc if flex.get("evaluated") else worst, "hand")
     out["print_weight"] = case(w_print, wc, "print")
-    out["hand_load"]["point_basis"] = ("worst corner of the print area (the flexure was solved there)" if flex.get("evaluated")
+    out["hand_load"]["point_basis"] = ("the worst of the four corners of the print area and its centre, each loaded in turn (FEA flexure "
+                                       "plus support compliance)" if flex.get("evaluated")
                                        else "worst point of the print area by the support model")
     lim = SAG_FRACTION_OF_LAYER * lay["layer"]
     out["print_weight"]["limit_mm"] = round(lim, 4)
