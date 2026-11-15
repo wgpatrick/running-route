@@ -3,7 +3,7 @@
 Everything here is simulated. Nothing has been built.
 
 `designs/printer_v6.py` starts from `designs/printer_v5.py`. It passes all 12 verifiers (0 errors, 8 warnings,
-full run of 2026-11-15 03:38 to 03:52 UTC, against the Roto and Revo solids rebuilt from E3D's reference CAD).
+final full run of 2026-11-15 04:22 to 04:35 UTC, against the Roto and Revo solids rebuilt from E3D's reference CAD).
 The designer worked from findings, hints, documents, the parts catalogue and the public helpers of
 `mechloop/electrical.py`. The verifier, tolerance and twin sources were not read.
 
@@ -20,7 +20,7 @@ fabricated part is printed, laser-cut or a single-set-up plate.
 | <= 320 parts | **317** | yes |
 | assembly estimate <= 65 min | **66.0 min** (v5: 69.7) | **no**, by 1 minute |
 | direct drive, <= 0.40 kg moving in X | E3D Roto + Revo on the X guide block, **0.351 kg** with the block | yes |
-| both Y belts within 1 mm of plane in >= 98 % of builds | 98.4 % and 98.7 % in the final run; over 14 runs of the final geometry and its near variants the right belt was 97.9 to 98.7 %, the left 98.7 to 99.1 % | yes at the mean, **no margin**: the right belt's figure is within the simulation's own scatter (about +/-0.3 %) of the limit |
+| both Y belts within 1 mm of plane in >= 98 % of builds | 98.4 % and 99.0 % in the final run; over 15 runs of the final geometry and its near variants the right belt was 97.9 to 98.7 %, the left 98.7 to 99.1 % | yes at the mean, **no margin**: the right belt's figure is within the simulation's own scatter (about +/-0.3 %) of the limit |
 | a bed probe that works across the whole print area | switches 0.88 to 1.52 mm before the nozzle touches for every unit in its +/-10 % spread; reaches 148 x 174 mm of the 180 x 180 mm | **no**: a 32 mm strip at high X and a 6 mm strip at high Y are not probed |
 | no stand-in purchased part where the catalogue has a real one | one hand-made purchased part is left, the bed probe; the catalogue has no probe | yes |
 
@@ -204,15 +204,17 @@ model has no heat-sink node for it (item 1 below).
 | full 1 | not an error: Y resonance 58.1 Hz with 9 mm Y belts | 12 mm on Y |
 | full 2 | requirements: a Requirement of mine took the metrics dict as an argument; Y belt 97.9 % | function fixed; beam-bolt slots, two-bolt mounts |
 | full 3 | pass | |
+| assemble | the whole gantry declared as one bench sub-assembly: simulation incomplete, 25 parts never placed | smaller bench jobs (motors on plates, idler on its plate, fan on its carrier) |
+| full 4 | pass (the report in `out/printer_v6/`) | |
 
-Three full runs (13 to 14 minutes each), about 14 partial runs, 5 rounds of tolerance experiments on scratch
+Four full runs after the first failing one (13 to 14 minutes each), about 14 partial runs, 5 rounds of tolerance experiments on scratch
 copies.
 
 ## v5 against v6
 
 v5 figures: full report of 2026-11-14 for motion, assembly and FEA; fast verifiers re-run on 2026-11-15 01:27 UTC
 (after the checker fixes); resonance from `STATUS.md` after the twin was refitted. v6: full run of
-2026-11-15 03:52 UTC (repeated at the end, see "Scores"), `mechloop score --assembly` 03:52 to 04:03 UTC. The twin was being refitted during this work; treat the dynamic figures
+2026-11-15 04:35 UTC, `mechloop score --assembly` 03:52 to 04:03 UTC. The twin was being refitted during this work; treat the dynamic figures
 as provisional until v4, v5 and v6 are scored together.
 
 | | v5 | v6 |
@@ -233,8 +235,8 @@ as provisional until v4, v5 and v6 are scored together.
 | Acceleration an owner would run / step-loss ceiling | 6,800 / 12,000 mm/s^2 | 6,800 / 10,000 mm/s^2 (ranges 4,400 to 9,600 / 8,000 to 12,000) |
 | Benchmark print time | 2,564 s | 2,571 s |
 | Cross-track RMS / worst (verify's test cube) | 0.011 / 0.113 mm (score) | 0.012 / 0.107 mm |
-| Y belts within 1 mm of plane | 92.8 / 92.7 % | 98.4 / 98.7 % |
-| X belt within 1 mm | 99.5 % | 99.1 % |
+| Y belts within 1 mm of plane | 92.8 / 92.7 % | 98.4 / 99.0 % |
+| X belt within 1 mm | 99.5 % | 99.4 % |
 | Bed with 3x payload, screw-only | 368 N/mm | 432 N/mm |
 | Bed 60 K hot: gap / bow | -0.074 / 0.010 mm | -0.071 / 0.019 mm |
 | Bed tilt mode on the blocks | 562 Hz | 358 Hz |
