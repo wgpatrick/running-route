@@ -144,12 +144,16 @@ def build() -> Design:
     for sx in (-1, 1):
         tool_plate += Pos(sx * 20, -5.25, z_top + 4 + RIB / 2) * Box(6, 45.5 - 8 + RIB, RIB)
         tool_plate += Pos(sx * 20, -20 - RIB / 2, z_top - 20 + RIB / 2) * Box(6, RIB, 48 + RIB)
+    # The MGN12H's threads are M3 x 3.5 deep (Hiwin, Table 3.79). An M3x8 through the bare 4 mm plate went 4.0 mm in and
+    # bottomed out; a 1 mm seat boss under each head makes it 3.0 mm (one diameter in steel).
+    SEAT = 1.0
     for x in (-10, 10):
         for y in (-10, 10):
-            tool_plate -= Pos(x, y, z_top + 2) * Cylinder(clearance_hole("M3") / 2, 4)
+            tool_plate += Pos(x, y, z_top + 4 + SEAT / 2) * Cylinder(4.0, SEAT)
+            tool_plate -= Pos(x, y, z_top + 2 + SEAT / 2) * Cylinder(clearance_hole("M3") / 2, 4 + SEAT)
     d.add("tool_plate", tool_plate, material="petg", body="xbody")
     for i, (x, y) in enumerate([(-10, -10), (-10, 10), (10, -10), (10, 10)]):
-        add_screw(d, f"tool_screw_{i}", "M3", 8, at=(x, y, z_top + 4), body="xbody", threads_into="x_carriage")
+        add_screw(d, f"tool_screw_{i}", "M3", 8, at=(x, y, z_top + 4 + SEAT), body="xbody", threads_into="x_carriage")
     # X belt clamp bar: pockets grip the last 14 mm of each belt end against the tab
     XC_Y1 = TAB_Y1 + 5.5
     xclamp = Pos(0, (TAB_Y1 + XC_Y1) / 2, Z_XB + 1) * Box(40, XC_Y1 - TAB_Y1, 20)

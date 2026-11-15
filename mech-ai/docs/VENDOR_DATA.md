@@ -351,3 +351,37 @@ time). Details and effects: the same report, section "Fourth batch".
 | `BED-COLUMN-SIL-16x18_dims.txt` | collector's note from a seller listing | `silicone_bed_column_dims.json` | 16 OD x 18 x 4 bore, as in the catalogue | Hardness, stiffness |
 | (staging only) 17 distinct McMaster STEP files | 91290A-series cap screws, 90591A-series nuts | `mcmaster_fasteners.json` | Part numbers; heads, lengths, sockets equal ISO 4762; M5 nut 4.0 mm thick (DIN 934) against the catalogue's 4.7 (ISO 4032). `SHCS-M3x6.step` is the M3x12 file. Recommendation: keep the generated solids (a McMaster M3x30 is 767 faces and 22,144 triangles against 15 and 696) | M3x6, M3x25, M3x45, M5x16 |
 | (staging only) `LRS-350-24.step` | byte-identical to `vendor_cad/meanwell_LRS-350.stp` | — | already the detail model | — |
+
+
+# Applied 2026-11-15: what the hand-collected documents changed in the code
+
+The two sections above recorded the documents beside the values in use. This section says what was then applied.
+Numbering is that of `/home/user/running-route/reports/Vendor documents - what they change.md`, where each proposal is
+marked applied or not. Known-answer tests: `tests/test_known_answers_v6.py`. Statements earlier in this file that
+these supersede: "Recorded but not vendor-backed" (MGN12 is vendor-backed; `thread_depth_unverified` is now
+`thread_depth` and drives `thread_bottoms_out`), "Could not be sourced" rows for Hiwin and Gates, and "No value that
+the catalogue code ... reads was changed".
+
+| # | What changed | Where | Source |
+|---|---|---|---|
+| 1 | Belt stiffness 22 -> **19 kN per 6 mm** (range 15 to 27 kept), linear in width, with a note that it rises with tension | `mechloop/twin/fitted_parameters.json` `belt_ea_n_per_6mm` (the one place; `PrinterMap.belt_ea_n` reads it) | Gates manual Table 6 (16.9 kN); three reference machines and Wang 2018 (21 to 24 kN) |
+| 2 | New rating on `nema17(48)`: `max_radial_load_n` 21 at `max_radial_load_at_mm` 20, basis "read from drawing, meaning inferred". New ratings check `motor_shaft_radial_load` (warning); `Belt.tension`, default Gates' minimum installation tension for the width | `stepperonline_nema17.json` parts.48.values; `verifiers/ratings.py` `belt_shaft_loads`; `gates_gt2.json` belt.installation_tension | drawing A0842 (one line); Gates manual p.65 |
+| 3 | `mgn12h_carriage(preload=...)`: radial rigidity 63 N/um (Z0, the default, reported as assumed) or 81 (Z1); none for ZF, which uses the verifier's assumed 40. Ball-track length L1 32.4 mm. `ratings.BLOCK_K` is now only the fallback | `parts/__init__.py`; `hiwin_mgn12.json` catalogue | Hiwin Tables 3.77, 3.79 |
+| 4 | Coupler: bores as in the vendor STEP; `max_insertion_a` 12.05, `max_insertion_b` 8.6, `bore_depth` 7.5; check `shaft_too_deep_in_coupler` | `shaft_coupler()`; `stepperonline_coupler.json` vendor_step; `verifiers/interference.py` | vendor STEP (`docs/VENDOR_CAD.md`) |
+| 5 | Allowable parallelism of two rails: 0.009 mm (ZF, Z0), 0.005 mm (Z1), as `allowable_parallelism_mm` on the block; the paired-rail metrics give it with its source and the preload class (default was 0.025) | `parts/__init__.py`; `tolerance/__init__.py` | Hiwin Table 3.88 |
+| 6 | MGN12 rail and carriage are vendor-backed (`source.level` "vendor"); `thread_depth` 3.5, so `thread_bottoms_out` applies to carriage screws. Values in use are the earlier transcriptions, equal to the catalogue's except in rounding (mass 0.054 against a printed 0.05; moments 38.22 / 36.26 against 38.2 / 36.3) | `parts/__init__.py` | Hiwin Tables 3.76, 3.79, 3.81 |
+| 7 | 17HS19-2004S1 resistance 1.40 -> 1.60 ohm; `MOTOR_ELECTRICAL` is now built from the vendor file, so the two tables cannot disagree (side effect: the fallback holding torque of the 60 mm motor is the drawing's 650 N.mm, not the page's 760; the catalogue part always used 650) | `stepperonline_nema17.json`; `parts/electrical.py` | drawing A0842 |
+| 8 | Stock flatness of cast tooling plate as supplied (0.381 mm up to 12.7 mm thick, 0.127 above), reported beside the bed results as a reference; not applied to the stack-up | `tolerance/process.py` `STOCK_PLATE_FLATNESS`; tolerance metrics `printer.bed_plate_stock_flatness` | ATP-5 sheet (shown for MIC-6 too, whose sheet is empty) |
+| 9 | `al_atp5`: E 70,300 -> 70,000 MPa; expansion 23.8e-6 -> 23.6e-6 /K | `model.py`, `verifiers/fea.py`, `cast_tooling_plate.json` | ATP-5 sheet |
+| 10 | Pulley and idler source text: 12 mm belt in 2 mm pitch and a 5 mm-bore 20-groove sprocket are not Gates stock | `parts/__init__.py` `_gt2_source` | Gates manual p.15, p.29 |
+| 11 | Twin text: the fitted 10 N/um is unchanged; its description now says the bare block is 17 % (MGN12H) and 24 % (MGN7H) of that compliance, the rest mounts and clamp; MGN7H L1 is the maker's figure | `fitted_parameters.json` | Hiwin Tables 3.77, 3.79 |
+| 12 | Endstop: trigger 9.0 -> **6.8 mm** from the mounting-hole line (Y 10.6 -> 8.4), tolerance +/-1.5, overtravel 0.55 min, movement differential 0.5, operating force 0.78 N; new interfaces `trigger_latest`, `trigger_earliest`, `case_limit`; the endstop check uses the spread | `parts/details.py` `ENDSTOP` (reads `omron_d2f.json`); `verifiers/subsystems.py` | OMRON D2F data sheet p.4 |
+| 13 | BOM text names the gold-contact low-current type (D2F-01L) and why | `endstop_switch()` description and source | OMRON D2F data sheet p.2 |
+| 14 | OMRON's right-angled terminal figures recorded on the part (`pin_row_omron_right_angled`); the generated carrier board's row is unchanged and the source text says it is not a known bought module | `endstop_switch()` | OMRON D2F data sheet p.3 |
+| 15 | LRS-350: `leakage_current_ma_max` 2.0 at 240 VAC, `derate_to_frac_at_90vac` 0.8, `full_load_min_vac` 100; metrics `bay.psu_low_line`; an error only if the design's own mains range goes below 100 VAC with more load than allowed | `psu_lrs()`; `verifiers/electrical.py` | LRS-350-SPEC p.2, p.3 |
+| 16 | Pi Zero 2 W: `min_ambient_c` -20, `max_ambient_c` 70; the bay check compares the bay air with each device's own limit (`device_over_ambient_limit`). The 0.60 A draw stays unverified | `raspberry_pi_zero2w()`; `verifiers/electrical.py` | product brief p.3 |
+| motors | `17HS13-0404S1.step`, `17HS19-2004S1.step` and `COUPLER-5x8.step` are detail models; the motors' simulation solids have the STEP's small lead exit in place of a connector block | `docs/VENDOR_CAD.md` | vendor STEP files |
+
+Still not vendor data after this: MIC-6 (empty sheet), the coupler's permissible misalignment (1.0 deg assumed), the
+Pi's current draw, any lateral or moment rigidity of a guide block, a shaft-load figure for the 34 mm motor, belt
+stiffness against tension as a curve, the endstop's carrier board.

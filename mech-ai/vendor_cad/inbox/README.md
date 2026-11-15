@@ -21,11 +21,11 @@ Keep each file under about 5 MB. Part numbers marked "look up" are not known wit
 
 | part (catalogue call) | vendor part number | where to get it | save as |
 |---|---|---|---|
-| NEMA 17, 34 mm (`nema17(34)`: X and Z motors) | StepperOnline 17HS13-0404S | product page on www.omc-stepperonline.com, Downloads, STEP (needs a free login) | `17HS13-0404S.step` |
+| ~~NEMA 17, 34 mm (`nema17(34)`: X and Z motors)~~ | StepperOnline 17HS13-0404S | **DONE 2026-11-15**: `vendor_cad/17HS13-0404S1.step` (the S1 variant, same motor) is the detail model | |
 | NEMA 17, 40 mm (`nema17(40)`) | StepperOnline 17HS16-2004S1 | same | `17HS16-2004S1.step` |
-| NEMA 17, 48 mm (`nema17(48)`: both Y motors) | StepperOnline 17HS19-2004S1 | same (the page lists `17HS19-2004S1.STEP`, 1.13 MB) | `17HS19-2004S1.step` |
+| ~~NEMA 17, 48 mm (`nema17(48)`: both Y motors)~~ | StepperOnline 17HS19-2004S1 | **DONE 2026-11-15**: `vendor_cad/17HS19-2004S1.step` is the detail model | |
 | NEMA 17, 60 mm (`nema17(60)`) | StepperOnline 17HS24-2104S | same | `17HS24-2104S.step` |
-| Jaw coupling 5 x 8 mm (`shaft_coupler(5, 8)`) | StepperOnline MH2025-5-8 | product page, Downloads (`MH2025-5-8.STEP`, login) | `COUPLER-5x8.step` |
+| ~~Jaw coupling 5 x 8 mm (`shaft_coupler(5, 8)`)~~ | StepperOnline MH2025-5-8 | **DONE 2026-11-15**: `vendor_cad/COUPLER-5x8.step` is the detail model | |
 | T8 lead screw and brass nut | StepperOnline LSN-S-MB-320 (lead 8); the design uses lead 2 mm: look up | StepperOnline, or the screw's seller | `T8x2-200.step` (screw, 200 mm), `T8-NUT.step` (nut) |
 | MGN12H carriage | Hiwin MGN12H (e.g. MGN12H1R...Z0CM set: look up) | www.hiwin.tw / www.hiwin.com 3D CAD download (refused automated requests) | `MGN12H.step` |
 | MGN12 rail, 215 / 250 / 300 mm | Hiwin MGNR12R215CM, MGNR12R250CM, MGNR12R300CM (confirm on the configurator) | same | `MGN12-R-215.step`, `MGN12-R-250.step`, `MGN12-R-300.step` |

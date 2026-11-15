@@ -288,6 +288,11 @@ Adjustment needed (99th percentile of 3,000 builds) against provided:
 
 ## Checker behaviour worth a look
 
+All eight were fixed in `mechloop/` on 2026-11-15, each with a known-answer test in `tests/test_known_answers_v6.py`
+(`STATUS.md`, "Vendor findings applied and eight checker fixes"); `AGENT.md` has the new declarations (over-travel,
+print area, sensorless, cut-off node). The design itself was not changed by those fixes. The text below is the
+original report.
+
 1. **A thermal cut-off in series with a block-type heater crashes the heater check.** Reproduce: in v6 place
    `thermal_fuse(99, 76, 10)` on the extruder, `device_from(el, d, "hs_tco")`, wire `control_board.E0 -> hs_tco.a`
    and `hs_tco.b -> hotend.in`. Result: `check_crashed: Electrical check 'heaters' could not run: KeyError:

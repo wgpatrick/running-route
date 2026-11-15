@@ -44,7 +44,8 @@ derived shapes are cached as BREP in `vendor_cad/.cache/` (not committed), keyed
 | `psu_lrs("LRS-350-24")`, `psu_24v(350)` | **vendor CAD** | MEAN WELL `LRS-350-3D.zip` (meanwell.com), unchanged, 3.2 MB | Case 215 x 115 x 30 and the four M4 base holes at (+/-75, +/-25) agree exactly (drawn 3.1 mm for the thread). **Terminal strip position corrected**: the strip is centred 9.5 mm towards -Y, so port Y positions moved from -38..38 to -47.5..28.5 (was "read off the drawing, +/-2 mm"). The vendor STEP has one internal bracket drawn 0.9 mm *through* the base, against the data sheet's 30 mm height: trimmed at the base plane, and said here. Volume ratio 4.5 is declared (hollow sheet-metal box vs. solid envelope). |
 | `psu_lrs("LRS-200-24")`, `psu_24v(200)` | vendor CAD of the LRS-350 | same file; same 215 x 115 x 30 case per the data sheets | The LRS-200 3D download is a RAR archive that could not be unpacked here: on the wish list. |
 | `skr_mini_e3_v3()`, `control_board()` | **vendor CAD**, reduced | BIGTREETECH's STEP from their GitHub repository (17.7 MB), reduced to the 41 solids over 40 mm^3 (4.6 MB) | Outline 103.75 x 70.25 agrees. **Component envelope height 13.0 -> 14.2 mm** above the PCB (`control_board()`: box 18 -> 15.8 mm). The five motor connectors are within 0.5 mm of the catalogue's port positions. USB / micro-SD overhang the +X edge by 1.4 mm (declared). **Vendor CAD and vendor drawing disagree twice**: the STEP draws the PCB 0.8 mm thick (kept 1.6), and it has *no* holes where the SIZE drawing puts the five 3.1 mm mounting holes; it has two 3.1 mm holes at (-30.68, 16.6) and (9.33, 16.6) instead. The catalogue keeps the dimensioned drawing; the hole check is switched off for this part. Measure a real board before drilling the tray. |
-| `nema17(34/40/48/60)` | community CAD | FreeCAD-library NEMA 17 (40 mm, with connector), cut at the stator and brought to each body length and shaft length in code | Frame 42.3, pilot 22, shaft 5, four M3 on 31 mm, 4.5 mm thread all agree. **Connector added to the simulation solid**: a 5.7 x 17.2 x 8 mm block on the +X side at the rear (new interface `connector_side`). Model pilot height 1.6 vs. drawing 2.0 (noted). StepperOnline's own STEP files need a login: wish list. |
+| `nema17(34)`, `nema17(48)` | **vendor CAD** since 2026-11-15 | see "StepperOnline STEP files" at the end | |
+| `nema17(40)`, `nema17(60)` (and all four until 2026-11-15) | community CAD | FreeCAD-library NEMA 17 (40 mm, with connector), cut at the stator and brought to each body length and shaft length in code | Frame 42.3, pilot 22, shaft 5, four M3 on 31 mm, 4.5 mm thread all agree. **Connector added to the simulation solid**: a 5.7 x 17.2 x 8 mm block on the +X side at the rear (new interface `connector_side`). Model pilot height 1.6 vs. drawing 2.0 (noted). StepperOnline's own STEP files need a login: wish list. |
 | `mgn12_rail(L)` | community CAD | FreeCAD-library MGN12 rail: section swept to length, holes to the MG table | Section 12 x 8, holes 3.5 / counterbore 6 x 4.5 / pitch 25 / end distance 10 in the community model equal the recorded table. No change. |
 | `mgn12h_carriage()` | community CAD | FreeCAD-library MGN12H | 27 x 45.4, 3..13 mm high, M3 on 20 x 20 agree. The model draws the threads 3.5 mm deep: a second (community) source for `thread_depth_unverified`; still not Hiwin's. Its ball rows are drawn 25 mm^3 into the rail model's grooves (declared mate). No change. |
 | `extrusion_2020(L)` | community CAD | FreeCAD-library 20x20 slot-6 profile: section swept to length | Outline agrees. Not applied, recorded: section area 174.3 mm^2 (0.47 kg/m; catalogue 0.45), slot opening 6.0 (simulation solid 6.2 wide, plain 5 mm deep slots, no T cavity). Misumi's own data still not reachable. |
@@ -57,7 +58,8 @@ derived shapes are cached as BREP in `vendor_cad/.cache/` (not committed), keyed
 | `endstop_switch()` | community CAD + generated board | FreeCAD-library D2F-size hinge-lever microswitch (PCB terminals) on a generated 20 x 12.5 x 1.6 mm board | Rebuilt, see below. |
 | `shcs(size, L)` | generated to standard | ISO 4762 via `bd_warehouse` (head, socket, chamfers) | Agrees. Generated head is the knurled-head maximum (M3: 5.68), simulation solid the plain-head 5.5 (0.09 mm per side, noted). |
 | `hex_nut(size)` | generated to standard | ISO 4032 via `bd_warehouse` | Agrees. The simulation solid stays hole-less (the thread is the overlap with the screw). |
-| `shaft_coupler`, `leadscrew_t8`, `linear_rod`, `bearing`, `extruder_direct`, `iec_inlet_c14`, `relay_btt_v12`, `raspberry_pi_zero2w`, `mosfet_module`, `bed_heater_pad`, heater / thermistor cartridges, `thermal_fuse`, `psu_24v(150)` | proxy | see "Still proxy" | |
+| `shaft_coupler(5, 8)` | **vendor CAD** since 2026-11-15 | see "StepperOnline STEP files" at the end | |
+| `shaft_coupler` (other bores), `leadscrew_t8`, `linear_rod`, `bearing`, `extruder_direct`, `iec_inlet_c14`, `relay_btt_v12`, `raspberry_pi_zero2w`, `mosfet_module`, `bed_heater_pad`, heater / thermistor cartridges, `thermal_fuse`, `psu_24v(150)` | proxy | see "Still proxy" | |
 
 T-nuts and washers are BOM lines only (no geometry in any design), so they have no model.
 
@@ -111,8 +113,8 @@ last report.
 
 | Part | Why |
 |---|---|
-| NEMA 17 motors as *vendor* CAD | StepperOnline lists a STEP per motor but behind a login; the file host is blocked. Community model used meanwhile. |
-| `shaft_coupler(5, 8)` (MH2025-5-8) | Same login. The FreeCAD-library coupler is a different part (25 x 34 mm). |
+| NEMA 17, 40 and 60 mm, as *vendor* CAD | StepperOnline lists a STEP per motor behind a login. The 34 and 48 mm files were hand-downloaded and are in use since 2026-11-15; these two were not. Community model used meanwhile. |
+| `shaft_coupler` with bores other than 5 x 8 | no file; generic proxy with bores to mid-length. |
 | `leadscrew_t8` | The only model found is 150 mm long and 5 MB of helical faces; the plain 8 mm cylinder is kept. |
 | `gt2_pulley`, 12 mm idler | Community models disagree with each other and with the proxy (above); printer_v4 uses 12 mm belt, for which no model was found. |
 | `extruder_direct`, hotend (design-local proxy) | No CAD on E3D's product pages; their GitHub repositories were not found under the names tried. The community V6-style hotend in FreeCAD-library is 62.8 mm long against the design's 60 mm proxy: not applied, because the nozzle position is a design datum. |
@@ -225,3 +227,24 @@ port. `hotend_revo()` placed unrotated at the Roto's `hotend_seat` reproduces E3
 
 Note on the inbox mechanism: `inbox_override` looks only in `vendor_cad/inbox/` (its doc text says "or vendor_cad/").
 A checked file that has moved up into `vendor_cad/` is used through its function in `details.py`, as here.
+
+## StepperOnline STEP files (integrated 2026-11-15)
+
+Three hand-downloaded files (free account; the pages state no licence) moved from `vendor_cad/staging/` into
+`vendor_cad/` and became detail models. Rows in `vendor_cad/SOURCES.md`. The files are stored unchanged; the frame
+change and the lead cut are done in code (`mechloop/parts/details.py`: `NEMA17_VENDOR_STEP`, `shaft_coupler`).
+
+| Catalog part | File | Frame in the file -> part frame | What the STEP showed, and what changed |
+|---|---|---|---|
+| `nema17(34)` | `17HS13-0404S1.step` (the S1: the same motor as the catalogue's 17HS13-0404S with a 1 m lead and connector) | rear face Z=0, face Z=33, shaft +Z, leads towards -Y -> turned 90 deg about Z, moved -33 in Z | Body 33.0 long (drawing: 34 max; the simulation solid keeps 34 and the difference is declared). **No connector block**: four leads leave one side face 4.5 to 7.0 mm from the rear in a 4.0 x 2.5 mm bundle. The simulation solid's 5.7 x 17.2 x 8 mm connector block (from the community model) was replaced by a 5.7 x 4.0 x 2.5 mm lead-exit block on +X, inside the old block's envelope, so nothing that cleared the old solid can clash with the new one. The STEP draws the leads as rigid 18 mm stubs; the detail model keeps 5.7 mm of them (they are flexible), as was done for the Roto's motor leads |
+| `nema17(48)` | `17HS19-2004S1.step` | face Z=0, shaft -Z, leads towards -Y -> turned 180 deg about X and -90 deg about Z | Body 48.0, shaft 24.0, holes on 31.0: agree. Same lead exit, same change |
+| both | | | **Pilot boss: no disagreement after all.** The first inspection read 1.5 mm against the drawing's 2.0; measured again, the boss is 2.0 mm high in both files (1.5 mm straight and a 0.5 mm chamfer). The solid stays at 2.0 |
+| `shaft_coupler(5, 8)` | `COUPLER-5x8.step` (MH2025-5-8: two clamp hubs, spider, two M3 x 10 screws; kept as five solids) | axis at X -1.378, Y -0.015, 8 mm end at Z 3.156 -> re-centred, turned 180 deg about X, 5 mm end on Z=0 | OD 20.0, length 25.1 (drawing 25). **Bores are short**: 7.3 mm of cylinder behind a 0.2 mm chamfer, then the hub is open to the spider. A 5 mm test shaft first meets the spider (its web) 12.05 mm in; an 8 mm one meets it 8.6 mm in (the rim of its 7 mm centre hole; the first inspection's 9.5 mm was where that hole proper starts). The simulation solid, which had 12.5 mm bores, now has a 5 mm bore 12.05 deep and an 8 mm bore 8.6 deep, with new interfaces `max_insertion_a`, `max_insertion_b`, `bore_depth` (7.5). A shaft drawn deeper overlaps the solid (`interference`) and gets `shaft_too_deep_in_coupler` with the excess |
+
+Left in `vendor_cad/staging/` (not used by any part): E3D's Roto Sensored, Roto Bowden and Revo Voron reference
+models (CC BY-NC-ND: kept as downloaded, not altered or copied), the step.parts `MGN12H.step` (identical geometry to
+the model in use), and the later batches.
+
+The endstop's detail model is unchanged; what changed is where its lever operates (OMRON's data sheet: `docs/VENDOR_DATA.md`).
+The earlier line under "Not done / limits" that a lever is not checked for being crushed no longer holds: the
+subsystems verifier now reports `endstop_overtravel` when the striker ends past the case line.

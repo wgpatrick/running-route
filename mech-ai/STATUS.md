@@ -127,7 +127,7 @@ solves (about 1 wrong run in 48); the solver now runs single-threaded (200 of 20
 - `viewer/` is an interactive page for the whole design, with a replay of a simulated print
   (`tools/export_viewer.py`).
 
-134 tests pass.
+134 tests passed at that date (282 on 2026-11-15, see the last section).
 
 - Four checker defects that v5 exposed were fixed on 2026-11-15, each with a known-answer test
   (`tests/test_known_answers.py`): a captive-nut slot is no longer read as the screw's clearance hole; the screw-only
@@ -193,11 +193,12 @@ Full account: `../reports/Twin fitting.md`. Every number below, with range, sour
 - Declared adjustments are not checked against the geometry that should provide them.
 - Kinematic trees only: no closed loops (CoreXY belts, four-bars, parallel lead screws).
 - No axial retention check for bearings.
-- Belt tension and tooth load are not modelled.
+- Belt tooth load is not modelled, nor what belt tension does to belt stiffness. (Since 2026-11-15 the pull an
+  installed belt puts on a motor shaft is compared with the motor's shaft-load limit, where the catalogue has one.)
 - No fatigue or buckling checks; FEA ignores self-weight. Print warping is a rule of thumb.
 - Wiring is cable lengths only: no connectors, routing or strain relief.
 - No CAM output.
-- Catalog is small and its ratings are not vendor data.
+- Catalog is small; which ratings are vendor data is listed in `docs/VENDOR_DATA.md`.
 
 ## Suggested next steps
 
@@ -219,3 +220,47 @@ in those plates (belt-plane figure 92.8 % to 98.4 %, with no margin over the sim
 $848. Not met: the probe leaves a 32 mm strip unprobed, and the assembly estimate is 66 minutes against 65. The
 hotend still has no cut-off that works without the controller. `docs/PRINTER_V6.md` has the evidence, eight
 checker behaviours with reproductions, and seven decisions to confirm.
+
+
+## Vendor findings applied and eight checker fixes (added 2026-11-15, later)
+
+All sixteen proposals of `../reports/Vendor documents - what they change.md` were applied to the catalogue, the
+verifiers and the twin (two as records only), and the eight checker defects listed in `docs/PRINTER_V6.md` were
+fixed. Each has a known-answer test in `tests/test_known_answers_v6.py` (39 tests). 282 tests pass. `designs/` was
+not edited: **printer_v4, v5 and v6 no longer pass**, and are left failing for the design work that follows.
+Declarations a design can now make are in `AGENT.md` (belt tension, over-travel, print area, preload class,
+sensorless homing, where a thermal cut-off sits).
+
+What changed in the checks:
+
+- Belt stiffness 22 -> 19 kN per 6 mm (twin). New warning: belt pull on a motor shaft against the motor's shaft-load
+  limit. MGN12H rigidity and allowable rail parallelism from Hiwin by preload class; MGN12 vendor-backed, so carriage
+  screws are checked against the 3.5 mm thread. Coupler bores as in the vendor STEP, with an insertion check. Endstop
+  operating position 6.8 +/-1.5 mm (was 9.0), and the check uses the spread. StepperOnline's STEP files are the detail
+  models of the 34 and 48 mm motors and the coupler. Details: `docs/VENDOR_DATA.md`, `docs/VENDOR_CAD.md`.
+- A thermal cut-off on a hotend no longer crashes the heater check: it sits on a heat-sink side model and is
+  simulated with the fan running and stopped (figures assumed). Sensorless homing writes a configuration klippy
+  loads (diag pin, jumper note). Over-travel past the working range can be declared on a joint
+  (`Joint.overtravel`); in a printer's Z over-travel the bed meeting the nozzle tip is not a collision, anything else
+  is, and `position_min` goes negative by it. An overlap between parts is no longer taken as a joint of the tolerance
+  stack-up (it made a clashing model read better). The tolerance simulation is repeatable (the size errors were drawn
+  in set order, which changes from run to run) and reports the sampling error of every share. Mesh coverage uses a
+  declared print area. Cable clamp distance is to the true surface, including the part's CAD model, with 3.0 mm
+  allowed. The assemblability verifier honours `design.subassemblies`, and an incomplete assembly result always lists
+  what was not placed and why.
+
+What the three designs show now (full verifies, 2026-11-15, no design edits):
+
+| | printer_v4 | printer_v5 | printer_v6 |
+|---|---|---|---|
+| interference | FAIL: lead screw 12.5 mm into the coupler's 8 mm bore, limit 8.6 (196 mm^3); eight Z carriage screws 4.0 mm into 3.5 mm threads | FAIL: coupler, as v4 | FAIL: coupler, as v4 |
+| subsystems | FAIL: X, Y and Z endstops 3.70 mm short of the latest operating position (2.20 short of nominal) | FAIL: X and Y endstops, as v4; the two probe errors it already had (z_offset 0.10 mm) | FAIL: X and Y endstops, as v4 |
+| assemblability | not run (the runner skips it while parts overlap). Run on its own: everything but the clashing lead screw and coupler is placed, 290 of 292 | same, 349 of 351 | same, 315 of 317 |
+| ratings (warnings) | both Y motors: 37.4 N belt pull against 24.3 / 21.8 N allowed; the Z tilt warning is gone (75.6 -> 102.5 Hz) | 37.4 N against 25.8 / 23.0 N | 37.4 N against 25.8 N on both |
+| geometry, tolerance, manufacture, motion, electrical, fea, printing, requirements | pass | pass | pass |
+| twin resonance X / Y, Hz | 54.2 / 55.3 | 70.1 / 60.2 | 78.2 / 60.0 (was 80.2 / 62.0) |
+
+Known limits of what was added: the heat-sink figures are assumed; stall detection is not simulated; the shaft-load
+limit rests on one terse drawing line and exists only for the 48 mm motor; the plain assemblability check (designs
+without sub-assemblies) still withdraws a screw past the whole assembly, so a part far along a screw's axis can read
+as blocking it; no baseline scores were re-run at 19 kN.

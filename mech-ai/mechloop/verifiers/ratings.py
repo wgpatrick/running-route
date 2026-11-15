@@ -328,6 +328,10 @@ def verify_ratings(design: Design) -> VerifierResult:
             loads[jn] = {"blocks": len(blocks), "carried_mass_kg": round(m, 3),
                          "load_per_block_n": round(per_block, 2), "static_safety": round(sf, 1),
                          "overhang_mm": round(float(np.linalg.norm(arm)) * 1e3, 1), "moment_nm": round(moment, 3)}
+            pcs = sorted({str(b.ratings.get("preload_class")) for b in blocks if b.ratings.get("preload_class")})
+            if pcs:      # which preload class the block figures (rigidity, allowable parallelism) are for, and whether it was declared
+                loads[jn]["preload_class"] = "/".join(pcs)
+                loads[jn]["preload_class_basis"] = "; ".join(sorted({str(b.ratings.get("preload_class_basis")) for b in blocks}))
             rated_m = blocks[0].ratings.get("static_moment_nm")
             if rated_m:
                 pos = np.array([[b.shape.center().X, b.shape.center().Y, b.shape.center().Z] for b in blocks])
