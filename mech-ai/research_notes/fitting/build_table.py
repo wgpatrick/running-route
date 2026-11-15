@@ -168,6 +168,16 @@ for key, val, unit, why in (
                                   "public configurations (heater_relay_test)"),
         ("warp_cooling_adhesion", None, "", "not in the twin")):
     P[key] = {"status": "NOT FITTED", "old": val, "value": val, "low": None, "high": None, "unit": unit, "source": why, "held_out": "no", "used_by": ""}
+# Revised by hand on 2026-11-15 from the vendor documents (reports/Vendor documents - what they change.md, changes 1, 3
+# and 11): belt stiffness 22 -> 19 kN with both sources, and the text of the toolhead tilt entry. Keep them on a rebuild.
+try:
+    _cur = json.load(open(OUT))["parameters"]
+    if "sources" in _cur.get("belt_ea_n_per_6mm", {}):
+        P["belt_ea_n_per_6mm"] = _cur["belt_ea_n_per_6mm"]
+        P["toolhead_tilt_effective_n_per_um"]["source"] = _cur["toolhead_tilt_effective_n_per_um"]["source"]
+        P["toolhead_tilt_effective_n_per_um"]["reference_geometry"] = _cur["toolhead_tilt_effective_n_per_um"]["reference_geometry"]
+except (FileNotFoundError, KeyError):
+    pass
 json.dump({"_note": "Written by research_notes/fitting/build_table.py from the fits in that directory. Loaded by mechloop.twin.fitted. "
                     "status: fitted | calibrated | taken from published tables | not fitted (kept) | NOT FITTED. See reports/Twin fitting.md.",
            "date": "2026-11-15", "parameters": P}, open(OUT, "w"), indent=1)

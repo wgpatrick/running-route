@@ -343,16 +343,21 @@ def mosfet_module(amps: float = 25.0) -> Stock:
 
 
 # ----------------------------------------------------------------- electrical data for the existing catalog parts
-MOTOR_ELECTRICAL = {   # catalog SKU -> winding data [SO]
-    "NEMA17-34": {"model": "17HS13-0404S1", "rated_current_a": 0.4, "phase_resistance_ohm": 30.0, "phase_inductance_mh": 37.0,
-                  "holding_torque_nmm": 260.0},
-    "NEMA17-40": {"model": "17HS16-2004S1", "rated_current_a": 2.0, "phase_resistance_ohm": 1.3, "phase_inductance_mh": 2.6,
-                  "holding_torque_nmm": 450.0},
-    "NEMA17-48": {"model": "17HS19-2004S1", "rated_current_a": 2.0, "phase_resistance_ohm": 1.6, "phase_inductance_mh": 3.0,
-                  "holding_torque_nmm": 590.0},
-    "NEMA17-60": {"model": "17HS24-2104S", "rated_current_a": 2.1, "phase_resistance_ohm": 1.6, "phase_inductance_mh": 3.0,
-                  "holding_torque_nmm": 760.0},
-}
+def _motor_electrical() -> dict:
+    """Catalog SKU -> winding data, from the one vendor file the catalogue part reads
+    (mechloop/parts/vendor/stepperonline_nema17.json), so the two tables cannot disagree."""
+    from . import vendor_data
+
+    out = {}
+    for length, rec in vendor_data("stepperonline_nema17")["parts"].items():
+        v = rec["values"]
+        out[f"NEMA17-{length}"] = {"model": rec["part_number"], "rated_current_a": v["rated_current_a"],
+                                   "phase_resistance_ohm": v["phase_resistance_ohm"], "phase_inductance_mh": v["phase_inductance_mh"],
+                                   "holding_torque_nmm": v["holding_torque_nm"] * 1000.0}
+    return out
+
+
+MOTOR_ELECTRICAL = _motor_electrical()   # [SO]
 _ALIASES = {"rated_current_a": ("rated_current_a", "rated_current", "current_a"),
             "phase_resistance_ohm": ("phase_resistance_ohm", "resistance_ohm", "phase_resistance"),
             "phase_inductance_mh": ("phase_inductance_mh", "inductance_mh", "phase_inductance")}

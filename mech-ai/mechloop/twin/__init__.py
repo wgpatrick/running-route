@@ -47,12 +47,11 @@ class PrinterMap:
     damping_ratio: float = field(default_factory=lambda: float(_fit.value("stepper_damping_ratio")))  # of the stepper's magnetic spring (assumed)
     filament_density: float = 1.24  # g/cm^3 (PLA)
     compliant: bool = True  # belts stretch and the frame flexes; False = perfectly rigid machine
-    # belt tensile stiffness EA (N per unit strain) per 6 mm of width, glass-fibre GT2. 15 kN is a hobby
-    # measurement (RepRap wiki); no manufacturer figure exists, so treat it as +/- 30 %. Each belt's own
-    # width scales it, and all belts on an axis act in parallel.
-    # 6 mm GT2 belt, N per unit strain. 22 kN is the middle of the range that reproduces measured Voron 2.4
-    # resonances with their 6 mm belts (reference.py); the earlier 15 kN sat at the bottom of it. No Gates data yet.
-    belt_ea_n: float = 22000.0
+    # belt tensile stiffness EA (N per unit strain) per 6 mm of width, glass-fibre GT2: fitted_parameters.json
+    # `belt_ea_n_per_6mm`. 19 kN (15 to 27): between Gates' own figure (16.9 kN, design manual Table 6) and the 21 kN
+    # three reference machines imply. It scales linearly with each belt's width (Gates: 4 to 9 mm) and rises with
+    # tension; all belts on an axis act in parallel. Until 2026-11-15 this was 22 kN.
+    belt_ea_n: float = field(default_factory=lambda: float(_fit.value("belt_ea_n_per_6mm")))
     perimeter_speed: float = 45.0  # mm/s, the design's intended print speeds (design.printer["speeds"])
     infill_speed: float = 60.0
     travel_speed: float = 150.0

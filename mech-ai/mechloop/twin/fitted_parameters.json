@@ -3,15 +3,29 @@
  "date": "2026-11-15",
  "parameters": {
   "belt_ea_n_per_6mm": {
-   "status": "not fitted (kept)",
+   "status": "taken from published tables and the blind comparison (not fitted)",
    "old": 22000.0,
-   "value": 22000.0,
+   "value": 19000.0,
    "low": 15000.0,
    "high": 27000.0,
    "unit": "N per unit strain, 6 mm GT2",
-   "source": "no tensile data could be fetched; the blind three-machine comparison (reports/Twin calibration study.md) implies 15, 21 and 27 kN on its three gantry / bed axes",
-   "held_out": "blind prediction, +15 / -8 / +1 % on the three axes it governs",
-   "used_by": "PrinterMap.belt_ea_n; scorecard ranges"
+   "source": "between the maker's figure and what three reference machines imply. (1) Gates, Light Power and Precision Drive Design Manual, Table 6, printed p.59: 3.8 lb for 0.1 % elongation of 6 mm 2 mm-pitch belting = EA 16.9 kN (mechloop/parts/vendor/gates_gt2.json; vendor_docs/Gates_GT2_design_manual.pdf). (2) The blind three-machine comparison (reports/Twin calibration study.md) implies 15, 21 and 27 kN on its gantry / bed axes; Wang et al. 2018 (Robotics 7(4) 75, vendor_docs/Wang2018_GT2_belt.pdf; width not stated) measured 24.2 kN as a low-strain line. 22 kN was used until 2026-11-15",
+   "held_out": "at 22 kN the blind prediction was +15 / -8 / +1 % on the three axes it governs; not re-run at 19 kN (resonance moves about -2 to -3 %)",
+   "used_by": "PrinterMap.belt_ea_n; scorecard ranges",
+   "width_scaling": "linear in belt width: confirmed by Gates for 4, 6 and 9 mm (2.6 / 3.8 / 5.7 lb per 0.1 %: 2,890 / 2,820 / 2,820 N per mm of width). 12 mm is not a Gates stock width in 2 mm pitch; its value is an extrapolation",
+   "rises_with_tension": "EA is not a constant: it rises with belt tension. Wang 2018, tangent value from the cubic fit: about 11 kN at no load, 17 kN at 0.26 % strain, 18 kN at Gates' general installation tension (44.5 N on 6 mm), 21 kN at 0.5 %, 28 kN at 1 %. A slack belt is softer than the value here, a tight one stiffer",
+   "sources": [
+    {
+     "name": "Gates design manual, Table 6 p.59",
+     "ea_n_per_6mm": 16900.0,
+     "file": "mechloop/parts/vendor/gates_gt2.json"
+    },
+    {
+     "name": "three reference machines (blind comparison) and Wang 2018",
+     "ea_n_per_6mm": 21000.0,
+     "file": "reports/Twin calibration study.md; mechloop/parts/vendor/gates_gt2.json measurement_wang_2018"
+    }
+   ]
   },
   "toolhead_tilt_effective_n_per_um": {
    "status": "fitted (post hoc, two machines)",
@@ -20,7 +34,7 @@
    "low": 7.5,
    "high": 16.0,
    "unit": "N/um per guide block, spread over its ball track",
-   "source": "the spring missing between belt clamp and nozzle on the toolhead axes of the Voron 0.2 (MGN7H, nozzle 55.9 mm off the rail) and Trident 250 (MGN12H, 63.1 mm), expressed as a block stiffness through K_rot = k L1^2 / 12 and k_nozzle = K_rot / r^2: 9.5 and 10.5 N/um. Range: the same from the quartiles of the owners' frequencies. It lumps the block's tilt with printed mounts and belt clamp of those machines; it is NOT a measurement of block stiffness (ratings.BLOCK_K stays at its assumed 40 N/um)",
+   "source": "the spring missing between belt clamp and nozzle on the toolhead axes of the Voron 0.2 (MGN7H, nozzle 55.9 mm off the rail) and Trident 250 (MGN12H, 63.1 mm), expressed as a block stiffness through K_rot = k L1^2 / 12 and k_nozzle = K_rot / r^2: 9.5 and 10.5 N/um. Range: the same from the quartiles of the owners' frequencies. It lumps the block's tilt with printed mounts and belt clamp of those machines; it is NOT a measurement of block stiffness. Hiwin's catalogue (Table 3.77, p.96) gives the bare blocks' radial rigidity as 63 N/um (MGN12H) and 39 N/um (MGN7H) at preload Z0: by the same tilt formula the bare block accounts for only 17 % (MGN12H machine) and 24 % (MGN7H machine) of the fitted compliance; the rest is the printed mounts and belt clamp of those machines. The ratings verifier uses the catalogue rigidity for the block itself; this effective figure is unchanged",
    "held_out": "each rail machine predicted with the block stiffness the other one implies: voron0 +2.3 % (k = 10.47 N/um from trident250), trident250 -1.3 % (k = 9.54 N/um from voron0). Two machines; the comparison that uses the fitted value on both is not blind",
    "used_by": "machine.toolhead_compliance (series spring on the axis that carries the nozzle on its own guide blocks)",
    "reference_geometry": {
@@ -29,7 +43,7 @@
      "nozzle_horizontal_mm": 23.9,
      "block": "MGN7H",
      "L1_mm": 21.8,
-     "L1_source": "Hiwin MG catalogue, recalled, unverified"
+     "L1_source": "Hiwin MG catalogue GW-11-5-EN-2207-K, Table 3.79 p.97 (mechloop/parts/vendor/hiwin_mgn12.json, block catalogue)"
     },
     "trident250": {
      "nozzle_below_rail_mm": 51.0,

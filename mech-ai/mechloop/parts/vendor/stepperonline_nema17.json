@@ -49,7 +49,8 @@
     "shaft_length_mm": 20.0,
     "shaft_length_tol_mm": 1.0,
     "d_cut_length_mm": 15.0,
-    "d_cut_flat_height_mm": 4.5
+    "d_cut_flat_height_mm": 4.5,
+    "pilot_height_mm_vendor_step": 1.5
    },
    "value_origin": {
     "mass_g": "product page (datasheet WEIGHT cell is blank)",
@@ -403,7 +404,7 @@
    "values": {
     "holding_torque_nm": 0.59,
     "rated_current_a": 2.0,
-    "phase_resistance_ohm": 1.4,
+    "phase_resistance_ohm": 1.6,
     "phase_inductance_mh": 3.0,
     "rotor_inertia_gcm2": 82.0,
     "step_angle_deg": 1.8,
@@ -430,14 +431,18 @@
     "shaft_length_mm": 24.0,
     "shaft_length_tol_mm": 1.0,
     "d_cut_length_mm": 15.0,
-    "d_cut_flat_height_mm": 4.5
+    "d_cut_flat_height_mm": 4.5,
+    "max_radial_load_n": 21.0,
+    "max_radial_load_at_mm": 20.0,
+    "max_radial_load_basis": "read from drawing, meaning inferred: drawing A0842 prints only 'COMMENT:LENGTH 20mm: 21N MAX'; taken as the maximum radial force on the shaft 20 mm from the mounting face",
+    "pilot_height_mm_vendor_step": 1.5
    },
    "value_origin": {
     "mass_g": "product page (datasheet WEIGHT cell is blank)",
     "everything else": "datasheet drawing/table unless listed in page_vs_datasheet"
    },
    "page_vs_datasheet": {
-    "phase_resistance_ohm": "page 1.6, drawing 1.40+/-10% (drawing value used)"
+    "phase_resistance_ohm": "product page 1.6; drawing A0842 of 8.1.2025 1.60 +/-10 % (used since 2026-11-15, vendor_docs/17HS19-2004S1_datasheet.pdf); the 10.30.2020 drawing printed 1.40 +/-10 % (used before)"
    },
    "pull_out_torque_curve": {
     "title": "17HS19-2004S1 PULL OUT TORQUE (2A, 24V HALF STEP)",
@@ -531,7 +536,7 @@
     ]
    },
    "datasheet_2025_drawing_A0842": {
-    "_label": "added 2026-11-15 from a newer drawing of the same part number. Not read by the catalogue code (it reads 'values' above)",
+    "_label": "added 2026-11-15 from a newer drawing of the same part number. Since 2026-11-15 'values' above takes phase_resistance_ohm (1.6) and the shaft-load comment (max_radial_load_n) from this sheet",
     "document": "STEPPERONLINE stepper motor 17HS19-2004S1, drawing A0842 rev 0, dated 8.1.2025, 1 page",
     "document_file": "vendor_docs/17HS19-2004S1_datasheet.pdf",
     "page": 1,

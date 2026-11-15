@@ -393,7 +393,7 @@ def test_scorecard_ranges_bracket_the_point_and_the_ceiling_keeps_its_old_key():
     assert own[0] < own[1] < own[2] < r["step_loss_ceiling_accel_mm_s2"] == r["scorecard_max_clean_accel_mm_s2"]
     assert abs(own[1] - 0.5 * shaper_accel(min(r["resonance_hz"][a][1] for a in "xy"))) <= 100.0
     sets = uncertainty_sets(PrinterMap())
-    assert sets["soft"]["belt_ea_n"] < sets["expected"]["belt_ea_n"] == 22000.0 < sets["stiff"]["belt_ea_n"]
+    assert sets["soft"]["belt_ea_n"] < sets["expected"]["belt_ea_n"] == 19000.0 < sets["stiff"]["belt_ea_n"]
     assert sets["soft"]["extruder_lag_s"] > sets["expected"]["extruder_lag_s"] > sets["stiff"]["extruder_lag_s"]
     assert sets["soft"]["ringing_damping_ratio"]["toolhead_axis"] < sets["stiff"]["ringing_damping_ratio"]["toolhead_axis"]
 
