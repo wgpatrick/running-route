@@ -18,7 +18,7 @@ fabricated part is printed, laser-cut or a single-set-up plate.
 | every fabricated part printed, laser-cut or a single-set-up plate | 7 printed, 11 laser-cut, 2 plates machined in one set-up each (bed, tool plate) | yes |
 | parts cost + fabrication estimate <= $900 | $719 parts + $129 fabrication ($112 machining, $15 cutting, $2 filament) = **$848** | yes |
 | <= 320 parts | **317** | yes |
-| assembly estimate <= 65 min | **SCORE_ASM min** | SCORE_ASM_MET |
+| assembly estimate <= 65 min | **66.0 min** (v5: 69.7) | **no**, by 1 minute |
 | direct drive, <= 0.40 kg moving in X | E3D Roto + Revo on the X guide block, **0.351 kg** with the block | yes |
 | both Y belts within 1 mm of plane in >= 98 % of builds | 98.4 % and 98.7 % in the final run; over 14 runs of the final geometry and its near variants the right belt was 97.9 to 98.7 %, the left 98.7 to 99.1 % | yes at the mean, **no margin**: the right belt's figure is within the simulation's own scatter (about +/-0.3 %) of the limit |
 | a bed probe that works across the whole print area | switches 0.88 to 1.52 mm before the nozzle touches for every unit in its +/-10 % spread; reaches 148 x 174 mm of the 180 x 180 mm | **no**: a 32 mm strip at high X and a 6 mm strip at high Y are not probed |
@@ -164,7 +164,8 @@ pulleys with a 5 mm bore can be bought is still not confirmed (as in v5).
 
 ### 9. Consolidation (requirement 5)
 
-347 parts (351 once the corner-bracket screws were modelled) to 317; 18 fastener sizes to SCORE_FTYPES.
+347 parts (351 once the corner-bracket screws were modelled) to 317; fasteners 167 to 152; fastener types (as the
+assembly simulation counts them) 18 to 10; screw and nut sizes on the BOM: 13.
 Gone: extruder mount and its 6 screws, hotend mount with 4 screws and 4 nuts, two cartridges, heat-sink fan with
 2 screws and 2 nuts, belt tower and clamp with 3 screws and 3 nuts, X belt clamp with 3 screws and 3 nuts, two Y
 clamp bars with 6 screws, X idler slider and anchor screws, 2 Y motor-mount bolts, 3 board screws with spacers
@@ -211,7 +212,7 @@ copies.
 
 v5 figures: full report of 2026-11-14 for motion, assembly and FEA; fast verifiers re-run on 2026-11-15 01:27 UTC
 (after the checker fixes); resonance from `STATUS.md` after the twin was refitted. v6: full run of
-2026-11-15 03:52 UTC, score SCORE_TIME. The twin was being refitted during this work; treat the dynamic figures
+2026-11-15 03:52 UTC (repeated at the end, see "Scores"), `mechloop score --assembly` 03:52 to 04:03 UTC. The twin was being refitted during this work; treat the dynamic figures
 as provisional until v4, v5 and v6 are scored together.
 
 | | v5 | v6 |
@@ -228,7 +229,9 @@ as provisional until v4, v5 and v6 are scored together.
 | Moving mass X / Y / Z | 0.360 / 1.256 / 2.674 kg | 0.351 / 1.319 / 2.677 kg |
 | Nozzle to guide-block centre | 64 mm | 44 mm |
 | Nozzle stiffness X / Y, screw-only | 1,747 / 1,201 N/mm | 1,435 / 2,036 N/mm |
-| Resonance X / Y (twin) | 71.6 / 62.0 Hz | SCORE_RES |
+| Resonance X / Y (twin, built-in planner) | 71.6 / 62.0 Hz (ranges 64 to 79, 57 to 64) | 80.2 / 62.0 Hz (ranges 73 to 86, 57 to 65) |
+| Acceleration an owner would run / step-loss ceiling | 6,800 / 12,000 mm/s^2 | 6,800 / 10,000 mm/s^2 (ranges 4,400 to 9,600 / 8,000 to 12,000) |
+| Benchmark print time | 2,564 s | 2,571 s |
 | Cross-track RMS / worst (verify's test cube) | 0.011 / 0.113 mm (score) | 0.012 / 0.107 mm |
 | Y belts within 1 mm of plane | 92.8 / 92.7 % | 98.4 / 98.7 % |
 | X belt within 1 mm | 99.5 % | 99.1 % |
@@ -236,8 +239,9 @@ as provisional until v4, v5 and v6 are scored together.
 | Bed 60 K hot: gap / bow | -0.074 / 0.010 mm | -0.071 / 0.019 mm |
 | Bed tilt mode on the blocks | 562 Hz | 358 Hz |
 | Drive margin X / Y / Z | 8.4 / 8.0 / 3.4 | 8.5 / 7.7 / 3.4 |
-| Assembly time estimate | 69.7 min | SCORE_ASM min |
-| Needs holding / fasteners / fastener types | 89 / 167 / 18 | SCORE_HOLD |
+| Assembly time estimate | 69.7 min | 66.0 min |
+| Needs holding / fasteners / fastener types | 89 / 167 / 18 | 88 / 152 / 10 |
+| From below / turned / tool changes | 16 / 5 / 5 | 14 / 5 / 5 |
 | Warnings | 39: 27 proxy parts, 2 belt plane, 4 manufacture, 1 mesh strip, 4 electrical (pull-up, probe temperature, hotend cut-off, loom across a fan), 1 assembly | 8: 1 proxy part, 3 manufacture, 1 mesh strip, 2 electrical, 1 assembly |
 
 Adjustment needed (99th percentile of 3,000 builds) against provided:
@@ -335,7 +339,56 @@ Adjustment needed (99th percentile of 3,000 builds) against provided:
 
 ## Scores and firmware in the loop
 
-SCORE_SECTION
+All on 2026-11-15, after the other agent's refit of the twin had landed (commit `db218d2`); the twin may move
+again, and v4, v5 and v6 should be scored together before any of this is compared.
+
+`mechloop score designs/printer_v6.py --assembly` (03:52 to 04:03 UTC, built-in planner):
+
+| Score | Value | Range |
+|---|---|---|
+| Resonance X / Y | 80.2 / 62.0 Hz | 72.7 to 86.2 / 56.7 to 64.6 |
+| Acceleration an owner would run | 6,800 mm/s^2 | 4,400 to 9,600 |
+| Step-loss ceiling (first failure 12,000, Y loses steps) | 10,000 mm/s^2 | 8,000 to 12,000 |
+| Cross-track RMS / worst | 0.0116 / 0.107 mm | 0.0085 to 0.0167 / 0.084 to 0.148 |
+| Benchmark time | 2,571 s | |
+| Toolhead tilt term on X (one MGN12H, arm 43 mm) | 466 N/mm at the nozzle | |
+| Extruder lag (direct drive) | 0.0315 s | 0.02 to 0.058 |
+| Melt rate | cap 12 mm^3/s (Revo), 4.9 asked for: not limited | |
+
+X resonance: v5 71.6 Hz, v6 80.2 Hz. The ranges overlap (64 to 79 against 73 to 86), so the gain is likely but not
+shown. Y is level with v5; the acceleration an owner would run rests on Y and is unchanged. The step-loss ceiling
+is one sweep step lower than v5's 12,000, which the scorecard itself says is not a real difference.
+
+The assembly figure of the score run (63.0 min) is **not** used: it was taken with the whole gantry declared as
+one bench sub-assembly, and that simulation was incomplete (25 parts never placed, among them the X guide block,
+with `trapped: []`). With motors on their plates, the X idler on its plate and the part fan on its carrier as
+the bench jobs, `mechloop assemble` is complete: 66.0 min, 224 steps, 88 parts to hold, 14 from below, turned 5
+times (04:22 UTC). Without any of those bench jobs: 66.7 min.
+
+`mechloop score designs/printer_v6.py --firmware klipper --firmware-only` (04:03 to 04:09 UTC, Klipper `29d4ec2`):
+
+| | Shaper and pressure advance off | As configured |
+|---|---|---|
+| Input shaper | none | X: EI 99.2 Hz; Y: MZV 60.2 Hz |
+| Cross-track RMS / worst at 4,000 mm/s^2 | 0.0073 / 0.080 mm | 0.0058 / 0.040 mm |
+| Corner bulge | 0.40 mm | 0.20 mm |
+| Highest clean acceleration in the sweep | 12,000 (16,000: layer shift) | 48,000, the highest tried |
+| Klipper's shaper rule / what an owner would run | | 10,600 / 5,300 mm/s^2 (4,200 to 6,900) |
+
+`mechloop tune designs/printer_v6.py` (04:09 to 04:11 UTC): pressure advance 0.042 s from the sweep (bulge 0.30 to
+0.15 mm); bed mesh on the assumed surface (0.30 / 0.20 mm tilt, 0.15 mm bow): first-layer gap error over the whole
+print area 0.097 mm RMS / 0.305 worst without the mesh, 0.010 / 0.031 with it, the unprobed strips included (v5:
+0.023 / 0.088).
+
+Firmware in the loop, `mechloop print designs/printer_v6.py examples/motor_bracket.py:bracket --firmware klipper
+--trajectory --out out/printer_v6/fil/bracket` (04:11 to 04:22 UTC): Klipper accepted the generated `printer.cfg`
+and planned the whole print with no message. 255 layers, 3,891 s, 15.3 g. Outline match 98.4 % mean, 97.7 % worst;
+boundary deviation 0.030 mm mean, 0.045 worst; no layer shift; 0 collisions in 4,075 poses; the lowest thing after
+the nozzle is the probe, 2.0 mm above the nozzle plane; peak step rate 19,753 /s of 263,000. One warning: corner
+bulge 0.40 mm.
+
+The design file changed once after these runs (the bench sub-assemblies named above, which no verifier reads); the
+full verify was repeated afterwards and is the report in `out/printer_v6/`.
 
 ## Decisions that should be confirmed
 

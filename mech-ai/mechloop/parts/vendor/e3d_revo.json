@@ -132,7 +132,7 @@
   "source_url": "https://www.printables.com/model/655950-e3d-roto-reference-cad",
   "title": "solid REVO-HOTSIDE-REFERENCE of E3D's Roto reference CAD (REVO-ROTO-24V-AS-REFERENCE.STEP): HeaterCore and nozzle as one simplified solid",
   "obtained": "hand-downloaded by the owner on 2026-11-15",
-  "licence": "licence not confirmed: check the Printables page (printables.com could not be reached from this session)",
+  "licence": "CC BY-NC-ND 4.0, as stated on the Printables model page (read by the owner's agent, 2026-11-14). Non-commercial, no derivatives: the cut and split files in vendor_cad/ are for private use and must not be redistributed",
   "local_copy": "vendor_cad/HOTEND-REVO-24V-40W.step",
   "file_to_catalogue_frame": {
    "rot": [

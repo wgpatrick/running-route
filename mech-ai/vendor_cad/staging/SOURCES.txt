@@ -1,0 +1,19 @@
+SOURCES - V6 Toolhead CAD and Datasheets (as of 2026-11-14 19:52 PT)
+One line per file: filename | page URL | licence/terms stated there
+
+E3D_Roto_reference.step | https://www.printables.com/model/655950-e3d-roto-reference-cad | CC BY-NC-ND 4.0 (stated on model page)
+E3D_Roto_Sensored_reference.step | https://www.printables.com/model/655950-e3d-roto-reference-cad | CC BY-NC-ND 4.0 (stated on model page)
+E3D_Roto_Bowden_reference.step | https://www.printables.com/model/655950-e3d-roto-reference-cad | CC BY-NC-ND 4.0 (stated on model page)
+E3D_Revo_Voron_reference.step | https://www.printables.com/model/713137-e3d-revo-voron-reference-cad | CC BY-NC-ND 4.0 (stated on model page)
+Hiwin_MG_catalogue.pdf | https://www.damencnc.com/userdata/file/3458-3_HIWIN_MGN_and_MGW_Product_Catalog_2023.pdf | not stated (Hiwin MGN/MGW 2023 catalogue, mirrored copy; contains rigidity table: MGN12H = 63 N/um Z0, 81 N/um Z1)
+Wang2018_GT2_belt.pdf | https://mdpi-res.com/d_attachment/robotics/robotics-07-00075/article_deploy/robotics-07-00075-with-cover.pdf | open access, CC BY (MDPI Robotics 7(4):75, article page mdpi.com/2218-6581/7/4/75)
+Gates_GT2_design_manual.pdf | https://www.gates.com/content/dam/documents-library/catalogs/light-power-and-precision-manual.pdf | not stated
+17HS13-0404S1.step | https://www.omc-stepperonline.com/nema-17-bipolar-1-8deg-26ncm-36-8oz-in-0-4a-12v-42x42x34mm-4-wires-17hs13-0404s1 | not stated (free account download; NOTE: requested PN 17HS13-0404S is superseded by vendor PN 17HS13-0404S1)
+17HS13-0404S1_datasheet.pdf | same product page as above | not stated
+17HS19-2004S1.step | https://www.omc-stepperonline.com/nema-17-bipolar-59ncm-84oz-in-2a-42x48mm-4-wires-w-1m-cable-connector-17hs19-2004s1 | not stated (free account download)
+17HS19-2004S1_datasheet.pdf | same product page as above | not stated
+COUPLER-5x8.step | https://www.omc-stepperonline.com/5mm-8mm-flexible-jaw-coupling-20x25mm-cnc-stepper-motor-shaft-coupler-mh2025-5-8 | not stated (vendor PN MH2025-5-8; no angular/parallel misalignment rating stated on page or datasheet - only rated torque 2.8 Nm, max 5.6 Nm, torsional spring constant 55 Nm/rad)
+MH2025-5-8_datasheet.pdf | same product page as above | not stated (dimensional drawing only)
+MIC6_datasheet.pdf | https://www.upmet.com/sites/default/files/products/datasheet/mic-6-datasheet.pdf | not stated (note: Will's original upmet URL is dead; this is upmet's current datasheet URL)
+ATP5_datasheet.pdf | https://public.vistametals.com/products/atp-5-precision-tooling-plate.pdf | not stated
+MGN12H.step | https://www.step.parts/parts/linearslide_mgn12h | not stated on page (community STEP built to Hiwin MGN12H dimensions, github.com/earthtojake/step.parts)

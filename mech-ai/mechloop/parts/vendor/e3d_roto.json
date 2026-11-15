@@ -236,7 +236,7 @@
   "source_url": "https://www.printables.com/model/655950-e3d-roto-reference-cad",
   "title": "E3D 'Roto Reference' CAD: REVO-ROTO-24V-AS-REFERENCE.STEP (STEP AP214 written by SolidWorks 2022 on 2024-01-24), linked from E3D's Roto data-sheet page",
   "obtained": "hand-downloaded by the owner on 2026-11-15",
-  "licence": "licence not confirmed: check the Printables page (printables.com could not be reached from this session)",
+  "licence": "CC BY-NC-ND 4.0, as stated on the Printables model page (read by the owner's agent, 2026-11-14). Non-commercial, no derivatives: the cut and split files in vendor_cad/ are for private use and must not be redistributed",
   "local_copy": "vendor_cad/e3d_roto_reference_cad.step",
   "split_into": {
    "cold_side": "vendor_cad/EXTRUDER-E3D-ROTO.step (10 solids: everything but the hot side; the motor's four lead wires cut off at the lead block)",

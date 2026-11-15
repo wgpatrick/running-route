@@ -1,0 +1,15 @@
+MISSING - as of 2026-11-14 19:52 PT
+
+TIER 1
+2-4. MGN12-R-215.step / MGN12-R-250.step / MGN12-R-300.step (Hiwin MGNR12R rails)
+  Tried: hiwin.tw CAD portal (URL restructured, 404), hiwin.com MG-series downloads
+  (catalogue PDFs only, no CAD), hiwinsupport.com 2D/3D CAD (Hiwin's official CAD
+  portal - requires a free member login; creating it was outside the authorized scope),
+  hiwin.de (JS-driven CAD tab, no direct files), xemstudio.com and step.parts mirrors
+  (carriage blocks only, no rail lengths), printables model 1527120 (page no longer exists).
+  Options: (a) OK a free hiwinsupport.com member account and I'll pull official rail CAD;
+  (b) I generate the three rails parametrically from the dimensions in the Hiwin
+  catalogue (accurate mounting-hole pattern; simplified raceway grooves).
+
+TIER 2 / TIER 3 / DATASETS (items 13-34)
+  In progress - downloads continue; this file will be updated.

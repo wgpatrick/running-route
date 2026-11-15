@@ -207,3 +207,15 @@ Full account: `../reports/Twin fitting.md`. Every number below, with range, sour
 4. Trial earthtojake's `text-to-cad` in this sandbox (its telemetry is on by default).
 5. Contact and preload FEA for the few joints that set nozzle stiffness.
 6. Thermal model of the print itself (warping, cooling) in the twin.
+
+## printer_v6 (added 2026-11-15)
+
+`designs/printer_v6.py` takes v5 to a stated target: 180 x 180 x 180 mm, direct drive at 0.40 kg or less on the X
+axis, parts plus fabrication at $900 or less, 320 parts or fewer, both Y belts within 1 mm of plane in 98 % of
+builds, a probe that works. It passes all 12 verifiers with 8 warnings (v5: 39, and two probe errors). E3D Roto and
+Revo sit on one 8 mm plate on the X guide block, whose rail moved to the rear face of the beam (nozzle 44 mm from
+the block centre, v5 64 mm; 0.351 kg). The beam hangs under laser-cut Y plates, the Y belts are tied through slots
+in those plates (belt-plane figure 92.8 % to 98.4 %, with no margin over the simulation's own scatter), 317 parts,
+$848. Not met: the probe leaves a 32 mm strip unprobed, and the assembly estimate is 66 minutes against 65. The
+hotend still has no cut-off that works without the controller. `docs/PRINTER_V6.md` has the evidence, eight
+checker behaviours with reproductions, and seven decisions to confirm.

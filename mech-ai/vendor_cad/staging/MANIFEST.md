@@ -24,3 +24,29 @@ Listing: 15 files, no subfolders, no SOURCES.txt or MISSING.txt in the folder. R
 ## Failures
 
 None.
+
+## Batch 2 (second sweep, 2026-11-15, files created 03:52Z-04:20Z)
+
+Listing now: 19 files in the root plus 3 subfolders (zenodo-22716165: 1 file, zenodo-22770610: 3, zenodo-5747732: 5) = 28 files. 13 new files, all saved; the 15 batch 1 rows above are unchanged on Drive. SOURCES.txt and MISSING.txt now exist and are saved here. Zip archives saved as-is, not unpacked. Re-listing after the downloads showed no further additions or changes.
+
+MGN12H.step note: the connector returned this file inline rather than as a saved result file; its base64 was recovered byte-for-byte from the local session transcript of that same connector call and decoded (size matches Drive, starts `ISO-10303-21;`, ends `END-ISO-10303-21;`).
+
+| Batch | Title | Drive file id | Drive size | Local size | Verified | First line / type |
+|---|---|---|---|---|---|---|
+| 2 | upload-test.txt | 1BiK8eWpnQb2mB8_bK8dFR6jBgjYtT_T3 | 17 | 17 | yes | `upload-path-test` (text) |
+| 2 | MISSING.txt | 1LVpaW_Qzj3IgDWlDEN1oBW_vS5q_sDwZ | 909 | 909 | yes | `MISSING - as of 2026-11-14 19:52 PT` (text) |
+| 2 | SOURCES.txt | 1U4gTLG77xtoaKD8NF-7d7Xhl_zDxkpg9 | 2720 | 2720 | yes | `SOURCES - V6 Toolhead CAD and Datasheets (as of 20` (text) |
+| 2 | MGN12H.step | 1K9oyjFzayBA69UUX0ZtAF6mqCHmbwYnS | 33782 | 33782 | yes | `ISO-10303-21;` (STEP) |
+| 2 | zenodo-22716165/README.txt | 1b9aTvL-_ANKTdBi8fwkWxG-cl4aS7D_Q | 456 | 456 | yes | `Zenodo record 22716165 (item 34)` (text) |
+| 2 | zenodo-5747732/README.txt | 1rhqq1v_2XGBIzbrv7audau8493XEv0i6 | 531 | 531 | yes | `Zenodo record 5747732 (item 34)` (text) |
+| 2 | zenodo-22770610/README.txt | 1ZjDwcgDcatRpsRHSgQl0tYfRiiPY_7G9 | 601 | 601 | yes | `Zenodo record 22770610 (item 34)` (text) |
+| 2 | zenodo-5747732/RMS Acceleration by Layer.zip | 1P0eczvi-szQi1y3fDu-7edEtg2R6hacA | 40616 | 40616 | yes | PK\x03\x04 (ZIP, not unpacked) |
+| 2 | zenodo-5747732/GCode.zip | 1qT_uRG_v-vpqZ4fJTsuomOa9BpQYXX0q | 205772 | 205772 | yes | PK\x03\x04 (ZIP, not unpacked) |
+| 2 | zenodo-5747732/Dataset Descriptions.pdf | 16w_64eIQtOS156jrqtd5lu1PhruAlcyf | 274360 | 274360 | yes | %PDF-1.7 (PDF) |
+| 2 | zenodo-5747732/Figures.zip | 1_iFF9BBW1WefDyCSsxafycm1K72RjKNu | 1241850 | 1241850 | yes | PK\x03\x04 (ZIP, not unpacked) |
+| 2 | zenodo-22770610/calibration.zip | 1Iq1TUfruxvoMD6b7MU3GHIt6kIVVeR-x | 2440393 | 2440393 | yes | PK\x03\x04 (ZIP, not unpacked) |
+| 2 | zenodo-22770610/measured_signals.zip | 1FOz0ghSWDjyxda4imlZfEJdYlSPaoaEE | 6582332 | 6582332 | yes | PK\x03\x04 (ZIP, not unpacked) |
+
+### Batch 2 failures
+
+None.
