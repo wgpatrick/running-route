@@ -188,8 +188,14 @@ def _fastening(design: Design, contacts: dict[str, set[str]], r: VerifierResult)
 STANDARD_LENGTHS_MM = (3, 4, 5, 6, 8, 10, 12, 16, 20, 25, 30, 35, 40, 45, 50, 55, 60)      # ISO 4762 preferred lengths
 
 THREAD_FACTOR = {"steel": 1.0, "stainless304": 1.0, "brass": 1.0, "al6061": 1.5,  # x thread diameter; plastics 2.0
-                 # cast tooling plate yields at 105 / 124 MPa against 276 for 6061-T6: kept at the soft-material 2.0
-                 "al_mic6": 2.0, "al_atp5": 2.0}
+                 # soft aluminium (practice rule FST-010, Bossard's engagement table: AlMg3 F18 2 d): cast tooling plate,
+                 # 5052 sheet; 6061 / 6082 sits just under Bossard's AlMgSi1 F32 row (1.4 d): error below 1.5 d
+                 "al_mic6": 2.0, "al_atp5": 2.0, "al5052": 2.0}
+# FST-010: in 6061 an engagement between 1.5 d and 2 d is a WARNING (load-bearing or often-removed joints; Bossard's
+# trials cover M6-M16 only). A 2020 T-slot extrusion's end tap is in 6063, soft aluminium: 2 d (the extrusion alloy is not
+# in the vendor record: the 6063 mapping is ours, DERIVED).
+THREAD_WARN_FACTOR = {"al6061": 2.0}
+EXTRUSION_TAP_FACTOR = 2.0
 
 
 def _threads(design: Design, r: VerifierResult) -> None:
@@ -199,6 +205,7 @@ def _threads(design: Design, r: VerifierResult) -> None:
     comps = {c.name: c for c in design.components}
     axis_of = {f.name: np.array(f.axis, dtype=float) for f in design.fasteners}
     short = 0
+    marginal = []
     for c in design.components:
         d = c.meta.get("thread_d")
         if not d or c.meta.get("tnut") or c.name not in axis_of:
@@ -222,8 +229,10 @@ def _threads(design: Design, r: VerifierResult) -> None:
                                     for z in (bb.min.Z, bb.max.Z)])
                 pr = corners @ a
                 eng = max(eng, float(pr.max() - pr.min()))
-            need = THREAD_FACTOR.get(comps[tgt].material, 2.0) * d
             tsku = comps[tgt].sku or ""
+            soft_ext = tsku.startswith("EXT20")
+            need = (EXTRUSION_TAP_FACTOR if soft_ext else THREAD_FACTOR.get(comps[tgt].material, 2.0)) * d
+            warn_need = None if soft_ext else (THREAD_WARN_FACTOR.get(comps[tgt].material, 0.0) * d or None)
             if tsku.startswith("NUT-"):  # a standard nut is full strength once the screw passes through it
                 need = comps[tgt].meta.get("interfaces", {}).get("height", d * 0.8)
             depth = comps[tgt].meta.get("interfaces", {}).get("thread_depth")
@@ -248,11 +257,23 @@ def _threads(design: Design, r: VerifierResult) -> None:
                       hint="Use a shorter screw or a thicker part under the head.")
             if eng < need - 0.05:
                 short += 1
+                what = ("6063 extrusion end tap (soft aluminium, mapping DERIVED)" if soft_ext else comps[tgt].material)
                 r.add("error", "thread_engagement",
-                      f"{c.name} engages only {eng:.1f} mm of thread in {tgt} ({comps[tgt].material}); "
-                      f"an M{d:g} needs >= {need:.1f} mm there.",
-                      screw=c.name, into=tgt, engagement_mm=round(eng, 2), required_mm=round(need, 2),
+                      f"{c.name} engages only {eng:.1f} mm of thread in {tgt} ({what}); "
+                      f"an M{d:g} needs >= {need:.1f} mm there (FST-010, Bossard engagement table).",
+                      screw=c.name, into=tgt, engagement_mm=round(eng, 2), required_mm=round(need, 2), rule="FST-010",
                       hint="Use a longer screw, thicken the tapped part, or use a nut / threaded insert.")
+            elif warn_need and depth is None and not tsku.startswith("NUT-") and eng < warn_need - 0.05:
+                marginal.append({"screw": c.name, "into": tgt, "engagement_mm": round(eng, 2), "d": d, "ratio": round(eng / d, 2)})
+
+    if marginal:
+        w = min(marginal, key=lambda x: x["ratio"])
+        r.add("warning", "thread_engagement_marginal",
+              f"{len(marginal)} screw(s) engage between 1.5 d and 2 d in 6061 aluminium (least: {w['screw']} in {w['into']}, "
+              f"{w['engagement_mm']:.1f} mm = {w['ratio']:.2f} d). Enough for a static joint; on a load-bearing or often-removed joint "
+              f"FST-010 asks 2 d (Bossard: 6061 is just under the AlMgSi1 F32 row; the trials cover M6-M16 only).",
+              screws=[x["screw"] for x in marginal][:60], least=w, count=len(marginal), rule="FST-010",
+              hint="A longer screw where the joint carries load or is opened often; a nut or insert otherwise.")
 
 
 def _coupler_insertion(design: Design, r: VerifierResult) -> dict:

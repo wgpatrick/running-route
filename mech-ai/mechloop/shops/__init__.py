@@ -112,13 +112,15 @@ _SPAN: dict = {}
 def _span(c) -> float:
     """Longest side of the part's bounding box, mm (cached per component)."""
     k = id(c)
-    if k not in _SPAN:
+    hit = _SPAN.get(k)
+    if hit is None or hit[0] is not c or hit[1] is not c.shape:      # an id is reused once its object is gone: check identity
         try:
             bb = c.shape.bounding_box()
-            _SPAN[k] = float(max(bb.size.X, bb.size.Y, bb.size.Z))
+            v = float(max(bb.size.X, bb.size.Y, bb.size.Z))
         except Exception:
-            _SPAN[k] = 0.0
-    return _SPAN[k]
+            v = 0.0
+        hit = _SPAN[k] = (c, c.shape, v)
+    return hit[2]
 
 
 def tolerance_row(shop: str, process: str, span_mm: float) -> dict | None:

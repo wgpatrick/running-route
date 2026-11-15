@@ -117,7 +117,7 @@ def fractions(c) -> dict:
     s, src = settings_for(c)
     k = _key(c, s)
     cache = getattr(c, "_ps_cache", None)
-    if cache and cache[0] == k:
+    if cache and cache[0] == k and cache[2] is c.shape:
         return cache[1]
     up, frame = build_direction(c, s)
     upv = up if up is not None else frame[2]
@@ -140,7 +140,7 @@ def fractions(c) -> dict:
            "solid_fraction": round(f_shell + f_core * rho, 4),
            "structural_fraction_lower": round(f_shell + f_core * rho ** 2, 4),
            "orientation_declared": up is not None, "wall_mm": round(t_wall, 3), "top_mm": round(t_top, 3), "bottom_mm": round(t_bot, 3)}
-    object.__setattr__(c, "_ps_cache", (k, out))
+    object.__setattr__(c, "_ps_cache", (k, out, c.shape))
     return out
 
 

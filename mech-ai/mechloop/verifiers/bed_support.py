@@ -332,7 +332,29 @@ def seating_study(design: Design, lay: dict, model: dict, W: float, com, wc, syn
         margin = {n_: round(f0[n_] - E * sens[n_], 2) for n_ in f0}
         lvl_rows.append({"case": label, "height_error_mm": round(E, 4), "nut_load_margin_n": margin,
                          "a_nut_unseats": bool(worst[1]["nuts_not_seated"]), "worst_case": worst[1]})
+    # BRG-022: the axial load each screw's ball bearings carry (the largest nut load met above, all of it on one bearing)
+    # against SKF's limit for small bearings, 0.25 C0
+    axial = {}
+    comps = {c.name: c for c in design.components}
+    worst_nut = max([lv["worst_case"]["largest_nut_load_n"] for lv in lvl_rows] + list(f0.values()) + [0.0])
+    for s_ in lay["screws"]:
+        sc = comps.get(s_)
+        if sc is None or not sc.meta.get("placement"):
+            continue
+        Ps = np.array(sc.meta["placement"], dtype=float)
+        so, sa = Ps[:3, 3], Ps[:3, 2] / np.linalg.norm(Ps[:3, 2])
+        for b in design.components:
+            bi = b.meta.get("interfaces") or {}
+            if "axial_limit_n" not in bi or not b.meta.get("placement"):
+                continue
+            Pb = np.array(b.meta["placement"], dtype=float)
+            off = Pb[:3, 3] - so
+            if np.linalg.norm(off - (off @ sa) * sa) < 0.5 and abs(abs(Pb[:3, 2] @ sa) / np.linalg.norm(Pb[:3, 2]) - 1) < 1e-3:
+                axial[b.name] = {"screw": s_, "axial_load_n": round(worst_nut, 1), "limit_n": bi["axial_limit_n"],
+                                 "margin": round(bi["axial_limit_n"] / max(worst_nut, 1e-9), 1)}
     return {"nut_seating": seat, "lead_accuracy": la, "travel_mm": round(travel, 1),
+            "bearing_axial_loads": axial, "bearing_axial_note": "BRG-022: the largest nut load of any case above, all on one bearing, "
+                                                                 "against 0.25 C0 (SKF: small bearings, bore up to about 12 mm)",
             "lead_error_over_travel_mm": round(e_lead, 4),
             "lead_error_note": "per screw, at the class limit; the difference between two screws is between 0 (same error) and twice this "
                                "(opposite limits). It grows with the distance moved from the height the bed was trammed at; neither a belt "
@@ -1027,6 +1049,12 @@ def bed_support(design: Design, r: VerifierResult, with_fea: bool = True) -> dic
         if st is not None:
             st["evaluated"] = True
             out["nut_seating_and_lead_error"] = st
+            over = {k: v for k, v in (st.get("bearing_axial_loads") or {}).items() if v["axial_load_n"] > v["limit_n"]}
+            if over:
+                r.add("warning", "bearing_axial_overload",
+                      f"Joint {j.name}: a lead screw's ball bearing carries more axial load than SKF allows a small bearing (BRG-022, 0.25 C0): "
+                      + ", ".join(f"{k} {v['axial_load_n']:.0f} N against {v['limit_n']:.0f} N" for k, v in over.items()) + ".",
+                      bearings=over, rule="BRG-022", hint="An angular-contact or thrust bearing, or share the load between two bearings.")
             lvl["from_screw_lead_error_mm"] = st["levels"][1]["worst_case"]["bed_level_change_across_print_area_mm"]
             lvl["from_screw_lead_error_note"] = (f"one screw at its lead-accuracy limit over the {travel:g} mm travel "
                                                  f"({st['lead_error_over_travel_mm']:g} mm; {st['lead_accuracy']['basis']})")
@@ -1038,7 +1066,7 @@ def bed_support(design: Design, r: VerifierResult, with_fea: bool = True) -> dic
             wc_ = expected["worst_case"]
             least = min(expected["nut_load_margin_n"].values())
             seat_txt = (f" Nut seating ({st['nut_seating']['kind']}: {st['nut_seating']['basis']}): the moving mass seats the nuts with "
-                        + ", ".join(f"{v['seating_load_n']:.1f}" for v in st["nuts"].values()) + f" N. With the screws' lead error over the "
+                        + ", ".join(f"{v['seating_load_n']:.1f}" for v in st["nuts"].values()) + f" N. With the screws' lead error (LSC-015) over the "
                         f"{travel:g} mm travel added ({st['lead_error_over_travel_mm']:.3f} mm, {'ASSUMED class value' if st['lead_accuracy']['assumed'] else 'catalogue'}) "
                         f"the height error is {expected['height_error_mm']:.3f} mm and the least nut load would be {least:.1f} N"
                         + (f": {', '.join(wc_['nuts_not_seated'])} unseat(s) ({wc_['screw']} standing {wc_['stands']}); the bed's level then "
@@ -1055,13 +1083,13 @@ def bed_support(design: Design, r: VerifierResult, with_fea: bool = True) -> dic
                   + " The deflection figures above assume every nut seated and are then not what the machine does.",
                   joint=j.name, redundant_supports=n_red, height_error_mm=expected["height_error_mm"],
                   nuts_not_seated=expected["worst_case"]["nuts_not_seated"],
-                  unseats_on_synchronisation_error_alone=bool(sync_only and sync_only["a_nut_unseats"]),
+                  unseats_on_synchronisation_error_alone=bool(sync_only and sync_only["a_nut_unseats"]), rule="LSC-015",
                   hint="Let one thing hold the tilt: one guide block per rail with three screws (the screws set the plane), or one "
                        "screw with two blocks per rail (the rails set it); or make the nuts carry load both ways without backlash.")
         elif expected is not None and expected["a_nut_unseats"]:
             r.add("warning", "z_nut_unseats",
                   f"Joint {j.name}: on {n_s} lead screws ({sy['sync']}) a nut can lose its load." + seat_txt,
-                  joint=j.name, height_error_mm=expected["height_error_mm"], nuts_not_seated=expected["worst_case"]["nuts_not_seated"],
+                  joint=j.name, height_error_mm=expected["height_error_mm"], nuts_not_seated=expected["worst_case"]["nuts_not_seated"], rule="LSC-015",
                   hint="Bring the mass centre inside the triangle of the screws with more margin, add weight or a spring on the "
                        "light nut, or use nuts that carry load both ways.")
         if not sy["firmware_can_relevel"] and (worst_t > half or (drive_n and worst_nut > 0.3 * drive_n)):

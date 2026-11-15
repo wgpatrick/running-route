@@ -54,7 +54,8 @@ everything (with renders) before you finish. `python -m mechloop history <name>`
   warning. Leave it; it is true.
 - A verifier that is `skipped: not run` is not a pass, and neither is an `--only` run.
 - Screws need real thread engagement in what they screw into: at least 1x diameter in steel,
-  1.5x in aluminium, 2x in plastic (T-nut joints exempt). A catalogue part's own tapped hole states a MAXIMUM depth
+  1.5x in 6061 (2x wanted: warning between), 2x in soft aluminium (cast plate, 5052, extrusion end taps) and in
+  plastic (T-nut joints exempt; FST-010, see the washers section). A catalogue part's own tapped hole states a MAXIMUM depth
   (Mean Well "M4 L=3mm"): deeper is `thread_bottoms_out`; if no standard screw length reaches the usual engagement
   without bottoming out, the longest standard screw that stays inside is accepted, down to half a diameter of thread. Engagement is measured as the length of
   overlap, along the screw, between the screw and each `threads_into` part, so the tapped part must be
@@ -186,15 +187,19 @@ def build():
   `screw_head_seat_too_small` (over a slot or an oversize / adjustment hole: under 60 % of the ring a bare head has on
   its standard clearance hole is an error, under 85 % a warning) and `screw_head_bearing_pressure` (preload over that
   area against the seat's allowable). There is no "every screw needs a washer" rule: a steel head on steel or 6061 at
-  the class torque passes. Preload F = T / X with Bossard's conversion factor at mu 0.12 (VDI 2230 2015; X = 0.44,
-  0.51, 0.67, 0.81, 0.99, 1.32 mm for M2.5 to M8) and T = Bossard's maximum torque for class 8.8 (M3 1.27, M4 3.0, M5
-  5.9, M6 10.1, M8 24.6 N.m) where only metal is in the grip; a joint that clamps or threads into plastic takes an
-  ASSUMED lower torque (M3 0.5, M4 1.1, M5 2.0 N.m); state your own with
-  `d.manufacturing["tightening_torque_nm"] = {"M3": 0.8}` or `meta["torque_nm"]` on a screw. Allowables: metals,
-  VDI 2230's limiting surface pressure p_G (S235 490, 304 630, 6061 as AW-6082 360, 5052 285 DERIVED from AW-5083,
-  cast tooling plate as cast AlSi9Cu3 200 MPa; warning above). Printed plastic: no published allowable exists, so a
-  DERIVED one: 0.3 x the data sheet's printed tensile yield (PETG 47, ABS 30.8 MPa) for a sustained clamp load
-  (warning), the yield itself on tightening (error); where the ring reaches past the perimeters round the hole onto a
+  the class torque passes. Preload: Bossard's maximum for class 8.8 at mu 0.14 (VDI 2230 2015; FST-040: M3 2436 N
+  at 1.41 N.m, M4 4.3 kN at 3.3, M5 7.0 kN at 6.5, M6 9.9 kN at 11.3, M8 18.1 kN at 27.3) where only metal is in the
+  grip; a joint that clamps or threads into plastic takes an ASSUMED lower torque (M3 0.5, M4 1.1, M5 2.0 N.m) and
+  F = T / X (Bossard's conversion factor at mu 0.14: M3 0.58, M4 0.76, M5 0.93 mm); state your own with
+  `d.manufacturing["tightening_torque_nm"] = {"M3": 0.8}` or `meta["torque_nm"]` on a screw. Allowables (FST-030):
+  metals, VDI 2230's limiting surface pressure p_G (S235 490, 304 630, 6061 as AW-6082 360, 5052 285 DERIVED from
+  AW-5083, cast tooling plate as cast AlSi9Cu3 200 MPa; warning above). Printed plastic (PRT-030): no published
+  allowable exists; the DERIVED sustained limit is 5 MPa up to 40 degC, 2.5 MPa from 40 to 60 degC and none above
+  (the part's `meta["service_temp_c"]`, default room temperature) - it keeps PETG / ABS in its linear viscoelastic
+  range, it is not a strength (warning); above the data sheet's printed yield (PETG 47, ABS 30.8 MPa) the surface
+  crushes on tightening (error). The finding says what the seat carries (`allowed_preload_n`, `allowed_torque_nm`):
+  on printed plastic that is tens to a few hundred newtons even with a washer, so the remedy there is a washer and a
+  metal sleeve, with locking that needs no preload. Where the ring reaches past the perimeters round the hole onto a
   skin thinner than the ring is wide, the share over sparse infill counts only infill (along the build direction) or
   infill^1.5 (across) of that (`over_sparse_infill` in the row). Remedy: a catalogue flat washer,
   `add_screw(..., washer=True)` (ISO 7089: M2.5 6 x 0.5, M3 7 x 0.5, M4 9 x 0.8, M5 10 x 1.0, M6 12 x 1.6, M8 16 x 1.6)
@@ -206,6 +211,16 @@ def build():
   in the assembly estimate. Bought parts as the seat are not judged for pressure. Not modelled: countersunk heads.
   Sources: `vendor_cad/staging/practice_refs/01_*` (torque, preload), `04_*` (surface pressure), `06_*` (washers),
   `14_*` (plastics).
+- Thread engagement (interference, FST-010, Bossard's table): steel, stainless, brass 1 d; 6061 error under 1.5 d and
+  one grouped warning `thread_engagement_marginal` from 1.5 to 2 d; soft aluminium (cast plate MIC-6 / ATP-5, 5052,
+  and a 2020 extrusion's end tap, taken as 6063: DERIVED mapping) error under 2 d; plastic 2 d; a catalogue part's own
+  tapped hole follows its maker.
+- Ball bearings (ratings, BRG-024): what touches a 608's faces must stay on the ring it abuts (SKF: inner ring up
+  to its shoulder d1 12.15 mm, outer ring from D2 19.2 to Da max 20 mm). Contact between d1 and D2 rubs the shield;
+  one part on both rings makes the turning ring drag: `bearing_abutment` (warning; remedy an 8 x 12 shim on the inner
+  ring, or a relief). Bed support (BRG-022): each lead screw's coaxial 608 is given the largest nut load of the
+  seating study against 0.25 C0 = 342 N (`bearing_axial_loads`; `bearing_axial_overload`). Other bearings carry no
+  abutment data yet and are not checked.
 - `add_screw(..., insert=True)`: the screw threads into a heat-set insert in the printed part (`INSERT-HEATSET-M3` in
   the BOM); see print settings below for the wall it needs.
 

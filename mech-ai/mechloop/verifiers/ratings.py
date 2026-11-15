@@ -456,6 +456,9 @@ def verify_ratings(design: Design) -> VerifierResult:
             from .bearing import head_bearing
 
             r.metrics["head_bearing"] = head_bearing(design, r)
+            from .bearing import ring_abutment
+
+            r.metrics["bearing_abutment"] = ring_abutment(design, r)
         except Exception as e:
             r.add("warning", "head_bearing_not_checked", f"Screw head bearing was not checked: {type(e).__name__}: {e}")
         # bill of materials

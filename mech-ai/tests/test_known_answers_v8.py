@@ -602,16 +602,16 @@ def bearing(d):
 
 
 def test_a_steel_head_on_steel_or_wrought_aluminium_at_the_class_torque_is_not_flagged():
-    """M5 at 5.9 N.m (Bossard's maximum for class 8.8 at mu 0.12), F = T / X with X = 0.81 mm: 7,284 N on the head's
-    ring over a 5.5 mm hole, pi (3.91^2 - 2.75^2) = 24.3 mm^2: 300 MPa. Under VDI 2230's p_G for AW-6082 (360) and S235
-    (490): no finding, no blanket "needs a washer"."""
+    """M5 class 8.8 at Bossard's maximum for mu 0.14 (6.5 N.m, 7.0 kN; FST-040) on the head's ring over a 5.5 mm hole,
+    pi (3.91^2 - 2.75^2) = 24.3 mm^2: 288 MPa. Under VDI 2230's p_G for AW-6082 (360, mapped to 6061) and S235 (490):
+    no finding, no blanket "needs a washer"."""
     for mat in ("al6061", "steel"):
         m, f = bearing(seated_screw(mat))
         assert f == {} and m["seats_examined"] == 1
         w = m["worst"][0]
         assert w["seat_area_mm2"] == pytest.approx(math.pi * ((0.92 * 8.5 / 2) ** 2 - 2.76 ** 2), rel=0.02)
-        assert w["preload_n"] == round(5900 / 0.81) and w["bearing_pressure_mpa"] == pytest.approx(300, abs=6) and "Bossard" in w["torque_basis"]
-        assert w["allowable_mpa"] == {"al6061": 360.0, "steel": 490.0}[mat] and "VDI 2230" in w["allowable_basis"]
+        assert w["preload_n"] == 7000 and w["tightening_torque_nm"] == 6.5 and w["bearing_pressure_mpa"] == pytest.approx(290, abs=6)
+        assert "Bossard" in w["torque_basis"] and w["allowable_mpa"] == {"al6061": 360.0, "steel": 490.0}[mat] and "VDI 2230" in w["allowable_basis"]
 
 
 def test_a_head_over_a_slot_or_an_oversize_hole_needs_a_washer_and_a_washer_clears_it():
@@ -640,51 +640,65 @@ def test_a_head_over_a_slot_or_an_oversize_hole_needs_a_washer_and_a_washer_clea
 
 
 def test_a_bare_head_crushes_printed_plastic_and_a_washer_or_a_stated_torque_clears_it():
-    """M3 clamping printed PETG, 0.5 N.m assumed for a joint with plastic in it: F = 0.5 / 0.51 mm = 980 N on
-    pi (2.53^2 - 1.71^2) = 10.9 mm^2 = 90 MPa, above the printed yield (47 MPa, Prusament TDS): error. The sustained
-    allowable is DERIVED, 0.3 x 47 = 14.1 MPa. Bare at a stated 0.04 N.m: 7 MPa, no finding; at 0.1 N.m: 18 MPa,
-    over the allowance and under yield: warning. With an ISO 7089 washer (7 mm, 29.3 mm^2) at 0.15 N.m on a part printed
-    solid: 10 MPa, no finding."""
-    solid = {"print": {"infill": 1.0}}
+    """M3 clamping printed PETG, 0.5 N.m assumed for a joint with plastic in it: F = 0.5 / 0.58 mm = 862 N on
+    pi (2.53^2 - 1.71^2) = 10.9 mm^2 = 79 MPa, above the printed yield (47 MPa, Prusament TDS): error. The sustained
+    limit is PRT-030's DERIVED 5 MPa. Bare at a stated 0.02 N.m: 3 MPa, no finding; at 0.1 N.m: 16 MPa, over the limit and
+    under yield: warning, which says what the seat carries. With an ISO 7089 washer (7 mm, 29.3 mm^2) at 0.06 N.m on a
+    part printed solid: 3.5 MPa, no finding."""
     m, f = bearing(seated_screw("petg", size="M3"))
-    assert f["screw_head_bearing_pressure"].severity == "error" and f["screw_head_bearing_pressure"].data["worst_mpa"] == pytest.approx(90, abs=3)
-    assert f["screw_head_bearing_pressure"].data["allowable_mpa"] == pytest.approx(14.1) and "DERIVED" in m["worst"][0]["allowable_basis"]
-    assert bearing(seated_screw("petg", size="M3", torque=0.04))[1] == {}
+    assert f["screw_head_bearing_pressure"].severity == "error" and f["screw_head_bearing_pressure"].data["worst_mpa"] == pytest.approx(79, abs=3)
+    assert f["screw_head_bearing_pressure"].data["allowable_mpa"] == 5.0 and "PRT-030" in m["worst"][0]["allowable_basis"]
+    assert f["screw_head_bearing_pressure"].data["rule"] == "PRT-030"
+    assert bearing(seated_screw("petg", size="M3", torque=0.02))[1] == {}
     m, f = bearing(seated_screw("petg", size="M3", torque=0.1))
     assert f["screw_head_bearing_pressure"].severity == "warning" and "declared" in m["worst"][0]["torque_basis"]
-    d = seated_screw("petg", size="M3", washer=True, torque=0.15)
-    d.get("plate").meta.update(solid)
+    assert m["worst"][0]["allowed_preload_n"] == pytest.approx(5.0 * m["worst"][0]["seat_area_mm2"], rel=0.01)
+    d = seated_screw("petg", size="M3", washer=True, torque=0.06)
+    d.get("plate").meta["print"] = {"infill": 1.0}
     m, f = bearing(d)
-    assert f == {} and m["worst"][0]["bearing_pressure_mpa"] == pytest.approx(10.0, abs=0.6)
+    assert f == {} and m["worst"][0]["bearing_pressure_mpa"] == pytest.approx(3.5, abs=0.3)
+
+
+def test_the_printed_seat_limit_halves_between_40_and_60_degc_and_there_is_none_above():
+    """PRT-030: 5 MPa to 40 degC, 2.5 MPa to 60 degC, no sustained clamp above 60. The washer joint at 0.06 N.m (3.5 MPa)
+    passes at room temperature, is a warning on a part declared at 50 degC, and at 70 degC any clamp is."""
+    for temp, ok in ((None, True), (50, False), (70, False)):
+        d = seated_screw("petg", size="M3", washer=True, torque=0.06)
+        d.get("plate").meta["print"] = {"infill": 1.0}
+        if temp:
+            d.get("plate").meta["service_temp_c"] = temp
+        m, f = bearing(d)
+        assert (f == {}) == ok
+        assert m["worst"][0]["allowable_mpa"] == {None: 5.0, 50: 2.5, 70: 0.0}[temp]
 
 
 def test_a_washer_over_sparse_infill_carries_less_than_over_solid_plastic():
-    """The same washer (7 mm) at 0.2 N.m: 392 N on 29.3 mm^2 = 13.4 MPa. On a part printed solid that is under the
-    14.1 MPa allowance: no finding. Printed to the default (3 walls of 0.45 mm round the hole, a 1.0 mm top skin, 25 %
-    infill) the ring is 1.79 mm wide, wider than the skin: the 1.35 mm of perimeters round the hole carry their share
-    in full, the rest (31 % of the ring) bears on infill at 25 %: the allowance falls to 0.77 x 14.1 = 10.9 MPa and the
-    same joint is a warning, which says so."""
-    d = seated_screw("petg", size="M3", washer=True, torque=0.2)
+    """The same washer (7 mm) at 0.075 N.m: 129 N on 29.3 mm^2 = 4.4 MPa. On a part printed solid that is under PRT-030's
+    5 MPa: no finding. Printed to the default (3 walls of 0.45 mm round the hole, a 1.0 mm top skin, 25 % infill) the
+    ring is 1.79 mm wide, wider than the skin: the 1.35 mm of perimeters round the hole carry their share in full, the
+    rest (31 % of the ring) bears on infill at 25 %: the limit falls to 0.77 x 5 = 3.9 MPa and the same joint is a
+    warning, which says so."""
+    d = seated_screw("petg", size="M3", washer=True, torque=0.075)
     d.get("plate").meta["print"] = {"infill": 1.0}
     assert bearing(d)[1] == {}
-    m, f = bearing(seated_screw("petg", size="M3", washer=True, torque=0.2))
+    m, f = bearing(seated_screw("petg", size="M3", washer=True, torque=0.075))
     w = m["worst"][0]
     a_all, a_sol = math.pi * (3.5 ** 2 - 1.71 ** 2), math.pi * (3.06 ** 2 - 1.71 ** 2)
     assert f["screw_head_bearing_pressure"].severity == "warning" and "sparse infill" in w["over_sparse_infill"]
-    assert w["allowable_mpa"] == pytest.approx(14.1 * (a_sol + 0.25 * (a_all - a_sol)) / a_all, abs=0.2)
+    assert w["allowable_mpa"] == pytest.approx(5.0 * (a_sol + 0.25 * (a_all - a_sol)) / a_all, abs=0.1)
 
 
 def test_soft_aluminium_under_a_bare_head_is_a_warning_and_a_washer_spreads_it():
-    """M5 at the class torque (7,284 N, 300 MPa bare) on 5052-H32 sheet (p_G DERIVED from AW-5083: 285 MPa): warning
+    """M5 at the class torque (7.0 kN, 290 MPa bare) on 5052-H32 sheet (p_G DERIVED from AW-5083: 285 MPa): warning
     (the seat embeds). On cast MIC-6 (p_G of cast AlSi9Cu3: 200 MPa) likewise. With an ISO 7089 washer the ring is
-    pi (5^2 - 2.76^2) = 54.6 mm^2: 133 MPa, fine on both; the large series (15 mm) spreads it to 48 MPa."""
+    pi (5^2 - 2.76^2) = 54.6 mm^2: 128 MPa, fine on both; the large series (15 mm) spreads it to 46 MPa."""
     assert bearing(seated_screw("al5052"))[1]["screw_head_bearing_pressure"].severity == "warning"
-    assert bearing(seated_screw("al_mic6"))[1]["screw_head_bearing_pressure"].severity == "warning"
+    assert bearing(seated_screw("al_mic6"))[1]["screw_head_bearing_pressure"].data["rule"] == "FST-030"
     assert bearing(seated_screw("al5052", washer=True))[1] == {}
     m, f = bearing(seated_screw("al_mic6", washer=True))
-    assert f == {} and m["worst"][0]["bearing_pressure_mpa"] == pytest.approx(5900 / 0.81 / (math.pi * (5 ** 2 - 2.76 ** 2)), rel=0.03)
+    assert f == {} and m["worst"][0]["bearing_pressure_mpa"] == pytest.approx(7000 / (math.pi * (5 ** 2 - 2.76 ** 2)), rel=0.03)
     m, f = bearing(seated_screw("al_mic6", washer="large"))
-    assert f == {} and m["worst"][0]["bearing_pressure_mpa"] == pytest.approx(5900 / 0.81 / (math.pi * (7.5 ** 2 - 2.76 ** 2)), rel=0.03)
+    assert f == {} and m["worst"][0]["bearing_pressure_mpa"] == pytest.approx(7000 / (math.pi * (7.5 ** 2 - 2.76 ** 2)), rel=0.03)
 
 
 def test_washer_dimensions_are_the_tabulated_iso_7089_and_7093_sizes_m2_5_to_m8():
@@ -912,3 +926,53 @@ def test_a_nozzle_nine_millimetres_off_its_path_is_never_a_clean_print():
     assert f.severity == "error" and f.data["worst_mm"] == 9.34
     row = summarise({"ok": r.ok, "findings": [x.to_dict() if hasattr(x, "to_dict") else {"code": x.code, "severity": x.severity, "data": x.data} for x in r.findings]})
     assert row["ok"] is False and row["errors"] == ["nozzle_off_path"]
+
+
+def test_thread_engagement_in_aluminium_follows_the_alloy():
+    """FST-010 (Bossard's engagement table): M5 into a block of 6061 by 6 mm (1.2 d): error; by 8.5 mm (1.7 d): passes
+    the 1.5 d floor but is under 2 d: one grouped warning; by 11 mm (2.2 d): nothing. In cast MIC-6 (soft aluminium)
+    8.5 mm is an error (2 d)."""
+    from mechloop.verifiers.interference import _threads
+
+    def run(mat, depth):
+        d = Design("eng", base="block")
+        d.add("block", Pos(0, 0, -15) * Box(30, 30, 30), material=mat)
+        d.add("plate", Pos(0, 0, 2.5) * Box(30, 30, 5) - Pos(0, 0, 2.5) * Cylinder(2.75, 5), material="steel")
+        add_screw(d, "s", "M5", 5 + depth, at=(0, 0, 5), threads_into="block", clamps=("plate",))
+        r = VerifierResult("interference")
+        _threads(d, r)
+        return {f.code: f for f in r.findings}
+
+    f = run("al6061", 6)
+    assert f["thread_engagement"].severity == "error" and f["thread_engagement"].data["rule"] == "FST-010"
+    f = run("al6061", 8.5)
+    assert set(f) == {"thread_engagement_marginal"} and f["thread_engagement_marginal"].severity == "warning"
+    assert f["thread_engagement_marginal"].data["least"]["ratio"] == pytest.approx(1.7, abs=0.05)
+    assert run("al6061", 11) == {}
+    assert run("al_mic6", 8.5)["thread_engagement"].severity == "error"
+
+
+def test_what_bears_on_a_608_must_stay_on_the_ring_it_abuts():
+    """BRG-024 (SKF 608: inner ring shoulder d1 12.15, outer ring D2 19.2 mm). A pulley hub 15.5 mm across on the inner
+    ring reaches past d1: it rubs the shield (warning). A 12 mm shim between: inside d1, nothing. A flat plate against the
+    whole face touches both rings (warning: the turning ring drags)."""
+    from mechloop.parts import bearing as brg, place
+    from mechloop.verifiers.bearing import ring_abutment
+
+    def run(other):
+        d = Design("brg")
+        place(d, "b", brg("608"))
+        if other is not None:
+            d.add("x", other, material="al6061")
+        r = VerifierResult("ratings")
+        m = ring_abutment(d, r)
+        return m, {f.code: f for f in r.findings}
+
+    m, f = run(Pos(0, 0, 3.5 + 2) * (Cylinder(7.75, 4) - Cylinder(4, 4)))
+    assert f["bearing_abutment"].data["rule"] == "BRG-024" and "shield" in f["bearing_abutment"].data["contacts"][0]["problem"]
+    assert f["bearing_abutment"].data["contacts"][0]["contact_to_mm"] == pytest.approx(15.5, abs=1.2)
+    m, f = run(Pos(0, 0, 3.5 + 0.5) * (Cylinder(6.0, 1) - Cylinder(4, 1)))
+    assert f == {} and m["contacts"][0]["contact_to_mm"] < 12.15
+    m, f = run(Pos(0, 0, 3.5 + 2) * (Box(40, 40, 4) - Cylinder(4.5, 4)))
+    assert "both rings" in f["bearing_abutment"].data["contacts"][0]["problem"]
+    assert brg("608").interfaces["axial_limit_n"] == pytest.approx(342.5)

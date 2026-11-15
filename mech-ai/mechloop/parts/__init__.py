@@ -394,8 +394,15 @@ def bearing(designation: str = "608") -> Stock:
         raise ValueError(f"bearing must be one of {sorted(table)}")
     d, D, B, C, C0, m = table[designation]
     ring = Cylinder(D / 2, B) - Cylinder(d / 2, B)
+    iface = {"bore": d, "od": D, "width": B}
+    if designation == "608":
+        # SKF 608 product data (vendor_cad/staging/practice_refs/08_SKF_608_product_data.pdf, practice rule BRG-024):
+        # abutment da min 10, inner ring shoulder d1 ~12.15, Da max 20 mm; outer ring's inner diameter D2 ~19.2 (the
+        # shields lie between d1 and D2). Axial limit (BRG-022, SKF general catalogue: small bearings, bore up to ~12 mm)
+        # 0.25 C0 = 342 N.
+        iface.update({"da_min": 10.0, "d1": 12.15, "D2": 19.2, "Da_max": 20.0, "axial_limit_n": 0.25 * C0})
     return Stock(ring, f"BRG-{designation}", f"Ball bearing {designation} ({d}x{D}x{B})", m,
-                 ratings={"dynamic_load_n": C, "static_load_n": C0}, interfaces={"bore": d, "od": D, "width": B},
+                 ratings={"dynamic_load_n": C, "static_load_n": C0}, interfaces=iface,
                  cost_usd=1.0)
 
 
