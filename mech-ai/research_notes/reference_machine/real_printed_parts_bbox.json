@@ -1,0 +1,250 @@
+{
+ "3030 Spool Holder Mount.step": {
+  "size": [
+   90.0,
+   30.0,
+   14.5
+  ],
+  "vol_cm3": 17.26
+ },
+ "3030_end_cap.step": {
+  "size": [
+   30.0,
+   30.0,
+   8.0
+  ],
+  "vol_cm3": 4.91
+ },
+ "LJ8_probe_mount_8mm.step": {
+  "size": [
+   13.8,
+   16.5,
+   22.0
+  ],
+  "vol_cm3": 1.73
+ },
+ "TriHorn Duct.step": {
+  "size": [
+   64.7,
+   14.7,
+   49.6
+  ],
+  "vol_cm3": 4.85
+ },
+ "back_cartesian.step": {
+  "size": [
+   44.1,
+   32.0,
+   71.0
+  ],
+  "vol_cm3": 32.22
+ },
+ "bed_wire_guide_end.step": {
+  "size": [
+   29.8,
+   15.0,
+   29.8
+  ],
+  "vol_cm3": 7.73
+ },
+ "bed_wire_guide_start.step": {
+  "size": [
+   39.6,
+   30.0,
+   12.7
+  ],
+  "vol_cm3": 3.36
+ },
+ "bmo_face.step": {
+  "size": [
+   40.0,
+   23.0,
+   43.1
+  ],
+  "vol_cm3": 11.55
+ },
+ "bmo_support.step": {
+  "size": [
+   40.0,
+   20.3,
+   9.0
+  ],
+  "vol_cm3": 1.75
+ },
+ "bottom_mgn12_short_duct.step": {
+  "size": [
+   44.1,
+   22.2,
+   27.0
+  ],
+  "vol_cm3": 9.25
+ },
+ "cartesian_cable_fin.step": {
+  "size": [
+   19.9,
+   35.0,
+   16.4
+  ],
+  "vol_cm3": 2.59
+ },
+ "pillow_block.step": {
+  "size": [
+   38.0,
+   38.0,
+   9.0
+  ],
+  "vol_cm3": 11.07
+ },
+ "ratrig_eva_shroud.step": {
+  "size": [
+   44.4,
+   59.8,
+   13.6
+  ],
+  "vol_cm3": 2.61
+ },
+ "side_legs.step": {
+  "size": [
+   47.5,
+   107.0,
+   20.0
+  ],
+  "vol_cm3": 50.37
+ },
+ "tension_slider_6mm_belt_M3s.step": {
+  "size": [
+   25.0,
+   7.2,
+   13.5
+  ],
+  "vol_cm3": 1.79
+ },
+ "top_endstop_angled.step": {
+  "size": [
+   33.0,
+   27.4,
+   8.0
+  ],
+  "vol_cm3": 1.76
+ },
+ "top_mgn12.step": {
+  "size": [
+   29.8,
+   51.2,
+   44.1
+  ],
+  "vol_cm3": 21.23
+ },
+ "universal_face.step": {
+  "size": [
+   44.1,
+   57.0,
+   8.0
+  ],
+  "vol_cm3": 9.67
+ },
+ "x_gantry_end_cap.step": {
+  "size": [
+   35.0,
+   36.8,
+   30.2
+  ],
+  "vol_cm3": 20.18
+ },
+ "x_idler.step": {
+  "size": [
+   25.0,
+   46.0,
+   30.0
+  ],
+  "vol_cm3": 18.71
+ },
+ "x_motor_cage.step": {
+  "size": [
+   42.0,
+   48.0,
+   46.0
+  ],
+  "vol_cm3": 39.78
+ },
+ "x_wire_holder.step": {
+  "size": [
+   57.6,
+   28.2,
+   31.8
+  ],
+  "vol_cm3": 10.39
+ },
+ "y_belt_cover.step": {
+  "size": [
+   3.0,
+   17.0,
+   22.0
+  ],
+  "vol_cm3": 0.94
+ },
+ "y_belt_mount.step": {
+  "size": [
+   27.0,
+   54.0,
+   22.0
+  ],
+  "vol_cm3": 17.2
+ },
+ "y_belt_tensioner.step": {
+  "size": [
+   20.7,
+   25.0,
+   9.7
+  ],
+  "vol_cm3": 4.08
+ },
+ "y_endstop_mount.step": {
+  "size": [
+   27.1,
+   14.0,
+   44.0
+  ],
+  "vol_cm3": 5.05
+ },
+ "y_idler.step": {
+  "size": [
+   57.2,
+   48.0,
+   66.5
+  ],
+  "vol_cm3": 107.5
+ },
+ "y_motor_cage.step": {
+  "size": [
+   50.0,
+   86.0,
+   80.0
+  ],
+  "vol_cm3": 107.24
+ },
+ "z_cap.step": {
+  "size": [
+   65.0,
+   90.9,
+   55.0
+  ],
+  "vol_cm3": 31.55
+ },
+ "z_motor_cage.step": {
+  "size": [
+   53.0,
+   97.5,
+   47.0
+  ],
+  "vol_cm3": 78.33
+ },
+ "z_motor_cage_plug.step": {
+  "size": [
+   43.4,
+   14.5,
+   5.0
+  ],
+  "vol_cm3": 1.54
+ }
+}

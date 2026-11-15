@@ -1,0 +1,347 @@
+{
+ "design": "ref_vminion",
+ "static_checks_ok": true,
+ "planner": "built-in planner NOT RUN (firmware only)",
+ "nominal_print_ok": null,
+ "benchmark_ok": null,
+ "step_loss_ceiling_accel_mm_s2": null,
+ "max_clean_accel_mm_s2": null,
+ "accel_margin": null,
+ "cross_track_rms_mm": null,
+ "cross_track_worst_mm": null,
+ "benchmark_time_s": null,
+ "frame_stiffness_n_per_mm": {
+  "x": 71.6,
+  "y": 29.0
+ },
+ "klipper": {
+  "ran": true,
+  "firmware": "Klipper",
+  "commit": "29d4ec2d6d840ee839333306003a400da186d41d",
+  "speed_scale_in_sweep": 2.0,
+  "shaper_rule_accel_mm_s2": 1600.0,
+  "accel_owners_would_run_mm_s2": 800.0,
+  "accel_owners_would_run_range_mm_s2": [
+   600.0,
+   800.0,
+   1000.0
+  ],
+  "basis": "Klipper's own suggested max_accel for the chosen shapers (the lower axis), times the 0.5 (0.4 to 0.65) of it that owners of three reference machines run; the resonance it rests on is the twin's prediction at the values in use (its range is under 'ranges' at the top level)",
+  "reading": "highest_clean_accel_mm_s2 is the highest acceleration of the sweep that printed cleanly: with shaping on it is a ceiling set by the sweep or by step loss, not an acceleration to run. accel_owners_would_run_mm_s2 is the usable figure.",
+  "clean_means": "the test cube prints without lost steps and within the print checks, as in the built-in sweep",
+  "as_configured": {
+   "nominal": {
+    "ok": true,
+    "errors": [],
+    "print_time_s": 302.1,
+    "cross_track_rms_mm": 0.063,
+    "cross_track_worst_mm": 0.2334,
+    "cross_track_p99_mm": 0.1606,
+    "command_smoothing_worst_mm": 0.1847,
+    "max_bulge_mm": 0.3,
+    "outline_offset_mm": -0.058
+   },
+   "highest_clean_accel_mm_s2": 36000.0,
+   "max_clean_accel_mm_s2": 36000.0,
+   "accel_margin": 12,
+   "highest_accel_tried_mm_s2": 36000.0,
+   "first_failure": null,
+   "table": [
+    {
+     "accel_mm_s2": 3000.0,
+     "ok": true,
+     "errors": [],
+     "cross_track_rms_mm": 0.0669,
+     "cross_track_worst_mm": 0.2791,
+     "max_bulge_mm": 0.3,
+     "print_time_s": 238.4
+    },
+    {
+     "accel_mm_s2": 4500.0,
+     "ok": true,
+     "errors": [],
+     "cross_track_rms_mm": 0.0688,
+     "cross_track_worst_mm": 0.3237,
+     "max_bulge_mm": 0.3,
+     "print_time_s": 227.8
+    },
+    {
+     "accel_mm_s2": 6000.0,
+     "ok": true,
+     "errors": [],
+     "cross_track_rms_mm": 0.0706,
+     "cross_track_worst_mm": 0.3755,
+     "max_bulge_mm": 0.3,
+     "print_time_s": 222.3
+    },
+    {
+     "accel_mm_s2": 7500.0,
+     "ok": true,
+     "errors": [],
+     "cross_track_rms_mm": 0.0718,
+     "cross_track_worst_mm": 0.3645,
+     "max_bulge_mm": 0.3,
+     "print_time_s": 218.9
+    },
+    {
+     "accel_mm_s2": 9000.0,
+     "ok": true,
+     "errors": [],
+     "cross_track_rms_mm": 0.073,
+     "cross_track_worst_mm": 0.432,
+     "max_bulge_mm": 0.25,
+     "print_time_s": 216.5
+    },
+    {
+     "accel_mm_s2": 12000.0,
+     "ok": true,
+     "errors": [],
+     "cross_track_rms_mm": 0.0752,
+     "cross_track_worst_mm": 0.4826,
+     "max_bulge_mm": 0.25,
+     "print_time_s": 213.5
+    },
+    {
+     "accel_mm_s2": 15000.0,
+     "ok": true,
+     "errors": [],
+     "cross_track_rms_mm": 0.0769,
+     "cross_track_worst_mm": 0.5163,
+     "max_bulge_mm": 0.25,
+     "print_time_s": 211.7
+    },
+    {
+     "accel_mm_s2": 18000.0,
+     "ok": true,
+     "errors": [],
+     "cross_track_rms_mm": 0.0783,
+     "cross_track_worst_mm": 0.5598,
+     "max_bulge_mm": 0.2,
+     "print_time_s": 210.4
+    },
+    {
+     "accel_mm_s2": 24000.0,
+     "ok": true,
+     "errors": [],
+     "cross_track_rms_mm": 0.0804,
+     "cross_track_worst_mm": 0.6209,
+     "max_bulge_mm": 0.2,
+     "print_time_s": 208.8
+    },
+    {
+     "accel_mm_s2": 30000.0,
+     "ok": true,
+     "errors": [],
+     "cross_track_rms_mm": 0.0818,
+     "cross_track_worst_mm": 0.6486,
+     "max_bulge_mm": 0.2,
+     "print_time_s": 207.7
+    },
+    {
+     "accel_mm_s2": 36000.0,
+     "ok": true,
+     "errors": [],
+     "cross_track_rms_mm": 0.0828,
+     "cross_track_worst_mm": 0.6759,
+     "max_bulge_mm": 0.2,
+     "print_time_s": 207.0
+    }
+   ]
+  },
+  "shaper_and_pressure_advance_off": {
+   "nominal": {
+    "ok": true,
+    "errors": [],
+    "print_time_s": 302.1,
+    "cross_track_rms_mm": 0.0615,
+    "cross_track_worst_mm": 0.2873,
+    "cross_track_p99_mm": 0.183,
+    "command_smoothing_worst_mm": 0.0,
+    "max_bulge_mm": 0.45,
+    "outline_offset_mm": 0.022
+   },
+   "highest_clean_accel_mm_s2": 9000.0,
+   "max_clean_accel_mm_s2": 9000.0,
+   "accel_margin": 3,
+   "highest_accel_tried_mm_s2": 36000.0,
+   "first_failure": {
+    "accel_mm_s2": 12000.0,
+    "errors": [
+     "lost_steps",
+     "print_dimension_error",
+     "print_layer_shift",
+     "print_outline_defect",
+     "print_outline_poor"
+    ],
+    "axes_losing_steps": [
+     "Y"
+    ]
+   },
+   "table": [
+    {
+     "accel_mm_s2": 3000.0,
+     "ok": true,
+     "errors": [],
+     "cross_track_rms_mm": 0.0676,
+     "cross_track_worst_mm": 0.2965,
+     "max_bulge_mm": 0.55,
+     "print_time_s": 238.4
+    },
+    {
+     "accel_mm_s2": 4500.0,
+     "ok": true,
+     "errors": [],
+     "cross_track_rms_mm": 0.0817,
+     "cross_track_worst_mm": 0.3798,
+     "max_bulge_mm": 0.6,
+     "print_time_s": 227.8
+    },
+    {
+     "accel_mm_s2": 6000.0,
+     "ok": true,
+     "errors": [],
+     "cross_track_rms_mm": 0.0924,
+     "cross_track_worst_mm": 0.4762,
+     "max_bulge_mm": 0.65,
+     "print_time_s": 222.3
+    },
+    {
+     "accel_mm_s2": 7500.0,
+     "ok": true,
+     "errors": [],
+     "cross_track_rms_mm": 0.0979,
+     "cross_track_worst_mm": 0.5825,
+     "max_bulge_mm": 0.7,
+     "print_time_s": 218.9
+    },
+    {
+     "accel_mm_s2": 9000.0,
+     "ok": true,
+     "errors": [],
+     "cross_track_rms_mm": 0.0997,
+     "cross_track_worst_mm": 0.6699,
+     "max_bulge_mm": 0.7,
+     "print_time_s": 216.5
+    },
+    {
+     "accel_mm_s2": 12000.0,
+     "ok": false,
+     "errors": [
+      "lost_steps",
+      "print_dimension_error",
+      "print_layer_shift",
+      "print_outline_defect",
+      "print_outline_poor"
+     ],
+     "cross_track_rms_mm": 1.002,
+     "cross_track_worst_mm": 3.5862,
+     "max_bulge_mm": 1.5,
+     "print_time_s": 213.5
+    },
+    {
+     "accel_mm_s2": 15000.0,
+     "ok": false,
+     "errors": [
+      "lost_steps",
+      "print_dimension_error",
+      "print_layer_shift",
+      "print_outline_defect",
+      "print_outline_poor"
+     ],
+     "cross_track_rms_mm": 2.0522,
+     "cross_track_worst_mm": 5.5754,
+     "max_bulge_mm": 1.5,
+     "print_time_s": 211.7
+    },
+    {
+     "accel_mm_s2": 18000.0,
+     "ok": false,
+     "errors": [
+      "lost_steps",
+      "print_dimension_error",
+      "print_layer_shift",
+      "print_outline_defect",
+      "print_outline_poor"
+     ],
+     "cross_track_rms_mm": 3.3593,
+     "cross_track_worst_mm": 9.9443,
+     "max_bulge_mm": 1.5,
+     "print_time_s": 210.4
+    },
+    {
+     "accel_mm_s2": 24000.0,
+     "ok": false,
+     "errors": [
+      "lost_steps",
+      "print_layer_shift",
+      "print_outline_defect",
+      "print_outline_poor"
+     ],
+     "cross_track_rms_mm": 0.9107,
+     "cross_track_worst_mm": 2.4572,
+     "max_bulge_mm": 1.5,
+     "print_time_s": 208.8
+    },
+    {
+     "accel_mm_s2": 30000.0,
+     "ok": false,
+     "errors": [
+      "lost_steps",
+      "print_layer_shift",
+      "print_outline_defect",
+      "print_outline_poor"
+     ],
+     "cross_track_rms_mm": 0.7826,
+     "cross_track_worst_mm": 2.595,
+     "max_bulge_mm": 1.5,
+     "print_time_s": 207.7
+    },
+    {
+     "accel_mm_s2": 36000.0,
+     "ok": false,
+     "errors": [
+      "lost_steps",
+      "print_dimension_error",
+      "print_layer_shift",
+      "print_outline_defect",
+      "print_outline_poor"
+     ],
+     "cross_track_rms_mm": 2.588,
+     "cross_track_worst_mm": 6.9794,
+     "max_bulge_mm": 1.5,
+     "print_time_s": 207.0
+    }
+   ]
+  },
+  "input_shaper": {
+   "x": {
+    "shaper_type": "mzv",
+    "shaper_freq": 39.6,
+    "damping_ratio": 0.065,
+    "predicted_resonance_hz": 39.4,
+    "suggested_max_accel": 4600.0
+   },
+   "y": {
+    "shaper_type": "mzv",
+    "shaper_freq": 23.6,
+    "damping_ratio": 0.069,
+    "predicted_resonance_hz": 23.5,
+    "suggested_max_accel": 1600.0
+   }
+  },
+  "pressure_advance": {
+   "value": 0.0315,
+   "basis": "equal to the twin's 32 ms melt-flow lag (direct drive, 0.4 mm nozzle: factory pressure-advance values (fitted_parameters.json: extruder_lag_s), range 0.02 to 0.058 s); not measured on this machine, no sweep run: print a pressure-advance test",
+   "from_sweep": null
+  },
+  "assumed": [
+   "belt stiffness EA 19000 N per 6 mm",
+   "extruder lag 0.0315 s (first-order, one value for every flow rate; direct drive, 0.4 mm nozzle: factory pressure-advance values (fitted_parameters.json: extruder_lag_s), range 0.02 to 0.058 s)",
+   "ringing damping ratio {'x': 0.065, 'y': 0.069} (fitted to resonance spectra; range in fitted_parameters.json)",
+   "stepper damping ratio 0.25",
+   "toolhead tilt on its guide blocks: {'x': 246.2} N/mm at the nozzle (effective block stiffness 10 N/um, fitted to two machines)"
+  ]
+ },
+ "static_errors": [],
+ "seconds": 188.9
+}

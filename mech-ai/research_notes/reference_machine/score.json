@@ -1,0 +1,278 @@
+{
+ "design": "ref_vminion",
+ "static_checks_ok": true,
+ "planner": "built-in planner (no input shaping, no pressure advance) for every top-level figure",
+ "nominal_print_ok": true,
+ "benchmark_ok": true,
+ "step_loss_ceiling_accel_mm_s2": 10500.0,
+ "max_clean_accel_mm_s2": 10500.0,
+ "accel_margin": 3.5,
+ "resonance_hz": {
+  "x": 39.5,
+  "y": 23.5
+ },
+ "frame_stiffness_n_per_mm": {
+  "x": 71.6,
+  "y": 29.0
+ },
+ "cross_track_rms_mm": 0.0638,
+ "cross_track_worst_mm": 0.3409,
+ "benchmark_time_s": 2610.7,
+ "benchmark_time_with_heatup_s": 2965.0,
+ "moving_mass_kg": {
+  "x": 0.516,
+  "y": 1.021,
+  "z": 1.498
+ },
+ "total_mass_kg": 7.433,
+ "bom_cost_usd": 514.12,
+ "first_failure": {
+  "accel_mm_s2": 12000.0,
+  "errors": [
+   "lost_steps",
+   "print_dimension_error",
+   "print_layer_shift",
+   "print_outline_defect",
+   "print_outline_poor"
+  ],
+  "axes_losing_steps": [
+   "Y"
+  ]
+ },
+ "print_speeds_mm_s": {
+  "perimeter": 45.0,
+  "infill": 60.0,
+  "travel": 150.0
+ },
+ "melt_rate": {
+  "cap_mm3_s": 11.0,
+  "requested_flow_mm3_s": {
+   "perimeter": 3.66,
+   "infill": 4.88
+  },
+  "speed_at_cap_mm_s": 135.1,
+  "flow_limited": {},
+  "flow_limited_in_2x_sweep": {},
+  "hotend_class": "v6",
+  "cap_range_mm3_s": [
+   10.0,
+   15.0
+  ]
+ },
+ "extruder": {
+  "lag_s": 0.0315,
+  "basis": "direct drive, 0.4 mm nozzle: factory pressure-advance values (fitted_parameters.json: extruder_lag_s), range 0.02 to 0.058 s"
+ },
+ "toolhead_compliance": {
+  "x": {
+   "blocks": 1,
+   "block": "MGN12H",
+   "spacing_along_rail_mm": 0.0,
+   "ball_track_mm": 32.4,
+   "arm_mm": 59.6,
+   "k_rot_nm_per_rad": 874.8,
+   "n_per_mm": 246.2,
+   "block_stiffness_used_n_per_um": 10.0,
+   "joint": "x",
+   "basis": "guide blocks turning under a force at the nozzle: K_rot = k (n L^2 / 12 + sum a_i^2), stiffness K_rot / arm^2; k = 10 N/um effective (fitted to two machines, lumps their printed mounts)"
+  }
+ },
+ "assembly": {
+  "complete": true,
+  "estimated_time_min": 40.8,
+  "needs_holding": 47,
+  "from_below": 18,
+  "times_assembly_is_turned": 2,
+  "two_move_paths": 2,
+  "fasteners": 104,
+  "fastener_types": 15,
+  "tool_changes": 13,
+  "parts": 197
+ },
+ "static_errors": [],
+ "seconds": 316.7,
+ "accel_owners_would_run_mm_s2": 800.0,
+ "shaper_rule_accel_mm_s2": 1500.0,
+ "ranges": {
+  "resonance_hz": {
+   "x": [
+    37.4,
+    39.5,
+    42.4
+   ],
+   "y": [
+    23.1,
+    23.5,
+    24.0
+   ]
+  },
+  "shaper_rule_accel_mm_s2": [
+   1500.0,
+   1500.0,
+   1600.0
+  ],
+  "accel_owners_would_run_mm_s2": [
+   600.0,
+   800.0,
+   1000.0
+  ],
+  "step_loss_ceiling_accel_mm_s2": [
+   9000.0,
+   10500.0,
+   12000.0
+  ],
+  "cross_track_rms_mm": [
+   0.0574,
+   0.0638,
+   0.074
+  ],
+  "cross_track_worst_mm": [
+   0.2583,
+   0.3409,
+   0.4068
+  ],
+  "max_clean_accel_mm_s2": [
+   9000.0,
+   10500.0,
+   12000.0
+  ]
+ },
+ "headline": {
+  "step_loss_ceiling_accel_mm_s2": {
+   "value": 10500.0,
+   "range": [
+    9000.0,
+    10500.0,
+    12000.0
+   ],
+   "meaning": "acceleration (at 2x speed) at which the simulated motors first lose steps: a ceiling, not an acceleration to run; one sweep step is not a real difference"
+  },
+  "accel_owners_would_run_mm_s2": {
+   "value": 800.0,
+   "range": [
+    600.0,
+    800.0,
+    1000.0
+   ],
+   "meaning": "acceleration an owner would run with input shaping: 0.5 (0.4 to 0.65) x Klipper's shaper smoothing rule (MZV, 0.12 mm) at the lower resonance; calibrated on three machines"
+  },
+  "resonance_hz": {
+   "value": {
+    "x": 39.5,
+    "y": 23.5
+   },
+   "range": {
+    "x": [
+     37.4,
+     39.5,
+     42.4
+    ],
+    "y": [
+     23.1,
+     23.5,
+     24.0
+    ]
+   },
+   "meaning": "frequency each axis's load rings at"
+  },
+  "cross_track_rms_mm": {
+   "value": 0.0638,
+   "range": [
+    0.0574,
+    0.0638,
+    0.074
+   ],
+   "meaning": "sideways error from the planned path at the design's own settings"
+  },
+  "cross_track_worst_mm": {
+   "value": 0.3409,
+   "range": [
+    0.2583,
+    0.3409,
+    0.4068
+   ],
+   "meaning": "its largest value"
+  },
+  "benchmark_time_s": {
+   "value": 2610.7,
+   "range": null,
+   "meaning": "three benchmark parts at the design's own speeds, held to the hotend's melt rate; the ranged parameters do not enter (the melt-rate cap would, if a requested speed were flow-limited: see melt_rate)"
+  }
+ },
+ "ranges_basis": "low / expected / high from the ranges in mechloop/twin/fitted_parameters.json; expected is the scored value",
+ "uncertainty_runs": {
+  "soft": {
+   "parameters": {
+    "belt_ea_n": 15000.0,
+    "toolhead_tilt_n_per_um": 7.5,
+    "ringing_damping_ratio": {
+     "toolhead_axis": 0.043,
+     "gantry_or_bed_axis": 0.035
+    },
+    "extruder_lag_s": 0.058
+   },
+   "resonance_hz": {
+    "x": 37.4,
+    "y": 23.2
+   },
+   "nominal_print_ok": true,
+   "cross_track_rms_mm": 0.074,
+   "cross_track_worst_mm": 0.4068,
+   "max_bulge_mm": 0.45,
+   "step_loss_ceiling_accel_mm_s2": 9000.0,
+   "first_failure": {
+    "accel_mm_s2": 10500.0,
+    "errors": [
+     "lost_steps",
+     "print_dimension_error",
+     "print_layer_shift",
+     "print_outline_defect",
+     "print_outline_poor"
+    ]
+   }
+  },
+  "stiff": {
+   "parameters": {
+    "belt_ea_n": 27000.0,
+    "toolhead_tilt_n_per_um": 16.0,
+    "ringing_damping_ratio": {
+     "toolhead_axis": 0.116,
+     "gantry_or_bed_axis": 0.118
+    },
+    "extruder_lag_s": 0.02
+   },
+   "resonance_hz": {
+    "x": 42.4,
+    "y": 24.0
+   },
+   "nominal_print_ok": true,
+   "cross_track_rms_mm": 0.0574,
+   "cross_track_worst_mm": 0.2583,
+   "max_bulge_mm": 0.45,
+   "step_loss_ceiling_accel_mm_s2": 12000.0,
+   "first_failure": {
+    "accel_mm_s2": 15000.0,
+    "errors": [
+     "lost_steps",
+     "print_dimension_error",
+     "print_layer_shift",
+     "print_outline_defect",
+     "print_outline_poor"
+    ]
+   }
+  },
+  "expected": {
+   "parameters": "the values in use (fitted_parameters.json)",
+   "resonance_hz": {
+    "x": 39.5,
+    "y": 23.5
+   },
+   "nominal_print_ok": true,
+   "cross_track_rms_mm": 0.0638,
+   "cross_track_worst_mm": 0.3409,
+   "step_loss_ceiling_accel_mm_s2": 10500.0
+  }
+ },
+ "ranges_varied": "belt stiffness, toolhead block stiffness, ringing damping ratio, extruder lag: soft / lightly damped / slow end against stiff / well damped / fast end of their fitted ranges",
+ "ranges_not_varied": "friction, motor torque curve, moving mass, FEA frame stiffness, stepper damping (no data to give them a range)"
+}

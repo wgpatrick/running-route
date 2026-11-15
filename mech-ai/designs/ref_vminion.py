@@ -16,7 +16,8 @@ the 16.5 mm rubber feet are not drawn):
   column   3060 x 345 standing beside the link, the Z rail on its REAR face
   X arm    2020 x 362 behind the column on a 4 mm plate on the Z block; X rail on top of it; toolhead hangs in front
 Joints: y = bed on the base (world -> ybody), z = arm on the column (world -> zbody), x = toolhead on the arm
-(zbody -> xbody). Home pose: toolhead and bed centred, nozzle 0.1 mm above the print surface (z joint = 0).
+(zbody -> xbody). Home pose: toolhead and bed centred, arm at the TOP of its travel (z joint = 0); the Z joint runs
+downward and z = 180 is the nozzle 0.1 mm above the print surface (the harness's convention: see the toolhead constants).
 
 SUBSTITUTIONS (catalogue part used for a part the catalogue lacks) and SIMPLIFICATIONS are listed in the doc; the
 flags S1.. in the comments below refer to that list.

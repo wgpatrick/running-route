@@ -1,0 +1,82 @@
+{
+ "design": "ref_vminion",
+ "metrics": {
+  "complete": true,
+  "steps": 160,
+  "parts": 197,
+  "fasteners": 104,
+  "fastener_types": 15,
+  "tools": [
+   "2 mm hex key",
+   "2.5 mm hex key",
+   "3 mm hex key",
+   "4 mm hex key",
+   "5 mm hex key",
+   "6 mm hex key"
+  ],
+  "tool_changes": 13,
+  "needs_holding": 47,
+  "from_below": 18,
+  "two_move_paths": 2,
+  "unsupported_steps": 74,
+  "times_assembly_is_turned": 2,
+  "subassemblies": {
+   "x_drive": 44.0,
+   "psu_panel": 41.0,
+   "board_panel": 284.0
+  },
+  "estimated_time_s": 2449.0,
+  "estimated_time_min": 40.8,
+  "trapped": [],
+  "not_placed": []
+ },
+ "needs_holding": [
+  "y_idler",
+  "z_rail",
+  "x_beam",
+  "x_idler_block",
+  "x_idler",
+  "x_plate",
+  "z_carriage",
+  "z_cap",
+  "y_motor_plate",
+  "x_drive",
+  "z_motor_cage",
+  "join_plate_t",
+  "join_plate_front",
+  "z_nut_block",
+  "y_belt_mount",
+  "bed_plate",
+  "bed_nut_2",
+  "bed_nut_1",
+  "bed_nut_0",
+  "y_endstop_spacer_1",
+  "y_endstop",
+  "y_endstop_spacer_0",
+  "x_endstop",
+  "inlet",
+  "case_back",
+  "inlet_nut_1",
+  "inlet_nut_0",
+  "z_motor",
+  "psu_panel",
+  "board_panel"
+ ],
+ "from_below": [
+  "t_plate_screw_3",
+  "t_plate_screw_2",
+  "t_plate_screw_1",
+  "t_plate_screw_0",
+  "z_nut_block_bolt_1",
+  "z_nut_block_bolt_0",
+  "extruder_screw_1",
+  "extruder_screw_0",
+  "inlet_screw_1",
+  "inlet_screw_0"
+ ],
+ "trapped": {},
+ "not_placed": [],
+ "artifacts": {
+  "instructions": "/tmp/claude-0/-home-user-running-route/87481e0a-8f62-5246-a6fc-1c1f80e15b45/scratchpad/refmachine/out_assemble/ref_vminion/BUILD.md"
+ }
+}

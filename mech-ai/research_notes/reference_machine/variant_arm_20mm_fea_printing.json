@@ -1,0 +1,463 @@
+{
+ "design": "ref_vminion",
+ "ok": true,
+ "partial": "only some verifiers were run; this is not a full pass",
+ "summary": {
+  "fea": "pass (0 errors, 0 warnings, 134.3s)",
+  "printing": "pass (0 errors, 1 warnings, 18.1s)"
+ },
+ "metrics": {
+  "fea": {
+   "z_nut_thrust": {
+    "component": "z_nut_block",
+    "material": "al6061",
+    "reaction_imbalance": 0.0,
+    "fos": 5520.0,
+    "min_fos": 3.0,
+    "yield_mpa": 276,
+    "peak_vm_mpa": 0.05,
+    "peak_at": [
+     -175.9,
+     26.8,
+     134.8
+    ],
+    "max_deflection_mm": 0.0,
+    "deflection_at": [
+     -177.0,
+     26.0,
+     122.4
+    ],
+    "nodes": 26701,
+    "mesh_size": 1.963,
+    "applied_force_n": [
+     0.0,
+     0.0,
+     47.08800000000001
+    ],
+    "load_area_mm2": 1428.24
+   },
+   "nozzle_stiffness_x": {
+    "components": [
+     "column",
+     "z_rail",
+     "z_carriage",
+     "x_plate",
+     "x_beam",
+     "x_rail",
+     "x_carriage",
+     "eva_carriage",
+     "hotend"
+    ],
+    "nodes": 103841,
+    "mesh_size": 8.449,
+    "load_area_mm2": 350.32,
+    "reaction_imbalance": 0.0,
+    "probe_vector_mm": [
+     0.03841,
+     0.00145,
+     0.00035
+    ],
+    "deflection_mm": 0.03844,
+    "deflection_at": [
+     -0.0,
+     0.0,
+     114.9
+    ],
+    "stiffness_n_per_mm": 78.0,
+    "joints": "bonded where parts touch",
+    "deflection_screwed_joints_mm": 0.0405,
+    "stiffness_low_n_per_mm": 74.1,
+    "screwed_joints": [
+     {
+      "joint": "column / z_rail",
+      "screws": 6,
+      "nodes_kept": 236,
+      "nodes_released": 435
+     },
+     {
+      "joint": "z_carriage / x_plate",
+      "screws": 4,
+      "nodes_kept": 383,
+      "nodes_released": 522
+     },
+     {
+      "joint": "x_plate / x_beam",
+      "screws": 2,
+      "nodes_kept": 22,
+      "nodes_released": 91
+     },
+     {
+      "joint": "x_plate / x_beam",
+      "screws": 2,
+      "nodes_kept": 22,
+      "nodes_released": 91
+     },
+     {
+      "joint": "x_beam / x_rail",
+      "screws": 10,
+      "nodes_kept": 40,
+      "nodes_released": 143
+     },
+     {
+      "joint": "x_beam / x_rail",
+      "screws": 10,
+      "nodes_kept": 40,
+      "nodes_released": 143
+     },
+     {
+      "joint": "x_carriage / eva_carriage",
+      "screws": 4,
+      "nodes_kept": 404,
+      "nodes_released": 573
+     }
+    ],
+    "stiffness_range_note": "low: joints held only around their screws; high: every touching face bonded. The real machine is in between; no bolt preload or contact is modelled.",
+    "parts": {
+     "column": {
+      "peak_vm_mpa": 0.05,
+      "fos": 5060.9
+     },
+     "z_rail": {
+      "peak_vm_mpa": 0.08,
+      "fos": 3234.3
+     },
+     "z_carriage": {
+      "peak_vm_mpa": 0.41,
+      "fos": 603.7
+     },
+     "x_plate": {
+      "peak_vm_mpa": 0.18,
+      "fos": 1493.6
+     },
+     "x_beam": {
+      "peak_vm_mpa": 0.25,
+      "fos": 1087.8
+     },
+     "x_rail": {
+      "peak_vm_mpa": 0.37,
+      "fos": 674.4
+     },
+     "x_carriage": {
+      "peak_vm_mpa": 1.54,
+      "fos": 162.8
+     },
+     "eva_carriage": {
+      "peak_vm_mpa": 0.5,
+      "fos": 90.2
+     },
+     "hotend": {
+      "peak_vm_mpa": 18.8,
+      "fos": 14.7
+     }
+    }
+   },
+   "nozzle_stiffness_y": {
+    "components": [
+     "column",
+     "z_rail",
+     "z_carriage",
+     "x_plate",
+     "x_beam",
+     "x_rail",
+     "x_carriage",
+     "eva_carriage",
+     "hotend"
+    ],
+    "nodes": 103841,
+    "mesh_size": 8.449,
+    "load_area_mm2": 350.32,
+    "reaction_imbalance": 0.0,
+    "probe_vector_mm": [
+     0.00166,
+     0.07317,
+     -0.00796
+    ],
+    "deflection_mm": 0.07362,
+    "deflection_at": [
+     -0.0,
+     0.0,
+     114.9
+    ],
+    "stiffness_n_per_mm": 40.7,
+    "joints": "bonded where parts touch",
+    "deflection_screwed_joints_mm": 0.09587,
+    "stiffness_low_n_per_mm": 31.3,
+    "screwed_joints": [
+     {
+      "joint": "column / z_rail",
+      "screws": 6,
+      "nodes_kept": 236,
+      "nodes_released": 435
+     },
+     {
+      "joint": "z_carriage / x_plate",
+      "screws": 4,
+      "nodes_kept": 383,
+      "nodes_released": 522
+     },
+     {
+      "joint": "x_plate / x_beam",
+      "screws": 2,
+      "nodes_kept": 22,
+      "nodes_released": 91
+     },
+     {
+      "joint": "x_plate / x_beam",
+      "screws": 2,
+      "nodes_kept": 22,
+      "nodes_released": 91
+     },
+     {
+      "joint": "x_beam / x_rail",
+      "screws": 10,
+      "nodes_kept": 40,
+      "nodes_released": 143
+     },
+     {
+      "joint": "x_beam / x_rail",
+      "screws": 10,
+      "nodes_kept": 40,
+      "nodes_released": 143
+     },
+     {
+      "joint": "x_carriage / eva_carriage",
+      "screws": 4,
+      "nodes_kept": 404,
+      "nodes_released": 573
+     }
+    ],
+    "stiffness_range_note": "low: joints held only around their screws; high: every touching face bonded. The real machine is in between; no bolt preload or contact is modelled.",
+    "parts": {
+     "column": {
+      "peak_vm_mpa": 0.61,
+      "fos": 454.4
+     },
+     "z_rail": {
+      "peak_vm_mpa": 1.28,
+      "fos": 195.7
+     },
+     "z_carriage": {
+      "peak_vm_mpa": 4.39,
+      "fos": 57.0
+     },
+     "x_plate": {
+      "peak_vm_mpa": 0.53,
+      "fos": 518.5
+     },
+     "x_beam": {
+      "peak_vm_mpa": 0.5,
+      "fos": 556.4
+     },
+     "x_rail": {
+      "peak_vm_mpa": 0.73,
+      "fos": 342.9
+     },
+     "x_carriage": {
+      "peak_vm_mpa": 0.85,
+      "fos": 294.7
+     },
+     "eva_carriage": {
+      "peak_vm_mpa": 0.99,
+      "fos": 45.5
+     },
+     "hotend": {
+      "peak_vm_mpa": 19.84,
+      "fos": 13.9
+     }
+    }
+   },
+   "payload_x3_on_bed": {
+    "components": [
+     "y_carriage",
+     "sub_plate",
+     "bed_standoff_0",
+     "bed_standoff_1",
+     "bed_standoff_2",
+     "bed_plate"
+    ],
+    "nodes": 70612,
+    "mesh_size": 4.368,
+    "load_area_mm2": 33733.47,
+    "reaction_imbalance": 0.0,
+    "probe_vector_mm": [
+     -0.00018,
+     -4e-05,
+     -0.00676
+    ],
+    "deflection_mm": 0.00676,
+    "deflection_at": [
+     92.0,
+     92.0,
+     94.0
+    ],
+    "stiffness_n_per_mm": 7331.1,
+    "joints": "bonded where parts touch",
+    "deflection_screwed_joints_mm": 0.00868,
+    "stiffness_low_n_per_mm": 5714.4,
+    "screwed_joints": [
+     {
+      "joint": "y_carriage / sub_plate",
+      "screws": 4,
+      "nodes_kept": 538,
+      "nodes_released": 983
+     }
+    ],
+    "stiffness_range_note": "low: joints held only around their screws; high: every touching face bonded. The real machine is in between; no bolt preload or contact is modelled.",
+    "parts": {
+     "y_carriage": {
+      "peak_vm_mpa": 0.8,
+      "fos": 313.5
+     },
+     "sub_plate": {
+      "peak_vm_mpa": 3.66,
+      "fos": 75.4
+     },
+     "bed_standoff_0": {
+      "peak_vm_mpa": 5.56,
+      "fos": 49.6
+     },
+     "bed_standoff_1": {
+      "peak_vm_mpa": 5.05,
+      "fos": 54.7
+     },
+     "bed_standoff_2": {
+      "peak_vm_mpa": 3.43,
+      "fos": 80.6
+     },
+     "bed_plate": {
+      "peak_vm_mpa": 3.94,
+      "fos": 26.6
+     }
+    }
+   },
+   "bed_heated_60K": {
+    "components": [
+     "y_carriage",
+     "sub_plate",
+     "bed_standoff_0",
+     "bed_standoff_1",
+     "bed_standoff_2",
+     "bed_plate"
+    ],
+    "nodes": 70612,
+    "temperature_rise_k": {
+     "bed_standoff_0": 30.0,
+     "bed_standoff_1": 30.0,
+     "bed_standoff_2": 30.0,
+     "bed_plate": 60.0
+    },
+    "max_growth_mm": 0.2476,
+    "joints": "bonded where parts touch",
+    "probe_movement_mm": {
+     "carriage": [
+      0.0,
+      0.0,
+      0.0
+     ],
+     "bed": [
+      -0.006,
+      -0.0064,
+      0.0084
+     ]
+    },
+    "gap_change_mm": {
+     "nozzle gap": -0.0084
+    },
+    "bow_mm": {
+     "bed_plate": 0.18
+    }
+   }
+  },
+  "printing": {
+   "test_part": "20 x 20 x 4 mm cube",
+   "print_time_s": 281.8,
+   "heatup_s": 118.1,
+   "job_time_s": 399.9,
+   "load_resonance_hz": [
+    39.8,
+    24.2,
+    137.7
+   ],
+   "series_stiffness_n_per_mm": [
+    38.1,
+    26.7,
+    null
+   ],
+   "frame_stiffness_from_fea_n_per_mm": {
+    "x": 74.1,
+    "y": 31.3
+   },
+   "belts_per_axis": {
+    "x": [
+     {
+      "belt": "x_belt",
+      "width_mm": 6.0,
+      "n_per_mm": 115.3
+     }
+    ],
+    "y": [
+     {
+      "belt": "y_belt",
+      "width_mm": 9.0,
+      "n_per_mm": 180.1
+     }
+    ]
+   },
+   "print_speeds_mm_s": {
+    "perimeter": 45.0,
+    "infill": 60.0,
+    "travel": 150.0
+   },
+   "worst_lag_mm": [
+    0.2356,
+    0.4717,
+    0.0047
+   ],
+   "cross_track_rms_mm": 0.0597,
+   "cross_track_worst_mm": 0.335,
+   "outline_match_min": 0.9864,
+   "outline_offset_mm": {
+    "mean": 0.017,
+    "worst": 0.02
+   },
+   "max_bulge_mm": 0.45,
+   "machine_collisions": 0
+  }
+ },
+ "findings": [
+  {
+   "verifier": "printing",
+   "severity": "warning",
+   "code": "corner_bulge",
+   "message": "Test print: Corners and seams bulge up to 0.45 mm (material keeps flowing while the nozzle slows; size depends on the 32 ms extruder lag (direct drive, 0.4 mm nozzle: factory pressure-advance values (fitted_parameters.json: extruder_lag_s), range 0.02 to 0.058 s)).",
+   "data": {}
+  },
+  {
+   "verifier": "fea",
+   "severity": "info",
+   "code": "fea_fixture_peak",
+   "message": "z_nut_thrust: raw peak 0.08 MPa is at the fixed boundary (artificially stiff clamp); governing stress taken away from it.",
+   "data": {
+    "loadcase": "z_nut_thrust"
+   }
+  },
+  {
+   "verifier": "fea",
+   "severity": "info",
+   "code": "overbuilt",
+   "message": "z_nut_thrust: FoS 5520.0 is far above the 3.0 target; mass could be removed.",
+   "data": {
+    "loadcase": "z_nut_thrust"
+   }
+  }
+ ],
+ "findings_truncated": 0,
+ "artifacts": {
+  "step": "/tmp/claude-0/-home-user-running-route/87481e0a-8f62-5246-a6fc-1c1f80e15b45/scratchpad/refmachine/out_z20/ref_vminion/ref_vminion.step",
+  "iteration": 1,
+  "seconds": {
+   "verify": 155.6,
+   "render_and_export": 3.2
+  }
+ }
+}

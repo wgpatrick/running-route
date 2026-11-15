@@ -1,0 +1,3596 @@
+{
+ "design": "real_printed_parts",
+ "ok": false,
+ "partial": "only some verifiers were run; this is not a full pass",
+ "summary": {
+  "manufacture": "FAIL (15 errors, 8 warnings, 15.9s)"
+ },
+ "metrics": {
+  "manufacture": {
+   "custom_parts": 31,
+   "by_process": {
+    "printed": 31
+   },
+   "shop": "generic",
+   "limits_overridden": null,
+   "machining_setups_total": null,
+   "machining_cost_estimate_usd_qty1": null,
+   "parts": {
+    "3030_Spool_Holder_Mount": {
+     "process": "printed",
+     "material": "petg",
+     "up": "+Z",
+     "up_vector": [
+      -0.0,
+      -0.0,
+      1.0
+     ],
+     "support_area_mm2": 79.0,
+     "footprint_mm2": 2490.0,
+     "height_mm": 14.5,
+     "lateral_mm": [
+      30.0,
+      90.0
+     ],
+     "flat_overhang_mm2": 19.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.87,
+     "slenderness": 0.3,
+     "bridges": {
+      "max_span_mm": 2.2,
+      "over_5mm_mm2": 0.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 218.0,
+       "footprint_mm2": 302.0,
+       "height_mm": 90.0,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 219.0,
+       "footprint_mm2": 256.0,
+       "height_mm": 90.0,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 431.0,
+       "footprint_mm2": 209.0,
+       "height_mm": 30.0,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 428.0,
+       "footprint_mm2": 209.0,
+       "height_mm": 30.0,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 79.0,
+       "footprint_mm2": 2490.0,
+       "height_mm": 14.5,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 1881.0,
+       "footprint_mm2": 135.0,
+       "height_mm": 14.5,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 1.37,
+     "typical_wall_mm": 4.11,
+     "holes_opening_on_bed": 0,
+     "warp": {
+      "longest_bed_dimension_mm": 90.0,
+      "open_air_limit_mm": 160.0,
+      "index": 0.56,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 14.6,
+      "print_hours": 0.85,
+      "material_usd": 0.37,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "3030_end_cap": {
+     "process": "printed",
+     "material": "petg",
+     "up": "-Z",
+     "up_vector": [
+      -0.0,
+      -0.0,
+      -1.0
+     ],
+     "support_area_mm2": 59.0,
+     "footprint_mm2": 797.0,
+     "height_mm": 8.0,
+     "lateral_mm": [
+      30.0,
+      30.0
+     ],
+     "flat_overhang_mm2": 0.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.9,
+     "slenderness": 0.3,
+     "bridges": {
+      "max_span_mm": 0.0,
+      "over_5mm_mm2": 0.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 85.0,
+       "footprint_mm2": 92.0,
+       "height_mm": 30.0,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 83.0,
+       "footprint_mm2": 92.0,
+       "height_mm": 30.0,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 78.0,
+       "footprint_mm2": 92.0,
+       "height_mm": 30.0,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 73.0,
+       "footprint_mm2": 92.0,
+       "height_mm": 30.0,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 192.0,
+       "footprint_mm2": 361.0,
+       "height_mm": 8.0,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 59.0,
+       "footprint_mm2": 797.0,
+       "height_mm": 8.0,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 2.84,
+     "typical_wall_mm": 3.31,
+     "holes_opening_on_bed": 0,
+     "warp": {
+      "longest_bed_dimension_mm": 30.0,
+      "open_air_limit_mm": 160.0,
+      "index": 0.19,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 4.9,
+      "print_hours": 0.32,
+      "material_usd": 0.12,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "LJ8_probe_mount_8mm": {
+     "process": "printed",
+     "material": "petg",
+     "up": "+Z",
+     "up_vector": [
+      -0.0,
+      -0.0,
+      1.0
+     ],
+     "support_area_mm2": 57.0,
+     "footprint_mm2": 71.0,
+     "height_mm": 22.0,
+     "lateral_mm": [
+      13.8,
+      16.5
+     ],
+     "flat_overhang_mm2": 14.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.34,
+     "slenderness": 2.6,
+     "bridges": {
+      "max_span_mm": 2.0,
+      "over_5mm_mm2": 0.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 317.0,
+       "footprint_mm2": 30.0,
+       "height_mm": 13.8,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 206.0,
+       "footprint_mm2": 137.0,
+       "height_mm": 13.8,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 160.0,
+       "footprint_mm2": 21.0,
+       "height_mm": 16.5,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 143.0,
+       "footprint_mm2": 105.0,
+       "height_mm": 16.5,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 57.0,
+       "footprint_mm2": 71.0,
+       "height_mm": 22.0,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 84.0,
+       "footprint_mm2": 46.0,
+       "height_mm": 22.0,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 0.12,
+     "typical_wall_mm": 1.57,
+     "holes_opening_on_bed": 1,
+     "warp": {
+      "longest_bed_dimension_mm": 16.5,
+      "open_air_limit_mm": 160.0,
+      "index": 0.1,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 2.2,
+      "print_hours": 0.17,
+      "material_usd": 0.05,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "TriHorn_Duct": {
+     "process": "printed",
+     "checked": false
+    },
+    "back_cartesian": {
+     "process": "printed",
+     "material": "petg",
+     "up": "+Y",
+     "up_vector": [
+      -0.0,
+      1.0,
+      -0.0
+     ],
+     "support_area_mm2": 0.0,
+     "footprint_mm2": 2342.0,
+     "height_mm": 32.0,
+     "lateral_mm": [
+      44.1,
+      71.0
+     ],
+     "flat_overhang_mm2": 926.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.68,
+     "slenderness": 0.7,
+     "bridges": {
+      "max_span_mm": 13.6,
+      "over_5mm_mm2": 810.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 1144.0,
+       "footprint_mm2": 313.0,
+       "height_mm": 44.1,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 1143.0,
+       "footprint_mm2": 320.0,
+       "height_mm": 44.1,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 0.0,
+       "footprint_mm2": 2342.0,
+       "height_mm": 32.0,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 649.0,
+       "footprint_mm2": 17.0,
+       "height_mm": 32.0,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 615.0,
+       "footprint_mm2": 684.0,
+       "height_mm": 71.0,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 337.0,
+       "footprint_mm2": 210.0,
+       "height_mm": 71.0,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 0.3,
+     "typical_wall_mm": 3.92,
+     "holes_opening_on_bed": 6,
+     "warp": {
+      "longest_bed_dimension_mm": 71.0,
+      "open_air_limit_mm": 160.0,
+      "index": 0.44,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 28.2,
+      "print_hours": 1.59,
+      "material_usd": 0.71,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "bed_wire_guide_end": {
+     "process": "printed",
+     "material": "petg",
+     "up": "-Y",
+     "up_vector": [
+      0.0,
+      -1.0,
+      0.0
+     ],
+     "support_area_mm2": 75.0,
+     "footprint_mm2": 832.0,
+     "height_mm": 15.0,
+     "lateral_mm": [
+      29.8,
+      29.8
+     ],
+     "flat_overhang_mm2": 42.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.8,
+     "slenderness": 0.5,
+     "bridges": {
+      "max_span_mm": 4.0,
+      "over_5mm_mm2": 0.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 18.0,
+       "footprint_mm2": 196.0,
+       "height_mm": 29.8,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 20.0,
+       "footprint_mm2": 196.0,
+       "height_mm": 29.8,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 342.0,
+       "footprint_mm2": 90.0,
+       "height_mm": 15.0,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 75.0,
+       "footprint_mm2": 832.0,
+       "height_mm": 15.0,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 162.0,
+       "footprint_mm2": 192.0,
+       "height_mm": 29.8,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 149.0,
+       "footprint_mm2": 356.0,
+       "height_mm": 29.8,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 0.21,
+     "typical_wall_mm": 3.86,
+     "holes_opening_on_bed": 1,
+     "warp": {
+      "longest_bed_dimension_mm": 29.8,
+      "open_air_limit_mm": 160.0,
+      "index": 0.19,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 6.9,
+      "print_hours": 0.42,
+      "material_usd": 0.17,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "bed_wire_guide_start": {
+     "process": "printed",
+     "material": "petg",
+     "up": "+Z",
+     "up_vector": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "support_area_mm2": 20.0,
+     "footprint_mm2": 623.0,
+     "height_mm": 11.0,
+     "lateral_mm": [
+      30.0,
+      38.0
+     ],
+     "flat_overhang_mm2": 10.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.93,
+     "slenderness": 0.4,
+     "bridges": {
+      "max_span_mm": 3.0,
+      "over_5mm_mm2": 0.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 161.0,
+       "footprint_mm2": 61.0,
+       "height_mm": 38.0,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 134.0,
+       "footprint_mm2": 110.0,
+       "height_mm": 38.0,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 268.0,
+       "footprint_mm2": 20.0,
+       "height_mm": 30.0,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 271.0,
+       "footprint_mm2": 20.0,
+       "height_mm": 30.0,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 20.0,
+       "footprint_mm2": 623.0,
+       "height_mm": 11.0,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 460.0,
+       "footprint_mm2": 40.0,
+       "height_mm": 11.0,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 0.15,
+     "typical_wall_mm": 2.45,
+     "holes_opening_on_bed": 2,
+     "warp": {
+      "longest_bed_dimension_mm": 38.0,
+      "open_air_limit_mm": 160.0,
+      "index": 0.24,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 4.2,
+      "print_hours": 0.28,
+      "material_usd": 0.1,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "bmo_face": {
+     "process": "printed",
+     "material": "petg",
+     "up": "+Z",
+     "up_vector": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "support_area_mm2": 331.0,
+     "footprint_mm2": 389.0,
+     "height_mm": 43.1,
+     "lateral_mm": [
+      22.0,
+      40.0
+     ],
+     "flat_overhang_mm2": 100.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.33,
+     "slenderness": 2.2,
+     "bridges": {
+      "max_span_mm": 5.3,
+      "over_5mm_mm2": 3.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 510.0,
+       "footprint_mm2": 371.0,
+       "height_mm": 40.0,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 467.0,
+       "footprint_mm2": 392.0,
+       "height_mm": 40.0,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 788.0,
+       "footprint_mm2": 383.0,
+       "height_mm": 22.0,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 335.0,
+       "footprint_mm2": 353.0,
+       "height_mm": 22.0,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 331.0,
+       "footprint_mm2": 389.0,
+       "height_mm": 43.1,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 535.0,
+       "footprint_mm2": 164.0,
+       "height_mm": 43.1,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 0.25,
+     "typical_wall_mm": 2.98,
+     "holes_opening_on_bed": 0,
+     "warp": {
+      "longest_bed_dimension_mm": 40.0,
+      "open_air_limit_mm": 160.0,
+      "index": 0.25,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 12.4,
+      "print_hours": 0.73,
+      "material_usd": 0.31,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "bmo_support": {
+     "process": "printed",
+     "material": "petg",
+     "up": "+Z",
+     "up_vector": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "support_area_mm2": 108.0,
+     "footprint_mm2": 279.0,
+     "height_mm": 9.0,
+     "lateral_mm": [
+      20.3,
+      40.0
+     ],
+     "flat_overhang_mm2": 8.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.61,
+     "slenderness": 0.5,
+     "bridges": {
+      "max_span_mm": 1.9,
+      "over_5mm_mm2": 0.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 149.0,
+       "footprint_mm2": 55.0,
+       "height_mm": 40.0,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 150.0,
+       "footprint_mm2": 55.0,
+       "height_mm": 40.0,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 86.0,
+       "footprint_mm2": 81.0,
+       "height_mm": 20.3,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 81.0,
+       "footprint_mm2": 118.0,
+       "height_mm": 20.3,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 108.0,
+       "footprint_mm2": 279.0,
+       "height_mm": 9.0,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 333.0,
+       "footprint_mm2": 30.0,
+       "height_mm": 9.0,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 0.01,
+     "typical_wall_mm": 1.75,
+     "holes_opening_on_bed": 0,
+     "warp": {
+      "longest_bed_dimension_mm": 40.0,
+      "open_air_limit_mm": 160.0,
+      "index": 0.25,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 2.2,
+      "print_hours": 0.17,
+      "material_usd": 0.06,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "bottom_mgn12_short_duct": {
+     "process": "printed",
+     "material": "petg",
+     "up": "-Y",
+     "up_vector": [
+      -0.0,
+      -1.0,
+      -0.0
+     ],
+     "support_area_mm2": 97.0,
+     "footprint_mm2": 1163.0,
+     "height_mm": 22.2,
+     "lateral_mm": [
+      27.0,
+      44.1
+     ],
+     "flat_overhang_mm2": 130.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.75,
+     "slenderness": 0.7,
+     "bridges": {
+      "max_span_mm": 26.2,
+      "over_5mm_mm2": 75.0,
+      "unsupported_ceiling_mm2": 13.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 68.0,
+       "footprint_mm2": 149.0,
+       "height_mm": 44.1,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 68.0,
+       "footprint_mm2": 149.0,
+       "height_mm": 44.1,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 1022.0,
+       "footprint_mm2": 109.0,
+       "height_mm": 22.2,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 97.0,
+       "footprint_mm2": 1163.0,
+       "height_mm": 22.2,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 0.0,
+       "footprint_mm2": 520.0,
+       "height_mm": 27.0,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 188.0,
+       "footprint_mm2": 205.0,
+       "height_mm": 27.0,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 0.9,
+     "typical_wall_mm": 3.52,
+     "holes_opening_on_bed": 0,
+     "warp": {
+      "longest_bed_dimension_mm": 44.1,
+      "open_air_limit_mm": 160.0,
+      "index": 0.28,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 8.8,
+      "print_hours": 0.53,
+      "material_usd": 0.22,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "cartesian_cable_fin": {
+     "process": "printed",
+     "material": "petg",
+     "up": "+Y",
+     "up_vector": [
+      -0.0,
+      1.0,
+      -0.0
+     ],
+     "support_area_mm2": 2.0,
+     "footprint_mm2": 122.0,
+     "height_mm": 35.0,
+     "lateral_mm": [
+      15.3,
+      16.4
+     ],
+     "flat_overhang_mm2": 44.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.58,
+     "slenderness": 3.2,
+     "bridges": {
+      "max_span_mm": 10.1,
+      "over_5mm_mm2": 3.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 376.0,
+       "footprint_mm2": 6.0,
+       "height_mm": 15.3,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 375.0,
+       "footprint_mm2": 5.0,
+       "height_mm": 15.3,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 2.0,
+       "footprint_mm2": 122.0,
+       "height_mm": 35.0,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 35.0,
+       "footprint_mm2": 15.0,
+       "height_mm": 35.0,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 324.0,
+       "footprint_mm2": 56.0,
+       "height_mm": 16.4,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 412.0,
+       "footprint_mm2": 0.0,
+       "height_mm": 16.4,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 0.01,
+     "typical_wall_mm": 1.84,
+     "holes_opening_on_bed": 3,
+     "warp": {
+      "longest_bed_dimension_mm": 16.4,
+      "open_air_limit_mm": 160.0,
+      "index": 0.1,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 3.3,
+      "print_hours": 0.23,
+      "material_usd": 0.08,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "pillow_block": {
+     "process": "printed",
+     "material": "petg",
+     "up": "+Z",
+     "up_vector": [
+      0.0,
+      0.0,
+      1.0
+     ],
+     "support_area_mm2": 0.0,
+     "footprint_mm2": 1278.0,
+     "height_mm": 9.0,
+     "lateral_mm": [
+      38.0,
+      38.0
+     ],
+     "flat_overhang_mm2": 0.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.96,
+     "slenderness": 0.3,
+     "bridges": {
+      "max_span_mm": 0.0,
+      "over_5mm_mm2": 0.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 29.0,
+       "footprint_mm2": 244.0,
+       "height_mm": 38.0,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 29.0,
+       "footprint_mm2": 244.0,
+       "height_mm": 38.0,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 29.0,
+       "footprint_mm2": 244.0,
+       "height_mm": 38.0,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 29.0,
+       "footprint_mm2": 244.0,
+       "height_mm": 38.0,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 0.0,
+       "footprint_mm2": 1278.0,
+       "height_mm": 9.0,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 0.0,
+       "footprint_mm2": 875.0,
+       "height_mm": 9.0,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 1.85,
+     "typical_wall_mm": 4.84,
+     "holes_opening_on_bed": 0,
+     "warp": {
+      "longest_bed_dimension_mm": 38.0,
+      "open_air_limit_mm": 160.0,
+      "index": 0.24,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 8.4,
+      "print_hours": 0.51,
+      "material_usd": 0.21,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "ratrig_eva_shroud": {
+     "process": "printed",
+     "checked": false
+    },
+    "side_legs": {
+     "process": "printed",
+     "material": "petg",
+     "up": "+Z",
+     "up_vector": [
+      -0.0,
+      -0.0,
+      1.0
+     ],
+     "support_area_mm2": 502.0,
+     "footprint_mm2": 2450.0,
+     "height_mm": 20.0,
+     "lateral_mm": [
+      47.5,
+      107.0
+     ],
+     "flat_overhang_mm2": 81.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.65,
+     "slenderness": 0.4,
+     "bridges": {
+      "max_span_mm": 2.8,
+      "over_5mm_mm2": 0.0,
+      "unsupported_ceiling_mm2": 11.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 737.0,
+       "footprint_mm2": 326.0,
+       "height_mm": 47.5,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 1577.0,
+       "footprint_mm2": 67.0,
+       "height_mm": 47.5,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 1033.0,
+       "footprint_mm2": 0.0,
+       "height_mm": 107.0,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 744.0,
+       "footprint_mm2": 116.0,
+       "height_mm": 107.0,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 502.0,
+       "footprint_mm2": 2450.0,
+       "height_mm": 20.0,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 492.0,
+       "footprint_mm2": 2383.0,
+       "height_mm": 20.0,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 1.0,
+     "typical_wall_mm": 6.93,
+     "holes_opening_on_bed": 2,
+     "warp": {
+      "longest_bed_dimension_mm": 107.0,
+      "open_air_limit_mm": 160.0,
+      "index": 0.67,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 30.5,
+      "print_hours": 1.72,
+      "material_usd": 0.76,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "tension_slider_6mm_belt_M3s": {
+     "process": "printed",
+     "material": "petg",
+     "up": "-Y",
+     "up_vector": [
+      -0.0,
+      -1.0,
+      -0.0
+     ],
+     "support_area_mm2": 0.0,
+     "footprint_mm2": 306.0,
+     "height_mm": 7.2,
+     "lateral_mm": [
+      13.5,
+      25.0
+     ],
+     "flat_overhang_mm2": 65.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.7,
+     "slenderness": 0.4,
+     "bridges": {
+      "max_span_mm": 5.4,
+      "over_5mm_mm2": 37.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 9.0,
+       "footprint_mm2": 63.0,
+       "height_mm": 25.0,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 13.0,
+       "footprint_mm2": 57.0,
+       "height_mm": 25.0,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 4.0,
+       "footprint_mm2": 274.0,
+       "height_mm": 7.2,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 0.0,
+       "footprint_mm2": 306.0,
+       "height_mm": 7.2,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 0.0,
+       "footprint_mm2": 149.0,
+       "height_mm": 13.5,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 9.0,
+       "footprint_mm2": 127.0,
+       "height_mm": 13.5,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 0.9,
+     "typical_wall_mm": 1.96,
+     "holes_opening_on_bed": 0,
+     "warp": {
+      "longest_bed_dimension_mm": 25.0,
+      "open_air_limit_mm": 160.0,
+      "index": 0.16,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 2.3,
+      "print_hours": 0.17,
+      "material_usd": 0.06,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "top_endstop_angled": {
+     "process": "printed",
+     "material": "petg",
+     "up": "-Z",
+     "up_vector": [
+      -0.0,
+      -0.0,
+      -1.0
+     ],
+     "support_area_mm2": 0.0,
+     "footprint_mm2": 350.0,
+     "height_mm": 8.0,
+     "lateral_mm": [
+      27.3,
+      33.0
+     ],
+     "flat_overhang_mm2": 3.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.92,
+     "slenderness": 0.4,
+     "bridges": {
+      "max_span_mm": 0.0,
+      "over_5mm_mm2": 0.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 19.0,
+       "footprint_mm2": 124.0,
+       "height_mm": 33.0,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 167.0,
+       "footprint_mm2": 47.0,
+       "height_mm": 33.0,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 163.0,
+       "footprint_mm2": 8.0,
+       "height_mm": 27.3,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 159.0,
+       "footprint_mm2": 8.0,
+       "height_mm": 27.3,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 274.0,
+       "footprint_mm2": 35.0,
+       "height_mm": 8.0,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 0.0,
+       "footprint_mm2": 350.0,
+       "height_mm": 8.0,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 1.0,
+     "typical_wall_mm": 2.22,
+     "holes_opening_on_bed": 1,
+     "warp": {
+      "longest_bed_dimension_mm": 33.0,
+      "open_air_limit_mm": 160.0,
+      "index": 0.21,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 2.2,
+      "print_hours": 0.17,
+      "material_usd": 0.06,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "top_mgn12": {
+     "process": "printed",
+     "material": "petg",
+     "up": "+Z",
+     "up_vector": [
+      0.0,
+      -0.0,
+      1.0
+     ],
+     "support_area_mm2": 186.0,
+     "footprint_mm2": 523.0,
+     "height_mm": 44.1,
+     "lateral_mm": [
+      29.8,
+      51.2
+     ],
+     "flat_overhang_mm2": 119.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.38,
+     "slenderness": 1.9,
+     "bridges": {
+      "max_span_mm": 2.7,
+      "over_5mm_mm2": 0.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 466.0,
+       "footprint_mm2": 614.0,
+       "height_mm": 29.8,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 1213.0,
+       "footprint_mm2": 14.0,
+       "height_mm": 29.8,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 957.0,
+       "footprint_mm2": 60.0,
+       "height_mm": 51.2,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 688.0,
+       "footprint_mm2": 520.0,
+       "height_mm": 51.2,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 186.0,
+       "footprint_mm2": 523.0,
+       "height_mm": 44.1,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 303.0,
+       "footprint_mm2": 370.0,
+       "height_mm": 44.1,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 0.64,
+     "typical_wall_mm": 3.91,
+     "holes_opening_on_bed": 1,
+     "warp": {
+      "longest_bed_dimension_mm": 51.2,
+      "open_air_limit_mm": 160.0,
+      "index": 0.32,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 18.6,
+      "print_hours": 1.07,
+      "material_usd": 0.47,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "universal_face": {
+     "process": "printed",
+     "material": "petg",
+     "up": "+Z",
+     "up_vector": [
+      -0.0,
+      -0.0,
+      1.0
+     ],
+     "support_area_mm2": 0.0,
+     "footprint_mm2": 1828.0,
+     "height_mm": 8.0,
+     "lateral_mm": [
+      44.1,
+      57.0
+     ],
+     "flat_overhang_mm2": 188.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.91,
+     "slenderness": 0.2,
+     "bridges": {
+      "max_span_mm": 5.6,
+      "over_5mm_mm2": 58.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 505.0,
+       "footprint_mm2": 231.0,
+       "height_mm": 44.1,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 503.0,
+       "footprint_mm2": 231.0,
+       "height_mm": 44.1,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 232.0,
+       "footprint_mm2": 170.0,
+       "height_mm": 57.0,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 244.0,
+       "footprint_mm2": 61.0,
+       "height_mm": 57.0,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 0.0,
+       "footprint_mm2": 1828.0,
+       "height_mm": 8.0,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 1116.0,
+       "footprint_mm2": 349.0,
+       "height_mm": 8.0,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 0.15,
+     "typical_wall_mm": 2.45,
+     "holes_opening_on_bed": 4,
+     "warp": {
+      "longest_bed_dimension_mm": 57.0,
+      "open_air_limit_mm": 160.0,
+      "index": 0.36,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 12.1,
+      "print_hours": 0.71,
+      "material_usd": 0.3,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "x_gantry_end_cap": {
+     "process": "printed",
+     "material": "petg",
+     "up": "-X",
+     "up_vector": [
+      -1.0,
+      -0.0,
+      -0.0
+     ],
+     "support_area_mm2": 0.0,
+     "footprint_mm2": 535.0,
+     "height_mm": 35.0,
+     "lateral_mm": [
+      30.2,
+      36.8
+     ],
+     "flat_overhang_mm2": 65.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.45,
+     "slenderness": 1.5,
+     "bridges": {
+      "max_span_mm": 3.4,
+      "over_5mm_mm2": 0.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 51.0,
+       "footprint_mm2": 318.0,
+       "height_mm": 35.0,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 0.0,
+       "footprint_mm2": 535.0,
+       "height_mm": 35.0,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 138.0,
+       "footprint_mm2": 518.0,
+       "height_mm": 36.8,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 128.0,
+       "footprint_mm2": 0.0,
+       "height_mm": 36.8,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 507.0,
+       "footprint_mm2": 812.0,
+       "height_mm": 30.2,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 505.0,
+       "footprint_mm2": 812.0,
+       "height_mm": 30.2,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 2.35,
+     "typical_wall_mm": 5.34,
+     "holes_opening_on_bed": 0,
+     "warp": {
+      "longest_bed_dimension_mm": 36.8,
+      "open_air_limit_mm": 160.0,
+      "index": 0.23,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 14.3,
+      "print_hours": 0.83,
+      "material_usd": 0.36,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "x_idler": {
+     "process": "printed",
+     "material": "petg",
+     "up": "+X",
+     "up_vector": [
+      1.0,
+      0.0,
+      -0.0
+     ],
+     "support_area_mm2": 0.0,
+     "footprint_mm2": 680.0,
+     "height_mm": 25.0,
+     "lateral_mm": [
+      30.0,
+      46.0
+     ],
+     "flat_overhang_mm2": 18.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.48,
+     "slenderness": 1.0,
+     "bridges": {
+      "max_span_mm": 0.0,
+      "over_5mm_mm2": 0.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 0.0,
+       "footprint_mm2": 680.0,
+       "height_mm": 25.0,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 119.0,
+       "footprint_mm2": 468.0,
+       "height_mm": 25.0,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 0.0,
+       "footprint_mm2": 301.0,
+       "height_mm": 46.0,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 0.0,
+       "footprint_mm2": 301.0,
+       "height_mm": 46.0,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 60.0,
+       "footprint_mm2": 622.0,
+       "height_mm": 30.0,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 60.0,
+       "footprint_mm2": 622.0,
+       "height_mm": 30.0,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 2.7,
+     "typical_wall_mm": 4.53,
+     "holes_opening_on_bed": 0,
+     "warp": {
+      "longest_bed_dimension_mm": 46.0,
+      "open_air_limit_mm": 160.0,
+      "index": 0.29,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 14.8,
+      "print_hours": 0.86,
+      "material_usd": 0.37,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "x_motor_cage": {
+     "process": "printed",
+     "material": "petg",
+     "up": "+Z",
+     "up_vector": [
+      -0.0,
+      -0.0,
+      1.0
+     ],
+     "support_area_mm2": 108.0,
+     "footprint_mm2": 1103.0,
+     "height_mm": 46.0,
+     "lateral_mm": [
+      42.0,
+      48.0
+     ],
+     "flat_overhang_mm2": 186.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.67,
+     "slenderness": 1.4,
+     "bridges": {
+      "max_span_mm": 7.1,
+      "over_5mm_mm2": 149.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 850.0,
+       "footprint_mm2": 617.0,
+       "height_mm": 42.0,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 1136.0,
+       "footprint_mm2": 480.0,
+       "height_mm": 42.0,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 1308.0,
+       "footprint_mm2": 886.0,
+       "height_mm": 48.0,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 2078.0,
+       "footprint_mm2": 96.0,
+       "height_mm": 48.0,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 108.0,
+       "footprint_mm2": 1103.0,
+       "height_mm": 46.0,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 173.0,
+       "footprint_mm2": 560.0,
+       "height_mm": 46.0,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 0.63,
+     "typical_wall_mm": 4.83,
+     "holes_opening_on_bed": 4,
+     "warp": {
+      "longest_bed_dimension_mm": 48.0,
+      "open_air_limit_mm": 160.0,
+      "index": 0.3,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 30.2,
+      "print_hours": 1.7,
+      "material_usd": 0.75,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "x_wire_holder": {
+     "process": "printed",
+     "material": "petg",
+     "up": "-Y",
+     "up_vector": [
+      -0.0,
+      -1.0,
+      0.0
+     ],
+     "support_area_mm2": 154.0,
+     "footprint_mm2": 1052.0,
+     "height_mm": 28.2,
+     "lateral_mm": [
+      42.3,
+      50.6
+     ],
+     "flat_overhang_mm2": 43.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.68,
+     "slenderness": 0.9,
+     "bridges": {
+      "max_span_mm": 4.0,
+      "over_5mm_mm2": 0.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientation_frame": "the part's own axes (it sits at an angle in the assembly); see up_vector",
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 472.0,
+       "footprint_mm2": 25.0,
+       "height_mm": 50.6,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 572.0,
+       "footprint_mm2": 0.0,
+       "height_mm": 50.6,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 736.0,
+       "footprint_mm2": 0.0,
+       "height_mm": 28.2,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 154.0,
+       "footprint_mm2": 1052.0,
+       "height_mm": 28.2,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 388.0,
+       "footprint_mm2": 0.0,
+       "height_mm": 42.3,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 225.0,
+       "footprint_mm2": 140.0,
+       "height_mm": 42.3,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 0.86,
+     "typical_wall_mm": 3.5,
+     "holes_opening_on_bed": 2,
+     "warp": {
+      "longest_bed_dimension_mm": 50.6,
+      "open_air_limit_mm": 160.0,
+      "index": 0.32,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 9.9,
+      "print_hours": 0.59,
+      "material_usd": 0.25,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "y_belt_cover": {
+     "process": "printed",
+     "material": "petg",
+     "up": "-X",
+     "up_vector": [
+      -1.0,
+      -0.0,
+      -0.0
+     ],
+     "support_area_mm2": 0.0,
+     "footprint_mm2": 344.0,
+     "height_mm": 3.0,
+     "lateral_mm": [
+      17.0,
+      22.0
+     ],
+     "flat_overhang_mm2": 0.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 1.0,
+     "slenderness": 0.2,
+     "bridges": {
+      "max_span_mm": 0.0,
+      "over_5mm_mm2": 0.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 0.0,
+       "footprint_mm2": 281.0,
+       "height_mm": 3.0,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 0.0,
+       "footprint_mm2": 344.0,
+       "height_mm": 3.0,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 13.0,
+       "footprint_mm2": 66.0,
+       "height_mm": 17.0,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 15.0,
+       "footprint_mm2": 48.0,
+       "height_mm": 17.0,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 24.0,
+       "footprint_mm2": 36.0,
+       "height_mm": 22.0,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 27.0,
+       "footprint_mm2": 51.0,
+       "height_mm": 22.0,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 1.01,
+     "typical_wall_mm": 1.76,
+     "holes_opening_on_bed": 2,
+     "warp": {
+      "longest_bed_dimension_mm": 22.0,
+      "open_air_limit_mm": 160.0,
+      "index": 0.14,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 1.2,
+      "print_hours": 0.12,
+      "material_usd": 0.03,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "y_belt_mount": {
+     "process": "printed",
+     "material": "petg",
+     "up": "+X",
+     "up_vector": [
+      1.0,
+      0.0,
+      0.0
+     ],
+     "support_area_mm2": 92.0,
+     "footprint_mm2": 926.0,
+     "height_mm": 27.0,
+     "lateral_mm": [
+      22.0,
+      54.0
+     ],
+     "flat_overhang_mm2": 372.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.58,
+     "slenderness": 0.9,
+     "bridges": {
+      "max_span_mm": 8.2,
+      "over_5mm_mm2": 253.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 92.0,
+       "footprint_mm2": 926.0,
+       "height_mm": 27.0,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 328.0,
+       "footprint_mm2": 677.0,
+       "height_mm": 27.0,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 234.0,
+       "footprint_mm2": 377.0,
+       "height_mm": 54.0,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 492.0,
+       "footprint_mm2": 205.0,
+       "height_mm": 54.0,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 159.0,
+       "footprint_mm2": 851.0,
+       "height_mm": 22.0,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 145.0,
+       "footprint_mm2": 1175.0,
+       "height_mm": 22.0,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 0.25,
+     "typical_wall_mm": 3.6,
+     "holes_opening_on_bed": 0,
+     "warp": {
+      "longest_bed_dimension_mm": 54.0,
+      "open_air_limit_mm": 160.0,
+      "index": 0.34,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 16.0,
+      "print_hours": 0.93,
+      "material_usd": 0.4,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "y_belt_tensioner": {
+     "process": "printed",
+     "material": "petg",
+     "up": "-Z",
+     "up_vector": [
+      0.0,
+      0.0,
+      -1.0
+     ],
+     "support_area_mm2": 24.0,
+     "footprint_mm2": 467.0,
+     "height_mm": 9.7,
+     "lateral_mm": [
+      20.7,
+      25.0
+     ],
+     "flat_overhang_mm2": 252.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.52,
+     "slenderness": 0.4,
+     "bridges": {
+      "max_span_mm": 20.0,
+      "over_5mm_mm2": 102.0,
+      "unsupported_ceiling_mm2": 13.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 0.0,
+       "footprint_mm2": 161.0,
+       "height_mm": 20.7,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 0.0,
+       "footprint_mm2": 192.0,
+       "height_mm": 20.7,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 10.0,
+       "footprint_mm2": 156.0,
+       "height_mm": 25.0,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 11.0,
+       "footprint_mm2": 176.0,
+       "height_mm": 25.0,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 33.0,
+       "footprint_mm2": 467.0,
+       "height_mm": 9.7,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 24.0,
+       "footprint_mm2": 467.0,
+       "height_mm": 9.7,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 0.0,
+     "typical_wall_mm": 2.76,
+     "holes_opening_on_bed": 0,
+     "warp": {
+      "longest_bed_dimension_mm": 25.0,
+      "open_air_limit_mm": 160.0,
+      "index": 0.16,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 4.6,
+      "print_hours": 0.3,
+      "material_usd": 0.12,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "y_endstop_mount": {
+     "process": "printed",
+     "material": "petg",
+     "up": "+Y",
+     "up_vector": [
+      -0.0,
+      1.0,
+      -0.0
+     ],
+     "support_area_mm2": 57.0,
+     "footprint_mm2": 735.0,
+     "height_mm": 14.0,
+     "lateral_mm": [
+      27.1,
+      44.0
+     ],
+     "flat_overhang_mm2": 26.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.85,
+     "slenderness": 0.5,
+     "bridges": {
+      "max_span_mm": 3.0,
+      "over_5mm_mm2": 0.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 417.0,
+       "footprint_mm2": 66.0,
+       "height_mm": 27.1,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 337.0,
+       "footprint_mm2": 96.0,
+       "height_mm": 27.1,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 57.0,
+       "footprint_mm2": 735.0,
+       "height_mm": 14.0,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 289.0,
+       "footprint_mm2": 111.0,
+       "height_mm": 14.0,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 168.0,
+       "footprint_mm2": 9.0,
+       "height_mm": 44.0,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 78.0,
+       "footprint_mm2": 85.0,
+       "height_mm": 44.0,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 0.87,
+     "typical_wall_mm": 2.94,
+     "holes_opening_on_bed": 2,
+     "warp": {
+      "longest_bed_dimension_mm": 44.0,
+      "open_air_limit_mm": 160.0,
+      "index": 0.28,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 5.5,
+      "print_hours": 0.35,
+      "material_usd": 0.14,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "y_idler": {
+     "process": "printed",
+     "material": "petg",
+     "up": "+Y",
+     "up_vector": [
+      -0.0,
+      1.0,
+      0.0
+     ],
+     "support_area_mm2": 277.0,
+     "footprint_mm2": 2034.0,
+     "height_mm": 48.0,
+     "lateral_mm": [
+      57.2,
+      66.5
+     ],
+     "flat_overhang_mm2": 302.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.51,
+     "slenderness": 1.1,
+     "bridges": {
+      "max_span_mm": 11.1,
+      "over_5mm_mm2": 124.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 1749.0,
+       "footprint_mm2": 1865.0,
+       "height_mm": 57.2,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 1786.0,
+       "footprint_mm2": 1452.0,
+       "height_mm": 57.2,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 277.0,
+       "footprint_mm2": 2034.0,
+       "height_mm": 48.0,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 459.0,
+       "footprint_mm2": 800.0,
+       "height_mm": 48.0,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 1068.0,
+       "footprint_mm2": 1088.0,
+       "height_mm": 66.5,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 1112.0,
+       "footprint_mm2": 608.0,
+       "height_mm": 66.5,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 1.01,
+     "typical_wall_mm": 9.63,
+     "holes_opening_on_bed": 0,
+     "warp": {
+      "longest_bed_dimension_mm": 66.5,
+      "open_air_limit_mm": 160.0,
+      "index": 0.42,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 54.5,
+      "print_hours": 3.03,
+      "material_usd": 1.36,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "y_motor_cage": {
+     "process": "printed",
+     "material": "petg",
+     "up": "-Y",
+     "up_vector": [
+      0.0,
+      -1.0,
+      -0.0
+     ],
+     "support_area_mm2": 301.0,
+     "footprint_mm2": 1953.0,
+     "height_mm": 86.0,
+     "lateral_mm": [
+      50.0,
+      80.0
+     ],
+     "flat_overhang_mm2": 89.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.6,
+     "slenderness": 1.9,
+     "bridges": {
+      "max_span_mm": 6.0,
+      "over_5mm_mm2": 5.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 3427.0,
+       "footprint_mm2": 1123.0,
+       "height_mm": 50.0,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 3659.0,
+       "footprint_mm2": 883.0,
+       "height_mm": 50.0,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 1801.0,
+       "footprint_mm2": 462.0,
+       "height_mm": 86.0,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 301.0,
+       "footprint_mm2": 1953.0,
+       "height_mm": 86.0,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 536.0,
+       "footprint_mm2": 2331.0,
+       "height_mm": 80.0,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 2123.0,
+       "footprint_mm2": 190.0,
+       "height_mm": 80.0,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 3.0,
+     "typical_wall_mm": 8.99,
+     "holes_opening_on_bed": 0,
+     "warp": {
+      "longest_bed_dimension_mm": 80.0,
+      "open_air_limit_mm": 160.0,
+      "index": 0.5,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 56.3,
+      "print_hours": 3.13,
+      "material_usd": 1.41,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "z_cap": {
+     "process": "printed",
+     "material": "petg",
+     "up": "-Z",
+     "up_vector": [
+      -0.0,
+      -0.0,
+      -1.0
+     ],
+     "support_area_mm2": 167.0,
+     "footprint_mm2": 2467.0,
+     "height_mm": 55.0,
+     "lateral_mm": [
+      65.0,
+      90.9
+     ],
+     "flat_overhang_mm2": 0.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.75,
+     "slenderness": 1.1,
+     "bridges": {
+      "max_span_mm": 0.0,
+      "over_5mm_mm2": 0.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 354.0,
+       "footprint_mm2": 929.0,
+       "height_mm": 65.0,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 1086.0,
+       "footprint_mm2": 212.0,
+       "height_mm": 65.0,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 940.0,
+       "footprint_mm2": 748.0,
+       "height_mm": 90.9,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 3162.0,
+       "footprint_mm2": 22.0,
+       "height_mm": 90.9,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 2631.0,
+       "footprint_mm2": 219.0,
+       "height_mm": 55.0,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 167.0,
+       "footprint_mm2": 2467.0,
+       "height_mm": 55.0,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 2.16,
+     "typical_wall_mm": 3.73,
+     "holes_opening_on_bed": 1,
+     "warp": {
+      "longest_bed_dimension_mm": 90.9,
+      "open_air_limit_mm": 160.0,
+      "index": 0.57,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 28.6,
+      "print_hours": 1.62,
+      "material_usd": 0.72,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "z_motor_cage": {
+     "process": "printed",
+     "material": "petg",
+     "up": "-Z",
+     "up_vector": [
+      -0.0,
+      -0.0,
+      -1.0
+     ],
+     "support_area_mm2": 313.0,
+     "footprint_mm2": 2226.0,
+     "height_mm": 47.0,
+     "lateral_mm": [
+      53.0,
+      97.5
+     ],
+     "flat_overhang_mm2": 78.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 0.68,
+     "slenderness": 1.0,
+     "bridges": {
+      "max_span_mm": 4.6,
+      "over_5mm_mm2": 0.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 3793.0,
+       "footprint_mm2": 1208.0,
+       "height_mm": 53.0,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 3394.0,
+       "footprint_mm2": 1304.0,
+       "height_mm": 53.0,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 1390.0,
+       "footprint_mm2": 40.0,
+       "height_mm": 97.5,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 1388.0,
+       "footprint_mm2": 296.0,
+       "height_mm": 97.5,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 808.0,
+       "footprint_mm2": 1193.0,
+       "height_mm": 47.0,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 313.0,
+       "footprint_mm2": 2226.0,
+       "height_mm": 47.0,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 2.41,
+     "typical_wall_mm": 7.12,
+     "holes_opening_on_bed": 0,
+     "warp": {
+      "longest_bed_dimension_mm": 97.5,
+      "open_air_limit_mm": 160.0,
+      "index": 0.61,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 46.7,
+      "print_hours": 2.6,
+      "material_usd": 1.17,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    },
+    "z_motor_cage_plug": {
+     "process": "printed",
+     "material": "petg",
+     "up": "+Z",
+     "up_vector": [
+      -0.0,
+      -0.0,
+      1.0
+     ],
+     "support_area_mm2": 0.0,
+     "footprint_mm2": 418.0,
+     "height_mm": 5.0,
+     "lateral_mm": [
+      14.5,
+      43.4
+     ],
+     "flat_overhang_mm2": 0.0,
+     "fits_print_volume": true,
+     "bed_contact_fraction": 1.0,
+     "slenderness": 0.2,
+     "bridges": {
+      "max_span_mm": 0.0,
+      "over_5mm_mm2": 0.0,
+      "unsupported_ceiling_mm2": 0.0
+     },
+     "load_along_build_axis": 0.0,
+     "orientation_pinned": false,
+     "orientations": {
+      "+X": {
+       "support_area_mm2": 70.0,
+       "footprint_mm2": 28.0,
+       "height_mm": 43.4,
+       "fits": true
+      },
+      "-X": {
+       "support_area_mm2": 70.0,
+       "footprint_mm2": 28.0,
+       "height_mm": 43.4,
+       "fits": true
+      },
+      "+Y": {
+       "support_area_mm2": 9.0,
+       "footprint_mm2": 160.0,
+       "height_mm": 14.5,
+       "fits": true
+      },
+      "-Y": {
+       "support_area_mm2": 128.0,
+       "footprint_mm2": 0.0,
+       "height_mm": 14.5,
+       "fits": true
+      },
+      "+Z": {
+       "support_area_mm2": 0.0,
+       "footprint_mm2": 418.0,
+       "height_mm": 5.0,
+       "fits": true
+      },
+      "-Z": {
+       "support_area_mm2": 213.0,
+       "footprint_mm2": 204.0,
+       "height_mm": 5.0,
+       "fits": true
+      }
+     },
+     "min_wall_mm": 0.01,
+     "typical_wall_mm": 2.17,
+     "holes_opening_on_bed": 0,
+     "warp": {
+      "longest_bed_dimension_mm": 43.4,
+      "open_air_limit_mm": 160.0,
+      "index": 0.27,
+      "basis": "rule of thumb, not simulated"
+     },
+     "estimate": {
+      "filament_g": 2.0,
+      "print_hours": 0.16,
+      "material_usd": 0.05,
+      "basis": "estimate: 1.2 mm walls, 20% infill, 5 mm3/s, no support material counted"
+     }
+    }
+   }
+  }
+ },
+ "findings": [
+  {
+   "verifier": "manufacture",
+   "severity": "error",
+   "code": "wall_too_thin_to_print",
+   "message": "LJ8_probe_mount_8mm: wall as thin as 0.12 mm at [299.63, 3.98, 16.52] (about 63 mm\u00b2 of surface under 0.8 mm, two beads of a 0.4 mm nozzle): the slicer drops it or prints one fragile bead.",
+   "data": {
+    "part": "LJ8_probe_mount_8mm",
+    "rule": "fdm.wall_min_mm",
+    "value": 0.123,
+    "limit": 0.8,
+    "unit": "mm",
+    "source": "https://www.hubs.com/knowledge-base/dfm-tips-for-3d-printed-parts-with-thin-walls/",
+    "at": [
+     [
+      299.63,
+      3.98,
+      16.52
+     ],
+     [
+      300.46,
+      3.96,
+      8.18
+     ],
+     [
+      300.38,
+      10.5,
+      8.47
+     ],
+     [
+      299.91,
+      9.89,
+      16.59
+     ]
+    ],
+    "hint": "Thicken to at least 0.8 mm (three beads, 1.2 mm, for anything that carries load).",
+    "limit_mm": 0.8
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "error",
+   "code": "part_not_checked",
+   "message": "TriHorn_Duct: the manufacturability check failed on this part (AttributeError: 'NoneType' object has no attribute 'NbNodes'); it has not been judged.",
+   "data": {
+    "part": "TriHorn_Duct",
+    "trace": "home/user/running-route/mech-ai/mechloop/geom.py\", line 20, in to_trimesh\n    verts, tris = shape.tessellate(tol, ang)\n                  ~~~~~~~~~~~~~~~~^^^^^^^^^^\n  File \"/home/user/running-route/mech-ai/.venv/lib/python3.13/site-packages/build123d/topology/shape_core.py\", line 2346, in tessellate\n    poly.Node(i).Transformed(trsf) for i in range(1, poly.NbNodes() + 1)\n                                                     ^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'NbNodes'\n"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "error",
+   "code": "wall_too_thin_to_print",
+   "message": "back_cartesian: wall as thin as 0.30 mm at [594.89, 3.0, 25.23] (about 778 mm\u00b2 of surface under 0.8 mm, two beads of a 0.4 mm nozzle): the slicer drops it or prints one fragile bead.",
+   "data": {
+    "part": "back_cartesian",
+    "rule": "fdm.wall_min_mm",
+    "value": 0.3,
+    "limit": 0.8,
+    "unit": "mm",
+    "source": "https://www.hubs.com/knowledge-base/dfm-tips-for-3d-printed-parts-with-thin-walls/",
+    "at": [
+     [
+      594.89,
+      3.0,
+      25.23
+     ],
+     [
+      604.46,
+      3.0,
+      23.85
+     ],
+     [
+      599.25,
+      3.0,
+      17.14
+     ],
+     [
+      598.6,
+      27.96,
+      -42.5
+     ],
+     [
+      600.86,
+      24.26,
+      -42.5
+     ],
+     [
+      601.04,
+      31.68,
+      -42.0
+     ]
+    ],
+    "hint": "Thicken to at least 0.8 mm (three beads, 1.2 mm, for anything that carries load).",
+    "limit_mm": 0.8
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "error",
+   "code": "wall_too_thin_to_print",
+   "message": "bed_wire_guide_end: wall as thin as 0.21 mm at [729.99, -101.42, 46.2] (about 19 mm\u00b2 of surface under 0.8 mm, two beads of a 0.4 mm nozzle): the slicer drops it or prints one fragile bead.",
+   "data": {
+    "part": "bed_wire_guide_end",
+    "rule": "fdm.wall_min_mm",
+    "value": 0.211,
+    "limit": 0.8,
+    "unit": "mm",
+    "source": "https://www.hubs.com/knowledge-base/dfm-tips-for-3d-printed-parts-with-thin-walls/",
+    "at": [
+     [
+      729.99,
+      -101.42,
+      46.2
+     ],
+     [
+      725.57,
+      -101.02,
+      46.31
+     ]
+    ],
+    "hint": "Thicken to at least 0.8 mm (three beads, 1.2 mm, for anything that carries load).",
+    "limit_mm": 0.8
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "error",
+   "code": "wall_too_thin_to_print",
+   "message": "bed_wire_guide_start: wall as thin as 0.15 mm at [885.29, -2.52, 9.8] (about 16 mm\u00b2 of surface under 0.8 mm, two beads of a 0.4 mm nozzle): the slicer drops it or prints one fragile bead.",
+   "data": {
+    "part": "bed_wire_guide_start",
+    "rule": "fdm.wall_min_mm",
+    "value": 0.154,
+    "limit": 0.8,
+    "unit": "mm",
+    "source": "https://www.hubs.com/knowledge-base/dfm-tips-for-3d-printed-parts-with-thin-walls/",
+    "at": [
+     [
+      885.29,
+      -2.52,
+      9.8
+     ],
+     [
+      885.29,
+      2.53,
+      8.56
+     ]
+    ],
+    "hint": "Thicken to at least 0.8 mm (three beads, 1.2 mm, for anything that carries load).",
+    "limit_mm": 0.8
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "error",
+   "code": "wall_too_thin_to_print",
+   "message": "bmo_face: wall as thin as 0.25 mm at [1057.32, -29.58, -67.1] (about 154 mm\u00b2 of surface under 0.8 mm, two beads of a 0.4 mm nozzle): the slicer drops it or prints one fragile bead.",
+   "data": {
+    "part": "bmo_face",
+    "rule": "fdm.wall_min_mm",
+    "value": 0.25,
+    "limit": 0.8,
+    "unit": "mm",
+    "source": "https://www.hubs.com/knowledge-base/dfm-tips-for-3d-printed-parts-with-thin-walls/",
+    "at": [
+     [
+      1057.32,
+      -29.58,
+      -67.1
+     ],
+     [
+      1052.48,
+      -41.54,
+      -67.1
+     ],
+     [
+      1042.02,
+      -37.22,
+      -67.1
+     ],
+     [
+      1046.22,
+      -26.99,
+      -67.1
+     ],
+     [
+      1053.32,
+      -44.0,
+      -72.21
+     ],
+     [
+      1053.08,
+      -43.73,
+      -78.76
+     ]
+    ],
+    "hint": "Thicken to at least 0.8 mm (three beads, 1.2 mm, for anything that carries load).",
+    "limit_mm": 0.8
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "error",
+   "code": "wall_too_thin_to_print",
+   "message": "bmo_support: wall as thin as 0.01 mm at [1183.59, -39.84, -43.0] (about 75 mm\u00b2 of surface under 0.8 mm, two beads of a 0.4 mm nozzle): the slicer drops it or prints one fragile bead.",
+   "data": {
+    "part": "bmo_support",
+    "rule": "fdm.wall_min_mm",
+    "value": 0.005,
+    "limit": 0.8,
+    "unit": "mm",
+    "source": "https://www.hubs.com/knowledge-base/dfm-tips-for-3d-printed-parts-with-thin-walls/",
+    "at": [
+     [
+      1183.59,
+      -39.84,
+      -43.0
+     ],
+     [
+      1215.58,
+      -35.22,
+      -42.99
+     ],
+     [
+      1184.45,
+      -33.83,
+      -42.97
+     ],
+     [
+      1215.53,
+      -39.56,
+      -43.0
+     ],
+     [
+      1183.99,
+      -34.3,
+      -36.0
+     ],
+     [
+      1215.99,
+      -37.17,
+      -36.0
+     ]
+    ],
+    "hint": "Thicken to at least 0.8 mm (three beads, 1.2 mm, for anything that carries load).",
+    "limit_mm": 0.8
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "error",
+   "code": "wall_too_thin_to_print",
+   "message": "cartesian_cable_fin: wall as thin as 0.01 mm at [1497.19, 21.44, 11.14] (about 158 mm\u00b2 of surface under 0.8 mm, two beads of a 0.4 mm nozzle): the slicer drops it or prints one fragile bead.",
+   "data": {
+    "part": "cartesian_cable_fin",
+    "rule": "fdm.wall_min_mm",
+    "value": 0.006,
+    "limit": 0.8,
+    "unit": "mm",
+    "source": "https://www.hubs.com/knowledge-base/dfm-tips-for-3d-printed-parts-with-thin-walls/",
+    "at": [
+     [
+      1497.19,
+      21.44,
+      11.14
+     ],
+     [
+      1502.78,
+      21.35,
+      11.11
+     ],
+     [
+      1497.04,
+      28.55,
+      13.89
+     ],
+     [
+      1503.02,
+      7.86,
+      11.96
+     ],
+     [
+      1502.98,
+      16.56,
+      12.68
+     ],
+     [
+      1502.94,
+      29.17,
+      13.74
+     ]
+    ],
+    "hint": "Thicken to at least 0.8 mm (three beads, 1.2 mm, for anything that carries load).",
+    "limit_mm": 0.8
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "error",
+   "code": "part_not_checked",
+   "message": "ratrig_eva_shroud: the manufacturability check failed on this part (AttributeError: 'NoneType' object has no attribute 'NbNodes'); it has not been judged.",
+   "data": {
+    "part": "ratrig_eva_shroud",
+    "trace": "home/user/running-route/mech-ai/mechloop/geom.py\", line 20, in to_trimesh\n    verts, tris = shape.tessellate(tol, ang)\n                  ~~~~~~~~~~~~~~~~^^^^^^^^^^\n  File \"/home/user/running-route/mech-ai/.venv/lib/python3.13/site-packages/build123d/topology/shape_core.py\", line 2346, in tessellate\n    poly.Node(i).Transformed(trsf) for i in range(1, poly.NbNodes() + 1)\n                                                     ^^^^^^^^^^^^\nAttributeError: 'NoneType' object has no attribute 'NbNodes'\n"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "error",
+   "code": "wall_too_thin_to_print",
+   "message": "top_mgn12: wall as thin as 0.64 mm at [2419.04, -12.8, 42.29] (about 157 mm\u00b2 of surface under 0.8 mm, two beads of a 0.4 mm nozzle): the slicer drops it or prints one fragile bead.",
+   "data": {
+    "part": "top_mgn12",
+    "rule": "fdm.wall_min_mm",
+    "value": 0.638,
+    "limit": 0.8,
+    "unit": "mm",
+    "source": "https://www.hubs.com/knowledge-base/dfm-tips-for-3d-printed-parts-with-thin-walls/",
+    "at": [
+     [
+      2419.04,
+      -12.8,
+      42.29
+     ],
+     [
+      2418.66,
+      13.5,
+      25.02
+     ],
+     [
+      2418.86,
+      13.5,
+      42.72
+     ],
+     [
+      2416.38,
+      -12.8,
+      24.46
+     ],
+     [
+      2423.04,
+      12.8,
+      42.85
+     ],
+     [
+      2422.88,
+      12.8,
+      24.74
+     ]
+    ],
+    "hint": "Thicken to at least 0.8 mm (three beads, 1.2 mm, for anything that carries load).",
+    "limit_mm": 0.8
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "error",
+   "code": "wall_too_thin_to_print",
+   "message": "universal_face: wall as thin as 0.15 mm at [2568.39, 18.83, -26.43] (about 132 mm\u00b2 of surface under 0.8 mm, two beads of a 0.4 mm nozzle): the slicer drops it or prints one fragile bead.",
+   "data": {
+    "part": "universal_face",
+    "rule": "fdm.wall_min_mm",
+    "value": 0.149,
+    "limit": 0.8,
+    "unit": "mm",
+    "source": "https://www.hubs.com/knowledge-base/dfm-tips-for-3d-printed-parts-with-thin-walls/",
+    "at": [
+     [
+      2568.39,
+      18.83,
+      -26.43
+     ],
+     [
+      2555.41,
+      50.52,
+      -25.5
+     ],
+     [
+      2545.22,
+      49.82,
+      -25.5
+     ],
+     [
+      2531.33,
+      18.24,
+      -26.0
+     ],
+     [
+      2569.29,
+      5.11,
+      -26.0
+     ],
+     [
+      2531.2,
+      34.49,
+      -26.0
+     ]
+    ],
+    "hint": "Thicken to at least 0.8 mm (three beads, 1.2 mm, for anything that carries load).",
+    "limit_mm": 0.8
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "error",
+   "code": "wall_too_thin_to_print",
+   "message": "x_motor_cage: wall as thin as 0.63 mm at [3012.0, -15.87, 36.01] (about 13 mm\u00b2 of surface under 0.8 mm, two beads of a 0.4 mm nozzle): the slicer drops it or prints one fragile bead.",
+   "data": {
+    "part": "x_motor_cage",
+    "rule": "fdm.wall_min_mm",
+    "value": 0.63,
+    "limit": 0.8,
+    "unit": "mm",
+    "source": "https://www.hubs.com/knowledge-base/dfm-tips-for-3d-printed-parts-with-thin-walls/",
+    "at": [
+     [
+      3012.0,
+      -15.87,
+      36.01
+     ],
+     [
+      2988.04,
+      -16.11,
+      36.5
+     ]
+    ],
+    "hint": "Thicken to at least 0.8 mm (three beads, 1.2 mm, for anything that carries load).",
+    "limit_mm": 0.8
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "error",
+   "code": "wall_too_thin_to_print",
+   "message": "y_belt_mount: wall as thin as 0.25 mm at [3446.75, -9.5, 18.2] (about 64 mm\u00b2 of surface under 0.8 mm, two beads of a 0.4 mm nozzle): the slicer drops it or prints one fragile bead.",
+   "data": {
+    "part": "y_belt_mount",
+    "rule": "fdm.wall_min_mm",
+    "value": 0.25,
+    "limit": 0.8,
+    "unit": "mm",
+    "source": "https://www.hubs.com/knowledge-base/dfm-tips-for-3d-printed-parts-with-thin-walls/",
+    "at": [
+     [
+      3446.75,
+      -9.5,
+      18.2
+     ],
+     [
+      3439.75,
+      17.18,
+      3.87
+     ],
+     [
+      3446.75,
+      4.66,
+      17.18
+     ],
+     [
+      3439.75,
+      16.18,
+      15.63
+     ],
+     [
+      3443.2,
+      2.0,
+      17.63
+     ]
+    ],
+    "hint": "Thicken to at least 0.8 mm (three beads, 1.2 mm, for anything that carries load).",
+    "limit_mm": 0.8
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "error",
+   "code": "wall_too_thin_to_print",
+   "message": "y_belt_tensioner: wall as thin as 0.00 mm at [3592.54, -30.0, 9.3] (about 1 mm\u00b2 of surface under 0.8 mm, two beads of a 0.4 mm nozzle): the slicer drops it or prints one fragile bead.",
+   "data": {
+    "part": "y_belt_tensioner",
+    "rule": "fdm.wall_min_mm",
+    "value": 0.0,
+    "limit": 0.8,
+    "unit": "mm",
+    "source": "https://www.hubs.com/knowledge-base/dfm-tips-for-3d-printed-parts-with-thin-walls/",
+    "at": [
+     [
+      3592.54,
+      -30.0,
+      9.3
+     ],
+     [
+      3599.02,
+      -30.0,
+      9.26
+     ]
+    ],
+    "hint": "Thicken to at least 0.8 mm (three beads, 1.2 mm, for anything that carries load).",
+    "limit_mm": 0.8
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "error",
+   "code": "wall_too_thin_to_print",
+   "message": "z_motor_cage_plug: wall as thin as 0.01 mm at [4531.39, -68.03, 1.45] (about 30 mm\u00b2 of surface under 0.8 mm, two beads of a 0.4 mm nozzle): the slicer drops it or prints one fragile bead.",
+   "data": {
+    "part": "z_motor_cage_plug",
+    "rule": "fdm.wall_min_mm",
+    "value": 0.008,
+    "limit": 0.8,
+    "unit": "mm",
+    "source": "https://www.hubs.com/knowledge-base/dfm-tips-for-3d-printed-parts-with-thin-walls/",
+    "at": [
+     [
+      4531.39,
+      -68.03,
+      1.45
+     ],
+     [
+      4509.61,
+      -68.03,
+      3.08
+     ]
+    ],
+    "hint": "Thicken to at least 0.8 mm (three beads, 1.2 mm, for anything that carries load).",
+    "limit_mm": 0.8
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "warning",
+   "code": "needs_support",
+   "message": "bmo_face: even in its best print orientation (+Z up) 331 mm\u00b2 overhangs by more than 45 degrees with nothing under it and needs support material.",
+   "data": {
+    "part": "bmo_face",
+    "rule": "fdm.support_area_mm2",
+    "value": 331.0,
+    "limit": 150.0,
+    "unit": "mm2",
+    "source": "mechloop's own figure: no published guide read here states one",
+    "at": [
+     [
+      1032.96,
+      -30.58,
+      -53.68
+     ],
+     [
+      1061.5,
+      -23.6,
+      -41.4
+     ],
+     [
+      1038.17,
+      -22.84,
+      -41.44
+     ],
+     [
+      1036.3,
+      -30.55,
+      -45.66
+     ],
+     [
+      1067.74,
+      -31.85,
+      -69.77
+     ]
+    ],
+    "hint": "Chamfer the undersides at 45 degrees, use teardrop holes, or split the part along a flat face.",
+    "orientation": "+Z"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "warning",
+   "code": "needs_support",
+   "message": "side_legs: even in its best print orientation (+Z up) 502 mm\u00b2 overhangs by more than 45 degrees with nothing under it and needs support material.",
+   "data": {
+    "part": "side_legs",
+    "rule": "fdm.support_area_mm2",
+    "value": 502.0,
+    "limit": 150.0,
+    "unit": "mm2",
+    "source": "mechloop's own figure: no published guide read here states one",
+    "at": [
+     [
+      1935.39,
+      -31.4,
+      15.47
+     ],
+     [
+      1934.21,
+      -8.97,
+      15.43
+     ],
+     [
+      1930.35,
+      -18.81,
+      15.87
+     ],
+     [
+      1934.07,
+      53.32,
+      15.41
+     ],
+     [
+      1936.37,
+      40.83,
+      15.31
+     ]
+    ],
+    "hint": "Chamfer the undersides at 45 degrees, use teardrop holes, or split the part along a flat face.",
+    "orientation": "+Z"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "warning",
+   "code": "needs_support",
+   "message": "top_mgn12: even in its best print orientation (+Z up) 186 mm\u00b2 overhangs by more than 45 degrees with nothing under it and needs support material.",
+   "data": {
+    "part": "top_mgn12",
+    "rule": "fdm.support_area_mm2",
+    "value": 186.0,
+    "limit": 150.0,
+    "unit": "mm2",
+    "source": "mechloop's own figure: no published guide read here states one",
+    "at": [
+     [
+      2421.19,
+      -8.17,
+      28.66
+     ],
+     [
+      2423.99,
+      -9.19,
+      46.72
+     ],
+     [
+      2418.99,
+      -1.55,
+      43.42
+     ],
+     [
+      2429.79,
+      -1.15,
+      43.65
+     ],
+     [
+      2420.86,
+      11.48,
+      46.42
+     ]
+    ],
+    "hint": "Chamfer the undersides at 45 degrees, use teardrop holes, or split the part along a flat face.",
+    "orientation": "+Z"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "warning",
+   "code": "needs_support",
+   "message": "x_wire_holder: even in its best print orientation (-Y up) 154 mm\u00b2 overhangs by more than 45 degrees with nothing under it and needs support material.",
+   "data": {
+    "part": "x_wire_holder",
+    "rule": "fdm.support_area_mm2",
+    "value": 154.0,
+    "limit": 150.0,
+    "unit": "mm2",
+    "source": "mechloop's own figure: no published guide read here states one",
+    "at": [
+     [
+      3098.32,
+      -16.6,
+      7.93
+     ],
+     [
+      3105.69,
+      -27.84,
+      -7.18
+     ],
+     [
+      3101.0,
+      -27.78,
+      9.19
+     ],
+     [
+      3101.73,
+      -27.73,
+      0.39
+     ],
+     [
+      3113.81,
+      -30.02,
+      -5.35
+     ]
+    ],
+    "hint": "Chamfer the undersides at 45 degrees, use teardrop holes, or split the part along a flat face.",
+    "orientation": "-Y"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "warning",
+   "code": "needs_support",
+   "message": "y_idler: even in its best print orientation (+Y up) 277 mm\u00b2 overhangs by more than 45 degrees with nothing under it and needs support material.",
+   "data": {
+    "part": "y_idler",
+    "rule": "fdm.support_area_mm2",
+    "value": 277.0,
+    "limit": 150.0,
+    "unit": "mm2",
+    "source": "mechloop's own figure: no published guide read here states one",
+    "at": [
+     [
+      3905.67,
+      -12.04,
+      29.65
+     ],
+     [
+      3949.06,
+      13.67,
+      -11.61
+     ],
+     [
+      3941.28,
+      13.63,
+      18.42
+     ],
+     [
+      3940.01,
+      13.77,
+      -18.27
+     ],
+     [
+      3949.63,
+      14.56,
+      12.96
+     ]
+    ],
+    "hint": "Chamfer the undersides at 45 degrees, use teardrop holes, or split the part along a flat face.",
+    "orientation": "+Y"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "warning",
+   "code": "needs_support",
+   "message": "y_motor_cage: even in its best print orientation (-Y up) 301 mm\u00b2 overhangs by more than 45 degrees with nothing under it and needs support material.",
+   "data": {
+    "part": "y_motor_cage",
+    "rule": "fdm.support_area_mm2",
+    "value": 301.0,
+    "limit": 150.0,
+    "unit": "mm2",
+    "source": "mechloop's own figure: no published guide read here states one",
+    "at": [
+     [
+      4064.2,
+      -36.5,
+      -17.23
+     ],
+     [
+      4061.96,
+      -55.81,
+      -16.85
+     ],
+     [
+      4059.22,
+      -37.79,
+      -44.95
+     ],
+     [
+      4067.56,
+      -37.7,
+      -45.24
+     ],
+     [
+      4064.48,
+      -5.53,
+      -25.33
+     ]
+    ],
+    "hint": "Chamfer the undersides at 45 degrees, use teardrop holes, or split the part along a flat face.",
+    "orientation": "-Y"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "warning",
+   "code": "needs_support",
+   "message": "z_cap: even in its best print orientation (-Z up) 167 mm\u00b2 overhangs by more than 45 degrees with nothing under it and needs support material.",
+   "data": {
+    "part": "z_cap",
+    "rule": "fdm.support_area_mm2",
+    "value": 167.0,
+    "limit": 150.0,
+    "unit": "mm2",
+    "source": "mechloop's own figure: no published guide read here states one",
+    "at": [
+     [
+      4186.49,
+      -14.63,
+      3.66
+     ],
+     [
+      4201.6,
+      -15.18,
+      3.14
+     ],
+     [
+      4211.22,
+      -17.12,
+      1.3
+     ]
+    ],
+    "hint": "Chamfer the undersides at 45 degrees, use teardrop holes, or split the part along a flat face.",
+    "orientation": "-Z"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "warning",
+   "code": "needs_support",
+   "message": "z_motor_cage: even in its best print orientation (-Z up) 313 mm\u00b2 overhangs by more than 45 degrees with nothing under it and needs support material.",
+   "data": {
+    "part": "z_motor_cage",
+    "rule": "fdm.support_area_mm2",
+    "value": 313.0,
+    "limit": 150.0,
+    "unit": "mm2",
+    "source": "mechloop's own figure: no published guide read here states one",
+    "at": [
+     [
+      4364.18,
+      -25.11,
+      -35.44
+     ],
+     [
+      4363.9,
+      -23.63,
+      -12.37
+     ],
+     [
+      4364.08,
+      -35.35,
+      -12.42
+     ],
+     [
+      4366.35,
+      -35.58,
+      -35.32
+     ],
+     [
+      4385.38,
+      -3.41,
+      -11.3
+     ]
+    ],
+    "hint": "Chamfer the undersides at 45 degrees, use teardrop holes, or split the part along a flat face.",
+    "orientation": "-Z"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "info",
+   "code": "elephant_foot",
+   "message": "LJ8_probe_mount_8mm: 1 hole(s) open onto the bed face (+Z up): the squashed first layer makes them and the outline about 0.1-0.3 mm tight there.",
+   "data": {
+    "part": "LJ8_probe_mount_8mm",
+    "at": [
+     [
+      300.0,
+      0.0,
+      11.0
+     ]
+    ],
+    "hint": "Put a 0.4 mm 45-degree chamfer on edges and hole mouths that touch the bed if the fit matters.",
+    "source": "https://www.hubs.com/knowledge-base/how-design-parts-fdm-3d-printing/"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "info",
+   "code": "elephant_foot",
+   "message": "back_cartesian: 6 hole(s) open onto the bed face (+Y up): the squashed first layer makes them and the outline about 0.1-0.3 mm tight there.",
+   "data": {
+    "part": "back_cartesian",
+    "at": [
+     [
+      613.0,
+      1.0,
+      -24.5
+     ],
+     [
+      617.05,
+      1.0,
+      23.5
+     ],
+     [
+      582.95,
+      1.0,
+      23.5
+     ],
+     [
+      587.0,
+      1.0,
+      -24.5
+     ],
+     [
+      617.5,
+      2.5,
+      -38.0
+     ],
+     [
+      582.5,
+      2.5,
+      -38.0
+     ]
+    ],
+    "hint": "Put a 0.4 mm 45-degree chamfer on edges and hole mouths that touch the bed if the fit matters.",
+    "source": "https://www.hubs.com/knowledge-base/how-design-parts-fdm-3d-printing/"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "info",
+   "code": "elephant_foot",
+   "message": "bed_wire_guide_end: 1 hole(s) open onto the bed face (-Y up): the squashed first layer makes them and the outline about 0.1-0.3 mm tight there.",
+   "data": {
+    "part": "bed_wire_guide_end",
+    "at": [
+     [
+      739.5,
+      -93.92,
+      61.0
+     ]
+    ],
+    "hint": "Put a 0.4 mm 45-degree chamfer on edges and hole mouths that touch the bed if the fit matters.",
+    "source": "https://www.hubs.com/knowledge-base/how-design-parts-fdm-3d-printing/"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "info",
+   "code": "elephant_foot",
+   "message": "bed_wire_guide_start: 2 hole(s) open onto the bed face (+Z up): the squashed first layer makes them and the outline about 0.1-0.3 mm tight there.",
+   "data": {
+    "part": "bed_wire_guide_start",
+    "at": [
+     [
+      911.18,
+      5.59,
+      0.5
+     ],
+     [
+      911.18,
+      -5.59,
+      0.5
+     ]
+    ],
+    "hint": "Put a 0.4 mm 45-degree chamfer on edges and hole mouths that touch the bed if the fit matters.",
+    "source": "https://www.hubs.com/knowledge-base/how-design-parts-fdm-3d-printing/"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "info",
+   "code": "elephant_foot",
+   "message": "cartesian_cable_fin: 3 hole(s) open onto the bed face (+Y up): the squashed first layer makes them and the outline about 0.1-0.3 mm tight there.",
+   "data": {
+    "part": "cartesian_cable_fin",
+    "at": [
+     [
+      1504.0,
+      12.5,
+      10.0
+     ],
+     [
+      1496.0,
+      12.5,
+      10.0
+     ],
+     [
+      1500.0,
+      3.5,
+      3.0
+     ]
+    ],
+    "hint": "Put a 0.4 mm 45-degree chamfer on edges and hole mouths that touch the bed if the fit matters.",
+    "source": "https://www.hubs.com/knowledge-base/how-design-parts-fdm-3d-printing/"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "info",
+   "code": "elephant_foot",
+   "message": "side_legs: 2 hole(s) open onto the bed face (+Z up): the squashed first layer makes them and the outline about 0.1-0.3 mm tight there.",
+   "data": {
+    "part": "side_legs",
+    "at": [
+     [
+      1950.0,
+      -30.0,
+      5.0
+     ],
+     [
+      1944.0,
+      45.0,
+      5.0
+     ]
+    ],
+    "hint": "Put a 0.4 mm 45-degree chamfer on edges and hole mouths that touch the bed if the fit matters.",
+    "source": "https://www.hubs.com/knowledge-base/how-design-parts-fdm-3d-printing/"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "info",
+   "code": "elephant_foot",
+   "message": "top_endstop_angled: 1 hole(s) open onto the bed face (-Z up): the squashed first layer makes them and the outline about 0.1-0.3 mm tight there.",
+   "data": {
+    "part": "top_endstop_angled",
+    "at": [
+     [
+      2260.0,
+      -0.0,
+      3.95
+     ]
+    ],
+    "hint": "Put a 0.4 mm 45-degree chamfer on edges and hole mouths that touch the bed if the fit matters.",
+    "source": "https://www.hubs.com/knowledge-base/how-design-parts-fdm-3d-printing/"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "info",
+   "code": "elephant_foot",
+   "message": "top_mgn12: 1 hole(s) open onto the bed face (+Z up): the squashed first layer makes them and the outline about 0.1-0.3 mm tight there.",
+   "data": {
+    "part": "top_mgn12",
+    "at": [
+     [
+      2436.45,
+      -19.28,
+      13.45
+     ]
+    ],
+    "hint": "Put a 0.4 mm 45-degree chamfer on edges and hole mouths that touch the bed if the fit matters.",
+    "source": "https://www.hubs.com/knowledge-base/how-design-parts-fdm-3d-printing/"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "info",
+   "code": "elephant_foot",
+   "message": "universal_face: 4 hole(s) open onto the bed face (+Z up): the squashed first layer makes them and the outline about 0.1-0.3 mm tight there.",
+   "data": {
+    "part": "universal_face",
+    "at": [
+     [
+      2567.05,
+      52.0,
+      -26.75
+     ],
+     [
+      2532.95,
+      52.0,
+      -26.75
+     ],
+     [
+      2563.0,
+      4.0,
+      -27.25
+     ],
+     [
+      2537.0,
+      4.0,
+      -27.25
+     ]
+    ],
+    "hint": "Put a 0.4 mm 45-degree chamfer on edges and hole mouths that touch the bed if the fit matters.",
+    "source": "https://www.hubs.com/knowledge-base/how-design-parts-fdm-3d-printing/"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "info",
+   "code": "elephant_foot",
+   "message": "x_motor_cage: 4 hole(s) open onto the bed face (+Z up): the squashed first layer makes them and the outline about 0.1-0.3 mm tight there.",
+   "data": {
+    "part": "x_motor_cage",
+    "at": [
+     [
+      3015.5,
+      -15.5,
+      3.05
+     ],
+     [
+      3015.5,
+      15.5,
+      3.05
+     ],
+     [
+      2984.5,
+      15.5,
+      3.05
+     ],
+     [
+      2984.5,
+      -15.5,
+      3.05
+     ]
+    ],
+    "hint": "Put a 0.4 mm 45-degree chamfer on edges and hole mouths that touch the bed if the fit matters.",
+    "source": "https://www.hubs.com/knowledge-base/how-design-parts-fdm-3d-printing/"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "info",
+   "code": "elephant_foot",
+   "message": "x_wire_holder: 2 hole(s) open onto the bed face (-Y up): the squashed first layer makes them and the outline about 0.1-0.3 mm tight there.",
+   "data": {
+    "part": "x_wire_holder",
+    "at": [
+     [
+      3138.91,
+      -17.18,
+      -0.0
+     ],
+     [
+      3130.95,
+      -17.18,
+      -0.0
+     ]
+    ],
+    "hint": "Put a 0.4 mm 45-degree chamfer on edges and hole mouths that touch the bed if the fit matters.",
+    "source": "https://www.hubs.com/knowledge-base/how-design-parts-fdm-3d-printing/"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "info",
+   "code": "elephant_foot",
+   "message": "y_belt_cover: 2 hole(s) open onto the bed face (-X up): the squashed first layer makes them and the outline about 0.1-0.3 mm tight there.",
+   "data": {
+    "part": "y_belt_cover",
+    "at": [
+     [
+      3301.0,
+      18.5,
+      3.5
+     ],
+     [
+      3301.0,
+      16.0,
+      14.75
+     ]
+    ],
+    "hint": "Put a 0.4 mm 45-degree chamfer on edges and hole mouths that touch the bed if the fit matters.",
+    "source": "https://www.hubs.com/knowledge-base/how-design-parts-fdm-3d-printing/"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "info",
+   "code": "elephant_foot",
+   "message": "y_endstop_mount: 2 hole(s) open onto the bed face (+Y up): the squashed first layer makes them and the outline about 0.1-0.3 mm tight there.",
+   "data": {
+    "part": "y_endstop_mount",
+    "at": [
+     [
+      3781.25,
+      -3.0,
+      40.0
+     ],
+     [
+      3761.5,
+      -3.0,
+      40.0
+     ]
+    ],
+    "hint": "Put a 0.4 mm 45-degree chamfer on edges and hole mouths that touch the bed if the fit matters.",
+    "source": "https://www.hubs.com/knowledge-base/how-design-parts-fdm-3d-printing/"
+   }
+  },
+  {
+   "verifier": "manufacture",
+   "severity": "info",
+   "code": "elephant_foot",
+   "message": "z_cap: 1 hole(s) open onto the bed face (-Z up): the squashed first layer makes them and the outline about 0.1-0.3 mm tight there.",
+   "data": {
+    "part": "z_cap",
+    "at": [
+     [
+      4179.38,
+      60.91,
+      1.5
+     ]
+    ],
+    "hint": "Put a 0.4 mm 45-degree chamfer on edges and hole mouths that touch the bed if the fit matters.",
+    "source": "https://www.hubs.com/knowledge-base/how-design-parts-fdm-3d-printing/"
+   }
+  }
+ ],
+ "findings_truncated": 0,
+ "artifacts": {
+  "step": "/tmp/claude-0/-home-user-running-route/87481e0a-8f62-5246-a6fc-1c1f80e15b45/scratchpad/refmachine/out_real/real_printed_parts/real_printed_parts.step",
+  "iteration": 1,
+  "seconds": {
+   "verify": 19.1,
+   "render_and_export": 1.7
+  }
+ }
+}
