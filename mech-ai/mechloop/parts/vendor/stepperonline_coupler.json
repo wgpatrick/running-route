@@ -37,5 +37,60 @@
    },
    "note": "no torque rating on the page"
   }
+ },
+ "drawing": {
+  "_label": "added 2026-11-15. Not read by the catalogue code",
+  "document": "STEPPERONLINE COUPLING MH2025-5-8, drawing A1917, dated 10.26.2026, 1 page",
+  "document_file": "vendor_docs/MH2025-5-8_datasheet.pdf",
+  "page": 1,
+  "origin": "hand-collected by the owner (Drive folder, fetched 2026-11-15; see vendor_cad/staging/MANIFEST.md); the download URL of the PDF itself was not recorded",
+  "values": {
+   "outside_diameter_mm": 20,
+   "length_mm": 25,
+   "bore_a_mm": 5,
+   "bore_b_mm": 8,
+   "type_as_drawn": "two clamp hubs (each split, one tangential socket cap screw) with a jaw insert between them"
+  },
+  "not_on_the_drawing": [
+   "permissible angular misalignment",
+   "permissible parallel (radial) misalignment",
+   "permissible axial misalignment",
+   "rated / maximum torque",
+   "torsional stiffness",
+   "maximum speed",
+   "mass",
+   "material",
+   "clamp screw size and tightening torque",
+   "bore tolerance",
+   "bore depth"
+  ],
+  "consequence": "the 1.0 deg angular misalignment used by the tolerance check stays an assumption; the torque, stiffness and speed figures stay product-page values"
+ },
+ "vendor_step_first_inspection": {
+  "_label": "first look at vendor_cad/staging/COUPLER-5x8.step on 2026-11-15; not integrated, nothing reads this",
+  "file": "vendor_cad/staging/COUPLER-5x8.step",
+  "step_header_name": "MH2025-5-8.STEP (SolidWorks 2016, 2023-01-12)",
+  "solids": {
+   "MH20-8 hub": 2425.8,
+   "MH20-5 hub": 2204.9,
+   "MH-20elastomer": 1539.1,
+   "M3-10 screw (x2)": 123.0
+  },
+  "solids_unit": "mm3",
+  "total_volume_mm3": 6415.7,
+  "measured_mm": {
+   "outside_diameter": 20.0,
+   "overall_length": 25.1,
+   "bore_8_depth": 7.3,
+   "bore_5_depth": 7.3,
+   "hub_length_each_with_jaws": 16.5,
+   "elastomer_od": 18.27,
+   "elastomer_length": 10.0,
+   "elastomer_centre_hole": 7.0,
+   "clamp_screw": "M3 x 10 socket cap, head 5.5",
+   "clamp_screw_clearance_hole": 3.4,
+   "clamp_screw_counterbore": 5.7
+  },
+  "mass_check_g": "hubs as aluminium 12.5 + elastomer about 1.8 + two steel screws 1.9 = about 16; product page 17"
  }
 }

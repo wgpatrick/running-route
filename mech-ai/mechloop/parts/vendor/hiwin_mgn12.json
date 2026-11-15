@@ -69,5 +69,561 @@
   "mounting-surface allowable parallelism error e1 for two rails",
   "preload classes (ZF/Z0/Z1) clearance values",
   "dimensional tolerances of H and N"
- ]
+ ],
+ "catalogue": {
+  "_label": "PRIMARY SOURCE, added 2026-11-15. Read from HIWIN's own catalogue. Nothing in the catalogue code reads this block; the values the code reads are still the ones under 'parts' (secondary transcription). Proposed use: reports/Vendor documents - what they change.md",
+  "document": "HIWIN GmbH, Linear guideways, section 3.5 MG series (MGN / MGW), catalogue GW-11-5-EN-2207-K, printed pages 92-105",
+  "document_file": "vendor_docs/Hiwin_MG_catalogue.pdf",
+  "pdf_page_of_printed_page": "PDF page = printed page - 91 (14 PDF pages)",
+  "origin": "hand-collected by the owner (Drive folder, fetched 2026-11-15; see vendor_cad/staging/MANIFEST.md); the download URL of the PDF itself was not recorded",
+  "how_read": "text layer of the PDF; tables 3.75, 3.76, 3.77 and 3.79 also checked against the rendered pages",
+  "preload_classes": {
+   "ref": "Table 3.75, printed p.95",
+   "ZF": {
+    "meaning": "slight backlash",
+    "clearance_um": [
+     4,
+     10
+    ],
+    "accuracy_classes": "C, H",
+    "note": "not available for size 5"
+   },
+   "Z0": {
+    "meaning": "reduced play to very light preload",
+    "clearance_um": [
+     0,
+     3
+    ],
+    "accuracy_classes": "C to P"
+   },
+   "Z1": {
+    "meaning": "light preload",
+    "preload_fraction_of_Cdyn": [
+     0.0,
+     0.02
+    ],
+    "accuracy_classes": "C to P",
+    "note": "not available for sizes 2 and 3"
+   }
+  },
+  "load_ratings": {
+   "ref": "Table 3.76, printed p.95. Cdyn is for a 50,000 m travel path. M0X = about the rail axis (roll, the 'MR' of the secondary table), M0Y = pitch ('MP'), M0Z = yaw ('MY'), per the three sketches above the table",
+   "columns": [
+    "Cdyn_N",
+    "C0_N",
+    "M0X_Nm",
+    "M0Y_Nm",
+    "M0Z_Nm"
+   ],
+   "MGN07C": [
+    980,
+    1245,
+    4.7,
+    2.8,
+    2.8
+   ],
+   "MGN07H": [
+    1370,
+    1960,
+    7.6,
+    4.8,
+    4.8
+   ],
+   "MGN09C": [
+    1860,
+    2550,
+    11.8,
+    7.4,
+    7.4
+   ],
+   "MGN09H": [
+    2550,
+    4020,
+    19.6,
+    18.6,
+    18.6
+   ],
+   "MGN12C": [
+    2840,
+    3920,
+    25.5,
+    13.7,
+    13.7
+   ],
+   "MGN12H": [
+    3720,
+    5880,
+    38.2,
+    36.3,
+    36.3
+   ],
+   "MGN15C": [
+    4610,
+    5590,
+    45.1,
+    21.6,
+    21.6
+   ],
+   "MGN15H": [
+    6370,
+    9110,
+    73.5,
+    57.8,
+    57.8
+   ],
+   "note": "Table 3.79 (p.97) prints Cdyn of MGN07H as 1,372 N; Table 3.76 prints 1,370"
+  },
+  "radial_rigidity_n_per_um": {
+   "ref": "Section 3.5.11 and Table 3.77 'Radial rigidity of MGN series', printed p.96. Deformation = load / k (formula F 3.15)",
+   "condition": "per block, radial direction (load pressing block onto rail), by preload class. The catalogue gives NO value for class ZF (clearance), no lateral or reverse-radial rigidity and no moment (tilt) rigidity",
+   "columns": [
+    "Z0",
+    "Z1"
+   ],
+   "MGN07C": [
+    26,
+    33
+   ],
+   "MGN09C": [
+    37,
+    48
+   ],
+   "MGN12C": [
+    44,
+    56
+   ],
+   "MGN15C": [
+    57,
+    74
+   ],
+   "MGN07H": [
+    39,
+    51
+   ],
+   "MGN09H": [
+    56,
+    73
+   ],
+   "MGN12H": [
+    63,
+    81
+   ],
+   "MGN15H": [
+    87,
+    113
+   ]
+  },
+  "block_dimensions": {
+   "ref": "Table 3.79, printed p.97. L1 is drawn as the length of the block body without its end caps; L is the overall length. The catalogue gives no separate ball-track or contact length",
+   "MGN07C": {
+    "H_mm": 8,
+    "H1_mm": 1.5,
+    "N_mm": 5.0,
+    "W_mm": 17,
+    "B_mm": 12,
+    "B1_mm": 2.5,
+    "C_mm": 8,
+    "L1_mm": 13.5,
+    "L_mm": 22.5,
+    "G_mm": null,
+    "Gn": "dia 1.2",
+    "mount_thread_Mxl": "M2 x 2.5",
+    "H2_mm": 1.5,
+    "Cdyn_N": 980,
+    "C0_N": 1245,
+    "mass_kg": 0.01
+   },
+   "MGN07H": {
+    "H_mm": 8,
+    "H1_mm": 1.5,
+    "N_mm": 5.0,
+    "W_mm": 17,
+    "B_mm": 12,
+    "B1_mm": 2.5,
+    "C_mm": 13,
+    "L1_mm": 21.8,
+    "L_mm": 30.8,
+    "G_mm": null,
+    "Gn": "dia 1.2",
+    "mount_thread_Mxl": "M2 x 2.5",
+    "H2_mm": 1.5,
+    "Cdyn_N": 1372,
+    "C0_N": 1960,
+    "mass_kg": 0.02
+   },
+   "MGN09C": {
+    "H_mm": 10,
+    "H1_mm": 2.0,
+    "N_mm": 5.5,
+    "W_mm": 20,
+    "B_mm": 15,
+    "B1_mm": 2.5,
+    "C_mm": 10,
+    "L1_mm": 18.9,
+    "L_mm": 28.9,
+    "G_mm": null,
+    "Gn": "dia 1.4",
+    "mount_thread_Mxl": "M3 x 3",
+    "H2_mm": 1.8,
+    "Cdyn_N": 1860,
+    "C0_N": 2550,
+    "mass_kg": 0.02
+   },
+   "MGN09H": {
+    "H_mm": 10,
+    "H1_mm": 2.0,
+    "N_mm": 5.5,
+    "W_mm": 20,
+    "B_mm": 15,
+    "B1_mm": 2.5,
+    "C_mm": 16,
+    "L1_mm": 29.9,
+    "L_mm": 39.9,
+    "G_mm": null,
+    "Gn": "dia 1.4",
+    "mount_thread_Mxl": "M3 x 3",
+    "H2_mm": 1.8,
+    "Cdyn_N": 2550,
+    "C0_N": 4020,
+    "mass_kg": 0.03
+   },
+   "MGN12C": {
+    "H_mm": 13,
+    "H1_mm": 3.0,
+    "N_mm": 7.5,
+    "W_mm": 27,
+    "B_mm": 20,
+    "B1_mm": 3.5,
+    "C_mm": 15,
+    "L1_mm": 21.7,
+    "L_mm": 34.7,
+    "G_mm": null,
+    "Gn": "dia 2",
+    "mount_thread_Mxl": "M3 x 3.5",
+    "H2_mm": 2.5,
+    "Cdyn_N": 2840,
+    "C0_N": 3920,
+    "mass_kg": 0.03
+   },
+   "MGN12H": {
+    "H_mm": 13,
+    "H1_mm": 3.0,
+    "N_mm": 7.5,
+    "W_mm": 27,
+    "B_mm": 20,
+    "B1_mm": 3.5,
+    "C_mm": 20,
+    "L1_mm": 32.4,
+    "L_mm": 45.4,
+    "G_mm": null,
+    "Gn": "dia 2",
+    "mount_thread_Mxl": "M3 x 3.5",
+    "H2_mm": 2.5,
+    "Cdyn_N": 3720,
+    "C0_N": 5880,
+    "mass_kg": 0.05
+   },
+   "MGN15C": {
+    "H_mm": 16,
+    "H1_mm": 4.0,
+    "N_mm": 8.5,
+    "W_mm": 32,
+    "B_mm": 25,
+    "B1_mm": 3.5,
+    "C_mm": 20,
+    "L1_mm": 26.7,
+    "L_mm": 42.1,
+    "G_mm": 4.5,
+    "Gn": "M3",
+    "mount_thread_Mxl": "M3 x 4",
+    "H2_mm": 3.0,
+    "Cdyn_N": 4610,
+    "C0_N": 5590,
+    "mass_kg": 0.06
+   },
+   "MGN15H": {
+    "H_mm": 16,
+    "H1_mm": 4.0,
+    "N_mm": 8.5,
+    "W_mm": 32,
+    "B_mm": 25,
+    "B1_mm": 3.5,
+    "C_mm": 25,
+    "L1_mm": 43.4,
+    "L_mm": 58.8,
+    "G_mm": 4.5,
+    "Gn": "M3",
+    "mount_thread_Mxl": "M3 x 4",
+    "H2_mm": 3.0,
+    "Cdyn_N": 6370,
+    "C0_N": 9110,
+    "mass_kg": 0.09
+   }
+  },
+  "rail_dimensions": {
+   "ref": "Table 3.81, printed p.99",
+   "columns": [
+    "assembly_screw",
+    "WR_mm",
+    "HR_mm",
+    "D_mm",
+    "h_mm",
+    "d_mm",
+    "P_mm",
+    "max_length_mm",
+    "E_min_mm",
+    "E_max_mm",
+    "kg_per_m"
+   ],
+   "MGNR07R": [
+    "M2 x 8",
+    7,
+    4.8,
+    4.2,
+    2.3,
+    2.4,
+    15,
+    600,
+    5,
+    12,
+    0.22
+   ],
+   "MGNR09R": [
+    "M3 x 10",
+    9,
+    6.5,
+    6.0,
+    3.5,
+    3.5,
+    20,
+    1200,
+    5,
+    15,
+    0.38
+   ],
+   "MGNR12R": [
+    "M3 x 10",
+    12,
+    8.0,
+    6.0,
+    4.5,
+    3.5,
+    25,
+    2000,
+    5,
+    20,
+    0.65
+   ],
+   "MGNR15R": [
+    "M3 x 12",
+    15,
+    10.0,
+    6.0,
+    4.5,
+    3.5,
+    40,
+    2000,
+    6,
+    34,
+    1.06
+   ],
+   "note": "tolerance of E is +0.5 / -1 mm; rails are made symmetric unless E1 / E2 are given"
+  },
+  "running_parallelism_um": {
+   "ref": "Table 3.86, printed p.102: parallelism between block and rail by rail length, accuracy classes C / H / P",
+   "columns": [
+    "C",
+    "H",
+    "P"
+   ],
+   "up_to_50": [
+    12,
+    6,
+    2.0
+   ],
+   "50_80": [
+    13,
+    7,
+    3.0
+   ],
+   "80_125": [
+    14,
+    8,
+    3.5
+   ],
+   "125_200": [
+    15,
+    9,
+    4.0
+   ],
+   "200_250": [
+    16,
+    10,
+    5.0
+   ],
+   "250_315": [
+    17,
+    11,
+    5.0
+   ],
+   "315_400": [
+    18,
+    11,
+    6.0
+   ],
+   "400_500": [
+    19,
+    12,
+    6.0
+   ]
+  },
+  "height_width_tolerance_mm": {
+   "ref": "Table 3.87, printed p.103, sizes MG_02 to MG_15",
+   "columns": [
+    "H_tolerance_plus_minus",
+    "N_tolerance_plus_minus",
+    "H_variance_between_blocks_on_one_rail",
+    "N_variance"
+   ],
+   "C": [
+    0.04,
+    0.04,
+    0.03,
+    0.03
+   ],
+   "H": [
+    0.02,
+    0.025,
+    0.015,
+    0.02
+   ],
+   "P": [
+    0.01,
+    0.015,
+    0.007,
+    0.01
+   ]
+  },
+  "mounting_surface": {
+   "ref": "Tables 3.88, 3.89, 3.90, printed p.104",
+   "max_parallelism_of_two_rails_um": {
+    "columns": [
+     "ZF",
+     "Z0",
+     "Z1"
+    ],
+    "MG_07": [
+     3,
+     3,
+     3
+    ],
+    "MG_09": [
+     4,
+     4,
+     3
+    ],
+    "MG_12": [
+     9,
+     9,
+     5
+    ],
+    "MG_15": [
+     10,
+     10,
+     6
+    ]
+   },
+   "height_difference_coefficient_K": {
+    "formula": "S1 (mm) = a (rail distance, mm) x K",
+    "columns": [
+     "ZF",
+     "Z0",
+     "Z1"
+    ],
+    "MG_07": [
+     5e-05,
+     5e-05,
+     6e-06
+    ],
+    "MG_09": [
+     7e-05,
+     7e-05,
+     1.2e-05
+    ],
+    "MG_12": [
+     0.0001,
+     0.0001,
+     2.4e-05
+    ],
+    "MG_15": [
+     0.00012,
+     0.00012,
+     4e-05
+    ]
+   },
+   "required_flatness_mm_per_200mm": {
+    "MG_07": 0.025,
+    "MG_09": 0.035,
+    "MG_12": 0.05,
+    "MG_15": 0.06,
+    "note": "for ZF and Z0; at least halved for Z1 or when more than one rail is on the surface"
+   }
+  },
+  "shoulders_mm": {
+   "ref": "Table 3.91, printed p.105",
+   "columns": [
+    "r1_max",
+    "r2_max",
+    "H1_shoulder",
+    "H2_shoulder"
+   ],
+   "MGN07": [
+    0.2,
+    0.2,
+    1.2,
+    3
+   ],
+   "MGN09": [
+    0.2,
+    0.3,
+    1.7,
+    3
+   ],
+   "MGN12": [
+    0.3,
+    0.4,
+    1.7,
+    4
+   ],
+   "MGN15": [
+    0.5,
+    0.5,
+    2.5,
+    5
+   ]
+  },
+  "compared_with_parts_block_above": {
+   "confirmed_equal": [
+    "H 13",
+    "H1 3.0",
+    "N 7.5",
+    "W 27",
+    "B 20",
+    "B1 3.5",
+    "C 20",
+    "L1 32.4",
+    "L 45.4",
+    "M3 x 3.5 thread",
+    "Cdyn 3720 N",
+    "C0 5880 N",
+    "rail 12 x 8, D 6.0, h 4.5, d 3.5, P 25, 0.65 kg/m"
+   ],
+   "differ": {
+    "mass_kg": "catalogue 0.050 (two decimals printed); recorded 0.054",
+    "static moments": "catalogue 38.2 / 36.3 / 36.3 N.m (one decimal); recorded 38.22 / 36.26 / 36.26",
+    "rail screw": "catalogue 'assembly screw for rail' M3 x 10; recorded M3x8"
+   },
+   "consequence": "the secondary values are confirmed by the primary catalogue; 'not_obtained' above is now obtained (this block). source_level stays 'secondary' until the catalogue code is switched over"
+  }
+ }
 }

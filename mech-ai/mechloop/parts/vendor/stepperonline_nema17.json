@@ -164,6 +164,87 @@
       26.0
      ]
     ]
+   },
+   "datasheet_17HS13_0404S1": {
+    "_label": "added 2026-11-15 from the S1 variant's own drawing. Not read by the catalogue code (it reads 'values' above)",
+    "document": "STEPPERONLINE stepper motor 17HS13-0404S1, drawing A0581 rev 0, dated 2.27.2026, 1 page",
+    "document_file": "vendor_docs/17HS13-0404S1_datasheet.pdf",
+    "page": 1,
+    "origin": "hand-collected by the owner (Drive folder, fetched 2026-11-15; see vendor_cad/staging/MANIFEST.md); the download URL of the PDF itself was not recorded",
+    "values": {
+     "connection": "bipolar, 4 leads",
+     "rated_current_a": 0.4,
+     "phase_resistance_ohm": 30.0,
+     "phase_resistance_tol": "+/-10 % at 25 degC",
+     "phase_inductance_mh": 37.0,
+     "phase_inductance_tol": "+/-20 % at 1 kHz",
+     "holding_torque_nm": 0.26,
+     "step_angle_deg": 1.8,
+     "step_accuracy": "+/-5 % non-accumulating",
+     "rotor_inertia_gcm2": null,
+     "mass_kg": null,
+     "ambient_temperature_c": [
+      -10,
+      50
+     ],
+     "insulation_class": "B, 130 degC",
+     "temperature_rise_max_k": 80,
+     "insulation_resistance_mohm": 100,
+     "dielectric_strength": "500 VAC for 1 min, coils to case",
+     "life": "MTBF 6000 h or more at 24 V / 300 rpm",
+     "frame_mm_max": 42.3,
+     "body_length_mm_max": 34,
+     "hole_square_mm": 31.0,
+     "hole_square_tol_mm": 0.1,
+     "mount_thread": "4 x M3",
+     "thread_depth_min_mm": 4.5,
+     "pilot_dia_mm": 22.0,
+     "pilot_dia_tol_mm": [
+      -0.05,
+      0.0
+     ],
+     "pilot_height_mm": 2.0,
+     "shaft_dia_mm": 5.0,
+     "shaft_dia_tol_mm": [
+      -0.012,
+      0.0
+     ],
+     "shaft_length_mm": 20.0,
+     "shaft_length_tol_mm": 1.0,
+     "d_cut_length_mm": 15.0,
+     "d_cut_length_tol_mm": 0.2,
+     "d_cut_flat_height_mm": 4.5,
+     "d_cut_flat_height_tol_mm": 0.1,
+     "lead_length_mm": 1000,
+     "lead_length_tol_mm": [
+      -10,
+      20
+     ],
+     "lead_wire": "UL1007 AWG24",
+     "connector": "HX25402-4Y (4-way, on the lead end)",
+     "lead_colours_pin_1_to_4": [
+      "black A+",
+      "green A-",
+      "red B+",
+      "blue B-"
+     ],
+     "end_cover": "black"
+    },
+    "blank_on_the_sheet": [
+     "rotor inertia",
+     "weight",
+     "detent torque",
+     "torque-speed curve",
+     "radial / axial shaft load"
+    ],
+    "differs_from_17HS13_0404S_sheet": {
+     "lead": "S1: 1000 +20/-10 mm with an HX25402-4Y connector and three cable ties; S: 300 +/-10 mm bare leads",
+     "hole_square_tol_mm": "S1 +/-0.1; S +/-0.2",
+     "d_cut_length_tol_mm": "S1 +/-0.2; S +/-0.25",
+     "rotor_inertia_gcm2": "S1 sheet blank; S sheet 35.00",
+     "added_on_S1": "MTBF line, end-cover colour",
+     "same": "0.40 A, 30 ohm, 37 mH, 0.26 N.m, 1.8 deg, frame, pilot, shaft, thread, temperatures, insulation class"
+    }
    }
   },
   "40": {
@@ -448,6 +529,84 @@
       230.0
      ]
     ]
+   },
+   "datasheet_2025_drawing_A0842": {
+    "_label": "added 2026-11-15 from a newer drawing of the same part number. Not read by the catalogue code (it reads 'values' above)",
+    "document": "STEPPERONLINE stepper motor 17HS19-2004S1, drawing A0842 rev 0, dated 8.1.2025, 1 page",
+    "document_file": "vendor_docs/17HS19-2004S1_datasheet.pdf",
+    "page": 1,
+    "origin": "hand-collected by the owner (Drive folder, fetched 2026-11-15; see vendor_cad/staging/MANIFEST.md); the download URL of the PDF itself was not recorded",
+    "values": {
+     "connection": "the table header prints UNIPOLAR; the connection table and the four leads are bipolar",
+     "rated_current_a": 2.0,
+     "phase_resistance_ohm": 1.6,
+     "phase_resistance_tol": "+/-10 % at 25 degC",
+     "phase_inductance_mh": 3.0,
+     "phase_inductance_tol": "+/-20 % at 1 kHz",
+     "holding_torque_nm": 0.59,
+     "step_angle_deg": 1.8,
+     "step_accuracy": "+/-5 % non-accumulating",
+     "rotor_inertia_gcm2": 82.0,
+     "mass_kg": null,
+     "ambient_temperature_c": [
+      -10,
+      50
+     ],
+     "insulation_class": "B, 130 degC",
+     "temperature_rise_max_k": 80,
+     "insulation_resistance_mohm": 100,
+     "dielectric_strength": "500 VAC for 1 min, coils to case",
+     "life": "MTBF 6000 h or more at 24 V / 300 rpm",
+     "shaft_load_comment_as_printed": "COMMENT:LENGTH 20mm: 21N MAX",
+     "shaft_load_reading": "taken as the maximum radial force on the shaft, 21 N at 20 mm from the mounting face; the sheet does not label it further",
+     "frame_mm_max": 42.3,
+     "body_length_mm_max": 48,
+     "hole_square_mm": 31.0,
+     "hole_square_tol_mm": 0.2,
+     "mount_thread": "4 x M3",
+     "thread_depth_min_mm": 4.5,
+     "pilot_dia_mm": 22.0,
+     "pilot_dia_tol_mm": [
+      -0.05,
+      0.0
+     ],
+     "pilot_height_mm": 2.0,
+     "shaft_dia_mm": 5.0,
+     "shaft_dia_tol_mm": [
+      -0.012,
+      0.0
+     ],
+     "shaft_length_mm": 24.0,
+     "shaft_length_tol_mm": 1.0,
+     "d_cut_length_mm": 15.0,
+     "d_cut_length_tol_mm": 0.25,
+     "d_cut_flat_height_mm": 4.5,
+     "d_cut_flat_height_tol_mm": 0.1,
+     "lead_length_mm": 1000,
+     "lead_length_tol_mm": [
+      -15,
+      15
+     ],
+     "connector": "Harwin connector, 2.54 mm 4-pin, black housing (on the lead end)",
+     "lead_colours_pin_1_to_4": [
+      "black A+",
+      "green A-",
+      "red B+",
+      "blue B-"
+     ],
+     "end_cover": "black"
+    },
+    "blank_on_the_sheet": [
+     "weight",
+     "detent torque",
+     "torque-speed curve",
+     "axial shaft load"
+    ],
+    "differs_from_the_2020_sheet_recorded_above": {
+     "phase_resistance_ohm": "this sheet 1.60 +/-10 %; the 10.30.2020 sheet (vendor_docs/17HS19-2004S1.pdf) 1.40 +/-10 %. The product page said 1.6. 'values' above still holds 1.4",
+     "added": "shaft load comment (21 N at 20 mm), MTBF line",
+     "same": "2.0 A, 3.0 mH, 0.59 N.m, 82 g.cm2, all dimensions and tolerances, lead 1000 +/-15"
+    }
    }
   },
   "60": {

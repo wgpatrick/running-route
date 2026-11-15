@@ -53,5 +53,92 @@
   "thermal conductivity and specific heat",
   "flatness and thickness tolerances (MIC-6: recalled +/-0.005 in thickness, 0.015 in flatness under 3/4 in)"
  ],
- "used_by_catalog": true
+ "used_by_catalog": true,
+ "datasheets": {
+  "_label": "added 2026-11-15. Not read by the catalogue code or by MATERIALS (mechloop/model.py)",
+  "al_atp5": {
+   "document": "Vista Metals Corp., ATP-5 Aluminum Tooling Plate, Precision Machined (2-page product sheet)",
+   "document_file": "vendor_docs/ATP5_datasheet.pdf",
+   "page": 2,
+   "origin": "hand-collected by the owner (Drive folder, fetched 2026-11-15; see vendor_cad/staging/MANIFEST.md); the download URL of the PDF itself was not recorded",
+   "properties_typical": {
+    "alloy": "AA 5083 (p.1)",
+    "tensile_mpa": 283,
+    "tensile_ksi": 41,
+    "yield_mpa": 124,
+    "yield_ksi": 18,
+    "elongation_pct_in_50mm": [
+     12,
+     15
+    ],
+    "hardness_hb": 70,
+    "density_kg_m3": 2660,
+    "density_lb_in3": 0.096,
+    "thermal_conductivity_w_mk": 140,
+    "electrical_conductivity_pct_iacs": 29,
+    "E_mpa": 70000,
+    "E_msi": 10.1,
+    "cte_per_k_20_100c": 2.36e-05,
+    "cte_per_k_101_200c": 2.42e-05
+   },
+   "specifications": {
+    "surface": "precision machined both sides, 20 RMS max (p.1 says 15-20 RMS), poly film both sides",
+    "flatness_guaranteed_mm": {
+     "thicker_than_12.7mm": 0.127,
+     "12.7mm_and_thinner": 0.381,
+     "condition": "before and after sawing"
+    },
+    "gauges_mm": [
+     6.35,
+     101.6
+    ],
+    "gauges_in": [
+     0.25,
+     4.0
+    ],
+    "gauge_tolerance_mm": 0.127,
+    "widths_mm": [
+     1232,
+     1537,
+     1842
+    ],
+    "width_tolerance_mm": [
+     0,
+     6.35
+    ],
+    "length_max_mm": 3670,
+    "edges": "saw cut",
+    "note": "the sheet lists a thickness range, not a list of stock thicknesses; p.1 says imperial and metric sizes are available"
+   },
+   "not_on_the_sheet": [
+    "specific heat",
+    "Poisson's ratio",
+    "fatigue or elevated-temperature strength"
+   ],
+   "compared_with_materials_block_above": {
+    "confirmed": [
+     "density 2660",
+     "yield 124",
+     "tensile 283"
+    ],
+    "differ": {
+     "E_mpa": "sheet 70,000; recorded 70,300",
+     "cte_per_k_20_100c": "sheet 23.6e-6; recorded 23.8e-6"
+    }
+   }
+  },
+  "al_mic6": {
+   "document": "United Performance Metals, 'Alloy MIC 6' data sheet (2 pages, copyright 2026)",
+   "document_file": "vendor_docs/MIC6_datasheet.pdf",
+   "origin": "hand-collected by the owner (Drive folder, fetched 2026-11-15; see vendor_cad/staging/MANIFEST.md); the download URL of the PDF itself was not recorded",
+   "content": "THE PROPERTY TABLES ARE EMPTY IN THIS FILE. Page 1 has the description, an empty composition table (headers 'Element', 'Percent by Weight'), an empty 'Industry Standards' box and the applications list. Page 2 has the headings 'Physical Properties' and 'Mechanical Properties' with nothing under them. The PDF has no images and no other text layer: the page was saved before its tables loaded",
+   "usable_statements": [
+    "cast, stress-relieved plate",
+    "ordered to specific decimal thicknesses",
+    "'for information only and not for design purposes'"
+   ],
+   "values": null,
+   "consequence": "nothing about al_mic6 is confirmed or contradicted; density 2800 and E 71,000 stay recalled"
+  }
+ }
 }

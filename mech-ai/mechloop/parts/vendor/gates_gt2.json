@@ -1,0 +1,468 @@
+{
+ "retrieved": "2026-11-15",
+ "family": "2 mm pitch GT2 / PowerGrip GT3 timing belt and sprockets",
+ "vendor": "Gates Corporation",
+ "source_level": "vendor",
+ "source_url": "https://www.gates.com/drivedesign",
+ "source_url_note": "the address printed in the footer of every page of the manual; the PDF itself was hand-collected by the owner (Drive folder, fetched 2026-11-15, vendor_cad/staging/MANIFEST.md) and its download URL was not recorded",
+ "title": "Gates, Light Power and Precision Drive Design Manual (112 PDF pages)",
+ "document_file": "vendor_docs/Gates_GT2_design_manual.pdf",
+ "page_numbering": "pages are quoted as PRINTED page numbers; PDF page = printed page + 2",
+ "used_by_catalog": false,
+ "_label": "added 2026-11-15. Nothing in the code reads this file yet: gt2_pulley / gt2_idler and the twin's belt stiffness keep their values. Proposed use: reports/Vendor documents - what they change.md",
+ "belt": {
+  "construction": {
+   "ref": "p.13, p.14",
+   "tensile_member": "helically wound fiberglass",
+   "body": "neoprene",
+   "tooth_facing": "nylon fabric"
+  },
+  "designation": {
+   "ref": "p.14, p.15",
+   "belt": "pitch length (mm), pitch code, width code: e.g. '300 3MGT 09' as printed on p.14; the 2 mm length table lists lengths as 2MR-<pitch length mm> (2MR-74 to 2MR-1700)",
+   "long_length": "LL2MGT04, LL2MGT06, LL2MGT09 (p.59)",
+   "sprocket": "2MR-<grooves>S-<width code>, e.g. 2MR-20S-06, 2MR-20S-09 (p.14, p.29, p.30)"
+  },
+  "stock_widths_mm": {
+   "ref": "p.15 '2mm Pitch Stock Belt Widths'",
+   "values": [
+    4,
+    6,
+    9
+   ],
+   "note": "12 mm appears in the width multiplier (p.18) and tensioning tables (p.65) but not as a stock width, not in the long-length table and not in the sprocket tables"
+  },
+  "overall_thickness_mm": {
+   "ref": "Table 15, p.72",
+   "value": 1.52
+  },
+  "width_tolerance_mm": {
+   "ref": "Tables 13 and 14, p.72",
+   "endless_up_to_11mm_wide": [
+    -0.8,
+    0.4
+   ],
+   "endless_over_11mm_wide_up_to_838mm_long": [
+    -0.8,
+    0.8
+   ],
+   "long_length_spiral_cut": [
+    -1.2,
+    0.8
+   ]
+  },
+  "long_length_table": {
+   "ref": "Table 6 'PowerGrip Long-Length Belting Specifications', p.59 (fiberglass cord). 'Tensile modulus and strength are equivalent to conventional endless and long length belting'",
+   "columns": [
+    "rated_working_tension_Ta_lb_at_12_14_16_18_20_30_45_grooves",
+    "min_breaking_strength_lb",
+    "tension_lb_for_0.1pct_elongation"
+   ],
+   "4mm": [
+    [
+     23,
+     23,
+     23,
+     24,
+     24,
+     24,
+     23
+    ],
+    85,
+    2.6
+   ],
+   "6mm": [
+    [
+     38,
+     39,
+     39,
+     39,
+     39,
+     39,
+     39
+    ],
+    125,
+    3.8
+   ],
+   "9mm": [
+    [
+     62,
+     63,
+     64,
+     64,
+     65,
+     65,
+     63
+    ],
+    190,
+    5.7
+   ]
+  },
+  "converted": {
+   "note": "1 lb = 4.44822 N. EA = tension at 0.1 % elongation / 0.001 (a secant value at that elongation)",
+   "working_tension_n_20_grooves": {
+    "4mm": 106.8,
+    "6mm": 173.5,
+    "9mm": 289.1
+   },
+   "min_breaking_strength_n": {
+    "4mm": 378.1,
+    "6mm": 556.0,
+    "9mm": 845.2
+   },
+   "tension_n_for_0.1pct_elongation": {
+    "4mm": 11.6,
+    "6mm": 16.9,
+    "9mm": 25.4
+   },
+   "EA_n": {
+    "4mm": 11600.0,
+    "6mm": 16900.0,
+    "9mm": 25400.0
+   },
+   "EA_n_per_mm_width": {
+    "4mm": 2891,
+    "6mm": 2817,
+    "9mm": 2817
+   },
+   "EA_n_12mm_extrapolated": 33800.0,
+   "EA_12mm_note": "12 mm is NOT in Table 6: extrapolated at the 9 mm figure per mm of width"
+  },
+  "torque_rating": {
+   "ref": "'Belt Width Selection Tables - 2mm PowerGrip GT3 Belts', p.18: rated torque of the small sprocket, 6 mm belt, before the length factor",
+   "width_multiplier": {
+    "4mm": 0.6,
+    "6mm": 1.0,
+    "9mm": 1.64,
+    "12mm": 2.32
+   },
+   "20_grooves_6mm_nm_by_rpm": {
+    "10": 1.51,
+    "100": 1.12,
+    "200": 1.0,
+    "300": 0.93,
+    "400": 0.88,
+    "500": 0.84,
+    "1000": 0.73,
+    "2000": 0.61
+   },
+   "length_factor": {
+    "510_to_596mm": 1.25,
+    "598_to_696mm": 1.3,
+    "698_to_800mm": 1.35
+   },
+   "teeth_in_mesh": "ratings assume 6 or more teeth in mesh on the small sprocket; 5: x0.8, 4: x0.6, 3: x0.4 (p.104)",
+   "service_factor": "1.5 to 2.0 recommended for small-pitch drives (p.12); 1.0 on stall / holding torque of a stepper (p.63)"
+  },
+  "installation_tension": {
+   "ref": "Tables 7 and 8 and Formula 1, p.65. All values are per span",
+   "formula": "Tst (lb) = 1.21 Q / d + M S^2; Q = driver torque (lb-in), d = driver pitch diameter (in), S = belt speed (ft/min) / 1000",
+   "minimum_tst_lb": {
+    "4mm": 1.4,
+    "6mm": 2.1,
+    "9mm": 3.2,
+    "12mm": 4.2
+   },
+   "general_tst_lb": {
+    "4mm": 6,
+    "6mm": 10,
+    "9mm": 17,
+    "12mm": 24
+   },
+   "minimum_tst_n": {
+    "4mm": 6.2,
+    "6mm": 9.3,
+    "9mm": 14.2,
+    "12mm": 18.7
+   },
+   "general_tst_n": {
+    "4mm": 26.7,
+    "6mm": 44.5,
+    "9mm": 75.6,
+    "12mm": 106.8
+   },
+   "registration_drives": "start from the general values times 1.5 to 2.0; 'higher belt installation tensions help in increasing belt tensile modulus'",
+   "used_belt": "0.7 to 0.8 of Tst when re-installing",
+   "constants_M": {
+    "4mm": 0.026,
+    "6mm": 0.039,
+    "9mm": 0.059,
+    "12mm": 0.078
+   },
+   "constants_Y": {
+    "4mm": 1.38,
+    "6mm": 2.08,
+    "9mm": 3.11,
+    "12mm": 4.15
+   }
+  },
+  "mass_per_length": {
+   "ref": "not printed. DERIVED from the belt mass constant M (p.65, p.104) and the centrifugal tension formula Tc = M PD^2 rpm^2 / 16.2e6 (p.104), taking Tc = (mass per length) x (belt speed)^2",
+   "g_per_m": {
+    "4mm": 4.0,
+    "6mm": 6.1,
+    "9mm": 9.2,
+    "12mm": 12.1
+   }
+  },
+  "temperature": {
+   "ref": "p.61",
+   "max_environment_c": 85,
+   "note": "stock construction; made-to-order constructions on p.71"
+  },
+  "not_in_the_manual": [
+   "a tensile modulus or EA figure beyond the one 0.1 % elongation point",
+   "stiffness against tension / pretension",
+   "hysteresis or damping",
+   "a numerical tooth-jump (ratcheting) torque: p.10 only says GT3 resists it better",
+   "belt mass per length as a printed figure",
+   "12 mm stock belts or sprockets in 2 mm pitch"
+  ]
+ },
+ "sprockets": {
+  "ref": "'Sprocket Specification Tables - 2mm Pitch PowerGrip GT2 Sprockets', p.29 (6 mm) and p.30 (9 mm); diameters also on p.73",
+  "columns_in": [
+   "pitch_dia",
+   "OD",
+   "flange_dia_ref",
+   "W_face",
+   "L_overall",
+   "H_hub_dia",
+   "E_hub_length",
+   "plain_bore_min",
+   "plain_bore_max"
+  ],
+  "2MR-20S-06": {
+   "design_type": "6F (two flanges, hub)",
+   "in": [
+    0.501,
+    0.481,
+    0.685,
+    0.29,
+    0.625,
+    0.364,
+    0.236,
+    0.188,
+    0.188
+   ],
+   "mm": [
+    12.73,
+    12.22,
+    17.4,
+    7.37,
+    15.88,
+    9.25,
+    5.99,
+    4.78,
+    4.78
+   ],
+   "set_screws": "2 x 4-40 at 90 deg",
+   "weight_lb": 0.01,
+   "material": "aluminium, clear anodised"
+  },
+  "2MR-20S-09": {
+   "design_type": "6F",
+   "in": [
+    0.501,
+    0.481,
+    0.685,
+    0.41,
+    0.75,
+    0.364,
+    0.236,
+    0.188,
+    0.188
+   ],
+   "mm": [
+    12.73,
+    12.22,
+    17.4,
+    10.41,
+    19.05,
+    9.25,
+    5.99,
+    4.78,
+    4.78
+   ],
+   "set_screws": "2 x 4-40 at 90 deg",
+   "weight_lb": 0.01,
+   "material": "aluminium, clear anodised"
+  },
+  "pitch_dia_minus_od_mm": 0.51,
+  "stock_groove_counts": "12 to 120 (12 is the smallest listed)",
+  "minimum_sizes": {
+   "ref": "Table 9, p.68",
+   "inside_idler_sprocket": "12 grooves",
+   "backside_idler_od_in": 0.5,
+   "inside_flat_idler_od_in": 1.0,
+   "note": "an inside flat idler should be the pitch diameter of a 40-groove sprocket (25.5 mm); 6 teeth in mesh and 60 deg wrap on loaded sprockets"
+  },
+  "flange_and_face": {
+   "ref": "Tables 22 and 23, p.78",
+   "flange_height_mm_min_nominal": [
+    1.1,
+    1.5
+   ],
+   "face_width_over_belt_width_mm": {
+    "flanged": 1.0,
+    "unflanged": 3.0
+   }
+  },
+  "bore_note": "the 20-groove stock sprocket is listed with a 3/16 in (4.76 mm) plain bore, minimum = maximum; a 5 mm bore is not a Gates stock item"
+ },
+ "measurement_wang_2018": {
+  "document": "B. Wang, Y. Si, C. Chadha, J. T. Allison, A. E. Patterson, 'Nominal Stiffness of GT-2 Rubber-Fiberglass Timing Belts for Dynamic System Modeling and Design', Robotics 2018, 7(4), 75 (technical note, 8 pages + cover, CC BY)",
+  "source_url": "https://doi.org/10.3390/robotics7040075",
+  "document_file": "vendor_docs/Wang2018_GT2_belt.pdf",
+  "page_numbering": "printed page numbers of the article; PDF page = printed page + 1",
+  "test": {
+   "ref": "section 2, p.3",
+   "specimens": "new GT-2 belts, neoprene with glass fibres, free lengths 400 mm and 760 mm, three pulls each (six curves)",
+   "machine": "custom screw-driven manual test stand, 3000 N capacity, 1.6 mm per screw turn, 0.5 turn/s (0.8 mm/s), one reading per turn",
+   "load_cell_uncertainty_n": 0.89,
+   "to": "rupture (sudden, glass fibres torn)",
+   "not_stated": [
+    "belt width",
+    "belt maker",
+    "how the ends were gripped",
+    "temperature",
+    "any pretension or pre-cycling"
+   ]
+  },
+  "belt_section_fig1": {
+   "ref": "Figure 1, p.2",
+   "pitch_mm": 2,
+   "total_thickness_mm": 1.38,
+   "backing_mm": 0.63,
+   "tooth_radius_mm": 0.56
+  },
+  "break_points_read_from_fig4": {
+   "ref": "Figure 4a / 4b, p.4, read from the plotted crosses (about +/-10 N, +/-0.3 mm, +/-1 MPa)",
+   "columns": [
+    "free_length_mm",
+    "force_n",
+    "extension_mm",
+    "stress_mpa",
+    "strain",
+    "secant_EA_n"
+   ],
+   "760_rep1": [
+    760,
+    670,
+    20.6,
+    56,
+    0.0271,
+    24700
+   ],
+   "760_rep2": [
+    760,
+    565,
+    19.4,
+    47.5,
+    0.0255,
+    22200
+   ],
+   "760_rep3": [
+    760,
+    635,
+    19.0,
+    53,
+    0.025,
+    25400
+   ],
+   "400_rep1": [
+    400,
+    585,
+    11.8,
+    49,
+    0.0295,
+    19800
+   ],
+   "400_rep2": [
+    400,
+    595,
+    12.7,
+    49.5,
+    0.0318,
+    18700
+   ],
+   "400_rep3": [
+    400,
+    625,
+    14.2,
+    52.3,
+    0.0355,
+    17600
+   ]
+  },
+  "section_area_mm2_implied": {
+   "value": 12.0,
+   "how": "force / stress at the six break points (11.9 to 12.0); the paper does not state the area"
+  },
+  "regression_table1": {
+   "ref": "Table 1, p.5: stress (MPa) = A e^3 + B e^2 + C e + D, e = strain",
+   "full_dataset_cubic": {
+    "A": -2000000.0,
+    "B": 98091,
+    "C": 937.22,
+    "D": -0.1758,
+    "R2": 0.9672
+   },
+   "full_dataset_quadratic": {
+    "B": -19340,
+    "C": 2408.9,
+    "D": -3.3656,
+    "R2": 0.9552
+   },
+   "full_dataset_linear": {
+    "C": 1821.1,
+    "D": -0.614,
+    "R2": 0.9431
+   },
+   "low_strain_linear": {
+    "C": 2013.8,
+    "D": -2.3275,
+    "R2": 0.9573,
+    "strain_range": "0 to 0.02 (Figure 5c)"
+   },
+   "individual_cubic_C_range": [
+    445.86,
+    1281.6
+   ]
+  },
+  "derived_EA_of_the_tested_belt_n": {
+   "how": "modulus x 12.0 mm2 (equivalently force / strain; independent of what the area really is)",
+   "low_strain_linear_fit": 24200,
+   "full_dataset_linear_fit": 21900,
+   "tangent_from_full_cubic_at_strain": {
+    "0.000": 11200,
+    "0.001": 13500,
+    "0.0026": 16900,
+    "0.005": 21200,
+    "0.010": 27600,
+    "0.0163_peak": 30500,
+    "0.030": 17100
+   },
+   "secant_at_break_range": [
+    17600,
+    25400
+   ]
+  },
+  "width_inference": "NOT STATED in the paper. The specimens broke at 565 to 670 N. Gates' minimum breaking strength (manual p.59) is 556 N for a 6 mm and 845 N for a 9 mm 2 mm-pitch belt, so the specimens were most likely 6 mm wide. With 9 mm x 1.38 mm the area would be 12.4 mm2, also close to the 12.0 implied, so 9 mm cannot be excluded from the paper alone",
+  "EA_per_width_n": {
+   "if_specimen_was_6mm": {
+    "6mm": 24200,
+    "9mm": 36200,
+    "12mm": 48300,
+    "basis": "low-strain linear fit, scaled with width"
+   },
+   "if_specimen_was_9mm": {
+    "6mm": 16100,
+    "9mm": 24200,
+    "12mm": 32200
+   }
+  },
+  "nonlinearity": "stiffening from zero load (tangent roughly doubles between 0 and 1 % strain), then softening before rupture at 2.5 to 3.6 % strain. Part of the soft toe may be the grips and belt seating on a manual stand; the paper does not separate it",
+  "hysteresis": "not measured: single monotonic pulls to rupture, no unloading, no cycling"
+ }
+}

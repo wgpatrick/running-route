@@ -288,3 +288,35 @@ manual, OpenBuilds spacer page.
 None. `printer_v5` `--only ratings`: the same 27 `uncatalogued_cots` warnings and the same findings before and after
 (the design still uses its own proxies). No existing part's shape, SKU or ratings changed; `tests/test_vendor.py`
 checks the 6 and 12 mm pulley and idler names.
+
+---
+
+# Hand-collected documents (added 2026-11-15)
+
+The owner downloaded eight documents by hand (Drive folder; listing and sizes in `vendor_cad/staging/MANIFEST.md`). They
+were read as PDF only. Copies are in `vendor_docs/`. The numbers are recorded as new, labelled blocks in the vendor JSON
+files. **No value that the catalogue code, `MATERIALS`, a verifier or the twin reads was changed**: the blocks sit
+beside the old values. What each document would change, and the expected effect on printer_v4 / v5 / v6, is in
+`/home/user/running-route/reports/Vendor documents - what they change.md`.
+
+The new blocks use the key `document_file` (not `local_copy`), because `tests/test_vendor.py` limits a `local_copy`
+to 2 MB and the Gates manual is 4.2 MB.
+
+| File in `vendor_docs/` | What it is | Recorded in | What it now backs | What it does not contain |
+|---|---|---|---|---|
+| `Hiwin_MG_catalogue.pdf` | HIWIN GmbH catalogue GW-11-5-EN-2207-K, section 3.5 MG series, printed pages 92-105 (14 PDF pages) | `hiwin_mgn12.json`, block `catalogue` | Primary confirmation of every MGN12H / MGNR12 value under `parts` (was two third-party transcriptions): dimensions, L1 32.4, M3 x 3.5 thread, Cdyn 3720 N, C0 5880 N, moments 38.2 / 36.3 / 36.3 N.m, 0.65 kg/m. New: **radial rigidity** (Table 3.77: MGN12H 63 N/um at Z0, 81 at Z1; MGN7H 39 / 51), preload classes ZF / Z0 / Z1, running parallelism by rail length, H and N tolerances, allowed parallelism of two rails (MG_12: 9 um at ZF / Z0, 5 um at Z1), height coefficient, mounting flatness, shoulders, the same for MGN7, 9, 15 | Rigidity for class ZF, lateral or moment rigidity, a ball-track length separate from L1, friction, preload force in newtons |
+| `Gates_GT2_design_manual.pdf` | Gates "Light Power and Precision Drive Design Manual", 112 PDF pages (PDF page = printed page + 2) | new file `gates_gt2.json` | 2 mm pitch GT2 / GT3: stock widths 4 / 6 / 9 mm; working tension, minimum breaking strength and **tension for 0.1 % elongation** per width (Table 6, p.59: 6 mm 3.8 lb, i.e. EA 16.9 kN); torque ratings and width multipliers; installation tension per span (Tables 7, 8, p.65); sprocket tables (2MR-20S-06, 2MR-20S-09), minimum idler sizes, flange and face-width rules, belt thickness 1.52 mm, 85 degC limit | A modulus curve against tension, hysteresis, a tooth-jump torque number, printed belt mass (derived here from the mass constant M), any 12 mm stock belt or sprocket in 2 mm pitch, a 5 mm bore 20-groove sprocket |
+| `Wang2018_GT2_belt.pdf` | Wang et al., Robotics 2018, 7(4), 75, https://doi.org/10.3390/robotics7040075 (PDF page = printed page + 1) | `gates_gt2.json`, block `measurement_wang_2018` | Tensile tests of GT2 belt to rupture, 400 and 760 mm free length, six curves; regression table; EA of the tested belt 24.2 kN (low-strain linear fit), tangent rising from about 11 to 30 kN with strain | **Belt width is not stated** (inferred 6 mm from the breaking load), maker, grips, temperature, pretension, unloading or cycling (no hysteresis), any second width |
+| `17HS13-0404S1_datasheet.pdf` | StepperOnline drawing A0581 rev 0, 2.27.2026 | `stepperonline_nema17.json`, `parts.34.datasheet_17HS13_0404S1` | The S1 variant: electrically and mechanically the 17HS13-0404S already recorded; differs in the lead (1000 mm with HX25402-4Y connector against 300 mm bare), hole-square tolerance +/-0.1 (S: +/-0.2) and the flat-length tolerance | Rotor inertia and weight (blank), detent torque, torque-speed curve, shaft loads |
+| `17HS19-2004S1_datasheet.pdf` | StepperOnline drawing A0842 rev 0, 8.1.2025 | `stepperonline_nema17.json`, `parts.48.datasheet_2025_drawing_A0842` | Same part as the 2020 sheet already stored, but **resistance 1.60 ohm** (2020 sheet 1.40) and a new shaft-load comment, "LENGTH 20mm: 21N MAX" | Weight (blank), detent torque, torque-speed curve, axial load |
+| `MH2025-5-8_datasheet.pdf` | StepperOnline drawing A1917, 10.26.2026 | `stepperonline_coupler.json`, block `drawing` (and `vendor_step_first_inspection`) | OD 20, length 25, bores 5 and 8: equal to the product-page values in use | **Any misalignment figure**, torque, stiffness, speed, mass, clamp screw size. The 1.0 deg used by the tolerance check stays assumed |
+| `ATP5_datasheet.pdf` | Vista Metals ATP-5 product sheet, 2 pages | `cast_tooling_plate.json`, `datasheets.al_atp5` | Density 2660, yield 124, tensile 283 (all as recorded, were recalled); E 70,000 MPa (recorded 70,300); expansion 23.6e-6 /K at 20-100 degC (recorded 23.8e-6); new: 140 W/m.K, 70 HB, flatness 0.127 mm over 12.7 mm thick and 0.381 mm at 12.7 mm and under, thickness +/-0.127 mm, 6.35 to 101.6 mm | Specific heat, Poisson's ratio, a list of stock thicknesses |
+| `MIC6_datasheet.pdf` | United Performance Metals "Alloy MIC 6", 2 pages | `cast_tooling_plate.json`, `datasheets.al_mic6` | **Nothing.** The property tables are empty in this file (headings only; the page was saved before its tables loaded) | Every number. `al_mic6` density and modulus stay recalled. Needs downloading again (print the page after it has loaded, or the Arconic / Kaiser sheet) |
+
+This supersedes three rows of "Could not be sourced" above: the Hiwin catalogue and the Gates manual are now in hand,
+and the MGN12 entry can move from `secondary` to `vendor` when the catalogue code is switched to the `catalogue` block.
+It closes two of the five lines under "Documents" in `vendor_cad/inbox/README.md` (ATP-5, Gates) and leaves MIC-6 open.
+
+Six STEP files came with the documents and are still in `vendor_cad/staging/` (not integrated): the two motors,
+the coupler, E3D's Roto Sensored and Roto Bowden reference models and E3D's Revo Voron reference. First inspection
+(solids, sizes, what differs from the catalogue parts) is in the report named above.
