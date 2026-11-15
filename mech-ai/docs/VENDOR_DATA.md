@@ -159,7 +159,7 @@ Wanted: a direct-drive extruder for a toolhead of about 0.40 kg, 24 V, Klipper, 
 | | E3D Roto (chosen) | LDO Orbiter v2.0 | Annex Sherpa Mini | Bondtech LGX Lite | E3D Hemera XS |
 |---|---|---|---|---|---|
 | Mass with motor | **140 g, heat sink and fan included; 157 g with hot side and nozzle** | about 140 g, no hotend | 115-136 g by kit, no hotend | 141 g, no hotend | motor alone 160 g |
-| Gear ratio | 11.262:1 | 7.5:1 | 50:8 / 50:10 | 44:10 x 37:17 | direct 3.32:1 (recalled) |
+| Gear ratio | 11.262:1 | 7.5:1 | 50:8 / 50:10 | 44:10 x 37:17 | not on the page |
 | Rotation distance | 26.8937 per hobb turn (2.388 per motor turn), 0.9 deg motor | 4.637 (recalled) | 22.68 with gear ratio (recalled) | 55 with gear ratio, or 5.7 | 397 steps/mm at 16x |
 | Motor current | 0.318-0.424 A rms (0.45-0.6 A peak) | 1.0 A rated | 1.0 A rated | 0.45-0.60 A recommended | 0.99 A rms |
 | Motor R / L / torque | 7.5 ohm / **not published** / 75 mNm, rotor 7 gcm2 | not reached | not reached | not reached | 2.3 ohm / - / 180 mNm |
@@ -265,7 +265,7 @@ The electrical verifier's open warning stands: **no off-the-shelf product that c
 
 - No hotend on a reachable site has a built-in one-shot cut-off. E3D's Revo HeaterCore has the nearest real feature: a
   PTC winding ("power reduces as it gets hotter, reducing hazards in the event of a thermal runaway"). From E3D's
-  figures: 40 W at 23 degC, 27.2 W at 250 degC, 25.4 W at 300 degC, about 20.7 W at 450 degC (extrapolated past E3D's
+  figures: 40 W at 23 degC, 27.2 W at 250 degC, 25.4 W at 300 degC, about 21.2 W at 450 degC (extrapolated past E3D's
   graph, which ends at 300 degC). It limits a stuck-on heater; it does not switch it off. Recorded in
   `hotend_revo().ratings["electrical"]` (`resistance_ohm_23c`, `resistance_tempco_per_c`, `power_w_at_c`).
 - Axial thermal cut-offs of the kind already in the catalogue (`thermal_fuse`) stop at about 240 degC functioning

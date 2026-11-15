@@ -114,7 +114,7 @@
   "block_height_m": 0.017
  },
  "hardware_over_temperature_cut_off": {
-  "finding": "No off-the-shelf hotend with a built-in one-shot cut-off, and no thermal fuse rated to sit on a 250-300 degC heater block, was found on a reachable host. The HeaterCore's PTC winding is the real product feature that limits a stuck-on heater: at 24 V it delivers 40 W at 23 degC and 24^2 / (14.4 x (1 + 0.002078 x (T - 23))) W at T: 27.2 W at 250 degC, 25.4 W at 300 degC, 20.7 W at 450 degC. It reduces fault power; it does not remove it.",
+  "finding": "No off-the-shelf hotend with a built-in one-shot cut-off, and no thermal fuse rated to sit on a 250-300 degC heater block, was found on a reachable host. The HeaterCore's PTC winding is the real product feature that limits a stuck-on heater: at 24 V it delivers 40 W at 23 degC and 24^2 / (14.4 x (1 + 0.002078 x (T - 23))) W at T: 27.2 W at 250 degC, 25.4 W at 300 degC, 21.2 W at 450 degC. It reduces fault power; it does not remove it.",
   "options_not_verified": [
    "axial thermal cut-offs (SEFUSE SF-E class) stop at about 240 degC rated functioning temperature: recalled; they cannot sit on the block",
    "a bimetal disc thermostat (KSD301 class, ceramic body, normally closed, 250-300 degC) is the usual hardware answer but is 16 mm across and has no seat on a Revo or V6 hot side: recalled",

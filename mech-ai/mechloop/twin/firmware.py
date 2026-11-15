@@ -356,7 +356,7 @@ def commanded(design, info, gcode_path: Path, pts: np.ndarray, dt: float, workdi
         # X/Y pause to put them in: take whole clock periods from the planned run, where that search is sound
         wrap = (1 << 32) / run["clock_hz"]
         d = tz_a - tz_r
-        tz_a = tz_a - np.round((d - d[0]) / wrap) * wrap
+        tz_a = tz_a - np.round(d / wrap) * wrap        # the true offset between the runs is milliseconds
         as_[2] = (tz_a, as_[2][1])
         shift = float(np.median(tz_a - tz_r))
         drift = float(np.abs(tz_a - tz_r - shift).max())
