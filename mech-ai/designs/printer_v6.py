@@ -30,8 +30,8 @@ carrier, 2020 frame, 24 V, SKR Mini E3 V3 + Pi Zero 2 W, belt tensioners, no cus
 5. 180 mm of Z: frame 10 mm taller, 250 mm lead screw, Z blocks 55 mm apart on the same 300 mm rails.
 6. Real catalogue parts: Pololu / OpenBuilds round spacers, 16 x 18 silicone bed columns, MIC-6 bed plate, a 9 mm X
    belt with 9 mm pulley and idler (the two Y belts stay 12 mm).
-7. Y plates are laser-cut 3 mm steel: the beam ends inboard of the Y guide blocks, so their screws need no
-   counterbore and the gantry is built on the bench. Each Y belt end is tied through two slots in its Y plate (no
+7. Y plates are laser-cut 3 mm steel: the beam ends inboard of the Y guide blocks and hangs under the plates on one
+   M5 from above each side, so the block screws need no counterbore and no screw is driven from below. Each Y belt end is tied through two slots in its Y plate (no
    clamp part between the belt and the plate: the belt-plane scatter target).
 8. Hotend safety: PSU relay and bed thermal fuse kept; the Revo heater is self-limiting (PTC). No hardware cut-off
    for the hotend exists in the catalogue; the electrical verifier's warning stays open.
@@ -486,15 +486,15 @@ def build_electrical(d: Design) -> Electrical:
     zt = Z_TRAY + 8.0
     XL, ZL = -147.0, FZ - 6.0      # left looms run along the inner face of the left top rail, on its lower land
     # ---- looms (centre lines; one bundle radius off surfaces). Consecutive waypoints on different bodies flex.
-    P1 = (147.0, 150.0, FZ - 6.0)      # on the inner face of the right top rail, clear of the toolhead's sweep
+    P1 = (147.0, 134.0, FZ - 6.0)      # on the inner face of the right top rail, clear of the toolhead's sweep
     # toolhead loom: tied along the top of the Roto's rear face (left end: probe and hot-side leads join; right end:
     # motor lead joins and the free loop leaves), high enough to clear the part fan when the loop trails back
     yl = YB0 + R_TPR + ROTO_W + 2.0
     el.loom("toolhead", [Waypoint("xbody", (-13.0, yl, Z_BEAM + 26.0), clamp="extruder"),
                          Waypoint("xbody", (24.0, yl, Z_BEAM + 26.0), clamp="extruder"),
-                         Waypoint("world", (147.0, 177.0, FZ + 13.0), clamp="frame_top_back"), Waypoint("world", P1)],
+                         Waypoint("world", (147.8, 118.0, FZ - 6.0), clamp="frame_top_right"), Waypoint("world", P1)],
             flex_length={1: 460.0})
-    el.loom("drop_right", [("world", P1), ("world", (145.0, 154.0, FZ - 34.0)), ("world", (145.0, 168.0, FZ - 74.0)),
+    el.loom("drop_right", [("world", P1), ("world", (145.0, 152.0, FZ - 32.0)), ("world", (145.0, 168.0, FZ - 74.0)),
                            ("world", (145.0, 170.0, 60.0)), ("world", (145.0, 150.0, 34.0))])
     el.loom("tray_right", [("world", (145.0, 150.0, 34.0)), ("world", (149.0, 46.0, zt)), ("world", (149.0, -26.0, zt))])
     el.loom("front_right", [("world", (149.0, -26.0, zt)), ("world", (149.0, -120.0, zt)), ("world", (143.0, -150.0, 40.0)),
@@ -502,9 +502,10 @@ def build_electrical(d: Design) -> Electrical:
                             ("world", (143.0, -152.0, FZ - 26.0)), ("world", (146.0, -136.0, FZ - 8.0))])
     el.loom("back", [("world", (140.0, 152.0, 30.0)), ("world", (130.0, 155.0, 12.0)), ("world", (30.0, 155.0, 12.0))])
     # the X motor's and X switch's leads are tied to the front edge of the left Y plate, inboard of the Y guide block;
-    # the loop hangs from there to the rail's inner face
+    # the loop trails forward from there to the rail's inner face (the frame clamp is level with the plate's front
+    # edge at y = -TY, so the loop never has to pass back under the guide block)
     el.loom("gantry", [Waypoint("ybody", (-150.0, YB0 + PL_Y0 - 2.5, Z_PLATE + T_YP / 2), clamp="y_plate_left"),
-                       Waypoint("world", (XL, YB0 + PL_Y0 - 2.5, ZL), clamp="frame_top_left")], flex_length={0: 150.0})
+                       Waypoint("world", (XL - 0.8, -134.0, ZL), clamp="frame_top_left")], flex_length={0: 240.0})
     el.loom("top_left", [("world", (XL, -20.0, ZL)), ("world", (XL, 136.0, ZL))])
     el.loom("drop_left", [("world", (XL, -27.0, ZL)), ("world", (XL, -120.0, ZL)),
                           ("world", (-143.0, -150.0, FZ - 24.0)), ("world", (-143.0, -170.0, FZ - 64.0)),
@@ -726,7 +727,9 @@ def build() -> Design:
             for y in (-10, 10):
                 plate -= Pos(sx * RAIL_X + x, YB0 + y, Z_PLATE + T_YP / 2) * Cylinder(YH3 / 2, T_YP)
         x_bolt = sx * (RAIL_X - 25)
-        plate -= Pos(x_bolt, YB0, Z_PLATE + T_YP / 2) * Cylinder(clearance_hole("M5") / 2, T_YP)
+        # the beam bolt sits in a +/-1.5 mm slot across the machine: the gantry takes up the frame's width error, so
+        # each Y rail can be set to its own frame rail (the Y belt hardware is on those rails)
+        plate -= slot_z(x_bolt, YB0, 0.0, 1.5, clearance_hole("M5"), zp0, zp1)
         if sx < 0:
             # land behind the beam for the X endstop (the switch stands on two bought spacers); the land stops short of the tool plate's tab at x = -TX
             plate += bx(LAND_X[0], LAND_X[1], YB0 + PL_Y1, YB0 + LAND_Y1, zp0, zp1)
@@ -857,11 +860,11 @@ def build() -> Design:
                   clamps=("x_endstop", f"x_endstop_spacer_{i}", "y_plate_left"))
         add_nut(d, f"x_endstop_nut_{i}", "M3", at=(hx, hy, zp0), direction=(0, 0, -1), body="ybody", screw=f"x_endstop_screw_{i}")
     # ================= Y drives: vertical belt planes outboard of both top side rails =====
-    # Mounts are 3 mm laser-cut steel sheet. Belt tensioners: each motor mount is held by three M5 screws in T-nuts,
+    # Mounts are 3 mm laser-cut steel sheet. Belt tensioners: each motor mount is held by two M5 screws in T-nuts,
     # so with them slack it slides along the rail; an M3 jack screw in a printed anchor block (bolted to the same
     # slot, hooked under the rail) pushes it backwards on a lug. v6: left and right are mirror images.
     xf = FX / 2
-    Y_MOUNT_BOLTS = (133.0, 150.0, 167.0)
+    Y_MOUNT_BOLTS = (135.0, 165.0)       # v6: two per mount (three in v5)
     AN_Y0, AN_Y1, LUG_Y0, TS_Z = 105.0, 119.0, 125.0, FZ - 15.0
     side = lambda x, y, z, sg: Location(Plane(origin=(x, y, z), x_dir=(0, 1, 0), z_dir=(sg, 0, 0)))
 
@@ -1175,7 +1178,7 @@ def build() -> Design:
             and m["motion"]["belts"][b]["length_change_over_travel_mm"] <= 0.3 for b in ("x_belt", "y_belt", "y_belt_l")),
         str(m["motion"].get("belts")))))
 
-    def rail_margin(dd, extra_z=0.0):
+    def rail_margins(dd, extra_z=0.0):
         out = {}
         rails = {"y_carriage_left": "y_rail_left", "y_carriage_right": "y_rail_right", "x_carriage": "x_rail",
                  **{f"z_carriage_{s_}_{lv}": f"z_rail_{s_}" for s_ in ("left", "right") for lv in ("lo", "hi")}}
@@ -1186,10 +1189,10 @@ def build() -> Design:
             hi += extra_z if ax == "Z" else 0.0
             out[n] = round(min(getattr(cb.min, ax) + lo - getattr(rb.min, ax), getattr(rb.max, ax) - getattr(cb.max, ax) - hi), 2)
         return min(out.values()) >= 5.0, str(out)
-    d.requirements.append(Requirement("every carriage stays >= 5 mm inside its rail ends over the travel", rail_margin))
+    d.requirements.append(Requirement("every carriage stays >= 5 mm inside its rail ends over the travel", lambda dd: rail_margins(dd)))
 
     def z_beyond(dd):
-        ok_rail, detail = rail_margin(dd, Z_UP)
+        ok_rail, detail = rail_margins(dd, Z_UP)
         nut_top = dd.get("z_nut").shape.bounding_box().max.Z + PRINT_Z + Z_UP
         scr_top = dd.get("leadscrew").shape.bounding_box().max.Z
         return ok_rail and scr_top - nut_top >= 5.0, f"with Z {Z_UP:g} mm past the nozzle plane: {detail}; lead screw {scr_top - nut_top:.1f} mm above the nut"
