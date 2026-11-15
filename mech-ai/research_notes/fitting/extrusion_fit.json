@@ -1,0 +1,384 @@
+{
+ "pressure_advance": {
+  "bowden 0.25": {
+   "n": 17,
+   "min": 0.55,
+   "p25": 0.61,
+   "median": 0.73,
+   "p75": 0.92,
+   "max": 1.02
+  },
+  "bowden 0.4": {
+   "n": 17,
+   "min": 0.18,
+   "p25": 0.21,
+   "median": 0.24,
+   "p75": 0.32,
+   "max": 0.4
+  },
+  "bowden 0.6": {
+   "n": 17,
+   "min": 0.1,
+   "p25": 0.12,
+   "median": 0.15,
+   "p75": 0.2,
+   "max": 0.22
+  },
+  "bowden 0.8": {
+   "n": 17,
+   "min": 0.07,
+   "p25": 0.086,
+   "median": 0.09,
+   "p75": 0.12,
+   "max": 0.15
+  },
+  "direct 0.25": {
+   "n": 36,
+   "min": 0.07,
+   "p25": 0.09,
+   "median": 0.11,
+   "p75": 0.145,
+   "max": 0.2
+  },
+  "direct 0.3": {
+   "n": 36,
+   "min": 0.045,
+   "p25": 0.06,
+   "median": 0.072,
+   "p75": 0.09,
+   "max": 0.1
+  },
+  "direct 0.4": {
+   "n": 36,
+   "min": 0.02,
+   "p25": 0.0257,
+   "median": 0.0315,
+   "p75": 0.045,
+   "max": 0.058
+  },
+  "direct 0.5": {
+   "n": 36,
+   "min": 0.015,
+   "p25": 0.018,
+   "median": 0.022,
+   "p75": 0.0358,
+   "max": 0.05
+  },
+  "direct 0.6": {
+   "n": 36,
+   "min": 0.012,
+   "p25": 0.016,
+   "median": 0.018,
+   "p75": 0.025,
+   "max": 0.038
+  },
+  "direct 0.8": {
+   "n": 36,
+   "min": 0.009,
+   "p25": 0.01,
+   "median": 0.012,
+   "p75": 0.016,
+   "max": 0.025
+  }
+ },
+ "pa_rows": 284,
+ "flexible_0.4": {},
+ "nozzle_scaling": {
+  "direct": {
+   "k_0.4": 0.0315,
+   "exponent_from_0.4_and_0.6": 1.38,
+   "held_out": {
+    "0.25": {
+     "predicted": 0.0603,
+     "factory_median": 0.11,
+     "error_pct": -45.2
+    },
+    "0.3": {
+     "predicted": 0.0469,
+     "factory_median": 0.07200000000000001,
+     "error_pct": -34.9
+    },
+    "0.5": {
+     "predicted": 0.0232,
+     "factory_median": 0.022,
+     "error_pct": 5.2
+    },
+    "0.8": {
+     "predicted": 0.0121,
+     "factory_median": 0.012,
+     "error_pct": 0.8
+    }
+   },
+   "leave_one_out_0.4_median_abs_error_pct": 31.1
+  },
+  "bowden": {
+   "k_0.4": 0.24,
+   "exponent_from_0.4_and_0.6": 1.16,
+   "held_out": {
+    "0.25": {
+     "predicted": 0.4138,
+     "factory_median": 0.73,
+     "error_pct": -43.3
+    },
+    "0.8": {
+     "predicted": 0.1075,
+     "factory_median": 0.09,
+     "error_pct": 19.4
+    }
+   },
+   "leave_one_out_0.4_median_abs_error_pct": 25.0
+  }
+ },
+ "prusa_max_volumetric_speed_0.4": {
+  "high_flow_nozzle | ABS": {
+   "n": 288,
+   "min": 25.0,
+   "p25": 26.75,
+   "median": 30.5,
+   "p75": 34.5,
+   "max": 36.0
+  },
+  "high_flow_nozzle | ASA": {
+   "n": 160,
+   "min": 10.0,
+   "p25": 26.0,
+   "median": 27.0,
+   "p75": 34.0,
+   "max": 36.0
+  },
+  "high_flow_nozzle | PETG": {
+   "n": 452,
+   "min": 2.0,
+   "p25": 22.0,
+   "median": 25.0,
+   "p75": 30.0,
+   "max": 39.0
+  },
+  "high_flow_nozzle | PLA": {
+   "n": 896,
+   "min": 13.0,
+   "p25": 21.0,
+   "median": 26.0,
+   "p75": 32.0,
+   "max": 39.0
+  },
+  "mini_bowden_v6 | ABS": {
+   "n": 21,
+   "min": 6.0,
+   "p25": 10.0,
+   "median": 10.0,
+   "p75": 10.0,
+   "max": 11.0
+  },
+  "mini_bowden_v6 | ASA": {
+   "n": 11,
+   "min": 10.0,
+   "p25": 10.0,
+   "median": 10.0,
+   "p75": 10.0,
+   "max": 10.0
+  },
+  "mini_bowden_v6 | PETG": {
+   "n": 42,
+   "min": 2.0,
+   "p25": 8.0,
+   "median": 8.0,
+   "p75": 8.0,
+   "max": 12.0
+  },
+  "mini_bowden_v6 | PLA": {
+   "n": 8,
+   "min": 7.0,
+   "p25": 7.0,
+   "median": 14.0,
+   "p75": 14.25,
+   "max": 15.0
+  },
+  "nextruder_standard | ABS": {
+   "n": 84,
+   "min": 6.0,
+   "p25": 15.0,
+   "median": 15.0,
+   "p75": 15.0,
+   "max": 15.0
+  },
+  "nextruder_standard | ASA": {
+   "n": 44,
+   "min": 5.0,
+   "p25": 15.0,
+   "median": 15.0,
+   "p75": 15.0,
+   "max": 15.0
+  },
+  "nextruder_standard | PETG": {
+   "n": 161,
+   "min": 2.0,
+   "p25": 12.0,
+   "median": 12.0,
+   "p75": 12.0,
+   "max": 14.0
+  },
+  "nextruder_standard | PLA": {
+   "n": 328,
+   "min": 6.0,
+   "p25": 11.0,
+   "median": 15.0,
+   "p75": 15.0,
+   "max": 17.0
+  },
+  "v6_mk3_family | ABS": {
+   "n": 27,
+   "min": 6.0,
+   "p25": 11.0,
+   "median": 11.0,
+   "p75": 11.0,
+   "max": 11.0
+  },
+  "v6_mk3_family | ASA": {
+   "n": 13,
+   "min": 5.0,
+   "p25": 11.0,
+   "median": 11.0,
+   "p75": 11.0,
+   "max": 11.0
+  },
+  "v6_mk3_family | PETG": {
+   "n": 63,
+   "min": 2.0,
+   "p25": 7.5,
+   "median": 8.0,
+   "p75": 8.0,
+   "max": 14.0
+  },
+  "v6_mk3_family | PLA": {
+   "n": 90,
+   "min": 6.0,
+   "p25": 10.0,
+   "median": 15.0,
+   "p75": 15.0,
+   "max": 15.0
+  }
+ },
+ "bambu_max_volumetric_speed": {
+  "ABS": {
+   "n": 99,
+   "min": 2.0,
+   "p25": 2.0,
+   "median": 15.0,
+   "p75": 16.0,
+   "max": 25.0
+  },
+  "ASA": {
+   "n": 75,
+   "min": 2.0,
+   "p25": 2.0,
+   "median": 12.0,
+   "p75": 18.0,
+   "max": 25.0
+  },
+  "HIPS": {
+   "n": 24,
+   "min": 0.5,
+   "p25": 0.5,
+   "median": 8.0,
+   "p75": 8.0,
+   "max": 8.0
+  },
+  "PA": {
+   "n": 38,
+   "min": 8.0,
+   "p25": 8.0,
+   "median": 8.0,
+   "p75": 12.0,
+   "max": 12.0
+  },
+  "PA-CF": {
+   "n": 51,
+   "min": 8.0,
+   "p25": 8.0,
+   "median": 8.0,
+   "p75": 8.0,
+   "max": 14.0
+  },
+  "PA6-CF": {
+   "n": 25,
+   "min": 8.0,
+   "p25": 8.0,
+   "median": 8.0,
+   "p75": 8.0,
+   "max": 14.0
+  },
+  "PC": {
+   "n": 106,
+   "min": 1.0,
+   "p25": 1.0,
+   "median": 18.0,
+   "p75": 18.0,
+   "max": 25.0
+  },
+  "PETG": {
+   "n": 248,
+   "min": 1.0,
+   "p25": 1.0,
+   "median": 13.0,
+   "p75": 18.0,
+   "max": 30.0
+  },
+  "PETG-CF": {
+   "n": 46,
+   "min": 6.0,
+   "p25": 11.5,
+   "median": 11.5,
+   "p75": 11.5,
+   "max": 12.0
+  },
+  "PLA": {
+   "n": 890,
+   "min": 0.5,
+   "p25": 2.0,
+   "median": 12.0,
+   "p75": 20.0,
+   "max": 30.0
+  },
+  "PLA-CF": {
+   "n": 44,
+   "min": 10.0,
+   "p25": 12.0,
+   "median": 15.0,
+   "p75": 18.0,
+   "max": 18.0
+  },
+  "PPA-CF": {
+   "n": 23,
+   "min": 6.5,
+   "p25": 6.5,
+   "median": 8.0,
+   "p75": 8.0,
+   "max": 8.0
+  },
+  "PVA": {
+   "n": 50,
+   "min": 0.5,
+   "p25": 6.0,
+   "median": 6.0,
+   "p75": 16.0,
+   "max": 16.0
+  },
+  "TPU": {
+   "n": 113,
+   "min": 2.2,
+   "p25": 2.8,
+   "median": 3.6,
+   "p75": 12.0,
+   "max": 15.0
+  },
+  "TPU-AMS": {
+   "n": 42,
+   "min": 10.5,
+   "p25": 10.5,
+   "median": 12.0,
+   "p75": 18.0,
+   "max": 18.0
+  }
+ }
+}

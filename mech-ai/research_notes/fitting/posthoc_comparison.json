@@ -1,0 +1,112 @@
+{
+ "blind": false,
+ "note": "second comparison, made after the measurements were seen; the toolhead term's parameter was fitted to these machines. Frozen inputs unchanged (sha256 4561db2df882dafe)",
+ "rows": [
+  {
+   "machine": "voron0",
+   "axis": "x",
+   "kind": "toolhead",
+   "measured_median_hz": 79.2,
+   "blind_hz": 112.6,
+   "blind_error_pct": 42.2,
+   "with_term_hz": 80.1,
+   "with_term_error_pct": 1.2,
+   "term_n_per_mm": 126.9,
+   "guide": "linear_rail",
+   "implied_block_n_per_um": 9.54,
+   "leave_one_out": {
+    "fitted_on": "trident250",
+    "block_n_per_um": 10.47,
+    "hz": 81.0,
+    "error_pct": 2.3
+   }
+  },
+  {
+   "machine": "voron0",
+   "axis": "y",
+   "kind": "gantry or bed",
+   "measured_median_hz": 73.8,
+   "blind_hz": 85.2,
+   "blind_error_pct": 15.4,
+   "with_term_hz": 85.2,
+   "with_term_error_pct": 15.4,
+   "term_n_per_mm": null,
+   "guide": null
+  },
+  {
+   "machine": "trident250",
+   "axis": "x",
+   "kind": "toolhead",
+   "measured_median_hz": 64.6,
+   "blind_hz": 76.2,
+   "blind_error_pct": 18.0,
+   "with_term_hz": 64.2,
+   "with_term_error_pct": -0.6,
+   "term_n_per_mm": 219.5,
+   "guide": "linear_rail",
+   "implied_block_n_per_um": 10.47,
+   "leave_one_out": {
+    "fitted_on": "voron0",
+    "block_n_per_um": 9.54,
+    "hz": 63.7,
+    "error_pct": -1.3
+   }
+  },
+  {
+   "machine": "trident250",
+   "axis": "y",
+   "kind": "gantry or bed",
+   "measured_median_hz": 48.6,
+   "blind_hz": 44.5,
+   "blind_error_pct": -8.4,
+   "with_term_hz": 44.5,
+   "with_term_error_pct": -8.4,
+   "term_n_per_mm": null,
+   "guide": null
+  },
+  {
+   "machine": "ender3",
+   "axis": "x",
+   "kind": "toolhead",
+   "measured_median_hz": 50.6,
+   "blind_hz": 85.8,
+   "blind_error_pct": 69.6,
+   "with_term_hz": 50.1,
+   "with_term_error_pct": -1.0,
+   "term_n_per_mm": 40.0,
+   "guide": "v_wheels",
+   "leave_one_out": null
+  },
+  {
+   "machine": "ender3",
+   "axis": "y",
+   "kind": "gantry or bed",
+   "measured_median_hz": 45.0,
+   "blind_hz": 45.6,
+   "blind_error_pct": 1.3,
+   "with_term_hz": 45.6,
+   "with_term_error_pct": 1.3,
+   "term_n_per_mm": null,
+   "guide": null
+  }
+ ],
+ "summary": {
+  "all axes: mean abs error pct, blind / with term": [
+   25.8,
+   4.7
+  ],
+  "toolhead axes: mean signed error pct, blind / with term": [
+   43.3,
+   -0.1
+  ],
+  "toolhead axes: worst error pct, blind / with term": [
+   69.6,
+   1.2
+  ],
+  "rail toolhead axes, leave one machine out: errors pct": [
+   2.3,
+   -1.3
+  ],
+  "gantry and bed axes": "unchanged (no term): mean abs 8.4 pct"
+ }
+}

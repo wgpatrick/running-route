@@ -21,7 +21,9 @@ from ..report import VerifierResult, timed
 MAX_NODES = 250_000
 # linear thermal expansion, 1/K
 ALPHA = {"al6061": 23.6e-6, "steel": 12e-6, "stainless304": 17.3e-6, "pla": 68e-6, "petg": 60e-6, "abs": 90e-6,
-         "nylon_pa12": 100e-6, "brass": 19e-6, "rubber_gt2": 100e-6}
+         "nylon_pa12": 100e-6, "brass": 19e-6, "rubber_gt2": 100e-6,
+         # cast aluminium tooling plate, 20-100 degC (mechloop/parts/vendor/cast_tooling_plate.json)
+         "al_mic6": 23.6e-6, "al_atp5": 23.8e-6}
 
 
 def _gmsh_start():

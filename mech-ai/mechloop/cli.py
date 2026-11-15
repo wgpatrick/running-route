@@ -32,13 +32,16 @@ def main(argv=None) -> int:
     asm.add_argument("design")
     asm.add_argument("--out", default="out")
     asm.add_argument("--no-render", action="store_true")
-    sc = sub.add_parser("score", help="scorecard for a printer design (things to improve, not just pass)")
+    sc = sub.add_parser("score", help="scorecard for a printer design (things to improve, not just pass); every headline number "
+                                      "comes with a [low, expected, high] range under 'headline' and 'ranges'")
     sc.add_argument("design")
     sc.add_argument("--out", default="out")
     sc.add_argument("--assembly", action="store_true", help="also run the assembly simulation (slower)")
     sc.add_argument("--firmware", choices=["klipper"], help="also score with the real firmware planning every print from the "
                     "generated printer.cfg (input shaper and pressure advance on, and off for comparison); reported under 'klipper'")
     sc.add_argument("--firmware-only", action="store_true", help="with --firmware: skip the built-in planner's sweep and benchmark")
+    sc.add_argument("--no-ranges", action="store_true", help="skip the re-runs behind the [low, expected, high] of the step-loss ceiling "
+                    "and cross-track error (resonance and the acceleration an owner would run keep their ranges)")
     tu = sub.add_parser("tune", help="firmware tuning on the twin: input shaper, pressure-advance sweep, bed mesh (needs Klipper)")
     tu.add_argument("design")
     tu.add_argument("--out", default="out")
@@ -118,7 +121,7 @@ def main(argv=None) -> int:
 
         if a.firmware_only and not a.firmware:
             sys.exit("--firmware-only needs --firmware klipper")
-        res = score(a.design, a.out, assembly=a.assembly, firmware=a.firmware, builtin=not a.firmware_only)
+        res = score(a.design, a.out, assembly=a.assembly, firmware=a.firmware, builtin=not a.firmware_only, uncertainty=not a.no_ranges)
         print(json.dumps(res, indent=1, default=float))
         fw_ok = True
         if a.firmware:      # a firmware score that did not run, or whose nominal print failed, is not a pass

@@ -86,7 +86,7 @@ def skr_mini_e3_v3() -> Stock:
         "supply_v": (12.0, 24.0), "input_fuse_a": 20.0, "stepper_drivers": 4,
         "driver": "TMC2209", "sense_resistor_ohm": 0.11, "driver_max_rms_a": 1.74, "driver_abs_max_rms_a": 2.0,
         "driver_rds_on_ohm": 0.17, "driver_max_v": 29.0, "output_resistance_ohm": 0.012, "logic_w": 1.5,
-        "rail_5v_max_a": 3.0, "adc_bits": 12, "thermistor_pullup_ohm": 4700.0, "max_ambient_c": 60.0}
+        "rail_5v_max_a": 3.0, "rail_5v_fuse_a": 1.1, "adc_bits": 12, "thermistor_pullup_ohm": 4700.0, "max_ambient_c": 60.0}
     sources = {
         "outline_holes": "[BTT] SIZE drawing: 103.75 x 70.25 mm, five 3.1 mm holes",
         "connector_positions": "[BTT] scaled from the SIZE/PIN drawings, +/- 1 mm",
@@ -100,6 +100,7 @@ def skr_mini_e3_v3() -> Stock:
         "HB.max_a / E0.max_a / fan max_a": f"10 A / 5 A / JST-XH contact 3 A: BTT's figures for sibling boards, not in the V3.0 manual ({TU})",
         "output_resistance_ohm": f"MOSFET + trace + terminal, assumed 12 mOhm ({TU}); WSK220N04 itself is a few mOhm",
         "logic_w": TU, "rail_5v_max_a": f"MP1584EN buck, 3 A device limit ([BTT] schematic part number; rating {TU})",
+        "rail_5v_fuse_a": "[BTT] schematic F2, marked T110 (1.1 A) / 16 V, on the +5V rail per the power sheet (vendor file 'fuses')",
         "thermistor_pullup_ohm": "[BTT] schematic 4.7K on TH0/THB; [KLIP] default pullup 4700",
         "adc_bits": f"STM32G0B1 12-bit ADC ({TU}; Klipper sums 8 samples, not modelled)",
         "max_ambient_c": TU, "mass": TU, "cost": TU,

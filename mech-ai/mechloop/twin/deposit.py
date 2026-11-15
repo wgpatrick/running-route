@@ -276,7 +276,7 @@ def deposit_and_compare(info, pm, moves, e, seg, frac, Qc, Qa, dt, stl, out: Pat
         elif res["max_bulge_mm"] > 0.3:
             r.add("warning", "corner_bulge",
                   f"Corners and seams bulge up to {res['max_bulge_mm']:.2f} mm (material keeps flowing while the "
-                  f"nozzle slows; size depends on the assumed {pm.extruder_lag_s * 1e3:.0f} ms extruder lag"
+                  f"nozzle slows; size depends on the {pm.extruder_lag_s * 1e3:.0f} ms extruder lag ({pm.extruder_lag_basis})"
                   + ("" if e_cmd is None else " and on the firmware's pressure advance") + ").")
         if res["layer_shift_mm_worst"] > 0.25:
             bad = max(good, key=lambda x: x["shift"])

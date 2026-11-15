@@ -56,7 +56,8 @@ COMPATIBLE = {
     "series": {"heater_out", "heater", "series", "switched_out", "power_out", "power_in", "mains_out", "mains_in"},
     "switched_out": {"heater", "series"}, "switch_in": {"heater_out"},
     "stepper_out": {"stepper"}, "stepper": {"stepper_out"},
-    "fan_out": {"fan"}, "fan": {"fan_out"},
+    "fan_out": {"fan"}, "fan": {"fan_out", "rail_5v"},
+    "rail_5v": {"fan"},        # the board's always-on +5 V pins (add_board_5v_port): a 5 V fan may run from them
     "thermistor_in": {"thermistor"}, "thermistor": {"thermistor_in"},
     "endstop_in": {"endstop", "probe"}, "endstop": {"endstop_in"},
     "probe": {"endstop_in", "probe_in"}, "probe_in": {"probe"},
@@ -445,6 +446,8 @@ class ThermalNode:
     capacity: float               # J/K
     surfaces: list = field(default_factory=list)
     g_ambient: float = 0.0        # extra fixed conductance to ambient, W/K (e.g. conduction up a heat break)
+    g_fan: float = 0.0            # further conductance to ambient with the part fan at full speed, W/K (ThermalNet.fan scales it)
+    fan_law: tuple = (0.0, 1.0)   # (threshold, exponent): g_fan * (max(0, fan - threshold) / (1 - threshold)) ** exponent
 
 
 class ThermalNet:
@@ -456,6 +459,7 @@ class ThermalNet:
         self.idx = {n.name: i for i, n in enumerate(self.nodes)}
         self.links = [(self.idx[a], self.idx[b], g) for a, b, g in links]
         self.ambient = ambient_c
+        self.fan = 0.0             # part-cooling fan speed, 0..1: raises the loss of nodes that have a g_fan
         self.C = np.array([n.capacity for n in self.nodes], dtype=float)
         n = len(self.nodes)
         self.G = np.zeros((n, n))
@@ -474,6 +478,8 @@ class ThermalNet:
         for i, n in enumerate(self.nodes):
             ti = float(T[i])
             q = n.g_ambient * (ti - ta)
+            if n.g_fan and self.fan > n.fan_law[0]:
+                q += n.g_fan * ((self.fan - n.fan_law[0]) / (1.0 - n.fan_law[0])) ** n.fan_law[1] * (ti - ta)
             for k, s in enumerate(n.surfaces):
                 c = cache.get((i, k))
                 if c is None or abs(c[0] - ti) > 1.0:
@@ -522,6 +528,33 @@ class HeaterPlant:
     thermistor: Optional[Thermistor] = None
     cutoffs: list = field(default_factory=list)   # [{"kind": "thermal_fuse", "node": n, "trip_c": T} | {"kind": "psu_relay"}]
     basis: dict = field(default_factory=dict)
+    # A PTC heating element (E3D Revo HeaterCore): {"r_ohm_23c", "tempco_per_c", "volts", "r_series_ohm"}. Its resistance
+    # rises with its own temperature, so the power at 100 % duty falls as it heats. `power_w` is then the cold figure.
+    ptc: Optional[dict] = None
+
+    def power_at(self, t_heater_c: float) -> float:
+        """Power at 100 % duty with the heating element at t_heater_c (constant for an ordinary cartridge or pad)."""
+        if not self.ptc:
+            return self.power_w
+        r = self.ptc["r_ohm_23c"] * (1.0 + self.ptc["tempco_per_c"] * (float(t_heater_c) - 23.0))
+        i = self.ptc["volts"] / (r + self.ptc.get("r_series_ohm", 0.0))
+        return i * i * r
+
+    def steady_full_duty(self, t_guess: float = 100.0) -> np.ndarray:
+        """Node temperatures if the heater is left at 100 % duty for ever (a PTC element limits itself)."""
+        ih = self.net.idx[self.heater_node]
+        p = np.zeros(len(self.net.nodes))
+        p[ih] = self.power_at(t_guess)
+        T = self.net.steady(p, t_guess=t_guess)
+        if self.ptc:
+            for _ in range(60):
+                p[ih] = 0.5 * p[ih] + 0.5 * self.power_at(T[ih])
+                Tn = self.net.steady(p, t_guess=float(T[ih]))
+                done = np.abs(Tn - T).max() < 0.02
+                T = Tn
+                if done:
+                    break
+        return T
 
 
 def control_code() -> tuple:
@@ -737,7 +770,7 @@ def simulate_heater(plant: HeaterPlant, cfg: dict, target: float, t_end: float, 
         if fused or relay_open:
             applied = 0.0
         power[:] = 0.0
-        power[ih] = applied * plant.power_w
+        power[ih] = applied * plant.power_at(T[ih])       # a PTC element makes less as it heats; a short does not switch it off
         tr_t.append(t); tr_T.append(float(T[irep])); tr_s.append(float(sensor)); tr_d.append(applied)
         T = net.step(T, power, dt)
         if stop_when_settled and duty_override is None and not autotune:
@@ -784,14 +817,14 @@ def heater_characteristics(plant: HeaterPlant, targets, t_max: float) -> dict:
     for tg in targets:
         i = np.argmax(r["T"] >= tg)
         out["heatup_s"][tg] = float(r["t"][i]) if r["T"][i] >= tg else None
-    p = np.zeros(len(plant.net.nodes))
-    p[plant.net.idx[plant.heater_node]] = plant.power_w
-    Ts = plant.net.steady(p, t_guess=max(targets) + 100.0)
+    Ts = plant.steady_full_duty(t_guess=max(targets) + 100.0)
     out["max_temp_c"] = float(Ts[plant.net.idx[plant.report_node]])
-    out["duty_at"] = {}
-    for tg in targets:      # steady duty = loss at target / heater power (all nodes at about the target)
+    out["duty_at"], out["power_w_at"] = {}, {}
+    for tg in targets:      # steady duty = loss at target / heater power there (all nodes at about the target)
         loss = float(plant.net.loss(np.full(len(plant.net.nodes), float(tg))).sum())
-        out["duty_at"][tg] = loss / plant.power_w if plant.power_w > 0 else float("inf")
+        pw = plant.power_at(tg)
+        out["power_w_at"][tg] = pw
+        out["duty_at"][tg] = loss / pw if pw > 0 else float("inf")
     return out
 
 
@@ -842,6 +875,46 @@ CURVE_RPM = (0, 60, 120, 200, 300, 400, 500, 600, 750, 900, 1200, 1500, 1800, 24
 
 
 # ============================================================ circuit
+def fan_port(dev: Device) -> str:
+    """Name of a fan device's supply port ("in" on catalog fans; "out" when it was made with embedded_device)."""
+    return next((p.name for p in dev.ports.values() if p.kind == "fan"), "in")
+
+
+def add_board_5v_port(el: "Electrical", board: str, name: str = "5V", at=None, connector: str = "dupont", max_a: float = 2.0) -> Port:
+    """Declare the board's always-on +5 V / GND header pins as a port a 5 V fan may be wired to (kind "rail_5v").
+    The SKR Mini E3 V3.0 brings +5V out on its header pins (BTT PIN drawing). Whatever is wired here is added to the
+    host's draw in the board's 5 V budget (`board_5v_overloaded`). A fan on this port runs whenever the machine is
+    powered: there is no firmware section for it."""
+    b = el.devices[board]
+    if name in b.ports:
+        return b.ports[name]
+    ref = next((p for p in b.ports.values() if p.kind == "host"), None) or next(iter(b.ports.values()))
+    b.ports[name] = Port(name, "rail_5v", connector, max_a, None, 2, tuple(at) if at is not None else ref.at, ref.direction,
+                         None, True, {**{k: v for k, v in ref.extra.items() if k == "body"}, "volts": 5.0})
+    return b.ports[name]
+
+
+def add_regulator(el: "Electrical", design, name: str, component: str, out_v: float = 5.0, max_a: float = 1.0,
+                  efficiency: float | None = None, in_v_max: float = 28.0, product: dict | None = None, sources: dict | None = None) -> Device:
+    """A stock step-down board in line between a board fan output and a low-voltage fan (E3D's REVO-MICRO-BOARD-REG for
+    the Roto's 5 V fan on a 24 V machine). `component` is its CAD part. `efficiency=None` treats it as a linear
+    regulator (input current = output current, the rest is heat): the safe assumption when the vendor gives no figure.
+    max_a, in_v_max and efficiency are the caller's figures; say where they come from in `sources`."""
+    c = design.get(component)
+    bb = c.shape.bounding_box()
+    ctr = ((bb.min.X + bb.max.X) / 2, (bb.min.Y + bb.max.Y) / 2, (bb.min.Z + bb.max.Z) / 2)
+    ports = {"in": Port("in", "fan", "JST-XH", 3.0, None, 2, ctr, None, extra={"body": c.body}),
+             "out": Port("out", "fan_out", "JST-XH", 3.0, None, 2, ctr, None, extra={"body": c.body})}
+    dev = Device(name, "regulator", component, ports,
+                 {"out_v": float(out_v), "max_a": float(max_a), "efficiency": efficiency, "in_v_max": float(in_v_max)},
+                 {"out_v": "caller", "max_a": "caller (typical, unverified unless a data sheet is cited)", **(sources or {})},
+                 {"through": {"in": "out", "out": "in"}},
+                 product or {"product": "E3D 5 V regulator board for 12 / 24 V machines", "vendor": "E3D-Online",
+                             "part_number": "REVO-MICRO-BOARD-REG", "form": "assembled board", "off_the_shelf": True, "custom_pcb": False,
+                             "builder_work": "plug in line between the board's fan output and the fan lead"})
+    return el.add(dev)
+
+
 def _series_partner(dev: Device, port_name: str):
     """A pass-through device's other power port."""
     pair = dev.params.get("through") or {}
@@ -922,13 +995,40 @@ def solve_circuit(el: Electrical, design=None) -> dict:
         drv_supply += (p_tot + p_drv) / V
     # ---- fans
     fan_i = {}
+    res["fans"], res["rail_5v_a"], res["regulators"] = {}, {}, {}
     for d in el.devices.values():
         if d.kind == "fan":
             i = float(d.ratings.get("current_a", 0.0))
-            fan_i[d.name] = i
-            for w in el.wires_at(f"{d.name}.in"):
-                res["wire_current"][w.name] = i
-            res["loads_w"][d.name] = round(i * V, 2)
+            rated_v = float(d.ratings.get("volts", V))
+            wires, series, src = trace_supply(el, f"{d.name}.{fan_port(d)}")
+            sdev, sport = el.port(src) if src else (None, None)
+            reg = next((dev for dev, _, _ in series if dev.kind == "regulator"), None)
+            supplied_v, i_in, via = V, i, "supply voltage, switched by the board"
+            if sport is not None and sport.kind == "rail_5v":
+                supplied_v = float(sport.extra.get("volts", 5.0))
+                eff = float(sdev.ratings.get("rail_5v_efficiency", 0.85))
+                i_in = i * supplied_v / (eff * V)
+                res["rail_5v_a"][sdev.name] = res["rail_5v_a"].get(sdev.name, 0.0) + i
+                via = f"{sdev.name} +5 V rail (always on)"
+            if reg is not None:       # a step-down board between the output and the fan
+                out_v = float(reg.ratings.get("out_v", 5.0))
+                eff = reg.ratings.get("efficiency")        # None: taken as a linear regulator (input current = output current)
+                i_reg_in = i * out_v / (float(eff) * supplied_v) if eff else i
+                rg = res["regulators"].setdefault(reg.name, {"out_a": 0.0, "in_a": 0.0, "in_v": supplied_v, "out_v": out_v, "loss_w": 0.0})
+                rg["out_a"] += i
+                rg["in_a"] += i_reg_in
+                rg["loss_w"] = round(rg["loss_w"] + i_reg_in * supplied_v - i * out_v, 3)
+                i_in = i_in * i_reg_in / i if i > 0 else 0.0
+                supplied_v, via = out_v, f"{reg.name} ({out_v:g} V regulator) from " + via
+            seen_reg, i_side = False, (i_reg_in if reg is not None else i)
+            for w in wires:           # fan side of a regulator carries the fan's current, the supply side the regulator's input
+                res["wire_current"][w.name] = i_side if seen_reg else i
+                if reg is not None and reg.name in (w.a.split(".")[0], w.b.split(".")[0]):
+                    seen_reg = True
+            fan_i[d.name] = i_in
+            res["fans"][d.name] = {"rated_v": rated_v, "supplied_v": supplied_v, "via": via, "current_a": i,
+                                   "supply_current_a": round(i_in, 4), "source": src}
+            res["loads_w"][d.name] = round(i_in * V, 2)
     # ---- board logic, host
     logic = {}
     for d in el.devices.values():
@@ -1167,17 +1267,58 @@ def build_plants(el: Electrical, design, circuit: dict) -> dict:
             plants[hname] = HeaterPlant(hname, net, "pad", sens_node, "plate", power,
                                         sensor_tau_s=(sd.params.get("tau_s", 10.0) if sd else 10.0), cutoffs=cut, basis=basis)
         else:   # "block": a heater cartridge in a hot block
-            c_block = p.get("block_capacity_j_k", 12.0)
-            c_cart = p.get("cartridge_capacity_j_k", 1.5)
-            a_blk = p.get("block_area_m2", 1.6e-3)
-            nodes = [ThermalNode("cartridge", c_cart),
-                     ThermalNode("block", c_block, [Surface(a_blk, "body", p.get("block_height_m", 0.0115), p.get("emissivity", 0.3),
-                                                            h_fixed=p.get("h_forced", 0.0))],
-                                 g_ambient=p.get("heatbreak_w_k", 0.02))]
-            net = ThermalNet(nodes, [("cartridge", "block", p.get("cartridge_contact_w_k", 2.0))], amb)
-            basis.update({"block_capacity_j_k": c_block, "block_area_m2": a_blk, "heatbreak_w_k": p.get("heatbreak_w_k", 0.02)})
+            import os
+
+            from .twin import fitted as _fit
+
+            hcomp = comps.get(hd.component)
+            cls = _fit.hotend_class(hcomp.sku if hcomp is not None else None, ptc=bool(p.get("ptc")))
+            use_fit = p.get("thermal_model", os.environ.get("MECHLOOP_HOTEND_MODEL", "fitted")) != "catalog"
+            if use_fit:
+                # Three masses fitted to logged runs of a V6-class hotend (twin/fitted_parameters.json: hotend_thermal): the
+                # cartridge, the block where the sensor sits, and the nozzle side behind it; loss from the block as a
+                # fixed conductance plus a T^4 term, more with the part fan (net.fan), and a little from the nozzle.
+                # The part's own capacity and area estimates are replaced; they stay in `basis` for comparison.
+                ft = _fit.hotend_thermal(cls)
+                rad_area = ft["radiation_w_k4"] / SIGMA          # an area with emissivity 1 that radiates the fitted T^4 term
+                nodes = [ThermalNode("cartridge", ft["cartridge_capacity_j_k"]),
+                         ThermalNode("block", ft["block_capacity_j_k"], [Surface(rad_area, "fixed", 0.01, 1.0, h_fixed=0.0)],
+                                     g_ambient=ft["block_loss_w_k"], g_fan=ft["fan_loss_w_k"],
+                                     fan_law=(ft["fan_threshold"], ft["fan_exponent"])),
+                         ThermalNode("nozzle", ft["nozzle_capacity_j_k"], g_ambient=ft["nozzle_loss_w_k"])]
+                net = ThermalNet(nodes, [("cartridge", "block", ft["cartridge_block_w_k"]), ("block", "nozzle", ft["block_nozzle_w_k"])], amb)
+                tau = float(ft["sensor_tau_s"])
+                basis.update({"thermal_model": f"fitted three-node, class '{cls}' (mechloop/twin/fitted_parameters.json: hotend_thermal)",
+                              "total_capacity_j_k": ft["total_capacity_j_k"], "loss_still_w_k_at_245c": ft["loss_still_w_k_at_245c"],
+                              "loss_full_fan_w_k_at_245c": ft["loss_full_fan_w_k_at_245c"], "sensor_tau_s": tau,
+                              "what_is_fitted": ("fitted to one Ender 3's logs; range from Prusa's and Marlin's constants" if cls == "v6" else
+                                                 "NOT fitted: totals from Prusa's Revo model, node split and loss law scaled from the V6-class fit"),
+                              "catalog_estimates_replaced": {"block_capacity_j_k": p.get("block_capacity_j_k", 12.0),
+                                                             "cartridge_capacity_j_k": p.get("cartridge_capacity_j_k", 1.5),
+                                                             "sensor_tau_s": (sd.params.get("tau_s", 4.5) if sd else 4.5)}})
+            else:
+                c_block = p.get("block_capacity_j_k", 12.0)
+                c_cart = p.get("cartridge_capacity_j_k", 1.5)
+                a_blk = p.get("block_area_m2", 1.6e-3)
+                nodes = [ThermalNode("cartridge", c_cart),
+                         ThermalNode("block", c_block, [Surface(a_blk, "body", p.get("block_height_m", 0.0115), p.get("emissivity", 0.3),
+                                                                h_fixed=p.get("h_forced", 0.0))],
+                                     g_ambient=p.get("heatbreak_w_k", 0.02))]
+                net = ThermalNet(nodes, [("cartridge", "block", p.get("cartridge_contact_w_k", 2.0))], amb)
+                tau = float(sd.params.get("tau_s", 4.5) if sd else 4.5)
+                basis.update({"thermal_model": "catalogue estimates (assumed values)", "block_capacity_j_k": c_block, "block_area_m2": a_blk,
+                              "heatbreak_w_k": p.get("heatbreak_w_k", 0.02)})
+            ptc = None
+            if p.get("ptc"):      # resistance rises with temperature: power at 100 % duty falls as the element heats
+                hv = circuit["heaters"].get(hd.name, {})
+                r0 = float(p["ptc"]["r_ohm_23c"])
+                r_ser = max(0.0, el.supply_v / hv["current_a"] - hv.get("resistance_ohm", r0)) if hv.get("current_a") else 0.0
+                ptc = {"r_ohm_23c": r0, "tempco_per_c": float(p["ptc"]["tempco_per_c"]), "volts": el.supply_v,
+                       "r_series_ohm": round(r_ser, 4)}
+                basis["ptc"] = {**ptc, "note": "PTC element: power at 100 % duty falls with the element's temperature; "
+                                               "heater_power_w is the cold (23 degC) figure"}
             plants[hname] = HeaterPlant(hname, net, "cartridge", "block", "block", power,
-                                        sensor_tau_s=(sd.params.get("tau_s", 4.5) if sd else 4.5), cutoffs=cut, basis=basis)
+                                        sensor_tau_s=tau, cutoffs=cut, basis=basis, ptc=ptc)
         if sd is not None and sd.params.get("points"):
             board_in = next((el.port(el.other_end(w, f"{sd.name}.out"))[1] for w in el.wires_at(f"{sd.name}.out")), None)
             pull = (board_in.extra.get("pullup_ohm") if board_in else None) or 4700.0
@@ -1357,6 +1498,41 @@ def _probe_pin(el: Electrical, design) -> tuple:
     return f"{pre}{bp.pin}", dev, bp
 
 
+def extruder_gearing(el: Electrical, ex: dict) -> dict:
+    """rotation_distance, gear_ratio and full_steps_per_rotation of the extruder as Klipper wants them.
+    The design's firmware block wins; what it leaves out comes from the extruder part (the motor device's params,
+    e.g. `extruder_roto`: 26.8937 mm per turn of the hobb, 11.262:1, 400 full steps). A part's gear_ratio and
+    full_steps_per_rotation are only attached to the part's own rotation_distance: a firmware block that states a
+    different rotation_distance (a per-motor-rev figure such as the 1.194 fallback) is taken as complete."""
+    dev = el.devices.get((ex.get("motors") or [None])[0])
+    pp = dev.params if dev is not None else {}
+    rd, part_rd = ex.get("rotation_distance"), pp.get("rotation_distance")
+    use_part = part_rd is not None and (rd is None or abs(float(rd) - float(part_rd)) <= 1e-3 * float(part_rd))
+    out = {"rotation_distance": float(rd if rd is not None else (part_rd if part_rd is not None else 7.71)),
+           "gear_ratio": ex.get("gear_ratio", pp.get("gear_ratio") if use_part else None),
+           "full_steps_per_rotation": ex.get("full_steps_per_rotation", pp.get("full_steps_per_rotation") if use_part else None),
+           "microsteps": int(ex.get("microsteps", 16)), "from_part": bool(use_part)}
+    gr = out["gear_ratio"]
+    if isinstance(gr, (int, float)):
+        out["gear_ratio"] = f"{gr:g}:1"
+    ratio = 1.0
+    for term in str(out["gear_ratio"] or "1:1").split(","):
+        a, b = term.split(":")
+        ratio *= float(a) / float(b)
+    out["steps_per_mm"] = (out["full_steps_per_rotation"] or 200) * out["microsteps"] * ratio / out["rotation_distance"]
+    return out
+
+
+def extruder_gearing_lines(el: Electrical, ex: dict) -> list:
+    g = extruder_gearing(el, ex)
+    L = [f"rotation_distance: {g['rotation_distance']:.6g}"]
+    if g["gear_ratio"]:
+        L.append(f"gear_ratio: {g['gear_ratio']}")
+    if g["full_steps_per_rotation"]:
+        L.append(f"full_steps_per_rotation: {int(g['full_steps_per_rotation'])}")
+    return L
+
+
 def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict | None = None) -> str:
     """printer.cfg from the pin map, the design's transmissions and joints, the heater simulation and the twin's
     tuning (mechloop.twin.tuning.firmware_tuning: input shaper, pressure advance, probe and bed mesh). With
@@ -1458,7 +1634,7 @@ def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict
         if port is not None:
             pins = port.pin
             L += [f"step_pin: {pins['step']}", f"dir_pin: {pins['dir']}", f"enable_pin: !{pins['enable']}",
-                  f"microsteps: {ex.get('microsteps', 16)}", f"rotation_distance: {ex.get('rotation_distance', 7.71):g}"]
+                  f"microsteps: {ex.get('microsteps', 16)}"] + extruder_gearing_lines(el, ex)
         L += [f"nozzle_diameter: {pr.get('nozzle', 0.4):.3f}", "filament_diameter: 1.750",
               f"heater_pin: {hp.pin if hp else 'NOT WIRED'}", f"sensor_type: {sd.params.get('sensor_type', 'Generic 3950') if sd else '?'}",
               f"sensor_pin: {sp.pin if sp else 'NOT WIRED'}"]
@@ -1492,8 +1668,11 @@ def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict
         d = {"max_error": 120.0, "check_gain_time": 60.0 if hname == "heater_bed" else 20.0, "hysteresis": 5.0, "heating_gain": 2.0, **vh}
         L += [f"[verify_heater {hname}]"] + [f"{k}: {v:g}" for k, v in d.items()] + [""]
     for fname, fc in (fw.get("fans") or {}).items():
-        fp = _board_port_of(el, fc["device"], "in")
-        if fc.get("role") == "part":
+        fdev = el.devices.get(fc["device"])
+        fp = _board_port_of(el, fc["device"], fan_port(fdev) if fdev is not None else "in")
+        if fp is not None and fp.kind == "rail_5v":
+            L += [f"# fan '{fname}' is wired to the board's +5 V rail: it runs whenever the machine is powered (no firmware section)", ""]
+        elif fc.get("role") == "part":
             L += ["[fan]", f"pin: {fp.pin if fp else 'NOT WIRED'}", ""]
         elif fc.get("role") == "heatsink":
             L += [f"[heater_fan {fname}]", f"pin: {fp.pin if fp else 'NOT WIRED'}", "heater: extruder", "heater_temp: 50.0", ""]

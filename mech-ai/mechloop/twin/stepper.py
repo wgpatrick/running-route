@@ -105,7 +105,8 @@ def simulate(Qc, Vc, mass, fmax, travel_per_rev, bias, friction, dt_out, damping
     k_step = f0 * k_e * 1e3  # N/m
     c_m = 2 * damping_ratio * np.sqrt(k_step * m_m) * 1e-3  # N per (mm/s)
     red = np.where(ks > 0, m_m * m_l / np.maximum(m_m + m_l, 1e-12), 1.0)
-    c_s = 2 * spring_damping_ratio * np.sqrt(ks * 1e3 * red) * 1e-3
+    c_s = 2 * np.asarray(spring_damping_ratio, dtype=float) * np.sqrt(ks * 1e3 * red) * 1e-3     # one ratio, or one per axis
+    c_s = np.broadcast_to(c_s, ks.shape).copy()
     w_all = [np.sqrt(k_step / m_m)]
     if (ks > 0).any():
         w_all.append(np.sqrt(np.where(ks > 0, ks * 1e3 / red, 0.0)))

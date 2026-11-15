@@ -18,6 +18,74 @@ def axis_joints(design, pm):
     return [joints[pm.x], joints[pm.y], joints[pm.z]]
 
 
+def toolhead_compliance(design, pm) -> dict:
+    """The spring between belt clamp and nozzle on the axis that carries the nozzle on its own guide blocks:
+    {axis: {"n_per_mm", "blocks", "arm_mm", ...}} (empty when there is no such axis or the term is switched off).
+
+    The FEA nozzle-stiffness case bonds block and rail, so it has the mounts and the beam but not the carriage turning on
+    its balls. That turning is derived from the design: number of blocks, their spacing along the rail, their ball-track
+    length and the nozzle's distance from the rail (verifiers.ratings.guide_tilt), with the effective block stiffness
+    fitted to two reference machines (fitted_parameters.json: toolhead_tilt_effective_n_per_um). Only the axis whose
+    moving body is the tool body gets it: on gantry and bed axes the blind comparison found nothing missing.
+    pm.toolhead_stiffness = {"x": N/mm} overrides the derivation for an axis."""
+    out = {}
+    if not getattr(pm, "toolhead_compliance", True) or design.tool_point is None:
+        return out
+    from ..verifiers.ratings import guide_tilt
+
+    joints = {j.name: j for j in design.joints}
+    tool_body, tp = design.tool_point
+    T0 = forward_kinematics(design, {})
+    noz = (T0[tool_body] @ np.array([*tp, 1.0]))[:3]
+    for ax in "xy":
+        j = joints.get(getattr(pm, ax))
+        if j is None or j.child != tool_body:
+            continue
+        ov = (getattr(pm, "toolhead_stiffness", None) or {}).get(ax)
+        if ov is not None:
+            if np.isfinite(ov) and ov > 0:
+                out[ax] = {"n_per_mm": float(ov), "basis": "given (pm.toolhead_stiffness)"}
+            continue
+        g = guide_tilt(design, j.name, noz, k_n_per_m=float(pm.toolhead_tilt_n_per_um) * 1e6)
+        if g is None or not np.isfinite(g["n_per_mm"]):
+            continue
+        out[ax] = {**g, "n_per_mm": round(float(g["n_per_mm"]), 1), "joint": j.name,
+                   "basis": "guide blocks turning under a force at the nozzle: K_rot = k (n L^2 / 12 + sum a_i^2), stiffness K_rot / arm^2; "
+                            f"k = {pm.toolhead_tilt_n_per_um:g} N/um effective (fitted to two machines, lumps their printed mounts)"}
+    return out
+
+
+def _low_mode_damping(k_step, k_s, m_m, m_l, zeta_m, zeta_s) -> float:
+    """Damping ratio of the mode the load rings in (the lower one) for motor spring + series spring, as stepper.py damps them."""
+    c_m = 2 * zeta_m * math.sqrt(k_step * m_m)
+    c_s = 2 * zeta_s * math.sqrt(k_s * m_m * m_l / (m_m + m_l))
+    A = np.array([[0, 1, 0, 0], [-(k_step + k_s) / m_m, -(c_m + c_s) / m_m, k_s / m_m, c_s / m_m],
+                  [0, 0, 0, 1], [k_s / m_l, c_s / m_l, -k_s / m_l, -c_s / m_l]])
+    lam = np.linalg.eigvals(A)
+    lam = lam[lam.imag > 1e-9]
+    if not len(lam):
+        return 1.0
+    low = lam[np.argmin(np.abs(lam))]
+    return float(-low.real / abs(low))
+
+
+def spring_damping_for(target: float, k_step: float, k_s: float, m_m: float, m_l: float, zeta_m: float) -> float:
+    """Belt/frame damping ratio that gives the ringing mode the target damping ratio (bisection; 0 if the stepper's own
+    damper already gives more)."""
+    if _low_mode_damping(k_step, k_s, m_m, m_l, zeta_m, 0.0) >= target:
+        return 0.0
+    lo, hi = 0.0, 1.0
+    if _low_mode_damping(k_step, k_s, m_m, m_l, zeta_m, hi) < target:
+        return hi
+    for _ in range(40):
+        mid = 0.5 * (lo + hi)
+        if _low_mode_damping(k_step, k_s, m_m, m_l, zeta_m, mid) < target:
+            lo = mid
+        else:
+            hi = mid
+    return 0.5 * (lo + hi)
+
+
 def machine_model(design, pm, mass_extra: dict | None = None) -> dict:
     """Mass, gravity bias, travel per rev, series stiffness and rotor mass for X, Y, Z. Raises ValueError if a drive
     is not resolved. Returns also the motor names per axis so the caller can evaluate the torque curve at speed."""
@@ -53,6 +121,7 @@ def machine_model(design, pm, mass_extra: dict | None = None) -> dict:
     coupled = bool(np.abs(sub - np.diag(np.diag(sub))).max() > 1e-6)
     # series compliance: belt stretch (from the belt's routed length) in series with frame flex (from FEA)
     series, motor_mass, belts_used = [], [], {}
+    toolhead = toolhead_compliance(design, pm) if pm.compliant else {}
     for k, (j, ax) in enumerate(zip(jl, "xyz")):
         ks = None
         dr = j.drive_resolved
@@ -80,11 +149,33 @@ def machine_model(design, pm, mass_extra: dict | None = None) -> dict:
         if pm.compliant and ax in pm.struct_stiffness:
             kst = float(pm.struct_stiffness[ax])
             ks = kst if ks is None else 1.0 / (1.0 / ks + 1.0 / kst)
+        if pm.compliant and ax in toolhead:       # the carriage turning on its guide blocks, between belt clamp and nozzle
+            kt = float(toolhead[ax]["n_per_mm"])
+            ks = kt if ks is None else 1.0 / (1.0 / ks + 1.0 / kt)
         series.append(ks)
         motor_mass.append(j.reflected_inertia)
-    return {"joints": jl, "mass": np.array(mass), "bias": np.array(bias), "tpr": np.array(tpr), "drives": drives,
-            "series": series, "motor_mass": np.array(motor_mass), "belts_used": belts_used, "coupled": coupled,
-            "fric": [pm.friction_n.get(a, 2.0) for a in "xyz"], "back": [pm.backlash_mm.get(a, 0.0) for a in "xyz"]}
+    mm = {"joints": jl, "mass": np.array(mass), "bias": np.array(bias), "tpr": np.array(tpr), "drives": drives,
+          "series": series, "motor_mass": np.array(motor_mass), "belts_used": belts_used, "coupled": coupled,
+          "fric": [pm.friction_n.get(a, 2.0) for a in "xyz"], "back": [pm.backlash_mm.get(a, 0.0) for a in "xyz"],
+          "toolhead": toolhead}
+    # belt/frame damper per axis: a given pm.spring_damping_ratio is used as it is; otherwise each axis's damper is set so
+    # that the mode its load rings in has the fitted damping ratio (toolhead axis / gantry or bed axis)
+    sd, targets = [], {}
+    f0 = drive_force(mm, np.zeros((1, 3)))[0]
+    for k, ax in enumerate("xyz"):
+        fixed = getattr(pm, "spring_damping_ratio", None)
+        ks, m_rot, m_tot = series[k], float(motor_mass[k]), float(mass[k])
+        if fixed is not None or ks is None or m_rot <= 1e-9 or ax == "z":
+            sd.append(float(fixed) if fixed is not None else 0.05)
+            continue
+        kind = "toolhead_axis" if ax in toolhead or jl[k].child == (design.tool_point or (None,))[0] else "gantry_or_bed_axis"
+        target = float((getattr(pm, "ringing_damping_ratio", None) or {}).get(kind, 0.05))
+        k_step = float(f0[k]) * 2 * math.pi * POLE_PAIRS / float(tpr[k]) * 1e3
+        sd.append(spring_damping_for(target, k_step, ks * 1e3, m_rot, max(m_tot - m_rot, 1e-6), pm.damping_ratio))
+        targets[ax] = {"axis_type": kind, "ringing_damping_ratio": target, "belt_frame_damper_ratio": round(sd[-1], 4)}
+    mm["spring_damping"] = np.array(sd)
+    mm["damping"] = targets
+    return mm
 
 
 def drive_force(mm: dict, Vc: np.ndarray, torque_scale: float = 1.0) -> np.ndarray:
@@ -110,7 +201,8 @@ def linear_axis(mm: dict, k: int, pm, speed_mm_s: float = 0.0, torque_scale: flo
     if two_mass:
         m_m, m_l, k_s = m_rot, max(m_tot - m_rot, 1e-6), ks * 1e3
         c_m = 2 * pm.damping_ratio * math.sqrt(k_step * m_m)
-        c_s = 2 * pm.spring_damping_ratio * math.sqrt(k_s * m_m * m_l / (m_m + m_l))
+        zs = float(mm["spring_damping"][k]) if "spring_damping" in mm else float(pm.spring_damping_ratio if pm.spring_damping_ratio is not None else 0.05)
+        c_s = 2 * zs * math.sqrt(k_s * m_m * m_l / (m_m + m_l))
         A = np.array([[0, 1, 0, 0], [-(k_step + k_s) / m_m, -(c_m + c_s) / m_m, k_s / m_m, c_s / m_m],
                       [0, 0, 0, 1], [k_s / m_l, c_s / m_l, -k_s / m_l, -c_s / m_l]])
 

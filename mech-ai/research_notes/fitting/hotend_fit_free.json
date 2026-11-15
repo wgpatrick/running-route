@@ -1,0 +1,170 @@
+{
+ "assumed": {
+  "heater_w": 40.0,
+  "ambient_c": 25.0,
+  "k_fil_w_per_k_per_mm_s": 0.0054
+ },
+ "parameters": {
+  "C_h": 0.2,
+  "C_b": 0.5,
+  "C_n": 5.8705,
+  "G_hb": 16.737,
+  "G_bn": 0.59471,
+  "g_b": 0.042303,
+  "g_n": 0.0085605,
+  "g_fan": 0.023888,
+  "fan_exp": 0.26914,
+  "c_rad": 1.1642e-10,
+  "tau_s": 5.9815,
+  "fan_f0": 0.076773
+ },
+ "at_bounds": [
+  "C_h",
+  "C_b"
+ ],
+ "derived": {
+  "total_capacity_j_k": 6.57,
+  "loss_still_air_w_k_at_245c": 0.0847,
+  "of_which_radiation": 0.034,
+  "loss_full_fan_w_k_at_245c": 0.1086,
+  "loss_w_k_by_fan": {
+   "0": 0.0847,
+   "0.25": 0.0999,
+   "0.5": 0.1041,
+   "0.75": 0.1066,
+   "1": 0.1086
+  },
+  "resistance_k_w_still_and_full_fan": [
+   11.8,
+   9.2
+  ],
+  "sensor_lag_s": 5.98
+ },
+ "calibration_runs": [
+  {
+   "run": "2026-09-21_0108_http_180tutma_soguma",
+   "duration_s": 58,
+   "sample_s": 1.76,
+   "rmse_c": 3.71,
+   "bias_c": 3.24,
+   "worst_c": 7.71,
+   "final_error_c": 2.4,
+   "mean_duty_logged": 0.1754
+  },
+  {
+   "run": "2026-09-21_0110_http_220tutma_soguma",
+   "duration_s": 69,
+   "sample_s": 1.76,
+   "rmse_c": 2.16,
+   "bias_c": 1.33,
+   "worst_c": 4.6,
+   "final_error_c": 0.7,
+   "mean_duty_logged": 0.1851
+  },
+  {
+   "run": "2026-09-23_1933_http_150plato_245",
+   "duration_s": 400,
+   "sample_s": 1.75,
+   "rmse_c": 5.4,
+   "bias_c": -3.93,
+   "worst_c": 20.29,
+   "final_error_c": -1.98,
+   "mean_duty_logged": 0.3152
+  },
+  {
+   "run": "2026-09-24_2150_http_150plato_245",
+   "duration_s": 382,
+   "sample_s": 1.75,
+   "rmse_c": 6.47,
+   "bias_c": -5.09,
+   "worst_c": 10.36,
+   "final_error_c": 7.78,
+   "mean_duty_logged": 0.3188
+  },
+  {
+   "run": "2026-09-25_1252_pc_245kisa",
+   "duration_s": 145,
+   "sample_s": 0.27,
+   "rmse_c": 2.5,
+   "bias_c": 1.35,
+   "worst_c": 6.73,
+   "final_error_c": -0.88,
+   "mean_duty_logged": 0.6202
+  },
+  {
+   "run": "2026-09-25_1443_klipper_245tutma_fan_soguma",
+   "duration_s": 570,
+   "sample_s": 0.28,
+   "rmse_c": 2.06,
+   "bias_c": -0.02,
+   "worst_c": 6.28,
+   "final_error_c": 3.14,
+   "mean_duty_logged": 0.3685
+  },
+  {
+   "run": "2026-09-25_1848_klipper_245tutma_fan100-50_soguma",
+   "duration_s": 697,
+   "sample_s": 0.27,
+   "rmse_c": 2.6,
+   "bias_c": 1.22,
+   "worst_c": 5.69,
+   "final_error_c": 2.3,
+   "mean_duty_logged": 0.2639
+  },
+  {
+   "run": "2026-09-25_1927_klipper_245tutma_fan_150tutma_soguma",
+   "duration_s": 786,
+   "sample_s": 0.27,
+   "rmse_c": 2.48,
+   "bias_c": 0.73,
+   "worst_c": 6.62,
+   "final_error_c": 2.74,
+   "mean_duty_logged": 0.2825
+  }
+ ],
+ "held_out_runs": [
+  {
+   "run": "2026-09-25_2056_klipper_baski245_fan30-50",
+   "duration_s": 1182,
+   "sample_s": 0.25,
+   "rmse_c": 8.01,
+   "bias_c": -7.27,
+   "worst_c": 11.84,
+   "final_error_c": -7.65,
+   "mean_duty_logged": 0.6083
+  }
+ ],
+ "held_out_without_filament_term": [
+  {
+   "run": "2026-09-25_2056_klipper_baski245_fan30-50",
+   "duration_s": 1182,
+   "sample_s": 0.25,
+   "rmse_c": 20.6,
+   "bias_c": 20.28,
+   "worst_c": 27.18,
+   "final_error_c": 19.27,
+   "mean_duty_logged": 0.6083
+  }
+ ],
+ "calibration_rmse_c": 3.66,
+ "one_node_same_runs": {
+  "C_j_k": 7.12,
+  "g_w_k": 0.0791,
+  "g_fan_w_k": 0.0361,
+  "rmse_c": 9.54,
+  "held_out_rmse_c": [
+   51.29
+  ]
+ },
+ "held_out": [
+  "2056_klipper_baski245"
+ ],
+ "held_out_hold_duty": [
+  {
+   "run": "2026-09-25_2056_klipper_baski245_fan30-50",
+   "model_mean_duty": 0.6348,
+   "logged_mean_duty": 0.6083,
+   "error_pct": 4.4
+  }
+ ]
+}

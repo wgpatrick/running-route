@@ -90,7 +90,7 @@ def _completeness(ctx, r, m):
             r.add("error", "port_used_twice", f"Port {ref} has {len(ws)} wires on it: {ws}.", port=ref, wires=ws,
                   hint="One wire per port; use another output, or a port declared for several lugs (a stud or bus).")
     # every load, sensor and switch is wired to something that can drive / read it
-    need = {"stepper": "stepper_out", "heater": "heater_out", "thermistor": "thermistor_in", "fan": "fan_out", "endstop": "endstop_in",
+    need = {"stepper": "stepper_out", "heater": "heater_out", "thermistor": "thermistor_in", "fan": ("fan_out", "rail_5v"), "endstop": "endstop_in",
             "probe": ("endstop_in", "probe_in")}
     wired_to_board = {}
     for d in el.devices.values():
@@ -353,12 +353,51 @@ def _circuit(ctx, r, m):
         if vmax and el.supply_v > vmax:
             r.add("error", "supply_above_driver_rating", f"{el.supply_v:g} V supply exceeds the {vmax:g} V rating of {b.name}'s drivers.")
         m["power_budget"].setdefault("board_fuse_a", {})[b.name] = fuse
-        rail = sum(d.ratings.get("supply_w", 0.0) / d.ratings.get("volts", 5.0) for d in el.devices.values()
-                   if d.kind == "host" and any(el.port(el.other_end(w, f"{d.name}.{p}"))[0] is b for p in d.ports for w in el.wires_at(f"{d.name}.{p}")))
-        if rail > b.ratings.get("rail_5v_max_a", 1e9) * el.req("output_max_load_frac"):
-            r.add("error", "board_5v_overloaded", f"Board '{b.name}' 5 V rail: {rail:.2f} A drawn by the host, rail limit "
-                  f"{b.ratings['rail_5v_max_a']:g} A.", part=b.component)
+        host_a = sum(d.ratings.get("supply_w", 0.0) / d.ratings.get("volts", 5.0) for d in el.devices.values()
+                     if d.kind == "host" and any(el.port(el.other_end(w, f"{d.name}.{p}"))[0] is b for p in d.ports for w in el.wires_at(f"{d.name}.{p}")))
+        fans_a = c.get("rail_5v_a", {}).get(b.name, 0.0)
+        rail = host_a + fans_a
+        # the rail is good for the smaller of its regulator's limit and any fuse in it (SKR Mini E3 V3.0: F2, 1.1 A,
+        # mechloop/parts/vendor/bigtreetech_skr_mini_e3_v3.json)
+        lims = [x for x in (b.ratings.get("rail_5v_max_a"), b.ratings.get("rail_5v_fuse_a")) if x]
+        rail_lim = min(lims) if lims else None
+        if rail_lim is not None and rail > rail_lim * el.req("output_max_load_frac"):
+            r.add("error", "board_5v_overloaded", f"Board '{b.name}' 5 V rail: {rail:.2f} A drawn ({host_a:.2f} A by the host, "
+                  f"{fans_a:.2f} A by 5 V fans); the rail is good for {rail_lim:g} A, limit {el.req('output_max_load_frac'):.0%} = "
+                  f"{rail_lim * el.req('output_max_load_frac'):.2f} A.", part=b.component, current_a=round(rail, 3), limit_a=rail_lim,
+                  hint="Feed the fan through a 5 V regulator board on a fan output instead (mechloop.electrical.add_regulator), "
+                       "or power the host from its own supply.")
+        if fans_a and rail_lim is None:
+            r.add("warning", "board_5v_limit_unknown", f"Board '{b.name}' feeds {fans_a:.2f} A of 5 V fans but the catalog has no "
+                  "figure for its 5 V rail, so the load is not checked.", part=b.component)
         m["power_budget"].setdefault("board_5v_a", {})[b.name] = round(rail, 2)
+        m["power_budget"].setdefault("board_5v", {})[b.name] = {"host_a": round(host_a, 3), "fans_a": round(fans_a, 3), "limit_a": rail_lim,
+                                                                 "allowed_a": round(rail_lim * el.req("output_max_load_frac"), 3) if rail_lim else None}
+    # ---- fans get the voltage they are made for (a 5 V fan on a 24 V output burns out)
+    m["power_budget"]["fans"] = c.get("fans", {})
+    for fn, f in c.get("fans", {}).items():
+        if f["source"] is None:
+            continue        # not wired: reported by the completeness check
+        if abs(f["supplied_v"] - f["rated_v"]) > 0.1 * f["rated_v"]:
+            fd = el.devices[fn]
+            r.add("error", "fan_voltage_mismatch",
+                  f"Fan '{fn}' is a {f['rated_v']:g} V fan but is supplied with {f['supplied_v']:g} V ({f['via']}).", device=fn,
+                  part=fd.component, rated_v=f["rated_v"], supplied_v=f["supplied_v"],
+                  hint="Put a stock regulator board of the fan's voltage in line (mechloop.electrical.add_regulator), wire the fan to "
+                       "the board's +5 V pins (mechloop.electrical.add_board_5v_port; it then runs whenever the machine is on), "
+                       "or use a fan of the supply voltage.")
+    m["power_budget"]["regulators"] = c.get("regulators", {})
+    for rn, g in c.get("regulators", {}).items():
+        rd = el.devices[rn]
+        if g["out_a"] > rd.ratings.get("max_a", 0.0) * el.req("output_max_load_frac"):
+            r.add("error", "regulator_overloaded", f"Regulator '{rn}' supplies {g['out_a']:.2f} A; it is rated {rd.ratings.get('max_a', 0):g} A "
+                  f"(limit {el.req('output_max_load_frac'):.0%}).", device=rn, part=rd.component)
+        if g["in_v"] > rd.ratings.get("in_v_max", 1e9):
+            r.add("error", "regulator_input_voltage", f"Regulator '{rn}' is fed {g['in_v']:g} V; its input is rated "
+                  f"{rd.ratings['in_v_max']:g} V.", device=rn, part=rd.component)
+        if rd.ratings.get("efficiency") is None and g["loss_w"] > 0.5:
+            r.add("warning", "regulator_heat", f"Regulator '{rn}' is taken as a linear regulator (no efficiency given): it turns "
+                  f"{g['loss_w']:.1f} W into heat. Give its efficiency from the data sheet if it is a switching type.", device=rn)
 
 
 # ====================================================================== wires, connectors, outputs
@@ -511,7 +550,7 @@ def _mains(ctx, r, m):
     else:
         ep = next(el.port(x)[0] for x in (w_frame.a, w_frame.b) if el.port(x)[0].kind == "earth_point")
         comp = next((cc for cc in ctx["design"].components if cc.name == ep.params.get("bonds", ep.component)), None)
-        if comp is None or comp.material not in ("al6061", "steel", "stainless304", "brass"):
+        if comp is None or comp.material not in ("al6061", "al5052", "al_mic6", "al_atp5", "steel", "stainless304", "brass"):
             r.add("error", "earth_point_not_on_metal", f"Earth point '{ep.name}' is not on a metal frame part.", device=ep.name)
     thinnest_mains = max((w.awg for w in mains_wires), default=None)
     for w in (w_psu, w_frame):
@@ -625,9 +664,17 @@ def heater_report(el, design, circuit, quick: bool = False) -> dict:
         lim = el.req("bed_heatup_max_s") if kind == "bed" else el.req("hotend_heatup_max_s")
         t_max = 2.5 * (max(lim.values()) if isinstance(lim, dict) else lim)
         ch = E.heater_characteristics(plant, targets, t_max)
-        out = {"kind": kind, "targets_c": targets, "power_w": plant.power_w, "basis": plant.basis, "heatup_s": ch["heatup_s"],
+        out = {"kind": kind, "targets_c": targets, "power_w": plant.power_w,
+               "power_w_at_target": {k: round(v, 2) for k, v in ch["power_w_at"].items()}, "ptc": plant.ptc,
+               "basis": plant.basis, "heatup_s": ch["heatup_s"],
                "max_temp_at_full_duty_c": round(ch["max_temp_c"], 1), "steady_duty": {k: round(v, 3) for k, v in ch["duty_at"].items()},
                "cutoffs": plant.cutoffs, "plant": plant}
+        if any(n.g_fan for n in plant.net.nodes):      # holding the target with the part fan at full speed takes more
+            plant.net.fan = 1.0
+            plant.net.__dict__.pop("_hc", None)
+            out["steady_duty_full_fan"] = {tg: round(float(plant.net.loss(np.full(len(plant.net.nodes), float(tg))).sum()) / plant.power_at(tg), 3)
+                                           for tg in targets}
+            plant.net.fan = 0.0
         rep[hn] = out
         if quick or plant.thermistor is None:
             continue
@@ -662,8 +709,9 @@ def heater_report(el, design, circuit, quick: bool = False) -> dict:
             faults[f"{fk} while holding {tg:g} degC"] = fr
         cold = E.simulate_heater(plant, cfg, tg, t_end=horizon, fault={"kind": "sensor_detached", "at": 0.0})
         faults[f"sensor_detached before heating to {tg:g} degC"] = _fault_summary(cold, 0.0, tg)
-        bare = E.HeaterPlant(plant.name, plant.net, plant.heater_node, plant.sensor_node, plant.report_node, plant.power_w,
-                             plant.sensor_tau_s, plant.thermistor, [])
+        import dataclasses
+
+        bare = dataclasses.replace(plant, cutoffs=[])       # the same heater (PTC law included) with nothing to cut it off
         fr = _fault_run(bare, cfg, tg, hold, {"kind": "mosfet_short", "at": 30.0}, horizon)
         fr["settles_at_c"] = round(ch["max_temp_c"], 1)
         faults["mosfet_short with no independent cut-off"] = fr
@@ -820,8 +868,10 @@ def _heaters(ctx, r, m):
             flow = v * design.printer.get("layer_height", 0.2) * design.printer.get("nozzle", 0.4) * 1.125     # mm^3/s
             tg = max(h["targets_c"])
             p_melt = flow * 1e-9 * 1240.0 * 1800.0 * (tg - el.req("ambient_c"))
-            spare = h["power_w"] * (1.0 - h["steady_duty"][tg])
+            duty_hold = max(h["steady_duty"][tg], (h.get("steady_duty_full_fan") or {}).get(tg, 0.0))     # part fan on while printing
+            spare = h.get("power_w_at_target", {}).get(tg, h["power_w"]) * (1.0 - duty_hold)   # a PTC heater makes less when hot
             res["melt"] = {"flow_mm3_s": round(flow, 2), "melt_power_w": round(p_melt, 2), "spare_power_w": round(spare, 1),
+                           "hold_duty_used": round(duty_hold, 3),
                            "basis": "PLA: 1240 kg/m^3, cp 1800 J/kgK (typical, unverified); latent heat ignored"}
             if p_melt > spare:
                 r.add("error", "melt_capacity", f"Hotend needs {p_melt:.1f} W to melt {flow:.1f} mm^3/s but has {spare:.1f} W spare at {tg:g} degC.", heater=hn)

@@ -13,6 +13,47 @@ from ..report import VerifierResult, timed
 BLOCK_K = 40e6   # N/m radial stiffness of a small recirculating-ball block: assumed, no vendor rigidity data yet
 
 
+def block_track_length_m(block) -> float:
+    """Length over which a guide block's balls bear on the rail (Hiwin's L1): from the part's own rating, the vendor
+    table for an MGN12H, else 30 mm."""
+    v = block.ratings.get("ball_track_length_m")
+    if v:
+        return float(v)
+    if (block.sku or "") == "MGN12H":
+        try:
+            from ..parts import vendor_data
+
+            return float(vendor_data("hiwin_mgn12")["parts"]["MGN12H_block"]["values"]["L1_mm"]) * 1e-3
+        except Exception:
+            pass
+    return 0.030
+
+
+def guide_tilt(design: Design, joint_name: str, point, k_n_per_m: float = BLOCK_K) -> dict | None:
+    """How stiffly the guide blocks of one joint hold a point of the carried body against a force ALONG the rail.
+
+    The force acts at `point` (world, home pose), off the rail by an arm r, so it turns the carried body about an axis
+    across the rail. Each block is a spring of k_n_per_m spread along its ball track (length L): a block alone resists
+    turning with k L^2 / 12, blocks spaced along the rail add k a_i^2 (a_i measured from their centroid), the same
+    rule the cantilever check below uses. The stiffness left at the point is K_rot / r^2. The FEA cannot see this:
+    it bonds block and rail. Returns None when the joint has no guide blocks."""
+    blocks = [c for c in design.components if c.meta.get("guides") == joint_name and "static_load_n" in c.ratings]
+    j = next((x for x in design.joints if x.name == joint_name), None)
+    if not blocks or j is None:
+        return None
+    ax = np.array(j.axis, dtype=float) / np.linalg.norm(j.axis)
+    pos = np.array([[b.shape.center().X, b.shape.center().Y, b.shape.center().Z] for b in blocks]) * 1e-3
+    cen = pos.mean(axis=0)
+    al = (pos - cen) @ ax
+    track = block_track_length_m(blocks[0])
+    d = np.asarray(point, dtype=float) * 1e-3 - cen
+    arm = float(np.linalg.norm(d - (d @ ax) * ax))
+    k_rot = float(k_n_per_m * (al ** 2).sum() + len(blocks) * k_n_per_m * track ** 2 / 12.0)      # N*m/rad
+    return {"blocks": len(blocks), "block": blocks[0].sku, "spacing_along_rail_mm": round(float(al.max() - al.min()) * 1e3, 1),
+            "ball_track_mm": round(track * 1e3, 1), "arm_mm": round(arm * 1e3, 1), "k_rot_nm_per_rad": round(k_rot, 1),
+            "n_per_mm": (k_rot / arm ** 2) * 1e-3 if arm > 1e-6 else float("inf"), "block_stiffness_used_n_per_um": k_n_per_m * 1e-6}
+
+
 def _torque_at(ratings: dict, rpm: float) -> float:
     hold = ratings["holding_torque_nmm"]
     curve = ratings.get("torque_curve_rpm_frac")

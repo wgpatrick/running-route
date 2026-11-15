@@ -128,7 +128,8 @@ def test_generated_config_has_shaper_pressure_advance_probe_and_mesh_and_klippy_
     assert c.getfloat("probe", "x_offset") == 33.0 and c.getfloat("probe", "y_offset") == 0.0
     assert abs(c.getfloat("probe", "z_offset") - 0.1) < 1e-9     # 3.2 mm switching distance, face 3.1 mm above the nozzle
     assert c.get("bed_mesh", "mesh_min") == "33, 0" and c.get("bed_mesh", "mesh_max") == "182, 180"
-    assert 0.0 < c.getfloat("extruder", "pressure_advance") < 0.2 and c.getfloat("extruder", "max_extrude_only_distance") > 0
+    # printer_v5 is Bowden: K is the Bowden lag (factory values 0.18 to 0.40 s at 0.4 mm), not the direct-drive 0.03
+    assert 0.17 < c.getfloat("extruder", "pressure_advance") < 0.40 and c.getfloat("extruder", "max_extrude_only_distance") > 0
     for ax, lo, hi in (("x", 60.0, 130.0), ("y", 45.0, 90.0)):   # at or above the axis's own resonance, by shaper type
         assert lo < c.getfloat("input_shaper", f"shaper_freq_{ax}") < hi
         assert c.get("input_shaper", f"shaper_type_{ax}") in ("zv", "mzv", "ei", "2hump_ei", "3hump_ei")
@@ -187,9 +188,11 @@ def test_pressure_advance_reaches_the_extruder_steps_and_shrinks_the_corner_bulg
     d, pm = v5
     pm = replace(pm, raster_px_per_mm=40)
     off = _chip(v5, tmp_path / "off", {"input_shaper": False, "pressure_advance": False}, pm)
-    on = _chip(v5, tmp_path / "on", {"input_shaper": False, "pressure_advance": 0.045}, pm)
+    k = pm.extruder_lag_s                 # the Bowden lag the design selects (about 0.24 s): K equal to it is what cancels it
+    assert 0.17 < k < 0.40
+    on = _chip(v5, tmp_path / "on", {"input_shaper": False, "pressure_advance": k}, pm)
     assert off["ok"] and on["ok"]
-    assert on["firmware"]["features"]["pressure_advance"] == 0.045 and off["firmware"]["features"]["pressure_advance"] is None
+    assert on["firmware"]["features"]["pressure_advance"] == k and off["firmware"]["features"]["pressure_advance"] is None
     for r in (off, on):                                                  # the filament total is unchanged by it
         assert abs(r["firmware"]["filament_commanded_mm"] - r["firmware"]["filament_in_gcode_mm"]) < 0.05
     assert on["print"]["max_bulge_mm"] <= off["print"]["max_bulge_mm"] - 0.1

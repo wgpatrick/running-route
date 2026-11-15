@@ -1,6 +1,23 @@
 # Printer and digital-twin evaluation
 
-Everything here was computed in simulation. Friction, extruder lag, damping and belt stiffness are assumed values; the sensitivity section shows which of them matter.
+Everything here was computed in simulation, on `designs/printer.py`, before the twin was fitted to published data
+(2026-11-15). At the time friction, extruder lag, damping and belt stiffness were all assumed values; the sensitivity
+section shows which of them matter. What has changed since:
+
+- Ringing damping, extruder lag (by drive type and nozzle), the melt-rate cap and the hotend's thermal model are now
+  fitted to published data, and the axis that carries the nozzle has the toolhead's tilt on its guide blocks in
+  series. Sources, ranges and held-out checks: `../../reports/Twin fitting.md` and
+  `mechloop/twin/fitted_parameters.json`. Friction, the step-loss boundary, guide-block stiffness itself and frame
+  joints are still assumed.
+- "Prints cleanly up to N x acceleration" below is the **step-loss ceiling** (`step_loss_ceiling_accel_mm_s2` in the
+  scorecard, formerly `max_clean_accel_mm_s2`): where the simulated motors lose steps. On three real machines that
+  ceiling sat 6 to 8 times above what their owners run. The usable figure is `accel_owners_would_run_mm_s2`: 0.5
+  (0.4 to 0.65) x Klipper's input-shaper smoothing rule at the lower resonance.
+- `mechloop score` now reports `[low, expected, high]` beside each headline number (`headline`, `ranges`), from the
+  parameter ranges. The tables below are point values of the unfitted twin and were not re-run.
+- The robustness and sensitivity scenarios below moved the extruder lag between fixed direct-drive values (0.015 to
+  0.06 s). They now scale the lag the design selects (x0.5, x1.5, x2), so a Bowden design is varied about its own
+  0.24 s.
 
 ## Summary
 
@@ -141,6 +158,6 @@ Voron 2.4 350 (CoreXY), documented values only. Uncertain inputs were sampled ov
 | no step loss at tuned config 2 (650 mm/s, 20000 mm/s^2, 1.4 A) | no skip | runs without skipping | consistent |  |
 | acceleration at which steps are first lost, stock current, 300 mm/s | x: 63900.0, y: 33700.0 | no controlled measurement found; anecdotes pass 20,000-23,000 | not testable | prediction only; it would be contradicted by a stock machine skipping below this |
 | speed where torque starts to fall, 1.4 A: 1.8 deg vs 0.9 deg motor | 1.8 deg: 511, 0.9 deg: 274, ratio: 1.86 | 1.8 deg top speed: [800.0, 1000.0], 0.9 deg top speed: 450.0, ratio: [1.78, 2.22] | consistent | compares the ratio between motors; absolute top speed depends on the load during the test |
-| extruder lag time constant | 0.03 | 0.03–0.06 s | consistent | the twin's assumed 30 ms lag sits inside the documented pressure-advance range for direct drive |
+| extruder lag time constant | 0.03 | 0.03–0.06 s | consistent | the twin's then-assumed 30 ms lag sits inside the documented pressure-advance range for direct drive (now: 0.0315 s direct, 0.24 s Bowden, from factory profiles) |
 
 Compute time: 8 minutes on 4 cores.

@@ -48,9 +48,13 @@ reach its first layer (bed 1 mm short of the nozzle), which no static check had 
 The twin now models belt stretch (and frame flex when given FEA stiffness). An
 in-simulation evaluation of the printer and of the twin itself is in `docs/EVALUATION.md`.
 
-Not in the twin: any thermal behaviour (cooling, warping, adhesion, sag), pressure
-advance, position-dependent stiffness. Friction, extruder lag and stepper damping are
-assumed values, so corner bulge and lag figures are indicative, not calibrated.
+Not in the twin: heat in the printed part (cooling, warping, adhesion, sag), position-dependent
+stiffness. Since 2026-11-15 the ringing damping, the extruder lag (by drive type and nozzle), the
+melt-rate cap and the hotend's thermal model are fitted to published data, and the toolhead's tilt on
+its guide blocks is in the axis model (see "Twin fitted to published data" below). Friction, the
+step-loss boundary, guide-block stiffness itself, frame joints and the bed's thermal constants are
+still assumed. Every fitted or assumed number, with range and source, is in
+`mechloop/twin/fitted_parameters.json`.
 
 ## Evidence that the checks work
 
@@ -130,6 +134,43 @@ solves (about 1 wrong run in 48); the solver now runs single-threaded (200 of 20
   FEA bound decides which joints are screwed from what each screw holds, not from distance; `add_corner_bracket`
   through-bolts a non-extrusion part with a real screw and nut; the machining estimate no longer finishes the stock
   faces of a stock-thickness plate. Before and after figures are in `docs/PRINTER_V5.md` (items 1, 2, 5, 6).
+
+## Twin fitted to published data (added 2026-11-15)
+
+Full account: `../reports/Twin fitting.md`. Every number below, with range, source and held-out check, is in
+`mechloop/twin/fitted_parameters.json`, which the twin and the heater model load.
+
+- **Toolhead tilt on its guide blocks** is now a spring in series on the axis that carries the nozzle, derived from
+  the design (block count, spacing, ball-track length, nozzle distance from the rail) with one fitted block stiffness
+  (10 N/um, 7.5 to 16). On the three reference machines the toolhead-axis errors go from +42 / +18 / +70 % to
+  +1 / -1 / -1 %. That comparison is not blind; each rail machine predicted from the other is +2.3 % and -1.3 %.
+  The FEA nozzle-stiffness case still bonds rail and block.
+- **Ringing damping** 0.065 (toolhead axis) and 0.069 (gantry or bed axis), range 0.04 to 0.12, from a mode fit of
+  resonance spectra of 35 machine-axes.
+- **Extruder lag** by drive type and nozzle from factory pressure-advance values: direct 0.03 s, Bowden 0.24 s at
+  0.4 mm. printer_v5 (Bowden, 420 mm tube) now gets 0.235 s.
+- **Melt-rate cap** per hotend class (V6 11, Revo 12 mm^3/s): the slicer is held to it and a flow-limited speed is
+  reported. Neither v4 nor v5 is limited.
+- **Hotend thermal model**: three nodes with a fan-dependent loss, fitted to one Ender 3's logs (held-out run within
+  6 degC over 20 minutes). That hotend is too light to stand for a V6, so the default class uses the fitted structure
+  with Prusa's published totals, and its sensor lag was adjusted (to 8 s) so that a simulated relay autotune cycles in
+  25 s, inside the 24 to 55 s of public PID sets. The Revo class is scaled, not fitted, and has the HeaterCore's PTC
+  power law. Beds are unchanged: their relay period (48 s) is inside the public range.
+- **Scorecard**: `max_clean_accel_mm_s2` is now `step_loss_ceiling_accel_mm_s2` (the old key is still written) and is
+  named as a ceiling. `accel_owners_would_run_mm_s2` (0.5, range 0.4 to 0.65, of Klipper's shaper smoothing rule) is
+  reported beside it. Every headline number has `[low, expected, high]` under `headline` and `ranges`.
+- **Re-scored** (built-in planner; before the fit in brackets): printer_v4 X 55.4 Hz, range 50 to 61 [68.4], Y 56.9
+  [56.9], step-loss ceiling 8,000 mm/s^2, range 6,000 to 12,000 [8,000], an owner would run 5,300, range 3,400 to
+  7,900. printer_v5 X 71.6 Hz, range 64 to 79 [88.5], Y 62.0 [62.0], ceiling 12,000, range 8,000 to 14,000 [10,000],
+  an owner would run 6,800, range 4,500 to 9,500. The v4-to-v5 gain in X resonance survives the ranges; the gains in
+  cross-track error and in Y do not. No verifier changed between pass and fail on either design.
+- **Also added**: `[extruder]` gearing (`gear_ratio`, `full_steps_per_rotation`) from the extruder part; the Revo
+  HeaterCore's PTC behaviour in the heater simulation, stuck-on fault included; a checked 5 V fan supply (regulator
+  board or the board's 5 V rail); `al_mic6` / `al_atp5` in the material-keyed tables.
+- **Still assumed**: belt stiffness (kept; range 15 to 27 kN per 6 mm from the blind test), friction, the step-loss
+  boundary, guide-block stiffness itself, frame joints, the bed's thermal constants, everything about heat in the
+  printed part.
+- 229 tests pass; 13 of them were added with this work.
 
 ## Vendor CAD (added 2026-11-14)
 

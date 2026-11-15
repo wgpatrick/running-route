@@ -187,8 +187,12 @@ def decode(dump: Path, cfg_text: str, clock_hz: float) -> dict:
 
 
 def _mm_per_step(c, sec):
+    ratio = 1.0          # Klipper's gear_ratio: "a:b" pairs separated by commas, motor turns per turn of the output
+    for term in c.get(sec, "gear_ratio", fallback="1:1").split(","):
+        a, b = term.split(":")
+        ratio *= float(a) / float(b)
     return c.getfloat(sec, "rotation_distance") / (c.getint(sec, "full_steps_per_rotation", fallback=200)
-                                                   * c.getint(sec, "microsteps", fallback=1))
+                                                   * c.getint(sec, "microsteps", fallback=1) * ratio)
 
 
 def _march(Q, P, tol=0.03):

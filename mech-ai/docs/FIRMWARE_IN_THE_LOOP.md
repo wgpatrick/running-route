@@ -65,15 +65,21 @@ board manages (Klipper's published benchmark for this processor with three motor
 
 Everything in this section is simulated. Each figure rests on assumed values, named with it.
 
+**The numbers in this section were made before the twin was fitted (2026-11-15, later the same day).** Since then the X
+axis of printer_v5 has the toolhead's tilt on its guide block in series (resonance 88.6 Hz became about 71 Hz), the
+ringing damping is fitted (0.065 / 0.069), and the extruder lag follows the drive type (printer_v5 is Bowden: 0.235 s, not
+0.03 s). The re-scored figures are in "After the fit" at the end of this section; the tables between here and there are
+kept as the record of the method and of what the unfitted twin said.
+
 ### Where the settings come from
 
 | Setting | How it is found | Real Klipper code | Assumed |
 |---|---|---|---|
-| `[input_shaper]` type and frequency per axis | The twin's axis model, linearised (stepper spring, belt and frame spring, two masses), gives a frequency response per axis as a resonance test would record it. Klipper's `shaper_calibrate.find_best_shaper` picks from it, exactly as it does from accelerometer data. | the selection; the shaping itself, in the step stream | stepper damping ratio 0.25, belt/frame damping ratio 0.05, belt stiffness; FEA frame stiffness |
-| `pressure_advance` | A sweep on the twin (`mechloop tune`): the test cube printed once per K by Klipper, corner bulge and recess read off each result. Without a sweep, K = the twin's melt-flow lag. | pressure advance in the extruder's steps | the melt-flow lag: first order, 30 ms, one value for every flow rate. Not measured. |
+| `[input_shaper]` type and frequency per axis | The twin's axis model, linearised (stepper spring, belt and frame spring, two masses), gives a frequency response per axis as a resonance test would record it. Klipper's `shaper_calibrate.find_best_shaper` picks from it, exactly as it does from accelerometer data. | the selection; the shaping itself, in the step stream | belt stiffness (15 to 27 kN per 6 mm, 22 used); the toolhead term's block stiffness (fitted to two machines); ringing damping ratio (fitted: 0.065 toolhead axis, 0.069 gantry or bed axis); stepper damping ratio 0.25 (assumed); FEA frame stiffness |
+| `pressure_advance` | A sweep on the twin (`mechloop tune`): the test cube printed once per K by Klipper, corner bulge and recess read off each result. Without a sweep, K = the twin's melt-flow lag. | pressure advance in the extruder's steps | the melt-flow lag: first order, one value for every flow rate, taken from factory pressure-advance values for the design's drive type and nozzle (direct 0.03 s, Bowden 0.24 s at 0.4 mm). Not measured on this machine. The sweep now spans 0 to twice the lag. |
 | `[probe]` offsets, `[safe_z_home]`, `[bed_mesh]` bounds | The CAD: sensing face against nozzle tip and bed plate; the plate inset by the probe's edge margin and cut to X/Y travel | config validation; mesh interpolation and the Z adjustment in the step stream | switching distance and its +/-10 % spread (recalled class values), repeatability 0.01 mm, edge margin |
 | the mesh itself | klippy's offline mode cannot run a probe sequence (nothing answers the probe), so `BED_MESH_CALIBRATE` is not run. The twin probes its own as-built bed point by point (median of 3 samples with the probe's scatter) and hands Klipper the result as the stored `[bed_mesh default]` profile a real machine would have saved; the job loads it with `BED_MESH_PROFILE LOAD=default`. | loading the profile, interpolating it, adjusting Z | the bed's shape (tilt and bow given as input) |
-| heater PID gains, runaway check | Klipper's `ControlAutoTune`, `ControlPID`, `ControlBangBang` and `verify_heater.HeaterCheck` classes run against the lumped thermal model | all four | the thermal constants of the model (see `docs/ELECTRICAL.md`) |
+| heater PID gains, runaway check | Klipper's `ControlAutoTune`, `ControlPID`, `ControlBangBang` and `verify_heater.HeaterCheck` classes run against the lumped thermal model | all four | the thermal constants of the model: hotend from `fitted_parameters.json` (structure fitted to one Ender 3's logs, totals from Prusa's V6 / Revo models, sensor lag set by the relay check); bed as in `docs/ELECTRICAL.md` (assumed) |
 
 `mechloop/twin/klippy_code.py` loads Klipper's Python modules unmodified and gives them small stand-ins for the
 objects they talk to. `mechloop/twin/tuning.py` does the tuning; `mechloop tune <printer.py>` runs all of it and
@@ -131,7 +137,8 @@ K equal to the lag does not remove the bulge completely, although for a pure fir
 corner's braking takes, so part of the lag gets through. Without any lag the same print shows 0.05 mm. The
 sweep picks 0.04. This says how the method behaves; it does not say what K a real extruder needs. printer_v5
 has a Bowden extruder, for which K on real machines is commonly some ten times larger (recalled, not measured):
-the twin's 30 ms lag is very likely too short for this design.
+the twin's 30 ms lag is very likely too short for this design. (Fixed 2026-11-15: the design's Bowden tube now selects
+0.235 s, from the Prusa MINI's factory values.)
 
 Bed mesh. Assumed bed: 0.30 mm tilt across X, 0.20 mm across Y, centre 0.15 mm above the corners; Z referenced
 with the probe over the middle. 5 x 5 mesh probed by the twin (range 0.33 mm).
@@ -177,13 +184,43 @@ the row says so (`planner`). `--firmware-only` skips the built-in sweep and benc
 the commanded one. For the built-in planner and for Klipper without a shaper the two are the same thing, so old
 figures are unchanged (printer_v5, built-in: 0.0114 / 0.1133 mm before and after).
 
+### After the fit (2026-11-15)
+
+Re-scored with the fitted twin (`mechloop score --firmware klipper`; method, sources and ranges in
+`../../reports/Twin fitting.md`). Point values at the expected parameters.
+
+| printer_v5, real Klipper | Before the fit | After |
+|---|---|---|
+| Predicted resonance X / Y | 85.9 / 60.0 Hz | 70.6 / 59.9 Hz |
+| Input shaper X | EI 108.4 Hz | MZV 70.8 Hz |
+| Input shaper Y | MZV 60.4 Hz | MZV 60.4 Hz |
+| Klipper's suggested max_accel X / Y | 21,400 / 10,700 mm/s^2 | 14,700 / 10,700 |
+| Acceleration an owner would run (0.5 x the lower, range 0.4 to 0.65) | not reported | 5,400 mm/s^2 (4,300 to 7,000) |
+| Pressure advance | 0.03 s | 0.2352 s (Bowden, 420 mm tube) |
+| As configured, nominal: sideways error RMS / worst | 0.0039 / 0.037 mm | 0.0083 / 0.047 mm |
+| As configured, nominal: corner bulge | 0.20 mm | 0.20 mm |
+| As configured: highest clean acceleration in the sweep | 48,000, the highest tried | 48,000, the highest tried |
+| Shaper and pressure advance off, nominal: RMS / worst | 0.0066 / 0.081 mm | 0.0088 / 0.079 mm |
+| Shaper and pressure advance off: step-loss ceiling | 12,000 mm/s^2 | 16,000 mm/s^2 |
+
+- printer_v4 after the fit: X MZV 55.2 Hz, Y MZV 55.6 Hz (predicted resonance 54.9 / 55.3 Hz; it was EI 85.8 / EI 70.8);
+  an owner would run 4,400 mm/s^2 (3,600 to 5,800); as configured 0.0087 / 0.064 mm; pressure advance 0.0315 s.
+- "Highest clean acceleration" (`highest_clean_accel_mm_s2`, old key `max_clean_accel_mm_s2`) is a ceiling: where the
+  sweep stops or the motors lose steps. The figure to design to is the acceleration an owner would run.
+- With shaping on, about 0.008 mm RMS remains on both designs. It is the axis relaxing from its friction lag on the now
+  softer X spring; friction is an assumed 2 N, so that floor is no better known than that.
+- The Klipper figures were not re-run at the ends of the parameter ranges. The resonance they rest on has a range of
+  64 to 79 Hz (X) and 57 to 64 Hz (Y) for printer_v5.
+
 ### Limits
 
 - The shaper is tuned on the same model it is then tested on, so the test cannot show a mistuned shaper. A real
   machine's resonance will differ from the prediction; the comparison shows what shaping is worth if the
   prediction is right.
-- One resonance per axis, the same everywhere in the travel; no cross-coupling between axes; damping assumed.
-- Melt flow is a first-order lag with an assumed constant; no nozzle pressure, no compliance of a Bowden tube.
+- One resonance per axis, the same everywhere in the travel; no cross-coupling between axes; damping fitted to other
+  people's machines (0.04 to 0.12).
+- Melt flow is a first-order lag whose constant is a factory pressure-advance value for the drive type; no nozzle
+  pressure, no flow dependence. A Bowden tube only changes the constant.
 - The bed's shape is an input. The tolerance verifier's as-built figure for printer_v5 is 2.1 mm out of level
   at the 99th percentile before any levelling; what is left after levelling with the four screws is not
   modelled, so the mesh study uses a stated, assumed surface.

@@ -14,6 +14,7 @@ the belts (4 EA / L per belt) and, when given, the frame. It is the formula in
     python -m mechloop.twin.calibration predict        # blind predictions for the frozen machines
     python -m mechloop.twin.calibration compare        # predictions against the measurements
     python -m mechloop.twin.calibration compare <frozen predictions.json>   # the blind ones themselves
+    python -m mechloop.twin.calibration posthoc        # the same machines with the toolhead term (NOT blind)
     python -m mechloop.twin.calibration design <design.py> <print_report.json>   # a design's scores as ranges
 """
 from __future__ import annotations
@@ -312,52 +313,158 @@ def compare(params: dict | None = None, pred: dict | None = None, **predict_kw) 
                            for k, v in kinds.items() if len(v)}}}
 
 
-# ------------------------------------------------------------------ proposal (made after the comparison; not applied)
-PROPOSED = {
-    # Belt EA of glass-cord GT2, N per unit strain for 6 mm of width, as [low, nominal, high]. From the three
-    # gantry / bed axes (their implied EA: 15, 21, 27 kN). The twin's default (22 kN) is inside it: keep the
-    # default, carry the range. Width scaling to 9 and 12 mm is not tested by any of the three machines.
-    "belt_ea_n_per_6mm": [15000.0, 21000.0, 27000.0],
-    # Compliance between the belt and the nozzle on an axis that carries only the toolhead on one guide
-    # block (carriage tilt, printed mounts), N/mm in series, as [low, nominal, high]. The two rail machines
-    # need 120 and 230; the V-wheel machine needs 40. The twin has no such term unless the design's FEA
-    # stiffness case contains it; a bonded-block FEA case does not.
-    "toolhead_mount_n_per_mm": {"linear_rail_single_block": [120.0, 170.0, 230.0], "v_wheels": [30.0, 40.0, 60.0]},
-    # Damping ratio of the ringing mode: what owners enter after measuring it (Voron 0 and Trident, n = 39).
-    "ringing_damping_ratio": [0.03, 0.05, 0.09],
-    # Acceleration owners actually run with input shaping, as a fraction of the shaper smoothing rule (MZV)
-    # evaluated at the lower measured resonance: 0.44 (Ender 3), 0.51 (Voron 0), 0.62 (Trident 250).
-    "used_accel_over_shaper_rule": [0.4, 0.5, 0.65],
-}
+# ------------------------------------------------------------------ second comparison, with the toolhead term (NOT blind)
+POSTHOC_FILE = HERE / "calibration_posthoc.json"
+
+
+def posthoc() -> dict:
+    return json.loads(POSTHOC_FILE.read_text())["machines"]
+
+
+def toolhead_term(key: str, k_block_n_per_um: float | None = None, wheels_n_per_mm: float | None = None) -> float | None:
+    """Belt-clamp-to-nozzle stiffness (N/mm) of a reference machine's toolhead axis, by the rule the twin applies to a
+    design (machine.toolhead_compliance): one guide block turning over its ball track, K_rot = k L^2 / 12, seen at the
+    nozzle's distance from the rail. Wheels: the flat fitted figure."""
+    from . import fitted
+
+    g = posthoc()[key]
+    if g["guide"] == "v_wheels":
+        return float(fitted.value("toolhead_v_wheels_n_per_mm") if wheels_n_per_mm is None else wheels_n_per_mm)
+    k = (fitted.value("toolhead_tilt_effective_n_per_um") if k_block_n_per_um is None else k_block_n_per_um) * 1e6
+    arm = math.hypot(g["nozzle_below_rail_mm"], g["nozzle_horizontal_mm"]) * 1e-3
+    k_rot = g["blocks"] * k * (g["ball_track_mm"] * 1e-3) ** 2 / 12.0
+    return k_rot / arm ** 2 * 1e-3
+
+
+def implied_block_stiffness(key: str, f_measured: float) -> float | None:
+    """Effective block stiffness (N/um) that makes the toolhead axis of a rail machine ring at f_measured."""
+    g, mach = posthoc()[key], machines()[key]
+    if g["guide"] != "linear_rail":
+        return None
+    kx = implied(mach, g["toolhead_axis"], f_measured)["extra_series_stiffness_n_per_mm"]
+    if kx is None:
+        return None
+    arm = math.hypot(g["nozzle_below_rail_mm"], g["nozzle_horizontal_mm"]) * 1e-3
+    return kx * 1e3 * arm ** 2 * 12.0 / (g["blocks"] * (g["ball_track_mm"] * 1e-3) ** 2) * 1e-6
+
+
+def compare_posthoc() -> dict:
+    """The frozen three-machine comparison again, with the toolhead term in series on the toolhead axes. The frozen
+    inputs are not touched; the term's geometry comes from calibration_posthoc.json. NOT blind: the term's parameter
+    was fitted to the two rail machines here (the wheeled machine has a parameter of its own, so its row is a fit by
+    construction). `leave_one_out` predicts each rail machine with the stiffness implied by the other one alone."""
+    meas, mm_ = measurements(), machines()
+    rows = []
+    for key, mach in mm_.items():
+        g = posthoc()[key]
+        for axis in mach["axes"]:
+            f_meas = meas[key][f"{axis}_hz"]["median"]
+            before = resonance(mach, axis)
+            is_tool = axis == g["toolhead_axis"]
+            after = resonance(mach, axis, frame=toolhead_term(key)) if is_tool else before
+            row = {"machine": key, "axis": axis, "kind": "toolhead" if is_tool else "gantry or bed", "measured_median_hz": f_meas,
+                   "blind_hz": round(before, 1), "blind_error_pct": round(100 * (before / f_meas - 1), 1),
+                   "with_term_hz": round(after, 1), "with_term_error_pct": round(100 * (after / f_meas - 1), 1),
+                   "term_n_per_mm": round(toolhead_term(key), 1) if is_tool else None, "guide": g["guide"] if is_tool else None}
+            if is_tool and g["guide"] == "linear_rail":
+                other = next(k for k, v in posthoc().items() if v["guide"] == "linear_rail" and k != key)
+                k_other = implied_block_stiffness(other, meas[other][f"{posthoc()[other]['toolhead_axis']}_hz"]["median"])
+                loo = resonance(mach, axis, frame=toolhead_term(key, k_block_n_per_um=k_other))
+                row.update({"implied_block_n_per_um": round(implied_block_stiffness(key, f_meas), 2),
+                            "leave_one_out": {"fitted_on": other, "block_n_per_um": round(k_other, 2), "hz": round(loo, 1),
+                                              "error_pct": round(100 * (loo / f_meas - 1), 1)}})
+            elif is_tool:
+                row["leave_one_out"] = None        # one wheeled machine: nothing to hold out
+            rows.append(row)
+    e0 = np.array([r["blind_error_pct"] for r in rows])
+    e1 = np.array([r["with_term_error_pct"] for r in rows])
+    tool = np.array([r["kind"] == "toolhead" for r in rows])
+    loo = np.array([r["leave_one_out"]["error_pct"] for r in rows if r.get("leave_one_out")])
+    return {"blind": False, "note": "second comparison, made after the measurements were seen; the toolhead term's parameter was fitted to "
+                                    "these machines. Frozen inputs unchanged (sha256 %s)" % frozen_hash()[:16],
+            "rows": rows,
+            "summary": {"all axes: mean abs error pct, blind / with term": [round(float(np.abs(e0).mean()), 1), round(float(np.abs(e1).mean()), 1)],
+                        "toolhead axes: mean signed error pct, blind / with term": [round(float(e0[tool].mean()), 1), round(float(e1[tool].mean()), 1)],
+                        "toolhead axes: worst error pct, blind / with term": [round(float(e0[tool][np.abs(e0[tool]).argmax()]), 1),
+                                                                             round(float(e1[tool][np.abs(e1[tool]).argmax()]), 1)],
+                        "rail toolhead axes, leave one machine out: errors pct": [float(x) for x in loo],
+                        "gantry and bed axes": "unchanged (no term): mean abs %.1f pct" % float(np.abs(e0[~tool]).mean())}}
+
+
+# ------------------------------------------------------------------ proposal (made after the comparison; applied 2026-11-15, see fitted.py)
+def _proposed() -> dict:
+    from . import fitted
+
+    return {
+        # Belt EA of glass-cord GT2, N per unit strain for 6 mm of width, as [low, nominal, high]. From the three gantry /
+        # bed axes (their implied EA: 15, 21, 27 kN). The twin's default (22 kN) is inside it. Width scaling to 9 and
+        # 12 mm is not tested by any of the three machines.
+        "belt_ea_n_per_6mm": [15000.0, 21000.0, 27000.0],
+        # The flat figures of the first study (kept for reference): compliance between belt and nozzle on an axis that
+        # carries only the toolhead on one guide block, N/mm in series. The twin now derives the rail figure from the
+        # design's geometry with one fitted block stiffness (toolhead_tilt_effective_n_per_um below).
+        "toolhead_mount_n_per_mm": {"linear_rail_single_block": [120.0, 170.0, 230.0], "v_wheels": [30.0, 40.0, 60.0]},
+        "toolhead_tilt_effective_n_per_um": fitted.triple("toolhead_tilt_effective_n_per_um"),
+        # Damping ratio of the ringing mode. First study: what owners enter (n = 39). Now fitted to resonance spectra.
+        "ringing_damping_ratio": [0.03, 0.05, 0.09],
+        "ringing_damping_ratio_fitted": {k: [fitted.entry("ringing_damping_ratio")["low"][k], v, fitted.entry("ringing_damping_ratio")["high"][k]]
+                                         for k, v in fitted.value("ringing_damping_ratio").items()},
+        # Acceleration owners actually run with input shaping, as a fraction of the shaper smoothing rule (MZV)
+        # evaluated at the lower measured resonance: 0.44 (Ender 3), 0.51 (Voron 0), 0.62 (Trident 250).
+        "used_accel_over_shaper_rule": fitted.triple("used_accel_over_shaper_rule"),
+    }
+
+
+PROPOSED = _proposed()
 
 
 def axis_range(mass_kg: float, reflected_kg: float, k_motor: float, k_belt_default: float, k_frame: float | None,
-               toolhead_mount: str | None = None, belt_ea_default: float = 22000.0, n: int = 2000, seed: int = 0) -> dict:
-    """Resonance of one axis as a range under PROPOSED. Stiffnesses in N/mm; `k_belt_default` is the belt
-    stiffness the twin computed at `belt_ea_default`; mass includes the reflected rotor inertia."""
+               toolhead_mount: str | None = None, belt_ea_default: float = 22000.0, n: int = 2000, seed: int = 0,
+               k_toolhead: float | None = None) -> dict:
+    """Resonance of one axis as a range under the fitted parameter ranges. Stiffnesses in N/mm; `k_belt_default` is
+    the belt stiffness the twin computed at `belt_ea_default`; mass includes the reflected rotor inertia.
+    k_toolhead: the design's own toolhead term at the fitted block stiffness (it scales in proportion to that
+    stiffness, so its range is the parameter's). toolhead_mount: the older flat figure, used only when k_toolhead is None."""
     rng = np.random.default_rng(seed)
     ea = rng.triangular(*PROPOSED["belt_ea_n_per_6mm"], n) / belt_ea_default
     inv = 1.0 / k_motor + 1.0 / (k_belt_default * ea) + (1.0 / k_frame if k_frame else 0.0)
-    if toolhead_mount:
+    inv0 = 1.0 / k_motor + 1.0 / k_belt_default + (1.0 / k_frame if k_frame else 0.0)
+    if k_toolhead:
+        lo, mid, hi = PROPOSED["toolhead_tilt_effective_n_per_um"]
+        inv = inv + 1.0 / (k_toolhead * rng.triangular(lo, mid, hi, n) / mid)
+        inv0 += 1.0 / k_toolhead
+    elif toolhead_mount:
         inv = inv + 1.0 / rng.triangular(*PROPOSED["toolhead_mount_n_per_mm"][toolhead_mount], n)
     f = np.sqrt(1e3 / inv / (mass_kg - reflected_kg)) / (2 * math.pi)
-    inv0 = 1.0 / k_motor + 1.0 / k_belt_default + (1.0 / k_frame if k_frame else 0.0)
+
+    def corner(i):       # every ranged stiffness at the same end of its range: the low and high the scorecard reports
+        e = PROPOSED["belt_ea_n_per_6mm"]
+        iv = 1.0 / k_motor + 1.0 / (k_belt_default * e[i] / belt_ea_default) + (1.0 / k_frame if k_frame else 0.0)
+        if k_toolhead:
+            t = PROPOSED["toolhead_tilt_effective_n_per_um"]
+            iv += 1.0 / (k_toolhead * t[i] / t[1])
+        elif toolhead_mount:
+            iv += 1.0 / PROPOSED["toolhead_mount_n_per_mm"][toolhead_mount][i]
+        return round(math.sqrt(1e3 / iv / (mass_kg - reflected_kg)) / (2 * math.pi), 1)
+
     return {"point_hz": round(math.sqrt(1e3 / inv0 / (mass_kg - reflected_kg)) / (2 * math.pi), 1),
-            "low_hz": round(float(np.percentile(f, 5)), 1), "median_hz": round(float(np.median(f)), 1),
-            "high_hz": round(float(np.percentile(f, 95)), 1)}
+            "low_hz": corner(0), "median_hz": round(float(np.median(f)), 1), "high_hz": corner(2),
+            "p5_hz": round(float(np.percentile(f, 5)), 1), "p95_hz": round(float(np.percentile(f, 95)), 1)}
 
 
 def design_ranges(design_path, print_report, frame_stiffness: dict | None = None,
                   toolhead_axis: str | None = "x", toolhead_mount: str = "linear_rail_single_block",
                   max_clean_accel: float | None = None, reflected_kg: dict | None = None,
                   belt_ea_default: float = 22000.0) -> dict:
-    """The scorecard's resonance and acceleration for a design, as ranges under PROPOSED.
+    """The scorecard's resonance and acceleration for a design, as [low, expected, high] under the fitted ranges
+    (belt stiffness; the toolhead term's block stiffness), in closed form from a twin `print_report.json`.
 
     design_path: the design file (loaded only to read each drive's reflected rotor inertia; not loaded
     when `reflected_kg` = {"x": kg, "y": kg} is given).
-    print_report: a twin `print_report.json` (dict or path), e.g. out/<name>/score/nominal/print_report.json.
-    frame_stiffness: the scorecard's `frame_stiffness_n_per_mm`, if the report was made with it.
-    toolhead_axis: the axis that carries only the toolhead on one guide block (None: no such axis)."""
+    print_report: dict or path, e.g. out/<name>/score/nominal/print_report.json. A report written by the fitted twin
+    carries its own toolhead term (dynamics.toolhead_compliance); for an older report the flat figure
+    `toolhead_mount` is put on `toolhead_axis` instead.
+    frame_stiffness: the scorecard's `frame_stiffness_n_per_mm`."""
     rep = json.loads(Path(print_report).read_text()) if not isinstance(print_report, dict) else print_report
     dyn = rep["dynamics"]
     if reflected_kg is None:
@@ -371,6 +478,7 @@ def design_ranges(design_path, print_report, frame_stiffness: dict | None = None
         jl = {j.name: j for j in design.joints}
         reflected_kg = {ax: jl[getattr(pm, ax)].reflected_inertia for ax in "xy"}
         belt_ea_default = pm.belt_ea_n
+    has_term = "toolhead_compliance" in dyn
     out = {"axes": {}}
     for i, ax in enumerate("xy"):
         refl = reflected_kg[ax]
@@ -378,28 +486,31 @@ def design_ranges(design_path, print_report, frame_stiffness: dict | None = None
         ks, f0, mass = dyn["series_stiffness_n_per_mm"][i], dyn["load_resonance_hz"][i], dyn["axis_mass_kg"][i]
         if not kb or not ks:
             continue
-        inv_f = 1.0 / ks - 1.0 / kb
+        kt = (dyn.get("toolhead_compliance") or {}).get(ax, {}).get("n_per_mm")
+        inv_f = 1.0 / ks - 1.0 / kb - (1.0 / kt if kt else 0.0)
         k_frame = (frame_stiffness or {}).get(ax) or (1.0 / inv_f if inv_f > 1e-9 else None)
         k_eff = (mass - refl) * (2 * math.pi * f0) ** 2 * 1e-3
         k_motor = 1.0 / (1.0 / k_eff - 1.0 / ks)
-        r = axis_range(mass, refl, k_motor, kb, k_frame, toolhead_mount if ax == toolhead_axis else None,
-                       belt_ea_default=belt_ea_default)
-        r.update({"stiffness_n_per_mm": {"motor": round(k_motor, 1), "belt": round(kb, 1), "frame": round(k_frame, 1) if k_frame else None},
-                  "toolhead_mount_term": toolhead_mount if ax == toolhead_axis else None,
+        flat = toolhead_mount if (not has_term and ax == toolhead_axis) else None
+        r = axis_range(mass, refl, k_motor, kb, k_frame, flat, belt_ea_default=belt_ea_default, k_toolhead=kt)
+        r.update({"stiffness_n_per_mm": {"motor": round(k_motor, 1), "belt": round(kb, 1), "frame": round(k_frame, 1) if k_frame else None,
+                                         "toolhead": round(kt, 1) if kt else None},
+                  "toolhead_mount_term": ("derived from the design (guide blocks, nozzle offset)" if kt else flat),
                   "scorecard_hz": f0})
         out["axes"][ax] = r
     lo = min(a["low_hz"] for a in out["axes"].values())
-    med = min(a["median_hz"] for a in out["axes"].values())
+    med = min((a["scorecard_hz"] if has_term else a["median_hz"]) for a in out["axes"].values())
     hi = min(a["high_hz"] for a in out["axes"].values())
     u = PROPOSED["used_accel_over_shaper_rule"]
-    out["resonance_hz"] = {ax: [a["low_hz"], a["median_hz"], a["high_hz"]] for ax, a in out["axes"].items()}
+    out["resonance_hz"] = {ax: [a["low_hz"], (a["scorecard_hz"] if has_term else a["median_hz"]), a["high_hz"]] for ax, a in out["axes"].items()}
     out["shaper_rule_accel_mm_s2"] = [shaper_accel(lo), shaper_accel(med), shaper_accel(hi)]
     out["accel_owners_would_run_mm_s2"] = [round(shaper_accel(lo) * u[0], -2), round(shaper_accel(med) * u[1], -2),
                                            round(shaper_accel(hi) * u[2], -2)]
     if max_clean_accel is not None:
+        out["step_loss_ceiling_accel_mm_s2"] = max_clean_accel
         out["scorecard_max_clean_accel_mm_s2"] = max_clean_accel
-        out["note"] = ("max_clean_accel is where the simulated motors lose steps. On the three reference machines that limit "
-                       "sat 6 to 8 times above what owners run; treat it as a ceiling and the range above as the usable figure.")
+        out["note"] = ("The step-loss ceiling is where the simulated motors lose steps. On the three reference machines that limit "
+                       "sat 6 to 8 times above what owners run; treat it as a ceiling and accel_owners_would_run as the usable figure.")
     out["proposed_parameters"] = PROPOSED
     return out
 
@@ -410,6 +521,8 @@ def _main(argv):
     elif argv and argv[0] == "compare":
         frozen = argv[1] if len(argv) > 1 else None
         print(json.dumps(compare(pred=json.loads(Path(frozen).read_text()) if frozen else None), indent=1))
+    elif argv and argv[0] == "posthoc":
+        print(json.dumps(compare_posthoc(), indent=1))
     elif argv and argv[0] == "design" and len(argv) >= 3:
         print(json.dumps(design_ranges(argv[1], argv[2]), indent=1))
     else:

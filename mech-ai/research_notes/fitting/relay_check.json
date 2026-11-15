@@ -1,0 +1,148 @@
+{
+ "public": {
+  "hotend": {
+   "distinct_sets": 81,
+   "Tu_s": {
+    "p10": 24.148,
+    "median": 36.896,
+    "p90": 55.244
+   },
+   "Ku_per_K": {
+    "p10": 0.102,
+    "median": 0.158,
+    "p90": 0.199
+   }
+  },
+  "bed": {
+   "distinct_sets": 70,
+   "Tu_s": {
+    "p10": 22.831,
+    "median": 89.42,
+    "p90": 160.673
+   },
+   "Ku_per_K": {
+    "p10": 0.351,
+    "median": 0.465,
+    "p90": 1.075
+   }
+  }
+ },
+ "hotend": {
+  "old catalogue model (assumed values), 40 W": {
+   "Tu_s": 25.8,
+   "Ku_per_K": 0.174,
+   "at_c": 210.0,
+   "Tu_inside_10_90": true,
+   "Ku_inside_10_90": true
+  },
+  "fitted Ender 3 hotend, 40 W": {
+   "Tu_s": 5.4,
+   "Ku_per_K": 0.173,
+   "at_c": 210.0,
+   "Tu_inside_10_90": false,
+   "Ku_inside_10_90": true
+  },
+  "v6 class with Prusa's own lag 2.1 s, 40 W": {
+   "Tu_s": 12.6,
+   "Ku_per_K": 0.187,
+   "at_c": 210.0,
+   "Tu_inside_10_90": false,
+   "Ku_inside_10_90": true
+  },
+  "v6 class as adopted (lag 8 s), 40 W": {
+   "Tu_s": 24.9,
+   "Ku_per_K": 0.164,
+   "at_c": 210.0,
+   "Tu_inside_10_90": true,
+   "Ku_inside_10_90": true
+  },
+  "v6 class as adopted (lag 8 s), 30 W (printer_v4 / v5)": {
+   "Tu_s": 22.8,
+   "Ku_per_K": 0.208,
+   "at_c": 210.0,
+   "Tu_inside_10_90": false,
+   "Ku_inside_10_90": false
+  },
+  "revo class (Prusa's lag 0.27 s), PTC 40 W": {
+   "Tu_s": 5.1,
+   "Ku_per_K": 0.288,
+   "at_c": 210.0,
+   "Tu_inside_10_90": false,
+   "Ku_inside_10_90": false
+  }
+ },
+ "bed": {
+  "printer_v4": {
+   "Tu_s": 48.6,
+   "Ku_per_K": 0.415,
+   "at_c": 60.0,
+   "power_w": 195.6,
+   "plate_capacity_j_k": 701.2,
+   "sensor_tau_s": 10.0,
+   "Tu_inside_10_90": true,
+   "Ku_inside_10_90": true
+  },
+  "printer_v5": {
+   "Tu_s": 48.3,
+   "Ku_per_K": 0.415,
+   "at_c": 60.0,
+   "power_w": 195.6,
+   "plate_capacity_j_k": 701.2,
+   "sensor_tau_s": 10.0,
+   "Tu_inside_10_90": true,
+   "Ku_inside_10_90": true
+  }
+ },
+ "hotend_lag_scan_v6_40w_210c": {
+  "2.1": 12.6,
+  "4": 17.1,
+  "6": 21.0,
+  "8": 24.9,
+  "10": 27.0
+ },
+ "chosen_v6_sensor_tau_s": 8.0,
+ "chosen_revo_sensor_tau_s": 0.27,
+ "decision": "Hotend, relay test at 210 degC: real machines cycle in 24 to 55 s (median 37), Ku 0.102 to 0.199 (median 0.158). The old model: 25.8 s (at the low edge). The fitted Ender hotend: 5.4 s (it really is that light: the log shows it cooling 2.6 K/s at 245 degC), outside. The v6 class (fitted structure, Prusa's E3D V6 totals) with Prusa's own lag of 2.1 s: 12.6 s, outside. Its sensor lag was therefore raised to 8 s (inside the 2.9 to 10 s that Marlin's MPC sets imply): 24.9 s and Ku 0.164 with a 40 W heater, inside the band but below the median; with the 30 W cartridge of printer_v4 / v5, 22.8 s and Ku 0.208, just under the 10th percentile. The model still cycles faster than a typical real hotend.",
+ "table_entry": {
+  "status": "checked; hotend sensor lag ADJUSTED to it",
+  "old": {
+   "hotend_sensor_tau_s": 4.5,
+   "bed_sensor_tau_s": 10.0
+  },
+  "value": {
+   "hotend_v6_sensor_tau_s": 8.0,
+   "hotend_revo_sensor_tau_s": 0.27,
+   "bed_sensor_tau_s": 10.0,
+   "hotend_v6_40w_210c": {
+    "Tu_s": 24.9,
+    "Ku_per_K": 0.164
+   },
+   "beds_60c": {
+    "printer_v4": {
+     "Tu_s": 48.6,
+     "Ku_per_K": 0.415
+    },
+    "printer_v5": {
+     "Tu_s": 48.3,
+     "Ku_per_K": 0.415
+    }
+   }
+  },
+  "low": {
+   "hotend_Tu_s": 24.148,
+   "bed_Tu_s": 22.831,
+   "hotend_Ku_per_K": 0.102,
+   "bed_Ku_per_K": 0.351
+  },
+  "high": {
+   "hotend_Tu_s": 55.244,
+   "bed_Tu_s": 160.673,
+   "hotend_Ku_per_K": 0.199,
+   "bed_Ku_per_K": 1.075
+  },
+  "unit": "s, duty per K (ultimate period and gain of Klipper's relay autotune)",
+  "source": "81 distinct extruder and 70 distinct bed PID sets in Klipper's example configurations (hotend Tu median 36.896 s, Ku 0.158; bed Tu median 89.42 s, Ku 0.465); the twin's figures from Klipper's own ControlAutoTune on the model. research_notes/fitting/relay_check.py",
+  "held_out": "this IS the outside check of the heater models' fast dynamics. Hotend, relay test at 210 degC: real machines cycle in 24 to 55 s (median 37), Ku 0.102 to 0.199 (median 0.158). The old model: 25.8 s (at the low edge). The fitted Ender hotend: 5.4 s (it really is that light: the log shows it cooling 2.6 K/s at 245 degC), outside. The v6 class (fitted structure, Prusa's E3D V6 totals) with Prusa's own lag of 2.1 s: 12.6 s, outside. Its sensor lag was therefore raised to 8 s (inside the 2.9 to 10 s that Marlin's MPC sets imply): 24.9 s and Ku 0.164 with a 40 W heater, inside the band but below the median; with the 30 W cartridge of printer_v4 / v5, 22.8 s and Ku 0.208, just under the 10th percentile. The model still cycles faster than a typical real hotend. Beds of printer_v4 / v5: printer_v4 Tu 48.6 s, Ku 0.415, printer_v5 Tu 48.3 s, Ku 0.415 against 22.831 to 160.673 s and 0.351 to 1.075: inside, nothing changed. The Revo class cycles faster than any cartridge hotend in the public sets; no Revo-only set was found to check it against.",
+  "used_by": "hotend_thermal.v6.sensor_tau_s"
+ }
+}

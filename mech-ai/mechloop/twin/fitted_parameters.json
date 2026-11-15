@@ -1,0 +1,381 @@
+{
+ "_note": "Written by research_notes/fitting/build_table.py from the fits in that directory. Loaded by mechloop.twin.fitted. status: fitted | calibrated | taken from published tables | not fitted (kept) | NOT FITTED. See reports/Twin fitting.md.",
+ "date": "2026-11-15",
+ "parameters": {
+  "belt_ea_n_per_6mm": {
+   "status": "not fitted (kept)",
+   "old": 22000.0,
+   "value": 22000.0,
+   "low": 15000.0,
+   "high": 27000.0,
+   "unit": "N per unit strain, 6 mm GT2",
+   "source": "no tensile data could be fetched; the blind three-machine comparison (reports/Twin calibration study.md) implies 15, 21 and 27 kN on its three gantry / bed axes",
+   "held_out": "blind prediction, +15 / -8 / +1 % on the three axes it governs",
+   "used_by": "PrinterMap.belt_ea_n; scorecard ranges"
+  },
+  "toolhead_tilt_effective_n_per_um": {
+   "status": "fitted (post hoc, two machines)",
+   "old": null,
+   "value": 10.0,
+   "low": 7.5,
+   "high": 16.0,
+   "unit": "N/um per guide block, spread over its ball track",
+   "source": "the spring missing between belt clamp and nozzle on the toolhead axes of the Voron 0.2 (MGN7H, nozzle 55.9 mm off the rail) and Trident 250 (MGN12H, 63.1 mm), expressed as a block stiffness through K_rot = k L1^2 / 12 and k_nozzle = K_rot / r^2: 9.5 and 10.5 N/um. Range: the same from the quartiles of the owners' frequencies. It lumps the block's tilt with printed mounts and belt clamp of those machines; it is NOT a measurement of block stiffness (ratings.BLOCK_K stays at its assumed 40 N/um)",
+   "held_out": "each rail machine predicted with the block stiffness the other one implies: voron0 +2.3 % (k = 10.47 N/um from trident250), trident250 -1.3 % (k = 9.54 N/um from voron0). Two machines; the comparison that uses the fitted value on both is not blind",
+   "used_by": "machine.toolhead_compliance (series spring on the axis that carries the nozzle on its own guide blocks)",
+   "reference_geometry": {
+    "voron0": {
+     "nozzle_below_rail_mm": 50.5,
+     "nozzle_horizontal_mm": 23.9,
+     "block": "MGN7H",
+     "L1_mm": 21.8,
+     "L1_source": "Hiwin MG catalogue, recalled, unverified"
+    },
+    "trident250": {
+     "nozzle_below_rail_mm": 51.0,
+     "nozzle_horizontal_mm": 37.2,
+     "block": "MGN12H",
+     "L1_mm": 32.4,
+     "L1_source": "mechloop/parts/vendor/hiwin_mgn12.json"
+    },
+    "offsets_source": "research_notes/trade_study/measurements.json (makers' CAD)"
+   }
+  },
+  "toolhead_v_wheels_n_per_mm": {
+   "status": "fitted (post hoc, ONE machine)",
+   "old": null,
+   "value": 40.0,
+   "low": 30.0,
+   "high": 60.0,
+   "unit": "N/mm at the nozzle",
+   "source": "Ender 3 X axis (wheels on extrusion): 41 N/mm implied by the owners' median frequency",
+   "held_out": "none possible: one machine, one number",
+   "used_by": "calibration.compare_posthoc only (no catalogue part rides on wheels)"
+  },
+  "ringing_damping_ratio": {
+   "status": "fitted",
+   "old": "0.02 to 0.05 (what the two assumed dampers, 0.25 and 0.05, gave)",
+   "value": {
+    "toolhead_axis": 0.065,
+    "gantry_or_bed_axis": 0.069
+   },
+   "low": {
+    "toolhead_axis": 0.043,
+    "gantry_or_bed_axis": 0.035
+   },
+   "high": {
+    "toolhead_axis": 0.116,
+    "gantry_or_bed_axis": 0.118
+   },
+   "unit": "damping ratio of the mode the load rings in",
+   "source": "mode fit of 62 Klipper resonance spectra, one file per machine and axis (17 X, 18 Y, 15 repositories); X files are the toolhead axis, Y files a gantry or a bed (research_notes/fitting/fit_damping.py). Range: 10th to 90th percentile over machines",
+   "held_out": "machines split in two by a hash of the repository name: X 0.104 (n=5) against 0.059 (n=12), Y 0.09 (n=6) against 0.053 (n=12): the halves differ by more than the X/Y difference, so the range, not the second digit, is the result. Independent check: 39 owner-entered values, 0.03 to 0.09, medians 0.05 to 0.07 (calibration study): inside the range. Estimator check on synthetic spectra: unbiased to 0.001",
+   "used_by": "machine.machine_model sets each axis's belt/frame damper so that its ringing mode has this ratio"
+  },
+  "stepper_damping_ratio": {
+   "status": "not fitted (kept)",
+   "old": 0.25,
+   "value": 0.25,
+   "low": 0.125,
+   "high": 0.375,
+   "unit": "of the motor's magnetic spring",
+   "source": "assumed; no data separates it from the belt damper (only their combined effect on the ringing mode is fitted)",
+   "held_out": "no",
+   "used_by": "PrinterMap.damping_ratio"
+  },
+  "used_accel_over_shaper_rule": {
+   "status": "calibrated (three machines)",
+   "old": null,
+   "value": 0.5,
+   "low": 0.4,
+   "high": 0.65,
+   "unit": "fraction of Klipper's MZV smoothing rule at the lower resonance",
+   "source": "max_accel owners run with input shaping, over the rule at their own measured resonance: 0.44 (Ender 3), 0.51 (Voron 0), 0.62 (Trident 250)",
+   "held_out": "no (three machines; the range is their spread)",
+   "used_by": "scorecard: accel_owners_would_run_mm_s2"
+  },
+  "extruder_lag_s": {
+   "status": "fitted",
+   "old": 0.03,
+   "unit": "s (first-order melt-flow lag = pressure-advance constant)",
+   "value": {
+    "direct": {
+     "0.25": 0.11,
+     "0.3": 0.072,
+     "0.4": 0.0315,
+     "0.5": 0.022,
+     "0.6": 0.018,
+     "0.8": 0.012
+    },
+    "bowden": {
+     "0.25": 0.73,
+     "0.4": 0.24,
+     "0.6": 0.15,
+     "0.8": 0.09
+    }
+   },
+   "low": {
+    "direct": {
+     "0.25": 0.07,
+     "0.3": 0.045,
+     "0.4": 0.02,
+     "0.5": 0.015,
+     "0.6": 0.012,
+     "0.8": 0.009
+    },
+    "bowden": {
+     "0.25": 0.55,
+     "0.4": 0.18,
+     "0.6": 0.1,
+     "0.8": 0.07
+    }
+   },
+   "high": {
+    "direct": {
+     "0.25": 0.2,
+     "0.3": 0.1,
+     "0.4": 0.058,
+     "0.5": 0.05,
+     "0.6": 0.038,
+     "0.8": 0.025
+    },
+    "bowden": {
+     "0.25": 1.02,
+     "0.4": 0.4,
+     "0.6": 0.22,
+     "0.8": 0.15
+    }
+   },
+   "bowden_reference_length_mm": 430.0,
+   "bowden_reference_note": "the Bowden values are the Prusa MINI's; its tube length (about 0.43 m) is recalled, not verified. A design's tube length scales the part above the direct-drive value linearly: an assumption, not fitted",
+   "source": "PrusaSlicer factory profiles, every distinct M572 expression for rigid filaments: 36 direct-drive (Nextruder, MK3.5), 17 Bowden (MINI); median per nozzle size, range = smallest to largest factory value (the spread is between filaments). research_notes/fitting/fit_extrusion.py",
+   "held_out": "nozzle sizes left out of a power law fitted on 0.4 and 0.6 mm: direct 0.5 mm +5 %, 0.8 mm +1 %, Bowden 0.8 mm +19 %; below 0.4 mm the law fails (-45 % at 0.25 mm), so the table is used, not the law. Leaving one filament's value out at 0.4 mm: median error 31 % direct, 25 % Bowden. One maker's machines; a K equals the lag only for a linear compliance",
+   "used_by": "printer_map_for -> PrinterMap.extruder_lag_s (design.printer['extruder'], nozzle, Bowden tube length); tuning.pressure_advance"
+  },
+  "melt_rate_cap_mm3_s": {
+   "status": "taken from published tables (not a fit)",
+   "old": null,
+   "unit": "mm^3/s, 0.4 mm brass nozzle, PLA",
+   "value": {
+    "v6": 11.0,
+    "revo": 12.0
+   },
+   "low": {
+    "v6": 10.0,
+    "revo": 11.0
+   },
+   "high": {
+    "v6": 15.0,
+    "revo": 13.0
+   },
+   "nozzle_exponent": 1.0,
+   "source": "V6 class: E3D 600 mm^3/min = 10 (vendor file e3d_v6.json), Ellis' table 11, PrusaSlicer PLA profiles for the MK3 family and MINI 15 at most. Revo: E3D 13 (PLA 220 degC, e3d_revo.json), Ellis 11. Bambu's PLA profiles: median 12 on their own hotend. research_notes/fitting/extrusion_fit.json",
+   "held_out": "no fit: three independent sources per class agree to within the range",
+   "used_by": "run_print: the slicer is given the cap (max volumetric speed) and the report says which requested speeds it limits"
+  },
+  "hotend_thermal": {
+   "status": "structure fitted (one Ender 3); totals of the v6 and revo classes taken from Prusa's models, NOT fitted; sensor lag set by the relay check",
+   "old": "block 12 J/K + cartridge 1.5 J/K behind 2 W/K, free convection on 1.6e-3 m^2 with emissivity 0.3, 0.02 W/K up the heat break, sensor lag 4.5 s (all assumed); Revo: 6.9 J/K estimated from part masses, lag 2 s assumed",
+   "unit": "J/K, W/K, W/K^4, s",
+   "value": {
+    "ender3_fitted": {
+     "cartridge_capacity_j_k": 1.5001,
+     "block_capacity_j_k": 2.0,
+     "nozzle_capacity_j_k": 3.6527,
+     "cartridge_block_w_k": 1.4997,
+     "block_nozzle_w_k": 0.42898,
+     "block_loss_w_k": 0.028246,
+     "nozzle_loss_w_k": 0.02403,
+     "fan_loss_w_k": 0.023601,
+     "fan_exponent": 0.24151,
+     "fan_threshold": 0.10004,
+     "radiation_w_k4": 1.1587e-10,
+     "sensor_tau_s": 0.64142,
+     "total_capacity_j_k": 7.15,
+     "loss_still_w_k_at_245c": 0.0848,
+     "loss_full_fan_w_k_at_245c": 0.1084,
+     "heater_w_assumed_in_fit": 40.0
+    },
+    "v6": {
+     "cartridge_capacity_j_k": 2.54,
+     "block_capacity_j_k": 3.38,
+     "nozzle_capacity_j_k": 6.18,
+     "cartridge_block_w_k": 2.54,
+     "block_nozzle_w_k": 0.726,
+     "block_loss_w_k": 0.0162,
+     "nozzle_loss_w_k": 0.0138,
+     "fan_loss_w_k": 0.0502,
+     "fan_exponent": 0.24151,
+     "fan_threshold": 0.10004,
+     "radiation_w_k4": 6.67e-11,
+     "sensor_tau_s": 8.0,
+     "total_capacity_j_k": 12.1,
+     "loss_still_w_k_at_245c": 0.0488,
+     "loss_full_fan_w_k_at_245c": 0.099
+    },
+    "revo": {
+     "cartridge_capacity_j_k": 1.84,
+     "block_capacity_j_k": 2.45,
+     "nozzle_capacity_j_k": 4.48,
+     "cartridge_block_w_k": 1.84,
+     "block_nozzle_w_k": 0.526,
+     "block_loss_w_k": 0.0132,
+     "nozzle_loss_w_k": 0.0112,
+     "fan_loss_w_k": 0.0254,
+     "fan_exponent": 0.24151,
+     "fan_threshold": 0.10004,
+     "radiation_w_k4": 5.4e-11,
+     "sensor_tau_s": 0.27,
+     "total_capacity_j_k": 8.77,
+     "loss_still_w_k_at_245c": 0.0395,
+     "loss_full_fan_w_k_at_245c": 0.0649
+    }
+   },
+   "low": {
+    "v6": {
+     "total_capacity_j_k": 6.5,
+     "loss_still_w_k": 0.049,
+     "loss_full_fan_w_k": 0.063,
+     "sensor_tau_s": 2.1
+    },
+    "revo": {
+     "total_capacity_j_k": 6.9,
+     "loss_still_w_k": 0.033,
+     "sensor_tau_s": 0.27
+    }
+   },
+   "high": {
+    "v6": {
+     "total_capacity_j_k": 16.8,
+     "loss_still_w_k": 0.14,
+     "loss_full_fan_w_k": 0.174,
+     "sensor_tau_s": 10.0
+    },
+    "revo": {
+     "total_capacity_j_k": 9.1,
+     "loss_still_w_k": 0.085,
+     "sensor_tau_s": 2.0
+    }
+   },
+   "source": "ender3_fitted: three-node model fitted to eight logged runs of one Ender 3 with a V6-style hotend and 40 W cartridge (batu63562/ender3-hotend-twin, GPL-3.0): 7.15 J/K, 0.0848 W/K still air and 0.1084 W/K full fan at 245 degC, calibration RMSE 3.79 degC against 9.54 for one mass. The logs do not pin down the fast path from heater to sensor (bounds wide open, the cartridge shrinks to 0.2 J/K with no worse an RMSE, 3.66), so cartridge and contact are held to what the parts are and end on those bounds. That hotend is light and lossy (it cools 2.6 K/s at 245 degC): its capacity is at the bottom of Marlin's MPC range (6.5 to 16.8 J/K) and about half Prusa's E3D V6. v6 (the default for a cartridge in a block): the fitted STRUCTURE scaled to Prusa's E3D V6 totals (12.1 J/K, 20.5 to 10.1 K/W). revo: the same structure scaled to Prusa's Revo totals (8.77 J/K, 25.3 to 15.4 K/W); heater power from E3D's PTC figures. Ranges: Marlin's eight MPC sets and Prusa's models. research_notes/fitting/fit_hotend.py",
+   "held_out": "ender3_fitted: the print run was held out: open loop over 1182 s the model is -5.4 degC off on average (RMSE 6.12), i.e. it needs +3.0 % more power than was logged; without the (unfitted, physical) heat taken by the filament the error is +20 degC. Second fit with the heat / fan / 150 degC hold / cool run held out as well: RMSE 2.81 degC on it (calibration 3.95). v6 and revo: no log of either hotend; checked only by the relay test (heater_relay_test)",
+   "used_by": "mechloop.electrical.build_plants (heaters of model 'block'): heat-up, PID autotune, fault simulation, melt-capacity margin"
+  },
+  "heater_relay_test": {
+   "status": "checked; hotend sensor lag ADJUSTED to it",
+   "old": {
+    "hotend_sensor_tau_s": 4.5,
+    "bed_sensor_tau_s": 10.0
+   },
+   "value": {
+    "hotend_v6_sensor_tau_s": 8.0,
+    "hotend_revo_sensor_tau_s": 0.27,
+    "bed_sensor_tau_s": 10.0,
+    "hotend_v6_40w_210c": {
+     "Tu_s": 24.9,
+     "Ku_per_K": 0.164
+    },
+    "beds_60c": {
+     "printer_v4": {
+      "Tu_s": 48.6,
+      "Ku_per_K": 0.415
+     },
+     "printer_v5": {
+      "Tu_s": 48.3,
+      "Ku_per_K": 0.415
+     }
+    }
+   },
+   "low": {
+    "hotend_Tu_s": 24.148,
+    "bed_Tu_s": 22.831,
+    "hotend_Ku_per_K": 0.102,
+    "bed_Ku_per_K": 0.351
+   },
+   "high": {
+    "hotend_Tu_s": 55.244,
+    "bed_Tu_s": 160.673,
+    "hotend_Ku_per_K": 0.199,
+    "bed_Ku_per_K": 1.075
+   },
+   "unit": "s, duty per K (ultimate period and gain of Klipper's relay autotune)",
+   "source": "81 distinct extruder and 70 distinct bed PID sets in Klipper's example configurations (hotend Tu median 36.896 s, Ku 0.158; bed Tu median 89.42 s, Ku 0.465); the twin's figures from Klipper's own ControlAutoTune on the model. research_notes/fitting/relay_check.py",
+   "held_out": "this IS the outside check of the heater models' fast dynamics. Hotend, relay test at 210 degC: real machines cycle in 24 to 55 s (median 37), Ku 0.102 to 0.199 (median 0.158). The old model: 25.8 s (at the low edge). The fitted Ender hotend: 5.4 s (it really is that light: the log shows it cooling 2.6 K/s at 245 degC), outside. The v6 class (fitted structure, Prusa's E3D V6 totals) with Prusa's own lag of 2.1 s: 12.6 s, outside. Its sensor lag was therefore raised to 8 s (inside the 2.9 to 10 s that Marlin's MPC sets imply): 24.9 s and Ku 0.164 with a 40 W heater, inside the band but below the median; with the 30 W cartridge of printer_v4 / v5, 22.8 s and Ku 0.208, just under the 10th percentile. The model still cycles faster than a typical real hotend. Beds of printer_v4 / v5: printer_v4 Tu 48.6 s, Ku 0.415, printer_v5 Tu 48.3 s, Ku 0.415 against 22.831 to 160.673 s and 0.351 to 1.075: inside, nothing changed. The Revo class cycles faster than any cartridge hotend in the public sets; no Revo-only set was found to check it against.",
+   "used_by": "hotend_thermal.v6.sensor_tau_s"
+  },
+  "friction_n": {
+   "status": "NOT FITTED",
+   "old": {
+    "x": 2.0,
+    "y": 3.0,
+    "z": 5.0
+   },
+   "value": {
+    "x": 2.0,
+    "y": 3.0,
+    "z": 5.0
+   },
+   "low": null,
+   "high": null,
+   "unit": "N per axis",
+   "source": "no measured data for miniature guides under printer loads",
+   "held_out": "no",
+   "used_by": ""
+  },
+  "step_loss_boundary": {
+   "status": "NOT FITTED",
+   "old": null,
+   "value": null,
+   "low": null,
+   "high": null,
+   "unit": "mm/s^2",
+   "source": "comes out of the motor torque curve and the stepper model; no controlled measurement of the acceleration at which a printer first loses steps was found. On three reference machines it sat 6 to 8 times above what owners run",
+   "held_out": "no",
+   "used_by": ""
+  },
+  "guide_block_radial_n_per_um": {
+   "status": "NOT FITTED",
+   "old": 40.0,
+   "value": 40.0,
+   "low": null,
+   "high": null,
+   "unit": "N/um",
+   "source": "ratings.BLOCK_K: catalogue editions disagree (44 / 67 N/um for MGN12C) and none was read",
+   "held_out": "no",
+   "used_by": ""
+  },
+  "frame_and_joint_stiffness": {
+   "status": "NOT FITTED",
+   "old": null,
+   "value": null,
+   "low": null,
+   "high": null,
+   "unit": "N/mm",
+   "source": "from the design's own FEA (bonded / screw-only bracket); no modal test of a printer frame",
+   "held_out": "no",
+   "used_by": ""
+  },
+  "bed_thermal": {
+   "status": "NOT FITTED",
+   "old": null,
+   "value": null,
+   "low": null,
+   "high": null,
+   "unit": "",
+   "source": "plate capacity from the CAD and the bond conductance are assumed; only the relay-test period is checked against public configurations (heater_relay_test)",
+   "held_out": "no",
+   "used_by": ""
+  },
+  "warp_cooling_adhesion": {
+   "status": "NOT FITTED",
+   "old": null,
+   "value": null,
+   "low": null,
+   "high": null,
+   "unit": "",
+   "source": "not in the twin",
+   "held_out": "no",
+   "used_by": ""
+  }
+ }
+}

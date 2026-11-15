@@ -285,3 +285,175 @@ def test_klippers_own_heater_classes_agree_with_the_port_and_are_the_ones_used()
         v.check(0.0, 200.0, 200.0)
         trips.append(next(t for t in range(1, 200) if v.check(float(t), 150.0, 200.0)))
     assert trips[0] == trips[1] and 2 <= trips[0] <= 5      # error grows 45 K per second against max_error 120
+
+
+# ------------------------------------------------------------------ hooks added 2026-11-15: Roto gearing, PTC heater, 5 V fan
+def _revo_rig():
+    """The rig with the E3D Revo hot side (PTC HeaterCore with its own thermistor) in place of the plain cartridge."""
+    from mechloop.parts import hotend_revo
+
+    d = rig()
+    el = d.electrical
+    d.components = [c for c in d.components if c.name not in ("hot_heater", "hot_sensor")]
+    for nm in ("hot_heater", "hot_sensor"):
+        del el.devices[nm]
+    el.wires = [w for w in el.wires if w.name not in ("hotend", "hot ntc")]
+    st = hotend_revo()
+    place(d, "revo", st, Location((0, 150, 80)))
+    d.join("revo", "hotend", "bond")
+    device_from(el, d, "revo")
+    embedded_device(el, d, "revo", "revo_ntc", "thermistor", "ntc", "thermistor", **st.ratings["thermistor"])
+    el.wire("hotend", "board.E0", "revo.in", 20, insulation="silicone")
+    el.wire("hot ntc", "board.TH0", "revo_ntc.out", 26)
+    el.firmware["heaters"]["extruder"].update(heater="revo", sensor="revo_ntc")
+    return d, st
+
+
+def test_ptc_heater_makes_less_power_hot_and_limits_itself_when_stuck_on():
+    """E3D publish 14.4 ohm at 23 degC and 0.002078 /K for the 24 V 40 W HeaterCore: 40 W cold, 27 W at 250 degC."""
+    import dataclasses
+
+    d, st = _revo_rig()
+    plant = E.thermal_plants(d)["extruder"]
+    assert plant.ptc and abs(plant.ptc["r_ohm_23c"] - 14.4) < 1e-6
+    p_cold, p_250 = plant.power_at(23.0), plant.power_at(250.0)
+    assert 38.0 < p_cold <= 40.0                                   # a little is lost in the leads
+    assert abs(p_250 / p_cold - 1.0 / (1 + 0.002078 * 227.0)) < 0.01 and abs(p_250 - st.ratings["heater_power_w_at_250c"]) < 1.0
+    # the same block with a constant-power heater (the old model) runs away further and heats faster
+    const = dataclasses.replace(plant, ptc=None)
+    T_ptc = plant.steady_full_duty(300.0)[plant.net.idx["block"]]
+    T_const = const.steady_full_duty(300.0)[const.net.idx["block"]]
+    assert T_ptc < T_const - 50.0
+    # energy balance at the self-limited temperature: loss there = what the element makes there
+    Tn = plant.steady_full_duty(300.0)
+    assert abs(float(plant.net.loss(Tn).sum()) - plant.power_at(Tn[plant.net.idx[plant.heater_node]])) < 0.3
+    # stuck-on fault (shorted MOSFET, nothing to cut it off): the simulation follows the PTC law and ends at that temperature
+    stuck = {"control": "watermark", "verify_heater": None, "max_temp": 5000.0}
+    r = E.simulate_heater(dataclasses.replace(plant, cutoffs=[], thermistor=None), stuck, 250.0, 3000.0,
+                          fault={"kind": "mosfet_short", "at": 0.0})
+    assert r["duty"][-1] == 1.0                                    # it limits; it does not switch off
+    assert abs(r["T"][-1] - T_ptc) < 0.03 * T_ptc
+    rc = E.simulate_heater(dataclasses.replace(const, cutoffs=[], thermistor=None), stuck, 250.0, 3000.0,
+                           fault={"kind": "mosfet_short", "at": 0.0})
+    assert rc["T"][-1] > r["T"][-1] + 50.0
+    # and the verifier's report carries the hot power, used for the melt-capacity margin
+    rep = VE.heater_report(d.electrical, d, E.electrical_loads(d), quick=True)["extruder"]
+    assert rep["power_w_at_target"][250.0] < rep["power_w"] - 10.0
+
+
+def test_extruder_gearing_comes_from_the_part():
+    """E3D Roto: 26.8937 mm per turn of the hobb, 11.262:1, 0.9 degree motor; E3D quote 2682 steps/mm at 16x."""
+    from mechloop.parts import extruder_roto
+
+    ro = extruder_roto()
+    el = Electrical()
+    el.add(Device("ex", "stepper", None, {}, params=dict(ro.ratings["electrical"]["params"])))
+    g = E.extruder_gearing(el, {"motors": ["ex"]})
+    assert g["gear_ratio"] == "11.262:1" and g["full_steps_per_rotation"] == 400 and g["rotation_distance"] == 26.8937
+    assert abs(g["steps_per_mm"] / ro.ratings["steps_per_mm_16x"] - 1.0) < 1e-3      # 2680.1 against the quoted 2682
+    assert E.extruder_gearing_lines(el, {"motors": ["ex"]}) == ["rotation_distance: 26.8937", "gear_ratio: 11.262:1",
+                                                                "full_steps_per_rotation: 400"]
+    # a design that states the per-motor-rev fallback is taken at its word: no gear ratio is attached to it
+    fb = ro.ratings["rotation_distance_200_steps_no_gear_ratio"]
+    g2 = E.extruder_gearing(el, {"motors": ["ex"], "rotation_distance": fb})
+    assert g2["gear_ratio"] is None and g2["full_steps_per_rotation"] is None
+    assert abs(g2["steps_per_mm"] / ro.ratings["steps_per_mm_16x"] - 1.0) < 2e-3
+    # a plain extruder (no gearing in the part) is written as before
+    el.add(Device("plain", "stepper", None, {}))
+    assert E.extruder_gearing_lines(el, {"motors": ["plain"], "rotation_distance": 7.71}) == ["rotation_distance: 7.71"]
+    # the twin decodes Klipper's steps with the same gearing
+    from mechloop.twin import firmware as fw
+
+    c = fw._cfg("[extruder]\nmicrosteps: 16\n" + "\n".join(E.extruder_gearing_lines(el, {"motors": ["ex"]})))
+    assert abs(1.0 / fw._mm_per_step(c, "extruder") - g["steps_per_mm"]) < 1e-6
+
+
+def _fan_rig(how: str):
+    """The rig plus a 5 V 0.14 A fan (the Roto's), wired one of three ways."""
+    d = rig()
+    el = d.electrical
+    d.add("fan5", Pos(0, 150, 90) * Box(35, 7, 35))
+    d.join("fan5", "hotend", "bond")
+    prod = {"product": "5 V fan 35 x 35 x 7", "vendor": "E3D-Online", "part_number": "E-FAN-35-35-7-5V-2WIRE-INC-CABLE", "form": "component",
+            "off_the_shelf": True, "custom_pcb": False, "builder_work": "plug in"}
+    el.add(Device("fan5", "fan", "fan5", {"in": Port("in", "fan", "JST-XH", 3.0, at=(0.0, 150.0, 90.0))},
+                  {"current_a": 0.14, "volts": 5.0}, product=prod))
+    if how == "direct":
+        el.wire("fan", "board.FAN1", "fan5.in", 26)
+    elif how == "rail":
+        E.add_board_5v_port(el, "board")
+        el.wire("fan", "board.5V", "fan5.in", 26)
+    else:
+        d.add("reg", Pos(0, 120, 90) * Box(20, 12, 4))
+        d.join("reg", "hotend", "bond")
+        E.add_regulator(el, d, "reg", "reg", out_v=5.0, max_a=0.15 if how == "weak_regulator" else 1.0, efficiency=0.85)
+        el.wire("fan feed", "board.FAN1", "reg.in", 26)
+        el.wire("fan", "reg.out", "fan5.in", 26)
+    return d
+
+
+def test_a_5v_fan_on_a_24v_machine_is_checked_not_assumed():
+    r = VE.verify_electrical(_fan_rig("direct"))
+    assert "fan_voltage_mismatch" in {f.code for f in r.findings if f.severity == "error"}
+    for how in ("rail", "regulator"):
+        r = VE.verify_electrical(_fan_rig(how))
+        assert not [f for f in r.findings if f.severity == "error"], (how, [f.message for f in r.findings if f.severity == "error"])
+        assert r.metrics["power_budget"]["fans"]["fan5"]["supplied_v"] == 5.0
+    # the board's 5 V rail carries the Pi and the fan: 0.60 + 0.14 A against the 1.1 A fuse F2 at the 80 % limit
+    b5 = VE.verify_electrical(_fan_rig("rail")).metrics["power_budget"]["board_5v"]["board"]
+    assert abs(b5["host_a"] - 0.6) < 1e-6 and abs(b5["fans_a"] - 0.14) < 1e-6 and b5["limit_a"] == 1.1
+    d = _fan_rig("rail")
+    d.electrical.devices["fan5"].ratings["current_a"] = 0.40          # a bigger fan no longer fits on the rail
+    assert "board_5v_overloaded" in {f.code for f in VE.verify_electrical(d).findings if f.severity == "error"}
+    assert "regulator_overloaded" in {f.code for f in VE.verify_electrical(_fan_rig("weak_regulator")).findings if f.severity == "error"}
+    # through a switching regulator the 24 V side carries less than the fan's own current
+    c = E.electrical_loads(_fan_rig("regulator"))
+    assert abs(c["wire_current"]["fan"] - 0.14) < 1e-9 and abs(c["wire_current"]["fan feed"] - 0.14 * 5 / (0.85 * 24)) < 1e-6
+
+
+# ------------------------------------------------------------------ fitted hotend model (2026-11-15)
+def test_fitted_hotend_model_held_out_run_published_constants_and_relay_period():
+    fitdir = Path(E.__file__).parent.parent / "research_notes" / "fitting"
+    fit = json.loads((fitdir / "hotend_fit.json").read_text())
+    relay = json.loads((fitdir / "relay_check.json").read_text())
+    from mechloop.twin import fitted as F
+
+    # the fit: three nodes beat one mass on the calibration runs, and the run that was held out is predicted
+    assert fit["calibration_rmse_c"] < 0.5 * fit["one_node_same_runs"]["rmse_c"]
+    ho = fit["held_out_runs"][0]
+    assert "baski" in ho["run"] and ho["rmse_c"] < 10.0 and abs(fit["held_out_hold_duty"][0]["error_pct"]) < 6.0
+    assert ho["rmse_c"] < 0.5 * fit["held_out_without_filament_term"][0]["rmse_c"]       # the filament's heat is physics, not a fitted term
+    assert ho["rmse_c"] < 0.2 * fit["one_node_same_runs"]["held_out_rmse_c"][0]
+    # against the published constants: capacity and loss of the fitted machine lie inside Marlin's MPC sets
+    e = fit["derived"]
+    assert 6.5 <= e["total_capacity_j_k"] <= 16.8 and 0.052 <= e["loss_still_air_w_k_at_245c"] <= 0.14
+    assert e["loss_full_fan_w_k_at_245c"] > e["loss_still_air_w_k_at_245c"]
+    # the plant the verifier builds for a cartridge in a block is the v6 class: Prusa's totals on the fitted structure
+    d = rig()
+    plant = E.thermal_plants(d)["extruder"]
+    v6 = F.hotend_thermal("v6")
+    assert [n.name for n in plant.net.nodes] == ["cartridge", "block", "nozzle"] and plant.sensor_node == plant.report_node == "block"
+    assert abs(plant.net.C.sum() - 12.1) < 0.05 and plant.sensor_tau_s == v6["sensor_tau_s"] == relay["chosen_v6_sensor_tau_s"]
+    still = float(plant.net.loss(np.full(3, 245.0)).sum()) / 220.0
+    plant.net.fan = 1.0
+    plant.net.__dict__.pop("_hc", None)
+    fan = float(plant.net.loss(np.full(3, 245.0)).sum()) / 220.0
+    plant.net.fan = 0.0
+    assert abs(still - 1 / 20.5) < 0.003 and abs(fan - 1 / 10.1) < 0.004                 # Prusa: 20.5 K/W fan off, 10.1 K/W full fan
+    # relay test (Klipper's ControlAutoTune on the model) against the public PID sets
+    pub = relay["public"]["hotend"]["Tu_s"]
+    kp, ki, kd = E.autotune_pid(dataclass_replace(plant, power_w=40.0), {"control": "pid", "max_power": 1.0, "max_temp": 400}, 210.0)
+    assert pub["p10"] <= 2 * kp / ki <= pub["p90"]
+    assert not relay["hotend"]["fitted Ender 3 hotend, 40 W"]["Tu_inside_10_90"]          # recorded: that hotend is too light to be the default
+    for b in relay["bed"].values():
+        assert b["Tu_inside_10_90"] and b["Ku_inside_10_90"]
+    # the old assumed model can still be asked for
+    d.electrical.devices["hot_heater"].params["thermal_model"] = "catalog"
+    old = E.thermal_plants(d)["extruder"]
+    assert [n.name for n in old.net.nodes] == ["cartridge", "block"] and old.sensor_tau_s == 4.5
+
+
+def dataclass_replace(obj, **kw):
+    import dataclasses
+
+    return dataclasses.replace(obj, **kw)

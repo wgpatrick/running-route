@@ -1,0 +1,12 @@
+{
+ "_note": "POST HOC, added 2026-11-15 AFTER the blind comparison was read. NOT part of the frozen inputs (calibration_machines.json is unchanged, its hash is still pinned by a test). These are the extra design facts the toolhead-compliance term needs for the three reference machines. A comparison that uses this file is no longer blind: the term's one parameter was fitted to the same two rail machines.",
+ "_sources": {
+  "nozzle_to_x_rail_mm": "research_notes/trade_study/measurements.json (makers' CAD assemblies; 'below' and 'horizontal' distance of the nozzle tip from the X rail)",
+  "block_L1": "MGN12H: mechloop/parts/vendor/hiwin_mgn12.json (32.4 mm). MGN7H: 21.8 mm, Hiwin MG catalogue, recalled, unverified"
+ },
+ "machines": {
+  "voron0": {"toolhead_axis": "x", "guide": "linear_rail", "blocks": 1, "block": "MGN7H", "ball_track_mm": 21.8, "nozzle_below_rail_mm": 50.5, "nozzle_horizontal_mm": 23.9},
+  "trident250": {"toolhead_axis": "x", "guide": "linear_rail", "blocks": 1, "block": "MGN12H", "ball_track_mm": 32.4, "nozzle_below_rail_mm": 51.0, "nozzle_horizontal_mm": 37.2},
+  "ender3": {"toolhead_axis": "x", "guide": "v_wheels", "blocks": null, "block": null, "ball_track_mm": null, "nozzle_below_rail_mm": 34.2, "nozzle_horizontal_mm": 26.8}
+ }
+}

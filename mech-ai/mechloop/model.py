@@ -263,7 +263,9 @@ class Design:
     tool_point: Optional[tuple] = None  # (body, (x, y, z)) traced in the motion render
     adjustments: list[Adjustment] = field(default_factory=list)
     cables: list[Cable] = field(default_factory=list)
-    # homing: [{"joint": name, "switch": part, "at": "min"|"max"}] or {"joint": name, "sensorless": True}
+    # homing: [{"joint": name, "switch": part, "at": "min"|"max"}] or {"joint": name, "sensorless": True};
+    # a bed probe that homes Z: {"joint": "z", "probe": <probe part>, "at": "min"|"max"} (the part needs a
+    # 'sensing_face' interface and an electrical template of kind "probe"; checked by the subsystems verifier)
     endstops: list = field(default_factory=list)
     # Groups built on the bench and installed as one unit: {name: [part names]}
     subassemblies: dict = field(default_factory=dict)

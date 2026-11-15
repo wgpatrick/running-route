@@ -4,9 +4,11 @@ simulated nozzle actually went, and compare the result with the intended part.
 
 Modelled: G-code from a real slicer, look-ahead planning with the machine's own
 speed/acceleration limits, axis masses from the CAD, motor torque curves, step
-loss, extruder lag, bead width from extruded volume, machine collisions along
-the print.
-Not modelled: heat (melting, cooling, warping, bed adhesion), ooze and stringing, vibration of the printed part.
+loss, belt stretch, frame flex, the carriage turning on its guide blocks, extruder lag
+by drive type, a melt-rate cap per hotend class, bead width from extruded volume,
+machine collisions along the print.
+Not modelled: heat in the part (cooling, warping, bed adhesion), ooze and stringing, vibration of the printed part.
+Which numbers are fitted to published data and which are still assumed: fitted_parameters.json (fitted.py).
 With firmware="klipper" the motion, input shaping, pressure advance and bed-mesh compensation are whatever real
 Klipper puts in its step stream (firmware.py, tuning.py); the built-in planner has none of the three.
 """
@@ -23,6 +25,7 @@ import numpy as np
 from ..geom import forward_kinematics
 from ..model import Design
 from ..report import VerifierResult
+from . import fitted as _fit
 
 
 @dataclass
@@ -37,8 +40,11 @@ class PrinterMap:
     nozzle: float = 0.4
     filament_diameter: float = 1.75
     friction_n: dict = field(default_factory=lambda: {"x": 2.0, "y": 3.0, "z": 5.0})  # assumed rail/screw friction
-    extruder_lag_s: float = 0.03  # first-order melt-flow lag (assumed)
-    damping_ratio: float = 0.25  # of the stepper's electromagnetic spring (assumed)
+    # first-order melt-flow lag: the factory pressure-advance constant of direct-drive machines with a 0.4 mm nozzle.
+    # printer_map_for() picks the value for the design's drive type (Bowden: about eight times longer), nozzle and tube length
+    extruder_lag_s: float = field(default_factory=lambda: _fit.extruder_lag("direct", 0.4))
+    extruder_lag_basis: str = "direct drive, 0.4 mm nozzle (default; no design given)"
+    damping_ratio: float = field(default_factory=lambda: float(_fit.value("stepper_damping_ratio")))  # of the stepper's magnetic spring (assumed)
     filament_density: float = 1.24  # g/cm^3 (PLA)
     compliant: bool = True  # belts stretch and the frame flexes; False = perfectly rigid machine
     # belt tensile stiffness EA (N per unit strain) per 6 mm of width, glass-fibre GT2. 15 kN is a hobby
@@ -52,7 +58,17 @@ class PrinterMap:
     travel_speed: float = 150.0
     struct_stiffness: dict = field(default_factory=dict)  # nozzle stiffness from FEA, N/mm, e.g. {"x": 3000}
     backlash_mm: dict = field(default_factory=dict)  # lost motion per axis (slack belt, loose pulley)
-    spring_damping_ratio: float = 0.05  # of belt/frame vibration (assumed)
+    # belt/frame damper. None (default): each axis's damper is set so that the mode its load rings in has the damping
+    # ratio fitted to resonance spectra (ringing_damping_ratio). A number forces that damper ratio on every axis.
+    spring_damping_ratio: float | None = None
+    ringing_damping_ratio: dict = field(default_factory=lambda: dict(_fit.value("ringing_damping_ratio")))
+    # the carriage turning on its guide blocks between belt clamp and nozzle (machine.toolhead_compliance)
+    toolhead_compliance: bool = True
+    toolhead_tilt_n_per_um: float = field(default_factory=lambda: float(_fit.value("toolhead_tilt_effective_n_per_um")))
+    toolhead_stiffness: dict = field(default_factory=dict)  # override, N/mm at the nozzle, e.g. {"x": 170.0}
+    # melt-rate cap of the hotend, mm^3/s (None: no cap). printer_map_for() sets it from the design's hotend class
+    max_volumetric_flow: float | None = None
+    max_volumetric_flow_basis: dict = field(default_factory=dict)
     raster_px_per_mm: int = 20
     # the bed surface as built, relative to the flat plane the firmware assumes (all assumed inputs, mm):
     # {"tilt_x_mm": rise across the bed's width, "tilt_y_mm": across its depth, "bow_mm": centre above the corners,
@@ -195,6 +211,9 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
               "machine": {"accel": jl[0].max_accel * accel_scale, "speed": jl[0].max_speed * speed_scale,
                           "z_speed": jl[2].max_speed, "z_accel": jl[2].max_accel},
               **(slicer_args or {})}
+        if pm.max_volumetric_flow:      # the slicer holds every extruding move to the hotend's melt rate, as a filament profile does
+            sa["extra"] = list(sa.get("extra") or []) + ["--max-volumetric-speed", f"{pm.max_volumetric_flow:g}",
+                                                         "--filament-max-volumetric-speed", f"{pm.max_volumetric_flow:g}"]
         slice_part(stl, gpath, layer_height=pm.layer_height, nozzle=pm.nozzle,
                    filament_diameter=pm.filament_diameter, **sa)
     except RuntimeError as e:
@@ -208,6 +227,18 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
         moves = gcode_edit(moves)
     rep["gcode"] = {"moves": len(moves), "file": str(gpath),
                     "codes_ignored": {k: v for k, v in sorted(ignored.items())}}
+    rep["flow"] = flow_report(pm, moves, sa)
+    if rep["flow"].get("limited"):
+        r.add("warning", "flow_limited",
+              f"The hotend melts about {pm.max_volumetric_flow:g} mm^3/s; the requested "
+              + ", ".join(f"{k} speed {v['requested_mm_s']:g} mm/s needs {v['requested_flow_mm3_s']:g}" for k, v in rep["flow"]["limited"].items())
+              + f". Those moves were slowed to the cap (about {rep['flow']['speed_at_cap_mm_s']:g} mm/s at this bead).",
+              cap_mm3_s=pm.max_volumetric_flow, limited=rep["flow"]["limited"],
+              hint="A higher-flow hotend, a larger nozzle or thinner layers raise the cap; otherwise the speed is not real.")
+    if rep["flow"].get("over_cap_moves"):
+        r.add("error", "flow_cap_not_respected",
+              f"{rep['flow']['over_cap_moves']} extruding moves ask for up to {rep['flow']['peak_flow_in_gcode_mm3_s']:g} mm^3/s, above the "
+              f"hotend's {pm.max_volumetric_flow:g} mm^3/s: the G-code was not held to the melt rate.")
     if not moves:
         r.add("error", "empty_gcode", "The slicer produced no moves.")
         return finish()
@@ -303,7 +334,7 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
     Qa, worst, sinfo = simulate(Qc, Vc, np.array(mass), fmax, np.array(tpr), np.array(bias), np.array(fric), dt,
                                 damping_ratio=pm.damping_ratio, motor_mass=np.array(motor_mass),
                                 series_stiffness=series, backlash=back,
-                                spring_damping_ratio=pm.spring_damping_ratio)
+                                spring_damping_ratio=mm["spring_damping"])
     Qm = sinfo.pop("motor_positions")
     if trajectory:
         every = max(1, int(round(0.02 / dt)))
@@ -318,6 +349,7 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
     rep["dynamics"] = {"axis_mass_kg": [round(float(x), 3) for x in mass],
                        "gravity_bias_n": [round(float(x), 2) for x in bias],
                        "friction_n_assumed": fric, "belts_per_axis": belts_used, **sinfo,
+                       "toolhead_compliance": mm["toolhead"], "damping": mm["damping"],
                        "worst_lag_mm": [round(float(x), 4) for x in lag.max(axis=0)],
                        "rms_lag_mm": [round(float(x), 4) for x in np.sqrt((lag ** 2).mean(axis=0))],
                        "worst_motor_error_mm": [round(float(x), 4) for x in mlag.max(axis=0)],
@@ -400,11 +432,64 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
     return finish()
 
 
+def flow_report(pm: PrinterMap, moves, slicer_args: dict) -> dict:
+    """Volumetric flow the print asks for against the hotend's melt-rate cap: what the design's speeds would need at
+    this bead, which of them the cap limits, and the largest flow actually in the G-code."""
+    import numpy as _np
+
+    a_fil = math.pi * pm.filament_diameter ** 2 / 4.0
+    width = 1.125 * pm.nozzle                      # PrusaSlicer's default extrusion width for a nozzle
+    bead = pm.layer_height * (width - pm.layer_height * (1 - math.pi / 4))      # its rounded-rectangle bead section
+    out = {"cap_mm3_s": pm.max_volumetric_flow, "bead_section_mm2": round(bead, 4), "basis": pm.max_volumetric_flow_basis or None}
+    req = {k: float(slicer_args[f"{k}_speed"]) for k in ("perimeter", "infill")}
+    out["requested_flow_mm3_s"] = {k: round(v * bead, 2) for k, v in req.items()}
+    g = _np.array([[m.x, m.y, m.z, m.e, m.feed] for m in moves])
+    d = _np.linalg.norm(_np.diff(_np.vstack([g[:1, :3], g[:, :3]]), axis=0), axis=1)
+    ext = (g[:, 3] > 0) & (d > 0.05)
+    q = _np.where(ext, g[:, 3] * a_fil / _np.maximum(d, 1e-9) * g[:, 4], 0.0)
+    out["peak_flow_in_gcode_mm3_s"] = round(float(q.max()), 2) if ext.any() else 0.0
+    if pm.max_volumetric_flow:
+        cap = float(pm.max_volumetric_flow)
+        out["speed_at_cap_mm_s"] = round(cap / bead, 1)
+        out["limited"] = {k: {"requested_mm_s": v, "requested_flow_mm3_s": round(v * bead, 2), "speed_at_cap_mm_s": round(cap / bead, 1)}
+                          for k, v in req.items() if v * bead > cap * 1.001}
+        over = ext & (q > cap * 1.10)              # the slicer rounds feeds; 10 % over means the cap was not applied
+        out["over_cap_moves"] = int(over.sum())
+    return out
+
+
+def extruder_of(design: Design) -> dict:
+    """Drive type, Bowden tube length and hotend of a printer design, as the twin uses them."""
+    spec = design.printer or {}
+    drive = "bowden" if spec.get("extruder") == "bowden" else "direct"
+    tube = None
+    if drive == "bowden":
+        tube = spec.get("bowden_length") or next((c.length for c in getattr(design, "cables", []) if "bowden" in c.name.lower()), None)
+    tool_body = design.tool_point[0] if design.tool_point else None
+    hot = next((c for c in design.components if (c.sku or "").upper().startswith("HOTEND") and (tool_body is None or c.body == tool_body)), None)
+    return {"drive": drive, "bowden_length_mm": float(tube) if tube else None, "hotend": hot.name if hot is not None else None,
+            "hotend_sku": hot.sku if hot is not None else None,
+            "hotend_vendor_max_flow": hot.ratings.get("max_flow_mm3_s") if hot is not None else None}
+
+
 def printer_map_for(design: Design, metrics: dict | None = None, **overrides) -> PrinterMap:
     """PrinterMap for a design that declares `design.printer`, with the simulations coupled:
-    belt stiffness from the belts' width, frame stiffness at the nozzle from the design's own FEA."""
+    belt stiffness from the belts' width, frame stiffness at the nozzle from the design's own FEA, extruder lag from
+    the drive type (direct or Bowden, with the tube's length) and nozzle, melt-rate cap from the hotend's class."""
     spec = design.printer or {}
     kw = {k: spec[k] for k in ("x", "y", "z", "bed", "layer_height", "nozzle", "bed_surface") if k in spec}
+    ex = extruder_of(design)
+    noz = float(spec.get("nozzle", 0.4))
+    kw["extruder_lag_s"] = _fit.extruder_lag(ex["drive"], noz, ex["bowden_length_mm"])
+    kw["extruder_lag_basis"] = (f"{ex['drive']} drive, {noz:g} mm nozzle"
+                                + (f", Bowden tube {ex['bowden_length_mm']:g} mm" if ex["bowden_length_mm"] else "")
+                                + ": factory pressure-advance values (fitted_parameters.json: extruder_lag_s), range "
+                                + f"{_fit.extruder_lag(ex['drive'], noz, ex['bowden_length_mm'], 'low'):g} to "
+                                + f"{_fit.extruder_lag(ex['drive'], noz, ex['bowden_length_mm'], 'high'):g} s")
+    cap = _fit.melt_cap(ex["hotend_sku"], noz, ex["hotend_vendor_max_flow"])
+    kw["max_volumetric_flow"] = cap["value"]
+    kw["max_volumetric_flow_basis"] = {**cap, "hotend": ex["hotend"], "hotend_sku": ex["hotend_sku"],
+                                       "class_assumed": ex["hotend_sku"] is None}
     for k_, f_ in (("perimeter", "perimeter_speed"), ("infill", "infill_speed"), ("travel", "travel_speed")):
         if k_ in (spec.get("speeds") or {}):
             kw[f_] = float(spec["speeds"][k_])

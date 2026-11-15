@@ -42,8 +42,13 @@ def input_shaper(design, pm: PrinterMap, mm: dict | None = None) -> dict:
     from . import klippy_code as K
 
     mm = mm or machine_model(design, pm)
-    out = {"basis": "", "assumed": ["stepper damping ratio %g" % pm.damping_ratio, "belt/frame damping ratio %g" % pm.spring_damping_ratio,
-                                    "belt stiffness EA %g N per 6 mm" % pm.belt_ea_n],
+    out = {"basis": "", "assumed": ["stepper damping ratio %g" % pm.damping_ratio,
+                                    ("belt/frame damping ratio %g" % pm.spring_damping_ratio) if pm.spring_damping_ratio is not None else
+                                    "ringing damping ratio %s (fitted to resonance spectra; range in fitted_parameters.json)" % (
+                                        {k_: v_["ringing_damping_ratio"] for k_, v_ in mm.get("damping", {}).items()} or pm.ringing_damping_ratio),
+                                    "belt stiffness EA %g N per 6 mm" % pm.belt_ea_n]
+                                   + (["toolhead tilt on its guide blocks: %s N/mm at the nozzle (effective block stiffness %g N/um, fitted to two machines)"
+                                       % ({a_: t_["n_per_mm"] for a_, t_ in mm["toolhead"].items()}, pm.toolhead_tilt_n_per_um)] if mm.get("toolhead") else []),
            "selected_by": K.source() + " (shaper_calibrate.find_best_shaper) on the twin's synthetic frequency response",
            "frame_stiffness_used_n_per_mm": dict(pm.struct_stiffness) or None}
     for k, ax in enumerate("xy"):
@@ -88,17 +93,18 @@ def pressure_advance(design, pm: PrinterMap, roots=None) -> dict:
     user takes it from a test print; else the twin's assumed melt-flow lag, the value a first-order lag calls for."""
     el = getattr(design, "electrical", None)
     fixed = ((el.firmware.get("extruder_tuning") or {}).get("pressure_advance") if el is not None else None)
-    assumed = [f"extruder lag {pm.extruder_lag_s:g} s (first-order, one value for every flow rate)"]
+    assumed = [f"extruder lag {pm.extruder_lag_s:g} s (first-order, one value for every flow rate; {pm.extruder_lag_basis})"]
     if fixed is not None:
         return {"value": float(fixed), "smooth_time": PA_SMOOTH_TIME, "basis": "set in the design's firmware block", "assumed": []}
     sw = stored_sweep(design.name, pm.extruder_lag_s, roots)
     if sw is not None:
         return {"value": float(sw["best"]), "smooth_time": PA_SMOOTH_TIME, "assumed": assumed, "from_sweep": sw["file"],
-                "basis": f"best of a sweep on the twin (smallest corner bulge + recess), whose melt-flow lag is an ASSUMED "
-                         f"{pm.extruder_lag_s * 1e3:.0f} ms; print a pressure-advance test on the machine"}
+                "basis": f"best of a sweep on the twin (smallest corner bulge + recess), whose melt-flow lag is "
+                         f"{pm.extruder_lag_s * 1e3:.0f} ms ({pm.extruder_lag_basis}); not measured on this machine: print a "
+                         "pressure-advance test"}
     return {"value": float(pm.extruder_lag_s), "smooth_time": PA_SMOOTH_TIME,
-            "basis": f"equal to the twin's ASSUMED {pm.extruder_lag_s * 1e3:.0f} ms melt-flow lag (not measured, no sweep run); "
-                     "print a pressure-advance test on the machine",
+            "basis": f"equal to the twin's {pm.extruder_lag_s * 1e3:.0f} ms melt-flow lag ({pm.extruder_lag_basis}); not measured on "
+                     "this machine, no sweep run: print a pressure-advance test",
             "assumed": assumed}
 
 
@@ -221,12 +227,16 @@ def _report(out, name) -> dict:
 
 def _pm_kw(pm: PrinterMap) -> dict:
     return {k: getattr(pm, k) for k in ("x", "y", "z", "bed", "perimeter_speed", "infill_speed", "travel_speed", "belt_ea_n",
-                                        "struct_stiffness", "extruder_lag_s", "damping_ratio", "spring_damping_ratio", "bed_surface")}
+                                        "struct_stiffness", "extruder_lag_s", "damping_ratio", "spring_damping_ratio", "bed_surface",
+                                        "ringing_damping_ratio", "toolhead_compliance", "toolhead_tilt_n_per_um", "toolhead_stiffness")}
 
 
-def pressure_advance_sweep(printer_path, out, pm: PrinterMap, values=(0.0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06), part="quick") -> dict:
+def pressure_advance_sweep(printer_path, out, pm: PrinterMap, values=None, part="quick") -> dict:
     """Print the test part once per K with real Klipper and read the corner bulge off each result, as a user reads a
-    pressure-advance test print. Returns the table and the K with the smallest bulge (ties: the smallest K)."""
+    pressure-advance test print. Returns the table and the K with the smallest bulge (ties: the smallest K).
+    values: default 0 to twice the twin's melt-flow lag in seven steps (a Bowden machine needs a wider sweep)."""
+    if values is None:
+        values = tuple(float(f"{pm.extruder_lag_s * f:.3g}") for f in (0.0, 1 / 3, 2 / 3, 1.0, 4 / 3, 5 / 3, 2.0))
     jobs = [(f"pa_{k:g}", part, _pm_kw(pm), {"firmware": "klipper", "firmware_opts": {"pressure_advance": float(k), "bed_mesh": False}},
              str(out)) for k in values]
     res = _run(printer_path, jobs)
@@ -241,7 +251,7 @@ def pressure_advance_sweep(printer_path, out, pm: PrinterMap, values=(0.0, 0.01,
     best = min(good, key=lambda r: (r["max_bulge_mm"] + (r["max_recess_mm"] or 0.0), r["pressure_advance"]))
     return {"table": rows, "best": best["pressure_advance"], "criterion": "smallest corner bulge + recess on the test part",
             "assumed_extruder_lag_s": pm.extruder_lag_s,
-            "note": "the lag is an assumed first-order constant; the sweep shows the method and that K = lag removes the bulge "
+            "note": "the lag is a first-order constant taken from factory pressure-advance values of machines of this drive type; the sweep shows the method and that K = lag removes the bulge "
                     "in this model, not what K a real extruder needs"}
 
 
@@ -290,7 +300,7 @@ def ringing_test(design, pm: PrinterMap, out, opts: dict | None = None, travel_m
     mm = machine_model(design, pm)
     Qa, _, sinfo = simulate(Qc, Vc, mm["mass"], drive_force(mm, Vc), mm["tpr"], mm["bias"], np.array(mm["fric"]), dt,
                             damping_ratio=pm.damping_ratio, motor_mass=mm["motor_mass"], series_stiffness=mm["series"],
-                            backlash=mm["back"], spring_damping_ratio=pm.spring_damping_ratio)
+                            backlash=mm["back"], spring_damping_ratio=mm["spring_damping"])
     # dwells: the planned trajectory is at rest (after the four test moves; the approach is not counted)
     Vn = np.gradient(Qn, dt, axis=0)
     # at rest = neither the plan nor the (shaped, slightly longer) command is moving; steps are interpolated, so a

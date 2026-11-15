@@ -100,7 +100,16 @@ def _shape(key: str):
 def _job(args):
     name, key, pm_kw, run_kw, out = args
     shape = _shape(key)
-    pm = replace(PrinterMap(), **pm_kw)
+    pm_kw = dict(pm_kw)
+    lag_scale = pm_kw.pop("extruder_lag_scale", None)      # relative to the lag the design selects (direct or Bowden)
+    if getattr(_PRINTER, "printer", None):
+        from . import printer_map_for
+
+        pm = printer_map_for(_PRINTER, None, **pm_kw)
+    else:
+        pm = replace(PrinterMap(), **pm_kw)
+    if lag_scale is not None:
+        pm = replace(pm, extruder_lag_s=pm.extruder_lag_s * float(lag_scale))
     rep = run_print(_PRINTER, shape, Path(out) / name, pm, name=name, render=run_kw.pop("render", False),
                     collisions=run_kw.pop("collisions", False), **run_kw)
     return name, summarise(rep)
@@ -151,10 +160,10 @@ SCENARIOS = {
     "rail friction x2": ({"friction_n": {"x": 4.0, "y": 6.0, "z": 10.0}}, {}),
     "motor torque -30%": ({}, {"torque_scale": 0.7}),
     "toolhead +300 g": ({}, {"mass_extra": {"x": 0.3, "y": 0.3}}),
-    "extruder lag x2": ({"extruder_lag_s": 0.06}, {}),
+    "extruder lag x2": ({"extruder_lag_scale": 2.0}, {}),
     "belts half as stiff": ({"belt_ea_n": 11000.0}, {}),
     "less damping": ({"damping_ratio": 0.1, "spring_damping_ratio": 0.02}, {}),
-    "all of the above": ({"friction_n": {"x": 4.0, "y": 6.0, "z": 10.0}, "extruder_lag_s": 0.06, "belt_ea_n": 11000.0,
+    "all of the above": ({"friction_n": {"x": 4.0, "y": 6.0, "z": 10.0}, "extruder_lag_scale": 2.0, "belt_ea_n": 11000.0,
                           "damping_ratio": 0.1, "spring_damping_ratio": 0.02},
                          {"torque_scale": 0.7, "mass_extra": {"x": 0.3, "y": 0.3}}),
 }
@@ -214,7 +223,7 @@ def variants(printer_path, out, speed=2.0, accels=(1, 2, 3, 4, 5, 6, 8, 10)):
 
 SENS = {  # parameter -> (low, high) as (PrinterMap overrides, run overrides)
     "rail friction": (({"friction_n": {"x": 1.0, "y": 1.5, "z": 2.5}}, {}), ({"friction_n": {"x": 3.0, "y": 4.5, "z": 7.5}}, {})),
-    "extruder lag": (({"extruder_lag_s": 0.015}, {}), ({"extruder_lag_s": 0.045}, {})),
+    "extruder lag": (({"extruder_lag_scale": 0.5}, {}), ({"extruder_lag_scale": 1.5}, {})),
     "stepper damping": (({"damping_ratio": 0.125}, {}), ({"damping_ratio": 0.375}, {})),
     "belt/frame damping": (({"spring_damping_ratio": 0.025}, {}), ({"spring_damping_ratio": 0.075}, {})),
     "belt stiffness": (({"belt_ea_n": 11000.0}, {}), ({"belt_ea_n": 33000.0}, {})),
@@ -246,69 +255,93 @@ def sensitivity(printer_path, out):
     return {"base": b, "base_ok": base["ok"], "parameters": rows}
 
 
-def score_uncertainty(printer_path, out, score: dict, toolhead_axis: str | None = "x",
-                      toolhead_mount: str = "linear_rail_single_block", speed: float = 2.0,
-                      accels=(1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6), workers: int = 4) -> dict:
-    """The scorecard's dynamic numbers as ranges instead of points.
+def uncertainty_sets(pm) -> dict:
+    """Three coherent parameter sets from the fitted ranges (fitted_parameters.json): the soft, lightly damped, slow-melting
+    end; the values in use; the stiff, well damped, fast-melting end. PrinterMap overrides for each."""
+    from . import fitted as F
 
-    `score` is the dict `mechloop score` printed (or a line of out/<name>/scores.jsonl). The twin is re-run
-    with the belt stiffness and toolhead-mount compliance at the low, expected and high ends of the ranges
-    the calibration study proposes (`calibration.PROPOSED`: what three real machines' measured resonances
-    allow), and each number is reported as [low, expected, high] next to the scored point value.
-    Nothing here changes the twin's defaults."""
+    ea = F.triple("belt_ea_n_per_6mm")
+    tilt = F.triple("toolhead_tilt_effective_n_per_um")
+    rd = F.entry("ringing_damping_ratio")
+    lag0 = F.extruder_lag("direct", 0.4)
+    sets = {}
+    for i, (label, which) in enumerate((("soft", "low"), ("expected", "value"), ("stiff", "high"))):
+        lag_scale = {"low": F.entry("extruder_lag_s")["high"]["direct"]["0.4"] / lag0, "value": 1.0,
+                     "high": F.entry("extruder_lag_s")["low"]["direct"]["0.4"] / lag0}[which]
+        sets[label] = {"belt_ea_n": float(pm.belt_ea_n) * ea[i] / ea[1], "toolhead_tilt_n_per_um": tilt[i],
+                       "ringing_damping_ratio": dict(rd[which]), "extruder_lag_s": round(pm.extruder_lag_s * lag_scale, 4)}
+    return sets
+
+
+def score_uncertainty(printer_path, out, score: dict, toolhead_axis: str | None = None, toolhead_mount: str | None = None,
+                      speed: float = 2.0, accels=(1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8, 10, 12), workers: int = 4,
+                      pm_overrides: dict | None = None) -> dict:
+    """The scorecard's dynamic numbers as [low, expected, high] instead of points.
+
+    `score` is the dict `mechloop score` builds (or a line of out/<name>/scores.jsonl). The twin is re-run with belt
+    stiffness, the toolhead term's block stiffness, the ringing damping ratio and the extruder lag at the soft and at
+    the stiff end of their fitted ranges (`uncertainty_sets`); "expected" is the scored value itself. For each number,
+    low and high are the smallest and largest of the three runs. The acceleration sweep moves in steps, so its range
+    is at least one step wide either way. (toolhead_axis / toolhead_mount are accepted for old callers and ignored:
+    the toolhead term now comes from the design.)"""
     from ..runner import load_design
     from . import printer_map_for
-    from .calibration import PROPOSED, shaper_accel
+    from .calibration import shaper_accel
+    from . import fitted as F
 
     design = load_design(printer_path)
-    pm = printer_map_for(design)
-    base = {k: getattr(pm, k) for k in ("x", "y", "z", "bed", "perimeter_speed", "infill_speed", "travel_speed")}
     frame = dict(score.get("frame_stiffness_n_per_mm") or {})
-    ea, mount = PROPOSED["belt_ea_n_per_6mm"], PROPOSED["toolhead_mount_n_per_mm"][toolhead_mount]
-    sets = {}
-    for i, label in enumerate(("low", "expected", "high")):
-        st = dict(frame)
-        if toolhead_axis:
-            kf = st.get(toolhead_axis)
-            st[toolhead_axis] = mount[i] if not kf else 1.0 / (1.0 / kf + 1.0 / mount[i])
-        sets[label] = {**base, "belt_ea_n": ea[i], "struct_stiffness": st}
+    pm = printer_map_for(design, None, **{**({"struct_stiffness": frame} if frame else {}), **(pm_overrides or {})})
+    base = {k: getattr(pm, k) for k in ("x", "y", "z", "bed", "perimeter_speed", "infill_speed", "travel_speed", "struct_stiffness")}
+    base.update(pm_overrides or {})
+    sets = {k: {**base, **v} for k, v in uncertainty_sets(pm).items() if k != "expected"}
     jobs = []
     for label, kw in sets.items():
-        jobs.append((f"{label}_nominal", "quick", dict(kw), {}, str(out)))
-        jobs += [(f"{label}_a{a:g}", "quick", dict(kw), {"speed_scale": speed, "accel_scale": float(a)}, str(out)) for a in accels]
+        jobs.append((f"u_{label}_nominal", "quick", dict(kw), {}, str(out)))
+        jobs += [(f"u_{label}_a{a:g}", "quick", dict(kw), {"speed_scale": speed, "accel_scale": float(a)}, str(out)) for a in accels]
     res = _run_all(printer_path, jobs, workers=workers)
     a_nom = {j.name: j for j in design.joints}[pm.x].max_accel
     per = {}
     for label in sets:
-        first_fail = next((a for a in accels if not res[f"{label}_a{a:g}"]["ok"]), None)
-        ok = [a for a in accels if res[f"{label}_a{a:g}"]["ok"] and (first_fail is None or a < first_fail)]
-        nom = res[f"{label}_nominal"]
-        per[label] = {"belt_ea_n_per_6mm": sets[label]["belt_ea_n"], "nozzle_stiffness_n_per_mm": sets[label]["struct_stiffness"],
+        first_fail = next((a for a in accels if not res[f"u_{label}_a{a:g}"]["ok"]), None)
+        ok = [a for a in accels if res[f"u_{label}_a{a:g}"]["ok"] and (first_fail is None or a < first_fail)]
+        nom = res[f"u_{label}_nominal"]
+        per[label] = {"parameters": {k: sets[label][k] for k in ("belt_ea_n", "toolhead_tilt_n_per_um", "ringing_damping_ratio", "extruder_lag_s")},
                       "resonance_hz": {"x": nom["resonance_hz"][0], "y": nom["resonance_hz"][1]},
                       "nominal_print_ok": nom["ok"], "cross_track_rms_mm": nom["cross_track_rms_mm"],
-                      "cross_track_worst_mm": nom["cross_track_worst_mm"],
-                      "max_clean_accel_mm_s2": (max(ok) * a_nom) if ok else 0.0,
-                      "first_failure": ({"accel_mm_s2": first_fail * a_nom, "errors": sorted(set(res[f"{label}_a{first_fail:g}"]["errors"]))}
+                      "cross_track_worst_mm": nom["cross_track_worst_mm"], "max_bulge_mm": nom["max_bulge_mm"],
+                      "step_loss_ceiling_accel_mm_s2": (max(ok) * a_nom) if ok else 0.0,
+                      "first_failure": ({"accel_mm_s2": first_fail * a_nom, "errors": sorted(set(res[f"u_{label}_a{first_fail:g}"]["errors"]))}
                                         if first_fail else None)}
+    ceiling = score.get("step_loss_ceiling_accel_mm_s2", score.get("max_clean_accel_mm_s2"))
+    per["expected"] = {"parameters": "the values in use (fitted_parameters.json)", "resonance_hz": score.get("resonance_hz"),
+                       "nominal_print_ok": score.get("nominal_print_ok"), "cross_track_rms_mm": score.get("cross_track_rms_mm"),
+                       "cross_track_worst_mm": score.get("cross_track_worst_mm"), "step_loss_ceiling_accel_mm_s2": ceiling}
 
     def rng(f):
-        return [f(per[k]) for k in ("low", "expected", "high")]
+        v = [f(per[k]) for k in ("soft", "expected", "stiff")]
+        if any(x is None for x in v):
+            return [None, v[1], None]
+        return [min(v), v[1], max(v)]
 
-    u = PROPOSED["used_accel_over_shaper_rule"]
+    u = F.triple("used_accel_over_shaper_rule")
     fmin = rng(lambda p_: min(p_["resonance_hz"].values()))
     out_d = {"design": score.get("design"),
-             "scored": {k: score.get(k) for k in ("resonance_hz", "max_clean_accel_mm_s2", "cross_track_rms_mm", "cross_track_worst_mm")},
              "range_low_expected_high": {
                  "resonance_hz": {ax: rng(lambda p_, ax=ax: p_["resonance_hz"][ax]) for ax in "xy"},
-                 "max_clean_accel_mm_s2": rng(lambda p_: p_["max_clean_accel_mm_s2"]),
+                 "step_loss_ceiling_accel_mm_s2": rng(lambda p_: p_["step_loss_ceiling_accel_mm_s2"]),
                  "cross_track_rms_mm": rng(lambda p_: p_["cross_track_rms_mm"]),
                  "cross_track_worst_mm": rng(lambda p_: p_["cross_track_worst_mm"]),
                  "shaper_rule_accel_mm_s2": [shaper_accel(f) for f in fmin],
                  "accel_owners_would_run_mm_s2": [round(shaper_accel(f) * u[i], -2) for i, f in enumerate(fmin)]},
-             "runs": per, "parameters": PROPOSED,
-             "reading": ("max_clean_accel is the step-loss ceiling; on three real machines that ceiling sat 6 to 8 times above "
-                         "the acceleration owners run. accel_owners_would_run is the comparable figure: the input-shaper "
-                         "smoothing rule at the lower resonance, scaled by what owners of those machines actually set.")}
+             "runs": per,
+             "varied": "belt stiffness, toolhead block stiffness, ringing damping ratio, extruder lag: soft / lightly damped / slow end "
+                       "against stiff / well damped / fast end of their fitted ranges",
+             "not_varied": "friction, motor torque curve, moving mass, FEA frame stiffness, stepper damping (no data to give them a range)",
+             "reading": ("The step-loss ceiling is where the simulated motors lose steps; on three real machines that ceiling sat 6 to 8 "
+                         "times above the acceleration owners run. accel_owners_would_run is the comparable figure: Klipper's input-shaper "
+                         "smoothing rule at the lower resonance, times the 0.5 (0.4 to 0.65) that owners of those machines actually set.")}
+    out_d["range_low_expected_high"]["max_clean_accel_mm_s2"] = out_d["range_low_expected_high"]["step_loss_ceiling_accel_mm_s2"]   # old name
     Path(out).mkdir(parents=True, exist_ok=True)
     (Path(out) / "score_uncertainty.json").write_text(json.dumps(out_d, indent=1, default=float))
     return out_d

@@ -125,8 +125,23 @@ A printer design declares how to print on it:
 d.tool_point = ("xbody", nozzle_tip_xyz)
 d.printer = {"bed": "bed", "x": "x", "y": "y", "z": "z",
              "stiffness": {"x": "<AssemblyCase giving nozzle stiffness in X>", "y": "<... in Y>"},
-             "speeds": {"perimeter": 45, "infill": 60, "travel": 150}}   # mm/s the machine is meant to print at
+             "speeds": {"perimeter": 45, "infill": 60, "travel": 150},   # mm/s the machine is meant to print at
+             "extruder": "bowden"}                                       # only if the extruder is on the frame; default: direct drive
 ```
+
+What the twin takes from the design besides masses, motors and belts:
+
+- **Extruder lag** from the drive type: direct drive 0.03 s, Bowden about 0.24 s at a 0.4 mm nozzle (factory
+  pressure-advance values), scaled with the Bowden tube's length (a `Cable` whose name contains "bowden", or
+  `printer["bowden_length"]`) and the nozzle size (`printer["nozzle"]`).
+- **Melt-rate cap** from the hotend's class (the part on the tool body whose SKU starts with `HOTEND`): V6 class
+  11 mm^3/s, Revo 12. The slicer is held to it. If a speed you asked for needs more, the print is slowed and the
+  report says so (`flow_limited` warning, `melt_rate` in the scorecard): that speed is then not real.
+- **The toolhead turning on its guide blocks**: the axis whose body carries the nozzle gets a spring between belt
+  clamp and nozzle, from the number of blocks with `guides=` on that joint, their spacing along the rail and the
+  nozzle's distance from the rail. One block with the nozzle 60 mm away is about 200 N/mm, softer than the belts; two
+  blocks 40 mm apart are more than ten times stiffer. Your FEA nozzle-stiffness case does not contain this (it bonds
+  block and rail), so both are used, in series.
 
 Then `mechloop verify` also runs the **printing** verifier: the digital twin prints a short test
 cube on the machine (real slicer G-code, firmware-style planning, stepper motors that can lose
@@ -136,11 +151,12 @@ at the end of Z travel must be <= the first layer height).
 
 Passing is the floor. To make a design **better**, use the scorecard:
 
-    python -m mechloop score designs/<printer>.py        # about a minute; appends to out/<name>/scores.jsonl
+    python -m mechloop score designs/<printer>.py        # a few minutes; appends to out/<name>/scores.jsonl
 
 | Score | Meaning | Direction |
 |---|---|---|
-| `max_clean_accel_mm_s2`, `accel_margin` | highest acceleration (at 2x speed) that still prints cleanly; margin is relative to the joints' own `max_accel` | up |
+| `accel_owners_would_run_mm_s2` | the acceleration an owner would run with input shaping: 0.5 (0.4 to 0.65) x Klipper's shaper smoothing rule at the lower of the two resonances, calibrated on three real machines. This is the usable acceleration figure | up |
+| `step_loss_ceiling_accel_mm_s2`, `accel_margin` | the acceleration (at 2x speed) at which the simulated motors first lose steps. A ceiling, not an acceleration to run: on three real machines it sat 6 to 8 times above what their owners set. Old name, still written: `max_clean_accel_mm_s2`. Margin is relative to the joints' own `max_accel` | up |
 | `resonance_hz` | frequency the toolhead rings at on each axis | up |
 | `cross_track_rms_mm`, `cross_track_worst_mm` | how far the nozzle strays sideways from the commanded path at nominal settings (vibration that shows on the part) | down |
 | `benchmark_time_s` | time to print three benchmark parts at the design's own `speeds` and joint acceleration limits | down |
@@ -151,9 +167,16 @@ The improvement loop: score the baseline; pick the weakest number; make ONE real
 (geometry, a catalog part, a transmission, a joint limit); run `mechloop verify` (everything must
 still pass) and `mechloop score`; keep the change only if the score improved and nothing you care
 about got worse; otherwise revert. Log every attempt, including the reverted ones.
+Every headline number comes with a range: `headline.<score>.range` (and `ranges.<score>`) is
+`[low, expected, high]` under the ranges of the twin's fitted parameters (belt stiffness, toolhead block
+stiffness, ringing damping, extruder lag; `mechloop/twin/fitted_parameters.json`). A change that moves a score
+by less than the width of its range is not shown to be an improvement; say so when you report it.
 Scores near the step-loss boundary are noisy: do not count a change of one acceleration step as real.
-The twin has no thermal model, and friction, extruder lag, damping and belt stiffness are assumed
-values, so prefer changes that are robust in kind (less mass, more stiffness, more torque margin).
+Resonance is believable to about +/-15 % (blind test on three machines for gantry and bed axes; the toolhead
+axis rests on a term fitted to two of them). Damping, extruder lag and the melt-rate cap are fitted to published
+data; friction, the step-loss boundary, guide-block stiffness and frame joints are still assumed, and the twin has
+no model of heat in the part (warping, cooling). So prefer changes that are robust in kind (less mass, more
+stiffness, a second guide block, more torque margin).
 `python -m mechloop print <printer.py> <design.py>:<part>` prints any part and renders the result.
 
 ## Building it: the assembly simulation
@@ -252,6 +275,11 @@ their sources are in `mechloop/verifiers/dfm_rules.py` and `docs/DFM.md`. Every 
   travel (`part.meta["interfaces"]["trigger"]`: the lever's operating position at its tip, 9 mm to one side of
   the switch centre). The seat needs a clearance hole at each of `interfaces["pin_holes"]` (the terminals stand
   2.6 mm out of the board). Or `{"joint": "x", "sensorless": True}`.
+  A bed probe that homes Z is declared the same way: `d.endstops.append({"joint": "z", "probe": "<probe part>", "at": "max"})`.
+  The probe part rides on the toolhead, has a `sensing_face` interface (centre of the face that looks at the bed) and
+  an electrical template of kind `probe` (`mechloop.parts.electrical.inductive_probe_template(...)`). The verifier
+  checks that it switches before the nozzle touches for every unit within the sensing-distance spread, that Z travel
+  brings the bed within range, and reports the strip of bed it cannot reach. See `designs/printer_v5.py`.
 - Cables: `d.cables.append(Cable("toolhead loom", ("xbody", clamp_xyz), ("world", clamp_xyz), length=450))`.
   Every moving body that carries something electrical needs one; its length is checked over the travel.
 - A printer also needs an extruder (`extruder_direct()` on the toolhead, or
@@ -291,6 +319,22 @@ el.sync_cables(d); add_electrical_bom(el, d)                      # flexing span
   allows, and say so.
 - The motor torque curve used by ratings, motion and the twin comes from the electrical model once
   `design.electrical` exists (winding R and L, driver current, supply voltage). Lowering a run current lowers force.
+- A fan gets the voltage it is made for (`fan_voltage_mismatch` otherwise). For a 5 V fan on a 24 V machine (the E3D
+  Roto's heat-sink fan) either put a stock regulator board in line, `mechloop.electrical.add_regulator(el, d, "fan_reg",
+  "<its CAD part>", out_v=5.0, max_a=..., efficiency=...)`, wired board fan output -> `fan_reg.in`, `fan_reg.out` -> fan; or run it
+  from the board's +5 V pins, `add_board_5v_port(el, "control_board")` then wire `control_board.5V` -> fan (it then runs
+  whenever the machine is on, and is added to the host's draw in the board's 5 V budget: SKR Mini E3 V3.0 1.1 A fuse,
+  80 % limit, Pi Zero 2 W 0.6 A). A fan made with `embedded_device(..., port_kind="fan")` is found by its port kind.
+- An extruder part that states its gearing (`extruder_roto`: 26.8937 mm per turn of the hobb, 11.262:1, 400 full steps)
+  is written to `[extruder]` with `gear_ratio` and `full_steps_per_rotation`: leave `rotation_distance` out of the
+  firmware block's `steppers["extruder"]` (or give the part's own value). A different `rotation_distance` there is taken
+  as complete and written alone.
+- A PTC heater (`hotend_revo`: `params["ptc"]`) is simulated with its resistance rising with temperature: 40 W cold,
+  27 W at 250 degC, self-limiting near 485 degC if its MOSFET fails shorted (it limits; it does not switch off, so the
+  cut-off rules apply as for any heater). The melt-capacity margin uses the hot power and the part fan at full speed.
+- Hotend thermal constants are no longer the part's estimates: a cartridge in a block is the V6 class, a HeaterCore the
+  Revo class (`mechloop/twin/fitted_parameters.json`: `hotend_thermal`). `params["thermal_model"] = "catalog"` on the
+  heater device brings the part's own figures back.
 - Outputs: `out/<name>/electrical/printer.cfg`, `wiring.csv`, `wiring.md`, `pin_map.json`.
 - Not checked: EMC, firmware bugs, crimp quality, the short stubs between loom ends and connectors (length only),
   I2t of fuses, the real heater's tolerance and the real PID tune.

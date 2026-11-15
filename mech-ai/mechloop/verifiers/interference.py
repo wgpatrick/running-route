@@ -149,7 +149,9 @@ def _fastening(design: Design, contacts: dict[str, set[str]], r: VerifierResult)
                            "real joint with design.join(a, b, kind) for a press fit, bond, clamp or set screw.")
 
 
-THREAD_FACTOR = {"steel": 1.0, "stainless304": 1.0, "brass": 1.0, "al6061": 1.5}  # x thread diameter; plastics 2.0
+THREAD_FACTOR = {"steel": 1.0, "stainless304": 1.0, "brass": 1.0, "al6061": 1.5,  # x thread diameter; plastics 2.0
+                 # cast tooling plate yields at 105 / 124 MPa against 276 for 6061-T6: kept at the soft-material 2.0
+                 "al_mic6": 2.0, "al_atp5": 2.0}
 
 
 def _threads(design: Design, r: VerifierResult) -> None:

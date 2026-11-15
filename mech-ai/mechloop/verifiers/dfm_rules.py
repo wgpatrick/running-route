@@ -260,7 +260,9 @@ PLASTICS = {"pla", "petg", "abs", "nylon_pa12", "asa", "tpu", "pc"}
 # Rough machining figures for the estimate (mechloop's own assumptions, small 3-axis VMC, for comparing alternatives only).
 # material removal rate cm3/min, stock price USD/kg
 MACHINING = {"al6061": (12.0, 8.0), "al5052": (12.0, 8.0), "brass": (10.0, 14.0), "steel": (3.0, 3.0), "stainless304": (1.8, 8.0),
-             "*plastic": (15.0, 12.0), "*": (3.0, 6.0)}
+             "*plastic": (15.0, 12.0), "*": (3.0, 6.0),
+             # cast tooling plate: cuts like wrought aluminium; stock price per kg assumed a third above 6061 plate (unverified)
+             "al_mic6": (12.0, 11.0), "al_atp5": (12.0, 11.0)}
 SHOP_RATE_USD_H = 75.0
 SETUP_MIN = 12.0            # per set-up: fixture, touch off
 PROGRAM_MIN = 20.0          # once per part number
