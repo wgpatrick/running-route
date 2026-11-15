@@ -10,7 +10,10 @@ from ..model import Design
 from ..report import VerifierResult, timed
 
 
-BLOCK_K = 40e6   # N/m radial stiffness of a small recirculating-ball block: assumed, no vendor rigidity data yet
+# N/m radial stiffness of a small recirculating-ball block: ASSUMED. The fallback for a guide block whose catalogue part
+# carries no maker's figure (`radial_stiffness_n_per_m`): an MGN12H at preload ZF (Hiwin publishes none for the clearance
+# class), bearings, hand-made proxies. An MGN12H at Z0 / Z1 carries Hiwin's 63 / 81 N/um and does not use this.
+BLOCK_K = 40e6
 
 
 def block_track_length_m(block) -> float:
@@ -145,6 +148,127 @@ def resolve_drives(design: Design, r: VerifierResult | None = None) -> dict:
     return out
 
 
+def belt_installation_tension(belt) -> tuple[float, str]:
+    """Installation tension per span (N) of a belt: what the design declares (`Belt.tension`), else Gates' minimum
+    recommended installation tension for the width (design manual Tables 7 and 8, p.65; interpolated between the listed
+    widths 4, 6, 9 and 12 mm, in proportion to width outside them)."""
+    if getattr(belt, "tension", None) is not None:
+        return float(belt.tension), "declared on the belt (Belt.tension)"
+    from ..parts import vendor_data
+
+    tab = vendor_data("gates_gt2")["belt"]["installation_tension"]["minimum_tst_n"]
+    ws = sorted((float(k[:-2]), float(v)) for k, v in tab.items())
+    xs, ys = [w for w, _ in ws], [t for _, t in ws]
+    w = float(belt.width)
+    t = float(np.interp(w, xs, ys)) if xs[0] <= w <= xs[-1] else (ys[0] * w / xs[0] if w < xs[0] else ys[-1] * w / xs[-1])
+    return t, f"default: Gates' minimum recommended installation tension for a {w:g} mm belt (design manual p.65)"
+
+
+def belt_shaft_loads(design: Design, r: VerifierResult | None = None) -> dict:
+    """Belt pull on each pulley that sits on a motor shaft, against the motor's radial shaft-load limit.
+
+    A belt installed at tension T per span pulls a pulley it wraps with the vector sum of its two spans, T (u1 + u2)
+    (2 T for a half turn). On a pulley carried by the motor shaft alone that is an overhung load, acting in the belt's
+    plane at a distance a from the mounting face. The motor's limit F0 at distance L0 (catalogue rating
+    `max_radial_load_n` at `max_radial_load_at_mm`) is carried to the belt plane at equal bending moment about the
+    face: F_allowed = F0 * L0 / a. Motors without such a rating are listed but not judged. Home pose, belt at rest: under
+    load the tight span rises and the slack span falls by about the same amount, so the sum barely changes."""
+    from ..geom import forward_kinematics
+    from .belts import route
+
+    if not design.belts:
+        return {}
+    comps = {c.name: c for c in design.components}
+    motors = [c for c in design.components if "holding_torque_nmm" in c.ratings and c.meta.get("placement")
+              and (c.meta.get("interfaces") or {}).get("shaft_length")]
+    T0 = forward_kinematics(design, {})
+    out: dict = {}
+    for b in design.belts:
+        tension, basis = belt_installation_tension(b)
+        try:
+            rt = route(design, b, T0)
+        except Exception:
+            continue                      # the motion verifier reports a belt that cannot be routed
+        segs = rt["segments"]
+        n_nodes = len(b.path)
+        for idx, node in enumerate(b.path):
+            if node[0] != "pulley" or node[1] not in comps:
+                continue
+            pul = comps[node[1]]
+            ctr = np.array(pul.meta["interfaces"]["belt_center"][0], dtype=float)
+            motor = None
+            for mc in motors:
+                if mc.body != pul.body:
+                    continue
+                P = np.array(mc.meta["placement"], dtype=float)
+                o, z = P[:, 3], P[:, 2]
+                arm = float((ctr - o) @ z)
+                off = float(np.linalg.norm((ctr - o) - arm * z))
+                if off < 1.0 and -1.0 < arm <= float(mc.meta["interfaces"]["shaft_length"]) + 10.0:
+                    motor = (mc, arm)
+                    break
+            if motor is None:
+                continue
+            mc, arm = motor
+            # the spans that leave this pulley: segment idx starts here, segment idx-1 ends here
+            dirs = []
+            if idx < len(segs) and (rt["closed"] or idx < n_nodes - 1):
+                p0, p1 = segs[idx]
+                dirs.append((p1 - p0) / np.linalg.norm(p1 - p0))
+            prev = (idx - 1) % n_nodes if rt["closed"] else idx - 1
+            if prev >= 0 and prev < len(segs) and (rt["closed"] or idx > 0):
+                p0, p1 = segs[prev]
+                dirs.append((p0 - p1) / np.linalg.norm(p1 - p0))
+            if not dirs:
+                continue
+            res = float(np.linalg.norm(tension * np.sum(dirs, axis=0)))
+            lim, at = mc.ratings.get("max_radial_load_n"), mc.ratings.get("max_radial_load_at_mm")
+            e = {"belt": b.name, "pulley": pul.name, "motor": mc.name, "motor_sku": mc.sku,
+                 "tension_per_span_n": round(tension, 1), "tension_basis": basis, "belt_width_mm": b.width,
+                 "wrap_deg": round(rt["wraps_deg"].get(pul.name, 0.0), 1), "shaft_load_n": round(res, 1),
+                 "belt_plane_from_motor_face_mm": round(arm, 1)}
+            supported = pul.name in tuple(getattr(b, "outboard_support", ()) or ())
+            if supported:
+                P = np.array(mc.meta["placement"], dtype=float)
+                o, z = P[:, 3], P[:, 2]
+                brg = [c for c in design.components if (c.sku or "").startswith("BRG-") and c.body == mc.body
+                       and float((np.array(tuple(c.shape.center())) - o) @ z) > arm
+                       and float(np.linalg.norm((np.array(tuple(c.shape.center())) - o)
+                                                - ((np.array(tuple(c.shape.center())) - o) @ z) * z)) < 1.0]
+                e["outboard_support"] = brg[0].name if brg else None
+                if not brg and r is not None:
+                    r.add("warning", "outboard_support_not_found",
+                          f"Belt {b.name} declares an outboard support for pulley {pul.name}, but no catalog bearing sits on "
+                          f"{mc.name}'s shaft axis beyond the pulley.", belt=b.name, pulley=pul.name, motor=mc.name)
+                    supported = False
+            if lim and at:
+                allowed = float(lim) * float(at) / max(arm, 1e-6)
+                e.update({"motor_limit_n": float(lim), "motor_limit_at_mm": float(at), "allowed_at_belt_plane_n": round(allowed, 1),
+                          "limit_basis": mc.ratings.get("max_radial_load_basis", "catalogue rating"),
+                          "load_over_allowed": round(res / allowed, 2)})
+                if supported:
+                    e["judged"] = "not judged: the shaft end is carried by an outboard bearing, the limit is for an overhung load"
+                elif res > allowed and r is not None:
+                    need_t = allowed / max(res / tension, 1e-9)
+                    r.add("warning", "motor_shaft_radial_load",
+                          f"Belt {b.name} pulls {res:.0f} N sideways on the shaft of {mc.name} ({mc.sku}) at {tension:.1f} N per "
+                          f"span ({basis}), {arm:.1f} mm from the mounting face. The motor's limit is {float(lim):g} N at "
+                          f"{float(at):g} mm ({e['limit_basis']}), i.e. {allowed:.0f} N at the belt plane: "
+                          f"{res / allowed:.1f} times over.",
+                          belt=b.name, motor=mc.name, pulley=pul.name, shaft_load_n=round(res, 1), allowed_n=round(allowed, 1),
+                          tension_per_span_n=round(tension, 1), arm_mm=round(arm, 1), limit_n=float(lim), limit_at_mm=float(at),
+                          tension_for_limit_n=round(need_t, 1),
+                          hint=f"Carry the shaft end in an outboard support bearing (declare Belt.outboard_support), move the "
+                               f"pulley closer to the motor face, use a motor with a larger shaft-load rating, or lower the "
+                               f"tension: the limit is met at {need_t:.1f} N per span, which is "
+                               f"{'below' if need_t < belt_installation_tension(type(b)(b.name, b.path, width=b.width))[0] else 'at or above'} "
+                               f"Gates' minimum for this width.")
+            else:
+                e["judged"] = "not judged: the motor's catalogue entry has no radial shaft-load limit"
+            out[f"{b.name}:{pul.name}"] = e
+    return out
+
+
 def verify_ratings(design: Design) -> VerifierResult:
     r = VerifierResult("ratings")
     with timed(r):
@@ -238,8 +362,11 @@ def verify_ratings(design: Design) -> VerifierResult:
             # tilting only over its own ball-track length, blocks spaced along the rail resist it as a couple.
             arm_len = float(np.linalg.norm(arm - (arm @ gdir) * gdir))        # horizontal overhang of the mass, m
             if rated_m and arm_len > 0.02 and abs(float(np.array(j.axis, dtype=float) @ gdir)) > 0.5:
-                k = float(blocks[0].ratings.get("radial_stiffness_n_per_m", BLOCK_K))
+                maker_k = min((b.ratings["radial_stiffness_n_per_m"] for b in blocks if b.ratings.get("radial_stiffness_n_per_m")),
+                              default=None) if all(b.ratings.get("radial_stiffness_n_per_m") for b in blocks) else None
+                k = float(maker_k if maker_k else BLOCK_K)
                 track = float(blocks[0].ratings.get("ball_track_length_m", 0.030))
+                classes = sorted({str(b.ratings.get("preload_class")) for b in blocks if b.ratings.get("preload_class")})
                 pos_ = np.array([[b.shape.center().X, b.shape.center().Y, b.shape.center().Z] for b in blocks]) * 1e-3
                 ax_ = np.array(j.axis, dtype=float) / np.linalg.norm(j.axis)
                 al = (pos_ - pos_.mean(axis=0)) @ ax_
@@ -248,13 +375,20 @@ def verify_ratings(design: Design) -> VerifierResult:
                 f_tilt = float(np.sqrt(k_tilt / max(m * arm_len ** 2, 1e-9)) / (2 * np.pi))
                 loads[jn].update({"tilt_stiffness_nm_per_rad": round(k_tilt), "sag_at_mass_centre_mm_per_kg": round(sag, 4),
                                   "tilt_mode_hz": round(f_tilt, 1), "block_stiffness_assumed_n_per_um": round(k * 1e-6, 1),
-                                  "block_stiffness_source": blocks[0].ratings.get("radial_stiffness_source",
-                                                                                 "assumed: no vendor rigidity data")})
+                                  "block_stiffness_source": (blocks[0].ratings.get("radial_stiffness_source") if maker_k else None)
+                                  or "assumed (ratings.BLOCK_K): no maker's rigidity figure for this block"
+                                  + (f" at preload {'/'.join(classes)}" if classes else ""),
+                                  "ball_track_mm": round(track * 1e3, 1)})
+                if classes:
+                    loads[jn]["preload_class"] = "/".join(classes)
+                    loads[jn]["preload_class_basis"] = "; ".join(sorted({str(b.ratings.get("preload_class_basis")) for b in blocks}))
                 if f_tilt < 100.0:
                     r.add("warning", "cantilever_on_guide_blocks",
                           f"Joint {jn}: the {m:.2f} kg it carries hangs {arm_len * 1e3:.0f} mm from its {len(blocks)} guide blocks, which "
                           f"have {float(al.max() - al.min()) * 1e3:.0f} mm of spacing along the rail. On the blocks' own give it nods at about "
-                          f"{f_tilt:.0f} Hz and sags {sag:.3f} mm per kg (estimate: block stiffness {k * 1e-6:.0f} N/um is assumed).",
+                          f"{f_tilt:.0f} Hz and sags {sag:.3f} mm per kg (estimate: block stiffness {k * 1e-6:.0f} N/um, "
+                          + (f"the maker's radial figure at preload {'/'.join(classes)}, {loads[jn].get('preload_class_basis', '')})." if maker_k
+                             else "assumed)."),
                           joint=jn, tilt_mode_hz=round(f_tilt, 1),
                           hint="Put two blocks on each rail, spaced along it, or support the body on a third point.")
             if sf < 3.0:
@@ -265,6 +399,12 @@ def verify_ratings(design: Design) -> VerifierResult:
             r.metrics["guide_loads"] = loads
             r.add("info", "guide_moments_approximate",
                   "Guide moment checks use the home pose and bounding-box centres of mass; treat them as estimates.")
+        try:
+            sl = belt_shaft_loads(design, r)
+            if sl:
+                r.metrics["belt_shaft_loads"] = sl
+        except Exception as e:      # a belt the routing check will report; never lose the other ratings checks to it
+            r.add("warning", "belt_shaft_load_not_checked", f"Belt pull on motor shafts was not checked: {type(e).__name__}: {e}")
         # bill of materials
         bom: dict[str, dict] = {}
         for c in design.components:

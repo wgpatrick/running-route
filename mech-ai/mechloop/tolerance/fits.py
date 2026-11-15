@@ -78,9 +78,9 @@ def screw_patterns(design: Design, r: VerifierResult, n: int = 4000, seed: int =
         tip = head - ax * (2 * half)
         targets = [t for t in sc.meta.get("threads_into", []) if t in comps]
         through = []
-        for name in set(f.clamps) | {c.name for c in design.components
-                                     if c.name != f.name and c.name not in targets and not c.meta.get("thread_d")
-                                     and bboxes_overlap(sc.shape, c.shape, 0.05)}:
+        for name in sorted(set(f.clamps) | {c.name for c in design.components
+                                            if c.name != f.name and c.name not in targets and not c.meta.get("thread_d")
+                                            and bboxes_overlap(sc.shape, c.shape, 0.05)}):     # sorted: same order every run
             if name not in comps or name in targets:
                 continue
             p0, p1 = head - ax * (sc.meta.get("interfaces", {}).get("head_h", d) + 0.3), tip + ax * 0.3
@@ -132,7 +132,8 @@ def screw_patterns(design: Design, r: VerifierResult, n: int = 4000, seed: int =
         # screws into T-nuts always start: each nut slides along its slot and has play across it
         p_fit = 1.0 if all_tnut else float(ok.mean())
         nominal_clear = float(min(i["hole_r"] - i["d"] / 2 + 0.05 for i in items))
-        out[f"{pa} -> {pb}"] = {"screws": k, "p_all_start": round(p_fit, 4), "nominal_radial_clearance_mm": round(nominal_clear, 3),
+        out[f"{pa} -> {pb}"] = {"screws": k, "p_all_start": round(p_fit, 4),
+                                "p_all_start_standard_error": round(float(np.sqrt(max(p_fit * (1 - p_fit), 0.0) / n)), 4), "nominal_radial_clearance_mm": round(nominal_clear, 3),
                                 "process": [process_of(comps[pa]), process_of(comps[pb])]}
         if p_fit < 0.99:
             worst.append((p_fit, pa, pb, k, nominal_clear))

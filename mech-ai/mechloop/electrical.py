@@ -531,6 +531,22 @@ class HeaterPlant:
     # A PTC heating element (E3D Revo HeaterCore): {"r_ohm_23c", "tempco_per_c", "volts", "r_series_ohm"}. Its resistance
     # rises with its own temperature, so the power at 100 % duty falls as it heats. `power_w` is then the cold figure.
     ptc: Optional[dict] = None
+    # The hotend's heat sink, for a thermal cut-off mounted on it: {"capacity_j_k", "heatbreak_w_k", "fan_on_w_k",
+    # "fan_off_w_k", "fan": 1.0 | 0.0, "from_node": "block"}. A side model: it is warmed through the heat break by the
+    # node it hangs on and cooled by its fan or by still air. The heat it takes is already inside the fitted loss of the
+    # block, so the heater's own (fitted) behaviour is unchanged by it. All four figures are assumed (HEAT_SINK_ASSUMED).
+    heat_sink: Optional[dict] = None
+
+    def heat_sink_g(self, fan: Optional[float] = None) -> float:
+        hs = self.heat_sink
+        fan = hs.get("fan", 1.0) if fan is None else fan
+        return float(hs["fan_on_w_k"] if fan >= 0.5 else hs["fan_off_w_k"])
+
+    def heat_sink_steady(self, t_from_c: float, fan: Optional[float] = None) -> float:
+        """Heat-sink temperature once settled with the node it hangs on at t_from_c (fan: 1 running, 0 stopped;
+        default the plant's own setting)."""
+        hs, g = self.heat_sink, self.heat_sink_g(fan)
+        return (hs["heatbreak_w_k"] * float(t_from_c) + g * self.net.ambient) / (hs["heatbreak_w_k"] + g)
 
     def power_at(self, t_heater_c: float) -> float:
         """Power at 100 % duty with the heating element at t_heater_c (constant for an ordinary cartridge or pad)."""
@@ -686,6 +702,14 @@ def simulate_heater(plant: HeaterPlant, cfg: dict, target: float, t_end: float, 
     duty, shutdown, shutdown_reason, t_shutdown = 0.0, False, "", None
     out_of_range = 0
     fused, t_fuse, relay_open, t_relay = False, None, False, None
+    hs = plant.heat_sink
+    if hs is not None:      # settled against the starting temperature of the node it hangs on (ambient on a cold start)
+        # "fan" is the heat-sink fan's state once the fault has struck (or throughout, without a fault);
+        # "fan_before_fault" its state until then (default: the same)
+        i_hs = net.idx[hs.get("from_node", "block")]
+        fan_before = hs.get("fan_before_fault", hs.get("fan", 1.0))
+        t_hs = plant.heat_sink_steady(T[i_hs], fan_before)
+        hs_peak = t_hs
     fkind = (fault or {}).get("kind")
     t_fault = (fault or {}).get("at", 0.0)
     detached_temp = None
@@ -762,8 +786,12 @@ def simulate_heater(plant: HeaterPlant, cfg: dict, target: float, t_end: float, 
         applied = duty
         if faulted and fkind == "mosfet_short":
             applied = 1.0
+        if hs is not None:
+            g_hs = plant.heat_sink_g(None if (faulted or fault is None) else fan_before)
+            t_hs += (hs["heatbreak_w_k"] * (T[i_hs] - t_hs) - g_hs * (t_hs - net.ambient)) * dt / hs["capacity_j_k"]
+            hs_peak = max(hs_peak, t_hs)
         for c in plant.cutoffs:
-            if c["kind"] == "thermal_fuse" and not fused and T[net.idx[c["node"]]] >= c["trip_c"]:
+            if c["kind"] == "thermal_fuse" and not fused and (t_hs if c["node"] == "heat_sink" else T[net.idx[c["node"]]]) >= c["trip_c"]:
                 fused, t_fuse = True, t
             if c["kind"] == "psu_relay" and shutdown and not relay_open and t >= t_shutdown + c.get("delay_s", 0.05):
                 relay_open, t_relay = True, t
@@ -784,6 +812,8 @@ def simulate_heater(plant: HeaterPlant, cfg: dict, target: float, t_end: float, 
            "state": T, "shutdown": shutdown, "shutdown_reason": shutdown_reason, "t_shutdown": t_shutdown,
            "fuse_opened_at": t_fuse, "relay_opened_at": t_relay, "peaks": tuner.peaks() if tuner is not None else peaks,
            "control_code": code}
+    if hs is not None:
+        res["heat_sink_c"], res["heat_sink_peak_c"] = float(t_hs), float(hs_peak)
     if tuner is not None and len(res["peaks"]) >= 6:
         res["autotune_pid"] = tuner.final_pid()
     return res
@@ -1217,6 +1247,19 @@ def apply_motor_curves(design) -> dict:
 
 
 # ============================================================ heater plants from the design
+# A hotend's heat sink, as seen by a thermal cut-off taped to it. ASSUMED values for a V6-size finned aluminium sink with
+# a 30 mm fan (no measurement, no vendor figure): override on the cut-off device, device_from(el, d, "<tco>",
+# heat_sink={"capacity_j_k": ..., "fan_on_w_k": ..., "fan_off_w_k": ...}); the heat break comes from the heater's
+# own "heatbreak_w_k" when it has one.
+HEAT_SINK_ASSUMED = {"capacity_j_k": 10.0,      # about 11 g of aluminium
+                     "heatbreak_w_k": 0.02,     # block to sink through the heat break: about 4.5 W at 250 degC
+                     "fan_on_w_k": 0.25,        # sink to air with its fan running: about 4 K/W
+                     "fan_off_w_k": 0.03}       # sink to still air: natural convection and radiation from about 30 cm^2
+HEAT_SINK_NOTE = ("heat sink as a side model: warmed through the heat break by the block, cooled by its fan (fan_on_w_k) or by "
+                  "still air (fan_off_w_k). All figures ASSUMED for a V6-size sink with a 30 mm fan, not measured and not from a "
+                  "vendor; the heat it takes is already in the block's fitted loss")
+
+
 def build_plants(el: Electrical, design, circuit: dict) -> dict:
     """One HeaterPlant per firmware heater, from the heater device's parameters, the CAD and the delivered power."""
     comps = {c.name: c for c in design.components} if design is not None else {}
@@ -1232,10 +1275,17 @@ def build_plants(el: Electrical, design, circuit: dict) -> dict:
         basis = {"heater_power_w": power}
         cut = []
         wires, series, src = trace_supply(el, f"{hd.name}.in")
+        is_plate = p.get("model") == "plate"
+        heat_sink = None
         for dev, _, _ in series:
             if dev.kind == "thermal_fuse":
-                cut.append({"kind": "thermal_fuse", "node": dev.params.get("node", "plate"), "trip_c": dev.ratings["trip_c"],
-                            "device": dev.name})
+                # where the cut-off sits: on the plate of a bed; on a hotend, the heat sink unless the design says "block"
+                # (no common thermal cut-off survives on a 250 degC block; the nuisance check says so if one is put there)
+                node = dev.params.get("node") or ("plate" if is_plate else "heat_sink")
+                cut.append({"kind": "thermal_fuse", "node": node, "trip_c": dev.ratings["trip_c"], "device": dev.name})
+                if node == "heat_sink" and not is_plate:
+                    heat_sink = {**HEAT_SINK_ASSUMED, "heatbreak_w_k": float(p.get("heatbreak_w_k", HEAT_SINK_ASSUMED["heatbreak_w_k"])),
+                                 **{k: float(v) for k, v in (dev.params.get("heat_sink") or {}).items()}, "fan": 1.0, "from_node": "block"}
         if any(d.kind == "relay" and d.params.get("cuts") == "psu" and el.wires_at(f"{d.name}.ctrl") for d in el.devices.values()):
             cut.append({"kind": "psu_relay", "delay_s": 0.05})
         if p.get("model") == "plate":
@@ -1317,13 +1367,24 @@ def build_plants(el: Electrical, design, circuit: dict) -> dict:
                        "r_series_ohm": round(r_ser, 4)}
                 basis["ptc"] = {**ptc, "note": "PTC element: power at 100 % duty falls with the element's temperature; "
                                                "heater_power_w is the cold (23 degC) figure"}
+            if heat_sink is not None:
+                basis["heat_sink"] = {**heat_sink, "note": HEAT_SINK_NOTE}
             plants[hname] = HeaterPlant(hname, net, "cartridge", "block", "block", power,
-                                        sensor_tau_s=tau, cutoffs=cut, basis=basis, ptc=ptc)
+                                        sensor_tau_s=tau, cutoffs=cut, basis=basis, ptc=ptc, heat_sink=heat_sink)
         if sd is not None and sd.params.get("points"):
             board_in = next((el.port(el.other_end(w, f"{sd.name}.out"))[1] for w in el.wires_at(f"{sd.name}.out")), None)
             pull = (board_in.extra.get("pullup_ohm") if board_in else None) or 4700.0
             bits = (board_in.extra.get("adc_bits") if board_in else None) or 12
             plants[hname].thermistor = Thermistor(sd.params["points"], sd.params.get("beta"), pull, bits, sd.params.get("sensor_type", ""))
+    for hname, pl in plants.items():      # a cut-off said to sit on a node this heater's model does not have: say so, do not crash
+        bad = [c for c in pl.cutoffs if c["kind"] == "thermal_fuse" and c["node"] not in pl.net.idx
+               and not (c["node"] == "heat_sink" and pl.heat_sink is not None)]
+        if bad:
+            pl.cutoffs = [c for c in pl.cutoffs if c not in bad]
+            pl.basis["cutoffs_not_modelled"] = [
+                {"device": c["device"], "node": c["node"],
+                 "why": f"this heater's thermal model has no node '{c['node']}': use one of {sorted(pl.net.idx)}"
+                        + ("" if "plate" in pl.net.idx else " or 'heat_sink'") + " (device_from(..., node=...))"} for c in bad]
     return plants
 
 
@@ -1458,7 +1519,10 @@ def probe_geometry(design) -> dict | None:
     gap0 = float(noz[2] - bb.max.Z)
     out["nozzle_above_bed_at_home_pose_mm"] = round(gap0, 3)
     if jz is not None:   # how close to the nozzle the Z travel can bring the bed (firmware Z at the joint's upper end)
-        out["nozzle_above_bed_at_end_of_z_travel_mm"] = round(gap0 - jz.range[1], 3)
+        # the mechanical end: the working range plus any declared over-travel (Joint.overtravel)
+        out["nozzle_above_bed_at_end_of_z_travel_mm"] = round(gap0 - jz.mechanical_range[1], 3)
+        out["nozzle_above_bed_at_end_of_working_z_range_mm"] = round(gap0 - jz.range[1], 3)
+        out["z_overtravel_past_working_range_mm"] = round(jz.mechanical_range[1] - jz.range[1], 3)
     if jx is None or jy is None:
         return out
     # machine coordinates: nozzle at X = q - lo; the bed's centre and extent in the same frame
@@ -1468,7 +1532,24 @@ def probe_geometry(design) -> dict | None:
     bmax = [bb.max.X - noz[0] - jx.range[0], bb.max.Y - noz[1] - jy.range[0]]
     size = pc.shape.bounding_box().size
     margin = rt.get("edge_margin_mm") or PROBE_DEFAULTS["edge_margin_mm"] or round(max(min(size.X, size.Y), 2.0 * sn), 1)
-    area = [[max(0.0, bmin[k]), min(trav[k], bmax[k])] for k in (0, 1)]              # where the nozzle can print
+    reach = [[max(0.0, bmin[k]), min(trav[k], bmax[k])] for k in (0, 1)]             # where the nozzle can be over the plate
+    centre_ = [(bmin[k] + bmax[k]) / 2 for k in (0, 1)]
+    declared = print_area_size(design)
+    if declared is not None:
+        # the DECLARED print area (design.printer["print_area"], centred on the plate): travel beyond it, e.g. added so
+        # the probe can reach, is not print area
+        want = [[centre_[k] - declared[k] / 2, centre_[k] + declared[k] / 2] for k in (0, 1)]
+        area = [[max(reach[k][0], want[k][0]), min(reach[k][1], want[k][1])] for k in (0, 1)]
+        out["print_area_basis"] = f"declared: design.printer['print_area'] = {declared[0]:g} x {declared[1]:g} mm, centred on the plate"
+        out["print_area_declared"] = [[round(v, 3) for v in a] for a in want]
+        out["print_area_outside_nozzle_reach_mm"] = {
+            "x_low": round(max(0.0, reach[0][0] - want[0][0]), 3), "x_high": round(max(0.0, want[0][1] - reach[0][1]), 3),
+            "y_low": round(max(0.0, reach[1][0] - want[1][0]), 3), "y_high": round(max(0.0, want[1][1] - reach[1][1]), 3)}
+    else:
+        area = reach
+        out["print_area_basis"] = ("not declared (design.printer['print_area']): taken as the whole XY travel over the plate, so "
+                                   "travel added for probing counts as print area")
+    out["nozzle_reach_over_plate"] = [[round(v, 3) for v in a] for a in reach]
     mesh = [[max(bmin[k] + margin, off[k]), min(bmax[k] - margin, trav[k] + off[k])] for k in (0, 1)]   # where the probe can sense
     centre = [(bmin[k] + bmax[k]) / 2 for k in (0, 1)]
     home = [min(max(centre[k] - off[k], 0.0), trav[k]) for k in (0, 1)]              # nozzle position that puts the probe mid-bed
@@ -1481,6 +1562,21 @@ def probe_geometry(design) -> dict | None:
                 "unprobed_strip_mm": {"x_low": round(max(0.0, mesh[0][0] - area[0][0]), 2), "x_high": round(max(0.0, area[0][1] - mesh[0][1]), 2),
                                       "y_low": round(max(0.0, mesh[1][0] - area[1][0]), 2), "y_high": round(max(0.0, area[1][1] - mesh[1][1]), 2)}})
     return out
+
+
+def print_area_size(design) -> tuple | None:
+    """The print area a printer design claims, (x, y) in mm, centred on the bed plate: design.printer["print_area"] as
+    (x, y) or (x, y, z). None when the design does not say."""
+    pa = (getattr(design, "printer", None) or {}).get("print_area")
+    if pa is None:
+        return None
+    try:
+        x, y = float(pa[0]), float(pa[1])
+    except Exception:
+        raise ValueError("design.printer['print_area'] must be (x, y) or (x, y, z) in mm, centred on the bed plate")
+    if x <= 0 or y <= 0:
+        raise ValueError("design.printer['print_area'] sizes must be positive")
+    return (x, y)
 
 
 def _probe_pin(el: Electrical, design) -> tuple:
@@ -1531,6 +1627,9 @@ def extruder_gearing_lines(el: Electrical, ex: dict) -> list:
     if g["full_steps_per_rotation"]:
         L.append(f"full_steps_per_rotation: {int(g['full_steps_per_rotation'])}")
     return L
+
+
+SENSORLESS_SGTHRS_START = 100      # StallGuard threshold written for a sensorless axis: a starting point, not a prediction
 
 
 def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict | None = None) -> str:
@@ -1592,7 +1691,8 @@ def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict
         e = ends.get(jn, {})
         L += [f"[stepper_{ax}]", f"step_pin: {pins['step']}", f"dir_pin: {pins['dir']}", f"enable_pin: !{pins['enable']}",
               f"microsteps: {st.get('microsteps', 16)}", f"rotation_distance: {dr.get('travel_per_rev', 40):g}"]
-        if e.get("sensorless"):
+        sensorless = bool(e.get("sensorless"))
+        if sensorless:
             L += [f"endstop_pin: tmc2209_stepper_{ax}:virtual_endstop"]
         elif e.get("probe"):
             L += ["endstop_pin: probe:z_virtual_endstop" if probe_pin else "# endstop_pin: PROBE NOT WIRED"]
@@ -1607,8 +1707,11 @@ def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict
             at_max = e.get("at", "min") == "max"
             z_end = (gap - hi) if (gap is not None and at_max) else 0.0
             zmax = (gap - lo) if gap is not None else hi - lo
+            ot_lo, ot_hi = j.mechanical_range[0] - lo, j.mechanical_range[1] - hi     # declared over-travel (<= 0, >= 0)
             if e.get("probe"):     # Z = 0 comes from the probe's z_offset; travel may go below it by what the joint has
-                z_low = (gap - hi) if gap is not None else -2.0
+                # down to the MECHANICAL end of travel: the working range plus the declared over-travel past the nozzle
+                # plane (Joint.overtravel), which is what a low-built bed and a bed mesh need
+                z_low = (gap - (hi + ot_hi)) if gap is not None else -2.0
                 L += [f"position_min: {min(0.0, z_low):.3f}", f"position_max: {zmax:.3f}", "homing_speed: 5", "second_homing_speed: 1",
                       "homing_retract_dist: 3"]
             else:
@@ -1616,13 +1719,29 @@ def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict
                       f"position_max: {zmax:.3f}", "homing_speed: 5", "second_homing_speed: 1"]
         else:
             at_max = e.get("at", "min") == "max"
-            L += [f"position_endstop: {(hi - lo) if at_max else 0:g}", "position_min: 0", f"position_max: {hi - lo:g}",
-                  f"homing_speed: {min(50.0, j.max_speed or 50.0):g}"]
+            L += [f"position_endstop: {(hi - lo) if at_max else 0:g}", "position_min: 0", f"position_max: {hi - lo:g}"]
+            if sensorless:
+                # Klipper docs/TMC_Drivers.md, "Sensorless Homing": half a motor turn per second, no second homing move
+                L += [f"homing_speed: {dr.get('travel_per_rev', 40) / 2:g}", "homing_retract_dist: 0"]
+            else:
+                L += [f"homing_speed: {min(50.0, j.max_speed or 50.0):g}"]
             if at_max:
                 L += ["homing_positive_dir: true"]
         L += ["", f"[tmc2209 stepper_{ax}]", f"uart_pin: {pins['uart']}", f"tx_pin: {pins['tx']}", f"uart_address: {pins['uart_address']}",
               f"run_current: {st['run_current']:.3f}", f"sense_resistor: {board.ratings.get('sense_resistor_ohm', 0.11):.3f}",
-              "stealthchop_threshold: 0", ""]
+              "stealthchop_threshold: 0"]
+        if sensorless:
+            sg = int((fw.get("sensorless") or {}).get(jn, {}).get("sgthrs", SENSORLESS_SGTHRS_START))
+            if pins.get("diag"):
+                L += [f"# sensorless homing: the driver's DIAG output reaches {pins['diag']} ONLY with a jumper fitted on the board's "
+                      f"{pins.get('diag_jumper', 'DIAG')} header,",
+                      f"# and with nothing plugged into that axis's endstop connector (same MCU pin). driver_SGTHRS is a STARTING "
+                      f"value: tune it on the machine",
+                      "# (Klipper docs/TMC_Drivers.md, 'Sensorless Homing': 255 is most sensitive, 0 never triggers).",
+                      f"diag_pin: ^{pins['diag']}", f"driver_SGTHRS: {sg}"]
+            else:
+                L += ["# diag_pin: THIS BOARD'S CATALOGUE ENTRY NAMES NO DIAG PIN FOR THIS DRIVER: sensorless homing cannot be configured"]
+        L += [""]
     ex = fw.get("steppers", {}).get("extruder")
     hx = (fw.get("heaters") or {}).get("extruder")
     if ex and hx:

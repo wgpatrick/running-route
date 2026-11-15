@@ -100,7 +100,7 @@ def _dir_class(dn: str, axis=None, up=(0, 0, 1)) -> str:
     return "from above" if z < -0.5 else ("from below" if z > 0.5 else "from the side")
 
 
-def analyse(design: Design, p: Plan | None = None, _depth: int = 0, reorient: bool = True) -> dict:
+def analyse(design: Design, p: Plan | None = None, _depth: int = 0, reorient: bool = True, within: str | None = None) -> dict:
     """Simulate the build. With reorient=True the assembly may be turned onto any of its six sides
     between steps; the orientation schedule is chosen to minimise holding, awkward directions and flips."""
     p = p or plan(design)
@@ -194,7 +194,7 @@ def analyse(design: Design, p: Plan | None = None, _depth: int = 0, reorient: bo
     subs, flips, prev_o = {}, 0, "+Z"
     loose: set[str] = set()   # parts placed but not yet touched by an installed screw
     if p.steps[0].kind == "subassembly" and _depth < 2:   # the starting unit is itself built first
-        inner0 = analyse(design, plan(design, members=p.steps[0].parts), _depth + 1, reorient)
+        inner0 = analyse(design, plan(design, members=p.steps[0].parts), _depth + 1, reorient, within=p.steps[0].unit)
         subs[p.steps[0].unit] = inner0
         time_s += inner0["metrics"]["estimated_time_s"]
     for i, st in enumerate(steps):
@@ -238,7 +238,7 @@ def analyse(design: Design, p: Plan | None = None, _depth: int = 0, reorient: bo
                 counts["two_move_paths"] += 1
                 t += T_TWO_STEP
             if st.kind == "subassembly" and _depth < 2:
-                inner = analyse(design, plan(design, members=st.parts), _depth + 1, reorient)
+                inner = analyse(design, plan(design, members=st.parts), _depth + 1, reorient, within=st.unit)
                 subs[st.unit] = inner
                 t += inner["metrics"]["estimated_time_s"]
         if how == "from below":
@@ -259,6 +259,12 @@ def analyse(design: Design, p: Plan | None = None, _depth: int = 0, reorient: bo
         flips += im["times_assembly_is_turned"]
         for k_ in counts:
             counts[k_] += im[k_]
+    # everything that could not be placed, at this level and inside every bench sub-assembly, with the reason
+    from .planner import not_placed as _not_placed
+
+    missing = _not_placed(p, within)
+    for name, inner in subs.items():
+        missing += inner["metrics"]["not_placed"]
     metrics = {"complete": p.complete and all(v["metrics"]["complete"] for v in subs.values()),
                "steps": len(p.steps), "parts": sum(len(s_.parts) for s_ in p.steps),
                "fasteners": n_fast, "fastener_types": len(skus), "_skus": sorted(skus),
@@ -266,7 +272,11 @@ def analyse(design: Design, p: Plan | None = None, _depth: int = 0, reorient: bo
                **counts, "times_assembly_is_turned": flips,
                "subassemblies": {k: v["metrics"]["estimated_time_s"] for k, v in subs.items()},
                "estimated_time_s": round(time_s, 0), "estimated_time_min": round(time_s / 60.0, 1),
-               "trapped": sorted(p.trapped)}
+               "trapped": sorted(p.trapped) + sorted(f"{m['in']}/{m['unit']}" for m in missing if m["in"] != within),
+               "not_placed": missing}
+    if not metrics["complete"] and not missing:      # never "incomplete" without saying what and why
+        metrics["not_placed"] = [{"unit": None, "in": within, "reason": "unknown",
+                                  "why": "the simulation is incomplete but no unit was recorded as trapped: a planner defect"}]
     return {"plan": p, "rows": rows, "metrics": metrics, "subassemblies": subs}
 
 

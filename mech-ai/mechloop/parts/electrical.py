@@ -60,7 +60,11 @@ def skr_mini_e3_v3() -> Stock:
     xh = dict(connector="JST-XH", max_a=3.0)
     # endstop inputs: MCU pins on the 3.3 V rail. pin_max_v is a conservative assumption (see sources)
     es = dict(logic_v=3.3, pin_max_v=3.6)
-    drv = lambda step, dir_, en, addr: {"step": step, "dir": dir_, "enable": en, "uart": "PC11", "tx": "PC10", "uart_address": addr}
+    # "diag": the MCU pin the driver's DIAG output reaches for sensorless homing. On this board that is the axis's own
+    # endstop input, and ONLY with a jumper fitted on the 2-pin X-DIAG / Y-DIAG / Z-DIAG / E0-DIAG header ([BTT]
+    # schematic: header pin 1 = driver DIAG, pin 2 = the X-STOP / ... net); the endstop connector must then stay empty.
+    drv = lambda step, dir_, en, addr, diag, hdr: {"step": step, "dir": dir_, "enable": en, "uart": "PC11", "tx": "PC10",
+                                                   "uart_address": addr, "diag": diag, "diag_jumper": hdr}
     ports = {
         "POWER": dict(kind="power_in", connector="screw-5.08", max_a=20.0, at=v(8.3, 3.5), dir=edge),
         "HB": dict(kind="heater_out", connector="screw-5.08", max_a=10.0, pin="PC9", at=v(21.6, 3.5), dir=edge),
@@ -74,11 +78,11 @@ def skr_mini_e3_v3() -> Stock:
         "E0-STOP": dict(kind="endstop_in", **es, pin="PC15", at=v(74.5, 16.5), dir=up, **xh),
         "THB": dict(kind="thermistor_in", pin="PC4", at=v(86.2, 3.4), dir=up, pullup_ohm=4700.0, adc_bits=12, **xh),
         "TH0": dict(kind="thermistor_in", pin="PA0", at=v(94.4, 3.4), dir=up, pullup_ohm=4700.0, adc_bits=12, **xh),
-        "XM": dict(kind="stepper_out", pin=drv("PB13", "!PB12", "PB14", 0), group="X", conductors=4, at=v(13.2, 66.9), dir=up, **xh),
-        "YM": dict(kind="stepper_out", pin=drv("PB10", "!PB2", "PB11", 2), group="Y", conductors=4, at=v(33.6, 66.9), dir=up, **xh),
-        "ZAM": dict(kind="stepper_out", pin=drv("PB0", "PC5", "PB1", 1), group="Z", conductors=4, at=v(47.1, 66.9), dir=up, **xh),
-        "ZBM": dict(kind="stepper_out", pin=drv("PB0", "PC5", "PB1", 1), group="Z", conductors=4, at=v(60.2, 66.9), dir=up, **xh),
-        "EM": dict(kind="stepper_out", pin=drv("PB3", "!PB4", "PD1", 3), group="E", conductors=4, at=v(73.9, 66.9), dir=up, **xh),
+        "XM": dict(kind="stepper_out", pin=drv("PB13", "!PB12", "PB14", 0, "PC0", "X-DIAG"), group="X", conductors=4, at=v(13.2, 66.9), dir=up, **xh),
+        "YM": dict(kind="stepper_out", pin=drv("PB10", "!PB2", "PB11", 2, "PC1", "Y-DIAG"), group="Y", conductors=4, at=v(33.6, 66.9), dir=up, **xh),
+        "ZAM": dict(kind="stepper_out", pin=drv("PB0", "PC5", "PB1", 1, "PC2", "Z-DIAG"), group="Z", conductors=4, at=v(47.1, 66.9), dir=up, **xh),
+        "ZBM": dict(kind="stepper_out", pin=drv("PB0", "PC5", "PB1", 1, "PC2", "Z-DIAG"), group="Z", conductors=4, at=v(60.2, 66.9), dir=up, **xh),
+        "EM": dict(kind="stepper_out", pin=drv("PB3", "!PB4", "PD1", 3, "PC15", "E0-DIAG"), group="E", conductors=4, at=v(73.9, 66.9), dir=up, **xh),
         "PS-ON": dict(kind="signal_out", pin="PC13", at=v(61.5, 16.5), dir=up, **xh),
         "TFT": dict(kind="host", connector="dupont", max_a=2.0, pin="USART2 PA2/PA3", conductors=4, at=v(74.0, 25.0), dir=up),
     }
@@ -91,6 +95,10 @@ def skr_mini_e3_v3() -> Stock:
         "outline_holes": "[BTT] SIZE drawing: 103.75 x 70.25 mm, five 3.1 mm holes",
         "connector_positions": "[BTT] scaled from the SIZE/PIN drawings, +/- 1 mm",
         "pins": "[BTT] PIN drawing, cross-checked with [KLIP] generic-bigtreetech-skr-mini-e3-v3.0.cfg",
+        "diag pins (sensorless homing)": "[BTT] schematic (vendor_docs/BTT_SKR_MINI_E3_V3.0_SCH.pdf): each TMC2209's DIAG (pin 11) "
+                                         "goes to a 2-pin header X-DIAG / Y-DIAG / Z-DIAG / E0-DIAG whose other pin is the X-STOP / "
+                                         "Y-STOP / Z-STOP / E0-STOP net (PC0 / PC1 / PC2 / PC15). DIAG is NOT routed without the jumper. "
+                                         "[KLIP]'s example config for this board has no sensorless section",
         "input_fuse_a": "[BTT] schematic F1: 20 A / 32 V",
         "sense_resistor_ohm": "[BTT] schematic 0R11; [KLIP] default 0.110",
         "driver_max_rms_a": "[KLIP] tmc2208.py: CS=31 -> 32*0.32/(32*(0.11+0.02)*sqrt(2)) = 1.74 A rms",
@@ -307,7 +315,9 @@ def bed_heater_pad(size_x: float = 200.0, size_y: float = 200.0, watts: float = 
 @part
 def thermal_fuse(trip_c: float = 133.0, hold_c: float = 109.0, amps: float = 10.0) -> Stock:
     """Axial one-shot thermal cut-off, 4 mm x 11 mm, taped against the part it protects and wired in series with the
-    heater. Local frame: axis along X, centred."""
+    heater. Local frame: axis along X, centred. Where it sits thermally is `node` on its device
+    (device_from(el, d, name, node=...)): the plate of a bed heater by default; for a hotend the heat sink by default
+    ("heat_sink": it then follows the sink, which stays cool while its fan runs) or "block"."""
     ports = {"a": dict(flying=True, kind="series", connector="ferrule", max_a=amps, at=(-5.5, 0, 0), dir=(-1, 0, 0)),
              "b": dict(flying=True, kind="series", connector="ferrule", max_a=amps, at=(5.5, 0, 0), dir=(1, 0, 0))}
     ratings = {"trip_c": trip_c, "hold_c": hold_c, "amps": amps, "resistance_ohm": 0.002}
@@ -316,7 +326,7 @@ def thermal_fuse(trip_c: float = 133.0, hold_c: float = 109.0, amps: float = 10.
     return Stock(Rot(0, 90, 0) * Cylinder(2.0, 11.0), f"TCO-{trip_c:g}C-{amps:g}A", f"Thermal cut-off {trip_c:g} degC {amps:g} A", 0.001,
                  material="brass",
                  ratings={"electrical": {"kind": "thermal_fuse", "ports": ports, "ratings": ratings, "sources": sources,
-                                         "product": dict(product=f"Axial thermal cut-off, Tf {trip_c:g} degC, {amps:g} A (SEFUSE SF-E class)", vendor="commodity (Schott/NEC SEFUSE or equivalent)", part_number=None, form="component", off_the_shelf=True, custom_pcb=False, builder_work="crimp (never solder) in series with the heater lead; tape against the plate with polyimide tape"), "params": {"through": {"a": "b", "b": "a"}, "node": "plate"}}, "approximate": True},
+                                         "product": dict(product=f"Axial thermal cut-off, Tf {trip_c:g} degC, {amps:g} A (SEFUSE SF-E class)", vendor="commodity (Schott/NEC SEFUSE or equivalent)", part_number=None, form="component", off_the_shelf=True, custom_pcb=False, builder_work="crimp (never solder) in series with the heater lead; tape against the plate with polyimide tape"), "params": {"through": {"a": "b", "b": "a"}}}, "approximate": True},
                  interfaces=_ports_to_interfaces(ports), cost_usd=1.0)
 
 

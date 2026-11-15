@@ -83,7 +83,8 @@ def verify_interference(design: Design) -> VerifierResult:
                           hint="Parts in one rigid body must be in contact (bolted, seated or bonded). Close the gap or add the connecting part.")
         _fastening(design, contacts, r)
         _threads(design, r)
-        r.metrics = {"pairs": n_pairs, "pairs_checked_exactly": n_exact,
+        cpl = _coupler_insertion(design, r)
+        r.metrics = {**({"coupler_shaft_insertion": cpl} if cpl else {}), "pairs": n_pairs, "pairs_checked_exactly": n_exact,
                      "worst_overlap_mm3": round(worst, 2),
                      "contact_pairs": sum(len(v) for v in contacts.values()) // 2}
     return r
@@ -203,3 +204,71 @@ def _threads(design: Design, r: VerifierResult) -> None:
                       f"an M{d:g} needs >= {need:.1f} mm there.",
                       screw=c.name, into=tgt, engagement_mm=round(eng, 2), required_mm=round(need, 2),
                       hint="Use a longer screw, thicken the tapped part, or use a nut / threaded insert.")
+
+
+def _coupler_insertion(design: Design, r: VerifierResult) -> dict:
+    """How far each shaft goes into a coupler, against how far a shaft of that size can go (`max_insertion_a` /
+    `max_insertion_b` of the catalogue coupler: where it would meet the elastomer spider). Measured as the reach, along
+    the coupler's axis from that end, of whatever other part lies on the axis inside the bore's diameter. A shaft drawn
+    deeper also overlaps the coupler's solid (reported as `interference`); this finding gives the numbers, and holds
+    even where an overlap was allowed."""
+    import numpy as np
+    from build123d import Cylinder, Pos
+
+    from ..geom import location_from_matrix
+
+    out: dict = {}
+    for c in design.components:
+        itf = c.meta.get("interfaces") or {}
+        if "max_insertion_a" not in itf or not c.meta.get("placement"):
+            continue
+        P = np.vstack([np.array(c.meta["placement"], dtype=float), [0, 0, 0, 1]])
+        o, z = P[:3, 3], P[:3, 2]
+        L = float(itf["length"])
+        loc = location_from_matrix(P)
+        ends = (("a", float(itf["bore_a"]), float(itf["max_insertion_a"]), 1.0, 0.0),
+                ("b", float(itf["bore_b"]), float(itf["max_insertion_b"]), -1.0, L))
+        for end, bore, limit, sgn, z_end in ends:
+            probe = (Pos(0, 0, L / 2) * Cylinder(bore / 2 - 0.05, L)).moved(loc)
+            best = None
+            for other in design.components:
+                if other is c or other.body != c.body or (other.sku or "").startswith(("SHCS", "NUT")):
+                    continue
+                if not bboxes_overlap(other.shape, probe, 0.0):
+                    continue
+                try:
+                    common = other.shape & probe
+                except Exception:
+                    continue
+                sols = common.solids() if common is not None else []
+                if not sols or sum(x.volume for x in sols) < VOL_TOL:
+                    continue
+                zs = []
+                for so in sols:
+                    bb = so.bounding_box()
+                    for x in (bb.min.X, bb.max.X):
+                        for y in (bb.min.Y, bb.max.Y):
+                            for zz in (bb.min.Z, bb.max.Z):
+                                zs.append(float((np.array([x, y, zz]) - o) @ z))
+                # the part must enter from this end: it reaches the end face and the larger part of it is outside that end
+                ob = other.shape.bounding_box()
+                ctr = float((np.array([(ob.min.X + ob.max.X) / 2, (ob.min.Y + ob.max.Y) / 2, (ob.min.Z + ob.max.Z) / 2]) - o) @ z)
+                if (sgn > 0 and (min(zs) > 0.3 or ctr > L / 2)) or (sgn < 0 and (max(zs) < L - 0.3 or ctr < L / 2)):
+                    continue
+                depth = (max(zs) - z_end) if sgn > 0 else (z_end - min(zs))
+                if best is None or depth > best[1]:
+                    best = (other.name, depth)
+            if best is None:
+                continue
+            name, depth = best
+            out[f"{c.name}:{end}"] = {"shaft": name, "bore_mm": bore, "insertion_mm": round(depth, 2), "max_insertion_mm": limit,
+                                      **({"clamped_bore_depth_mm": itf["bore_depth"]} if "bore_depth" in itf else {})}
+            if depth > limit + 0.05:
+                r.add("error", "shaft_too_deep_in_coupler",
+                      f"{name} is drawn {depth:.1f} mm into the {bore:g} mm bore of {c.name}, but a shaft of that size can enter "
+                      f"only {limit:g} mm before it meets the coupler's elastomer spider: {depth - limit:.1f} mm too deep.",
+                      shaft=name, coupler=c.name, insertion_mm=round(depth, 2), max_insertion_mm=limit,
+                      too_deep_mm=round(depth - limit, 2),
+                      hint=f"Move the shaft {depth - limit:.1f} mm out of the coupler (or the coupler and what drives it the other "
+                           f"way). The hub clamps {itf.get('bore_depth', limit):g} mm of shaft.")
+    return out

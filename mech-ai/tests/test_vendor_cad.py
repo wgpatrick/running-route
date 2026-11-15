@@ -21,7 +21,7 @@ WITH_CAD = [
     lambda: gt2_idler(20, 5.0, 6.0), leadscrew_nut_t8, endstop_switch, lambda: fan(30), lambda: fan(40),
     control_board, skr_mini_e3_v3, lambda: psu_lrs("LRS-350-24"), lambda: psu_24v(350),
     lambda: shcs("M3", 8), lambda: shcs("M5", 35), lambda: shcs("M2.5", 12), lambda: hex_nut("M3"), lambda: hex_nut("M5"),
-    hotend_v6, extruder_roto, hotend_revo, lambda: hotend_revo(40, 12.0),
+    hotend_v6, extruder_roto, hotend_revo, lambda: hotend_revo(40, 12.0), shaft_coupler,
 ]
 
 

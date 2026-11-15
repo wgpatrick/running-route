@@ -37,6 +37,10 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
     if len(comps) < 2:
         r.skipped = "fewer than two parts"
         return r
+    if design.subassemblies:
+        with timed(r):
+            _with_subassemblies(design, base, r)
+        return r
     with timed(r):
         meshes = {n: to_trimesh(c.shape) for n, c in comps.items()}
         bounds = {n: m.bounds for n, m in meshes.items()}
@@ -240,7 +244,7 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
                      "insert_directions": {o["part"]: _opp(o["direction"]) for o in reversed(order)}
                      if len(order) <= 200 else "omitted",
                      "parts_placed": len(order) + 1, "parts_total": len(comps),
-                     "complete": not trapped, "exact_overlap_checks": len(exact_cache)}
+                     "complete": not trapped, "not_placed": trapped, "exact_overlap_checks": len(exact_cache)}
         if design.fasteners:
             ok = sum(1 for f in design.fasteners if f.name in comps and f.name not in trapped)
             r.metrics["fasteners_drivable_in_sequence"] = f"{ok}/{len(design.fasteners)}"
@@ -248,6 +252,92 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
             if f.name not in comps:
                 r.add("error", "unknown_fastener", f"Fastener '{f.name}' is not a component.", fastener=f.name)
     return r
+
+
+def _with_subassemblies(design: Design, base: str | None, r: VerifierResult) -> None:
+    """The same question for a design that declares bench sub-assemblies (design.subassemblies), answered the way
+    `mechloop assemble` builds it: each declared group is built on its own on the bench (its screws need driver access
+    among its own parts only) and then goes into the main assembly as one unit, straight in. Straight moves only, as
+    in the plain check: no two-move paths."""
+    from ..assembly.planner import not_placed, plan
+
+    comps = {c.name: c for c in design.components}
+    tools = {f.name: f for f in design.fasteners if f.name in comps}
+    for sname, parts in design.subassemblies.items():
+        unknown = [p for p in parts if p not in comps]
+        if unknown:
+            r.add("error", "subassembly_unknown_part", f"Sub-assembly '{sname}' lists {unknown[:6]}, not in the design.",
+                  subassembly=sname, parts=unknown)
+    levels: list = []          # (name of the sub-assembly or None, plan)
+    top = plan(design, base=base, two_step=False)
+    levels.append((None, top))
+
+    def descend(p, depth):
+        for st in p.steps:
+            if st.kind == "subassembly" and depth < 2:
+                inner = plan(design, members=st.parts, two_step=False)
+                levels.append((st.unit, inner))
+                descend(inner, depth + 1)
+
+    descend(top, 0)
+    declared = {st.unit for _, p in levels for st in p.steps if st.kind == "subassembly"}
+    ignored = sorted(set(design.subassemblies) - declared)
+    missing, checks = [], 0
+    for within, p in levels:
+        checks += p.exact_checks
+        missing += not_placed(p, within)
+    for m in missing:
+        where = f" in the bench sub-assembly '{m['in']}'" if m["in"] else ""
+        u = m["unit"]
+        if u in tools and m["reason"] == "blocked":
+            f = tools[u]
+            blk = sorted({x for v in (m.get("blocked_by") or {}).values() for x in v})
+            r.add("error", "tool_access_blocked",
+                  f"Fastener {u}{where} cannot be driven: the screw and a {f.tool_diameter:.0f} mm x {f.tool_length:.0f} mm "
+                  f"driver along its axis are blocked by {blk}, which must already be in place when it is installed.",
+                  fastener=u, blockers=blk, subassembly=m["in"],
+                  hint="Add an access hole in the blocking part, flip the fastener, or move it clear.")
+        elif m["reason"] == "held":
+            r.add("error", "trapped_part",
+                  f"{u}{where} cannot be installed: it is held by fasteners {m['held_by']} that themselves cannot be driven.",
+                  part=u, held_by=m["held_by"], subassembly=m["in"],
+                  hint="Fix access to those fasteners first; this part is only stuck because they are.")
+        else:
+            what = "The sub-assembly" if len(m["parts"]) > 1 else "Part"
+            r.add("error", "trapped_part",
+                  f"{what} {u}{where} cannot be installed/removed along any straight path: {m['why']}.",
+                  part=u, parts=m["parts"], blocked_by_direction=m.get("blocked_by", {}), subassembly=m["in"],
+                  hint="Split the enclosing part, add an opening or slot along one direction, reorder so the blocker installs "
+                       "later, or change what is in the sub-assembly.")
+    loose = sorted({st.unit for _, p in levels for st in p.steps if st.unsupported})
+    if loose and not missing:
+        r.add("warning", "unsupported_step",
+              f"The only assembly order found installs something before the part that supports it (around {loose[:6]}); "
+              f"it would need holding in place.", parts=loose,
+              hint="Add a locating feature, change which part carries the screws, or put the parts in one bench sub-assembly.")
+    seq = [st.unit for st in top.steps]
+    placed = sum(len(st.parts) for _, p in levels for st in p.steps if st.kind != "subassembly")
+    r.metrics = {"base": top.base, "method": "declared sub-assemblies are built on the bench and installed as one unit "
+                                             "(the planner behind `mechloop assemble`, straight moves only)",
+                 "assembly_sequence": seq if len(seq) <= 200 else "omitted",
+                 "subassemblies": {name: {"parts": len([k for k, v in top.unit_of.items() if v == name]) or
+                                          next((len(st.parts) for _, p in levels for st in p.steps if st.unit == name), 0),
+                                          "sequence": [st.unit for st in p.steps], "complete": p.complete}
+                                   for name, p in levels if name},
+                 "subassemblies_not_used": ignored,
+                 "parts_placed": placed, "parts_total": len(comps), "complete": not missing,
+                 "not_placed": missing, "exact_overlap_checks": checks}
+    if ignored:
+        r.add("warning", "subassembly_not_used",
+              f"Declared sub-assemblies {ignored} were not treated as units (fewer than two parts in the design, the whole "
+              f"design, or sharing a part with another sub-assembly).", subassemblies=ignored)
+    if design.fasteners:
+        bad = {m["unit"] for m in missing}
+        ok = sum(1 for f in design.fasteners if f.name in comps and f.name not in bad)
+        r.metrics["fasteners_drivable_in_sequence"] = f"{ok}/{len(design.fasteners)}"
+    for f in design.fasteners:
+        if f.name not in comps:
+            r.add("error", "unknown_fastener", f"Fastener '{f.name}' is not a component.", fastener=f.name)
 
 
 def _opp(d: str) -> str:

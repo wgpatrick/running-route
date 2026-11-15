@@ -294,3 +294,27 @@ def plan(design: Design, base: str | None = None, members: list[str] | None = No
             trapped[u] = {"reason": "blocked", "blocked_by": blocked_cache.get(u, {})}
     steps = [Step(base_unit, list(units[base_unit]), kind(base_unit), [], onto=[])] + list(reversed(removed))
     return Plan(base_part, steps, trapped, unit_of, not trapped, len(W.exact_cache))
+
+
+def not_placed(p: Plan, within: str | None = None) -> list[dict]:
+    """Every unit of a plan that could not be placed, with the reason: {"unit", "parts", "kind", "in" (the bench
+    sub-assembly being built, or None for the main assembly), "reason" ("held" | "blocked"), "held_by" or
+    "blocked_by" (parts in the way, per direction tried), "why" (one sentence)}."""
+    out = []
+    members = {}
+    for u, parts in ((u, [k for k, v in p.unit_of.items() if v == u]) for u in p.trapped):
+        members[u] = parts or [u]
+    for u, why in sorted(p.trapped.items()):
+        row = {"unit": u, "parts": members[u], "in": within, "reason": why.get("reason")}
+        if why.get("reason") == "held":
+            row["held_by"] = list(why.get("held_by", []))
+            row["why"] = f"still held by fastener(s) {row['held_by']} that could not be removed first"
+        else:
+            bb = why.get("blocked_by") or {}
+            row["blocked_by"] = {k: list(v) for k, v in bb.items()}
+            every = sorted({x for v in bb.values() for x in v})
+            row["why"] = (f"no straight way in: blocked by {every}" if every else
+                          "it was never free to try: taking it off would leave other parts unsupported, or the parts "
+                          "around it could not be removed first")
+        out.append(row)
+    return out

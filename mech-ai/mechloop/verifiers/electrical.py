@@ -165,6 +165,29 @@ def _completeness(ctx, r, m):
                       hint="Give the part ratings={'electrical': inductive_probe_template(...)} and add it with device_from().")
             elif d.name not in wired_to_board:
                 r.add("error", "endstop_not_wired", f"Axis {jn}: probe '{e['probe']}' is not wired to an endstop/probe input.", joint=jn)
+        elif e.get("sensorless"):
+            port = E._board_port_of(el, st["motors"][0]) if st.get("motors") else None
+            pins = port.pin if port is not None and isinstance(port.pin, dict) else {}
+            if port is None:
+                pass                                   # axis_without_driver above
+            elif not pins.get("diag"):
+                r.add("error", "sensorless_not_supported",
+                      f"Axis {jn} is declared sensorless, but the board's catalogue entry names no DIAG pin for the driver on "
+                      f"port {port.name}: Klipper's virtual endstop needs one (diag_pin).", joint=jn,
+                      hint="Use an endstop switch, or a board whose catalogue entry states where the driver's DIAG output goes.")
+            else:
+                shared = [f"{w.a} -> {w.b}" for w in el.wires
+                          for end in (w.a, w.b) if end.split(".")[0] in el.devices and el.devices[end.split(".")[0]].kind == "board"
+                          and getattr(el.devices[end.split(".")[0]].ports.get(end.split(".", 1)[1]), "pin", None) == pins["diag"]]
+                if shared:
+                    r.add("error", "sensorless_pin_shared",
+                          f"Axis {jn} homes sensorless through MCU pin {pins['diag']}, but that pin's connector is also wired "
+                          f"({shared[0]}): a switch there and the driver's DIAG output would fight.", joint=jn, pin=pins["diag"])
+                r.add("info", "sensorless_needs_diag_jumper",
+                      f"Axis {jn} homes sensorless: the driver's DIAG output reaches MCU pin {pins['diag']} only with a jumper on "
+                      f"the board's {pins.get('diag_jumper', 'DIAG')} header, and the StallGuard threshold in printer.cfg "
+                      f"(driver_SGTHRS) is a starting value that must be tuned on the machine. Stall detection is not simulated.",
+                      joint=jn, pin=pins["diag"], jumper=pins.get("diag_jumper"))
         elif not e.get("sensorless"):
             d = sw_dev.get(e.get("switch"))
             if d is None or d.name not in wired_to_board:
@@ -711,6 +734,32 @@ def heater_report(el, design, circuit, quick: bool = False) -> dict:
         faults[f"sensor_detached before heating to {tg:g} degC"] = _fault_summary(cold, 0.0, tg)
         import dataclasses
 
+        if plant.heat_sink is not None:
+            # A cut-off on the heat sink sees the sink, not the block. With the heat-sink fan running (the normal state, and
+            # the state a hung controller leaves it in) the sink stays cool; it gets hot only once the fan has stopped. Both
+            # are simulated, long enough for the sink to settle (it is slow: capacity over conductance).
+            hsd = plant.heat_sink
+            hs_rep = {"assumed": dict(hsd), "cutoffs": [c["device"] for c in plant.cutoffs if c.get("node") == "heat_sink"],
+                      "trip_c": min(c["trip_c"] for c in plant.cutoffs if c.get("node") == "heat_sink")}
+            for label, fan in (("fan_running", 1.0), ("fan_stopped", 0.0)):
+                # the heater stuck on with nothing but the heat-sink cut-off(s) to stop it: what they do on their own
+                # (the fan-stopped case: the fan stops at the moment the heater sticks on, from a normal hold with it running)
+                pl = dataclasses.replace(plant, heat_sink={**hsd, "fan": fan, "fan_before_fault": 1.0},
+                                         cutoffs=[c for c in plant.cutoffs if c.get("node") == "heat_sink"])
+                g = pl.heat_sink_g()
+                long_ = max(horizon, 6.0 * hsd["capacity_j_k"] / (hsd["heatbreak_w_k"] + g) + 60.0)
+                hold_c = pl.heat_sink_steady(tg, fan)
+                run_f = E.simulate_heater(pl, cfg, tg, t_end=long_, fault={"kind": "mosfet_short", "at": 30.0}, t0_state=hold)
+                fs = _fault_summary(run_f, 30.0, tg)
+                hs_rep[label] = {"sink_c_settled_while_holding_target": round(hold_c, 1),
+                                 "sink_c_peak_with_heater_stuck_on": round(run_f["heat_sink_peak_c"], 1),
+                                 "sink_c_settled_with_heater_stuck_on": round(pl.heat_sink_steady(ch["max_temp_c"]), 1),
+                                 "cutoff_opens": run_f["fuse_opened_at"] is not None,
+                                 "cutoff_opens_after_s": None if run_f["fuse_opened_at"] is None else round(run_f["fuse_opened_at"] - 30.0, 1),
+                                 "block_peak_c": fs["peak_c"], "simulated_s": round(long_, 0)}
+                if fan == 0.0:
+                    faults[f"mosfet_short with the heat-sink fan stopped, holding {tg:g} degC"] = fs
+            out["heat_sink_cutoff"] = hs_rep
         bare = dataclasses.replace(plant, cutoffs=[])       # the same heater (PTC law included) with nothing to cut it off
         fr = _fault_run(bare, cfg, tg, hold, {"kind": "mosfet_short", "at": 30.0}, horizon)
         fr["settles_at_c"] = round(ch["max_temp_c"], 1)
@@ -822,7 +871,7 @@ def _heaters(ctx, r, m):
         for fname, f in h["faults"].items():
             bare = "no independent cut-off" in fname
             if fname.startswith("mosfet_short"):
-                if bare:
+                if bare or "heat-sink fan stopped" in fname:
                     continue
                 hard = [cu for cu in h["cutoffs"] if cu["kind"] == "thermal_fuse"]
                 settle = h["faults"]["mosfet_short with no independent cut-off"]["settles_at_c"]
@@ -855,7 +904,40 @@ def _heaters(ctx, r, m):
                       f"Heater '{hn}', fault '{fname}': detected after {f['detected_after_s']:.0f} s (limit {tlim:g}), peak "
                       f"{f['peak_c']:.0f} degC (limit {plim:g}).", heater=hn, fault=fname, detected_after_s=f["detected_after_s"], peak_c=f["peak_c"],
                       hint="Tighten verify_heater max_error / check_gain_time, or lower max_temp.")
+        for bad in (h.get("basis") or {}).get("cutoffs_not_modelled", []):
+            r.add("error", "thermal_fuse_node_unknown",
+                  f"Thermal fuse '{bad['device']}' in series with heater '{hn}' is declared on '{bad['node']}': {bad['why']}. "
+                  f"It was left out of the simulation.", device=bad["device"], heater=hn)
+        hsr = h.get("heat_sink_cutoff")
+        if hsr:
+            on, off = hsr["fan_running"], hsr["fan_stopped"]
+            names = ", ".join(f"'{n}'" for n in hsr["cutoffs"])
+            txt = (f"Thermal cut-off {names} ({hsr['trip_c']:g} degC) is on the hotend's heat sink, so it follows the sink, not the "
+                   f"block. Heater stuck on with the heat-sink fan running: the sink reaches {on['sink_c_peak_with_heater_stuck_on']:.0f} "
+                   f"degC (settles at {on['sink_c_settled_with_heater_stuck_on']:.0f}) and the cut-off "
+                   + (f"opens after {on['cutoff_opens_after_s']:.0f} s" if on["cutoff_opens"] else "does NOT open")
+                   + f". If the fan stops at the same moment: {off['sink_c_peak_with_heater_stuck_on']:.0f} degC and it "
+                   + (f"opens after {off['cutoff_opens_after_s']:.0f} s (block peak {off['block_peak_c']:.0f} degC)" if off["cutoff_opens"]
+                      else f"does not open within {off['simulated_s']:.0f} s")
+                   + f". (Fan stopped in normal printing at {max(h['targets_c']):g} degC: the sink settles at "
+                     f"{off['sink_c_settled_while_holding_target']:.0f} degC.) Heat-sink figures are assumed, not measured.")
+            if not on["cutoff_opens"]:
+                r.add("warning", "cutoff_on_heat_sink_needs_fan_failure",
+                      txt + " It protects against heat creep and a stopped fan; it is not an independent cut-off for a heater "
+                            "stuck on while the fan runs.", heater=hn, devices=hsr["cutoffs"], fan_running=on, fan_stopped=off,
+                      hint="For the stuck-on case add a relay ahead of the supply that the firmware drops, a self-limiting (PTC) "
+                           "heater, or a cut-off rated for and mounted at the block.")
+            else:
+                r.add("info", "cutoff_on_heat_sink", txt, heater=hn, devices=hsr["cutoffs"], fan_running=on, fan_stopped=off)
         for cu in h["cutoffs"]:
+            if cu["kind"] == "thermal_fuse" and cu.get("node") == "heat_sink" and hsr:
+                dv = el.devices[cu["device"]]
+                normal = hsr["fan_running"]["sink_c_settled_while_holding_target"]
+                if dv.ratings.get("hold_c", 1e9) < normal + 5.0:
+                    r.add("error", "thermal_fuse_nuisance", f"Thermal fuse '{dv.name}' holds only to {dv.ratings['hold_c']:g} degC; the heat "
+                          f"sink runs at about {normal:.0f} degC with its fan on, so it will age and open in normal use.",
+                          device=dv.name, part=dv.component)
+                continue
             if cu["kind"] == "thermal_fuse":
                 dv = el.devices[cu["device"]]
                 if dv.ratings.get("hold_c", 1e9) < max(h["targets_c"]) + 5.0:

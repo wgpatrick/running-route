@@ -46,38 +46,7 @@ def verify_subsystems(design: Design) -> VerifierResult:
             if sw is None or "trigger" not in sw.meta.get("interfaces", {}):
                 r.add("error", "endstop_missing_switch", f"Endstop for joint {jn}: '{e.get('switch')}' is not a catalog endstop switch.")
                 continue
-            j = joints[jn]
-            q_end = j.range[0] if e.get("at", "min") == "min" else j.range[1]
-            trig = np.array(sw.meta["interfaces"]["trigger"][0])
-            other = j.child if sw.body != j.child and not _under(design, sw.body, j.child) else j.parent
-
-            def gap(q):
-                T = forward_kinematics(design, {jn: float(q)})
-                p = (T[sw.body] @ np.array([*trig, 1.0]))[:3]
-                best = 1e9
-                for c in design.components:
-                    moves_with_switch = (c.body == sw.body) or (_under(design, c.body, j.child) == _under(design, sw.body, j.child))
-                    if c.name == sw.name or moves_with_switch:
-                        continue
-                    local = (np.linalg.inv(T[c.body]) @ np.array([*p, 1.0]))[:3]
-                    try:
-                        best = min(best, c.shape.distance_to(Vertex(*local)))
-                    except Exception:
-                        pass
-                return best
-
-            g_end = gap(q_end)
-            back = q_end + (3.0 if e.get("at", "min") == "min" else -3.0)
-            g_back = gap(back)
-            homed[jn] = {"switch": sw.name, "at": e.get("at", "min"), "gap_at_end_mm": round(g_end, 2), "gap_3mm_before_mm": round(g_back, 2)}
-            if g_end > 1.0:
-                r.add("error", "endstop_not_reached",
-                      f"Endstop {sw.name} on joint {jn}: at the {e.get('at', 'min')} end of travel nothing comes within "
-                      f"{g_end:.1f} mm of its trigger point, so it is never pressed.", joint=jn, gap=round(g_end, 2),
-                      hint="Move the switch, or add a tab on the moving part that reaches its trigger point at the end of travel.")
-            elif g_back < 0.3:
-                r.add("warning", "endstop_always_pressed",
-                      f"Endstop {sw.name} on joint {jn} is already touched 3 mm before the end of travel.", joint=jn)
+            homed[jn] = _switch_checks(design, e, sw, joints[jn], r)
         if design.printer:
             for ax in ("x", "y", "z"):
                 jn = design.printer.get(ax)
@@ -89,7 +58,7 @@ def verify_subsystems(design: Design) -> VerifierResult:
         if homed:
             m["homing"] = homed
         # ---- cables
-        poses = sample_poses(design, per_joint=7, n_random=10) if design.joints else [{}]
+        poses = sample_poses(design, per_joint=7, n_random=10, mechanical=True) if design.joints else [{}]
         cab = {}
         cabled_bodies = set()
         for c in design.cables:
@@ -112,10 +81,14 @@ def verify_subsystems(design: Design) -> VerifierResult:
             cab[c.name] = {"length_mm": c.length, "furthest_apart_mm": round(dmax, 1), "closest_mm": round(dmin, 1),
                            "needed_mm": round(need, 1)}
             for body, pt in (c.a, c.b):
-                near = min((x.shape.distance_to(Vertex(*pt)) for x in design.components if x.body == body), default=1e9)
-                if near > 3.0:
-                    r.add("error", "cable_clamp_in_air", f"Cable {c.name}: its clamp point on body '{body}' is {near:.0f} mm from any part.",
-                          cable=c.name)
+                near, on = clamp_distance(design, body, pt)
+                cab[c.name].setdefault("clamp_to_surface_mm", {})[body] = None if near is None else round(near, 2)
+                if near is None or near > CLAMP_MAX_MM + 1e-6:
+                    r.add("error", "cable_clamp_in_air",
+                          f"Cable {c.name}: its clamp point on body '{body}' is "
+                          + (f"{near:.1f} mm from the nearest surface ({on}); a clamp must be within {CLAMP_MAX_MM:g} mm of a part."
+                             if near is not None else "on a body with no parts."),
+                          cable=c.name, body=body, distance_mm=None if near is None else round(near, 2), nearest=on)
             if c.length < need:
                 r.add("error", "cable_too_short",
                       f"Cable {c.name} is {c.length:.0f} mm but its ends get {dmax:.0f} mm apart at "
@@ -175,6 +148,158 @@ def verify_subsystems(design: Design) -> VerifierResult:
     return r
 
 
+CLAMP_MAX_MM = 3.0      # a cable clamp point must be within this of the surface of a part on its body
+
+
+def surface_distance(shape, point) -> float:
+    """Distance from a point to a solid part: 0 inside it or on its surface, else the true distance to the nearest
+    point of its surface (which may be in the middle of a flat face, not only on an edge or vertex). The CAD kernel's
+    own shape-to-vertex distance treats a solid as its skin, so a point inside reads as its depth: that is corrected."""
+    pt = tuple(float(x) for x in point)
+    try:
+        solids = list(shape.solids())
+    except Exception:
+        solids = []
+    for so in solids:
+        try:
+            if so.is_inside(pt, 1e-6):
+                return 0.0
+        except Exception:
+            pass
+    try:
+        return float(shape.distance_to(Vertex(*pt)))
+    except Exception:
+        return float("inf")
+
+
+def clamp_distance(design: Design, body: str, point) -> tuple:
+    """(distance, part name) from a cable clamp point to the nearest part on `body`: to its simulation solid or, where
+    the catalogue part has a detail model (vendor CAD), to that, whichever is nearer. A clamp sits on the real part."""
+    best, on = None, None
+    p = np.array(point, dtype=float)
+    for x in design.components:
+        if x.body != body:
+            continue
+        for shp, what in ((x.shape, ""), (x.detail, " (its CAD model)")):
+            if shp is None:
+                continue
+            bb = shp.bounding_box()
+            lo, hi = np.array([bb.min.X, bb.min.Y, bb.min.Z]), np.array([bb.max.X, bb.max.Y, bb.max.Z])
+            box_d = float(np.linalg.norm(np.maximum(np.maximum(lo - p, p - hi), 0.0)))     # never more than the true distance
+            if best is not None and box_d >= best:
+                continue
+            d = surface_distance(shp, point)
+            if best is None or d < best:
+                best, on = d, x.name + what
+    return best, on
+
+
+REACH_TOL = 0.1         # mm a striker may stop short of the latest operating position (numerical / drawing tolerance)
+RETRACT_MM = 5.0        # Klipper's default homing_retract_dist: after backing off this far the switch must have let go
+
+
+def _switch_checks(design: Design, e: dict, sw, j, r: VerifierResult) -> dict:
+    """A lever switch homing one joint, with the switch's unit-to-unit spread.
+
+    The switch operates when its lever is pushed to the operating position, which lies anywhere within
+    +/-operating_position_tol of nominal (OMRON D2F hinge lever: 6.8 +/-1.5 mm). So at the end of the joint's mechanical
+    travel (range plus declared over-travel) the striker must have pushed the lever to the LATEST operating position
+    (`trigger_latest`), or some units never switch; and it must not push past the point where the lever lies on the
+    switch case (`case_limit`). A unit at the other extreme switches earlier by up to twice the tolerance: the axis then
+    homes that much before the end of travel, which costs working travel at the far end, and after backing off the
+    lever must be released (earliest operating position plus the movement differential).
+    Parts without the spread data (hand-made switches) are judged at their one trigger point as before."""
+    jn = j.name
+    itf = sw.meta["interfaces"]
+    at = e.get("at", "min")
+    q_work = j.range[0] if at == "min" else j.range[1]
+    q_end = j.mechanical_range[0] if at == "min" else j.mechanical_range[1]
+    P = np.vstack([np.array(sw.meta["placement"], dtype=float), [0, 0, 0, 1]]) if sw.meta.get("placement") else None
+    trig = np.array(itf["trigger"][0], dtype=float)
+    tol = float(itf.get("operating_position_tol", 0.0) or 0.0)
+    press = None
+    if P is not None and "press_direction" in itf:
+        press = P[:3, :3] @ np.array(itf["press_direction"], dtype=float)
+        press /= np.linalg.norm(press)
+
+    def gap(q, point):
+        T = forward_kinematics(design, {jn: float(q)})
+        p = (T[sw.body] @ np.array([*point, 1.0]))[:3]
+        best = 1e9
+        for c in design.components:
+            moves_with_switch = (c.body == sw.body) or (_under(design, c.body, j.child) == _under(design, sw.body, j.child))
+            if c.name == sw.name or moves_with_switch:
+                continue
+            local = (np.linalg.inv(T[c.body]) @ np.array([*p, 1.0]))[:3]
+            bb = c.shape.bounding_box()
+            lo, hi = np.array([bb.min.X, bb.min.Y, bb.min.Z]), np.array([bb.max.X, bb.max.Y, bb.max.Z])
+            if float(np.linalg.norm(np.maximum(np.maximum(lo - local, local - hi), 0.0))) >= best:
+                continue
+            best = min(best, surface_distance(c.shape, local))       # 0 once the striker has passed the point
+        return best
+
+    out = {"switch": sw.name, "at": at, "gap_at_end_mm": round(gap(q_end, trig), 2)}
+    if not tol or press is None:
+        # a switch with one trigger point and no spread data: the earlier rule
+        g_end = gap(q_end, trig)
+        back = q_end + (3.0 if at == "min" else -3.0)
+        g_back = gap(back, trig)
+        out["gap_3mm_before_mm"] = round(g_back, 2)
+        if g_end > 1.0:
+            r.add("error", "endstop_not_reached",
+                  f"Endstop {sw.name} on joint {jn}: at the {at} end of travel nothing comes within "
+                  f"{g_end:.1f} mm of its trigger point, so it is never pressed.", joint=jn, gap=round(g_end, 2),
+                  hint="Move the switch, or add a tab on the moving part that reaches its trigger point at the end of travel.")
+        elif g_back < 0.3:
+            r.add("warning", "endstop_always_pressed",
+                  f"Endstop {sw.name} on joint {jn} is already touched 3 mm before the end of travel.", joint=jn)
+        return out
+    latest, earliest = trig + tol * press, trig - tol * press                # world points on the switch at home
+    case = np.array(itf["case_limit"][0], dtype=float) if "case_limit" in itf else None
+    md = float(itf.get("movement_differential", 0.0) or 0.0)
+    g_nom, g_late = gap(q_end, trig), gap(q_end, latest)
+    g_work_nom = gap(q_work, trig)
+    out.update({"operating_position_tol_mm": tol, "mechanical_end": float(q_end), "working_end": float(q_work),
+                "short_of_nominal_operating_position_mm": round(g_nom, 2),
+                "short_of_latest_operating_position_mm": round(g_late, 2),
+                "short_of_nominal_at_working_end_mm": round(g_work_nom, 2),
+                "homes_before_end_of_travel_mm": [0.0, round(2 * tol, 2)],
+                "overtravel_guaranteed_mm": itf.get("overtravel"), "overtravel_to_case_mm": itf.get("overtravel_to_case"),
+                "note": "the axis must be stopped by the switch signal (homing), not by the striker: OMRON guarantees only "
+                        f"{itf.get('overtravel')} mm of lever travel past each unit's own operating position"})
+    where = "the end of its mechanical travel" if abs(q_end - q_work) > 1e-9 else f"the {at} end of travel"
+    if g_late > REACH_TOL:
+        r.add("error", "endstop_not_reached",
+              f"Endstop {sw.name} on joint {jn}: at {where} ({jn}={q_end:g}) the striker stops {g_late:.2f} mm short of the "
+              f"switch's latest operating position (nominal {g_nom:.2f} mm short; the operating position is nominal "
+              f"+/-{tol:g} mm unit to unit), so "
+              + ("it is never pressed." if g_nom > tol + 1e-6 else "a switch at the late end of that spread is never pressed."),
+              joint=jn, gap=round(g_late, 2), short_of_latest_mm=round(g_late, 2), short_of_nominal_mm=round(g_nom, 2),
+              operating_position_tol_mm=tol,
+              hint=f"Move the switch {g_late:.2f} mm towards its striker along the lever's travel (or lengthen the striker, or "
+                   f"declare that much over-travel on the joint if the axis really has it). The trigger point is "
+                   f"interfaces['trigger']; the point to reach is interfaces['trigger_latest'].")
+    elif case is not None:
+        g_case = gap(q_end, case)
+        out["clear_of_case_limit_mm"] = round(g_case, 2)
+        if g_case < 0.02:
+            r.add("error", "endstop_overtravel",
+                  f"Endstop {sw.name} on joint {jn}: at {where} ({jn}={q_end:g}) the striker has pushed the lever down onto "
+                  f"the switch case ({itf.get('overtravel_to_case')} mm below the latest operating position): the switch is "
+                  f"crushed.", joint=jn, hint="Move the switch away from its striker: the striker must end between "
+                                             "interfaces['trigger_latest'] and interfaces['case_limit'].")
+    # release: after the firmware's retract move a unit at the EARLY end of the spread must have let go again
+    back = q_end + (RETRACT_MM if at == "min" else -RETRACT_MM)
+    g_rel = gap(back, earliest - md * press)
+    out["clear_of_release_point_after_retract_mm"] = round(g_rel, 2)
+    if g_late <= REACH_TOL and g_rel < 0.05:
+        r.add("warning", "endstop_always_pressed",
+              f"Endstop {sw.name} on joint {jn}: {RETRACT_MM:g} mm back from the end of travel the striker still holds the "
+              f"lever at or below the release point of a switch at the early end of the spread (operating position +{tol:g} mm, "
+              f"plus the {md:g} mm movement differential).", joint=jn)
+    return out
+
+
 def _probe_checks(design: Design, e: dict, r: VerifierResult) -> dict:
     """A bed probe homing Z: its real sensing distance against the bed and nozzle geometry. The probe must switch
     before the nozzle touches (for every unit within the sensing-distance spread), the Z travel must bring the bed
@@ -192,7 +317,15 @@ def _probe_checks(design: Design, e: dict, r: VerifierResult) -> dict:
     out = {"probe": name, "checked": True, **{k: pg.get(k) for k in (
         "target", "sensing_distance_mm", "sensing_distance_tolerance_frac", "repeatability_mm", "x_offset", "y_offset",
         "face_above_nozzle_mm", "z_offset", "z_offset_range_mm", "nozzle_above_bed_at_end_of_z_travel_mm", "edge_margin_mm",
-        "mesh_min", "mesh_max", "home_xy", "home_probe_xy", "print_area", "unprobed_strip_mm", "assumed", "sources")}}
+        "nozzle_above_bed_at_end_of_working_z_range_mm", "z_overtravel_past_working_range_mm",
+        "mesh_min", "mesh_max", "home_xy", "home_probe_xy", "print_area", "print_area_basis", "print_area_declared",
+        "print_area_outside_nozzle_reach_mm", "nozzle_reach_over_plate", "unprobed_strip_mm", "assumed", "sources")}}
+    off_reach = {k: v for k, v in (pg.get("print_area_outside_nozzle_reach_mm") or {}).items() if v > 0.05}
+    if off_reach:
+        r.add("error", "print_area_not_reachable",
+              f"The declared print area ({pg['print_area_basis']}) extends past where the nozzle can be over the plate: "
+              f"{off_reach} (mm).", strips=off_reach,
+              hint="Extend the X/Y travel, enlarge or move the plate, or declare a smaller print area.")
     if not pg["rides_with_nozzle"]:
         r.add("error", "probe_not_on_toolhead", f"Bed probe '{name}' is on body '{pg['on_body']}', not on the body that carries the "
               "nozzle: its offset from the nozzle is not fixed.", part=name)
@@ -246,8 +379,9 @@ def _probe_checks(design: Design, e: dict, r: VerifierResult) -> dict:
         if strips:
             r.add("warning", "bed_mesh_does_not_cover_print_area",
                   f"Bed probe '{name}' is offset ({pg['x_offset']:g}, {pg['y_offset']:g}) mm from the nozzle and kept "
-                  f"{pg['edge_margin_mm']:g} mm inside the plate edge, so strips of the printable area are never probed: {strips} "
-                  "(mm wide). The firmware holds the nearest measured value there.", part=name, strips=strips,
+                  f"{pg['edge_margin_mm']:g} mm inside the plate edge, so strips of the print area are never probed: {strips} "
+                  f"(mm wide; print area {pg.get('print_area_basis', '')}). The firmware holds the nearest measured value there.",
+                  part=name, strips=strips,
                   hint="Acceptable if the bed is flat at the edges; otherwise move the probe closer to the nozzle or shrink the print area.")
     return out
 

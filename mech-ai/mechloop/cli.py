@@ -114,7 +114,8 @@ def main(argv=None) -> int:
         res["metrics"].pop("_skus", None)
         print(json.dumps({"design": d.name, "metrics": res["metrics"],
                           "needs_holding": holds[:30], "from_below": [r["unit"] for r in res["rows"] if r.get("direction") == "from below"][:30],
-                          "trapped": res["plan"].trapped, "artifacts": arts}, indent=1, default=str))
+                          "trapped": res["plan"].trapped, "not_placed": res["metrics"]["not_placed"],
+                          "artifacts": arts}, indent=1, default=str))
         return 0 if res["metrics"]["complete"] else 1
     if a.cmd == "score":
         from .twin.score import score

@@ -158,13 +158,20 @@ def nema17(length: int = 40) -> Stock:
     torque = v["holding_torque_nm"] * 1000.0
     shaft_len = v["shaft_length_mm"]  # from the mounting face, pilot boss included
     body = Pos(0, 0, -length / 2) * Box(v["frame_mm_max"], v["frame_mm_max"], length)  # `length` is the maximum body length
-    boss = Pos(0, 0, v["pilot_height_mm"] / 2) * Cylinder(v["pilot_dia_mm"] / 2, v["pilot_height_mm"])
-    shaft = Pos(0, 0, shaft_len / 2) * Cylinder(v["shaft_dia_mm"] / 2, shaft_len)
-    # connector / lead exit on the +X side near the rear, as in the detail model (it was missing from the solid)
-    cn = details.NEMA17_CONNECTOR
-    conn = Pos((cn["x0"] + cn["x1"]) / 2 - 0.5, 0, -length + sum(cn["z_from_rear"]) / 2) * Box(
-        cn["x1"] - cn["x0"] + 1.0, 2 * cn["half_y"], cn["z_from_rear"][1] - cn["z_from_rear"][0])
     detail, model = details.nema17(length, v, rec["part_number"])
+    vendor_step = model.get("kind") == "vendor CAD"
+    # Pilot boss: 2.0 mm on the drawings and in StepperOnline's STEP files (there 1.5 mm straight plus a 0.5 mm chamfer).
+    pilot_h = v["pilot_height_mm"]
+    boss = Pos(0, 0, pilot_h / 2) * Cylinder(v["pilot_dia_mm"] / 2, pilot_h)
+    shaft = Pos(0, 0, shaft_len / 2) * Cylinder(v["shaft_dia_mm"] / 2, shaft_len)
+    # What leaves the +X side near the rear, as in the detail model: the vendor STEP (34, 48 mm) has a small lead exit;
+    # the community model used for the other lengths has a connector block.
+    cn = details.NEMA17_LEAD_EXIT if vendor_step else details.NEMA17_CONNECTOR
+    rear = details.NEMA17_VENDOR_STEP[length]["body"] if vendor_step else length      # the STEP's own rear face (34 mm motor: 33.0)
+    conn = Pos((cn["x0"] + cn["x1"]) / 2 - 0.5, 0, -rear + sum(cn["z_from_rear"]) / 2) * Box(
+        cn["x1"] - cn["x0"] + 1.0, 2 * cn["half_y"], cn["z_from_rear"][1] - cn["z_from_rear"][0])
+    shaft_load = ({"max_radial_load_n": v["max_radial_load_n"], "max_radial_load_at_mm": v["max_radial_load_at_mm"],
+                   "max_radial_load_basis": v["max_radial_load_basis"]} if "max_radial_load_n" in v else {})
     h = v["hole_square_mm"] / 2
     holes = [(x, y, 0.0) for x in (-h, h) for y in (-h, h)]
     # published 24 V pull-out torque curve, as a fraction of holding torque. Below the first published speed the
@@ -178,18 +185,23 @@ def nema17(length: int = 40) -> Stock:
                           "max_rpm_basis": "last speed of the published pull-out torque curve",
                           "torque_curve_conditions": rec["pull_out_torque_curve"]["title"],
                           "rated_current_a": v["rated_current_a"], "phase_resistance_ohm": v["phase_resistance_ohm"],
-                          "phase_inductance_mh": v["phase_inductance_mh"], "vendor_part": rec["part_number"]},
+                          "phase_inductance_mh": v["phase_inductance_mh"], "vendor_part": rec["part_number"], **shaft_load},
                  interfaces={"mount_holes_m3": holes, "shaft_dia": v["shaft_dia_mm"], "pilot_dia": v["pilot_dia_mm"],
                              "hole_square": v["hole_square_mm"], "thread_depth": v["thread_depth_min_mm"],
-                             "shaft_length": shaft_len, "connector_side": "+X"},
+                             "shaft_length": shaft_len, "connector_side": "+X", "pilot_height": pilot_h,
+                             "lead_exit": "lead exit" if vendor_step else "connector block"},
                  cost_usd=14.0, detail=detail, model=model,
                  source=_source("stepperonline_nema17", "vendor", rec["part_number"], rec["datasheet"]["source_url"],
                                 note="torque curve points read by eye from the published graph"))
 
 
 # ----------------------------------------------------------- linear motion
-_MGN12_NOTE = ("third-party transcriptions of the Hiwin MG table; the Hiwin catalogue itself could not be fetched. "
-               "Accuracy class, preload and allowable mounting error are not sourced.")
+_MGN12_NOTE = ("confirmed by HIWIN's own catalogue (GW-11-5-EN-2207-K, section 3.5 MG series, Tables 3.76 to 3.90; "
+               "vendor_docs/Hiwin_MG_catalogue.pdf, block `catalogue` of the vendor file). The values in use are the "
+               "earlier transcriptions, equal to the catalogue's except in rounding: block mass 0.054 kg (catalogue prints "
+               "0.05), static moments 38.22 / 36.26 / 36.26 N.m (38.2 / 36.3 / 36.3), rail screw M3x8 (M3 x 10).")
+_MGN12_URL = "vendor_docs/Hiwin_MG_catalogue.pdf (HIWIN GmbH catalogue GW-11-5-EN-2207-K, printed pages 92-105; hand-collected)"
+MGN12_PRELOAD_CLASSES = ("ZF", "Z0", "Z1")
 
 
 @part
@@ -210,14 +222,23 @@ def mgn12_rail(length: float) -> Stock:
                  detail=detail, model=model,
                  interfaces={"mount_holes_m3": holes, "hole_pitch": pitch, "screw_seat_z": hr - cb_depth},
                  cost_usd=6 + 0.04 * length,
-                 source=_source("hiwin_mgn12", "secondary", "MGNR12", note=_MGN12_NOTE))
+                 source=_source("hiwin_mgn12", "vendor", "MGNR12", _MGN12_URL, note=_MGN12_NOTE))
 
 
 @part
-def mgn12h_carriage() -> Stock:
-    """MGN12H carriage block (long). Local frame: sits on an MGN12 rail whose base is Z=0; top face at Z=13."""
-    d = vendor_data("hiwin_mgn12")["parts"]
+def mgn12h_carriage(preload: str | None = None) -> Stock:
+    """MGN12H carriage block (long). Local frame: sits on an MGN12 rail whose base is Z=0; top face at Z=13.
+    preload: Hiwin's class, "ZF" (4-10 um clearance), "Z0" (0-3 um, very light preload) or "Z1" (light preload). Left
+    out, Z0 is ASSUMED (and the metrics say so): order that class, or pass the one you buy. It sets the block's radial
+    rigidity (Z0 63 N/um, Z1 81; the catalogue gives none for ZF, so a ZF block falls back to the verifier's assumed
+    figure) and the allowable parallelism error of two rails (ZF / Z0 9 um, Z1 5 um)."""
+    d = vendor_data("hiwin_mgn12")
+    cat = d["catalogue"]
+    d = d["parts"]
     v, rv = d["MGN12H_block"]["values"], d["MGNR12_rail"]["values"]
+    cls = preload or "Z0"
+    if cls not in MGN12_PRELOAD_CLASSES:
+        raise ValueError(f"mgn12h_carriage preload must be one of {MGN12_PRELOAD_CLASSES}")
     H, H1, W, L = v["assembly_height_H_mm"], v["clearance_H1_mm"], v["width_W_mm"], v["length_L_mm"]
     # block body from H1 above the rail base to H; the rail channel clears the rail's sides by 0.2 mm
     block = Pos(0, 0, (H + H1) / 2) * Box(L, W, H - H1) \
@@ -225,17 +246,28 @@ def mgn12h_carriage() -> Stock:
     holes = [(x, y, H) for x in (-v["hole_spacing_C_mm"] / 2, v["hole_spacing_C_mm"] / 2)
              for y in (-v["hole_spacing_B_mm"] / 2, v["hole_spacing_B_mm"] / 2)]
     moments = {k: v[f"static_moment_{k}_Nm"] for k in ("MR", "MP", "MY")}
+    rig = cat["radial_rigidity_n_per_um"]
+    par = cat["mounting_surface"]["max_parallelism_of_two_rails_um"]
+    stiff = {}
+    if cls in rig["columns"]:
+        stiff = {"radial_stiffness_n_per_m": rig["MGN12H"][rig["columns"].index(cls)] * 1e6,
+                 "radial_stiffness_source": f"Hiwin MG catalogue Table 3.77 (p.96): MGN12H, preload {cls}, radial, per block"}
     detail, model = details.mgn12h(v)
-    return Stock(block, "MGN12H", "MGN12H carriage block", v["mass_kg"], detail=detail, model=model,
+    return Stock(block, "MGN12H", "MGN12H carriage block" + (f" (preload {cls})" if preload else ""), v["mass_kg"],
+                 detail=detail, model=model,
                  ratings={"dynamic_load_n": v["dynamic_load_C_kN"] * 1000.0, "static_load_n": v["static_load_C0_kN"] * 1000.0,
                           "static_moment_nm": min(moments.values()), "static_moment_mr_nm": moments["MR"],
                           "static_moment_mp_nm": moments["MP"], "static_moment_my_nm": moments["MY"],
-                          "approximate": True},
-                 # the M3 x 3.5 thread depth is from the secondary table only, so it is exposed under its own key and does not
-                 # yet drive the interference verifier's thread_bottoms_out check (which reads "thread_depth")
-                 interfaces={"mount_holes_m3": holes, "top_z": H, "thread_depth_unverified": v["thread_depth_mm"]},
+                          "preload_class": cls,
+                          "preload_class_basis": "declared by the design" if preload else "assumed (catalogue default Z0; not declared)",
+                          # Hiwin's L1: the block body without end caps, the length the ball tracks bear on
+                          "ball_track_length_m": cat["block_dimensions"]["MGN12H"]["L1_mm"] * 1e-3, **stiff,
+                          "allowable_parallelism_mm": round(par["MG_12"][par["columns"].index(cls)] * 1e-3, 6),
+                          "allowable_parallelism_source": f"Hiwin MG catalogue Table 3.88 (p.104): MG_12, preload {cls}"},
+                 # M3 x 3.5: Hiwin Table 3.79, so the interference verifier's thread_bottoms_out check applies
+                 interfaces={"mount_holes_m3": holes, "top_z": H, "thread_depth": v["thread_depth_mm"]},
                  cost_usd=9.0,
-                 source=_source("hiwin_mgn12", "secondary", "MGN12H", note=_MGN12_NOTE))
+                 source=_source("hiwin_mgn12", "vendor", "MGN12H", _MGN12_URL, note=_MGN12_NOTE))
 
 
 @part
@@ -267,7 +299,9 @@ def linear_rod(diameter: float, length: float) -> Stock:
 # ----------------------------------------------------------- transmission
 # Belt width in the SKU. The 6 and 12 mm parts were catalogued before the width was part of the name and existing designs
 # and BOMs use those names, so they keep them; every other width (9 mm) carries it: "GT2-20T-B5-W9", with the rating
-# belt_width_mm. Nothing about GT2 belts or pulleys is vendor data here (gates.com refuses automated requests).
+# belt_width_mm. The pulley and idler shapes are generic parts, not Gates products: Gates' design manual
+# (vendor_docs/Gates_GT2_design_manual.pdf, mechloop/parts/vendor/gates_gt2.json) lists 2 mm pitch belts in 4, 6 and 9 mm
+# only (no 12 mm belt or sprocket as stock) and its 20-groove sprocket only with a 3/16 in (4.76 mm) plain bore.
 _GT2_LEGACY_WIDTHS = (6.0, 12.0)
 
 
@@ -300,7 +334,7 @@ def gt2_pulley(teeth: int = 20, bore: float = 5.0, belt_width: float = 6.0) -> S
                  ratings={"pitch_diameter_mm": pd, "teeth": teeth, "belt_pitch_mm": 2.0, **_gt2_width_rating(belt_width)},
                  interfaces={"bore": bore, "height": total, "belt_center_z": h_hub + h_fl + (belt_width + 1) / 2,
                              "belt_center": [(0.0, 0.0, h_hub + h_fl + (belt_width + 1) / 2)]},
-                 cost_usd=2.5)
+                 cost_usd=2.5, source=_gt2_source(belt_width, bore, "pulley"))
 
 
 @part
@@ -318,7 +352,7 @@ def gt2_idler(teeth: int = 20, bore: float = 5.0, belt_width: float = 6.0) -> St
                  ratings={"pitch_diameter_mm": pd, "teeth": teeth, "belt_pitch_mm": 2.0, **_gt2_width_rating(belt_width)},
                  interfaces={"bore": bore, "height": h, "belt_center_z": h / 2, "belt_center": [(0.0, 0.0, h / 2)],
                              "flange_dia": 2 * fl},
-                 cost_usd=2.0)
+                 cost_usd=2.0, source=_gt2_source(belt_width, bore, "idler"))
 
 
 @part
@@ -367,22 +401,50 @@ def bearing(designation: str = "608") -> Stock:
 @part
 def shaft_coupler(bore_a: float = 5.0, bore_b: float = 8.0) -> Stock:
     """Flexible jaw/beam shaft coupler, L25. Local frame: axis Z, bottom (bore_a side) at Z=0.
-    5 x 8 mm bores: StepperOnline MH2025-5-8 jaw coupling (D20 x L25). Other bores: generic D19 x L25 proxy."""
+    5 x 8 mm bores: StepperOnline MH2025-5-8 jaw coupling (D20 x L25). Its bores are short: `max_insertion_a` /
+    `max_insertion_b` in the interfaces are how far a shaft of each size can enter before it meets the elastomer spider
+    (12.05 mm for the 5 mm shaft, 8.6 mm for the 8 mm one); `bore_depth` (7.5 mm) is the length the hub clamps.
+    Other bores: generic D19 x L25 proxy with bores to mid-length."""
     src, od, length, mass, torque, extra = {}, 19.0, 25.0, 0.016, 1500.0, {"approximate": True}
+    ins_a = ins_b = length / 2
+    iface, detail, model = {}, None, {}
     if (bore_a, bore_b) == (5.0, 8.0):
         d = vendor_data("stepperonline_coupler")
         v = d["parts"]["MH2025-5-8"]["values"]
+        st = d["vendor_step"]["measured_mm"]
         od, length, mass, torque = v["outside_diameter_mm"], v["length_mm"], v["mass_g"] / 1000.0, v["rated_torque_nm"] * 1000.0
         extra = {"max_torque_nmm": v["max_torque_nm"] * 1000.0, "max_rpm": v["max_speed_rpm"],
                  "torsional_stiffness_nm_per_rad": v["torsional_stiffness_nm_per_rad"],
                  "inertia_gcm2": v["moment_of_inertia_kgm2"] * 1e7}
-        src = _source("stepperonline_coupler", "vendor", "MH2025-5-8")
-    body = Pos(0, 0, length / 2) * Cylinder(od / 2, length) - Pos(0, 0, length / 4) * Cylinder(bore_a / 2, length / 2) \
-        - Pos(0, 0, 3 * length / 4) * Cylinder(bore_b / 2, length / 2)
+        ins_a, ins_b = st["max_insertion_5mm_shaft"], st["max_insertion_8mm_shaft"]
+        iface = {"bore_depth": st["bore_depth_with_chamfer"], "max_insertion_source": "vendor STEP (vendor_cad/COUPLER-5x8.step)"}
+        src = _source("stepperonline_coupler", "vendor", "MH2025-5-8",
+                      note="bore depth and shaft insertion limits are measured in the vendor's STEP file; the drawing does not give them")
+        detail, model = details.shaft_coupler(od, length)
+    # each bore is open only as far as a shaft of that size can really go; the rest is solid, so a shaft drawn deeper
+    # overlaps the coupler and the interference verifier reports it
+    body = Pos(0, 0, length / 2) * Cylinder(od / 2, length) - Pos(0, 0, ins_a / 2) * Cylinder(bore_a / 2, ins_a) \
+        - Pos(0, 0, length - ins_b / 2) * Cylinder(bore_b / 2, ins_b)
     return Stock(body, f"COUPLER-{bore_a:g}x{bore_b:g}", f"Flexible coupler {bore_a:g} to {bore_b:g} mm", mass,
                  material="al6061", ratings={"rated_torque_nmm": torque, "angular_misalignment_deg": 1.0,   # typical for jaw couplings; not on the vendor page
                           "angular_misalignment_assumed": True, **extra},
-                 interfaces={"bore_a": bore_a, "bore_b": bore_b, "length": length, "od": od}, cost_usd=3.0, source=src)
+                 interfaces={"bore_a": bore_a, "bore_b": bore_b, "length": length, "od": od,
+                             "max_insertion_a": ins_a, "max_insertion_b": ins_b, **iface},
+                 cost_usd=3.0, source=src, detail=detail, model=model)
+
+
+def _gt2_source(belt_width: float, bore: float, what: str) -> dict:
+    """Provenance of a generic GT2 pulley / idler: what Gates' manual says about this width and bore as stock."""
+    g = vendor_data("gates_gt2")
+    stock_w = g["belt"]["stock_widths_mm"]["values"]
+    notes = [f"generic {what}, not a Gates catalogue item; dimensions are typical values, unverified"]
+    if float(belt_width) not in [float(x) for x in stock_w]:
+        notes.append(f"a {belt_width:g} mm belt in 2 mm pitch is NOT Gates stock (stock widths: {', '.join(str(x) for x in stock_w)} mm; "
+                     f"no {belt_width:g} mm sprocket either): buy generic GT2 belt and pulleys of this width")
+    if what == "pulley" and abs(bore - 4.76) > 0.05:
+        notes.append(f"Gates' 20-groove sprocket (2MR-20S) has a 3/16 in (4.76 mm) plain bore only: a {bore:g} mm bore is not Gates stock")
+    return {**_source("gates_gt2", "proxy", f"GT2 {what}", note="; ".join(notes)),
+            "gates_stock_belt_width": float(belt_width) in [float(x) for x in stock_w]}
 
 
 def belt_length(teeth_a: int, teeth_b: int, center: float, pitch: float = 2.0) -> float:
@@ -394,12 +456,18 @@ def belt_length(teeth_a: int, teeth_b: int, center: float, pitch: float = 2.0) -
 # ----------------------------------------------------- electrics and printer subsystems
 @part
 def endstop_switch() -> Stock:
-    """Lever-microswitch endstop on a small board (D2F-size hinge-lever switch soldered to a 20 x 12.5 mm board).
-    Local frame: board on Z=0 (mount face), 20 wide, from Y=-7.5 to Y=5, switch body above; the lever is pressed in -Y.
-    Two M3 holes at Y=-4.2. `trigger` is the lever's operating position at its tip, (-9.0, 10.6, 4.5): the striker must
-    reach it. The lever tip rests at Y=11.6 (`lever_free`) and bottoms on the case at Y=6.65 (`overtravel` = 3.95 mm
-    past the trigger). Three terminals come 2.6 mm out of the underside at `pin_holes` (X = -5.08, 0, 5.08, Y = -0.8):
-    the seat needs a clearance hole at each (2.5 mm drill) and must not touch them."""
+    """Lever-microswitch endstop on a small board (OMRON D2F-01L-size hinge-lever switch, gold contacts for logic-level
+    loads, soldered to a 20 x 12.5 mm board). Local frame: board on Z=0 (mount face), 20 wide, from Y=-7.5 to Y=5,
+    switch body above; the lever is pressed in -Y. Two M3 holes at Y=-4.2.
+    `trigger` is the lever's NOMINAL operating position at its tip, (-9.0, 8.4, 4.5): 6.8 mm from the switch's
+    mounting-hole line (OMRON data sheet). Unit to unit it lies anywhere within +/-`operating_position_tol` (1.5 mm) of
+    that along Y, so the striker must push the lever to Y = 6.9 (`trigger_latest`) for every unit to switch, and must
+    stop before the lever lies on the case at Y = 6.65 (`overtravel_to_case` below the latest operating position:
+    0.25 mm). OMRON guarantees only `overtravel` = 0.55 mm past each unit's own operating position, and the switch lets
+    go again up to `movement_differential` = 0.5 mm above where it operated. The lever tip rests at Y=11.6
+    (`lever_free`). Three terminals come 2.6 mm out of the underside at `pin_holes` (X = -5.08, 0, 5.08, Y = -0.8): the
+    seat needs a clearance hole at each (2.5 mm drill) and must not touch them. The terminal row is that of the
+    generated carrier board, not of a bought module."""
     e = details.ENDSTOP
     w, dpt, t = e["pcb"]
     board = Pos(0, (e["pcb_y"][0] + e["pcb_y"][1]) / 2, t / 2) * Box(w, dpt, t)
@@ -408,14 +476,37 @@ def endstop_switch() -> Stock:
     holes = [(x, y, 0.0) for x, y in e["holes"]]
     for x, y, _ in holes:   # M3 mounting holes, far enough from the switch body for a cap head to seat on the board
         board -= Pos(x, y, t / 2) * Cylinder(e["hole_d"] / 2, t)
-    trig = (-9.0, e["operate_y"], 4.5)
+    op, tol = e["operate_y"], e["operate_tol"]
+    trig = (-9.0, round(op, 3), 4.5)
     detail, model = details.endstop()
-    return Stock(board + body, "ENDSTOP-MICRO", "Microswitch endstop board (lever switch)", 0.004, material="abs",
+    om = e["omron_angled_terminals"]
+    src = _source("omron_d2f", "partial", "D2F-01L (hinge lever, PCB terminals, gold-alloy contacts, 0.1 A 30 VDC)",
+                  unverified=("carrier board", "mount_holes_m3", "pin_holes", "pin_length_below", "lever tip X"),
+                  note="switch figures (body, operating position 6.8 +/-1.5 mm, overtravel 0.55 mm min, movement differential "
+                       "0.5 mm max, operating force 0.78 N max) are OMRON's D2F data sheet. Buy the gold-contact low-current type "
+                       "(D2F-01L): a general-purpose D2F needs 100 mA at 5 V as its minimum load, a 3.3 V logic input with a "
+                       "pull-up draws far less; D2F-01 needs 1 mA. The 20 x 12.5 mm carrier board is generated, not a known "
+                       "bought module: its terminal row (0.9 mm below the body bottom, 2.62 mm through the board) is kept as "
+                       f"drawn. OMRON's right-angled terminals (-A) would be {om['row_below_body_bottom_mm']} +/-{om['row_tol_mm']} mm "
+                       f"below the body bottom and {om['through_a_1.6mm_board_mm']} mm through a 1.6 mm board: re-check the three "
+                       "terminal holes once the bought module is known")
+    return Stock(board + body, "ENDSTOP-MICRO",
+                 "Microswitch endstop board (lever switch, OMRON D2F-01L type: gold contacts, for logic-level current)", 0.004,
+                 material="abs",
                  interfaces={"trigger": [trig], "mount_holes_m3": holes, "lever_free": [e["lever_tip_free"]],
-                             "overtravel": round(e["operate_y"] - by[1], 2),
-                             "pretravel": round(e["lever_tip_free"][1] - e["operate_y"], 2),
-                             "pin_holes": [(x, y, 0.0) for x, y in e["pins"]], "pin_length_below": -e["pins_z"]},
-                 ratings={"electrical": True}, cost_usd=1.5, detail=detail, model=model)
+                             "operating_position_tol": tol,
+                             "trigger_latest": [(-9.0, round(op - tol, 3), 4.5)], "trigger_earliest": [(-9.0, round(op + tol, 3), 4.5)],
+                             "case_limit": [(-9.0, by[1], 4.5)], "press_direction": (0.0, -1.0, 0.0),
+                             "overtravel": e["overtravel_min"],                       # OMRON's guaranteed minimum past the operating position
+                             "overtravel_to_case": round(op - tol - by[1], 2),        # geometric room below the latest operating position
+                             "movement_differential": e["movement_differential"],
+                             "pretravel": round(e["lever_tip_free"][1] - op, 2),      # nominal; 1.7 to 4.7 over the spread
+                             "pin_holes": [(x, y, 0.0) for x, y in e["pins"]], "pin_length_below": -e["pins_z"],
+                             "pin_row_omron_right_angled": dict(om)},
+                 ratings={"electrical": True, "operating_force_n": e["operating_force_n"],
+                          "operating_position_mm": [round(op - e["hole_line_y"], 3), tol],
+                          "min_load": "1 mA at 5 VDC (D2F-01, gold contacts)"},
+                 cost_usd=1.5, detail=detail, model=model, source=src)
 
 
 @part

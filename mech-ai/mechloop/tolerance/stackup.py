@@ -15,11 +15,25 @@ import math
 
 import numpy as np
 
-from ..geom import bboxes_overlap
+from ..geom import bboxes_overlap, overlap_volume
 from ..model import Design
 from .process import process_of, tol
 
 N = 3000
+SEED = 0             # every tolerance simulation uses fixed seeds and a fixed order of draws: identical runs agree exactly
+CLASH_VOL = 0.5      # mm^3: two parts overlapping by more than this (and not a declared thread / press fit) clash
+
+
+def std_error(p: float, n: int) -> float:
+    """Monte Carlo standard error of a share p estimated from n simulated builds."""
+    return math.sqrt(max(p * (1.0 - p), 0.0) / max(n, 1))
+
+
+def near_limit(p: float, n: int, limit: float) -> bool:
+    """True when p is within two standard errors of `limit`: the simulation cannot tell which side it is on. For a
+    share of exactly 0 or 1 the error is taken from one build in n (the estimate cannot be closer than that)."""
+    se = max(std_error(p, n), std_error(1.0 / max(n, 1), n))
+    return abs(p - limit) <= 2.0 * se
 
 
 def _bb(shape):
@@ -35,8 +49,8 @@ def _skew_rows(c):
 class Build:
     """n randomly-built copies of the design. `at(part, point)` gives where a point on a part ends up."""
 
-    def __init__(self, design: Design, n: int = N, seed: int = 0, screw_play: dict | None = None):
-        self.d, self.n = design, n
+    def __init__(self, design: Design, n: int = N, seed: int = SEED, screw_play: dict | None = None):
+        self.d, self.n, self.seed = design, n, seed
         rng = np.random.default_rng(seed)
         comps = {c.name: c for c in design.components}
         self.comps = comps
@@ -45,15 +59,30 @@ class Build:
         box = {k: _bb(comps[k].shape) for k in names}
         self.centroid = {k: (box[k][0] + box[k][1]) / 2 for k in names}
         pairs = []
+        # Two parts that touch locate each other: that contact is a joint of the stack-up. Two parts that OVERLAP are
+        # not seated on each other, they are drawn through each other: a clash. A clash must never count as a joint
+        # (it would tie the two parts together and tighten every chain through them), unless the overlap is a declared
+        # thread or press fit (design.allow_overlap) or the pair has a declared join.
+        self.clashes: list = []
         for i, a in enumerate(names):
             for b in names[i + 1:]:
                 near = False
+                key = frozenset((a, b))
                 if bboxes_overlap(comps[a].shape, comps[b].shape, 0.05):
                     try:
                         near = comps[a].shape.distance_to(comps[b].shape) <= 0.05
                     except Exception:
                         near = True
-                if near or frozenset((a, b)) in design.joins:
+                    if near and key not in design.joins:
+                        try:
+                            vol, _ = overlap_volume(comps[a].shape, comps[b].shape)
+                        except Exception:
+                            vol = 0.0
+                        allowed = design.allowed_overlaps.get(key)
+                        if vol > CLASH_VOL and (allowed is None or vol > allowed):
+                            near = False
+                            self.clashes.append({"parts": [a, b], "overlap_mm3": round(float(vol), 2)})
+                if near or key in design.joins:
                     pairs.append((a, b))
         base = design.base if design.base in names else max(names, key=lambda k: comps[k].shape.volume)
         # keep only parts connected to the base
@@ -107,7 +136,7 @@ class Build:
                 rows.append(row / sig)
                 rhs.append((er, sig, a, b, None, c))
             self.iface.append((a, b, et))
-        self.eps = {k: rng.normal(0, tol(comps[k])["scale"], n) for k in seen}
+        self.eps = {k: rng.normal(0, tol(comps[k])["scale"], n) for k in sorted(seen)}     # sorted: a set's order changes run to run
         # right-hand sides: the random joint error, less what the two parts' size errors already account for
         R = np.zeros((len(rows), n))
         for r_i, (e, sig, a, b, k, c) in enumerate(rhs):

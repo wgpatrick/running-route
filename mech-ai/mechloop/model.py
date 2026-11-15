@@ -97,6 +97,20 @@ class Joint:
     drive: Optional[dict] = None
     min_drive_margin: float = 1.5  # available / required effort; friction is not modelled, so keep > 1
     reflected_inertia: float = 0.0  # motor rotor inertia seen at the joint (filled in from the drive)
+    # Mechanical over-travel beyond `range`, as (past the low end, past the high end), both >= 0. `range` is the WORKING
+    # range (what programs, prints and the firmware's working coordinates use); the joint can physically move over
+    # `mechanical_range`. Use it for travel that exists but is not working travel: a bed that can rise past the nominal
+    # nozzle plane (what a probe's z_offset and a bed mesh need: the firmware's position_min goes negative by it), or
+    # room past an endstop's nominal trigger point. Collisions, guide run-off, belts and cables are checked over the
+    # mechanical range. In a printer's Z over-travel towards the nozzle the bed meeting the nozzle tip is by
+    # declaration not a collision; the bed meeting anything else there is.
+    overtravel: tuple[float, float] = (0.0, 0.0)
+
+    @property
+    def mechanical_range(self) -> tuple[float, float]:
+        lo, hi = self.range
+        a, b = (tuple(self.overtravel) + (0.0, 0.0))[:2]
+        return (lo - max(float(a), 0.0), hi + max(float(b), 0.0))
 
 
 @dataclass
@@ -174,6 +188,13 @@ class Belt:
     thickness: float = 1.4
     stock_length: Optional[float] = None  # closed-loop belt length you intend to buy
     adjust: float = 3.0  # mm of tensioner/slot adjustment available
+    # Installation tension per span, N (what the tensioner is set to). None: Gates' minimum recommended installation
+    # tension for the width (mechloop/parts/vendor/gates_gt2.json: 6.2 / 9.3 / 14.2 / 18.7 N for 4 / 6 / 9 / 12 mm).
+    # The ratings verifier compares the pull it puts on a motor shaft with the motor's radial load limit.
+    tension: Optional[float] = None
+    # Pulleys on a motor shaft whose shaft end runs in an outboard support bearing (a catalog bearing on the same
+    # axis beyond the pulley): the belt pull is then not an overhung load on the motor.
+    outboard_support: Sequence[str] = ()
 
 
 @dataclass
@@ -372,7 +393,8 @@ class Design:
                 dst[frozenset(nm(x) for x in k)] = v
         for b in other.belts:
             path = [(n[0], nm(n[1]), n[2]) if n[0] == "pulley" else (n[0], bd(n[1]), pt(n[2])) for n in b.path]
-            self.belts.append(Belt(nm(b.name), path, vec(b.axis), b.width, b.thickness, b.stock_length, b.adjust))
+            self.belts.append(Belt(nm(b.name), path, vec(b.axis), b.width, b.thickness, b.stock_length, b.adjust, b.tension,
+                                   tuple(nm(x) for x in b.outboard_support)))
         for sku, e in other.bom_extras.items():
             self.bom_extra(sku, e["qty"], e["unit_cost_usd"])
         if not moved:

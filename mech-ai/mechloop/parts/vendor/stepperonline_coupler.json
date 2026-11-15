@@ -67,7 +67,7 @@
   "consequence": "the 1.0 deg angular misalignment used by the tolerance check stays an assumption; the torque, stiffness and speed figures stay product-page values"
  },
  "vendor_step_first_inspection": {
-  "_label": "first look at vendor_cad/staging/COUPLER-5x8.step on 2026-11-15; not integrated, nothing reads this",
+  "_label": "first look at the file on 2026-11-15 (then in vendor_cad/staging/); superseded by 'vendor_step'",
   "file": "vendor_cad/staging/COUPLER-5x8.step",
   "step_header_name": "MH2025-5-8.STEP (SolidWorks 2016, 2023-01-12)",
   "solids": {
@@ -92,5 +92,28 @@
    "clamp_screw_counterbore": 5.7
   },
   "mass_check_g": "hubs as aluminium 12.5 + elastomer about 1.8 + two steel screws 1.9 = about 16; product page 17"
+ },
+ "vendor_step": {
+  "_label": "integrated 2026-11-15: read by shaft_coupler() for the bore depth and shaft insertion limits; the file is the detail model",
+  "file": "vendor_cad/COUPLER-5x8.step",
+  "step_header_name": "MH2025-5-8.STEP (SolidWorks 2016, 2023-01-12)",
+  "frame": "file axis along Z at X -1.378, Y -0.015; 8 mm bore end at Z 3.156, 5 mm bore end at Z 28.256. Part frame: 5 mm end on Z=0",
+  "measured_mm": {
+   "overall_length": 25.1,
+   "outside_diameter": 20.0,
+   "bore_cylinder_depth": 7.3,
+   "bore_chamfer": 0.2,
+   "bore_depth_with_chamfer": 7.5,
+   "spider_from_each_end": 7.55,
+   "spider_centre_hole": 7.0,
+   "spider_web_from_5mm_end": [
+    12.05,
+    13.05
+   ],
+   "max_insertion_5mm_shaft": 12.05,
+   "max_insertion_8mm_shaft": 8.6
+  },
+  "how_measured": "mechloop's CAD kernel: bore cylinders 7.3 mm long behind a 0.2 mm chamfer; a 5 mm test shaft first overlaps the spider (its web) at 12.05 mm of insertion; an 8 mm test shaft first overlaps the spider (the rim of its 7 mm centre hole) between 8.5 and 8.7 mm. The first-inspection figure of 9.5 mm was where the 7 mm hole proper begins",
+  "note": "past the 7.5 mm bore a shaft is no longer clamped; the insertion limits are where it would start to crush the elastomer"
  }
 }

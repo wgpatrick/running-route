@@ -10,7 +10,7 @@ from ..model import Design
 from ..report import VerifierResult, timed
 from .fits import bores_and_shafts, screw_patterns
 from .process import PROCESS, process_of
-from .stackup import Build, _bb
+from .stackup import SEED, Build, _bb, near_limit, std_error
 
 MU_BALL, MU_NUT = 0.005, 0.2          # rolling guide, sliding bronze/steel nut (assumed)
 K_GUIDE = 15000.0                      # N/mm lateral stiffness of a small recirculating guide block (assumed)
@@ -34,7 +34,22 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
 
         resolve_drives(design)
         comps = {c.name: c for c in design.components}
-        m: dict = {"builds_simulated": n,
+        noise: list = []     # results the simulation cannot place on one side of their limit
+
+        def share(p: float, limit: float | None = None, what: str = "", builds: int = n) -> dict:
+            """Standard error of a simulated share, and whether it is within sampling error (2 s.e.) of its limit."""
+            d = {"standard_error": round(std_error(p, builds), 4)}
+            if limit is not None:
+                d["limit"] = limit
+                d["within_sampling_error_of_the_limit"] = near_limit(p, builds, limit)
+                if d["within_sampling_error_of_the_limit"]:
+                    noise.append(f"{what}: {p:.1%} +/-{std_error(p, builds):.1%} against {limit:.0%}")
+            return d
+
+        m: dict = {"builds_simulated": n, "seed": SEED,
+                   "monte_carlo": f"{n} simulated builds, fixed seed {SEED} and a fixed order of draws: an identical run gives "
+                                  f"identical numbers. Each share p has a sampling error of sqrt(p(1-p)/{n}), given beside it as "
+                                  f"standard_error; a share within two standard errors of its limit is flagged.",
                    "processes": {p: sum(1 for c in design.components if process_of(c) == p) for p in PROCESS
                                  if any(process_of(c) == p for c in design.components)}}
         sp = screw_patterns(design, r, n)
@@ -48,6 +63,15 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
         B = Build(design, n, screw_play=play)
         if B.unplaced:
             m["not_in_stackup"] = B.unplaced[:20]
+        if B.clashes:
+            # reported here too so that a `--only tolerance` run shows them; the interference verifier is the judge
+            m["clashes_not_used_as_joints"] = B.clashes[:20]
+            worst_c = max(B.clashes, key=lambda c: c["overlap_mm3"])
+            r.add("warning", "clash_in_stackup",
+                  f"{len(B.clashes)} pair(s) of parts overlap in the model without a declared thread, press fit or join "
+                  f"(largest: {worst_c['parts'][0]} and {worst_c['parts'][1]}, {worst_c['overlap_mm3']} mm^3). An overlap is a "
+                  f"clash, not a seat: it is left out of the stack-up, so it cannot tighten any tolerance chain. Fix the clash "
+                  f"(see the interference verifier) before reading the figures below.", pairs=B.clashes[:20])
         joints = {j.name: j for j in design.joints}
 
         def partner(blk, j):
@@ -88,7 +112,10 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
             spread = H.max(axis=1) - H.min(axis=1)
             nominal = float(np.ptp([float(np.mean(h)) for h in hs]))
             p_ok = float((spread <= 1.0).mean())
-            belts[b.name] = {"out_of_plane_mm_99": round(_rng99(spread), 2), "p_within_1mm": round(p_ok, 3)}
+            sh = share(p_ok, 0.95 if p_ok >= 0.875 else 0.8, f"belt {b.name} within 1 mm of plane")
+            belts[b.name] = {"out_of_plane_mm_99": round(_rng99(spread), 2), "p_within_1mm": round(p_ok, 3),
+                             "p_within_1mm_standard_error": sh["standard_error"], "limit": sh["limit"],
+                             "within_sampling_error_of_the_limit": sh["within_sampling_error_of_the_limit"]}
             if p_ok < 0.95:
                 r.add("error" if p_ok < 0.8 else "warning", "belt_out_of_plane",
                       f"Belt {b.name}: its idlers and clamps end up more than 1 mm out of plane in {1 - p_ok:.0%} of builds "
@@ -124,7 +151,16 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
             drag = 2 * MU_BALL * side
             p_ok = float((drift <= allow).mean())
             rails_m[jn] = {"rails": rails, "parallelism_error_over_travel_mm_99": round(_rng99(drift), 3),
-                           "allowable_mm": allow, "p_within_allowable": round(p_ok, 3),
+                           "allowable_mm": allow,
+                           "allowable_source": next((comps[b.name].ratings["allowable_parallelism_source"] for b in blocks
+                                                     if comps[b.name].ratings.get("allowable_parallelism_mm") == allow
+                                                     and comps[b.name].ratings.get("allowable_parallelism_source")),
+                                                    "default 0.025 mm (assumed: the guide blocks carry no maker's figure)"),
+                           **({"preload_class": "/".join(sorted({str(comps[b.name].ratings["preload_class"]) for b in blocks
+                                                                 if comps[b.name].ratings.get("preload_class")}))}
+                              if any(comps[b.name].ratings.get("preload_class") for b in blocks) else {}),
+                           "p_within_allowable": round(p_ok, 3),
+                           "p_within_allowable_standard_error": share(p_ok, None if adj else 0.9, f"rails of {jn} parallel")["standard_error"],
                            "side_load_on_blocks_n_99": round(_rng99(side), 0), "added_drag_n_99": round(_rng99(drag), 1),
                            "aligned_at_assembly": bool(adj)}
             if not adj and p_ok < 0.9:
@@ -258,6 +294,15 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
             p_lvl = float((tilt <= lh / 2).mean())
             pm["p_first_layer_reachable_as_built"] = round(p_gap, 3)
             pm["p_bed_level_within_half_a_layer_as_built"] = round(p_lvl, 3)
+            pm["p_first_layer_reachable_standard_error"] = share(p_gap, None if a_z else 0.95, "first layer reachable as built")["standard_error"]
+            pm["p_bed_level_standard_error"] = share(p_lvl, None if a_lvl else 0.95, "bed level within half a layer as built")["standard_error"]
+            # declared over-travel past the working range (Joint.overtravel): a bed built low can still be brought up
+            ot_z = abs(jz.mechanical_range[1] - jz.range[1]) if z_travel == jz.range[1] else abs(jz.range[0] - jz.mechanical_range[0])
+            if ot_z > 0:
+                p_ot = float((G[:, 0] <= lh + ot_z).mean())
+                pm["z_overtravel_mm"] = round(ot_z, 3)
+                pm["p_bed_reaches_nozzle_with_overtravel"] = round(p_ot, 3)
+                pm["p_bed_reaches_nozzle_with_overtravel_standard_error"] = round(std_error(p_ot, n), 4)
             if a_z:
                 pm["z_offset_needed_mm_99"], pm["z_offset_available_mm"] = round(_rng99(offset), 2), a_z.range_mm
                 if _rng99(offset) > a_z.range_mm:
@@ -284,6 +329,12 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
                       p_ok=round(p_lvl, 3),
                       hint="Add bed levelling (Adjustment kind='bed_level': three sprung screws or a probe with mesh compensation).")
             m["printer"] = pm
+        if noise:
+            m["within_sampling_error_of_a_limit"] = noise
+            r.add("info", "within_sampling_error_of_the_limit",
+                  f"{len(noise)} result(s) are within sampling error (two standard errors, {n} builds) of the limit they are "
+                  f"judged against, so the pass or fail could go either way with more builds: " + "; ".join(noise[:6]) + ".",
+                  results=noise)
         m["adjustments_declared"] = [{"name": a.name, "kind": a.kind, "range_mm": a.range_mm, "joint": a.joint} for a in design.adjustments]
         r.metrics = m
     return r

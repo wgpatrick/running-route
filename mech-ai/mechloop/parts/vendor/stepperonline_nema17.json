@@ -49,8 +49,7 @@
     "shaft_length_mm": 20.0,
     "shaft_length_tol_mm": 1.0,
     "d_cut_length_mm": 15.0,
-    "d_cut_flat_height_mm": 4.5,
-    "pilot_height_mm_vendor_step": 1.5
+    "d_cut_flat_height_mm": 4.5
    },
    "value_origin": {
     "mass_g": "product page (datasheet WEIGHT cell is blank)",
@@ -246,6 +245,31 @@
      "added_on_S1": "MTBF line, end-cover colour",
      "same": "0.40 A, 30 ohm, 37 mH, 0.26 N.m, 1.8 deg, frame, pilot, shaft, thread, temperatures, insulation class"
     }
+   },
+   "vendor_step": {
+    "file": "vendor_cad/17HS13-0404S1.step",
+    "measured_mm": {
+     "body_length": 33.0,
+     "pilot_dia": 22.0,
+     "pilot_height": 2.0,
+     "pilot_straight_part": 1.5,
+     "pilot_chamfer": 0.5,
+     "shaft_dia": 5.0,
+     "shaft_above_face": 20.0,
+     "hole_square": 31.0,
+     "hole_dia_as_drawn": 2.5,
+     "hole_depth": 4.5,
+     "lead_bundle_section": [
+      4.0,
+      2.5
+     ],
+     "lead_bundle_from_rear": [
+      4.5,
+      7.0
+     ],
+     "lead_stub_length_beyond_side_face": 18.0
+    },
+    "note": "the pilot boss is 2.0 mm high in the STEP (1.5 mm straight and a 0.5 mm chamfer): it AGREES with the drawing's 2.0. The first inspection's '1.5' was the straight part only. The STEP has no connector block: four leads leave one side face"
    }
   },
   "40": {
@@ -434,8 +458,7 @@
     "d_cut_flat_height_mm": 4.5,
     "max_radial_load_n": 21.0,
     "max_radial_load_at_mm": 20.0,
-    "max_radial_load_basis": "read from drawing, meaning inferred: drawing A0842 prints only 'COMMENT:LENGTH 20mm: 21N MAX'; taken as the maximum radial force on the shaft 20 mm from the mounting face",
-    "pilot_height_mm_vendor_step": 1.5
+    "max_radial_load_basis": "read from drawing, meaning inferred: drawing A0842 prints only 'COMMENT:LENGTH 20mm: 21N MAX'; taken as the maximum radial force on the shaft 20 mm from the mounting face"
    },
    "value_origin": {
     "mass_g": "product page (datasheet WEIGHT cell is blank)",
@@ -612,6 +635,31 @@
      "added": "shaft load comment (21 N at 20 mm), MTBF line",
      "same": "2.0 A, 3.0 mH, 0.59 N.m, 82 g.cm2, all dimensions and tolerances, lead 1000 +/-15"
     }
+   },
+   "vendor_step": {
+    "file": "vendor_cad/17HS19-2004S1.step",
+    "measured_mm": {
+     "body_length": 48.0,
+     "pilot_dia": 22.0,
+     "pilot_height": 2.0,
+     "pilot_straight_part": 1.5,
+     "pilot_chamfer": 0.5,
+     "shaft_dia": 5.0,
+     "shaft_above_face": 24.0,
+     "hole_square": 31.0,
+     "hole_dia_as_drawn": 2.5,
+     "hole_depth": 4.5,
+     "lead_bundle_section": [
+      4.0,
+      2.5
+     ],
+     "lead_bundle_from_rear": [
+      4.5,
+      7.0
+     ],
+     "lead_stub_length_beyond_side_face": 18.0
+    },
+    "note": "the pilot boss is 2.0 mm high in the STEP (1.5 mm straight and a 0.5 mm chamfer): it AGREES with the drawing's 2.0. The first inspection's '1.5' was the straight part only. The STEP has no connector block: four leads leave one side face"
    }
   },
   "60": {

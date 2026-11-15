@@ -21,13 +21,53 @@ def _file(name: str):
 
 
 # ------------------------------------------------------------------ motors
+# StepperOnline's own STEP files (hand-downloaded, free account; licence not stated: vendor_cad/SOURCES.md), by
+# catalogue length: file stem, the vendor part the file is of, and how the file is brought into the part frame.
+#   17HS13-0404S1: rear face Z=0, mounting face Z=33.0, shaft +Z, leads leave towards -Y.
+#   17HS19-2004S1: mounting face Z=0, shaft towards -Z, body to Z=48, leads leave towards -Y.
+NEMA17_VENDOR_STEP = {34: dict(file="17HS13-0404S1", of="17HS13-0404S1", rot=(0, 0, 90), pos=(0, 0, -33.0), body=33.0),
+                      48: dict(file="17HS19-2004S1", of="17HS19-2004S1", rot=(180, 0, -90), pos=(0, 0, 0), body=48.0)}
+# Lead exit of those two motors, measured in the vendor STEP: four leads in a 4.0 x 2.5 mm bundle leaving one side face
+# 4.5 to 7.0 mm from the rear. The STEP draws them as straight rigid stubs 18 mm long; they are flexible, so the detail
+# model keeps 5.7 mm of them (room for the leads to turn) and the simulation solid has a block of that size.
+NEMA17_LEAD_EXIT = dict(x0=21.15, x1=26.85, half_y=2.0, z_from_rear=(4.5, 7.0))   # "rear" = the STEP's rear face (body below)
+
+
 def nema17(length: int, v: dict, part_number: str):
-    """Community NEMA 17 (40 mm body, connector on one side) brought to the catalogue body and shaft length.
-    File: rear face Z=0, mounting face Z=40.1, shaft along +Z, connector on +X.  Part: file Z - body length."""
+    """34 and 48 mm: StepperOnline's own STEP of the motor (see NEMA17_VENDOR_STEP), lead stubs cut to 5.7 mm.
+    40 and 60 mm: community NEMA 17 (40 mm body, connector on one side) brought to the catalogue body and shaft length.
+    Community file: rear face Z=0, mounting face Z=40.1, shaft along +Z, connector on +X.  Part: file Z - body length."""
+    vs = NEMA17_VENDOR_STEP.get(length)
+    fv = _file(vs["file"]) if vs else None
+    if fv is not None:
+        same = "" if vs["of"] == part_number else (f" (the file is of the {vs['of']}: the same motor as the catalogue's {part_number} "
+                                                   "with a 1 m lead and connector instead of 300 mm bare leads)")
+        rec = _rec("vendor CAD", f"{vs['file']}.step",
+                   f"STEPPERONLINE {vs['of']}.STEP from the product page (hand-downloaded, free account; licence not stated){same}; "
+                   "lead stubs cut 5.7 mm from the side face",
+                   inbox=[part_number, f"{part_number}.STEP"],
+                   features=[hole_feature("shaft_dia", (0, 0, v["shaft_length_mm"] - 3), v["shaft_dia_mm"], (0, 0, 1), tol_dia=0.05),
+                             hole_feature("pilot_dia", (0, 0, 0.75), v["pilot_dia_mm"], (0, 0, 1), tol_dia=0.1)],
+                   protrusions={"zmin": (-(length - vs["body"]), f"the vendor CAD draws the body {vs['body']:g} mm long; the "
+                                         f"simulation solid keeps the drawing's maximum, {length} mm")} if length != vs["body"] else {},
+                   notes=["the pilot boss is 2.0 mm high in the STEP (1.5 mm straight and a 0.5 mm chamfer), as on the drawing",
+                          "the STEP has no connector block: four leads leave one side face 4.5 to 7.0 mm from the rear (drawn as rigid "
+                          "18 mm stubs, cut to 5.7 mm here because they are flexible); the simulation solid has the same small block on +X",
+                          "frame corners are chamfered in the model; the simulation solid keeps the full 42.3 mm square",
+                          "mounting holes are drawn at the tap-drill size (2.5 mm), 4.5 mm deep"])
+
+        def build_vendor():
+            from build123d import Box, Pos
+
+            s = vc.frame(vc.solids_of(vc.load_step(fv)), tuple(vs["rot"]), tuple(vs["pos"]))
+            cut = s - Pos(NEMA17_LEAD_EXIT["x1"] + 50.0, 0, 0) * Box(100.0, 200.0, 400.0)
+            return vc.bake(vc.solids_of(cut))
+
+        return vc.cached(f"nema17_vendor:{length}:{vs['rot']}:{vs['pos']}:{NEMA17_LEAD_EXIT['x1']}", [fv], build_vendor), rec
     f = _file("nema17_40mm_with_connector")
     rec = _rec("community CAD", "nema17_40mm_with_connector.step",
                f"{FCL}: NEMA-17_Stepper_Motor_40mm_with_connector.step, body cut at the stator and brought to {length} mm, "
-               f"shaft to {v['shaft_length_mm']:g} mm (the StepperOnline STEP for {part_number} needs a login)",
+               f"shaft to {v['shaft_length_mm']:g} mm (no StepperOnline STEP for {part_number} is in vendor_cad/)",
                inbox=[part_number, f"{part_number}.STEP"],
                features=[hole_feature("shaft_dia", (0, 0, v["shaft_length_mm"] - 3), v["shaft_dia_mm"], (0, 0, 1), tol_dia=0.05),
                          hole_feature("pilot_dia", (0, 0, 1.0), v["pilot_dia_mm"], (0, 0, 1), tol_dia=0.1)],
@@ -85,7 +125,8 @@ def mgn12h(v: dict):
     f = _file("mgn12h_block")
     rec = _rec("community CAD", "mgn12h_block.step", f"{FCL}: LinearSlide-MGN12H.step", inbox=["MGN12H"],
                mates_with=("MGN12-R",),   # the model's ball rows are drawn 25 mm^3 into the community rail's grooves
-               notes=["the community model draws the four M3 threads 3.5 mm deep, the same as the secondary table"])
+               notes=["the community model draws the four M3 threads 3.5 mm deep, the same as Hiwin's Table 3.79 (M3 x 3.5)",
+                      "end caps are not drawn, so the catalogue's L1 (32.4 mm body without end caps) is not in the model"])
     if f is None:
         return None, rec
     return vc.cached("mgn12h", [f], lambda: vc.frame(vc.solids_of(vc.load_step(f)), rot=(90, 0, 90),
@@ -155,6 +196,31 @@ def gt2_idler(teeth: int, bore: float, belt_width: float):
     return vc.cached("gt2_idler_20_5_6", [f], lambda: vc.frame(vc.solids_of(vc.load_step(f)))), rec
 
 
+COUPLER_STEP_AXIS = (-1.378, -0.015)       # axis of the vendor STEP in its own frame; the 5 mm end is at file Z = 28.256
+
+
+def shaft_coupler(od: float, length: float):
+    """StepperOnline's own STEP of the MH2025-5-8 jaw coupling: two clamp hubs, the elastomer spider and two M3 x 10
+    clamp screws (five solids, kept as an assembly). File: axis along Z at COUPLER_STEP_AXIS, 8 mm bore end at
+    Z=3.156, 5 mm bore end at Z=28.256.  Part: axis on Z, 5 mm bore end on Z=0 (file turned 180 deg about X)."""
+    f = _file("COUPLER-5x8")
+    rec = _rec("vendor CAD", "COUPLER-5x8.step",
+               "STEPPERONLINE MH2025-5-8.STEP from the product page (hand-downloaded, free account; licence not stated): hubs, "
+               "spider and clamp screws, re-centred on the part axis",
+               inbox=["MH2025-5-8"], assembly=True, no_auto_features=True,
+               features=[hole_feature("bore_a", (0, 0, 3.0), 5.0, (0, 0, 1), tol_dia=0.05),
+                         hole_feature("bore_b", (0, 0, length - 3.0), 8.0, (0, 0, 1), tol_dia=0.05)],
+               tolerance={"volume_ratio": (0.6, 1.7)},
+               notes=["the STEP is 25.1 mm long (drawing: 25)",
+                      "each bore is 7.3 mm of cylinder behind a 0.2 mm chamfer; past it the hub is open to the spider. A 5 mm shaft "
+                      "meets the spider's web 12.05 mm in, an 8 mm shaft meets the spider 8.6 mm in (its centre hole is 7 mm)"])
+    if f is None:
+        return None, rec
+    ax, ay = COUPLER_STEP_AXIS
+    return vc.cached("shaft_coupler_5x8:2", [f],
+                     lambda: vc.frame(vc.solids_of(vc.load_step(f)), rot=(180, 0, 0), pos=(0, 0, 28.256), pre=(-ax, -ay, 0.0))), rec
+
+
 def t8_nut():
     """Community T8 flanged nut. File: axis Z, barrel Z = 0..15, flange Z = 1.5..5. Part: file Z - 1.5 (flange
     bottom on Z=0, a 1.5 mm stub of the barrel below it)."""
@@ -186,14 +252,31 @@ def fan(size: int):
     return vc.cached(f"fan:{size}", [f], lambda: vc.frame(vc.solids_of(vc.load_step(f)), pos=(0, 0, -5.0))), rec
 
 
+def _d2f() -> dict:
+    """OMRON's D2F data sheet figures for the hinge-lever models (mechloop/parts/vendor/omron_d2f.json)."""
+    import json
+    from pathlib import Path
+
+    return json.loads((Path(__file__).parent / "vendor" / "omron_d2f.json").read_text(encoding="utf-8"))["hinge_lever_models"]
+
+
+_D2F = _d2f()
 ENDSTOP = {   # the endstop module, part frame (see parts.endstop_switch)
     "pcb": (20.0, 12.5, 1.6), "pcb_y": (-7.5, 5.0), "holes": ((-7.5, -4.2), (7.5, -4.2)), "hole_d": 3.2,
     # switch body (D2F size): 12.8 long, 6.55 high (Y), 5.8 thick (Z, lying on the board). It overhangs the board's
     # +Y edge by 1.65 mm so that its terminals clear the mounting holes.
     "shift_y": 1.6, "body_x": (-6.4, 6.4), "body_y": (0.1, 6.65), "body_z": (1.6, 7.4), "hole_line_y": 1.6,
-    "lever_tip_free": (-9.4, 11.59, 4.5),      # as drawn in the community model: 10.0 mm from the mounting-hole line
-    "operate_y": 10.6,                          # Omron D2F-L operating position 10 +/- 1 mm from the hole line: its low limit
+    "lever_tip_free": (-9.4, 11.59, 4.5),      # as drawn in the community model: 10.0 mm from the mounting-hole line (Omron: FP 10 max)
+    # OMRON D2F data sheet, hinge lever models (vendor_docs/ENDSTOP-MICRO_datasheet.pdf p.4): operating position
+    # 6.8 +/-1.5 mm from the mounting-hole line. Until 2026-11-15 this was 10.6 (9.0 from the hole line), a recalled
+    # figure that was really the FREE position.
+    "operate_y": 1.6 + _D2F["operating_position_mm"], "operate_tol": _D2F["operating_position_tol_mm"],
+    "overtravel_min": _D2F["overtravel_min_mm"][0], "movement_differential": _D2F["movement_differential_max_mm"][0],
+    "operating_force_n": _D2F["operating_force_max_n"][0], "free_max_y": 1.6 + _D2F["free_position_max_mm"],
+    # Terminal row and length: those of the GENERATED carrier board (no maker), kept. An Omron right-angled D2F (-A) on a
+    # board would have its legs 2.6 +/-0.2 mm below the body bottom (here 0.9) and 1.5 mm through the board (here 2.62).
     "pins": ((-5.08, -0.8), (0.0, -0.8), (5.08, -0.8)), "pins_z": -2.62,
+    "omron_angled_terminals": {"row_below_body_bottom_mm": 2.6, "row_tol_mm": 0.2, "through_a_1.6mm_board_mm": 1.5},
 }
 
 
@@ -211,8 +294,11 @@ def endstop():
                             "xmin": (-e["lever_tip_free"][0] + 0.98 - 10.0, "lever tip past the end of the board"),
                             "zmin": (-e["pins_z"], "switch terminals through the board")},
                tolerance={"volume_ratio": (0.6, 1.9)}, assembly=True,
-               notes=["operating position is the Omron D2F-L figure (10 +/- 1 mm from the mounting holes), recalled: "
-                      "omron.com was not reachable; the board is a generic one, not a named product"])
+               notes=["operating position is OMRON's D2F hinge-lever figure, 6.8 +/-1.5 mm from the mounting-hole line (data sheet p.4); "
+                      "the lever is drawn at its free position (10 mm from that line), 3.2 mm before it operates",
+                      "the community model's lever is 1.45 mm longer than OMRON's point A (9.0 against 7.55 mm from the body centre)",
+                      "the board is a generic generated one, not a named product: its terminal row (0.9 mm below the body bottom, "
+                      "2.62 mm through the board) is NOT OMRON's right-angled terminal (2.6 +/-0.2 mm below the body, 1.5 mm through)"])
     if f is None:
         return None, rec
 

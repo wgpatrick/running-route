@@ -24,15 +24,24 @@ VOL_TOL = 0.5
 
 
 def sample_poses(design: Design, per_joint: int = 9, max_corners: int = 64, n_random: int = 12,
-                 seed: int = 0) -> list[dict[str, float]]:
-    joints = [j for j in design.joints if j.range[0] != j.range[1]]
+                 seed: int = 0, mechanical: bool = False) -> list[dict[str, float]]:
+    """Poses to check: each joint alone over its travel, the corners of the joint space and random combinations.
+    mechanical=True covers each joint's mechanical range (working range plus declared Joint.overtravel); the working
+    range's own ends are then sampled too. With no over-travel declared the two are the same poses."""
+    def rng_of(j):
+        return tuple(j.mechanical_range) if mechanical else tuple(j.range)
+
+    joints = [j for j in design.joints if rng_of(j)[0] != rng_of(j)[1]]
     poses: list[dict[str, float]] = [{}]
     for j in joints:
-        span = abs(j.range[1] - j.range[0])
+        lo, hi = rng_of(j)
+        span = abs(hi - lo)
         n = int(min(41, max(per_joint, span / (10.0 if j.kind == "slide" else 7.5) + 1)))
-        for q in np.linspace(j.range[0], j.range[1], n):
-            poses.append({j.name: float(q)})
-    corners = list(itertools.product(*[(j.range[0], j.range[1]) for j in joints])) if len(joints) > 1 else []
+        qs = [float(q) for q in np.linspace(lo, hi, n)]
+        qs += [float(q) for q in j.range if mechanical and min(abs(q - x) for x in qs) > 1e-9]
+        for q in qs:
+            poses.append({j.name: q})
+    corners = list(itertools.product(*[rng_of(j) for j in joints])) if len(joints) > 1 else []
     rng = np.random.default_rng(seed)
     if len(corners) > max_corners:
         corners = [corners[i] for i in rng.choice(len(corners), max_corners, replace=False)]
@@ -40,8 +49,54 @@ def sample_poses(design: Design, per_joint: int = 9, max_corners: int = 64, n_ra
         poses.append({j.name: float(q) for j, q in zip(joints, c)})
     if len(joints) > 1:
         for _ in range(n_random):
-            poses.append({j.name: float(rng.uniform(*j.range)) for j in joints})
+            poses.append({j.name: float(rng.uniform(*rng_of(j))) for j in joints})
     return poses
+
+
+def nozzle_approach(design: Design) -> dict | None:
+    """A printer's declared Z over-travel towards the nozzle: the travel in which the bed is, by declaration, allowed to
+    pass the nominal nozzle plane (a bed built low, a bed mesh lifting a low corner). Returns the Z joint's name, which
+    end of its travel that is, the bed part, the part that carries the nozzle tip (the one the tool point lies on) and
+    the over-travel in mm; None when the design declares none. Only the bed meeting THAT part, and only as deep as the
+    bed has gone past the working range, is not a collision there."""
+    pr = design.printer or {}
+    j = next((x for x in design.joints if x.name == pr.get("z")), None)
+    if j is None or design.tool_point is None or not pr.get("bed"):
+        return None
+    comps = {c.name: c for c in design.components}
+    bed = comps.get(pr["bed"])
+    if bed is None:
+        return None
+    tb, tp = design.tool_point
+    from build123d import Vertex
+
+    cand = []
+    for c in design.components:
+        if c.body != tb:
+            continue
+        try:
+            cand.append((c.shape.distance_to(Vertex(*tp)), c.name))
+        except Exception:
+            pass
+    if not cand or min(cand)[0] > 0.5:
+        return None
+    nozzle = min(cand)[1]
+    T0 = forward_kinematics(design, {})
+    out = None
+    for side, q_end, ot in ((0, j.range[0], j.range[0] - j.mechanical_range[0]), (1, j.range[1], j.mechanical_range[1] - j.range[1])):
+        if ot <= 1e-9:
+            continue
+        # is this the end at which the bed comes up to the nozzle? compare the nozzle-to-bed distance at the two ends
+        def gap(q):
+            T = forward_kinematics(design, {j.name: float(q)})
+            p = (T[tb] @ np.array([*tp, 1.0]))[:3]
+            local = (np.linalg.inv(T[bed.body]) @ np.array([*p, 1.0]))[:3]
+            return float(bed.shape.distance_to(Vertex(*local)))
+        other = j.range[1 - side]
+        if gap(q_end) < gap(other) and gap(q_end) < 5.0:
+            out = {"joint": j.name, "side": side, "working_end": float(q_end), "overtravel_mm": float(ot), "bed": bed.name,
+                   "nozzle_part": nozzle, "gap_at_working_end_mm": round(gap(q_end), 3)}
+    return out
 
 
 _COLLIDERS: dict[int, tuple] = {}
@@ -93,13 +148,55 @@ def verify_motion(design: Design, per_joint: int = 9) -> VerifierResult:
                 r.add("warning", "home_outside_range",
                       f"Joint {j.name}: home pose (0) is outside its range {j.range}.", joint=j.name)
         comps = {c.name: c for c in design.components}
-        poses = sample_poses(design, per_joint)
+        for j in design.joints:
+            if any(float(x) < 0 for x in (tuple(j.overtravel) + (0.0, 0.0))[:2]):
+                r.add("error", "bad_overtravel", f"Joint {j.name}: overtravel {tuple(j.overtravel)} must be two values >= 0 "
+                      f"(past the low end, past the high end of its range).", joint=j.name)
+        # collisions are checked over the MECHANICAL range: the working range plus declared over-travel
+        poses = sample_poses(design, per_joint, mechanical=True)
+        approach = nozzle_approach(design)
+        ot_m = {j.name: {"working_range": list(j.range), "mechanical_range": list(j.mechanical_range)}
+                for j in design.joints if tuple(j.mechanical_range) != tuple(j.range)}
+        if approach:
+            ot_m[approach["joint"]]["nozzle_approach"] = (
+                f"in the {approach['overtravel_mm']:g} mm past {approach['joint']}={approach['working_end']:g} the bed "
+                f"({approach['bed']}) meeting the nozzle tip ({approach['nozzle_part']}) is by declaration not a collision; "
+                f"every other pair is checked there")
+        if ot_m:
+            r.metrics["overtravel"] = ot_m
         worst: dict[tuple, dict] = {}
         exact_checks = 0
         cache: dict = {}
+        exempted = 0.0
         for q in poses:
             pairs, T = colliding_pairs(design, q)
+            past = 0.0
+            if approach and approach["joint"] in q:
+                dq = q[approach["joint"]] - approach["working_end"]
+                past = dq if approach["side"] == 1 else -dq
             for a, b in pairs:
+                if past > 1e-9 and {a, b} == {approach["bed"], approach["nozzle_part"]}:
+                    # the nozzle/bed approach itself. Only the tip may be met: the overlap must be no deeper, along the
+                    # joint axis, than the bed has gone past the working range.
+                    rel = np.linalg.inv(T[comps[a].body]) @ T[comps[b].body]
+                    try:
+                        common = comps[a].shape & comps[b].shape.moved(location_from_matrix(rel))
+                        sols = list(common.solids()) if common is not None else []
+                    except Exception:
+                        sols = None
+                    if sols is not None:
+                        jz = next(x for x in design.joints if x.name == approach["joint"])
+                        ax = np.array(jz.axis, dtype=float) / np.linalg.norm(jz.axis)
+                        ax_a = np.linalg.inv(T[comps[a].body])[:3, :3] @ (T[jz.parent][:3, :3] @ ax if jz.parent in T else ax)
+                        depth = 0.0
+                        for so in sols:
+                            bb = so.bounding_box()
+                            pr_ = [np.array([x, y, z]) @ ax_a for x in (bb.min.X, bb.max.X) for y in (bb.min.Y, bb.max.Y)
+                                   for z in (bb.min.Z, bb.max.Z)]
+                            depth = max(depth, float(max(pr_) - min(pr_)))
+                        if depth <= past + 0.05:
+                            exempted = max(exempted, past)
+                            continue
                 # relative transform fully determines the overlap -> cache on it
                 rel = np.linalg.inv(T[comps[a].body]) @ T[comps[b].body]
                 ck = (a, b, tuple(np.round(rel.reshape(-1), 4)))
@@ -123,6 +220,11 @@ def verify_motion(design: Design, per_joint: int = 9) -> VerifierResult:
                   f"{a} hits {b} during travel: {w['volume_mm3']} mm^3 overlap at pose {pose}, near {w['at']}.",
                   parts=[a, b], **{k: v for k, v in w.items() if k != "first_pose"},
                   hint="Shorten the joint range, move the part out of the swept path, or add clearance.")
+        if approach and exempted > 0:
+            r.add("info", "nozzle_approach_overtravel",
+                  f"Joint {approach['joint']} has {approach['overtravel_mm']:g} mm of declared over-travel past the nozzle plane: "
+                  f"the bed meeting the nozzle tip there was not counted as a collision (checked to {exempted:g} mm past); "
+                  f"everything else was. The probe must stop the bed first: see the subsystems verifier.", joint=approach["joint"])
         _runoff(design, r)
         from .belts import verify_belts
 
@@ -182,7 +284,7 @@ def _runoff(design: Design, r: VerifierResult) -> None:
             b_lo, b_hi = extent(blk.shape)
             p_lo, p_hi = extent(best.shape)
             sign = 1.0 if blk.body == j.child else -1.0
-            for q in j.range:
+            for q in j.mechanical_range:
                 lo, hi = b_lo + sign * q, b_hi + sign * q
                 over = max(p_lo - lo, hi - p_hi)
                 if over > 0.5:
