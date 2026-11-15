@@ -95,3 +95,25 @@ class timed:
     def __exit__(self, *exc):
         self.result.seconds = time.time() - self.t
         return False
+
+
+def without_timings(report: dict) -> dict:
+    """A report (Report.to_dict / report.json) with everything that is a timing or a place on disk taken out, so that
+    two runs can be compared: a verify is a function of the design alone, and every other field must be identical
+    between two runs of one design, whatever the process's hash seed, the machine's load or what earlier runs left
+    on disk. Removed: keys named `seconds` or ending in `_seconds`, the `(…, 12.3s)` of each summary line, and
+    `artifacts` (file paths, the iteration counter and run times) at any depth."""
+    import re
+
+    def strip(x):
+        if isinstance(x, dict):
+            return {k: strip(v) for k, v in x.items()
+                    if not (k == "seconds" or str(k).endswith("_seconds") or k == "artifacts")}
+        if isinstance(x, list):
+            return [strip(v) for v in x]
+        return x
+
+    out = strip(report)
+    if isinstance(out.get("summary"), dict):
+        out["summary"] = {k: re.sub(r", \d+(\.\d+)?s\)$", ")", str(v)) for k, v in out["summary"].items()}
+    return out
