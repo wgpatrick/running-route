@@ -103,8 +103,10 @@ class Joint:
     # `mechanical_range`. Use it for travel that exists but is not working travel: a bed that can rise past the nominal
     # nozzle plane (what a probe's z_offset and a bed mesh need: the firmware's position_min goes negative by it), or
     # room past an endstop's nominal trigger point. Collisions, guide run-off, belts and cables are checked over the
-    # mechanical range. In a printer's Z over-travel towards the nozzle the bed meeting the nozzle tip is by
-    # declaration not a collision; the bed meeting anything else there is.
+    # mechanical range. A printer's Z over-travel towards the nozzle is allowance for where the nozzle really ends up
+    # relative to the bed, not a motion through the nozzle: there the bed meeting the nozzle tip is by declaration not
+    # a collision, parts on the nozzle's body ride with it and are checked at nozzle contact plus their toolhead
+    # margin (mechloop.tolerance.toolhead), and every other pair is checked through the whole over-travel.
     overtravel: tuple[float, float] = (0.0, 0.0)
 
     @property

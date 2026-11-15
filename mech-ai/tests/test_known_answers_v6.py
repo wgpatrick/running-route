@@ -427,16 +427,19 @@ def test_sensorless_homing_writes_a_config_klippy_loads(tmp_path):
 
 
 # ---------------------------------------------------------------- C. Z over-travel past the nozzle plane
-def bed_under_nozzle(z_range=(0.0, 50.0), overtravel=(0.0, 0.0), clip=False):
-    """Bed top at z = 50, nozzle tip at z = 100: the bed meets the nozzle plane at z = +50. `clip`: something else on
-    the toolhead 1 mm above the nozzle plane, 30 mm to the side."""
+def bed_under_nozzle(z_range=(0.0, 50.0), overtravel=(0.0, 0.0), clip=False, clip_body="world"):
+    """Bed top at z = 50, nozzle tip at z = 100: the bed meets the nozzle plane at z = +50. `clip`: something else
+    1 mm above the nozzle plane, 30 mm to the side; on the nozzle's own body ("world" here) or, with clip_body, on a
+    body that does not carry the nozzle."""
     d = Design("zot")
     d.add("frame", Pos(0, 0, 150) * Box(300, 300, 10))
     d.add("hotend", Pos(0, 0, 122.5) * Box(20, 20, 45))                                    # tip face at z = 100
     if clip:
-        d.add("clip", Pos(30, 0, 123) * Box(10, 10, 44))                                   # underside at z = 101
+        d.add("clip", Pos(30, 0, 123) * Box(10, 10, 44), body=clip_body)                   # underside at z = 101
     d.add("bed", Pos(0, 0, 47) * Box(200, 200, 6), material="al6061", body="zbody")        # top at z = 50
     d.joints.append(Joint("z", "slide", "world", "zbody", (0, 0, 1), range=z_range, max_effort=100, overtravel=overtravel))
+    if clip_body != "world":
+        d.joints.append(Joint("g", "slide", "world", clip_body, (0, 1, 0), range=(0.0, 0.0), max_effort=100))
     d.tool_point = ("world", (0.0, 0.0, 100.0))
     d.printer = {"bed": "bed", "x": "x", "y": "y", "z": "z"}
     return d
@@ -445,15 +448,19 @@ def bed_under_nozzle(z_range=(0.0, 50.0), overtravel=(0.0, 0.0), clip=False):
 def test_overtravel_past_the_nozzle_plane_is_not_a_collision_but_a_real_crash_still_is():
     """Range ending 2 mm past the plane (the only way to say it before): bed hits hotend, 20 x 20 x 2 = 800 mm^3, a
     false collision. Declared as working range 0..50 plus 2 mm of over-travel: no collision. With a clip 1 mm above the
-    nozzle plane the same over-travel crashes the bed into it: 10 x 10 x 1 = 100 mm^3, reported."""
+    nozzle plane on a body that does NOT carry the nozzle, the same over-travel crashes the bed into it:
+    10 x 10 x 1 = 100 mm^3, reported. (Since 2026-11-15 the same clip on the nozzle's own body rides with the nozzle
+    and is checked at nozzle contact plus its toolhead margin, here under 1 mm: no collision. The cases for that rule,
+    including a part that hangs below the nozzle, are in test_known_answers_checkers.py.)"""
     old = [f for f in verify_motion(bed_under_nozzle(z_range=(0.0, 52.0))).findings if f.code == "motion_collision"]
     assert len(old) == 1 and old[0].data["volume_mm3"] == pytest.approx(800.0, abs=1.0)
     r = verify_motion(bed_under_nozzle(overtravel=(0.0, 2.0)))
     assert "motion_collision" not in codes(r) and "nozzle_approach_overtravel" in codes(r)
     assert r.metrics["overtravel"]["z"] ["mechanical_range"] == [0.0, 52.0]
-    hit = [f for f in verify_motion(bed_under_nozzle(overtravel=(0.0, 2.0), clip=True)).findings if f.code == "motion_collision"]
+    hit = [f for f in verify_motion(bed_under_nozzle(overtravel=(0.0, 2.0), clip=True, clip_body="gantry")).findings if f.code == "motion_collision"]
     assert len(hit) == 1 and set(hit[0].data["parts"]) == {"bed", "clip"}
     assert hit[0].data["volume_mm3"] == pytest.approx(100.0, abs=1.0) and hit[0].data["pose"] == {"z": 52.0}
+    assert [f for f in verify_motion(bed_under_nozzle(overtravel=(0.0, 2.0), clip=True)).findings if f.code == "motion_collision"] == []
 
 
 def test_overtravel_reaches_the_probe_and_the_tolerance_figures_keep_the_working_range():

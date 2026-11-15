@@ -52,7 +52,9 @@ def probe_toolhead(model="E2E-X5ME1", clamp=(15.0, 18.0), tab="al6061", face_abo
 
 def probe_result(d):
     r = verify_subsystems(d)
-    return {f.code: f for f in r.findings if f.code.startswith("probe")}, r.metrics["homing"]["z"]
+    # the toolhead-margin warning (2026-11-15) has its own tests in test_known_answers_checkers.py; this rig's probe is not
+    # tied to the head, so its margin is the assumed one
+    return {f.code: f for f in r.findings if f.code.startswith("probe") and f.code != "probe_trigger_margin_thin"}, r.metrics["homing"]["z"]
 
 
 def test_catalogue_probes_carry_the_sheets_figures():

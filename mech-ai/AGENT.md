@@ -10,6 +10,10 @@ you report what was verified and what was not.
 2. Run `python -m mechloop verify designs/<name>.py`. It prints JSON:
    `summary` (per-verifier pass/FAIL/skipped), `findings` (errors first, each with a
    `code`, a one-line `message`, `data` and often a `hint`), `metrics`, `artifacts`.
+   `--out` is the ROOT folder (default `out`): files go to `<out>/<design name>/`. Leave it at the default, or pass
+   the same root to `verify`, `score`, `tune` and `assemble`. `--out out/<name>` nests to `out/<name>/<name>/` (verify
+   warns on stderr), and `score`, `tune` and `print` then do not find the report: `tune` says so on stderr and under
+   `warnings`, naming the file it looked for, and its figures then rest on belt stiffness only.
 3. Fix the design for the **errors**, cheapest verifier first (geometry → interference
    → ratings → motion → assemblability → fea → requirements). Change the design, not the check:
    never loosen a requirement, load, range or tolerance to get a pass unless the
@@ -125,9 +129,21 @@ def build():
   prints, firmware coordinates); the joint can physically move `overtravel` mm further at each end
   (`joint.mechanical_range`). Collisions, guide run-off, belts, cables and endstops are checked over the mechanical
   range. For a printer's Z joint, end the working range where the bed meets the nozzle plane and declare what the bed
-  can rise beyond it as over-travel: there the bed meeting the nozzle tip is not a collision (the bed meeting anything
-  else still is), the probe must switch first, and the generated `position_min` is negative by that amount, which is
-  what a probe's z_offset and a bed mesh need. Do not extend `range` past the nozzle plane.
+  can rise beyond it as over-travel; the generated `position_min` is negative by that amount, which is what a probe's
+  z_offset and a bed mesh need. Do not extend `range` past the nozzle plane. That over-travel is not a motion in which
+  the bed passes through the nozzle: it is allowance for where the nozzle really ends up relative to the bed in a built
+  machine. So in it (a) the bed meeting the part that carries the nozzle tip is not a collision; (b) everything else
+  on the nozzle's body (probe, fan duct, the toolhead's screws) rides with the nozzle, and is checked with the bed at
+  nozzle contact plus that part's **toolhead margin**, not through the whole over-travel; (c) every other pair (bed
+  against gantry or frame) is checked through the whole over-travel. The toolhead margin of a part
+  (`mechloop.tolerance.toolhead.height_margin`) is the stack-up inside the toolhead between the part and the nozzle
+  tip (the tolerance simulation run on the nozzle's body alone, 99.7th percentile; 0.5 mm or more, assumed, for screws
+  and for parts not tied to the nozzle part by touching or joined toolhead parts) plus how much higher the bed can
+  stand under the part than under the nozzle (plate flatness as a bow, 0.381 mm for cast plate and assumed for any
+  other, plus the levelling residual). A toolhead part that hangs below the nozzle tip, or less than its margin above
+  it over the bed, is a `motion_collision` naming the margin. Typical margins: 0.3 to 0.6 mm for a machined or bought
+  part bolted straight to the hotend's carrier, 0.8 to 1.1 mm for something on a printed arm 30 to 40 mm away.
+  Z over-travel no longer has to stay below a probe's face height.
 - Composing: `design.include(other_design, Location(...), prefix="z_")` brings a whole sub-assembly in
   (parts, bodies, joints, fasteners, joins, belts), moved and renamed. Its requirements, program and (when
   moved) load cases are not copied; restate them.
@@ -223,6 +239,15 @@ Design levers: add a ledge, pocket, pin or tab so a part locates and rests befor
 put fasteners on one side; reduce screw sizes to one or two; make bench sub-assemblies with
 `design.subassemblies["name"] = [part names]` (the group is built separately and installed as one
 unit); split or open up a part that traps another.
+
+What a bench sub-assembly does to `estimated_time_min`: its parts and screws are costed like any others, its first
+part is free (it is laid on the bench, whichever way up suits the steps that follow: that is not a turn), and the
+finished unit costs 12 s to carry over and locate against 6 s for a single part, plus holding and direction like any
+part. So a sub-assembly adds about 6 s unless the bench makes its steps cheaper (parts that rest instead of being
+held, nothing from below, no turn of the whole machine). Declaring one for parts that would be held either way raises
+the estimate slightly; that is the model, not an error. Turning a sub-assembly over is costed like turning the
+machine (25 s), which is high for a unit that fits in a hand. `mechloop assemble` and `mechloop score --assembly` run
+the same simulation and give the same figures.
 
 The assemblability verifier honours the same declaration: with `design.subassemblies` set, each group is checked as
 built on the bench (its screws need driver access among its own parts only) and then as one unit going straight into
@@ -341,14 +366,36 @@ their sources are in `mechloop/verifiers/dfm_rules.py` and `docs/DFM.md`. Every 
 
   (In OMRON's code M = unshielded: the E2E-X5ME1 is unshielded. The shielded M12 three-wire type senses only about
   0.6 mm on aluminium and is not offered.) Every distance is +/-10 % unit to unit and a further +/-10 % with
-  temperature up to 70 degC; the probe checks use both, so place the sensing face so that the SHORT end still
-  switches before the nozzle touches (`z_offset_range_mm` in the metrics; e.g. E2E-X10ME1: 3.0 x 0.8 = 2.4 mm, so the
-  face at most about 2 mm above the nozzle tip). Aluminium figures are read from a chart for small 1 mm plates,
+  temperature up to 70 degC (+/-15 % over the three-wire types' whole range to 85 degC: used when the sensor is
+  estimated to pass 70 degC, see "Heat" below); the probe checks use both, so place the sensing face so that the SHORT
+  end still switches before the nozzle touches (`z_offset_range_mm` in the metrics; e.g. E2E-X10ME1: 3.0 x 0.8 =
+  2.4 mm). Aluminium figures are read from a chart for small 1 mm plates,
   repeatability (0.01 mm) is assumed, the mass (30 g M12, 70 g M18) is estimated: all said on the part.
+  - **How high the face may sit.** The probe rides with the nozzle, so Z over-travel does not bring the bed to it (see
+    "Over-travel"). What separates face and nozzle tip is local: the probe's toolhead margin M
+    (`homing.z.probe_to_nozzle_margin` in the subsystems metrics: stack-up between face and tip, plus bed flatness
+    over the distance between them). The face must be at least M above the tip (`probe_face_below_nozzle_margin`,
+    error: in some builds the face meets the bed before the nozzle), and the short end should still switch with the
+    nozzle M above the bed (`probe_trigger_margin_thin`, warning; at or below 0 it is the error `probe_trigger_margin`).
+    So the face belongs between M and (short end - M) above the tip: `face_window_mm`. With M about 1.0 mm (printed
+    arm, 35 to 40 mm from the nozzle): E2E-X10ME1 on aluminium 1.0 to 1.4 mm; E2E-X5ME1 on aluminium (short end
+    1.28 mm) has no such window: 1.0 to 1.28 mm passes with the warning; on a steel bed (5 mm, short end 4.0)
+    1.0 to 3.0 mm. Below 1 mm the curled-edge warning also applies. A shorter, stiffer mount closer to the nozzle
+    lowers M. Setting the sensor's height on the built machine with its nuts removes the stack-up part in practice;
+    the checks do not model that, so say it in your report if you rely on it.
   - **Mounting.** The sensor is clamped in a plate or tab by its own two nuts (4 mm each, 17 mm across flats on M12,
     24 mm on M18): `clamp=(z_lo, z_hi)` are the plate's two faces above the sensing face; the plate needs the
     clearance hole from the table; `d.join(probe, plate, "clamped by its two nuts")`. The thread runs 7 to 40 mm
     (M12 unshielded), 10 to 48 mm (M18 unshielded) or 0 to 38 mm (M18 shielded) above the face.
+    For a **closed hole** make the nuts their own parts, which is how the sensor is really fitted (one nut off, barrel
+    through the hole, nut back on): `place(d, "bed_probe", probe_omron_e2e(model, clamp=..., nuts="separate"), ...)`
+    then `add_probe_nuts(d, "bed_probe")` (adds `bed_probe_nut_front` and `bed_probe_nut_rear`, catalogue parts
+    `e2e_nut`, joined to the probe; two more parts in the count, no cost). With the default `nuts="fused"` the nuts are
+    part of the sensor's solid: it can only slide sideways into an open fork, and a closed hole is `trapped_part`.
+    `probe_not_clamped` looks at the circle the nut bears on, at mid-thickness of the plate: at least 75 % of it must
+    have material of parts on the probe's body under it. Material of several parts counts together (a fork closed by
+    a key is a full ring; an open fork the width of the hole is about 67 % and fails), and the answer does not depend
+    on how the round sensor is turned about its axis.
   - **Unshielded** sensors need metal kept away from the head: the face must stand `l` mm proud of any metal and a
     cylinder `d` mm in diameter round the head must hold no metal (M12: l 15, d 40; M18: l 22, d 55;
     `interfaces["mounting"]`). Any metal part of the toolhead in that zone (the tab itself, the heater block, the
@@ -364,6 +411,13 @@ their sources are in `mechloop/verifiers/dfm_rules.py` and `docs/DFM.md`. Every 
     It is accepted only with an off-the-shelf interface stage placed in the design and declared,
     `params["interface"] = {"part": "<part>", "load_ohm": R, "on_current_ma_min": I, "off_current_ma_max": I}`; the
     catalogue has no such module, so prefer a three-wire type.
+  - **Heat.** `probe_near_hot_bed` (electrical verifier, warning) no longer compares the bed's temperature with the
+    sensor's ambient rating directly. The sensor's own temperature is estimated as a range
+    (`mechloop.electrical.probe_temperature_estimate`: heat in through the face across the air gap, out from the barrel
+    to air between room temperature and the film temperature (bed + room) / 2; textbook values, not validated) and the
+    HIGH end plus 10 K must stay under the rating: 85 degC for the three-wire types, 70 degC for the two-wire
+    E2E-X8MD1 (OMRON's sheet). An M18 sensor 2 mm above an 85 degC bed is estimated at 35 to 60 degC; over 100 degC,
+    38 to 69. Where the estimate cannot be made, the bed temperature itself must be 10 K under the rating.
   - No touch (microswitch) probe is in the catalogue: the only switch data is OMRON's D2F sheet, and a bare switch
     needs a deploy mechanism for which no off-the-shelf module has vendor data. A hand-made probe stays possible as
     before (below) and is flagged `uncatalogued_cots`.

@@ -296,20 +296,29 @@ def bench_unit(declare):
 
 
 def test_a_bench_subassembly_is_started_any_way_up_without_a_turn():
-    """The unit (bracket + cap) on the bench: the cap sits on the bracket when the pair is built upside down. Laying
-    the first part on the bench that way up is not a turn of anything: the sub-assembly's own simulation must show no
-    turn and no start penalty (25 s before), the cap resting from above, not held and not from below."""
-    from mechloop.assembly.simulate import T_FLIP, T_PLACE, analyse
+    """The unit (bracket + cap) on the bench: the cap hangs under the bracket as designed, and lies on it when the pair
+    is built upside down. Laying the first part on the bench that way up is not a turn of anything, but it was charged
+    as one (25 s), so the simulation preferred to hold the cap (10 s). Now: started upside down, no turn, nothing held:
+    place 6 s + from the side 2 s + 3 s/kg. The same two parts judged by the main assembly's rule (it starts upright)
+    still need the cap held: 10 s more."""
+    from mechloop.assembly.planner import plan
+    from mechloop.assembly.simulate import T_HOLD, T_PLACE, T_SIDE, analyse
 
-    res = analyse(bench_unit(True))
+    d = bench_unit(True)
+    res = analyse(d)
     inner = res["subassemblies"]["unit"]
     im = inner["metrics"]
     assert im["times_assembly_is_turned"] == 0 and im["needs_holding"] == 0 and im["from_below"] == 0
-    assert inner["rows"][0]["orientation"] == "-Z" and "upside down" in inner["rows"][0]["start_orientation"]
+    assert inner["rows"][0]["unit"] == "bracket" and inner["rows"][0]["orientation"] == "-Z" and "upside down" in inner["rows"][0]["start_orientation"]
     (row,) = inner["rows"][1:]
-    assert row["direction"] == "from above" and row["rests_stably"] and "turn_assembly" not in row
-    assert im["estimated_time_s"] < T_FLIP and im["estimated_time_s"] == pytest.approx(T_PLACE + 3.0 * bench_unit(True).get("cap").mass(), abs=0.5)
-    # the main assembly keeps its rule: it starts upright, and what is inside a sub-assembly is counted once
+    assert row["unit"] == "cap" and row["rests_stably"] and "turn_assembly" not in row
+    t_good = T_PLACE + T_SIDE + 3.0 * d.get("cap").mass()
+    assert row["seconds"] == pytest.approx(t_good, abs=0.06) and im["estimated_time_s"] == pytest.approx(t_good, abs=0.5)
+    upright = analyse(d, plan(d, members=["bracket", "cap"]))                     # the main assembly's rule: starts upright
+    um = upright["metrics"]
+    assert um["needs_holding"] == 1 and um["times_assembly_is_turned"] == 0
+    assert um["estimated_time_s"] == pytest.approx(t_good + T_HOLD, abs=0.5)
+    # the main assembly keeps its rule, and what is inside a sub-assembly is counted once
     assert res["rows"][0]["unit"] == "plate" and "start_orientation" not in res["rows"][0]
     assert res["metrics"]["estimated_time_s"] >= im["estimated_time_s"]
 
