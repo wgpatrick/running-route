@@ -329,6 +329,44 @@ their sources are in `mechloop/verifiers/dfm_rules.py` and `docs/DFM.md`. Every 
   board's X-DIAG / Y-DIAG header and shares the axis's endstop pin, so leave that endstop connector empty
   (`sensorless_pin_shared` otherwise). Stall detection itself is not simulated.
   A bed probe that homes Z is declared the same way: `d.endstops.append({"joint": "z", "probe": "<probe part>", "at": "max"})`.
+  **Catalogue bed probes** (OMRON E2E inductive sensors, maker's data sheet; `mechloop/parts/probes.py`):
+  `probe_omron_e2e(model, clamp=(z_lo, z_hi))`. Local frame: sensing face on Z=0 looking down, barrel up +Z.
+
+  | model | thread, hole | kind | on iron | on aluminium (chart reading) | electrical |
+  |---|---|---|---|---|---|
+  | `"E2E-X5ME1"` (default) | M12, 12.5 mm | unshielded | 5 mm | 1.6 mm | NPN three-wire |
+  | `"E2E-X10ME1"` | M18, 18.5 mm | unshielded | 10 mm | 3.0 mm (3.0 to 3.3) | NPN three-wire |
+  | `"E2E-X5E1"` | M18, 18.5 mm | **shielded** | 5 mm | 1.75 mm | NPN three-wire |
+  | `"E2E-X8MD1"` | M12, 12.5 mm | unshielded | 8 mm | 2.8 mm (2.8 to 3.2) | **DC two-wire** |
+
+  (In OMRON's code M = unshielded: the E2E-X5ME1 is unshielded. The shielded M12 three-wire type senses only about
+  0.6 mm on aluminium and is not offered.) Every distance is +/-10 % unit to unit and a further +/-10 % with
+  temperature up to 70 degC; the probe checks use both, so place the sensing face so that the SHORT end still
+  switches before the nozzle touches (`z_offset_range_mm` in the metrics; e.g. E2E-X10ME1: 3.0 x 0.8 = 2.4 mm, so the
+  face at most about 2 mm above the nozzle tip). Aluminium figures are read from a chart for small 1 mm plates,
+  repeatability (0.01 mm) is assumed, the mass (30 g M12, 70 g M18) is estimated: all said on the part.
+  - **Mounting.** The sensor is clamped in a plate or tab by its own two nuts (4 mm each, 17 mm across flats on M12,
+    24 mm on M18): `clamp=(z_lo, z_hi)` are the plate's two faces above the sensing face; the plate needs the
+    clearance hole from the table; `d.join(probe, plate, "clamped by its two nuts")`. The thread runs 7 to 40 mm
+    (M12 unshielded), 10 to 48 mm (M18 unshielded) or 0 to 38 mm (M18 shielded) above the face.
+  - **Unshielded** sensors need metal kept away from the head: the face must stand `l` mm proud of any metal and a
+    cylinder `d` mm in diameter round the head must hold no metal (M12: l 15, d 40; M18: l 22, d 55;
+    `interfaces["mounting"]`). Any metal part of the toolhead in that zone (the tab itself, the heater block, the
+    extruder, screws) is `probe_metal_in_clear_zone`, with each part's distance. So: a metal tab at `z_lo >= l` and at
+    least d/2 from other metal, or a printed (plastic) bracket, which may be anywhere. A **shielded** sensor may sit
+    flush in metal, at the price of range.
+  - **Electrical.** `device_from(el, d, "<probe>")`, wire its `out` port to an endstop input, and declare its supply:
+    `el.devices[name].params.update(supply_v=24.0, supply_from="...")` (10 to 30 V). Three-wire NPN types pull their
+    output up to the supply inside the sensor, so a 3.3 V input needs a BAT85-class diode in the signal lead, cathode
+    to the sensor: `params["series_diode"] = True` and `d.bom_extra("DIODE-BAT85", 1, 0.1)`; without it,
+    `probe_signal_over_voltage`. The **two-wire** E2E-X8MD1 is a switch in series with a load (at least 3 mA, 3 V
+    left across it when on, 0.8 mA leakage when off): straight on a logic input it is `probe_two_wire_needs_interface`.
+    It is accepted only with an off-the-shelf interface stage placed in the design and declared,
+    `params["interface"] = {"part": "<part>", "load_ohm": R, "on_current_ma_min": I, "off_current_ma_max": I}`; the
+    catalogue has no such module, so prefer a three-wire type.
+  - No touch (microswitch) probe is in the catalogue: the only switch data is OMRON's D2F sheet, and a bare switch
+    needs a deploy mechanism for which no off-the-shelf module has vendor data. A hand-made probe stays possible as
+    before (below) and is flagged `uncatalogued_cots`.
   The probe part rides on the toolhead, has a `sensing_face` interface (centre of the face that looks at the bed) and
   an electrical template of kind `probe` (`mechloop.parts.electrical.inductive_probe_template(...)`). The verifier
   checks that it switches before the nozzle touches for every unit within the sensing-distance spread, that Z travel
@@ -383,6 +421,14 @@ el.sync_cables(d); add_electrical_bom(el, d)                      # flexing span
   allows, and say so.
 - The motor torque curve used by ratings, motion and the twin comes from the electrical model once
   `design.electrical` exists (winding R and L, driver current, supply voltage). Lowering a run current lowers force.
+- The mains relay `relay_btt_v12()` has three mains terminals, `LIN`, `N`, `LOT`. It switches the live only and powers
+  itself from the mains, so its `N` must be wired or it never pulls in (`device_supply_not_connected`): run the
+  neutral through it, `el.wire("N inlet-relay", "inlet.N", "psu_relay.N", 18, ...)` and
+  `el.wire("N relay-supply", "psu_relay.N", "psu.N", 18, ...)` (the terminal takes both wires in one twin ferrule).
+  Any catalogue device may name ports that need a supply (`params["required_supply_ports"]`); the same check covers them.
+- Fans carry their rated voltage: `fan(30)` and `fan(40)` are 24 V; `fan(30, 12)` is the Sunon MF30101V2-1000U-A99
+  (12 V, 6 to 13.8 V, 32 mA; maker's sheet). The 24 V 30 mm fan's sheet is not in hand: its 0.05 A is a typical figure.
+  Every fan's rated voltage is compared with what its port supplies.
 - A fan gets the voltage it is made for (`fan_voltage_mismatch` otherwise). For a 5 V fan on a 24 V machine (the E3D
   Roto's heat-sink fan) either put a stock regulator board in line, `mechloop.electrical.add_regulator(el, d, "fan_reg",
   "<its CAD part>", out_v=5.0, max_a=..., efficiency=...)`, wired board fan output -> `fan_reg.in`, `fan_reg.out` -> fan; or run it

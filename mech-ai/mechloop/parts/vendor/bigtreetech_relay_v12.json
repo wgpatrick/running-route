@@ -65,6 +65,6 @@
    "the 0.5 W own consumption (converter is a 3 W type)"
   ]
  },
- "used_by_catalog": false,
- "_label": "added 2026-11-15 (batch 4). NOTHING READS THIS FILE: no catalogue part, verifier or design takes a value from it. Proposed use: reports/Vendor documents - what they change.md, 'Fourth batch'"
+ "used_by_catalog": true,
+ "_label": "added 2026-11-15 (batch 4). Applied 2026-11-15: relay_btt_v12() has the N terminal and requires it to be wired (values copied into the part's sources; the file itself is cited, not parsed)"
 }

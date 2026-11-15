@@ -1515,7 +1515,15 @@ def probe_geometry(design) -> dict | None:
     # the firmware's z_offset: nozzle height above the bed at the moment the probe switches
     z_off = sn - (face[2] - noz[2])
     out["z_offset"] = round(float(z_off), 3)
-    out["z_offset_range_mm"] = [round(float(z_off - tol * sn), 3), round(float(z_off + tol * sn), 3)]
+    # the spread of the real switching distance: unit to unit (tol), with temperature where the part's sheet gives a
+    # drift (temperature_drift_frac), and over the range a chart gives for the target material where it gives one
+    drift = float(rt.get("temperature_drift_frac", 0.0) or 0.0)
+    sn_lo, sn_hi = (rt.get(f"switching_distance_{target}_range_mm") or [sn, sn])[:2]
+    h_face = float(face[2] - noz[2])
+    out["sensing_distance_range_mm"] = [round(float(sn_lo), 3), round(float(sn_hi), 3)]
+    out["temperature_drift_frac"] = drift
+    out["z_offset_range_unit_spread_mm"] = [round(float(z_off - tol * sn), 3), round(float(z_off + tol * sn), 3)]
+    out["z_offset_range_mm"] = [round(float(sn_lo * (1.0 - tol - drift) - h_face), 3), round(float(sn_hi * (1.0 + tol + drift) - h_face), 3)]
     gap0 = float(noz[2] - bb.max.Z)
     out["nozzle_above_bed_at_home_pose_mm"] = round(gap0, 3)
     if jz is not None:   # how close to the nozzle the Z travel can bring the bed (firmware Z at the joint's upper end)

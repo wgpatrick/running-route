@@ -98,6 +98,6 @@
    "corner radius": "1.0; design cuts 2.0"
   }
  },
- "used_by_catalog": false,
- "_label": "added 2026-11-15 (batch 4). NOTHING READS THIS FILE: no catalogue part, verifier or design takes a value from it. Proposed use: reports/Vendor documents - what they change.md, 'Fourth batch'"
+ "used_by_catalog": true,
+ "_label": "added 2026-11-15 (batch 4). Read since 2026-11-15 by iec_inlet_c14() (mechloop/parts/electrical.py): ratings and dimensions_mm (screw version A)"
 }

@@ -385,3 +385,20 @@ the catalogue code ... reads was changed".
 Still not vendor data after this: MIC-6 (empty sheet), the coupler's permissible misalignment (1.0 deg assumed), the
 Pi's current draw, any lateral or moment rigidity of a guide block, a shaft-load figure for the 34 mm motor, belt
 stiffness against tension as a curve, the endstop's carrier board.
+
+
+# Applied 2026-11-15 (fourth batch: proposals 17 to 22)
+
+Tests: `tests/test_known_answers_batch4.py`. Status per proposal: the report's last table.
+
+| # | What changed | Where | Source |
+|---|---|---|---|
+| 17 | Bed probes as catalogue parts: `probe_omron_e2e("E2E-X5ME1" / "E2E-X10ME1" / "E2E-X5E1" / "E2E-X8MD1", clamp=)`. Ratings, thread, nuts and surrounding-metal clearances are the maker's; aluminium distance is a chart reading for a small 1 mm plate (1.6 / 3.0 / 1.75 / 2.8 mm), repeatability assumed, mass estimated (parts are `partial`, not verified). Two-wire model in the electrical check; mounting check in subsystems; temperature drift in the trigger-height range | `mechloop/parts/probes.py`; `omron_e2e.json` block `catalogue_models`; `verifiers/electrical.py`, `verifiers/subsystems.py`, `electrical.probe_geometry` | OMRON E2E data sheet p.13, 16, 17, 18, 21, 25, 27, 28 |
+| 18 | `fan(size, volts)`; `fan(30, 12)` = Sunon MF30101V2-1000U-A99 (12 V, 32 mA). The 24 V 30 mm fan: sheet not in hand, figures typical | `parts/__init__.py`, `parts/electrical.py` | Sunon specification D03033610G-01 |
+| 19 | Relay N terminal; `required_supply_ports`; error `device_supply_not_connected` | `relay_btt_v12()`; `verifiers/electrical.py` | BIGTREETECH Relay V1.2 manual p.3 |
+| 20 | Inlet = SCHURTER DD11 version A (geometry, ratings, 4.8 mm terminals); order number not pinned; hint on the panel's `holes_too_close` | `iec_inlet_c14()`; `verifiers/manufacture.py` | SCHURTER DD11 data sheet p.1, p.3 |
+| 21, 22 | McMaster part numbers per fastener SKU, with status, in the BOM; DIN 934 M5 nut as an option (`NUT-M5-DIN934`, 4.0 mm) | `parts/__init__.py` `mcmaster_part`, `hex_nut`, `add_nut`; `verifiers/ratings.py` | `mcmaster_fasteners.json` (STEP files inspected) |
+
+Not vendor data after this: a 24 V 30 mm fan's figures, the relay's contact rating, the inlet's order number and
+terminal positions, any probe's repeatability and its distance on a large thick aluminium plate. No touch probe exists
+in the catalogue (no off-the-shelf module with data).

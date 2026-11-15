@@ -89,6 +89,40 @@ def _completeness(ctx, r, m):
         if len(ws) > 1 and not port.multi:
             r.add("error", "port_used_twice", f"Port {ref} has {len(ws)} wires on it: {ws}.", port=ref, wires=ws,
                   hint="One wire per port; use another output, or a port declared for several lugs (a stud or bus).")
+    # a device that needs a supply connection of its own (its catalogue part says which ports: params
+    # "required_supply_ports") must have each of them wired back to something that can feed it
+    feeds = ("mains_out", "power_out", "rail_5v", "fan_out", "heater_out")
+    for d in el.devices.values():
+        for pn, why in (d.params.get("required_supply_ports") or {}).items():
+            ref = f"{d.name}.{pn}"
+            fed = False
+            for w in el.wires_at(ref):
+                cur, seen_w = el.other_end(w, ref), {id(w)}
+                for _ in range(12):                     # follow pass-through devices back to a source
+                    dv, pt = el.port(cur)
+                    if pt is None:
+                        break
+                    if pt.kind in feeds:
+                        fed = True
+                        break
+                    nxt = E._series_partner(dv, pt.name)
+                    if nxt is None:
+                        break
+                    more = [x for x in el.wires_at(f"{dv.name}.{nxt}") if id(x) not in seen_w]
+                    if not more:
+                        break
+                    seen_w.add(id(more[0]))
+                    cur = el.other_end(more[0], f"{dv.name}.{nxt}")
+                if fed:
+                    break
+            if not fed:
+                r.add("error", "device_supply_not_connected",
+                      f"Device '{d.name}' needs a supply connection on its port '{pn}' ({why}), and "
+                      + ("nothing is wired to it." if not el.wires_at(ref) else "what is wired to it does not lead back to a source."),
+                      device=d.name, port=ref, part=d.component,
+                      hint=f"Wire {ref} to the source it needs" + (f": for a mains neutral, el.wire('N inlet-relay', 'inlet.N', "
+                           f"'{ref}', 18, conductors=1) and el.wire('N relay-supply', '{ref}', 'psu.N', 18, conductors=1) "
+                           f"(the terminal takes both)." if pn == "N" else "."))
     # every load, sensor and switch is wired to something that can drive / read it
     need = {"stepper": "stepper_out", "heater": "heater_out", "thermistor": "thermistor_in", "fan": ("fan_out", "rail_5v"), "endstop": "endstop_in",
             "probe": ("endstop_in", "probe_in")}
@@ -253,11 +287,60 @@ def _probe(ctx, r, m):
             continue
         protected = bool(d.params.get("series_diode") or d.params.get("level_shift"))
         row["protection"] = "series diode" if d.params.get("series_diode") else ("level shifter" if d.params.get("level_shift") else None)
-        if kind.startswith("npn"):
+        if kind.startswith("two_wire"):
+            # A DC two-wire sensor is a switch in series with a load, powered through that load. On: it keeps up to
+            # `residual` volts across itself and needs at least `min_load` mA; off: it still passes `leak` mA. A logic
+            # input with a pull-up is not such a load, so it needs a declared interface stage.
+            leak, i_min = float(rt.get("leakage_current_ma_max", 0.0)), float(rt.get("min_load_current_ma", 0.0))
+            i_max, v_res = float(rt.get("max_load_current_ma", 1e9)), float(rt.get("residual_voltage_v_max", 0.0))
+            row.update({"two_wire": True, "min_load_current_ma": i_min, "leakage_current_ma_max": leak, "residual_voltage_v_max": v_res})
+            itf = d.params.get("interface")
+            pull_ohm = float(bp.extra.get("pullup_ohm", 40000.0))
+            row["direct_on_logic_input"] = {
+                "load_current_ma_from_the_pin_pullup": round(logic / pull_ohm * 1e3, 3),
+                "pin_low_level_v_when_on": f"up to {v_res:g} (residual voltage)", "pin_v_if_fed_from_the_supply": round(vs - v_res, 1)}
+            if not itf:
+                r.add("error", "probe_two_wire_needs_interface",
+                      f"Probe '{d.name}' is a DC two-wire sensor wired to {bsrc}. It needs a load of at least {i_min:g} mA (the "
+                      f"input's pull-up gives about {logic / pull_ohm * 1e3:.2f} mA), it leaves up to {v_res:g} V across itself "
+                      f"when on (a {logic:g} V input cannot read that as low; fed from {vs:g} V it would put {vs - v_res:g} V on a pin "
+                      f"limited to {pin_max:g} V), and it passes up to {leak:g} mA when off.", device=d.name, port=bsrc,
+                      hint="Use a three-wire NPN sensor (probe_omron_e2e('E2E-X5ME1') or 'E2E-X10ME1' with a series diode), or put "
+                           "an off-the-shelf interface between sensor and input (an opto-isolator or relay module as a part of the "
+                           "design) and declare it: el.devices[name].params['interface'] = {'part': <part name>, 'load_ohm': R, "
+                           "'on_current_ma_min': I_on, 'off_current_ma_max': I_off}.")
+            else:
+                comp_names = {c.name for c in (design.components if design is not None else []) if c.cots}
+                r_load = float(itf.get("load_ohm", 0.0) or 0.0)
+                i_on = (vs - v_res) / r_load * 1e3 if r_load > 0 else 0.0
+                row["interface"] = {**itf, "load_current_when_on_ma": round(i_on, 2), "leakage_when_off_ma": leak}
+                probs = []
+                if itf.get("part") not in comp_names:
+                    probs.append(f"its part '{itf.get('part')}' is not an off-the-shelf part of the design")
+                if r_load <= 0:
+                    probs.append("no load resistance ('load_ohm') is given")
+                else:
+                    if i_on < max(i_min, float(itf.get("on_current_ma_min", 0.0))):
+                        probs.append(f"the load passes {i_on:.1f} mA when the sensor is on; the sensor needs {i_min:g} mA and the "
+                                     f"stage {float(itf.get('on_current_ma_min', 0.0)):g} mA")
+                    if i_on > i_max:
+                        probs.append(f"the load passes {i_on:.0f} mA, over the sensor's {i_max:g} mA")
+                if "off_current_ma_max" not in itf or leak > float(itf["off_current_ma_max"]):
+                    probs.append(f"the sensor leaks up to {leak:g} mA when off; the stage must stay off at that current "
+                                 f"(declared 'off_current_ma_max': {itf.get('off_current_ma_max')})")
+                if probs:
+                    r.add("error", "probe_two_wire_interface_inadequate",
+                          f"Probe '{d.name}' (DC two-wire): the declared interface does not do the job: " + "; ".join(probs) + ".",
+                          device=d.name, problems=probs)
+        elif kind.startswith("npn"):
             pull = rt.get("internal_pullup")
             high = logic if (pull is False or protected) else vs      # worst case when the pull-up is present or not known
             row.update({"needs_board_pullup": True, "signal_low_v": 0.0, "signal_high_v_worst_case": high,
                         "internal_pullup": pull})
+            if rt.get("residual_voltage_v_max") is not None:
+                row["residual_voltage_v_max_at_full_load"] = rt["residual_voltage_v_max"]
+                row["signal_low_note"] = ("the maker's residual voltage is at full load current; at the few tenths of a mA of an input "
+                                          "pull-up it is far lower, plus the series diode's drop if one is fitted (not modelled)")
             if pull is True and not protected and vs > pin_max:
                 r.add("error", "probe_signal_over_voltage",
                       f"Probe '{d.name}' (NPN, internal pull-up to its {vs:g} V supply) holds {bsrc} near {vs:g} V when not "

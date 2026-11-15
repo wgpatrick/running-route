@@ -418,6 +418,8 @@ def verify_ratings(design: Design) -> VerifierResult:
                           f"{c.name} is marked off-the-shelf but did not come from the parts catalog "
                           f"(dimensions and ratings unverified).", part=c.name)
                 e = bom.setdefault(c.sku or c.name, {"qty": 0, "mass_kg": 0.0, "unit_cost_usd": c.meta.get("cost_usd")})
+                if c.ratings.get("mcmaster_pn"):      # a recorded supplier part number, and whether it was confirmed
+                    e["mcmaster_pn"], e["mcmaster_pn_status"] = c.ratings["mcmaster_pn"], c.ratings.get("mcmaster_pn_status")
                 e["qty"] += 1
                 e["mass_kg"] = round(e["mass_kg"] + c.mass(), 4)
         for sku, e in design.bom_extras.items():

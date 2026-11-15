@@ -300,6 +300,111 @@ def _switch_checks(design: Design, e: dict, sw, j, r: VerifierResult) -> dict:
     return out
 
 
+METALS = ("steel", "stainless304", "al6061", "al5052", "al_mic6", "al_atp5", "brass")
+
+
+def _probe_mount_checks(design: Design, name: str, r: VerifierResult) -> dict | None:
+    """Mounting of a threaded cylindrical proximity sensor (a catalogue part with interfaces["mounting"]), by the
+    maker's rules: it is clamped in a hole by its two nuts, and an UNSHIELDED sensor needs its sensing face `l` mm
+    proud of any metal with a cylinder `d` mm in diameter round the head free of metal (OMRON E2E sheet p.25: M12
+    15 / 40, M18 22 / 55). Metal inside that zone pulls the switching point in and can hold the sensor on. A shielded
+    sensor may sit flush. The sensor's own nuts and the bed (its target) are not counted. Home pose."""
+    from build123d import Cylinder, Pos
+
+    from ..geom import location_from_matrix
+
+    pc = next((c for c in design.components if c.name == name), None)
+    mt = (pc.meta.get("interfaces") or {}).get("mounting") if pc is not None else None
+    if not mt or not pc.meta.get("placement"):
+        return None
+    P = np.vstack([np.array(pc.meta["placement"], dtype=float), [0, 0, 0, 1]])
+    loc = location_from_matrix(P)
+    o, z = P[:3, 3], P[:3, 2]
+    out = {"thread": mt["thread"], "shielded": mt["shielded"], "hole_dia_mm": mt["hole_dia"], "source": mt["source"]}
+    bed = (design.printer or {}).get("bed")
+    # ---- clamped by its two nuts in a plate
+    cl = mt.get("clamp")
+    if cl is None:
+        r.add("error", "probe_mount_not_declared",
+              f"Bed probe '{name}' is a threaded {mt['thread']} sensor held by two nuts through a {mt['hole_dia']:g} mm hole, but the "
+              "part was made without `clamp=`: where its nuts sit is not declared.", part=name,
+              hint="probe_omron_e2e(model, clamp=(z_lo, z_hi)): the two faces of the plate it is clamped in, above the sensing face.")
+    else:
+        rr = mt["thread_dia"] / 2 + 0.6 * (mt["nut_across_flats"] / 2 - mt["thread_dia"] / 2)      # under the nut's bearing face
+        zm = (cl[0] + cl[1]) / 2
+        held: dict = {}
+        for k in range(8):
+            a = 2 * np.pi * k / 8
+            wp = (P @ np.array([rr * np.cos(a), rr * np.sin(a), zm, 1.0]))[:3]
+            for c in design.components:
+                if c is pc or c.body != pc.body:
+                    continue
+                bb = c.shape.bounding_box()
+                if not (bb.min.X - 1e-6 <= wp[0] <= bb.max.X + 1e-6 and bb.min.Y - 1e-6 <= wp[1] <= bb.max.Y + 1e-6
+                        and bb.min.Z - 1e-6 <= wp[2] <= bb.max.Z + 1e-6):
+                    continue
+                if surface_distance(c.shape, wp) <= 1e-6:
+                    held[c.name] = held.get(c.name, 0) + 1
+        best = max(held.items(), key=lambda kv: kv[1], default=(None, 0))
+        out["clamped_in"], out["clamp_mm"] = best[0], [cl[0], cl[1]]
+        if best[1] < 6:
+            r.add("error", "probe_not_clamped",
+                  f"Bed probe '{name}': its two nuts are drawn {cl[0]:g} and {cl[1]:g} mm above the sensing face, but no part on "
+                  f"body '{pc.body}' fills the space between them round the thread (material under {best[1]} of 8 points of the "
+                  "nut face).", part=name,
+                  hint=f"Give the toolhead a plate or tab {cl[1] - cl[0]:g} mm thick there with a {mt['hole_dia']:g} mm hole, and "
+                       "join the probe to it (design.join(probe, plate, 'clamped by its two nuts')).")
+    # ---- metal-free zone of an unshielded sensor
+    l, d = float(mt["head_proud_of_metal_l"]), float(mt["metal_free_dia_d"])
+    out["metal_free_zone"] = {"dia_mm": d, "from_face_mm": l}
+    if not mt["shielded"] and l > 0:
+        zone = (Pos(0, 0, l / 2) * Cylinder(d / 2, l)).moved(loc)
+        hits = []
+        for c in design.components:
+            if c is pc or c.name == bed or c.material not in METALS:
+                continue
+            if c.body != pc.body:
+                continue                      # what rides with the sensor is always in its zone; the rest moves
+            if not bboxes_overlap_shapes(c.shape, zone):
+                continue
+            try:
+                common = c.shape & zone
+                sols = list(common.solids()) if common is not None else []
+            except Exception:
+                sols = []
+            vol = sum(x.volume for x in sols)
+            if vol < 0.5:
+                continue
+            from build123d import Edge
+
+            axis_seg = Edge.make_line(tuple(o), tuple(o + l * z))
+            zs, rs = [], []
+            for so in sols:
+                for v in so.vertices():
+                    zs.append(float((np.array([v.X, v.Y, v.Z]) - o) @ z))
+                rs.append(float(so.distance_to(axis_seg)))            # true distance from the sensor's axis
+            hits.append({"part": c.name, "material": c.material, "volume_mm3": round(vol, 1),
+                         "nearest_to_face_mm": round(max(min(zs), 0.0), 2), "nearest_to_axis_mm": round(min(rs), 2)})
+        out["metal_in_zone"] = hits
+        if hits:
+            worst = min(hits, key=lambda h: h["nearest_to_face_mm"])
+            r.add("error", "probe_metal_in_clear_zone",
+                  f"Bed probe '{name}' is an unshielded {mt['thread']} sensor: its sensing face must stand {l:g} mm proud of any "
+                  f"metal, with {d:g} mm diameter round the head free of metal ({mt['source']}). In that zone: "
+                  + ", ".join(f"{h['part']} ({h['material']}, from {h['nearest_to_face_mm']:g} mm behind the face, "
+                              f"{h['nearest_to_axis_mm']:g} mm from the axis)" for h in sorted(hits, key=lambda h: h["nearest_to_face_mm"])[:6])
+                  + ".", part=name, metal=hits, zone_dia_mm=d, zone_depth_mm=l,
+                  hint=f"Clamp the sensor at least {l:g} mm behind its face (nearest metal now {worst['nearest_to_face_mm']:g} mm), keep "
+                       f"other metal {d / 2:g} mm from its axis there, carry it on a plastic bracket, or use a shielded type "
+                       "(flush-mountable, shorter range).")
+    return out
+
+
+def bboxes_overlap_shapes(a, b) -> bool:
+    A, B = a.bounding_box(), b.bounding_box()
+    return not (A.max.X < B.min.X or B.max.X < A.min.X or A.max.Y < B.min.Y or B.max.Y < A.min.Y or A.max.Z < B.min.Z or B.max.Z < A.min.Z)
+
+
 def _probe_checks(design: Design, e: dict, r: VerifierResult) -> dict:
     """A bed probe homing Z: its real sensing distance against the bed and nozzle geometry. The probe must switch
     before the nozzle touches (for every unit within the sensing-distance spread), the Z travel must bring the bed
@@ -307,14 +412,16 @@ def _probe_checks(design: Design, e: dict, r: VerifierResult) -> dict:
     from ..electrical import probe_geometry
 
     name = e.get("probe")
+    mount = _probe_mount_checks(design, name, r)
     try:
         pg = probe_geometry(design)
     except ValueError as ex:
         r.add("error", "probe_not_usable", f"Bed probe '{name}': {ex}.", part=name,
               hint="Give the probe part a 'sensing_face' interface and an electrical template of kind 'probe' "
                    "(mechloop.parts.electrical.inductive_probe_template), and set design.tool_point and printer['bed'].")
-        return {"probe": name, "checked": False}
-    out = {"probe": name, "checked": True, **{k: pg.get(k) for k in (
+        return {"probe": name, "checked": False, **({"mounting": mount} if mount else {})}
+    out = {"probe": name, "checked": True, **({"mounting": mount} if mount else {}), **{k: pg.get(k) for k in (
+        "sensing_distance_range_mm", "temperature_drift_frac", "z_offset_range_unit_spread_mm",
         "target", "sensing_distance_mm", "sensing_distance_tolerance_frac", "repeatability_mm", "x_offset", "y_offset",
         "face_above_nozzle_mm", "z_offset", "z_offset_range_mm", "nozzle_above_bed_at_end_of_z_travel_mm", "edge_margin_mm",
         "nozzle_above_bed_at_end_of_working_z_range_mm", "z_overtravel_past_working_range_mm",
@@ -337,8 +444,10 @@ def _probe_checks(design: Design, e: dict, r: VerifierResult) -> dict:
         return out
     sn, tol = pg["sensing_distance_mm"], pg["sensing_distance_tolerance_frac"]
     z_off, (z_lo, z_hi) = pg["z_offset"], pg["z_offset_range_mm"]
+    drift = pg.get("temperature_drift_frac") or 0.0
     what = (f"switching distance {sn:g} mm on {pg['target']} ({pg['sources'].get('switching_distance_' + pg['target'] + '_mm', 'not stated')}), "
-            f"+/-{tol:.0%} unit to unit ({'assumed' if 'sensing_distance_tolerance_frac' in pg['assumed'] else 'from its ratings'})")
+            f"+/-{tol:.0%} unit to unit ({'assumed' if 'sensing_distance_tolerance_frac' in pg['assumed'] else 'from its ratings'})"
+            + (f" and +/-{drift:.0%} with temperature" if drift else ""))
     if z_off <= 0.0:
         r.add("error", "probe_triggers_after_nozzle_touches",
               f"Bed probe '{name}': its sensing face is {pg['face_above_nozzle_mm']:.2f} mm above the nozzle tip and it switches "
@@ -349,8 +458,8 @@ def _probe_checks(design: Design, e: dict, r: VerifierResult) -> dict:
               f"Bed probe '{name}' switches with the nozzle only {z_off:.2f} mm above the bed ({what}). A unit at the short end "
               f"of that spread switches at {z_lo:+.2f} mm, i.e. the nozzle is on the bed first; the firmware's z_offset cannot "
               f"correct that, it can only be positive.", part=name, z_offset=z_off, z_offset_range=[z_lo, z_hi],
-              needed_margin_mm=round(tol * sn, 3),
-              hint=f"Lower the probe so it switches at least {tol * sn + 0.3:.1f} mm before the nozzle touches (1-2 mm is usual), "
+              needed_margin_mm=round(z_off - z_lo, 3),
+              hint=f"Lower the probe so it switches at least {z_off - z_lo + 0.3:.1f} mm before the nozzle touches (1-2 mm is usual), "
                    "or mount it on a slot so its height can be set on the machine.")
     if pg["face_above_nozzle_mm"] < 1.0:
         r.add("warning", "probe_face_near_nozzle_plane",

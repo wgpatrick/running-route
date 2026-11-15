@@ -264,3 +264,15 @@ Known limits of what was added: the heat-sink figures are assumed; stall detecti
 limit rests on one terse drawing line and exists only for the 48 mm motor; the plain assemblability check (designs
 without sub-assemblies) still withdraws a screw past the whole assembly, so a part far along a screw's axis can read
 as blocking it; no baseline scores were re-run at 19 kN.
+
+
+## Fourth batch of vendor documents applied (added 2026-11-15, last)
+
+Proposals 17 to 22 of the vendor-documents report, with `tests/test_known_answers_batch4.py`: OMRON E2E bed probes
+as catalogue parts (`probe_omron_e2e`) with a two-wire electrical model, the maker's metal-free mounting zone and the
+temperature term in the trigger height; the relay's neutral terminal and a general "this port must be fed" check; fans
+with a rated voltage (`fan(30, 12)` is the Sunon part; the 24 V one has no sheet); the inlet as the SCHURTER DD11
+(order number not pinned); McMaster part numbers in the BOM and the DIN 934 M5 nut as an option. `AGENT.md` says how a
+design declares each. Further effect on the designs, none of which was edited: **v4, v5 and v6 fail electrical**
+(`psu_relay.N` not wired) and their inlet panels are cut for the old 43 mm opening with screw holes 50 apart (the
+part is now 46.7 mm long with holes 56 apart).

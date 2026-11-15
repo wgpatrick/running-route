@@ -521,19 +521,54 @@ def extruder_direct() -> Stock:
 
 
 @part
-def fan(size: int = 40) -> Stock:
-    """Axial fan, 30 or 40 mm square, 10 mm thick. Local frame: centred, air along Z."""
+def fan(size: int = 40, volts: float = 24.0) -> Stock:
+    """Axial fan, 30 or 40 mm square, 10 mm thick. Local frame: centred, air along Z.
+    `volts` is the fan's RATED voltage and is checked against what its port supplies (`fan_voltage_mismatch`).
+    fan(30, 12): Sunon MF30101V2-1000U-A99 (12 V, 6 to 13.8 V operating, 32 mA; maker's sheet), SKU FAN-3010-12V. It
+    must not go on a 24 V fan output.
+    fan(30) / fan(30, 24): a 24 V 30 mm fan, SKU FAN-3010. The Sunon family's 24 V member (MF30102V...) is the part
+    meant, but its sheet is NOT in hand: current 0.05 A is a typical figure, unverified. fan(40): 24 V only, typical."""
     if size not in (30, 40):
         raise ValueError("fan size must be 30 or 40")
+    volts = float(volts)
+    if (size, volts) not in ((30, 24.0), (30, 12.0), (40, 24.0)):
+        raise ValueError("catalogue fans: fan(30, 24), fan(30, 12) (Sunon MF30101V2-1000U-A99) and fan(40, 24)")
     body = Box(size, size, 10) - Cylinder(size / 2 - 1.5, 10)
     pitch = {30: 24.0, 40: 32.0}[size]
     holes = [(x, y, -5.0) for x in (-pitch / 2, pitch / 2) for y in (-pitch / 2, pitch / 2)]
     for x, y, _ in holes:
         body -= Pos(x, y, 0) * Cylinder(1.6, 10)
     detail, model = details.fan(size)
-    return Stock(body, f"FAN-{size}10", f"{size} mm axial fan", {30: 0.008, 40: 0.016}[size], material="abs",
-                 detail=detail, model=model,
-                 interfaces={"mount_holes_m3": holes}, ratings={"electrical": True}, cost_usd=3.0)
+    mass, src = {30: 0.008, 40: 0.016}[size], {}
+    rt = {"electrical": True, "rated_voltage_v": volts, "rated_current_a": {30: 0.05, 40: 0.07}[size],
+          "rated_current_source": f"{volts:g} V axial fan of this size (typical, unverified)",
+          "rated_voltage_source": "catalogue part declared as a 24 V fan; no maker's sheet in hand"}
+    sku, text = f"FAN-{size}10", f"{size} mm axial fan, {volts:g} V"
+    if size == 30:
+        sv = vendor_data("sunon_mf30101v2")["values"]
+        if volts == 12.0:
+            mass, sku = sv["weight_g"] / 1000.0, "FAN-3010-12V"
+            text = "30 mm axial fan, 12 V (Sunon MF30101V2-1000U-A99)"
+            rt.update({"rated_voltage_v": sv["rated_voltage_v"], "operating_voltage_v": tuple(sv["operating_voltage_v"]),
+                       "rated_current_a": sv["rated_current_a"], "rated_power_w": sv["rated_power_w"], "speed_rpm": sv["speed_rpm"],
+                       "air_flow_m3_min": sv["air_flow_m3_min"], "static_pressure_pa": sv["static_pressure_pa"],
+                       "noise_dba": sv["noise_dba"], "max_ambient_c": float(sv["operating_temp_c"][1]),
+                       "vendor_part": "MF30101V2-1000U-A99",
+                       "rated_current_source": "Sunon specification D03033610G-01 p.3: 32 mA rated (37 max) at 12 V",
+                       "rated_voltage_source": "Sunon specification D03033610G-01 p.2, p.3: 12 VDC rated, 6 to 13.8 V operating"})
+            src = _source("sunon_mf30101v2", "partial", "MF30101V2-1000U-A99",
+                          unverified=("fourth mounting hole", "detail model"),
+                          note="electrical figures, size, hole pitch and mass are the maker's. The sheet has THREE 3.2 mm holes on "
+                               "24 mm (the 145 mm lead leaves at the fourth corner); the solid keeps four. Recommended screw M2.5")
+        else:
+            rt["vendor_part_intended"] = "Sunon MF30102V... (24 V member of the MF3010 family): sheet not in hand"
+            src = _source("sunon_mf30101v2", "proxy", "24 V 30 x 30 x 10 fan",
+                          note="the only sheet in hand (vendor_docs/FAN-3010_datasheet.pdf) is the 12 V MF30101V2-1000U-A99. The 24 V "
+                               "family member (model code voltage digit 2) is what a 24 V output needs; its sheet is NOT in hand, so "
+                               "current (0.05 A) and every other electrical figure here are typical values, unverified. Do not buy "
+                               "the MF30101V2 for a 24 V output")
+    return Stock(body, sku, text, mass, material="abs", detail=detail, model=model,
+                 interfaces={"mount_holes_m3": holes}, ratings=rt, cost_usd=3.0, source=src)
 
 
 @part
@@ -601,6 +636,22 @@ SCREW = {  # size: (thread d, head d, head h, hex key, close clearance hole, tap
     "M6": (6.0, 10.0, 6.0, 5.0, 6.6, 5.0, 19500), "M8": (8.0, 13.0, 8.0, 6.0, 9.0, 6.8, 35500)}
 
 
+def mcmaster_part(sku: str) -> dict:
+    """McMaster-Carr part number recorded for a fastener SKU (mechloop/parts/vendor/mcmaster_fasteners.json), for the
+    BOM: {"mcmaster_pn", "mcmaster_pn_status"} or {} when none is recorded. Status "confirmed by the delivered STEP
+    file" means the file of that number was inspected and equals the ISO dimensions; "unconfirmed" means it was not."""
+    m = vendor_data("mcmaster_fasteners")
+    pn = m["part_numbers"].get(sku)
+    if not pn:
+        return {}
+    if f"{sku}.step" in m.get("wrong_file", {}):
+        return {"mcmaster_pn": pn, "mcmaster_pn_status": "unconfirmed: the STEP file delivered under this name was a different part "
+                                                         "(" + m["wrong_file"][f"{sku}.step"].split(";")[0] + ")"}
+    seen = sku in m.get("screws", {}) or sku in m.get("nuts", {})
+    return {"mcmaster_pn": pn, "mcmaster_pn_status": "confirmed by the delivered STEP file" if seen else
+            "unconfirmed: listed in the collector's sources, no file inspected"}
+
+
 @part
 def shcs(size: str = "M3", length: float = 10.0) -> Stock:
     """Socket head cap screw (ISO 4762). Local frame: underside of head at Z=0, thread along -Z, head above."""
@@ -610,7 +661,7 @@ def shcs(size: str = "M3", length: float = 10.0) -> Stock:
     detail, model = details.shcs(size, length)
     return Stock(shape, f"SHCS-{size}x{length:g}", f"Socket head cap screw {size} x {length:g}", mass,
                  detail=detail, model=model,
-                 ratings={"proof_load_n": SCREW[size][6]},
+                 ratings={"proof_load_n": SCREW[size][6], **mcmaster_part(f"SHCS-{size}x{length:g}")},
                  interfaces={"thread_d": d, "head_d": hd, "head_h": hh, "hex_key": key}, cost_usd=0.08,
                  source=_source("iso_fasteners", "standard", f"ISO 4762 {size}", unverified=("proof_load_n",)))
 
@@ -618,27 +669,51 @@ def shcs(size: str = "M3", length: float = 10.0) -> Stock:
 NUT = {"M2.5": (5.0, 2.0), "M3": (5.5, 2.4), "M4": (7.0, 3.2), "M5": (8.0, 4.7), "M6": (10.0, 5.2), "M8": (13.0, 6.8)}
 
 
+NUT_DIN934 = {"M5": 4.0}      # where DIN 934 (what McMaster's 90591A series is) differs in height from ISO 4032
+
+
 @part
-def hex_nut(size: str = "M3") -> Stock:
-    """Hex nut (ISO 4032). Local frame: axis Z, bearing face at Z=0, nut body above."""
+def hex_nut(size: str = "M3", standard: str = "iso4032") -> Stock:
+    """Hex nut. Local frame: axis Z, bearing face at Z=0, nut body above.
+    standard "iso4032" (default): the generated ISO 4032 solid (M5: 8.0 across flats, 4.7 high).
+    standard "din934": only where it differs, i.e. M5, 4.0 mm high (McMaster 90591A260, measured in its STEP file);
+    SKU NUT-M5-DIN934. Name it when that is the nut you will buy: 0.7 mm more thread then shows past it. The default
+    M5 nut records McMaster's height beside its own (interfaces["height_din934_mcmaster"]) but is not changed by it."""
     from build123d import RegularPolygon, extrude
 
+    if standard not in ("iso4032", "din934"):
+        raise ValueError("hex_nut standard must be 'iso4032' or 'din934'")
     af, h = NUT[size]
     d = SCREW[size][0]
+    mc = mcmaster_part(f"NUT-{size}")
+    din = standard == "din934" and size in NUT_DIN934
+    extra_i = {}
+    if size in NUT_DIN934:
+        extra_i["height_din934_mcmaster"] = NUT_DIN934[size]
+        if not din and mc:      # the recorded McMaster nut is the DIN 934 one, not this ISO solid
+            mc = {"mcmaster_pn": mc["mcmaster_pn"], "mcmaster_pn_status":
+                  f"that McMaster number is the DIN 934 nut, {NUT_DIN934[size]:g} mm high, not this ISO 4032 nut ({h:g} mm): buy ISO 4032 "
+                  f"nuts, or declare hex_nut('{size}', 'din934') / add_nut(..., standard='din934')"}
+    if din:
+        h = NUT_DIN934[size]
     body = extrude(RegularPolygon(af / 2, 6, major_radius=False), h)  # solid: the thread is the overlap with the screw
-    detail, model = details.hex_nut(size)
-    return Stock(body, f"NUT-{size}", f"Hex nut {size}", af * af * 0.866 * h * 7.85e-6 * 0.7, detail=detail, model=model,
-                 interfaces={"across_flats": af, "height": h, "thread_d": d}, cost_usd=0.03,
-                 source=_source("iso_fasteners", "standard", f"ISO 4032 {size}",
-                                vendor_data("iso_fasteners")["sources"][1]["source_url"]))
+    detail, model = details.hex_nut(size) if not din else (None, {"source": "simulation solid only: DIN 934 height from McMaster's STEP"})
+    iso = vendor_data("iso_fasteners")
+    return Stock(body, f"NUT-{size}" + ("-DIN934" if din else ""), f"Hex nut {size}" + (" (DIN 934, McMaster 90591A260)" if din else ""),
+                 af * af * 0.866 * h * 7.85e-6 * 0.7, detail=detail, model=model, ratings=dict(mc),
+                 interfaces={"across_flats": af, "height": h, "thread_d": d, **extra_i}, cost_usd=0.03,
+                 source=(_source("mcmaster_fasteners", "vendor", "90591A260 (DIN 934 M5 hex nut)",
+                                 note="across flats 8.0 and thickness 4.0 mm measured in McMaster's STEP file") if din else
+                         _source("iso_fasteners", "standard", f"ISO 4032 {size}", iso["sources"][1]["source_url"])))
 
 
 def add_nut(design: Design, name: str, size: str, at, direction=(0, 0, 1), body: str = "world",
-            screw: str | None = None) -> Component:
+            screw: str | None = None, standard: str = "iso4032") -> Component:
     """Place a hex nut with its bearing face at `at`, body extending along `direction`.
-    Pass `screw=` to record that this nut is what that screw threads into."""
+    Pass `screw=` to record that this nut is what that screw threads into. standard="din934" places the McMaster
+    DIN 934 nut where it differs from ISO 4032 (M5: 4.0 mm high instead of 4.7)."""
     dvec = Vector(*direction).normalized()
-    c = place(design, name, hex_nut(size), Location(Plane(origin=at, z_dir=dvec)), body=body)
+    c = place(design, name, hex_nut(size, standard), Location(Plane(origin=at, z_dir=dvec)), body=body)
     if screw:
         design.join(screw, name, "thread")
         design.allow_overlap(screw, name)
@@ -774,3 +849,4 @@ def add_corner_bracket(design: Design, name: str, a: str, b: str, corner, u, v, 
 # ----------------------------------------------------- more catalog parts (registered on import)
 from .hardware import bed_column_silicone, spacer_lengths, spacer_round  # noqa: E402,F401
 from .toolhead import extruder_roto, hotend_revo, hotend_v6  # noqa: E402,F401
+from .probes import probe_omron_e2e  # noqa: E402,F401

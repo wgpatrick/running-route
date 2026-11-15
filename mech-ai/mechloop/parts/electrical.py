@@ -21,7 +21,7 @@ import math
 from build123d import Box, Cylinder, Pos, Rot
 
 from ..electrical import Device, Electrical, Port
-from . import Stock, part
+from . import Stock, _source, part, vendor_data
 
 TU = "typical, unverified"
 
@@ -191,32 +191,70 @@ def psu_lrs(model: str = "LRS-350-24") -> Stock:
 # ----------------------------------------------------------------- mains inlet, relay, host
 @part
 def iec_inlet_c14(fuse_a: float = 6.3) -> Stock:
-    """IEC 60320 C14 appliance inlet with rocker switch and 5 x 20 mm fuse drawer (screw flange). Local frame: flange
-    rear face on Z=0 (it sits against the outside of a panel), body through the panel along -Z, flange 60 x 50 x 3 on +Z;
-    two M3 holes 50 mm apart on Y. Panel cut-out 28 x 43. Geometry is typical, unverified."""
-    flange = Pos(0, 0, 1.5) * Box(50, 60, 3)
-    body = Pos(0, 0, -15) * Box(27, 42, 30)
-    holes = [(0.0, -25.0, 0.0), (0.0, 25.0, 0.0)]
+    """IEC 60320 C14 power entry module with 2-pole rocker switch and 5 x 20 mm fuseholder: SCHURTER DD11, screw
+    version A (data sheet in vendor_docs/INLET-C14-SW-FUSE-T8A_datasheet.pdf). Local frame: flange rear face on Z=0 (it
+    sits against the outside of a panel), body through the panel along -Z for 30 mm, flange 30.5 x 65 x 2.5 on +Z, the
+    module standing 5 mm proud of the panel; two 3.4 mm screw holes 56 mm apart on Y (`mount_holes_m3`).
+    Panel cut-out 28.1 x 47.1 with 1 mm corner radius (`interfaces["cutout"]` = (X, Y), `["cutout_corner_radius"]`).
+    The cut-out's end is 2.75 mm from each screw hole (28 - 23.55 - 1.7): that web is SCHURTER's own pattern. In sheet
+    thicker than 2.5 mm the sheet-cutting rule (one thickness between holes) warns about it; the warning is true and
+    stays: thin the panel to 2.5 mm or accept it with that reason. Terminals: 4.8 x 0.8 mm quick-connects.
+    The ORDER NUMBER IS NOT PINNED: the sheet lists 19; nearest are DD11.0111.1110 / .1111 (1-pole fuseholder, plain
+    rocker). The fuse drawer (4301.1405 or 4301.1407) and the fuse-link are separate items to order."""
+    dd = vendor_data("schurter_dd11")
+    dm, co = dd["dimensions_mm"], dd["dimensions_mm"]["panel_cutout"]
+    fl_y, fl_x = dm["version_A"]["flange"]                    # 65 long, 30.5 wide
+    ft, pitch = dm["flange_thickness"], dm["version_A"]["hole_pitch"]
+    bx, by = dm["front_body"][1], dm["front_body"][0]          # 27.7 x 46.7
+    depth, proud = dm["depth_behind_panel"], dm["front_projection"]
+    flange = Pos(0, 0, ft / 2) * Box(fl_x, fl_y, ft)
+    body = Pos(0, 0, -depth / 2) * Box(bx, by, depth) + Pos(0, 0, (ft + proud) / 2) * Box(bx, by, proud - ft)
+    holes = [(0.0, -pitch / 2, 0.0), (0.0, pitch / 2, 0.0)]
     for x, y, _ in holes:
-        flange -= Pos(x, y, 1.5) * Cylinder(1.7, 3)
+        flange -= Pos(x, y, ft / 2) * Cylinder(co["screw_hole_dia"] / 2, ft)
     back = (0, 0, -1)
-    fs = dict(connector="faston-6.3", max_a=10.0)
-    ports = {"L": dict(kind="mains_out", at=(-6.0, -12.0, -30.0), dir=back, **fs),
-             "N": dict(kind="mains_out", at=(6.0, -12.0, -30.0), dir=back, **fs),
-             "PE": dict(kind="pe", at=(0.0, 12.0, -30.0), dir=back, multi=True, **fs)}
-    ratings = {"amps": 10.0, "volts": 250.0, "fuse_a": fuse_a, "fuse_type": "T (time-lag) 5x20 mm", "switch": "2-pole rocker"}
-    sources = {"amps": "[IEC] C14: 10 A 250 V", "fuse_a": "chosen by the design from the standard 5x20 values",
-               "geometry": TU, "mass": TU, "cost": TU}
-    return Stock(flange + body, f"INLET-C14-SW-FUSE-T{fuse_a:g}A", f"IEC C14 inlet with switch and T{fuse_a:g}A fuse", 0.035, material="abs",
-                 ratings={"electrical": {"kind": "inlet", "ports": ports, "ratings": ratings, "sources": sources, "product": {'product': 'IEC 60320 C14 inlet module with rocker switch and 5x20 mm fuse drawer, 10 A 250 V', 'vendor': 'commodity (several makers)', 'part_number': None, 'form': 'module', 'off_the_shelf': True, 'custom_pcb': False, 'builder_work': 'cut the panel opening; crimp 6.3 mm faston receptacles; fit the T fuse'}, "params": {}},
+    fs = dict(connector="faston-4.8", max_a=10.0)
+    ports = {"L": dict(kind="mains_out", at=(-6.0, -12.0, -depth), dir=back, **fs),
+             "N": dict(kind="mains_out", at=(6.0, -12.0, -depth), dir=back, **fs),
+             "PE": dict(kind="pe", at=(0.0, 12.0, -depth), dir=back, multi=True, **fs)}
+    web = pitch / 2 - co["length"] / 2 - co["screw_hole_dia"] / 2
+    ratings = {"amps": float(dd["ratings"]["current_a"]), "volts": float(dd["ratings"]["voltage_vac"]), "fuse_a": fuse_a,
+               "fuse_type": "T (time-lag) 5x20 mm", "switch": "2-pole rocker",
+               "fuse_power_acceptance_w": dd["ratings"]["fuse_power_acceptance_w_at_23c"]["1_pole"],
+               "max_ambient_c": float(dd["ratings"]["operating_temp_c"][1])}
+    sources = {"amps": "[SCHURTER] DD11 data sheet p.1: 10 A 250 VAC, C14, 2-pole switch, 5 x 20 fuseholder",
+               "fuse_a": "chosen by the design from the standard 5x20 values; the fuse-link and the fuse drawer are not part of a DD11 number",
+               "geometry": "[SCHURTER] DD11 data sheet p.3, screw version A: cut-out 47.1 x 28.1 R1, holes 3.4 on 56, flange 65 x 30.5 x 2.5, "
+                           "30 mm behind the panel, 5 mm in front",
+               "terminal_positions": f"placed approximately; the sheet's rear view was not transcribed ({TU})",
+               "order_number": "NOT PINNED: 19 order numbers on the sheet; nearest DD11.0111.1110 / .1111",
+               "max_ambient_c": "[SCHURTER] DD11 data sheet p.1: -25 to 85 degC", "mass": TU, "cost": TU}
+    return Stock(flange + body, f"INLET-C14-SW-FUSE-T{fuse_a:g}A", f"IEC C14 inlet with switch and T{fuse_a:g}A fuse (SCHURTER DD11, version A; order number not pinned)", 0.035, material="abs",
+                 ratings={"electrical": {"kind": "inlet", "ports": ports, "ratings": ratings, "sources": sources, "product": {'product': 'SCHURTER DD11 power entry module: IEC C14 inlet, 2-pole rocker switch, 5x20 mm fuseholder, 10 A 250 V, screw version A', 'vendor': 'SCHURTER', 'part_number': 'DD11.0111.111x (order number NOT pinned: confirm on the data sheet); fuse drawer 4301.1405 and the fuse-link are ordered separately', 'form': 'module', 'off_the_shelf': True, 'custom_pcb': False, 'builder_work': '4.8 mm quick-connect receptacles on L, N and PE; fit the fuse drawer and a T fuse-link'}, "params": {}},
                           "approximate": True},
-                 interfaces={"mount_holes_m3": holes, "cutout": (28.0, 43.0), **_ports_to_interfaces(ports)}, cost_usd=4.0)
+                 interfaces={"mount_holes_m3": holes, "cutout": (co["width"], co["length"]), "cutout_corner_radius": co["corner_radius"],
+                             "cutout_to_screw_hole_web": round(web, 2), "flange": (fl_x, fl_y, ft), "hole_dia": co["screw_hole_dia"],
+                             "panel_thickness_max": dm["panel_thickness_max"],
+                             "pattern_note": f"SCHURTER DD11 (version A) mounting pattern: {co['length']:g} x {co['width']:g} mm cut-out with two "
+                                             f"{co['screw_hole_dia']:g} mm screw holes {pitch:g} mm apart leaves {web:.2f} mm between the cut-out "
+                                             "and each hole. That web is the maker's own; it meets a one-thickness spacing rule only "
+                                             "in sheet of 2.5 mm or thinner",
+                             **_ports_to_interfaces(ports)}, cost_usd=4.0,
+                 source=_source("schurter_dd11", "partial", "DD11, screw version A (order number not pinned)",
+                                unverified=("order number", "terminal positions", "mass_kg"),
+                                note="ratings, cut-out, screw pitch, flange, depth and terminal size are SCHURTER's DD11 data sheet. The "
+                                     "sheet covers 19 order numbers and none was chosen: nearest DD11.0111.1110 / .1111. The fuse drawer "
+                                     "and the fuse-link ('T8A' in the SKU) are separate items"))
 
 
 @part
 def relay_btt_v12() -> Stock:
     """BIGTREETECH Relay V1.2 mains relay module (80.32 x 36.19 mm PCB). Local frame: PCB centred, underside on Z=0,
-    mains terminals at +X, logic header at -X; four M3 holes on 74.17 x 29.21 mm."""
+    mains terminals at +X, logic header at -X; four M3 holes on 74.17 x 29.21 mm.
+    Mains terminals LIN, N, LOT (manual p.3): it opens the LIVE only, between LIN and LOT, and it powers itself from
+    the mains through N. So N must be wired or the relay never pulls in: run the neutral through its N terminal
+    (inlet.N -> relay.N, relay.N -> psu.N: the terminal takes both wires in one twin ferrule). The electrical verifier
+    reports `device_supply_not_connected` if N is left open."""
     W, H, T = 80.32, 36.19, 1.6
     pcb = Pos(0, 0, T / 2) * Box(W, H, T)
     env = Pos(4.0, 0, T + 9.0) * Box(58.0, H - 9.0, 18.0)
@@ -225,14 +263,19 @@ def relay_btt_v12() -> Stock:
         pcb -= Pos(x, y, T / 2) * Cylinder(1.6, T)
     sc = dict(connector="screw-5.08", max_a=10.0)
     ports = {"LIN": dict(kind="series", at=(33.0, -9.0, 12.0), dir=(1, 0, 0), **sc),
+             # neutral: feeds the module's own 5 V converter; a pass-through tap (two wires in the one terminal)
+             "N": dict(kind="series", at=(33.0, 0.0, 12.0), dir=(1, 0, 0), multi=True, **sc),
              "LOT": dict(kind="series", at=(33.0, 9.0, 12.0), dir=(1, 0, 0), **sc),
              "ctrl": dict(kind="signal_in", connector="JST-XH", max_a=3.0, at=(-33.0, 0.0, 8.0), dir=(0, 0, 1), conductors=3)}
     ratings = {"contact_a": 10.0, "volts": 265.0, "resistance_ohm": 0.0, "supply_w": 0.5}
     sources = {"outline_holes": "[BTT-R] dimensional drawing", "volts": "[BTT-R] AC input 85-265 V",
+               "mains_terminals": "[BTT-R] manual p.3 (mechloop/parts/vendor/bigtreetech_relay_v12.json): LOT, N, LIN; the on-board "
+                                  "converter ('INPUT 85-265VAC, OUTPUT DC5V/3W') is fed from LIN and N; one relay, live only. "
+                                  "Terminal order along the strip is as drawn here, not dimensioned in the manual",
                "contact_a": f"relay contact rating not in the manual ({TU})", "height": TU, "supply_w": TU, "mass": TU, "cost": TU}
     return Stock(pcb + env, "RELAY-BTT-V1.2", "BIGTREETECH Relay V1.2 mains relay module", 0.03, material="abs",
                  ratings={"electrical": {"kind": "relay", "ports": ports, "ratings": ratings, "sources": sources,
-                                         "product": {'product': 'BIGTREETECH Relay V1.2', 'vendor': 'BIGTREETECH', 'part_number': 'Relay V1.2', 'form': 'assembled board', 'off_the_shelf': True, 'custom_pcb': False, 'builder_work': 'mount on spacers; ferrules on the mains wires; 3-wire JST-XH lead to PS-ON'}, "params": {"through": {"LIN": "LOT", "LOT": "LIN"}, "cuts": "psu"}}, "approximate": True},
+                                         "product": {'product': 'BIGTREETECH Relay V1.2', 'vendor': 'BIGTREETECH', 'part_number': 'Relay V1.2', 'form': 'assembled board', 'off_the_shelf': True, 'custom_pcb': False, 'builder_work': 'mount on spacers; ferrules on the mains wires; 3-wire JST-XH lead to PS-ON'}, "params": {"through": {"LIN": "LOT", "LOT": "LIN", "N": "N"}, "cuts": "psu", "required_supply_ports": {"N": "mains neutral: the module's own 5 V converter is fed from LIN and N; without it the relay never pulls in and the machine does not switch on"}}}, "approximate": True},
                  interfaces={"mount_holes_m3": holes, "standoff_min": 4.0, **_ports_to_interfaces(ports)}, cost_usd=9.0)
 
 
@@ -446,10 +489,16 @@ def _template_for(c) -> dict | None:
                 "product": _ots("Direct-drive extruder with pancake NEMA 17 (complete unit)", "commodity", None, "component",
                                 "crimp a 4-way JST-XH on the motor lead")}
     if sku.startswith("FAN"):
-        amps = {"FAN-3010": 0.05, "FAN-4010": 0.07}.get(sku, 0.1)
+        # rated voltage and current are the catalogue part's own (parts.fan(size, volts)); older hand-made fans: 24 V
+        volts = float(c.ratings.get("rated_voltage_v", 24.0))
+        amps = float(c.ratings.get("rated_current_a", {"FAN-3010": 0.05, "FAN-4010": 0.07}.get(sku, 0.1)))
+        pn = c.ratings.get("vendor_part")
         return {"kind": "fan", "ports": {"in": dict(kind="fan", connector="JST-XH", max_a=3.0)},
-                "ratings": {"current_a": amps, "volts": 24.0}, "sources": {"current_a": f"24 V axial fan of this size ({TU})"}, "params": {},
-                "product": _ots(f"24 V axial fan {sku[4:6]} x {sku[4:6]} x 10 mm, 2-wire", "commodity", None, "component", "crimp a 2-way JST-XH")}
+                "ratings": {"current_a": amps, "volts": volts},
+                "sources": {"current_a": c.ratings.get("rated_current_source", f"{volts:g} V axial fan of this size ({TU})"),
+                            "volts": c.ratings.get("rated_voltage_source", f"catalogue part: a {volts:g} V fan")}, "params": {},
+                "product": _ots(f"{volts:g} V axial fan {sku[4:6]} x {sku[4:6]} x 10 mm, 2-wire" + (f" ({pn})" if pn else ""),
+                                "Sunon" if pn else "commodity", pn, "component", "crimp a 2-way JST-XH")}
     if sku.startswith("ENDSTOP"):
         return {"kind": "endstop", "ports": {"out": dict(kind="endstop", connector="JST-XH", max_a=1.0, conductors=3)},
                 "ratings": {}, "sources": {}, "params": {},

@@ -159,6 +159,231 @@
   "supply": "10 to 30 V (v6 assumes 6-36 V; 24 V is inside both)",
   "mass": "about 70 g packed with 2 m of cable (v6: 20 g)"
  },
- "used_by_catalog": false,
- "_label": "added 2026-11-15 (batch 4). NOTHING READS THIS FILE: no catalogue part, verifier or design takes a value from it. Proposed use: reports/Vendor documents - what they change.md, 'Fourth batch'"
+ "used_by_catalog": true,
+ "_label": "added 2026-11-15 (batch 4). Read since 2026-11-15 by mechloop/parts/probes.py (probe_omron_e2e): block 'catalogue_models'",
+ "catalogue_models": {
+  "_how": "one entry per sensor the catalogue offers. Ratings from the sheet's tables (p.13 two-wire, p.16 three-wire); surrounding-metal figures from the table on p.25 (l = sensing face proud of the mounting metal, d = diameter to keep free of metal round the head, m = distance to facing metal, n = between sensors); dimensions from p.27-28 (Diagrams 6, 10, 11); aluminium distance read BY EYE (+/-0.15 mm) from the 'Influence of Sensing Object Size and Material' charts (p.17 two-wire, p.18 three-wire), which are REFERENCE values for a 1 mm plate up to 45-60 mm square",
+  "E2E-X8MD1": {
+   "wires": 2,
+   "output": "two_wire_no",
+   "thread": "M12 x 1",
+   "thread_dia_mm": 12.0,
+   "shielded": false,
+   "sensing_distance_mm": 8.0,
+   "aluminium_mm": 2.8,
+   "aluminium_range_mm": [
+    2.8,
+    3.2
+   ],
+   "aluminium_note": "3.2 at 10-15 mm plate side, 3.05 at 30, 2.8 at 50 and still falling: the value for the largest plate is used",
+   "tolerance_frac": 0.1,
+   "temperature_drift_frac": 0.1,
+   "differential_travel_frac": 0.1,
+   "supply_v": [
+    10.0,
+    30.0
+   ],
+   "leakage_current_ma_max": 0.8,
+   "load_current_ma": [
+    3.0,
+    100.0
+   ],
+   "residual_voltage_v_max": 3.0,
+   "ambient_c": [
+    -25.0,
+    70.0
+   ],
+   "packed_weight_g": 70,
+   "conductors": 2,
+   "body_mm": {
+    "head_dia": 9.0,
+    "head_length": 7.0,
+    "threaded_length": 33.0,
+    "body_length": 38.0,
+    "cable_protector": 9.0,
+    "nut_across_flats": 17.0,
+    "nut_over_corners": 21.0,
+    "nut_thickness": 4.0,
+    "washer": 1.0
+   },
+   "surrounding_metal_mm": {
+    "l": 15.0,
+    "d": 40.0,
+    "D": 15.0,
+    "m": 20.0,
+    "n": 40.0
+   },
+   "tightening_torque_nm_max": 30
+  },
+  "E2E-X5ME1": {
+   "wires": 3,
+   "output": "npn_no",
+   "thread": "M12 x 1",
+   "thread_dia_mm": 12.0,
+   "shielded": false,
+   "sensing_distance_mm": 5.0,
+   "aluminium_mm": 1.6,
+   "aluminium_range_mm": [
+    1.6,
+    1.6
+   ],
+   "aluminium_note": "flat at about 1.6 from 15 to 45 mm plate side",
+   "tolerance_frac": 0.1,
+   "temperature_drift_frac": 0.1,
+   "differential_travel_frac": 0.1,
+   "supply_v": [
+    10.0,
+    30.0
+   ],
+   "current_consumption_ma_max": 13.0,
+   "load_current_ma_max": 200.0,
+   "residual_voltage_v_max": 2.0,
+   "internal_pullup_ma": [
+    1.5,
+    3.0
+   ],
+   "ambient_c": [
+    -40.0,
+    85.0
+   ],
+   "temperature_drift_note": "+/-10 % over -25 to 70 degC, +/-15 % over -40 to 85 degC",
+   "packed_weight_g": 75,
+   "conductors": 3,
+   "body_mm": {
+    "head_dia": 9.0,
+    "head_length": 7.0,
+    "threaded_length": 33.0,
+    "body_length": 38.0,
+    "cable_protector": 9.0,
+    "nut_across_flats": 17.0,
+    "nut_over_corners": 21.0,
+    "nut_thickness": 4.0,
+    "washer": 1.0
+   },
+   "surrounding_metal_mm": {
+    "l": 15.0,
+    "d": 40.0,
+    "D": 15.0,
+    "m": 20.0,
+    "n": 36.0
+   },
+   "tightening_torque_nm_max": 30
+  },
+  "E2E-X10ME1": {
+   "wires": 3,
+   "output": "npn_no",
+   "thread": "M18 x 1",
+   "thread_dia_mm": 18.0,
+   "shielded": false,
+   "sensing_distance_mm": 10.0,
+   "aluminium_mm": 3.0,
+   "aluminium_range_mm": [
+    3.0,
+    3.3
+   ],
+   "aluminium_note": "about 3.3 at 15-20 mm plate side, falling to 3.0 at 60 mm",
+   "tolerance_frac": 0.1,
+   "temperature_drift_frac": 0.1,
+   "differential_travel_frac": 0.1,
+   "supply_v": [
+    10.0,
+    30.0
+   ],
+   "current_consumption_ma_max": 13.0,
+   "load_current_ma_max": 200.0,
+   "residual_voltage_v_max": 2.0,
+   "internal_pullup_ma": [
+    1.5,
+    3.0
+   ],
+   "ambient_c": [
+    -40.0,
+    85.0
+   ],
+   "temperature_drift_note": "+/-10 % over -25 to 70 degC, +/-15 % over -40 to 85 degC",
+   "packed_weight_g": 150,
+   "conductors": 3,
+   "body_mm": {
+    "head_dia": 14.8,
+    "head_length": 10.0,
+    "threaded_length": 38.0,
+    "body_length": 43.0,
+    "cable_protector": 12.0,
+    "nut_across_flats": 24.0,
+    "nut_over_corners": 29.0,
+    "nut_thickness": 4.0,
+    "washer": 1.0
+   },
+   "surrounding_metal_mm": {
+    "l": 22.0,
+    "d": 55.0,
+    "D": 22.0,
+    "m": 40.0,
+    "n": 54.0
+   },
+   "tightening_torque_nm_max": 70,
+   "tightening_torque_note": "not re-read from the sheet for M18: recalled, unverified"
+  },
+  "E2E-X5E1": {
+   "wires": 3,
+   "output": "npn_no",
+   "thread": "M18 x 1",
+   "thread_dia_mm": 18.0,
+   "shielded": true,
+   "sensing_distance_mm": 5.0,
+   "aluminium_mm": 1.75,
+   "aluminium_range_mm": [
+    1.75,
+    1.75
+   ],
+   "aluminium_note": "flat at about 1.75 from 15 to 45 mm plate side",
+   "tolerance_frac": 0.1,
+   "temperature_drift_frac": 0.1,
+   "differential_travel_frac": 0.1,
+   "supply_v": [
+    10.0,
+    30.0
+   ],
+   "current_consumption_ma_max": 13.0,
+   "load_current_ma_max": 200.0,
+   "residual_voltage_v_max": 2.0,
+   "internal_pullup_ma": [
+    1.5,
+    3.0
+   ],
+   "ambient_c": [
+    -40.0,
+    85.0
+   ],
+   "temperature_drift_note": "+/-10 % over -25 to 70 degC, +/-15 % over -40 to 85 degC",
+   "packed_weight_g": 150,
+   "conductors": 3,
+   "body_mm": {
+    "head_dia": 18.0,
+    "head_length": 0.0,
+    "threaded_length": 38.0,
+    "body_length": 43.0,
+    "cable_protector": 12.0,
+    "nut_across_flats": 24.0,
+    "nut_over_corners": 29.0,
+    "nut_thickness": 4.0,
+    "washer": 1.0
+   },
+   "surrounding_metal_mm": {
+    "l": 0.0,
+    "d": 18.0,
+    "D": 0.0,
+    "m": 20.0,
+    "n": 27.0
+   },
+   "tightening_torque_nm_max": 70,
+   "tightening_torque_note": "not re-read from the sheet for M18: recalled, unverified"
+  },
+  "model_code": "E2E-X<distance><M = unshielded, blank = shielded><D = DC two-wire, E = NPN three-wire, F = PNP><1 = NO, 2 = NC>. So E2E-X5ME1 is M12 UNSHIELDED 5 mm NPN; the shielded M12 three-wire type is the 2 mm E2E-X2E1 (about 0.6 mm on aluminium: too short for a bed probe, not offered); the shielded 5 mm three-wire type is the M18 E2E-X5E1",
+  "not_in_the_sheet": [
+   "repeatability",
+   "mass without cable (estimated in the catalogue part)",
+   "sensing distance on a plate larger than 45-60 mm or thicker than 1 mm"
+  ]
+ }
 }

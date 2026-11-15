@@ -98,6 +98,7 @@ def verify_manufacture(design: Design) -> VerifierResult:
                 r.add("error", "part_not_checked", f"{c.name}: the manufacturability check failed on this part ({type(e).__name__}: {e}); "
                       f"it has not been judged.", part=c.name, trace=traceback.format_exc()[-500:])
                 parts[c.name] = {"process": process_of(c), "checked": False}
+        _explain_vendor_patterns(design, r)
         procs = sorted({v["process"] for v in parts.values()})
         setups = sum(v.get("setups_estimate", 0) for v in parts.values())
         cost = sum((v.get("estimate") or {}).get("cost_usd_each_qty1", 0) or 0 for v in parts.values())
@@ -113,6 +114,28 @@ def verify_manufacture(design: Design) -> VerifierResult:
                      "parts": parts if len(parts) <= 40 else {k: {kk: vv for kk, vv in v.items() if kk in ("process", "form", "setups_estimate", "up")}
                                                               for k, v in parts.items()}}
     return r
+
+
+def _explain_vendor_patterns(design: Design, r: VerifierResult) -> None:
+    """A `holes_too_close` warning whose closest pair is a bought part's own cut-out and screw holes (a power entry
+    module's mounting pattern) is true and stays; its hint then says whose pattern it is and what would clear it."""
+    import numpy as np
+
+    mods = [c for c in design.components if (c.meta.get("interfaces") or {}).get("pattern_note") and c.meta.get("placement")]
+    for f in r.findings:
+        if f.code != "holes_too_close" or not f.data.get("at"):
+            continue
+        for c in mods:
+            P = np.array(c.meta["placement"], dtype=float)
+            itf = c.meta["interfaces"]
+            reach = max(itf.get("cutout", (0, 0))) / 2 + 12.0
+            near = [a for a in f.data["at"] if np.linalg.norm(np.array(a, dtype=float) - P[:, 3]) <= reach]
+            if near:
+                f.data["vendor_pattern"] = {"part": c.name, "sku": c.sku, "web_mm": itf.get("cutout_to_screw_hole_web")}
+                f.data["hint"] = (f"{f.data.get('hint', '')} At {c.name} this is the bought part's own pattern and cannot be spaced "
+                                  f"out: {itf['pattern_note']}. Thin the panel to 2.5 mm there, or accept the warning with this "
+                                  "reason; it is not suppressed.").strip()
+                break
 
 
 def export_flat_patterns(design: Design, out_dir) -> dict:

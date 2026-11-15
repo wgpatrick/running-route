@@ -129,11 +129,14 @@ def rig(psu="LRS-350-24", bed_awg=16, thermistor=True, runaway=True, cutoffs=Tru
         el.wire("ps_on", "board.PS-ON", "relay.ctrl", 26, conductors=3)
         el.wire("bed", "board.HB", "tco.a", bed_awg, insulation="silicone", via=["trunk"])
         el.wire("bed tail", "tco.b", "bed_heater.in", bed_awg, insulation="silicone", length=80.0)
+        # the relay module powers itself from the mains: the neutral runs through its N terminal
+        el.wire("N", "inlet.N", "relay.N", 18, **mk)
+        el.wire("N2", "relay.N", "psu.N", 18, **mk)
     else:
         d.components = [c for c in d.components if c.name not in ("tco", "relay")]
         el.wire("L", "inlet.L", "psu.L", 18, **mk)
         el.wire("bed", "board.HB", "bed_heater.in", bed_awg, insulation="silicone", via=["trunk"])
-    el.wire("N", "inlet.N", "psu.N", 18, **mk)
+        el.wire("N", "inlet.N", "psu.N", 18, **mk)
     el.wire("pe psu", "inlet.PE", "psu.FG", 18, **mk)
     el.wire("pe frame", "inlet.PE", "earth.pe", 18, **mk)
     el.wire("24V", "psu.V+1", "board.POWER", 16, insulation="silicone")
