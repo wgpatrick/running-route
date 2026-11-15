@@ -1204,8 +1204,11 @@ def _artifacts(ctx, r, m):
                 if OUT_ROOT not in TU_.TUNING_ROOTS:
                     TU_.TUNING_ROOTS.insert(0, OUT_ROOT)
                 pm, src = TU_.pm_for(design, OUT_ROOT)
-                tuning = TU_.firmware_tuning(design, pm, {"bed_mesh": False})
-                tuning_note = {"frame_stiffness_from": src or "none: belt stiffness only",
+                tuning = TU_.firmware_tuning(design, pm, {"bed_mesh": False}, strict=False)
+                for ng in tuning.get("not_generated") or []:      # an explicit skip: said in the file and here, not a pass
+                    r.add("warning", "firmware_tuning_part_not_generated", f"printer.cfg was written without {ng}",
+                          hint="tools/setup_klipper.sh installs Klipper; its own code chooses the input shaper.")
+                tuning_note = {"frame_stiffness_from": src or "none: belt stiffness only", "not_generated": tuning.get("not_generated"),
                                "input_shaper": {ax: {k: v for k, v in tuning["input_shaper"][ax].items() if k != "candidates"}
                                                 for ax in ("x", "y")} if tuning.get("input_shaper") else None,
                                "selected_by": (tuning.get("input_shaper") or {}).get("selected_by"),
@@ -1216,7 +1219,7 @@ def _artifacts(ctx, r, m):
                 tuning = {"error": f"{type(ex).__name__}: {ex}"}
                 r.add("error", "firmware_tuning_not_generated",
                       f"Input shaper / pressure advance / probe settings could not be generated ({tuning['error']}); the printer.cfg "
-                      "was written without them.", hint="Klipper's source is needed for the shaper choice: tools/setup_klipper.sh.")
+                      "was written without them.")
         cfg = E.klipper_config(el, design, sim, tuning=tuning)
         m["firmware_tuning"] = tuning_note
         (out / "printer.cfg").write_text(cfg + "\n")

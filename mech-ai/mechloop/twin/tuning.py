@@ -160,10 +160,13 @@ def mesh_error_over_bed(design, pm: PrinterMap, profile: dict, pg: dict, n: int 
 
 
 # ------------------------------------------------------------------ everything the config needs
-def firmware_tuning(design, pm: PrinterMap | None = None, opts: dict | None = None, mass_extra: dict | None = None) -> dict:
+def firmware_tuning(design, pm: PrinterMap | None = None, opts: dict | None = None, mass_extra: dict | None = None,
+                    strict: bool = True) -> dict:
     """{"input_shaper", "pressure_advance", "probe", "bed_mesh"} for electrical.klipper_config.
     opts: {"input_shaper": True|False|dict, "pressure_advance": True|False|K, "bed_mesh": True|False|profile dict}.
-    A part that was asked for and cannot be produced raises; a part switched off is None."""
+    A part that was asked for and cannot be produced raises; a part switched off is None. With strict=False a shaper
+    that cannot be chosen because Klipper's source is not installed is left out and named in out["not_generated"]
+    (for writing a configuration file; a print must use strict=True)."""
     from ..electrical import probe_geometry
 
     opts = dict(opts or {})
@@ -173,7 +176,12 @@ def firmware_tuning(design, pm: PrinterMap | None = None, opts: dict | None = No
     if isinstance(sh, dict):
         out["input_shaper"] = {"basis": "given", **sh}
     elif sh:
-        out["input_shaper"] = input_shaper(design, pm, machine_model(design, pm, mass_extra))
+        try:
+            out["input_shaper"] = input_shaper(design, pm, machine_model(design, pm, mass_extra))
+        except ImportError as ex:
+            if strict:
+                raise
+            out["not_generated"] = [f"[input_shaper]: {ex}"]
     pa = opts.get("pressure_advance", True)
     if pa is True:
         out["pressure_advance"] = pressure_advance(design, pm)

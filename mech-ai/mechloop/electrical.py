@@ -1372,7 +1372,7 @@ def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict
         try:
             from .twin.tuning import firmware_tuning
 
-            tuning = firmware_tuning(design)
+            tuning = firmware_tuning(design, strict=False)
         except Exception as ex:      # the config is still written; the missing sections are named in it
             tuning = {"error": f"{type(ex).__name__}: {ex}"}
     tuning = tuning or {}
@@ -1384,6 +1384,8 @@ def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict
          "# PROBE_CALIBRATE, BED_MESH_CALIBRATE)."]
     if tuning.get("error"):
         L += [f"# TUNING NOT GENERATED ({tuning['error']}): no [input_shaper], pressure_advance or mesh settings below."]
+    for ng in tuning.get("not_generated") or []:
+        L += [f"# NOT GENERATED: {ng}"]
     L += [""]
     board = next((d for d in el.devices.values() if d.kind == "board"), None)
     host = next((d for d in el.devices.values() if d.kind == "host"), None)
