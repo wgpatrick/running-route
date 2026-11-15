@@ -54,6 +54,11 @@ class Build:
         rng = np.random.default_rng(seed)
         comps = {c.name: c for c in design.components}
         self.comps = comps
+        # bent sheet parts: bend angle and bend-line scatter (mechloop/tolerance/bends.py). Drawn from their own random
+        # streams, so a design without bent parts gives exactly the numbers it gave before bends were modelled.
+        from .bends import bends_of
+
+        self.bends, self.bends_not_recognised = bends_of(design, n, seed)
         fast = {f.name for f in design.fasteners}
         names = sorted(k for k in comps if k not in fast)       # screws clamp; they do not locate
         box = {k: _bb(comps[k].shape) for k in names}
@@ -101,6 +106,7 @@ class Build:
         idx = {k: 6 * i for i, k in enumerate(free)}
         play = screw_play or {}
         rows, rhs, self.iface = [], [], []
+        rot_k: dict = {}       # row index -> axis, for the rotation rows
         for a, b in pairs:
             if a not in seen or b not in seen:
                 continue
@@ -135,6 +141,7 @@ class Build:
                         row[idx[part] + 3 + k] = sgn
                 rows.append(row / sig)
                 rhs.append((er, sig, a, b, None, c))
+                rot_k[len(rows) - 1] = k
             self.iface.append((a, b, et))
         self.eps = {k: rng.normal(0, tol(comps[k])["scale"], n) for k in sorted(seen)}     # sorted: a set's order changes run to run
         # right-hand sides: the random joint error, less what the two parts' size errors already account for
@@ -143,6 +150,11 @@ class Build:
             v = e.copy()
             if k is not None:
                 v = v - self.eps[b] * (c[k] - self.centroid[b][k]) + self.eps[a] * (c[k] - self.centroid[a][k])
+            # a flange of a bent part is not where the drawing has it: what sits on it moves and turns with it
+            for part, sgn in ((a, 1.0), (b, -1.0)):
+                pb = self.bends.get(part)
+                if pb is not None:
+                    v = v + sgn * (pb.displacement(c)[:, k] if k is not None else pb.rotation(c)[:, rot_k[r_i]])
             R[r_i] = v / sig
         Amat = np.array(rows)
         X = np.linalg.pinv(Amat) @ R if len(free) else np.zeros((0, n))
@@ -156,13 +168,22 @@ class Build:
     def at(self, part: str, point) -> np.ndarray:
         """(n, 3) positions of a point (given at its drawn position) on `part` across the builds."""
         p = np.array(point, dtype=float)
-        return (p[None, :] + self.t[part] + np.cross(self.th[part], p[None, :])
-                + self.eps[part][:, None] * (p - self.centroid[part])[None, :])
+        out = (p[None, :] + self.t[part] + np.cross(self.th[part], p[None, :])
+               + self.eps[part][:, None] * (p - self.centroid[part])[None, :])
+        pb = self.bends.get(part)
+        if pb is not None:
+            out = out + pb.displacement(p)
+        return out
 
-    def direction(self, part: str, axis) -> np.ndarray:
-        """(n, 3) unit direction of an axis fixed in `part` across the builds."""
+    def direction(self, part: str, axis, at=None) -> np.ndarray:
+        """(n, 3) unit direction of an axis fixed in `part` across the builds. For a bent part pass `at`, a point on
+        the flange the axis belongs to: that flange's bend error is then included."""
         a = np.array(axis, dtype=float)
-        v = a[None, :] + np.cross(self.th[part], a[None, :])
+        th = self.th[part]
+        pb = self.bends.get(part)
+        if pb is not None and at is not None:
+            th = th + pb.rotation(at)
+        v = a[None, :] + np.cross(th, a[None, :])
         return v / np.linalg.norm(v, axis=1, keepdims=True)
 
     def nearest_part(self, body: str, point) -> str:
@@ -187,3 +208,37 @@ class Build:
                     cc = max(cc, abs(float(np.corrcoef(et[:, k], outcome)[0, 1])))
             rows.append((round(cc, 2), f"{a} / {b}", process_of(self.comps[a]), process_of(self.comps[b])))
         return [{"joint": j, "processes": [pa, pb], "correlation": c_} for c_, j, pa, pb in sorted(rows, reverse=True)[:top]]
+
+
+# ---------------------------------------------------------------------------------------------------------------------
+# One Build per design and run: the tolerance verifier makes it, later checks (clearances under tolerance, the
+# endstop and probe windows of the subsystems verifier) reuse it instead of simulating the builds again.
+_LAST: dict = {}
+
+
+def _signature(design: Design) -> tuple:
+    return (tuple((c.name, id(c.shape.wrapped), c.body) for c in design.components), len(design.joins),
+            len(design.fasteners), len(design.allowed_overlaps))
+
+
+def remember(design: Design, build: "Build") -> None:
+    _LAST.clear()
+    _LAST[id(design)] = (_signature(design), build)
+
+
+def build_for(design: Design, n: int = N) -> "Build":
+    """The Build the tolerance verifier made for this design in this process, or a new one made the same way
+    (screw play from the screw patterns), so a check run on its own gives the same numbers."""
+    hit = _LAST.get(id(design))
+    if hit is not None and hit[0] == _signature(design) and hit[1].n == n:
+        return hit[1]
+    from ..report import VerifierResult
+    from .fits import screw_patterns
+
+    play = {}
+    for key, v in screw_patterns(design, VerifierResult("tolerance"), n).items():
+        a, b = key.split(" -> ")
+        play[frozenset((a, b))] = max(v["nominal_radial_clearance_mm"], 0.0)
+    B = Build(design, n, screw_play=play)
+    remember(design, B)
+    return B
