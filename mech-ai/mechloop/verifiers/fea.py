@@ -23,7 +23,8 @@ MAX_NODES = 250_000
 ALPHA = {"al6061": 23.6e-6, "steel": 12e-6, "stainless304": 17.3e-6, "pla": 68e-6, "petg": 60e-6, "abs": 90e-6,
          "nylon_pa12": 100e-6, "brass": 19e-6, "rubber_gt2": 100e-6,
          # cast aluminium tooling plate, 20-100 degC (mechloop/parts/vendor/cast_tooling_plate.json)
-         "al_mic6": 23.6e-6, "al_atp5": 23.8e-6}
+         # al_atp5: Vista Metals ATP-5 sheet, 23.6e-6 at 20-100 degC (24.2e-6 at 101-200 degC); al_mic6 recalled
+         "al_mic6": 23.6e-6, "al_atp5": 23.6e-6}
 
 
 def _gmsh_start():

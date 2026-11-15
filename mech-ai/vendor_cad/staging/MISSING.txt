@@ -13,3 +13,57 @@ TIER 1
 
 TIER 2 / TIER 3 / DATASETS (items 13-34)
   In progress - downloads continue; this file will be updated.
+
+--- update 2026-11-14 20:37 PT ---
+TIER 1 items 2-4 RESOLVED: per Will's decision (20:33 PT) the official-file hunt and the
+hiwinsupport account were dropped; MGN12-R-215/250/300.step are GENERATED from catalogue
+table 3.81 dims (plain bar + standard hole pattern), marked in SOURCES.txt.
+
+STILL OPEN:
+13. ENDSTOP-MICRO.step (Omron D2F-L STEP) - datasheet delivered; STEP tried: omron.com
+    (blocked), marathon-os.com (signup/credits), lazystones (ad-confirm flow). Digikey
+    model 83264 and Ultra Librarian need accounts. Will may grab via his own account.
+14-19. T8 screw/nut, GT2 pulleys/idlers - searching no-login sources.
+21. Roto_motor_datasheet.pdf (E3D Roto motor inductance) - searching.
+22-26. Misumi/McMaster items - both sites gate CAD behind accounts; evaluating.
+27. LRS-350-24.step - datasheet delivered; Meanwell offers no public STEP, checking mirrors.
+28. HOST-RPI-ZERO-2W.step - Raspberry Pi publishes no official STEP; datasheet delivered.
+29-33. Relay, MOSFET, inlet, fan, bed column - searching.
+34. Zenodo: small files mirrored; big files in progress (see READMEs in subfolders).
+
+--- update 2026-11-14 20:38 PT ---
+TIER 1 items 2-4 FINAL: user-provided. Will has his own generated rails following the
+catalogue dims; my generated copies were removed from the folder at his request. No
+official Hiwin file hunt (his decision), no hiwinsupport account.
+
+--- update 2026-11-14 20:41 PT ---
+21. Roto_motor_datasheet.pdf: inductance NOT PUBLISHED. Tried: E3D Roto Vitamins page
+    (gives 4.5V, 7.5 ohm/phase, 75 mNm holding torque, 0.9 deg step - no inductance),
+    E3D Roto product + support pages, DREMC datasheet mirror. No OEM motor PN visible.
+29. RELAY-BTT-V1.2.step: BTT GitHub has PDFs only, no STEP. Datasheet delivered.
+
+--- update 2026-11-14 20:45 PT ---
+14. T8x2-200.step (T8 lead screw, 2mm lead, 200mm): no official/vendor STEP found for a
+    generic description item. Generated stand-ins REMOVED per Will's instruction
+    (phonemsg-01M7ERAQVWGC48CB489ZVF8VF7 "don't include any files you generated").
+15. T8-NUT.step: same - generic item, no official CAD.
+16. GT2-20T-B5-W9.step: same. Community parametric models exist (printables) but are
+    login/JS-gated for download; xemstudio files are API-gated.
+17. GT2-20T-B5.step: same as 16.
+18. GT2-IDLER-20T-B5-W9.step: same as 16.
+19. GT2-IDLER-20T-B5.step: same as 16.
+
+--- update 2026-11-14 21:02 PT ---
+31. INLET-C14-SW-FUSE-T8A.step: Schurter DD11 CAD is free but account-gated everywhere
+    (Schurter's portal = Component Search Engine login; Digikey/SnapEDA same). Official
+    DD11 datasheet delivered instead.
+32. FAN-3010.step: Sunon publishes no STEP for the MF30 family (checked sunon.com and
+    sunonusa.com). Official spec PDF delivered (MF30101V2-1000U-A99, 30x30x10, 24V).
+28. HOST-RPI-ZERO-2W.step: Raspberry Pi publishes no board STEP. Community models all
+    sit behind logins (Marathon OS credits, slisearch/zhwtk aggregators). Datasheet delivered.
+30. MOSFET-BED-25A.step: generic module, no vendor STEP; community finds are STL cases
+    or login-gated GrabCAD. No datasheet applicable for the generic part.
+33. BED-COLUMN-SIL-16x18.step: no STEP exists; measured dims delivered as
+    BED-COLUMN-SIL-16x18_dims.txt per the spec's fallback.
+22-23, 26. Misumi (HFS5-2020 extrusions, HBLFSN5 bracket, T-nuts): account creation
+    blocked - Misumi's signup silently rejects the agent-mail domain. Awaiting decision.

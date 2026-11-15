@@ -17,3 +17,42 @@ MH2025-5-8_datasheet.pdf | same product page as above | not stated (dimensional 
 MIC6_datasheet.pdf | https://www.upmet.com/sites/default/files/products/datasheet/mic-6-datasheet.pdf | not stated (note: Will's original upmet URL is dead; this is upmet's current datasheet URL)
 ATP5_datasheet.pdf | https://public.vistametals.com/products/atp-5-precision-tooling-plate.pdf | not stated
 MGN12H.step | https://www.step.parts/parts/linearslide_mgn12h | not stated on page (community STEP built to Hiwin MGN12H dimensions, github.com/earthtojake/step.parts)
+
+--- update 2026-11-14 20:36 PT ---
+ENDSTOP-MICRO_datasheet.pdf | https://omronfs.omron.com/en_US/ecb/products/pdf/en-d2f.pdf | not stated (official Omron D2F datasheet, covers D2F-L)
+SKR_Mini_E3_V3_drawing.pdf | https://github.com/bigtreetech/BIGTREETECH-SKR-mini-E3 (hardware/BTT SKR MINI E3 V3.0/Hardware/BTT E3 SKR MINI V3.0_SIZE_20220301.pdf) | not stated
+HOST-RPI-ZERO-2W_datasheet.pdf | https://pip-assets.raspberrypi.com/categories/584-raspberry-pi-zero-2-w/documents/RP-008359-DS-1-raspberry-pi-zero-2-w-product-brief.pdf | not stated (official product brief; includes mechanical drawing)
+LRS-350-24_datasheet.pdf | https://www.meanwell.com/Upload/PDF/LRS-350/LRS-350-SPEC.PDF | not stated (official LRS-350 series spec)
+zenodo-5747732/* | https://zenodo.org/records/5747732 | licence stated on record page; Raw Acceleration Data.zip mirrored separately or user-provided
+zenodo-22770610/* | https://zenodo.org/records/22770610 | licence stated on record page; mraw camera zips mirrored separately or user-provided
+zenodo-22716165/README.txt | https://zenodo.org/records/22716165 | licence stated on record page; parquets mirrored separately or user-provided
+MGN12-R-215.step / MGN12-R-250.step / MGN12-R-300.step | USER-PROVIDED - Will has his own generated rails following the catalogue dims (per his message 20:38 PT); not in this folder. Official Hiwin CAD hunt dropped per his decision.
+
+--- update 2026-11-14 20:41 PT ---
+BED-PROBE_datasheet.pdf | https://assets.omron.eu/downloads/latest/datasheet/en/e2e_standard_proximity_sensor_datasheet_en.pdf | not stated (official Omron E2E series; probe pick E2E-X8MD1 2M - see manifest)
+RELAY-BTT-V1.2_datasheet.pdf | https://github.com/bigtreetech/BIGTREETECH-Relay-V1.2 (Relay V1.2-Operating Instruction.pdf) | not stated
+
+--- update 2026-11-14 20:59 PT ---
+SHCS-M3x6.step | https://www.mcmaster.com/91290A111/ | not stated (official McMaster CAD, black-oxide alloy steel class 12.9)
+SHCS-M3x8.step | https://www.mcmaster.com/91290A400/ | not stated
+SHCS-M3x10.step | https://www.mcmaster.com/91290A115/ | not stated
+SHCS-M3x12.step | https://www.mcmaster.com/91290A500/ | not stated
+SHCS-M3x14.step | https://www.mcmaster.com/91290A600/ | not stated
+SHCS-M3x16.step | https://www.mcmaster.com/91290A120/ | not stated
+SHCS-M3x30.step | https://www.mcmaster.com/91290A171/ | not stated
+SHCS-M5x6.step | https://www.mcmaster.com/91290A221/ | not stated
+SHCS-M5x8.step | https://www.mcmaster.com/91290A222/ | not stated
+SHCS-M5x10.step | https://www.mcmaster.com/91290A224/ | not stated
+SHCS-M5x30.step | https://www.mcmaster.com/91290A194/ | not stated
+SHCS-M5x35.step | https://www.mcmaster.com/91290A195/ | not stated
+SHCS-M2.5x12.step | https://www.mcmaster.com/91290A008/ | not stated
+SHCS-M4x6.step | https://www.mcmaster.com/91290A139/ | not stated
+NUT-M2.5.step | https://www.mcmaster.com/90591A270/ | not stated (official McMaster CAD, class 8 DIN 934 steel hex nut)
+NUT-M3.step | https://www.mcmaster.com/90591A250/ | not stated
+NUT-M5.step | https://www.mcmaster.com/90591A260/ | not stated
+
+--- update 2026-11-14 21:02 PT ---
+LRS-350-24.step | https://www.meanwell.com/webapp/product/search.aspx?prod=LRS-350 (3D OUTLINE > LRS-350-3D.zip; official Mean Well series model LRS-350(N2).stp) | not stated
+INLET-C14-SW-FUSE-T8A_datasheet.pdf | https://www.schurter.com/en/datasheet/typ_dd11.pdf (official Schurter DD11) | not stated
+FAN-3010_datasheet.pdf | https://www.sunon.com/PROSEARCH_FILES/(D03033610G-01)-1.pdf (official Sunon MF30101V2-1000U-A99, 30x30x10, 24V) | not stated
+BED-COLUMN-SIL-16x18_dims.txt | https://tronic.lk/product/silicone-spacer-column-heat-resistant-for-3d-printer-be (measured dims fallback per spec; no STEP exists) | not stated

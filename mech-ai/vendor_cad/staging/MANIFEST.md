@@ -65,3 +65,43 @@ Listing now: 22 files in the root plus the same 9 files in the 3 subfolders = 31
 ### Batch 3 failures
 
 None.
+
+## Batch 4 (fourth sweep, 2026-11-15, files created 04:38Z-05:02Z)
+
+Listing now: 45 files in the root plus the same 9 files in the 3 subfolders = 54 files. 23 new files plus SOURCES.txt and MISSING.txt, which were replaced on Drive (new file ids, 6443 and 4340 bytes, modified 05:02Z) and re-downloaded over the batch 2 copies. No file exceeded 20 MB, so nothing was skipped for size. `upload-test.txt` has not reappeared on Drive. Re-listing after the downloads showed no further additions or changes.
+
+Observations (content not modified):
+- `SHCS-M3x6.step` and `SHCS-M3x12.step` are byte-identical on Drive (same sha256); both carry McMaster part 91290A500, which SOURCES.txt assigns to M3x12. So the file named M3x6 is the M3x12 model, not 91290A111.
+- `LRS-350-24.step` is byte-identical to the repo's existing `vendor_cad/meanwell_LRS-350.stp`.
+
+| Batch | Title | Drive file id | Drive size | Local size | Verified | First line / type |
+|---|---|---|---|---|---|---|
+| 4 | BED-COLUMN-SIL-16x18_dims.txt | 1wW4xW5DP9Uihvuo8t1GobhVEe7S2qJwx | 531 | 531 | yes | `BED-COLUMN-SIL-16x18 - solid silicone heated-bed m` (text) |
+| 4 | MISSING.txt | 1gy1TUFXZAGar4ftPYUVva6sLPh5dHaxx | 4340 | 4340 | yes | `MISSING - as of 2026-11-14 19:52 PT` (text) |
+| 4 | SOURCES.txt | 1EFyXKqnaWQfNG9-lNeOiPDEpMAxuu2rN | 6443 | 6443 | yes | `SOURCES - V6 Toolhead CAD and Datasheets (as of 20` (text) |
+| 4 | INLET-C14-SW-FUSE-T8A_datasheet.pdf | 1HV3TFuPgiGxD188q6Suk-zhiC2o8ffXm | 450651 | 450651 | yes | %PDF-1.4 (PDF) |
+| 4 | NUT-M2.5.step | 152qwsMzU5mBRYN8lPjHu6aIfNX6D4cfG | 469202 | 469202 | yes | `ISO-10303-21;` (STEP) |
+| 4 | NUT-M5.step | 1XTLy4b0P-j9Lfodoikh6yUpizC9TYuCo | 503468 | 503468 | yes | `ISO-10303-21;` (STEP) |
+| 4 | NUT-M3.step | 1swVEdp54ilOu05tw-290HAgI7YxFpfZX | 507180 | 507180 | yes | `ISO-10303-21;` (STEP) |
+| 4 | SHCS-M3x8.step | 1UI2oazqzXysm7xDZJhyfu-qtqKAwORvF | 669210 | 669210 | yes | `ISO-10303-21;` (STEP) |
+| 4 | SHCS-M3x6.step | 1vVEFwZrQOl3-m_-JKaxYwb0bbI32koX5 | 888948 | 888948 | yes | `ISO-10303-21;` (STEP) |
+| 4 | SHCS-M3x12.step | 1F-g9J2ssbNhT5XTaxghvw4-PKj6gtpqm | 888948 | 888948 | yes | `ISO-10303-21;` (STEP) |
+| 4 | SHCS-M2.5x12.step | 16OiLjfeLhRzAoC_PRcPM5wClCHQjdJva | 899841 | 899841 | yes | `ISO-10303-21;` (STEP) |
+| 4 | SHCS-M3x14.step | 1cdgL9w2wdBW2l1Dc3rLGj7gc_EqZ4mTp | 958408 | 958408 | yes | `ISO-10303-21;` (STEP) |
+| 4 | RELAY-BTT-V1.2_datasheet.pdf | 1TRRq1TLo_qq0Kk1oB2ZDMYxXOB1J8IXG | 1199761 | 1199761 | yes | %PDF-1.5 (PDF) |
+| 4 | SHCS-M4x6.step | 1l4IouUHz0S4Wpt98ZOrpznD2GaEgUAa- | 1457733 | 1457733 | yes | `ISO-10303-21;` (STEP) |
+| 4 | SHCS-M5x6.step | 1tP9yHLn6_QFa7NP5-7ZCoq6TB5pMYsF0 | 1504336 | 1504336 | yes | `ISO-10303-21;` (STEP) |
+| 4 | SHCS-M5x8.step | 16mrWDTaW_VXD9OEMBbnv_G7fTp3V2mci | 1578761 | 1578761 | yes | `ISO-10303-21;` (STEP) |
+| 4 | SHCS-M5x10.step | 1gArYHEcNuMzo4VIwPRjgEXMMMBNagEc2 | 1619567 | 1619567 | yes | `ISO-10303-21;` (STEP) |
+| 4 | SHCS-M3x10.step | 15zn4ygFlRbJqWpFNtTs_xD995uV6EcGR | 1737216 | 1737216 | yes | `ISO-10303-21;` (STEP) |
+| 4 | SHCS-M3x16.step | 1y5Cq43cztpJs3iyFWFgU4kmsIT1joCMO | 2009735 | 2009735 | yes | `ISO-10303-21;` (STEP) |
+| 4 | LRS-350-24.step | 1D8JwZWO2vKulGjxhrtlv6nYjjpi92gKI | 3215319 | 3215319 | yes | `ISO-10303-21;` (STEP) |
+| 4 | SHCS-M5x30.step | 1Pqq5BtIf4FJ1CY8FmKGEqOQv0aRGA2x0 | 3618907 | 3618907 | yes | `ISO-10303-21;` (STEP) |
+| 4 | SHCS-M5x35.step | 1__ruYog92ktBkqwZgAE9qE3_c0H_JQgU | 3821749 | 3821749 | yes | `ISO-10303-21;` (STEP) |
+| 4 | SHCS-M3x30.step | 1ZJTMoFFbtObfbRLBShiI8IXhf9eL93az | 3942181 | 3942181 | yes | `ISO-10303-21;` (STEP) |
+| 4 | FAN-3010_datasheet.pdf | 13fgUHdH-rrd-eZN4EJ-iHtHtZx6zw0ds | 4368985 | 4368985 | yes | %PDF-1.6 (PDF) |
+| 4 | BED-PROBE_datasheet.pdf | 1STy6FHK8ZfzKCt1b0Axa7vMacqPBB1Vc | 8894771 | 8894771 | yes | %PDF-1.7 (PDF) |
+
+### Batch 4 failures
+
+None.

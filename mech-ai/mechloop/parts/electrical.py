@@ -163,7 +163,14 @@ def psu_lrs(model: str = "LRS-350-24") -> Stock:
         ports[f"V+{i + 1}"] = dict(kind="power_out", at=(xt, ys[6 + i], zt), dir=out, **scr)
     ratings = {"watts": watts, "volts": 24.0, "amps": amps, "efficiency": eff, "ac_current_a": ac, "inrush_a": inrush,
                "full_load_ambient_c": 50.0, "derate_to_frac_at_70c": 0.6, "has_fan": model == "LRS-350-24"}
+    if model == "LRS-350-24":      # [MW] LRS-350-SPEC p.2 and p.3 (mechloop/parts/vendor/meanwell_lrs.json, staging_copy_2026_11_15)
+        ratings.update({"leakage_current_ma_max": 2.0, "leakage_current_at_vac": 240.0,
+                        "full_load_min_vac": 100.0, "derate_to_frac_at_90vac": 0.8})
     sources = {k: "[MW] specification table" for k in ("watts", "amps", "efficiency", "ac_current_a", "inrush_a")}
+    if model == "LRS-350-24":
+        sources.update({"leakage_current_ma_max": "[MW] LRS-350-SPEC p.2: leakage current < 2 mA at 240 VAC",
+                        "derate_to_frac_at_90vac": "[MW] LRS-350-SPEC p.3 derating curve: 100 % from 100 to 132 VAC and 180 to 264 VAC, "
+                                                   "falling to 80 % at 90 VAC"})
     sources.update({"full_load_ambient_c": "[MW] derating curve: 100 % to 50 degC, 60 % at 70 degC",
                     "dimensions": "[MW] 215*115*30 mm (L*W*H)", "mass": "[MW] packing weight",
                     "mount_holes": "[MW] mechanical drawing, case 207A: 4-M4 L=3mm in the base, 150 x 50 mm"
@@ -241,9 +248,13 @@ def raspberry_pi_zero2w() -> Stock:
         pcb -= Pos(x, y, T / 2) * Cylinder(1.4, T)
     ports = {"GPIO": dict(kind="host", connector="dupont", max_a=2.0, conductors=4, at=(-20.0, 11.5, T + 3.0), dir=(0, 0, 1),
                           pin="5V, GND, GPIO14 TXD, GPIO15 RXD")}
-    ratings = {"supply_w": 3.0, "volts": 5.0}
-    sources = {"geometry": f"Raspberry Pi Zero mechanical drawing 65 x 30, holes 58 x 23 (recalled; {TU})",
-               "supply_w": f"about 0.6 A at 5 V under load ({TU})", "cost": TU}
+    ratings = {"supply_w": 3.0, "volts": 5.0, "min_ambient_c": -20.0, "max_ambient_c": 70.0}
+    sources = {"geometry": "Raspberry Pi Zero 2 W product brief (April 2024, vendor_docs/HOST-RPI-ZERO-2W_datasheet.pdf) p.3, p.4: "
+                           "65 x 30 mm, hole centres 3.5 mm from each edge (58 x 23); hole diameter not given",
+               "supply_w": f"about 0.6 A at 5 V under load ({TU}): the brief gives only the recommended supply, '5V DC 2.5A', "
+                           "not the draw",
+               "max_ambient_c": "Raspberry Pi Zero 2 W product brief p.3: operating temperature -20 to +70 degC "
+                                "(mechloop/parts/vendor/raspberry_pi_zero2w.json)", "cost": TU}
     return Stock(pcb + env, "HOST-RPI-ZERO-2W", "Raspberry Pi Zero 2 W (Klipper host, UART to the board's TFT header)", 0.011,
                  material="abs",
                  ratings={"electrical": {"kind": "host", "ports": ports, "ratings": ratings, "sources": sources, "product": {'product': 'Raspberry Pi Zero 2 W', 'vendor': 'Raspberry Pi Ltd', 'part_number': 'Raspberry Pi Zero 2 W', 'form': 'assembled board', 'off_the_shelf': True, 'custom_pcb': False, 'builder_work': 'solder or buy with the 40-pin header; 4-wire dupont lead to the TFT header; install Klipper on the SD card'}, "params": {}},

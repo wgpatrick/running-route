@@ -328,6 +328,12 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
                       f"half a layer): only {p_lvl:.0%} of machines would lay a good first layer. There is no bed levelling.",
                       p_ok=round(p_lvl, 3),
                       hint="Add bed levelling (Adjustment kind='bed_level': three sprung screws or a probe with mesh compensation).")
+            from .process import stock_plate_flatness
+
+            spf = stock_plate_flatness(comps[bed].material, float(min(bhi - blo)))
+            if spf:      # reference only: the bed-level figures above are about tilt, not the plate's own bow
+                pm["bed_plate_stock_flatness"] = {**spf, "note": "maker's guarantee for the plate as supplied; a reference value, "
+                                                  "not applied to the stack-up. A probed bed mesh is what takes it up"}
             m["printer"] = pm
         if noise:
             m["within_sampling_error_of_a_limit"] = noise

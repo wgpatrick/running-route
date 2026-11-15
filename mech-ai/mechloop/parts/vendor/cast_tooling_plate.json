@@ -30,22 +30,22 @@
   },
   "al_atp5": {
    "density_kg_m3": 2660,
-   "E_mpa": 70300,
+   "E_mpa": 70000,
    "nu": 0.33,
    "yield_mpa": 124,
    "tensile_mpa": 283,
-   "cte_per_k_20_100c": 2.38e-05,
+   "cte_per_k_20_100c": 2.36e-05,
    "confirmed_by_snippet": {
     "alloy": "cast in AA 5083-type alloy (magnesium the main alloying element); about 5 % lighter than MIC-6-type plate"
    },
    "recalled": [
-    "density_kg_m3",
-    "E_mpa",
-    "nu",
-    "yield_mpa (18 ksi)",
-    "tensile_mpa (41 ksi)",
-    "cte"
-   ]
+    "nu (typical for aluminium; not on the maker's sheet)"
+   ],
+   "confirmed_by_datasheet": {
+    "document_file": "vendor_docs/ATP5_datasheet.pdf",
+    "values": "density 2660, E 70,000 MPa (10.1 Msi; was 70,300 recalled), yield 124, tensile 283, expansion 23.6e-6 /K at 20-100 degC (was 23.8e-6 recalled), 140 W/m.K",
+    "applied": "2026-11-15"
+   }
   }
  },
  "not_obtained": [
@@ -55,7 +55,7 @@
  ],
  "used_by_catalog": true,
  "datasheets": {
-  "_label": "added 2026-11-15. Not read by the catalogue code or by MATERIALS (mechloop/model.py)",
+  "_label": "added 2026-11-15. Since then MATERIALS['al_atp5'] (mechloop/model.py), fea.ALPHA and tolerance/process.py STOCK_PLATE_FLATNESS take the ATP-5 values from this block; the MIC-6 sheet is empty, so al_mic6 is unchanged",
   "al_atp5": {
    "document": "Vista Metals Corp., ATP-5 Aluminum Tooling Plate, Precision Machined (2-page product sheet)",
    "document_file": "vendor_docs/ATP5_datasheet.pdf",

@@ -35,10 +35,11 @@ MATERIALS = {
         Material("rubber_gt2", 1200, 50, 0.48, 10),
         # Cast aluminium tooling plate (stress-relieved, milled both faces): the flat, stable plate for a print bed.
         # MIC-6: yield 105 MPa (15 ksi) from distributor data seen in search snippets; density (0.101 lb/in^3) and
-        # E (10.3 Msi) recalled. ATP-5 (5083-type): all recalled. Sources and what is confirmed:
-        # mechloop/parts/vendor/cast_tooling_plate.json. Thermal expansion 23.6e-6 /K (MIC-6), not in this table.
+        # E (10.3 Msi) recalled. ATP-5 (5083-type): density, E (10.1 Msi = 70,000 MPa) and yield from Vista Metals' product
+        # sheet (vendor_docs/ATP5_datasheet.pdf); Poisson's ratio typical. Sources and what is confirmed:
+        # mechloop/parts/vendor/cast_tooling_plate.json. Thermal expansion 23.6e-6 /K (both), not in this table.
         Material("al_mic6", 2800, 71000, 0.33, 105),
-        Material("al_atp5", 2660, 70300, 0.33, 124),
+        Material("al_atp5", 2660, 70000, 0.33, 124),
     ]
 }
 

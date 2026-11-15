@@ -1285,6 +1285,33 @@ def _bay_and_motors(ctx, r, m):
             b["psu_allowed_load_frac"] = round(allowed, 3)
             if c["psu"]["load_frac"] > allowed:
                 r.add("error", "psu_derated", f"At {t_bay:.0f} degC the supply may deliver {allowed:.0%} of its rating; the load is {c['psu']['load_frac']:.0%}.")
+        if psu is not None and psu.ratings.get("derate_to_frac_at_90vac"):
+            # recorded from the maker's sheet; judged only where the design's own mains range goes below full-load voltage
+            lo_v = min(el.mains_v) if isinstance(el.mains_v, (tuple, list)) else float(el.mains_v)
+            full_v, f90 = psu.ratings.get("full_load_min_vac", 100.0), psu.ratings["derate_to_frac_at_90vac"]
+            allowed_v = 1.0 if lo_v >= full_v else max(f90, 1.0 - (1.0 - f90) * (full_v - lo_v) / (full_v - 90.0))
+            b["psu_low_line"] = {"lowest_mains_v": lo_v, "full_load_from_vac": full_v, "allowed_load_frac_at_90vac": f90,
+                                 "allowed_load_frac_at_lowest_mains": round(allowed_v, 3), "load_frac": round(c["psu"]["load_frac"], 3),
+                                 "load_fits_at_90vac": bool(c["psu"]["load_frac"] <= f90),
+                                 "earth_leakage_ma_max": psu.ratings.get("leakage_current_ma_max"),
+                                 "earth_leakage_at_vac": psu.ratings.get("leakage_current_at_vac")}
+            if c["psu"]["load_frac"] > allowed_v:
+                r.add("error", "psu_derated_low_line", f"At {lo_v:g} VAC the supply may deliver {allowed_v:.0%} of its rating; the "
+                      f"load is {c['psu']['load_frac']:.0%}.")
+        # each bay device's own ambient limit, where its catalogue entry has one (the host: -20 to 70 degC)
+        lims = {}
+        for dn in el.bay.devices:
+            dv = el.devices.get(dn)
+            ma = dv.ratings.get("max_ambient_c") if dv is not None else None
+            if isinstance(ma, (int, float)):
+                lims[dn] = {"max_ambient_c": float(ma), "margin_k": round(float(ma) - t_bay, 1),
+                            "source": (dv.sources or {}).get("max_ambient_c", "not stated")}
+                if t_bay > float(ma):
+                    r.add("error", "device_over_ambient_limit",
+                          f"Electronics bay air reaches about {t_bay:.0f} degC; '{dn}' is rated to {float(ma):g} degC ambient "
+                          f"({lims[dn]['source']}).", device=dn, bay_c=t_bay, limit_c=float(ma))
+        if lims:
+            b["device_ambient_limits"] = lims
     mt = {}
     lim = el.req("motor_max_case_c")
     for name, mv in c["motors"].items():
