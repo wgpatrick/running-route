@@ -88,6 +88,8 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
                       hint="Model each bend with its inside and outside radius (see 'Can each part be made?').")
         if B.unplaced:
             m["not_in_stackup"] = B.unplaced[:20]
+        if B.screwed_apart:      # parts that do not touch but are clamped to each other by screws: located by that joint
+            m["located_by_screws_without_contact"] = B.screwed_apart[:40]
         if B.clashes:
             # reported here too so that a `--only tolerance` run shows them; the interference verifier is the judge
             m["clashes_not_used_as_joints"] = B.clashes[:20]

@@ -21,6 +21,7 @@ from .process import process_of, tol
 
 N = 3000
 SEED = 0             # every tolerance simulation uses fixed seeds and a fixed order of draws: identical runs agree exactly
+SCREWED_JOINTS = True   # parts clamped to each other by a screw are located by it even when they do not touch (tests switch it off to show the old result)
 CLASH_VOL = 0.5      # mm^3: two parts overlapping by more than this (and not a declared thread / press fit) clash
 
 
@@ -44,6 +45,10 @@ def _bb(shape):
 def _skew_rows(c):
     """Rows of the matrix M such that theta x c = M @ theta."""
     return np.array([[0, c[2], -c[1]], [-c[2], 0, c[0]], [c[1], -c[0], 0]])
+
+
+def design_axis(design: Design, fastener_name: str):
+    return next(f.axis for f in design.fasteners if f.name == fastener_name)
 
 
 class Build:
@@ -89,6 +94,36 @@ class Build:
                             self.clashes.append({"parts": [a, b], "overlap_mm3": round(float(vol), 2)})
                 if near or key in design.joins:
                     pairs.append((a, b))
+        # A screw that clamps two parts locates them on each other whether or not they touch (a plate on standoffs or
+        # on a post between jam nuts, a part over a spacer): that screwed joint is a joint of the stack-up, placed at
+        # the screw(s), with the screw's axis as its seating direction. Without it the part would be located only
+        # through whatever else it happens to touch, or not at all.
+        have = {frozenset(p_) for p_ in pairs}
+        clash_keys = {frozenset(c_["parts"]) for c_ in self.clashes}
+        screwed: dict = {}
+        for f in (design.fasteners if SCREWED_JOINTS else ()):
+            held = [k for k in dict.fromkeys(list(f.clamps) + list((comps[f.name].meta.get("threads_into") or []) if f.name in comps else []))
+                    if k in box]
+            if len(held) < 2 or f.name not in comps:
+                continue
+            ax = np.array(f.axis, dtype=float)
+            ax /= max(np.linalg.norm(ax), 1e-12)
+            # order the held parts along the screw; each locates the next
+            held.sort(key=lambda k: float(np.dot(self.centroid[k], ax)))
+            # only consecutive solid parts: a nut or spacer between two plates touches both and carries the chain itself
+            for a, b in zip(held[:-1], held[1:]):
+                key = frozenset((a, b))
+                if key in clash_keys:
+                    continue
+                screwed.setdefault(tuple(sorted((a, b))), []).append(f.name)
+        self.screwed_apart = []
+        self._screw_box = {}
+        for (a, b), screws in sorted(screwed.items()):
+            los, his = zip(*[_bb(comps[s_].shape) for s_ in screws])
+            self._screw_box[frozenset((a, b))] = (np.min(los, axis=0), np.max(his, axis=0), np.array(design_axis(design, screws[0])))
+            if frozenset((a, b)) not in have:
+                pairs.append((a, b))
+                self.screwed_apart.append({"parts": [a, b], "screws": screws})
         base = design.base if design.base in names else max(names, key=lambda k: comps[k].shape.volume)
         # keep only parts connected to the base
         adj = {k: set() for k in names}
@@ -116,6 +151,20 @@ class Build:
             c = (lo + hi) / 2
             L = max(float(np.sort(ext)[-1]), 8.0)
             normal = int(np.argmin(ext))
+            sb = self._screw_box.get(frozenset((a, b)))
+            if sb is not None and any(p_["parts"] == sorted((a, b)) for p_ in self.screwed_apart):
+                # two parts held apart on screws: the joint is where the screws are (across the screws: their own
+                # extent; along them: the span between the two parts), seated along the screw
+                normal = int(np.argmax(np.abs(sb[2])))
+                lo, hi = sb[0].copy(), sb[1].copy()
+                lo[normal] = min(box[a][1][normal], box[b][1][normal])
+                hi[normal] = max(box[a][0][normal], box[b][0][normal])
+                if hi[normal] < lo[normal]:
+                    lo[normal], hi[normal] = hi[normal], lo[normal]
+                ext = np.maximum(hi - lo, 0.0)
+                c = (lo + hi) / 2
+                lat = [float(ext[k_]) for k_ in range(3) if k_ != normal]
+                L = max(max(lat), 8.0)
             ta, tb = tol(comps[a]), tol(comps[b])
             s_seat = math.hypot(ta["flat"], tb["flat"])
             s_pos = math.hypot(ta["pos"], tb["pos"])
