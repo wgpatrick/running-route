@@ -50,3 +50,18 @@ MGN12H.step note: the connector returned this file inline rather than as a saved
 ### Batch 2 failures
 
 None.
+
+## Batch 3 (third sweep, 2026-11-15, files created 04:31Z)
+
+Listing now: 22 files in the root plus the same 9 files in the 3 subfolders = 31 files. 4 new files, all saved. SOURCES.txt (2720 bytes) and MISSING.txt (909 bytes) are unchanged on Drive (same size and modified time, 03:52Z), so they were not re-downloaded; note they do not yet list the four batch 3 files. `upload-test.txt` (batch 2) is no longer in the Drive folder; the local copy was left in place. Re-listing after the downloads showed no further additions or changes.
+
+| Batch | Title | Drive file id | Drive size | Local size | Verified | First line / type |
+|---|---|---|---|---|---|---|
+| 3 | SKR_Mini_E3_V3_drawing.pdf | 1clLpiuCRagsq1fFblLfgBaxEyvaDbG7k | 592336 | 592336 | yes | %PDF-1.3 (PDF) |
+| 3 | LRS-350-24_datasheet.pdf | 1trznjKj4GKwLXZH4s2nXcOULLbAMON_h | 674002 | 674002 | yes | %PDF-1.5 (PDF) |
+| 3 | ENDSTOP-MICRO_datasheet.pdf | 1auvkxRG3wXBUDcRsfzdgbayY73WtvmIz | 850668 | 850668 | yes | %PDF-1.6 (PDF) |
+| 3 | HOST-RPI-ZERO-2W_datasheet.pdf | 1iVdzbcUdQbpbs2KETjePbc6RRBO8uc6l | 1597167 | 1597167 | yes | %PDF-1.7 (PDF) |
+
+### Batch 3 failures
+
+None.
