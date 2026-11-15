@@ -187,13 +187,13 @@ def render_view(scene: Scene, path: Path, *, q: dict, show, camera: dict, size=(
                 ids[n] = k
         for n in show:
             k = ids.get(n, 0)
-            pl2.add_mesh(parts[n], color=(k * 20 / 255.0, 0.0, 1.0 if k else 0.0), lighting=False)
+            pl2.add_mesh(parts[n], color=[k * 8, 0, 255 if k else 0], lighting=False)
         cam(pl2)
         pl2.disable_anti_aliasing()
         idimg = pl2.screenshot(None, return_img=True)
         pl2.close()
         for k, (key, label, names) in enumerate(callouts, 1):
-            mask = (idimg[:, :, 0] == k * 20) & (idimg[:, :, 2] > 250)
+            mask = (idimg[:, :, 0] == k * 8) & (idimg[:, :, 2] > 250)
             if mask.sum() < 12:
                 out["callouts"].append({"key": key, "label": label, "visible": False, "parts": list(names)})
                 continue
