@@ -19,11 +19,16 @@ the frame it is placed in, is `mechloop/parts/details.py`. See `docs/VENDOR_CAD.
 | `voron0_3010_axial_fan.step` | 30 mm axial fan (`fan(30)`) | https://github.com/VoronDesign/Voron-0 `CAD/V0.2R1_Master_Assembly_STEP.zip`, part "3010 DC Axial Fan" extracted from the assembly and re-exported | commit a0d5d1bc91d1b3bc0af6109384d8704f2bf97d10 | GPL-3.0 (Voron-0 repository) | community-made |
 | `microswitch_spdt_lever.step` | lever microswitch of the endstop module (`endstop_switch`; the 20 x 12.5 mm board under it is generated) | FreeCAD-library `Electronics Parts/Switch/Limit switch/Microswitch_SPDT_Horizontal_L.step` | commit f5ca01cd | CC-BY 3.0 | community-made |
 | `hotend_v6_style.step` | V6-style hotend: heat sink with groove mount, heater block, nozzle (`hotend_v6`; no fan or duct) | FreeCAD-library `Electrical Parts/Hotend/hotend-3d-printer.step`, unchanged (retrieved 2026-11-15) | commit f5ca01cd | CC-BY 3.0 | community-made (not E3D's model) |
+| `e3d_roto_reference_cad.step` | E3D Roto extruder with Revo hot side, complete (source file of the two below; not used directly by a part) | E3D "Roto Reference" CAD, https://www.printables.com/model/655950-e3d-roto-reference-cad (linked from E3D's Roto data-sheet page); STEP header `REVO-ROTO-24V-AS-REFERENCE.STEP`, SolidWorks 2022, 2024-01-24; 11 solids; unchanged | hand-downloaded by the owner on 2026-11-15 | licence not confirmed: check the Printables page (printables.com was not reachable from this session; E3D's published reference model, vendor copyright) | vendor-made |
+| `EXTRUDER-E3D-ROTO.step` | E3D Roto cold side (`extruder_roto`): gearbox cover, heat sink, ring gear, fan, idler lever, motor, four screws | cut from `e3d_roto_reference_cad.step`: 10 of its 11 solids (hot side removed), the motor's four lead wires (0.8 mm rods, 60.5 mm^3) cut off at the lead block, re-exported in the file's own frame; frame change in `EXTRUDER-E3D-ROTO.step.json` | same download, split 2026-11-15 | licence not confirmed: check the Printables page (printables.com was not reachable from this session; E3D's published reference model, vendor copyright) | vendor-made, split and trimmed by us |
+| `HOTEND-REVO-24V-40W.step` | E3D Revo hot side (`hotend_revo`, 12 V and 24 V): HeaterCore + nozzle as one simplified solid, no lead sleeve | cut from `e3d_roto_reference_cad.step`: its solid `REVO-HOTSIDE-REFERENCE`, geometry unchanged, re-exported; frame change in `HOTEND-REVO-24V-40W.step.json` | same download, split 2026-11-15 | licence not confirmed: check the Printables page (printables.com was not reachable from this session; E3D's published reference model, vendor copyright) | vendor-made, split by us |
 
 Not files: socket head cap screws and hex nuts are generated to ISO 4762 / ISO 4032 by the `bd_warehouse` package
 (Apache-2.0) at run time; nothing is stored.
 
 Licence notes: the FreeCAD-library files are CC-BY 3.0 and must keep this attribution. The Voron file is GPL-3.0:
 keep this notice with it, and take it out (and use the wish-list replacement) before distributing this repository
-under terms that are not compatible with the GPL. The two vendor files carry no licence grant; they are the makers'
-published downloads and are kept here for internal design use.
+under terms that are not compatible with the GPL. The MEAN WELL and BIGTREETECH files carry no licence grant; they are
+the makers' published downloads and are kept here for internal design use. The three E3D files come from E3D's
+"Roto Reference" model on Printables; the licence shown on that page was NOT read (the host is blocked here): check
+it before distributing them, and treat them as internal-use only until then.

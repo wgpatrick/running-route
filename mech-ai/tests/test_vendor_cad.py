@@ -21,7 +21,7 @@ WITH_CAD = [
     lambda: gt2_idler(20, 5.0, 6.0), leadscrew_nut_t8, endstop_switch, lambda: fan(30), lambda: fan(40),
     control_board, skr_mini_e3_v3, lambda: psu_lrs("LRS-350-24"), lambda: psu_24v(350),
     lambda: shcs("M3", 8), lambda: shcs("M5", 35), lambda: shcs("M2.5", 12), lambda: hex_nut("M3"), lambda: hex_nut("M5"),
-    hotend_v6,
+    hotend_v6, extruder_roto, hotend_revo, lambda: hotend_revo(40, 12.0),
 ]
 
 
@@ -41,6 +41,10 @@ def test_every_file_has_a_sources_entry_and_nothing_else_is_in_the_folder():
     used = set()
     for make in WITH_CAD:
         st = make()
+        if "derived_from" in st.model:           # a file cut from a larger download: the unchanged download is kept beside it
+            src = Path(st.model["derived_from"]).name
+            used.add(src)
+            assert src in rows and (vc.root() / src).exists() and "unchanged" in rows[src]["origin"]
         if "file" in st.model:
             name = Path(st.model["file"]).name
             used.add(name)
@@ -58,8 +62,38 @@ def test_parts_without_cad_say_proxy():
     st = shaft_coupler(5.0, 8.0)
     assert st.detail is None and st.model["kind"] == "proxy"
     assert gt2_idler(20, belt_width=12.0).model["kind"] == "proxy"      # only the 6 mm idler has a model
-    for st in (extruder_roto(), hotend_revo()):                        # E3D's reference CAD is on a host this session cannot reach
-        assert st.detail is None and st.model["kind"] == "proxy" and st.model["inbox"]
+
+
+def test_roto_and_revo_are_e3ds_reference_cad_in_the_part_frames():
+    """E3D's Roto reference file (hand-downloaded) is split into cold side and hot side; both sit in their part's
+    frame, and the hot side placed at the Roto's `hotend_seat` is E3D's own assembly again."""
+    import numpy as np
+
+    ex, hot = extruder_roto(), hotend_revo()
+    for st in (ex, hot):
+        assert st.model["kind"] == "vendor CAD" and st.model["derived_from"] == "vendor_cad/e3d_roto_reference_cad.step"
+        assert not vc.excess_hulls(st, st.model["key"])         # nothing of the CAD sticks out of the simulation solid
+    assert len(ex.detail.solids()) == 10 and len(hot.detail.solids()) == 1
+    whole = vc.load_step(vc.root() / "e3d_roto_reference_cad.step")
+    assert len(whole.solids()) == 11
+    v_all, v_cold, v_hot = (sum(s.volume for s in x.solids()) for x in (whole, ex.detail, hot.detail))
+    assert 55.0 < v_all - v_cold - v_hot < 65.0                  # the four motor lead wires that were cut off (60.5 mm^3)
+    seat, tip = ex.interfaces["hotend_seat"][0], ex.interfaces["nozzle_tip"][0]
+    hb = vc.bbox6(hot.detail) + np.array(seat + seat)            # hot side at the seat, unrotated
+    assert hb[2] == pytest.approx(tip[2], abs=1e-3) and hb[5] == pytest.approx(seat[2], abs=1e-3)
+    assert (hb[0] + hb[3]) / 2 == pytest.approx(tip[0], abs=1e-3) and (hb[1] + hb[4]) / 2 == pytest.approx(tip[1], abs=1e-3)
+    # the whole file, moved by the Roto's sidecar transform, is the two detail models side by side
+    import json
+
+    sc = json.loads((vc.root() / "EXTRUDER-E3D-ROTO.step.json").read_text())
+    wb = vc.bbox6(vc.frame(vc.solids_of(whole, keep=lambda s, b: not 15000 < s.volume < 16000), tuple(sc["rot"]), tuple(sc["pos"])))   # all but the motor
+    eb = vc.bbox6(ex.detail)
+    assert wb[2] == pytest.approx(tip[2], abs=1e-3) and wb[[0, 1, 4, 5]] == pytest.approx(eb[[0, 1, 4, 5]], abs=1e-3)
+    # both mounting holes are where the interfaces say, in each of the two ears
+    for x, _, z in ex.interfaces["mount_holes_m3"]:
+        for y in (15.75, -15.75):
+            hit = vc.find_cylinder(ex.detail, (x, y, z), 3.3, (0, 1, 0), (0.99, 1.04))
+            assert hit is not None and hit[0] < 1e-3
 
 
 def test_wrong_proxy_is_caught():

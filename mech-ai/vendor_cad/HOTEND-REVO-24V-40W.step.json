@@ -1,0 +1,16 @@
+{
+ "rot": [
+  90,
+  0,
+  270
+ ],
+ "pos": [
+  0.0,
+  0.0,
+  -22.8
+ ],
+ "kind": "vendor CAD",
+ "source": "E3D Roto Reference CAD (printables.com model 655950), REVO-ROTO-24V-AS-REFERENCE.STEP: solid REVO-HOTSIDE-REFERENCE (HeaterCore + nozzle), unchanged",
+ "derived_from": "vendor_cad/e3d_roto_reference_cad.step",
+ "frame": "file: nozzle tip at the origin, axis +Y. Part: axis Z, seat on Z=0, tip at Z=-22.8"
+}

@@ -1,10 +1,14 @@
 """Toolhead catalog parts with vendor data: E3D Roto extruder, E3D Revo hot side (HeaterCore + nozzle), E3D V6 hotend.
 
 Every number comes from mechloop/parts/vendor/e3d_roto.json, e3d_revo.json or e3d_v6.json (E3D's own data-sheet pages
-and drawings, retrieved 2026-11-15; copies in vendor_docs/). What E3D does not dimension is either scaled from the
-drawing (said so, +/-1 mm) or an estimate, and is listed in `source["unverified_fields"]`. See docs/VENDOR_DATA.md.
+and drawings, retrieved 2026-11-15; copies in vendor_docs/). The geometry of the Roto and of the Revo hot side is
+measured in E3D's own reference CAD (`reference_cad` in the two vendor files; the STEP is in vendor_cad/ and is the
+parts' detail model). What E3D does not give is an estimate and is listed in `source["unverified_fields"]`.
+See docs/VENDOR_DATA.md and docs/VENDOR_CAD.md.
 """
 from __future__ import annotations
+
+import math
 
 from build123d import Box, Cylinder, Pos, Rot
 
@@ -26,36 +30,52 @@ def _pts(ports: dict) -> dict:
 @part
 def extruder_roto() -> Stock:
     """E3D Roto direct-drive extruder (REVO-ROTO-COLDSIDE-AS): 140 g with its motor, heat sink and 35 mm fan; takes a
-    Revo hot side (`hotend_revo`), 157 g complete. Local frame = E3D's drawing datum: origin on the axis of the LOWER
-    mounting hole at mid-width; +X towards the motor (fan at -X), Y across the 38.5 mm width (both 3.3 mm mounting holes
-    run along Y), +Z up. Second hole at (6.8, 30.5). Filament runs down -Z on the line X=-9.05, Y=-4.07; the nozzle tip
-    of the fitted hot side is at Z=-33.55 (`nozzle_tip`). Place `hotend_revo()` at `hotend_seat`. The latch lever on top
-    (to Z=44.15) swings: keep the space above it free. The fan is 5 V (E3D's regulator board for 24 V machines)."""
+    Revo hot side (`hotend_revo`), 157 g complete. Geometry measured in E3D's reference CAD (the detail model).
+    Local frame = E3D's drawing datum: origin on the axis of the LOWER mounting hole at mid-width; +X towards the motor
+    (fan at -X), Y across the 38.5 mm width, +Z up. Both 3.3 mm mounting holes run along Y, each through two 7 mm ears
+    at |Y| = 12.25..19.25 (`mount_ears_y`); second hole at (6.8, 30.5). Filament runs down -Z on the line X=-9.058,
+    Y=-4.06 and enters the heat sink at Z=27.05; the nozzle tip of the fitted hot side is at Z=-33.55 (`nozzle_tip`).
+    Place `hotend_revo()` at `hotend_seat`. Envelope X -25.26..31.85, Y +/-19.25, Z -11.75..44.15. The idler lever
+    stands on top on the +Y side of the filament (`lever_box`, to Z=44.15); the CAD shows one position, so keep the
+    space around it free. The motor's four leads (not in the solid: flexible) leave at `motor_lead_exit`, diagonally
+    towards -Y and +Z. The fan is 5 V (E3D's regulator board for 24 V machines)."""
     d = vendor_data("e3d_roto")
-    v, dr = d["values"], d["drawing"]
-    dm, sc = dr["dimensioned"], dr["scaled_from_drawing_mm"]
-    hw = dm["width_mm"] / 2
-    zb, zt = dm["body_bottom_z_mm"], sc["body_top_z"]
-    xs, xf, xm = dm["x_heatsink_face_mm"], dm["x_fan_face_mm"], dm["x_max_motor_rear_mm"]
-    box = lambda x0, x1, y0, y1, z0, z1: Pos((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2) * Box(x1 - x0, y1 - y0, z1 - z0)
-    body = box(xs, sc["motor_x"][0], -hw, hw, zb, zt)                                   # heat sink + gearbox
-    motor = Pos(sum(sc["motor_x"]) / 2, 0, sc["motor_centre_z"]) * Rot(0, 90, 0) * Cylinder(sc["motor_dia"] / 2, xm - sc["motor_x"][0])
-    fw = sc["fan_half_width"]
-    fan = box(xf, xs, -fw, fw, sc["fan_z"][0], sc["fan_z"][1]) + box(dm["x_min_fan_screw_heads_mm"], xf, -fw, fw, sc["fan_z"][0], sc["fan_z"][1])
-    lever = box(sc["lever_x"][0], sc["lever_x"][1], sc["lever_y_from_centre"][0], sc["lever_y_from_centre"][1], zt, dm["lever_top_z_mm"])
-    ex0, ex1 = sc["upper_ear_x"]
-    ey0, ey1 = sc["upper_ears_y_abs"]
-    ears = box(ex0, ex1, ey0, ey1, zt, sc["upper_ear_z_top"]) + box(ex0, ex1, -ey1, -ey0, zt, sc["upper_ear_z_top"])
+    v, c = d["values"], d["reference_cad"]["measured_mm"]
+    box = lambda x, y, z: Pos(sum(x) / 2, sum(y) / 2, sum(z) / 2) * Box(x[1] - x[0], y[1] - y[0], z[1] - z[0])
+    xcyl = lambda dia, x, y, z: Pos(sum(x) / 2, y, z) * Rot(0, 90, 0) * Cylinder(dia / 2, x[1] - x[0])
+    bd, mo, fa, fs, lv, ue = c["body"], c["motor"], c["fan"], c["fan_screw_heads"], c["idler_lever"], c["upper_ears"]
+    tip = tuple(c["nozzle_tip"])
+    seat = (tip[0], tip[1], c["hotend_seat_z"])
+    hw = c["width"] / 2
+    zt = bd["z"][1]
+    body = box(bd["x"], bd["y"], bd["z"])                                               # heat sink + gearbox cover + ring gear
+    nb = c["nozzle_boss"]
+    body += Pos(tip[0], tip[1], sum(nb["z"]) / 2) * Cylinder(nb["dia"] / 2, nb["z"][1] - nb["z"][0])   # seat boss under the heat sink
+    ay, az = mo["axis_yz"]
+    fl, lb = mo["flange"], mo["lead_block"]
+    motor = xcyl(mo["dia"], mo["x"], ay, az) + box(fl["x"], fl["y"], fl["z"])
+    ldir = tuple(lb["direction"])                                                       # radially out of the motor, in the YZ plane
+    r_in = mo["dia"] / 2 - 1.0                                                          # the block starts inside the round body
+    r_mid = (r_in + lb["radius_outer"]) / 2
+    motor += (Pos(lb["centre"][0], ay + r_mid * ldir[1], az + r_mid * ldir[2]) * Rot(math.degrees(math.atan2(-ldir[1], ldir[2])), 0, 0)
+              * Box(lb["size_x_tangential_radial"][0], lb["size_x_tangential_radial"][1], lb["radius_outer"] - r_in))
+    lead_exit = (lb["centre"][0], round(ay + lb["radius_outer"] * ldir[1], 3), round(az + lb["radius_outer"] * ldir[2], 3))
+    fw = fa["half_width"]
+    fan = box(fa["x"], (-fw, fw), fa["z"])
+    for y, z in fs["yz"]:                                                               # the two button heads of the fan screws
+        fan += xcyl(fs["dia"], fs["x"], y, z)
+    lever = box(lv["block"]["x"], lv["block"]["y"], lv["block"]["z"]) + box(lv["tab"]["x"], lv["tab"]["y"], lv["tab"]["z"])
+    ey0, ey1 = c["mount_ears_y_abs"]
+    ears = box(ue["x"], (ey0, ey1), (zt, ue["z_top"])) + box(ue["x"], (-ey1, -ey0), (zt, ue["z_top"]))
     shape = body + motor + fan + lever + ears
-    lo, up = dm["lower_hole_xz_mm"], dm["upper_hole_xz_mm"]
+    lo, up = c["mount_hole_lower"]["xz"], c["mount_hole_upper"]["xz"]
     holes = [(lo[0], 0.0, lo[1]), (up[0], 0.0, up[1])]
     for x, _, z in holes:
         shape -= Pos(x, 0, z) * Rot(90, 0, 0) * Cylinder(1.65, 2 * hw + 2)
-    ny = -(hw - dm["nozzle_axis_from_side_face_mm"])          # 15.18 from the -Y face (assumed side, see the vendor file)
-    tip = (dm["nozzle_tip_xz_mm"][0], round(ny, 3), dm["nozzle_tip_xz_mm"][1])
-    seat = (tip[0], tip[1], round(tip[2] + vendor_data("e3d_revo")["nozzle"]["drawing"]["dimensioned"]["seat_flange_to_tip_mm"], 3))
+    xf, xm = fa["x"][0], mo["x"][1]
+    detail, model = details.extruder_roto(c)
     m, k = v["motor"], d["klipper"]
-    ports = {"coils": dict(kind="stepper", connector="molex-microfit", max_a=3.0, conductors=4, at=(xm, 0.0, sc["motor_centre_z"]), dir=(1, 0, 0))}
+    ports = {"coils": dict(kind="stepper", connector="molex-microfit", max_a=3.0, conductors=4, at=lead_exit, dir=ldir)}
     mratings = {"rated_current_a": v["current_max_a_rms"], "phase_resistance_ohm": m["phase_resistance_ohm"],
                 "phase_inductance_mh": ROTO_INDUCTANCE_EST_MH, "holding_torque_nmm": float(m["holding_torque_nmm"]),
                 "rotor_inertia_gcm2": m["rotor_inertia_gcm2"], "step_angle_deg": m["step_angle_deg"],
@@ -66,7 +86,7 @@ def extruder_roto() -> Stock:
                 "phase_resistance_ohm": f"{E3D}: 7.5 ohm +/-10 % per phase at 20 degC", "holding_torque_nmm": f"{E3D}: 75 mNm",
                 "phase_inductance_mh": f"ESTIMATED {ROTO_INDUCTANCE_EST_MH:g} mH: E3D does not publish it ({TU}); measure the motor",
                 "rotor_inertia_gcm2": f"{E3D}: 7 gcm2", "run_current_min_a": f"{E3D}: 0.45 A peak (0.318 A rms) minimum recommended",
-                "connector": f"{E3D}, motor wiring image: Molex 43025-0400", "max_a": TU, "cost": "e3d-online.com list price GBP 115 (2026-11-15), taken as USD"}
+                "connector": f"{E3D}, motor wiring image: Molex 43025-0400 (on 40 mm leads that leave the motor at the port position: E3D reference CAD)", "max_a": TU, "cost": "e3d-online.com list price GBP 115 (2026-11-15), taken as USD"}
     tpl = {"kind": "stepper", "ports": ports, "ratings": mratings, "sources": msources,
            "params": {"rotation_distance": k["as_published"]["rotation_distance"], "gear_ratio": f"{v['gear_ratio']:g}:1",
                       "full_steps_per_rotation": v["full_steps_per_rotation"], "microsteps": 16,
@@ -93,24 +113,31 @@ def extruder_roto() -> Stock:
                "heatsink_sensor_type": v["heatsink_sensor_type"], "vendor_part": d["part_number"]}
     return Stock(shape, "EXTRUDER-E3D-ROTO", "E3D Roto direct-drive extruder with NEMA 14 motor, heat sink and fan (takes a Revo hot side)",
                  v["mass_g"] / 1000.0, material="al6061", ratings=ratings, cost_usd=115.0,
+                 detail=detail, model=model,
                  interfaces={"mount_holes_m3": holes, "mount_hole_axis": (0.0, 1.0, 0.0), "mount_hole_dia": 3.3,
-                             "mount_width": dm["width_mm"], "filament_axis": [(tip[0], tip[1], dm["lever_top_z_mm"]), tip],
+                             "mount_width": c["width"], "mount_ears_y": (ey0, ey1),
+                             "filament_axis": [(tip[0], tip[1], lv["tab"]["z"][1]), tip],
                              "filament_exit": [seat], "hotend_seat": [seat], "nozzle_tip": [tip],
-                             "filament_entry": [(tip[0], tip[1], zt)], "lever_top": [(sum(sc["lever_x"]) / 2, sum(sc["lever_y_from_centre"]) / 2, dm["lever_top_z_mm"])],
-                             "fan_face_x": xf, "motor_rear_x": xm, **_pts(ports)},
-                 model={"inbox": ["REVO-ROTO-COLDSIDE-AS", "Roto Reference", "e3d-roto-reference-cad"]},
+                             "filament_entry": [(tip[0], tip[1], c["filament_entry_z"])], "lever_top": [tuple(lv["top_face_centre"])],
+                             "lever_box": [(lv["tab"]["x"][0], lv["tab"]["y"][0], lv["block"]["z"][0]), (lv["tab"]["x"][1], lv["block"]["y"][1], lv["tab"]["z"][1])],
+                             "fan_face_x": xf, "fan_centre": [(xf, ay, az)], "motor_rear_x": xm, "motor_axis": [(mo["x"][0], ay, az), (xm, ay, az)],
+                             "motor_dia": mo["dia"], "motor_lead_exit": [lead_exit, tuple(round(p + 10.0 * q, 3) for p, q in zip(lead_exit, ldir))],
+                             "body_box": [(bd["x"][0], bd["y"][0], bd["z"][0]), (bd["x"][1], bd["y"][1], bd["z"][1])], **_pts(ports)},
                  source=_source("e3d_roto", "vendor", d["part_number"],
-                                unverified=("phase_inductance_mh (estimated)", "body top, motor, fan, lever and ear outlines (scaled from the drawing, +/-1 mm)",
-                                            "which side the nozzle's 4.07 mm lateral offset is on", "mounting-hole depth", "cost_usd"),
-                                note="mass, gearing, rotation distance, currents, resistance, torque, hole pattern and nozzle position are E3D's "
-                                     "published figures; E3D's Klipper block omits gear_ratio (see the vendor file)"))
+                                unverified=("phase_inductance_mh (estimated)", "idler lever travel (the reference CAD shows one position)",
+                                            "licence of the reference CAD (not confirmed)", "cost_usd"),
+                                note="mass, gearing, rotation distance, currents, resistance and torque are E3D's published figures; hole pattern, "
+                                     "nozzle position and every outline are measured in E3D's reference CAD and agree with E3D's drawing; "
+                                     "E3D's Klipper block omits gear_ratio (see the vendor file)"))
 
 
 @part
 def hotend_revo(watts: int = 40, volts: float = 24.0, nozzle: float = 0.4) -> Stock:
     """E3D Revo hot side: HeaterCore (heater + Semitec 104NT thermistor in one part) on a Revo brass nozzle; screws
     finger-tight into a Revo cold side such as `extruder_roto()`. Local frame: nozzle axis Z, the nozzle's seat flange on
-    Z=0 (place at the extruder's `hotend_seat`), tip at Z=-22.8; the HeaterCore's lead sleeve leaves towards +X. The
+    Z=0 (place at the extruder's `hotend_seat`), tip at Z=-22.8; the HeaterCore's lead sleeve leaves towards +X (the
+    sleeve is from E3D's HeaterCore drawing; everything else is measured in E3D's reference CAD, which has no sleeve:
+    HeaterCore 16.7 dia from 7.13 to 19.01 mm above the tip, 13 mm nozzle block from 2.0 to 7.13). The
     18.3 mm of nozzle tube above the seat is inside the cold side and is not in the solid. Heater: 40 W at 24 V
     (14.4 ohm at 23 degC, PTC). Electrical ports: "in" (heater) and "ntc" (thermistor). In a design:
     `device_from(el, d, "hotend")` (the heater device takes the component's name), then
@@ -121,17 +148,18 @@ def hotend_revo(watts: int = 40, volts: float = 24.0, nozzle: float = 0.4) -> St
         raise ValueError("hotend_revo: only the 40 W HeaterCore at 12 V or 24 V is recorded")
     if str(nozzle) not in nz["part_number"]:
         raise ValueError(f"hotend_revo nozzle must be one of {sorted(nz['part_number'])}")
-    hv, nd, ns = hc["values"], nz["drawing"]["dimensioned"], nz["drawing"]["scaled_from_drawing_mm"]
-    cs = hc["drawing"]["scaled_from_drawing_mm"]
+    hv, nd = hc["values"], nz["drawing"]["dimensioned"]
+    cs = hc["drawing"]["scaled_from_drawing_mm"]              # the lead sleeve only (the reference CAD has none)
+    c = d["reference_cad"]["measured_mm"]                     # heights above the nozzle tip, measured in E3D's reference CAD
     tip = -nd["seat_flange_to_tip_mm"]
-    blk_bot = tip + ns["block_bottom_above_tip"]
-    blk_top = blk_bot + ns["block_height"]
-    core_top = blk_top + cs["body_length"]
+    blk_bot, blk_top = round(tip + c["nozzle_block"]["z"][0], 3), round(tip + c["nozzle_block"]["z"][1], 3)
+    core_top = round(tip + c["heatercore"]["z"][1], 3)
+    core_dia = c["heatercore"]["dia"]
     cyl = lambda dia, z0, z1: Pos(0, 0, (z0 + z1) / 2) * Cylinder(dia / 2, z1 - z0)
-    shape = (cyl(ns["tube_dia_below_flange"], core_top, 0.0) + cyl(cs["body_dia"], blk_top, core_top)
-             + cyl(nd["block_dia_mm"], blk_bot, blk_top) + cyl(4.0, tip, blk_bot))
-    zc = (blk_top + core_top) / 2
-    x0 = cs["body_dia"] / 2
+    shape = (cyl(c["above_heatercore"]["head_dia"], core_top, 0.0) + cyl(core_dia, blk_top, core_top)
+             + cyl(c["nozzle_block"]["dia"], blk_bot, blk_top) + cyl(4.0, tip, blk_bot))
+    zc = round((blk_top + core_top) / 2, 3)
+    x0 = core_dia / 2
     shape += Pos(x0 + cs["lead_sleeve_length"] / 2 - 1.0, 0, zc) * Box(cs["lead_sleeve_length"] + 2.0, 5.0, cs["lead_sleeve_height"])
     r23 = hv["resistance_24v_40w_at_23c_ohm"] * (volts / 24.0) ** 2
     a = hv["temp_coefficient_per_c"]
@@ -166,8 +194,9 @@ def hotend_revo(watts: int = 40, volts: float = 24.0, nozzle: float = 0.4) -> St
                               "tau_s": f"assumed 2 s for a sensor potted in the HeaterCore ({TU})"},
                   "sensor_type": sensor, "points": THERMISTORS[sensor], "tau_s": 2.0, "node": "block"}
     mass = (hc["derived"]["mass_g"] + nz["values"]["mass_g"]) / 1000.0
+    detail, model = details.hotend_revo(c, cs["lead_sleeve_length"], hc["part_number"][str(int(volts))])
     return Stock(shape, f"HOTEND-REVO-{volts:g}V-{watts}W", f"E3D Revo hot side: HeaterCore {volts:g} V {watts} W + brass nozzle {nozzle:g} mm",
-                 mass, material="brass", cost_usd=40.0,
+                 mass, material="brass", cost_usd=40.0, detail=detail, model=model,
                  ratings={"electrical": tpl, "thermistor": thermistor, "max_temp_c": float(hv["max_printing_temperature_c"]),
                           "heater_w": float(watts), "heater_v": float(volts), "heater_resistance_ohm_23c": round(r23, 2),
                           "heater_tempco_per_c": a, "heater_power_w_at_250c": p_at(250), "sensor_type": sensor,
@@ -175,15 +204,14 @@ def hotend_revo(watts: int = 40, volts: float = 24.0, nozzle: float = 0.4) -> St
                           "hardware_cutoff": "none built in; PTC heater (power falls with temperature) - see the vendor file",
                           "vendor_part": tpl["product"]["part_number"]},
                  interfaces={"seat": [(0.0, 0.0, 0.0)], "nozzle_tip": [(0.0, 0.0, tip)], "heater_block_box": [(-x0, -x0, blk_bot), (x0, x0, core_top)],
-                             "nozzle_block_dia": nd["block_dia_mm"], "heatercore_dia": cs["body_dia"], "lead_exit": [lead], "tube_above_seat": nd["overall_length_mm"] + tip,
+                             "nozzle_block_dia": c["nozzle_block"]["dia"], "heatercore_dia": core_dia, "lead_exit": [lead], "tube_above_seat": nd["overall_length_mm"] + tip,
                              **_pts(ports)},
-                 model={"inbox": [hc["part_number"][str(int(volts))], "Revo HeaterCore", "HOTEND-REVO"]},
                  source=_source("e3d_revo", "vendor", tpl["product"]["part_number"],
-                                unverified=("HeaterCore diameter 16.3 and length 11.9 (scaled from the drawing)", "nozzle block height (scaled)",
+                                unverified=("lead sleeve 22 x 5 x 4.6 and its direction (scaled from the HeaterCore drawing; not in the reference CAD)",
                                             "mass split (9 g HeaterCore derived from 157 - 140 - 8)", "thermal capacity and area (estimated)",
                                             "thermistor response time", "cost_usd") + (("12 V resistance",) if volts != 24.0 else ()),
                                 note="power, resistance, temperature coefficient, sensor type, 300 degC limit, nozzle mass and the 22.8 / 41.1 / 13 mm "
-                                     "nozzle dimensions are E3D's published figures"))
+                                     "nozzle dimensions are E3D's published figures; HeaterCore and nozzle-block outline measured in E3D's reference CAD"))
 
 
 @part

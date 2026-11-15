@@ -1,0 +1,16 @@
+{
+ "rot": [
+  90,
+  0,
+  270
+ ],
+ "pos": [
+  -9.058,
+  -4.06,
+  -33.55
+ ],
+ "kind": "vendor CAD",
+ "source": "E3D Roto Reference CAD (printables.com model 655950), REVO-ROTO-24V-AS-REFERENCE.STEP: cold side (10 of 11 solids; the motor's four lead wires cut off at the lead block)",
+ "derived_from": "vendor_cad/e3d_roto_reference_cad.step",
+ "frame": "file: nozzle tip at the origin, filament +Y, motor at -Z. Part: origin on the lower mounting-hole axis at mid-width, +X towards the motor, +Z up"
+}

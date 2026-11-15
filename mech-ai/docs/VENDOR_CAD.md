@@ -163,10 +163,65 @@ shared the machine. The previous full run took 343 s in all.
 | Catalog part | Model kind | Source | Result |
 |---|---|---|---|
 | `hotend_v6()` | community CAD | FreeCAD-library `Electrical Parts/Hotend/hotend-3d-printer.step` (CC-BY 3.0): heat sink, groove mount, block and nozzle as one solid, no fan | The simulation solid is built from E3D's dimension drawing (62.55 mm tip to top; groove mount 16 / 12 / 16). The community model agrees on the groove mount diameters and the 3.7 mm top flange, is 62.8 mm long (0.25 mm more, declared) and draws the lower flange 2.0 mm thick (E3D: 3.0). `proxy_mismatch` passes with the volume ratio declared (finned model vs. envelope). This is the model the 2026-11-14 pass set aside because the design-local proxy was 60 mm long; the catalogue part now has the real length. |
-| `extruder_roto()` | proxy | E3D's "Roto Reference" CAD is published on printables.com (model 655950), outside this session's network allow-list; E3D's own CDN carries the drawings but not the STEP | Simulation solid: boxes and a motor cylinder to the dimensioned envelope of E3D's drawing, internal outlines scaled from it (+/-1 mm). First on the wish list. |
-| `hotend_revo()` | proxy | same (also in "Revo Voron Reference CAD", printables 713137) | Cylinders to E3D's nozzle drawing (22.8, 41.1, 13 mm) and the HeaterCore outline scaled from its drawing. |
+| `extruder_roto()` | **vendor CAD** | E3D "Roto Reference" CAD (printables.com model 655950), hand-downloaded by the owner: `e3d_roto_reference_cad.step`; cold side cut from it as `EXTRUDER-E3D-ROTO.step` (10 solids, motor lead wires cut off) | Simulation solid rebuilt on the CAD's numbers: body, seat boss, upper ears, round motor with flange and lead block, fan with two screw heads, idler lever (block + tab). `proxy_mismatch` passes with nothing declared; no part of the CAD is outside the solid. See "E3D Roto reference CAD" below. |
+| `hotend_revo()` | **vendor CAD** | the same file's solid `REVO-HOTSIDE-REFERENCE`: `HOTEND-REVO-24V-40W.step` | HeaterCore 16.3 -> 16.7 dia, 11.9 -> 11.88 long (7.13..19.01 above the tip); nozzle block 2.2..7.0 -> 2.0..7.13. The CAD has no lead sleeve: the simulation solid keeps the 22 mm sleeve from the HeaterCore drawing (declared). `proxy_mismatch` passes. |
 | `spacer_round()`, `bed_column_silicone()` | proxy | plain sleeves; no maker publishes a model | The generated solid is the part. |
 | `gt2_pulley(.., 9)`, `gt2_idler(.., 9)` | proxy | no model found for 9 mm belt | as for the 12 mm parts |
 
 Tried and not used: github.com/e3donline/ToolChanger (E3D's repository; printed tool parts only, no hotend or extruder
 model); github.com/Annex-Engineering/Sherpa_Mini-Extruder (has STEP files, but the Sherpa Mini was not chosen).
+
+## E3D Roto reference CAD (added 2026-11-15, second pass)
+
+The owner downloaded E3D's "Roto Reference" model (printables.com model 655950; STEP header
+`REVO-ROTO-24V-AS-REFERENCE.STEP`, SolidWorks 2022, 2024-01-24). Licence: **not confirmed** (the Printables page could
+not be read here). Views to check this reading by eye: `vendor_docs/E3D_Roto_reference_CAD_views.png` and
+`vendor_docs/E3D_Roto_reference_CAD_vs_simulation_solid.png` (magenta = simulation solid).
+
+**What is in the file** (11 solids, 66,634 mm^3): gearbox cover with the mounting ears, heat sink, ring-gear housing,
+35 x 35 x 6.8 fan ("3-Wire"), idler lever, round NEMA 14 motor with four lead wires, the Revo hot side (HeaterCore and
+nozzle as one simplified solid), and four screws (M3x30, M3x12, two M3x35 fan screws). File frame: nozzle tip at the
+origin, filament along +Y, motor axis along Z (motor at -Z, fan at +Z), width along X. Catalogue frame = file turned
+by rot (90, 0, 270) and moved by (-9.058, -4.06, -33.55): X = -file Z - 9.058, Y = -file X - 4.06, Z = file Y - 33.55.
+
+**Why the automatic alignment failed (78 x 57 x 56 against 57 x 38.5 x 56).** The drawing-based proxy was right; the
+file holds two things the part does not: the hot side (22.8 mm below the cold side: 78.3 = 22.8 + 55.5) and the
+motor's four lead wires, drawn as straight 0.8 mm rods 30.9 mm long that run diagonally 17.7 mm past the -Y side
+face (56.2 = 38.5 + 17.7). The 57.1 is the fan-screw-heads-to-motor-rear length, the same in both. The 38.5 mm width
+is exact in the CAD. With the hot side split off and the wires cut at the lead block, the cold side is
+57.11 x 38.50 x 55.90.
+
+**Drawing against CAD** (catalogue frame, mm):
+
+| item | E3D drawing / data sheet | reference CAD | difference |
+|---|---|---|---|
+| mounting holes | 2 x dia 3.3 +/-0.08, at (0, 0) and (6.8, 30.5) | upper 3.30, lower 3.39; at (0, 0) and (6.800, 30.500); axis Y | lower hole drawn 0.09 larger; positions equal |
+| hole depth | not given | each hole in two 7 mm ears at abs(Y) 12.25..19.25; lower: 6.5-6.7 mm channel between the ears; upper: open gap | new |
+| width | 38.5 +/-0.2 | 38.50 (Y -19.25..19.25) | 0 |
+| nozzle tip X, Z | -9.05 +/-0.26, -33.55 | -9.058, -33.55 | 0.008 |
+| nozzle axis from side face | 15.18 +/-0.41 (side assumed: -Y) | 15.19 from the -Y face (23.31 from +Y): Y = -4.06 | 0.01; **assumed side confirmed** |
+| hot-side seat | tip + 22.8 = -10.75 | -10.75 (1 mm up a 6.2 mm counterbore in a 7.36 mm boss ending at -11.75) | 0 |
+| body bottom | -11.45 | -11.45 (heat-sink underside around the nozzle: -10.75; boss: -11.75) | 0 (boss 0.3 lower) |
+| lever top | 44.15 | 44.15 | 0 |
+| fan screw heads (X min) | -25.25 | -25.258 | 0.008 |
+| fan face / heat-sink face | -23.6 / -16.8 | -23.608 / -16.808 | 0.008 |
+| motor rear (X max) | 31.85 | 31.85 | 0 |
+| body top (scaled) | 27.2 | 27.05 (also the filament entry) | -0.15 |
+| motor (scaled) | dia 36.9, X 16.0..31.85, axis Z 7.8 | dia 36.2 (steps 36.0, 35.0), X 16.35..31.85, axis (Y 0, Z 7.80); flange 38.14 square, 2 mm, two lugs; lead block to radius 20.0 | dia -0.7, front +0.35 |
+| fan (scaled; data sheet 35 x 35 x 7) | Z -9.7..25.4, half-width 17.5 | Z -9.7..25.3, half-width 17.5, 6.8 thick | 0.1 |
+| lever (scaled) | X -21.6..3.4, Y 2.9..6.1 | tab X -21.62..6.92, Y 2.94..5.94, Z 31.15..44.15; block X -12.85..-1.85, Y 2.94..12.88, Z 27.05..44.04 | **X +3.5, Y +6.8** |
+| upper ears (scaled) | X 3.4..10.2, top 33.9, abs(Y) 12.25..19.25 | X 3.25..10.35, top 34.05, abs(Y) 12.25..19.25 | 0.15 |
+| mass | 140 g | not in a STEP file | kept from the data sheet |
+
+Not in the file: mass, the lever's travel (one position drawn), the fan cable, the HeaterCore's lead sleeve.
+
+**How it is wired in.** `vendor_cad/e3d_roto_reference_cad.step` is the unchanged download. Two files are cut from it,
+named after the parts' SKUs, each with a `<file>.json` sidecar that holds the frame change (`rot`, `pos`) and the
+source: `EXTRUDER-E3D-ROTO.step` and `HOTEND-REVO-24V-40W.step`. `details.extruder_roto` / `details.hotend_revo` load
+them, apply the sidecar, and declare what the check must find (both holes in both ears, filament bore, motor diameter,
+fan opening; HeaterCore and nozzle-block diameters). The motor's lead wires are cut off in the cold-side file because
+the envelope check would treat them as a rigid spike; they leave at the interface `motor_lead_exit` / the `coils`
+port. `hotend_revo()` placed unrotated at the Roto's `hotend_seat` reproduces E3D's assembly.
+
+Note on the inbox mechanism: `inbox_override` looks only in `vendor_cad/inbox/` (its doc text says "or vendor_cad/").
+A checked file that has moved up into `vendor_cad/` is used through its function in `details.py`, as here.

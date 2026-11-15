@@ -52,7 +52,7 @@
     ]
    },
    "scaled_from_drawing_mm": {
-    "note": "only the lead lengths are dimensioned; body scaled at 12.0 px/mm, +/-0.5 mm",
+    "note": "only the lead lengths are dimensioned; body scaled at 12.0 px/mm, +/-0.5 mm. body_dia and body_length SUPERSEDED 2026-11-15 by reference_cad.measured_mm (16.7 dia, 11.88 long); the lead sleeve is still from this drawing",
     "body_dia": 16.3,
     "body_length": 11.9,
     "lead_sleeve_length": 22.0,
@@ -98,7 +98,7 @@
     "bore_mm": 2.0
    },
    "scaled_from_drawing_mm": {
-    "note": "26.2 px/mm, +/-0.3 mm",
+    "note": "26.2 px/mm, +/-0.3 mm. block_height and block_bottom_above_tip SUPERSEDED 2026-11-15 by reference_cad.measured_mm (block 2.0 to 7.13 above the tip)",
     "block_height": 4.8,
     "block_bottom_above_tip": 2.2,
     "tube_dia_below_flange": 6.0
@@ -110,7 +110,7 @@
   "block_capacity_j_k": 6.5,
   "block_capacity_basis": "8 g brass nozzle x 0.38 J/gK + 9 g HeaterCore (alumina/bronze, about 0.4 J/gK); the cold end of the nozzle tube is not heated",
   "block_area_m2": 0.0009,
-  "block_area_basis": "cylinder 16.3 dia x 11.9 plus the 13 mm nozzle block",
+  "block_area_basis": "cylinder 16.3 dia x 11.9 plus the 13 mm nozzle block (estimate made from the drawing; the reference CAD gives 16.7 x 11.88, not re-estimated)",
   "block_height_m": 0.017
  },
  "hardware_over_temperature_cut_off": {
@@ -127,5 +127,79 @@
    "www.sensata.com"
   ]
  },
- "used_by_catalog": true
+ "used_by_catalog": true,
+ "reference_cad": {
+  "source_url": "https://www.printables.com/model/655950-e3d-roto-reference-cad",
+  "title": "solid REVO-HOTSIDE-REFERENCE of E3D's Roto reference CAD (REVO-ROTO-24V-AS-REFERENCE.STEP): HeaterCore and nozzle as one simplified solid",
+  "obtained": "hand-downloaded by the owner on 2026-11-15",
+  "licence": "licence not confirmed: check the Printables page (printables.com could not be reached from this session)",
+  "local_copy": "vendor_cad/HOTEND-REVO-24V-40W.step",
+  "file_to_catalogue_frame": {
+   "rot": [
+    90,
+    0,
+    270
+   ],
+   "pos": [
+    0.0,
+    0.0,
+    -22.8
+   ],
+   "note": "file: tip at the origin, axis +Y. Same turn as the Roto's, so hotend_revo() placed unrotated at the Roto's hotend_seat is E3D's assembly"
+  },
+  "measured_mm": {
+   "note": "heights above the nozzle tip; the solid is a body of revolution about the nozzle axis",
+   "seat_to_tip": 22.8,
+   "tip_cone": {
+    "z": [
+     0.0,
+     2.0
+    ],
+    "max_dia": 3.7
+   },
+   "nozzle_block": {
+    "dia": 13.0,
+    "z": [
+     2.0,
+     7.13
+    ]
+   },
+   "heatercore": {
+    "dia": 16.7,
+    "z": [
+     7.13,
+     19.01
+    ],
+    "edge_radius": 1.0
+   },
+   "above_heatercore": {
+    "cone_dia": [
+     7.0,
+     5.8
+    ],
+    "cone_z": [
+     19.01,
+     19.61
+    ],
+    "neck_dia": 2.5,
+    "neck_z": [
+     19.61,
+     21.8
+    ],
+    "head_dia": 6.0,
+    "head_z": [
+     21.8,
+     22.8
+    ]
+   },
+   "bore_as_drawn_dia": 0.4,
+   "volume_mm3": 3322
+  },
+  "not_in_the_file": [
+   "the HeaterCore's lead sleeve and leads (kept from the HeaterCore drawing)",
+   "the spring",
+   "the nozzle tube above the seat (inside the cold side)",
+   "mass"
+  ]
+ }
 }

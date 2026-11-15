@@ -348,3 +348,76 @@ def hotend_v6(tip_z: float):
     if f is None:
         return None, rec
     return vc.cached("hotend_v6", [f], lambda: vc.frame(vc.solids_of(vc.load_step(f)), pos=(0, 0, -3.7))), rec
+
+
+E3D_REF = "E3D 'Roto Reference' CAD (printables.com model 655950, file REVO-ROTO-24V-AS-REFERENCE.STEP, hand-downloaded 2026-11-15)"
+E3D_REF_FILE = "e3d_roto_reference_cad.step"      # the unchanged download; the two files below are cut from it
+
+
+def _sidecar(f) -> dict:
+    """The `<file>.json` next to a STEP file ("rot", "pos": the file's frame -> the part's frame), or {}."""
+    import json
+
+    p = f.with_suffix(f.suffix + ".json")
+    return json.loads(p.read_text()) if p.exists() else {}
+
+
+def extruder_roto(c: dict):
+    """E3D's own reference CAD of the Roto, cold side: gearbox cover (with the mounting ears), heat sink, ring gear,
+    fan, idler lever, motor and four screws (10 solids). Cut from E3D's 11-solid reference file: the hot side went to
+    `hotend_revo`, and the motor's four lead wires (drawn as straight 0.8 mm rods 30.9 mm long) are cut off at the
+    lead block, because they are flexible and would otherwise read as a rigid spike 17.7 mm past the side face.
+    File: nozzle tip at the origin, filament +Y, motor at -Z. Part: frame from the sidecar (rot 90, 0, 270; origin on
+    the lower mounting-hole axis at mid-width). `c` is reference_cad.measured_mm of the vendor file."""
+    f = _file("EXTRUDER-E3D-ROTO")
+    ey = sum(c["mount_ears_y_abs"]) / 2
+    lo, up, mo, fa = c["mount_hole_lower"], c["mount_hole_upper"], c["motor"], c["fan"]
+    tip = c["nozzle_tip"]
+    feats = []
+    for i, h in enumerate((lo, up)):
+        for side, y in (("+Y", ey), ("-Y", -ey)):      # each hole exists only in two 7 mm ears
+            feats.append(hole_feature(f"mount_holes_m3[{i}] ({side} ear)", (h["xz"][0], y, h["xz"][1]), 3.3, (0, 1, 0), dia_range=(0.99, 1.04)))
+    feats += [hole_feature("filament_bore", (tip[0], tip[1], 10.0), c["filament_bore_dia"], (0, 0, 1), tol_dia=0.05),
+              hole_feature("motor_dia", (mo["x"][1] - 2.0, mo["axis_yz"][0], mo["axis_yz"][1]), mo["dia"], (1, 0, 0), tol_dia=0.05),
+              hole_feature("fan_opening", (sum(fa["x"]) / 2, mo["axis_yz"][0], mo["axis_yz"][1]), 33.4, (1, 0, 0), tol_dia=0.1)]
+    rec = _rec("vendor CAD", "EXTRUDER-E3D-ROTO.step",
+               f"{E3D_REF}: cold side, 10 of its 11 solids, motor lead wires cut off at the lead block",
+               inbox=["REVO-ROTO-COLDSIDE-AS", "Roto Reference", "e3d-roto-reference-cad"], derived_from=f"vendor_cad/{E3D_REF_FILE}",
+               assembly=True, no_auto_features=True, features=feats,
+               notes=["mounting holes: the CAD draws the lower one 3.39 mm and the upper one 3.30 mm (drawing: 2 x 3.3 +/-0.08); each is in "
+                      "two 7 mm ears at |Y| 12.25..19.25",
+                      "the motor's four leads (40 mm per the data sheet) are not in the model or the simulation solid: they leave the lead "
+                      "block at `motor_lead_exit`, diagonally towards -Y +Z",
+                      "the idler lever is drawn in one position; its travel is not in the CAD",
+                      "simulation solid: the heat sink's underside around the nozzle is 0.7 mm higher than the box (Z -10.75, not -11.45)"])
+    if f is None:
+        return None, rec
+    sc = _sidecar(f)
+    return vc.cached(f"extruder_roto:{sc.get('rot')}:{sc.get('pos')}", [f],
+                     lambda: vc.frame(vc.solids_of(vc.load_step(f)), tuple(sc.get("rot", (90, 0, 270))),
+                                      tuple(sc.get("pos", (-9.058, -4.06, -33.55))))), rec
+
+
+def hotend_revo(c: dict, sleeve_length: float, part_number: str):
+    """E3D's reference solid of the Revo hot side (HeaterCore + nozzle as one body of revolution; no lead sleeve, no
+    spring), taken unchanged from the Roto reference file. File: tip at the origin, axis +Y. Part: axis Z, seat on
+    Z=0, tip at Z=-22.8 (sidecar: rot 90, 0, 270, the Roto's own turn). `c` is reference_cad.measured_mm."""
+    f = _file("HOTEND-REVO-24V-40W")
+    z = lambda above_tip: above_tip - c["seat_to_tip"]
+    hc, nb = c["heatercore"], c["nozzle_block"]
+    rec = _rec("vendor CAD", "HOTEND-REVO-24V-40W.step", f"{E3D_REF}: solid REVO-HOTSIDE-REFERENCE, unchanged",
+               inbox=[part_number, "Revo HeaterCore", "HOTEND-REVO"], derived_from=f"vendor_cad/{E3D_REF_FILE}", no_auto_features=True,
+               features=[hole_feature("heatercore_dia", (0, 0, z(sum(hc["z"]) / 2)), hc["dia"], (0, 0, 1), tol_dia=0.05),
+                         hole_feature("nozzle_block_dia", (0, 0, z(sum(nb["z"]) / 2)), nb["dia"], (0, 0, 1), tol_dia=0.05)],
+               protrusions={"xmax": (-sleeve_length, "the HeaterCore's lead sleeve is in the simulation solid (from E3D's HeaterCore "
+                                                     "drawing) but not in the reference CAD")},
+               tolerance={"volume_ratio": (0.6, 1.7), "mass_ratio": (0.2, 3.0)},
+               notes=["the reference CAD has no lead sleeve; the simulation solid keeps it (22 mm towards +X, scaled from the HeaterCore drawing)",
+                      "above the HeaterCore the CAD draws a 2.5 mm neck and a 6 mm head; the simulation solid is a 6 mm tube up to the seat",
+                      "one model for the 12 V and 24 V HeaterCore (same body)"])
+    if f is None:
+        return None, rec
+    sc = _sidecar(f)
+    return vc.cached(f"hotend_revo:{sc.get('rot')}:{sc.get('pos')}", [f],
+                     lambda: vc.frame(vc.solids_of(vc.load_step(f)), tuple(sc.get("rot", (90, 0, 270))),
+                                      tuple(sc.get("pos", (0.0, 0.0, -c["seat_to_tip"]))))), rec

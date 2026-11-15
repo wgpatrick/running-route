@@ -63,7 +63,12 @@
    "noise_dba": 33.6,
    "mass_g": 7,
    "wire_length_mm": 130,
-   "regulator_for_12_24v": "REVO-MICRO-BOARD-REG (https://e3d-online.com/products/5v-regulator-board)"
+   "regulator_for_12_24v": "REVO-MICRO-BOARD-REG (https://e3d-online.com/products/5v-regulator-board)",
+   "size_reference_cad_mm": [
+    35.0,
+    35.0,
+    6.8
+   ]
   },
   "materials": {
    "heatsink": "aluminium (SLM printed)",
@@ -116,7 +121,7 @@
    "nozzle_axis_from_side_face_tolerance_mm": 0.41
   },
   "scaled_from_drawing_mm": {
-   "note": "not dimensioned: measured on the drawing at 11.1 px/mm, +/-1 mm",
+   "note": "not dimensioned: measured on the drawing at 11.1 px/mm, +/-1 mm. SUPERSEDED 2026-11-15 by reference_cad.measured_mm (E3D's reference CAD); kept as the record of what the drawing gave. Largest differences: lever X to 6.92 (was 3.4) and its block Y to 12.88 (was 6.1), motor 36.2 dia (was 36.9), motor front 16.35 (was 16.0)",
    "body_top_z": 27.2,
    "motor_x": [
     16.0,
@@ -147,9 +152,11 @@
     19.25
    ]
   },
-  "assumed": [
-   "which side face the 15.18 mm is measured from in 3D (taken: the face on the viewer's right when looking at the fan, i.e. -Y in the catalogue frame)",
-   "whether the two 3.3 mm holes run through the whole 38.5 mm width (the upper one passes through two ears)"
+  "assumed": [],
+  "resolved_by_reference_cad": [
+   "side of the 15.18 mm: CONFIRMED as assumed. The nozzle axis is 15.19 mm from the -Y face (23.31 from the +Y face), i.e. 4.06 mm to -Y of mid-width",
+   "the 3.3 mm holes: each runs through two 7 mm ears at |Y| = 12.25..19.25; the lower one continues through the body as a 6.5-6.7 mm channel; lower hole drawn 3.39 mm in the CAD, upper 3.30",
+   "the 38.5 mm width is the body's (and whole cold side's) Y extent; only the motor's flexible leads go past it"
   ]
  },
  "klipper": {
@@ -178,9 +185,9 @@
  "not_obtained": [
   "motor phase inductance (not on the page)",
   "rated motor current as such: E3D gives a rated voltage (4.5 V) and a 0.6 A peak limit; 4.5 V / 7.5 ohm = 0.6 A",
-  "STEP file: 'Roto Reference' CAD is on printables.com (model 655950), which this session cannot reach",
-  "depth and counterbore of the mounting holes",
-  "torque-speed curve"
+  "torque-speed curve",
+  "licence of the reference CAD (Printables page not reachable)",
+  "idler lever travel (the reference CAD shows one position)"
  ],
  "alternatives_considered": {
   "note": "Only e3d-online.com could be reached of the candidates' own sites. The other rows are web-search snippets of reseller pages (secondary), or recalled where marked; none of them was read from the maker's document.",
@@ -224,5 +231,328 @@
    "note": "vendor page read; the motor alone weighs more than the whole Roto"
   }
  },
- "used_by_catalog": true
+ "used_by_catalog": true,
+ "reference_cad": {
+  "source_url": "https://www.printables.com/model/655950-e3d-roto-reference-cad",
+  "title": "E3D 'Roto Reference' CAD: REVO-ROTO-24V-AS-REFERENCE.STEP (STEP AP214 written by SolidWorks 2022 on 2024-01-24), linked from E3D's Roto data-sheet page",
+  "obtained": "hand-downloaded by the owner on 2026-11-15",
+  "licence": "licence not confirmed: check the Printables page (printables.com could not be reached from this session)",
+  "local_copy": "vendor_cad/e3d_roto_reference_cad.step",
+  "split_into": {
+   "cold_side": "vendor_cad/EXTRUDER-E3D-ROTO.step (10 solids: everything but the hot side; the motor's four lead wires cut off at the lead block)",
+   "hot_side": "vendor_cad/HOTEND-REVO-24V-40W.step (1 solid: REVO-HOTSIDE-REFERENCE)"
+  },
+  "solids": [
+   "ROTO-GEARBOX-COVER-REFERENCE (carries both mounting holes)",
+   "ROTO-HEATSINK-REFERENCE",
+   "ROTO-RING-GEAR-REFERENCE",
+   "ROTO-FAN-REFERENCE_3-Wire",
+   "M-M3-30-LSHCS-A2",
+   "M-M3-12-LSHCS-A2",
+   "ROTO-IDLER-REFERENCE",
+   "REVO-HOTSIDE-REFERENCE",
+   "ROTO-MOTOR-REFERENCE (with four lead wires)",
+   "M-M3-35-BHCS-A2",
+   "M-M3-35-BHCS-A2"
+  ],
+  "volume_mm3": {
+   "all_11_solids": 66634,
+   "cold_side_without_lead_wires": 63252,
+   "hot_side": 3322
+  },
+  "file_frame": "nozzle tip at the origin, filament axis +Y (up), motor axis Z (motor at -Z, fan at +Z), width along X",
+  "file_to_catalogue_frame": {
+   "rot": [
+    90,
+    0,
+    270
+   ],
+   "pos": [
+    -9.058,
+    -4.06,
+    -33.55
+   ],
+   "note": "catalogue X = -file Z - 9.058, Y = -file X - 4.06, Z = file Y - 33.55 (degrees about fixed X, Y, Z, then the translation)"
+  },
+  "measured_mm": {
+   "note": "measured in the STEP, in the catalogue frame (origin on the lower mounting-hole axis at mid-width, +X towards the motor, +Z up); exact to the file's 0.001 mm",
+   "mount_hole_lower": {
+    "xz": [
+     0.0,
+     0.0
+    ],
+    "dia": 3.39
+   },
+   "mount_hole_upper": {
+    "xz": [
+     6.8,
+     30.5
+    ],
+    "dia": 3.3
+   },
+   "mount_hole_axis": "Y",
+   "mount_ears_y_abs": [
+    12.25,
+    19.25
+   ],
+   "mount_holes_note": "both holes are in the gearbox cover and exist only in two 7 mm ears at |Y| = 12.25..19.25. Lower hole: a 6.5-6.7 mm channel between the ears (inside the body), so a screw passes the whole 38.5 mm. Upper hole: the ears stand free above the body, the 24.5 mm between them is open (the idler lever is there)",
+   "nozzle_tip": [
+    -9.058,
+    -4.06,
+    -33.55
+   ],
+   "filament_axis_xy": [
+    -9.058,
+    -4.06
+   ],
+   "nozzle_axis_from_side_face": {
+    "minus_y_face": 15.19,
+    "plus_y_face": 23.31
+   },
+   "hotend_seat_z": -10.75,
+   "hotend_seat_note": "top of the Revo hot side solid = heat-sink underside around the nozzle; it sits 1.0 mm up a 6.2 mm counterbore in a 7.36 mm boss that ends at Z = -11.75",
+   "nozzle_boss": {
+    "dia": 7.36,
+    "z": [
+     -11.75,
+     -10.75
+    ]
+   },
+   "filament_bore_dia": 3.3,
+   "filament_entry_z": 27.05,
+   "width": 38.5,
+   "body": {
+    "x": [
+     -16.808,
+     16.35
+    ],
+    "y": [
+     -19.25,
+     19.25
+    ],
+    "z": [
+     -11.45,
+     27.05
+    ],
+    "parts_x": {
+     "heat_sink": [
+      -16.808,
+      3.25
+     ],
+     "gearbox_cover": [
+      -3.0,
+      10.35
+     ],
+     "ring_gear": [
+      10.35,
+      16.35
+     ]
+    }
+   },
+   "upper_ears": {
+    "x": [
+     3.25,
+     10.35
+    ],
+    "z_top": 34.05,
+    "outer_dia": 7.1
+   },
+   "motor": {
+    "axis_yz": [
+     0.0,
+     7.8
+    ],
+    "dia": 36.2,
+    "x": [
+     16.35,
+     31.85
+    ],
+    "pilot_x": 15.05,
+    "flange": {
+     "x": [
+      16.35,
+      18.35
+     ],
+     "y": [
+      -19.07,
+      19.07
+     ],
+     "z": [
+      -11.27,
+      26.87
+     ],
+     "note": "two lugs on one diagonal (-Y -Z and +Y +Z)"
+    },
+    "lead_block": {
+     "centre": [
+      28.74,
+      -13.35,
+      21.15
+     ],
+     "size_x_tangential_radial": [
+      3.0,
+      7.0,
+      2.25
+     ],
+     "radius_outer": 20.0,
+     "direction": [
+      0.0,
+      -0.7071,
+      0.7071
+     ]
+    },
+    "leads_as_drawn": {
+     "count": 4,
+     "dia": 0.8,
+     "length": 30.9,
+     "end_y": -36.98,
+     "end_z": 44.78,
+     "note": "drawn straight; flexible; data sheet: 40 mm"
+    }
+   },
+   "fan": {
+    "x": [
+     -23.608,
+     -16.808
+    ],
+    "half_width": 17.5,
+    "z": [
+     -9.7,
+     25.3
+    ],
+    "thickness": 6.8
+   },
+   "fan_screw_heads": {
+    "x": [
+     -25.258,
+     -23.608
+    ],
+    "dia": 5.68,
+    "yz": [
+     [
+      14.5,
+      -6.7
+     ],
+     [
+      -14.5,
+      22.3
+     ]
+    ]
+   },
+   "idler_lever": {
+    "block": {
+     "x": [
+      -12.85,
+      -1.85
+     ],
+     "y": [
+      2.94,
+      12.88
+     ],
+     "z": [
+      27.05,
+      44.04
+     ]
+    },
+    "tab": {
+     "x": [
+      -21.62,
+      6.92
+     ],
+     "y": [
+      2.94,
+      5.94
+     ],
+     "z": [
+      31.15,
+      44.15
+     ]
+    },
+    "top_face_centre": [
+     -7.35,
+     4.61,
+     44.15
+    ],
+    "note": "on the +Y side of the filament (filament at Y = -4.06): the filament enters the heat sink beside it. The file shows one position only: its travel is not in the CAD"
+   },
+   "envelope": {
+    "cold_side_without_motor": {
+     "x": [
+      -25.258,
+      18.65
+     ],
+     "y": [
+      -19.25,
+      19.25
+     ],
+     "z": [
+      -11.75,
+      44.15
+     ],
+     "note": "X max is the tip of the two screws that hold the motor; the ring gear ends at 16.35"
+    },
+    "cold_side_with_motor": {
+     "x": [
+      -25.258,
+      31.85
+     ],
+     "y": [
+      -19.25,
+      19.25
+     ],
+     "z": [
+      -11.75,
+      44.15
+     ],
+     "size": [
+      57.108,
+      38.5,
+      55.9
+     ]
+    },
+    "with_motor_leads_as_drawn": {
+     "x": [
+      -25.258,
+      31.85
+     ],
+     "y": [
+      -36.98,
+      19.25
+     ],
+     "z": [
+      -11.75,
+      44.78
+     ]
+    },
+    "with_hot_side": {
+     "x": [
+      -25.258,
+      31.85
+     ],
+     "y": [
+      -19.25,
+      19.25
+     ],
+     "z": [
+      -33.55,
+      44.15
+     ]
+    },
+    "whole_file": {
+     "size_along_filament": 78.33,
+     "across": [
+      56.23,
+      57.11
+     ],
+     "note": "78.33 = 22.8 hot side + 55.53 up to the end of the leads; 56.23 = the 38.5 width + 17.73 of lead wire past the -Y face; 57.11 = fan screw heads to motor rear"
+    }
+   }
+  },
+  "not_in_the_file": [
+   "mass (kept from the data sheet)",
+   "idler lever travel",
+   "the HeaterCore's lead sleeve and the fan cable",
+   "threads"
+  ]
+ }
 }

@@ -168,7 +168,7 @@ Wanted: a direct-drive extruder for a toolhead of about 0.40 kg, 24 V, Klipper, 
 | Nozzle position | dimensioned to the mounting holes | - | - | - | drawing on the page |
 | Hotend | Revo, built in | separate | separate | separate | Revo, built in |
 | Source reached | **E3D data-sheet page and drawing** | reseller snippets only | reseller snippets only | maker's page via snippets only | E3D data-sheet page |
-| Real CAD | Printables only (not reachable): wish list | not reached | STEP on GitHub (reachable) | not reached | not looked for |
+| Real CAD | E3D "Roto Reference" (Printables 655950), hand-downloaded 2026-11-15: now the detail model | not reached | STEP on GitHub (reachable) | not reached | not looked for |
 
 Chosen: **E3D Roto** (`extruder_roto()`), with the Revo hot side (`hotend_revo()`).
 
@@ -197,11 +197,11 @@ unless said otherwise:
 | Inductance | 11 mH | **estimate** (7.5 ohm x 1.5 ms), not published |
 | Motor connector | Molex 43025-0400 (Micro-Fit 3.0, 4-way) | wiring image on the page |
 | Fan | 35 x 35 x 7, 5 V, 0.14 A, 7 g | "Fan Specification"; size from the spare-part SKU |
-| Mounting | 2 x dia 3.3 +/-0.08 holes at (0, 0) and (6.8, 30.5) | drawing `vendor_docs/E3D_Roto_Dim.svg` |
-| Nozzle tip | (-9.05 +/-0.26, -33.55 +0.46/-0.36) from the lower hole; 15.18 +/-0.41 from one side face of the 38.5 width | same drawing |
-| Envelope | X -25.25..31.85, Z -11.45..44.15, width 38.5 | same drawing (reference dimensions) |
-| Body top, motor, fan, lever, ears | boxes | **scaled from the drawing, +/-1 mm** |
-| Side of the 4.07 mm lateral nozzle offset | -Y | **assumed** from the view layout |
+| Mounting | 2 x dia 3.3 +/-0.08 holes at (0, 0) and (6.8, 30.5), along Y, each through two 7 mm ears at abs(Y) 12.25..19.25 | drawing `vendor_docs/E3D_Roto_Dim.svg`; ears and positions measured in E3D's reference CAD (lower hole drawn 3.39) |
+| Nozzle tip | drawing: (-9.05 +/-0.26, -33.55 +0.46/-0.36) from the lower hole, 15.18 +/-0.41 from one side face. Catalogue (reference CAD): (-9.058, -4.06, -33.55), 15.19 from the -Y face | drawing and reference CAD agree |
+| Envelope | X -25.258..31.85, Y -19.25..19.25, Z -11.75..44.15 (57.11 x 38.5 x 55.9; the drawing's -25.25, -11.45 body bottom, 38.5 agree) | measured in E3D's reference CAD; motor leads (flexible, to Y -37, Z 44.8 as drawn) excluded |
+| Body top, motor, fan, lever, ears | body top 27.05; motor dia 36.2, X 16.35..31.85, axis (0, 7.8); fan Z -9.7..25.3; lever X -21.62..6.92, Y 2.94..12.88; ears X 3.25..10.35 to Z 34.05 | measured in E3D's reference CAD (were scaled from the drawing; table in `docs/VENDOR_CAD.md`) |
+| Side of the 4.06 mm lateral nozzle offset | -Y | **confirmed** by the reference CAD (was assumed) |
 
 **E3D's Klipper block is inconsistent with its own summary.** It prints `rotation_distance: 26.8937`,
 `full_steps_per_rotation: 400`, `microsteps: 16` and no `gear_ratio`. That is 238 steps/mm; the summary says 2682.
@@ -239,8 +239,8 @@ Hooks needed outside `mechloop/parts/` (not edited here):
 
 | Part | Source | Vendor-verified | Recalled / estimated / scaled |
 |---|---|---|---|
-| `extruder_roto()` = E3D REVO-ROTO-COLDSIDE-AS | E3D Roto data-sheet page and drawing | table above | inductance; outlines scaled from the drawing; side of the lateral offset; hole depth; cost |
-| `hotend_revo(40, 24.0, 0.4)` = E3D RC-CORE-24V-AS-SPRING + RC-NOZZLE-0400-AS-SPK | `e3d-online.com/pages/revo-support-40w-104nt-heatercore`, `.../revo-support-brass-nozzle`, nozzle drawing | 40 W; 14.4 ohm at 23 degC; temperature coefficient 0.002078 /degC (27.2 W at 250 degC); max 300 degC; Klipper sensor "ATC Semitec 104NT-4-R025H42G"; Micro-Fit connectors; nozzle 8 g, 41.1 long, 22.8 +/-0.2 seat to tip, 13 mm block | HeaterCore 16.3 dia x 11.9 (scaled from its drawing); HeaterCore mass 9 g (157 - 140 - 8); thermal capacity 6.5 J/K and area (estimates); sensor response 2 s |
+| `extruder_roto()` = E3D REVO-ROTO-COLDSIDE-AS | E3D Roto data-sheet page and drawing; geometry from E3D's reference CAD (`vendor_cad/e3d_roto_reference_cad.step`) | table above | inductance; idler lever travel; licence of the reference CAD; cost |
+| `hotend_revo(40, 24.0, 0.4)` = E3D RC-CORE-24V-AS-SPRING + RC-NOZZLE-0400-AS-SPK | `e3d-online.com/pages/revo-support-40w-104nt-heatercore`, `.../revo-support-brass-nozzle`, nozzle drawing | 40 W; 14.4 ohm at 23 degC; temperature coefficient 0.002078 /degC (27.2 W at 250 degC); max 300 degC; Klipper sensor "ATC Semitec 104NT-4-R025H42G"; Micro-Fit connectors; nozzle 8 g, 41.1 long, 22.8 +/-0.2 seat to tip, 13 mm block | lead sleeve 22 x 5 x 4.6 (scaled from the HeaterCore drawing; not in the reference CAD; HeaterCore 16.7 dia x 11.88 is now measured in E3D's reference CAD); HeaterCore mass 9 g (157 - 140 - 8); thermal capacity 6.5 J/K and area (estimates); sensor response 2 s |
 | `hotend_v6()` = E3D V6-175-24V | `e3d-online.com/pages/e3d-classics-support-v6-hotend` and its dimension drawing | 62.55 mm tip to heat-sink top, groove mount 16 / 12 / 16 mm (3.0, 6.0, 3.7 high), heat-sink radius 11.15, block bottom 4.8 above the tip; 300 degC rated, 285 with E3D thermistor, 260 with sock; 30 W heater, 24 V 30 W resistance 16.7-22.6 ohm; Semitec 104NT-4-R025H42G | mass 65 g (recalled); heater block 23 x 16 x 11.5 and bore positions (community model) |
 | `spacer_round("M3", L)` nylon, 5 OD x 3.3 ID, L in 2, 4, 6, 8, 10, 12, 15, 20, 25 | Pololu items 1980-1988 (`pololu.com/category/93/spacers`, item 1982 page) | OD, ID, length, item number, pack size | mass (from volume), nylon grade |
 | `spacer_round("M2.5", L)` nylon, 4 OD x 2.7 ID, L in 2, 4, 6, 8, 10, 12, 15, 20, 22, 25 | Pololu items 1970-1979 | same | same |

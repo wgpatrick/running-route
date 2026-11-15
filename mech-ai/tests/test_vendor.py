@@ -225,19 +225,34 @@ def test_ratings_verifier_lists_only_unverified_parts():
 def test_roto_extruder_matches_e3d():
     d = vendor_data("e3d_roto")
     v, dm = d["values"], d["drawing"]["dimensioned"]
+    c = d["reference_cad"]["measured_mm"]            # measured in E3D's reference CAD (vendor_cad/e3d_roto_reference_cad.step)
     st = parts.extruder_roto()
     assert st.verified and st.source["level"] == "vendor" and st.source["part"] == d["part_number"] == "REVO-ROTO-COLDSIDE-AS"
     assert st.sku.startswith("EXTRUDER")            # the subsystems and electrical verifiers find the extruder by this
     assert st.mass_kg == pytest.approx(v["mass_g"] / 1000) == 0.140
     bb = st.shape.bounding_box()
-    assert (bb.min.X, bb.max.X) == pytest.approx((dm["x_min_fan_screw_heads_mm"], dm["x_max_motor_rear_mm"]))
-    assert (bb.min.Z, bb.max.Z) == pytest.approx((dm["body_bottom_z_mm"], dm["lever_top_z_mm"]))
-    assert bb.size.Y == pytest.approx(dm["width_mm"])
+    env = c["envelope"]["cold_side_with_motor"]      # the simulation solid has the CAD's envelope (motor leads excluded) ...
+    assert (bb.min.X, bb.max.X) == pytest.approx(tuple(env["x"]), abs=1e-3)
+    assert (bb.min.Y, bb.max.Y) == pytest.approx(tuple(env["y"]), abs=1e-3)
+    assert (bb.min.Z, bb.max.Z) == pytest.approx(tuple(env["z"]), abs=1e-3)
+    # ... and the CAD agrees with E3D's dimensioned drawing (the seat boss hangs 0.3 mm below the drawing's body bottom)
+    assert (bb.min.X, bb.max.X) == pytest.approx((dm["x_min_fan_screw_heads_mm"], dm["x_max_motor_rear_mm"]), abs=0.02)
+    assert (bb.min.Z, bb.max.Z) == pytest.approx((dm["body_bottom_z_mm"] - 0.3, dm["lever_top_z_mm"]), abs=0.02)
+    assert c["body"]["z"][0] == dm["body_bottom_z_mm"] and st.interfaces["fan_face_x"] == pytest.approx(dm["x_fan_face_mm"], abs=0.02)
+    assert bb.size.Y == pytest.approx(dm["width_mm"]) == c["width"] == st.interfaces["mount_width"]
     lo, up = st.interfaces["mount_holes_m3"]
-    assert lo == (0.0, 0.0, 0.0) and up == (dm["upper_hole_xz_mm"][0], 0.0, dm["upper_hole_xz_mm"][1])
+    assert lo == (0.0, 0.0, 0.0) and up == (dm["upper_hole_xz_mm"][0], 0.0, dm["upper_hole_xz_mm"][1]) == (6.8, 0.0, 30.5)
+    assert st.interfaces["mount_hole_axis"] == (0.0, 1.0, 0.0) and st.interfaces["mount_ears_y"] == (12.25, 19.25)
     tip = st.interfaces["nozzle_tip"][0]
-    assert (tip[0], tip[2]) == tuple(dm["nozzle_tip_xz_mm"])
-    assert abs(tip[1]) == pytest.approx(dm["width_mm"] / 2 - dm["nozzle_axis_from_side_face_mm"])
+    assert tip == tuple(c["nozzle_tip"]) == (-9.058, -4.06, -33.55)
+    assert abs(tip[0] - dm["nozzle_tip_xz_mm"][0]) < 0.02 and tip[2] == dm["nozzle_tip_xz_mm"][1]       # drawing: -9.05 +/-0.26, -33.55
+    # the drawing's 15.18 mm is from the -Y face: the side the catalogue had assumed, now measured
+    assert tip[1] < 0 and c["nozzle_axis_from_side_face"]["minus_y_face"] == pytest.approx(dm["width_mm"] / 2 + tip[1])
+    assert abs(tip[1]) == pytest.approx(dm["width_mm"] / 2 - dm["nozzle_axis_from_side_face_mm"], abs=0.02)
+    assert st.interfaces["filament_entry"][0] == (tip[0], tip[1], 27.05) and st.interfaces["lever_top"][0][2] == dm["lever_top_z_mm"]
+    lead = st.interfaces["port:coils"]
+    assert lead[0] == st.interfaces["motor_lead_exit"][0] and lead[0][1] < 0 < lead[0][2]     # the leads leave towards -Y, +Z
+    assert not d["drawing"]["assumed"] and not any("side" in f or "scaled" in f for f in st.source["unverified_fields"])
     top, bottom = st.interfaces["filament_axis"]
     assert top[:2] == bottom[:2] == tip[:2] and bottom == tip                    # filament runs straight down to the nozzle
     seat = st.interfaces["hotend_seat"][0]
@@ -300,6 +315,11 @@ def test_revo_hotside_matches_e3d():
     st = parts.hotend_revo()
     assert st.verified and st.sku == "HOTEND-REVO-24V-40W"
     assert st.interfaces["nozzle_tip"] == [(0.0, 0.0, -nd["seat_flange_to_tip_mm"])] and st.interfaces["tube_above_seat"] == pytest.approx(18.3)
+    c = d["reference_cad"]["measured_mm"]            # HeaterCore and nozzle block as E3D's reference CAD draws them
+    assert c["seat_to_tip"] == nd["seat_flange_to_tip_mm"] and c["nozzle_block"]["dia"] == nd["block_dia_mm"] == st.interfaces["nozzle_block_dia"]
+    assert st.interfaces["heatercore_dia"] == c["heatercore"]["dia"] == 16.7
+    assert st.interfaces["heater_block_box"] == [(-8.35, -8.35, -20.8), (8.35, 8.35, -3.79)]
+    assert st.shape.bounding_box().max.X == pytest.approx(8.35 + 22.0)       # the lead sleeve (HeaterCore drawing; not in the CAD)
     assert st.shape.bounding_box().min.Z == pytest.approx(-22.8) and st.shape.bounding_box().max.Z == pytest.approx(0.0)
     assert st.mass_kg == pytest.approx(0.157 - 0.140)                       # E3D: Roto 140 g, 157 g with hot side and nozzle
     e = st.ratings["electrical"]
