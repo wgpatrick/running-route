@@ -148,6 +148,8 @@ def main(argv=None) -> int:
         if a.firmware:      # a firmware score that did not run, or whose nominal print failed, is not a pass
             k = res.get("klipper") or {}
             fw_ok = bool(k.get("ran")) and bool(k.get("as_configured", {}).get("nominal", {}).get("ok"))
+            for w in k.get("prints_not_run") or []:
+                print(f"mechloop score: NOT RUN: {w}", file=sys.stderr)
         builtin_ok = res.get("nominal_print_ok") if not a.firmware_only else True
         return 0 if res.get("static_checks_ok") and builtin_ok and fw_ok else 1
     if a.cmd == "tune":

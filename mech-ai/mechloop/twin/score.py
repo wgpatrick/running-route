@@ -45,23 +45,12 @@ def firmware_block(design_path, design, pm, pm_kw, out: Path, speed: float = 2.0
     a_nom = jl[pm.x].max_accel
 
     def sweep(prefix):
-        first_fail = next((a for a in accels if not res[f"{prefix}{a:g}"]["ok"]), None)
-        passing = [a for a in accels if res[f"{prefix}{a:g}"]["ok"] and (first_fail is None or a < first_fail)]
-        rows = [{"accel_mm_s2": a * a_nom, "ok": res[f"{prefix}{a:g}"]["ok"], "errors": sorted(set(res[f"{prefix}{a:g}"]["errors"])),
-                 "cross_track_rms_mm": res[f"{prefix}{a:g}"]["cross_track_rms_mm"], "cross_track_worst_mm": res[f"{prefix}{a:g}"]["cross_track_worst_mm"],
-                 "max_bulge_mm": res[f"{prefix}{a:g}"]["max_bulge_mm"], "print_time_s": res[f"{prefix}{a:g}"]["print_time_s"]} for a in accels]
-        top = (max(passing) * a_nom) if passing else 0.0
-        return {"highest_clean_accel_mm_s2": top, "max_clean_accel_mm_s2": top,      # the second is the old name of the first
-                "accel_margin": max(passing) if passing else 0.0,
-                "highest_accel_tried_mm_s2": max(accels) * a_nom,
-                "first_failure": ({"accel_mm_s2": first_fail * a_nom, "errors": sorted(set(res[f"{prefix}{first_fail:g}"]["errors"])),
-                                   "axes_losing_steps": res[f"{prefix}{first_fail:g}"].get("lost_step_axes")} if first_fail else None),
-                "table": rows}
+        return sweep_summary({a: res[f"{prefix}{a:g}"] for a in accels}, a_nom)
 
     def nominal(name):
         r = res[name]
         rep = _rep(out / name)
-        return {"ok": r["ok"], "errors": r["errors"], "print_time_s": r["print_time_s"], "cross_track_rms_mm": r["cross_track_rms_mm"],
+        return {"ok": r["ok"], "not_run": r.get("not_run"), "errors": r["errors"], "print_time_s": r["print_time_s"], "cross_track_rms_mm": r["cross_track_rms_mm"],
                 "cross_track_worst_mm": r["cross_track_worst_mm"], "cross_track_p99_mm": rep.get("dynamics", {}).get("cross_track_p99_mm"),
                 "command_smoothing_worst_mm": rep.get("dynamics", {}).get("command_smoothing_worst_mm"),
                 "max_bulge_mm": r["max_bulge_mm"], "outline_offset_mm": r["outline_offset_mm"]}
@@ -77,16 +66,57 @@ def firmware_block(design_path, design, pm, pm_kw, out: Path, speed: float = 2.0
                "basis": "Klipper's own suggested max_accel for the chosen shapers (the lower axis), times the 0.5 (0.4 to 0.65) of it that "
                         "owners of three reference machines run; the resonance it rests on is the twin's prediction at the values in use "
                         "(its range is under 'ranges' at the top level)"} if sug else {})
+    blocks = {"as_configured": {"nominal": nominal("fw_nominal"), **sweep("fw_a")},
+              "shaper_and_pressure_advance_off": {"nominal": nominal("fw_nominal_plain"), **sweep("fw_plain_a")}}
+    not_run = [f"{k}: {b['not_run_warning']}" for k, b in blocks.items() if b.get("not_run_warning")]
+    not_run += [f"{k}: the nominal print was NOT RUN ({res[n]['not_run'].get('detail')})"
+                for k, n in (("as_configured", "fw_nominal"), ("shaper_and_pressure_advance_off", "fw_nominal_plain")) if res[n].get("not_run")]
     return {"ran": True, "firmware": "Klipper", "commit": commit, "speed_scale_in_sweep": speed, **owners,
+            "prints_not_run": not_run,
             "reading": "highest_clean_accel_mm_s2 is the highest acceleration of the sweep that printed cleanly: with shaping on it is a "
                        "ceiling set by the sweep or by step loss, not an acceleration to run. accel_owners_would_run_mm_s2 is the usable figure.",
             "clean_means": "the test cube prints without lost steps and within the print checks, as in the built-in sweep",
-            "as_configured": {"nominal": nominal("fw_nominal"), **sweep("fw_a")},
-            "shaper_and_pressure_advance_off": {"nominal": nominal("fw_nominal_plain"), **sweep("fw_plain_a")},
+            **blocks,
             "input_shaper": {ax: {k: sh[ax].get(k) for k in ("shaper_type", "shaper_freq", "damping_ratio", "predicted_resonance_hz",
                                                                "suggested_max_accel")} for ax in ("x", "y") if ax in sh},
             "pressure_advance": {k: pa.get(k) for k in ("value", "basis", "from_sweep")},
             "assumed": sorted(set((sh.get("assumed") or []) + (pa.get("assumed") or [])))}
+
+
+def sweep_summary(by_accel: dict, a_nom: float) -> dict:
+    """One acceleration sweep from its prints' summaries ({accel factor: summarise(report)}).
+    A print that was NOT RUN (Klipper's output could not be read back: `not_run` in its summary) is neither clean nor
+    a failure: it is left out of "highest clean" and of "first failure", listed under `not_run`, and the summary says
+    which figures it leaves open."""
+    accels = sorted(by_accel)
+    nr = [a for a in accels if by_accel[a].get("not_run")]
+    ran = [a for a in accels if a not in nr]
+    first_fail = next((a for a in ran if not by_accel[a]["ok"]), None)
+    passing = [a for a in ran if by_accel[a]["ok"] and (first_fail is None or a < first_fail)]
+    rows = [{"accel_mm_s2": a * a_nom, "ok": (None if a in nr else by_accel[a]["ok"]),
+             "status": "NOT RUN" if a in nr else ("clean" if by_accel[a]["ok"] else "failed"),
+             "errors": sorted(set(by_accel[a]["errors"])),
+             "cross_track_rms_mm": by_accel[a].get("cross_track_rms_mm"), "cross_track_worst_mm": by_accel[a].get("cross_track_worst_mm"),
+             "max_bulge_mm": by_accel[a].get("max_bulge_mm"), "print_time_s": by_accel[a].get("print_time_s")} for a in accels]
+    top = (max(passing) * a_nom) if passing else 0.0
+    out = {"highest_clean_accel_mm_s2": top, "max_clean_accel_mm_s2": top,      # the second is the old name of the first
+           "accel_margin": max(passing) if passing else 0.0,
+           "highest_accel_tried_mm_s2": max(accels) * a_nom,
+           "first_failure": ({"accel_mm_s2": first_fail * a_nom, "errors": sorted(set(by_accel[first_fail]["errors"])),
+                              "axes_losing_steps": by_accel[first_fail].get("lost_step_axes")} if first_fail else None),
+           "table": rows}
+    if nr:
+        hi = max(passing) if passing else 0.0
+        open_ = [a for a in nr if a > hi and (first_fail is None or a < first_fail)]
+        out["not_run"] = [{"accel_mm_s2": a * a_nom, "reason": by_accel[a]["not_run"].get("reason"),
+                           "detail": by_accel[a]["not_run"].get("detail")} for a in nr]
+        out["not_run_warning"] = (
+            f"{len(nr)} of {len(accels)} prints of this sweep were NOT RUN (at "
+            + ", ".join(f"{a * a_nom:g}" for a in nr) + " mm/s^2): they are not counted as clean and not as failures. "
+            + ("The highest clean figure may be higher than stated: " + ", ".join(f"{a * a_nom:g}" for a in open_)
+               + " mm/s^2 lies between it and the first failure (or the top of the sweep) and was not run."
+               if open_ else "They lie below the highest clean point, so the highest clean figure stands on its neighbours."))
+    return out
 
 
 def _rep(run_dir: Path) -> dict:

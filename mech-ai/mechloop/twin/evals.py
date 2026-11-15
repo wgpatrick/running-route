@@ -70,7 +70,7 @@ KEYS = ("outline_iou_min", "outline_offset_mm", "max_bulge_mm", "max_recess_mm",
 
 def summarise(rep: dict) -> dict:
     p, d = rep.get("print", {}), rep.get("dynamics", {})
-    out = {"ok": rep.get("ok", False),
+    out = {"ok": rep.get("ok", False), "not_run": rep.get("not_run"),
            "errors": [f["code"] for f in rep.get("findings", []) if f["severity"] == "error"],
            "warnings": [f["code"] for f in rep.get("findings", []) if f["severity"] == "warning"],
            "print_time_s": rep.get("plan", {}).get("print_time_s"),

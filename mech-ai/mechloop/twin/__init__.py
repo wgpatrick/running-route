@@ -276,8 +276,16 @@ def run_print(design: Design, part, out: Path, pm: PrinterMap | None = None, nam
             res_fw = fw.commanded(design, info, gpath, pts, dt, out / "firmware", pm=pm, opts=firmware_opts,
                                   accel_scale=accel_scale, speed_scale=speed_scale, mass_extra=mass_extra)
         except (fw.FirmwareNotAvailable, fw.FirmwareError) as ex:
+            if isinstance(ex, fw.FirmwareNotDecoded):
+                # Klipper raised nothing; its output could not be read back. Not a result about the printer.
+                rep["not_run"] = {"reason": "firmware_not_decoded", "detail": str(ex)}
+                r.add("error", "firmware_not_decoded", str(ex),
+                      hint="This print was not run: it is neither a pass nor a failed print. Run it again.")
+                return finish()
             r.add("error", "firmware_not_run" if isinstance(ex, fw.FirmwareNotAvailable) else "firmware_error", str(ex),
                   hint="tools/setup_klipper.sh installs Klipper for these runs." if isinstance(ex, fw.FirmwareNotAvailable) else "")
+            if isinstance(ex, fw.FirmwareNotAvailable):
+                rep["not_run"] = {"reason": "firmware_not_run", "detail": str(ex)}
             return finish()
         Qc, Vc, seg, frac, seg_t = (res_fw[k] for k in ("Qc", "Vc", "seg", "frac", "seg_t"))
         Qn, e_cmd = res_fw["Qn"], res_fw["E"]

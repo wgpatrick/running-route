@@ -36,6 +36,44 @@ class FirmwareError(RuntimeError):
     pass
 
 
+class FirmwareNotDecoded(FirmwareError):
+    """Klipper ran and raised nothing, but its command stream could not be turned into a trajectory (the stream file
+    is cut short, or the decoder lost track). This says nothing about the printer: the print is NOT RUN, never a
+    failed print (finding `firmware_not_decoded`; a sweep leaves the point out and says so)."""
+
+
+STREAM_ATTEMPTS = 3
+
+
+def stream_cut_short(dump: Path, log_text: str, steps: dict, clock_hz: float) -> dict | None:
+    """Is Klipper's batch output file shorter than the print it planned?
+
+    Klipper's batch mode hands commands to a writer thread (chelper/serialqueue.c) and, at the end of the input,
+    asks that thread to exit (serialqueue_exit -> pollreactor_do_exit) without waiting for it to drain: on a busy
+    machine the last seconds of the print never reach the file, while klippy.log ends normally. A complete stream
+    ends with what klippy schedules at its exit (the motors switched off: queue_digital_out at about the print time
+    in "Exiting (print time ...)"), and its last step is within a fraction of a second of that time (measured 0.11 to 0.16 s on complete runs, 1.8 and 4.8 s on the two cut short).
+    Returns None when complete (or when the log has no exit time to compare with), else the evidence."""
+    m = re.findall(r"Exiting \(print time ([\d.]+)s\)", log_text)
+    if not m:
+        return None
+    t_exit = float(m[-1])
+    wrap = 1 << 32
+    want = int(round(t_exit * clock_hz)) % wrap
+    tail = Path(dump).read_text().splitlines()[-200:]
+    marker = False
+    for line in tail:
+        if line.startswith("queue_digital_out"):
+            mm = re.search(r"clock=(\d+)", line)
+            if mm and ((int(mm.group(1)) - want) % wrap) < int(1.0 * clock_hz):
+                marker = True
+    last = max((float(t[-1]) for t, _ in steps.values() if len(t)), default=0.0)
+    if marker or t_exit - last < 1.0:
+        return None
+    return {"klippy_exit_print_time_s": t_exit, "last_step_in_stream_s": round(last, 3),
+            "missing_s": round(t_exit - last, 3), "last_command": tail[-1].split(" ", 1)[0] if tail else None}
+
+
 def find_klipper():
     root = Path(__file__).resolve().parents[2]
     kdir = Path(os.environ.get("MECHLOOP_KLIPPER", root / "third_party" / "klipper"))
@@ -84,7 +122,7 @@ def run_klippy(cfg_text: str, gcode_text: str, workdir: Path) -> dict:
 
     mcu = json.loads((kdir / "out" / "klipper.dict").read_text())["config"]
     return {"dump": workdir / "commands.txt", "messages": msgs, "commit": commit, "mcu": mcu.get("MCU"),
-            "clock_hz": float(mcu["CLOCK_FREQ"])}
+            "clock_hz": float(mcu["CLOCK_FREQ"]), "log": log}
 
 
 def check_config(cfg_text: str, workdir: Path) -> dict:
@@ -292,8 +330,21 @@ def remove_mesh(prof: dict, x, y, z_stepper):
 
 
 def _run_decode(cfg_text: str, job: str, workdir: Path, c) -> dict:
-    run = run_klippy(cfg_text, job, workdir)
-    dec = decode(run["dump"], cfg_text, run["clock_hz"])
+    cut_runs = []
+    for attempt in range(STREAM_ATTEMPTS):      # a stream cut short at klippy's exit is klippy's race, not the print: run again
+        run = run_klippy(cfg_text, job, workdir)
+        dec = decode(run["dump"], cfg_text, run["clock_hz"])
+        cut = stream_cut_short(run["dump"], run.pop("log", ""), dec["steps"], run["clock_hz"])
+        if cut is None:
+            break
+        cut_runs.append(cut)
+    else:
+        raise FirmwareNotDecoded(
+            f"Klipper's batch output was cut short in {STREAM_ATTEMPTS} of {STREAM_ATTEMPTS} runs (the last one stops "
+            f"{cut['missing_s']:.2f} s before the print time klippy logged at exit, {cut['klippy_exit_print_time_s']:.1f} s; its log is clean). "
+            "Klipper's writer thread is told to exit before it has written everything; this happens on a loaded machine. "
+            "The print was NOT RUN: run it again with less running beside it.")
+    run["stream_cut_short_and_rerun"] = cut_runs
     steps = dec["steps"]
     if not all(k in steps and len(steps[k][0]) for k in (0, 1, 2)):
         raise FirmwareError("Klipper produced no steps on one of X, Y, Z. Its messages: " + "; ".join(run["messages"])[:400])
@@ -399,8 +450,8 @@ def commanded(design, info, gcode_path: Path, pts: np.ndarray, dt: float, workdi
             e_plus, e_minus = abs(start[k] + n[-1] * mm - end_g[k]), abs(start[k] - n[-1] * mm - end_g[k])
         sgn = 1.0 if e_plus <= e_minus else -1.0
         if min(e_plus, e_minus) > 0.05:
-            raise FirmwareError(f"Decoded {'XYZ'[k]} steps end {min(e_plus, e_minus):.3f} mm from the G-code's last position; "
-                                "the stream was not decoded correctly (a pause longer than the 67 s clock wrap?).")
+            raise FirmwareNotDecoded(f"Decoded {'XYZ'[k]} steps end {min(e_plus, e_minus):.3f} mm from the G-code's last position; "
+                                     "the stream was not decoded correctly (a pause longer than the 67 s clock wrap?). The print was NOT RUN.")
         sgns.append(sgn)
         Qk_ref[:, k] = start[k] + sgn * pos * mm
         ta, na = as_[k]
@@ -449,12 +500,12 @@ def commanded(design, info, gcode_path: Path, pts: np.ndarray, dt: float, workdi
     # moves in Klipper's; compare from the first move after it
     after = seg >= 3
     if len(pts) > 6 and seg[-1] < len(pts) - 3:
-        raise FirmwareError(f"The decoded motion could be followed only as far as G-code move {int(seg[-1])} of {len(pts) - 1}; "
+        raise FirmwareNotDecoded(f"The decoded motion could be followed only as far as G-code move {int(seg[-1])} of {len(pts) - 1}; "
                             "the command stream was not decoded correctly, so no result is reported.")
     off_path = float(dev[after].max()) if after.any() else 0.0
     if off_path > 0.1:
         k = int(np.argmax(np.where(after, dev, 0.0)))
-        raise FirmwareError(f"The decoded motion is {off_path:.2f} mm from the G-code path {k * dt:.0f} s into the print; "
+        raise FirmwareNotDecoded(f"The decoded motion is {off_path:.2f} mm from the G-code path {k * dt:.0f} s into the print; "
                             "the command stream was not decoded correctly, so no result is reported.")
     seg_t = np.bincount(seg, minlength=len(pts) - 1) * dt
     w = max(1, int(round(0.015 / dt)))   # steps are discrete: smooth over 15 ms before differentiating again
@@ -475,6 +526,7 @@ def commanded(design, info, gcode_path: Path, pts: np.ndarray, dt: float, workdi
         "max_distance_from_gcode_path_mm": round(off_path, 4), "approach_differs_s": round(float((~after).sum() * dt), 1),
         "klipper_messages": msgs, "other_commands": dec["other_commands"],
         "clock_wraps_resolved": dec["clock_wraps_resolved"],
+        "stream_cut_short_and_rerun": ref["run"].get("stream_cut_short_and_rerun", []) + (run.get("stream_cut_short_and_rerun", []) if act is not ref else []),
         "gcode_offset_applied_mm": [round(off_x, 3), round(off_y, 3)],
         "what_if": {"accel_scale": accel_scale, "speed_scale": speed_scale,
                     "max_accel": c.getfloat("printer", "max_accel"), "max_velocity": c.getfloat("printer", "max_velocity")},
