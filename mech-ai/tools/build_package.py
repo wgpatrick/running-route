@@ -161,7 +161,8 @@ def check_fresh(cx: Ctx) -> None:
     if diff:
         bad.append("BOM quantities differ for " + ", ".join(f"{k} (report {dig(rb, k, 'qty')}, design {mine.get(k)})" for k in diff[:8]))
     custom = sorted(c.name for c in d.components if not c.cots)
-    if sorted(dig(m, "ratings", "custom_parts", default=[])) != custom:
+    rc = dig(m, "ratings", "custom_parts", default=[])
+    if (len(custom) != rc) if isinstance(rc, int) else (sorted(rc) != custom):     # newer reports give the count only
         bad.append("custom part list differs")
     summ = cx.rep.get("summary", {})
     if cx.rep.get("partial") or len(summ) < 12:
@@ -1866,7 +1867,7 @@ def write_wiring(cx: Ctx, bom: dict) -> dict:
          + str(dig(el.devices["psu"].product, "builder_work") if el and "psu" in el.devices else "") + "'). 230 V on the 115 V setting destroys the supply.",
          "- The inlet's fuse drawer and fuse-link are ordered separately from the inlet (see BOM.md).",
          "- Live terminals that are open to touch in this open-frame design: the inlet's rear quick-connect tabs, the relay module's screw terminals and solder side, the supply's terminal block. "
-         (("Printed hoods in the design cover them: " + ", ".join(f"`{c.name}`" for c in cx.d.components if c.name.startswith("mains_cover"))
+         + (("Printed hoods in the design cover them: " + ", ".join(f"`{c.name}`" for c in cx.d.components if c.name.startswith("mains_cover"))
            + ". They are open where the wires enter: use fully insulated receptacles on the inlet's tabs and keep the hoods fitted whenever "
              "the machine is powered.") if any(c.name.startswith("mains_cover") for c in cx.d.components) else
           "**No cover for any of them is in the design.** Fit covers or an enclosure before the machine is powered with hands near it."), ""]

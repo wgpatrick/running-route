@@ -397,6 +397,8 @@ def main() -> None:
             return f"factor of safety {r['fos']:.1f} (need {r['min_fos']:g}); peak {r['peak_vm_mpa']:.2f} MPa; deflection {r['max_deflection_mm']:.3f} mm"
         if "deflection_mm" in r:
             return f"nozzle deflection {r['deflection_mm']*1000:.2f} µm under the load case"
+        if "max_growth_mm" in r:
+            return f"largest thermal growth {r['max_growth_mm']:.3f} mm ({r.get('joints', '')})"
         return None
 
     tol = v["tolerance"]["printer"]
@@ -422,7 +424,7 @@ def main() -> None:
         return f"print weight at the worst corner: {pw.get('judged_mm', '?')} mm (limit {pw.get('limit_mm', '?')} mm)" if pw else ""
 
     def mains_text():
-        covers = [p["name"] for p in v["parts"] if p["name"].startswith("mains_cover")]
+        covers = [p["name"] for p in v["parts"] if p["name"].startswith("mains_cover") and p["kind"] == "fabricated"]
         if covers:
             return f"Live terminals under {len(covers)} printed covers ({', '.join(covers)}), each held by screws into inserts."
         return "Open frame; live terminals not covered."
@@ -433,7 +435,7 @@ def main() -> None:
 
     crit = {
         "Frame": [
-            ("Frame stiffness at the nozzle", f"X {sc['frame_stiffness_n_per_mm']['x']:.0f} N/mm, Y {sc['frame_stiffness_n_per_mm']['y']:.0f} N/mm (FEA, bonded joints: optimistic)"),
+            ("Frame stiffness at the nozzle", f"X {sc['frame_stiffness_n_per_mm']['x']:.0f} N/mm, Y {sc['frame_stiffness_n_per_mm']['y']:.0f} N/mm (FEA, lower bound: joints held only round their screws)"),
             ("Print volume", reqf("print volume: travel >= 180 x 180 x 180 mm")),
             ("General tolerance, extrusion", "position ±0.30 mm, cut length ±0.20 %"),
         ],
