@@ -208,7 +208,8 @@ FB_FACE = FS_Y + 26.0                             # front beam's front face: cle
 FB_Y = FB_FACE + 10.0
 FB_X = FX / 2                                     # front beam half length (flush with the frame's sides)
 ARM_Y0, ARM_Y1 = FB_Y + 10.0, RB_Y - 10.0         # arms run between the beams
-T_NP = G64                                        # nut plates (6.35 mm 6061)
+T_NP = G64                                        # front nut plates (6.35 mm 6061)
+T_NPR = G95                                       # rear nut plate (9.525 mm 6061): its tongue is a 48 mm cantilever
 NP_HOLE = 2 * (5.1 + NUT_FLOAT) + 0.8             # the nut's barrel floats in a round hole
 PIN_SP_D = 5.0                                    # anti-rotation pin: an M2.5 screw through a 5 mm aluminium sleeve
 FP_X = 128.0                                      # front stiffener plate half width (clear of the towers and nut plates)
@@ -482,7 +483,7 @@ def back_plate_shape(carriage_holes):
         p -= Pos(hx, yc, hz) * ycyl(4.8 / 2, T_BP)
     for x in RB_BOLTS:
         p -= Pos(x, yc, Z_ARM) * ycyl(clearance_hole("M5") / 2, T_BP)
-    p -= bx(-RNP_TW / 2 - 1.5, RNP_TW / 2 + 1.5, Y_PF, Y_CAR, Z_FL - 1.5, Z_FL + T_NP + 1.5)
+    p -= bx(-RNP_TW / 2 - 1.5, RNP_TW / 2 + 1.5, Y_PF, Y_CAR, Z_FL - 1.5, Z_FL + T_NPR + 1.5)
     for x in TIE_BOLT_X:
         p -= Pos(x, yc, TIE_BOLT_Z) * ycyl(clearance_hole("M5") / 2, T_BP)
     return p
@@ -914,17 +915,19 @@ def build_frame_z():
     for i, x in enumerate(FP_BOLTS):
         add_screw(d, f"front_plate_bolt_{i}", "M5", 18, at=(x, FB_FACE - T_FP, Z_ARM), direction=(0, 1, 0), body="zbody",
                   threads_into="front_beam", tnut=True, clamps=("front_plate",), washer="large")
-    # nut plates: 9.525 mm 6061 on the beams' top faces; each floating T8 nut hangs under one (the carrier sits on its
+    # nut plates: 6061 on the beams' top faces (9.525 mm rear, 6.35 mm front); each floating T8 nut hangs under one (the carrier sits on its
     # flange), its barrel in a 16 mm hole, turned by a pin: an M3 through a 6 mm aluminium sleeve in a radial slot
-    zn0, zn1 = Z_FL, Z_FL + T_NP
+    zn0 = Z_FL
     nut_sets = []
-    rnp = bx(-36.0, 36.0, RB_Y - 10.0, RB_Y + 10.0, zn0, zn1) + bx(-RNP_TW / 2, RNP_TW / 2, RB_Y, LS_Y + 21.5, zn0, zn1)
-    nut_sets.append(("", 0.0, LS_Y, 1, rnp, [(-26.0, RB_Y), (26.0, RB_Y)], "rear_beam"))
+    zn1 = Z_FL + T_NPR
+    rnp = bx(-39.0, 39.0, RB_Y - 13.0, RB_Y + 10.0, zn0, zn1) + bx(-RNP_TW / 2, RNP_TW / 2, RB_Y, LS_Y + 21.5, zn0, zn1)
+    nut_sets.append(("", 0.0, LS_Y, 1, rnp, [(-26.0, RB_Y), (26.0, RB_Y)], "rear_beam", T_NPR))
     for sx, tg in ((-1, "_fl"), (1, "_fr")):
         xa, xb_ = sorted((sx * (FS_X - 25.0), sx * (FS_X + 15.0)))
-        npl = bx(xa, xb_, FS_Y - 21.5, ARM_Y0, zn0, zn1)
-        nut_sets.append((tg, sx * FS_X, FS_Y, -1, npl, [(sx * (FS_X - 15.0), FB_Y), (sx * (FS_X + 5.4), FB_Y)], "front_beam"))
-    for tg, cx, ly, sgn, shp, bolts, beam in nut_sets:
+        npl = bx(xa, xb_, FS_Y - 21.5, ARM_Y0, zn0, Z_FL + T_NP)
+        nut_sets.append((tg, sx * FS_X, FS_Y, -1, npl, [(sx * (FS_X - 15.0), FB_Y), (sx * (FS_X + 5.4), FB_Y)], "front_beam", T_NP))
+    for tg, cx, ly, sgn, shp, bolts, beam, tnp in nut_sets:
+        zn1 = Z_FL + tnp
         py = ly + sgn * NUT_PIN[1]
         shp -= zc(cx, ly, zn0, zn1, NP_HOLE / 2)
         shp -= slot_z(cx, py, 90.0, NUT_FLOAT, PIN_SP_D + 1.2, zn0, zn1)
@@ -935,8 +938,8 @@ def build_frame_z():
             add_screw(d, f"nut_plate{tg}_bolt_{i}", "M5", 16, at=(x, y, zn1), body="zbody", threads_into=beam, tnut=True,
                       clamps=(f"nut_plate{tg}",), washer=True)
         place(d, f"z_nut{tg}", leadscrew_nut_t8(), Location((cx, ly, Z_TAB - 3.5)), body="zbody")
-        place(d, f"nut_pin{tg}_sleeve", spacer_round("M2.5", T_NP + 0.2, "aluminium"), Location((cx, py, Z_TAB)), body="zbody")
-        add_screw(d, f"nut_pin{tg}", "M2.5", 16, at=(cx, py, Z_TAB + T_NP + 0.2), body="zbody", clamps=(f"nut_pin{tg}_sleeve", f"z_nut{tg}"))
+        place(d, f"nut_pin{tg}_sleeve", spacer_round("M2.5", tnp + 0.2, "aluminium"), Location((cx, py, Z_TAB)), body="zbody")
+        add_screw(d, f"nut_pin{tg}", "M2.5", 16 if tnp < 8 else 18, at=(cx, py, Z_TAB + tnp + 0.2), body="zbody", clamps=(f"nut_pin{tg}_sleeve", f"z_nut{tg}"))
         add_nut(d, f"nut_pin{tg}_nut", "M2.5", at=(cx, py, Z_TAB - 3.5), direction=(0, 0, -1), body="zbody", screw=f"nut_pin{tg}")
         d.allow_overlap(f"nut_pin{tg}", f"z_nut{tg}", max_volume=40.0)     # passes the flange's hole: the catalogue solid does not show the holes
         d.join(f"z_nut{tg}", f"nut_plate{tg}", "floating: the carrier sits on its flange; the pin in the slot stops it turning")
@@ -976,7 +979,9 @@ def build_frame_z():
         for j, yb in enumerate(ys):
             add_screw(d, f"bed_post_tab_{i}_bolt_{j}", "M5", 10, at=(sx * ARM_X, yb, Z_FL + T_TAB), body="zbody", threads_into=arm, tnut=True,
                       clamps=(f"bed_post_tab_{i}",), washer=True)
-        rod_shape = Pos(0, 0, rod_l / 2) * Cylinder(2.5, rod_l)
+        # drawn at the M5 stress-area diameter (4.48 mm): the stiffness a threaded rod really has, and a gap to the
+        # washers' bore the FEA mesher can fill
+        rod_shape = Pos(0, 0, rod_l / 2) * Cylinder(2.24, rod_l)
         rod_shape = chamfer(rod_shape.edges().filter_by(GeomType.CIRCLE), 0.5)      # threaded rod is sold with chamfered ends
         rod = Stock(rod_shape, f"ROD-M5-DIN976-A2-{rod_l:g}",
                     f"Threaded rod M5 x {rod_l:g} mm, DIN 976-1, A2-70 stainless (cut from 1 m stock; stand-in: not in the catalogue)",
@@ -1552,10 +1557,14 @@ def finish_build(d, zs, bed_own, towers, tower_parts) -> Design:
         loaded=("bed", lambda f: abs(f.center().Z - (Z_SURF)) < 0.05 and f.area > 1000),
         force=(0.0, 0.0, -w_bed), probe=(PRINT_X / 2, BED_CY - PRINT_Y / 2, Z_SURF), max_deflection=0.3, min_fos=3.0))
     # metal parts in the Z load path (no printed part carries load any more)
-    hole_at = lambda x, y, r: (lambda f: f.geom_type.name == "CYLINDER" and abs(f.radius - r) < 0.05
-                                         and math.hypot(f.center(CenterOf.MASS).X - x, f.center(CenterOf.MASS).Y - y) < 0.5)
-    from build123d import CenterOf
-    globals()["CenterOf"] = CenterOf
+    def hole_at(x, y, r):
+        # a cylindrical face (a whole hole wall or a piece of one) whose sampled points all lie r from the axis (x, y)
+        def sel(f):
+            if f.geom_type.name != "CYLINDER":
+                return False
+            pts = [f.position_at(u, v) for u in (0.1, 0.5, 0.9) for v in (0.2, 0.8)]
+            return all(abs(math.hypot(p.X - x, p.Y - y) - r) < 0.05 for p in pts)
+        return sel
     rb = [(-26.0, RB_Y), (26.0, RB_Y)]
     d.loadcases.append(LoadCase("nut_thrust", "nut_plate",
                                 fixed=lambda f: any(hole_at(x, y, 3.25)(f) for x, y in rb),
