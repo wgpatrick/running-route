@@ -40,6 +40,8 @@ def group_of(c, electronics):
 
 
 def kind_of(c):
+    if (c.sku or "").startswith("T8-NUT"):   # lead-screw nuts are drive parts, not hardware: keep them visible with fasteners hidden
+        return "purchased"
     if FAST.search(c.name) or (c.sku or "").startswith(("SHCS", "NUT", "HEX", "TNUT", "WASHER")):
         return "fastener"
     if c.ratings.get("electrical") or "electrical" in c.ratings:
