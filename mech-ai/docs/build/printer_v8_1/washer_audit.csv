@@ -1,0 +1,45 @@
+fastener,sku,kind,bears_on,process,material,thickness_mm,coverage,why,cast_bracket
+y_plate_left_screw_0,SHCS-M3x8,screw head,y_plate_left,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+y_plate_left_screw_1,SHCS-M3x8,screw head,y_plate_left,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+y_plate_left_screw_2,SHCS-M3x8,screw head,y_plate_left,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+y_plate_left_screw_3,SHCS-M3x8,screw head,y_plate_left,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+y_plate_right_screw_0,SHCS-M3x8,screw head,y_plate_right,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+y_plate_right_screw_1,SHCS-M3x8,screw head,y_plate_right,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+y_plate_right_screw_2,SHCS-M3x8,screw head,y_plate_right,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+y_plate_right_screw_3,SHCS-M3x8,screw head,y_plate_right,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+tool_screw_0,SHCS-M3x6,screw head,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+tool_screw_1,SHCS-M3x6,screw head,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+tool_screw_2,SHCS-M3x6,screw head,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+tool_screw_3,SHCS-M3x6,screw head,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+part_fan_screw_0,SHCS-M3x16,screw head,part_fan,purchased,abs,9.8,1.0,on a plastic fan frame,False
+part_fan_screw_1,SHCS-M3x16,screw head,part_fan,purchased,abs,9.8,1.0,on a plastic fan frame,False
+psu_screw_0,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+psu_screw_1,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+psu_screw_2,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+psu_screw_3,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+control_board_screw_0,SHCS-M3x16,screw head,control_board,purchased,abs,1.5,1.0,on a circuit board,False
+control_board_screw_1,SHCS-M3x16,screw head,control_board,purchased,abs,1.5,1.0,on a circuit board,False
+control_board_screw_2,SHCS-M3x16,screw head,control_board,purchased,abs,1.5,1.0,on a circuit board,False
+control_board_screw_4,SHCS-M3x16,screw head,control_board,purchased,abs,1.5,0.98,on a circuit board,False
+host_screw_0,SHCS-M2.5x12,screw head,host,purchased,abs,1.2,1.0,on a circuit board,False
+host_screw_3,SHCS-M2.5x12,screw head,host,purchased,abs,1.2,1.0,on a circuit board,False
+psu_relay_screw_0,SHCS-M3x16,screw head,psu_relay,purchased,abs,1.5,1.0,on a circuit board,False
+psu_relay_screw_1,SHCS-M3x16,screw head,psu_relay,purchased,abs,1.5,1.0,on a circuit board,False
+psu_relay_screw_2,SHCS-M3x16,screw head,psu_relay,purchased,abs,1.5,1.0,on a circuit board,False
+z_rear_post_0_nut,NUT-M5,nut,z_rear_h1,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+z_rear_post_1_nut,NUT-M5,nut,z_rear_h1,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+z_fl_post_0_nut,NUT-M5,nut,z_fl_h1,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+z_fl_post_1_nut,NUT-M5,nut,z_fl_h1,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+z_fr_post_0_nut,NUT-M5,nut,z_fr_h1,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+z_fr_post_1_nut,NUT-M5,nut,z_fr_h1,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+extruder_nut_0,NUT-M3,nut,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+extruder_nut_1,NUT-M3,nut,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+x_belt_bracket_nut_0,NUT-M3,nut,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+x_belt_bracket_nut_1,NUT-M3,nut,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+x_tension_nut,NUT-M3,nut,x_tension_anchor,sheet,al5052,3.0,0.5,on a slot or oversize hole (only 50% of the bearing ring has material under it); on thin aluminium (3.0 mm al5052),False
+x_endstop_nut_0,NUT-M3,nut,x_endstop,purchased,abs,1.5,0.98,on a circuit board,False
+x_endstop_nut_1,NUT-M3,nut,x_endstop,purchased,abs,1.5,0.98,on a circuit board,False
+y_tension_nut,NUT-M3,nut,y_tension_anchor,sheet,al5052,3.0,0.5,on a slot or oversize hole (only 50% of the bearing ring has material under it); on thin aluminium (3.0 mm al5052),False
+y_tension_nut_l,NUT-M3,nut,y_tension_anchor_l,sheet,al5052,3.0,0.5,on a slot or oversize hole (only 50% of the bearing ring has material under it); on thin aluminium (3.0 mm al5052),False
+y_endstop_nut_0,NUT-M3,nut,y_endstop,purchased,abs,1.5,0.98,on a circuit board,False
+y_endstop_nut_1,NUT-M3,nut,y_endstop,purchased,abs,1.5,0.98,on a circuit board,False

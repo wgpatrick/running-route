@@ -1,0 +1,26 @@
+wire,from,to,awg,mm2,conductors,insulation,length_mm,connector_from,connector_to,current_a,via,note,ampacity_a,protected_by
+mains L inlet-relay,inlet.L,psu_relay.LIN,18,0.823,1,pvc105,120.0,faston-4.8,screw-5.08,4.66,,,13.71,inlet fuse T8A
+mains L relay-supply,psu_relay.LOT,psu.L,18,0.823,1,pvc105,200.0,screw-5.08,screw-psu,4.66,mains,,10.97,inlet fuse T8A
+relay control,control_board.PS-ON,psu_relay.ctrl,26,0.129,3,pvc,260.0,JST-XH,JST-XH,0.001,,,3.66,board fuse 20 A (shared; no fuse per branch)
+mains N inlet-relay,inlet.N,psu_relay.N,18,0.823,1,pvc105,120.0,faston-4.8,screw-5.08,4.66,,,13.71,inlet fuse T8A
+mains N relay-supply,psu_relay.N,psu.N,18,0.823,1,pvc105,210.0,screw-5.08,screw-psu,4.66,mains,,10.97,inlet fuse T8A
+earth to supply,inlet.PE,psu.FG,18,0.823,1,pvc105,240.0,faston-4.8,screw-psu,0.0,mains,,10.97,protective earth: not fused
+earth to frame,inlet.PE,frame_earth.pe,13,2.624,1,pvc105,150.0,faston-4.8,ring-M5,0.0,,,28.26,protective earth: not fused
+24 V to board,psu.V+1,control_board.POWER,16,1.309,2,silicone,210.0,screw-psu,screw-5.08,10.015,,,13.6,none between supply and board (the supply's own current limit); board input fuse 20 A
+bed heater,control_board.HB,bed_tco.a,16,1.309,2,silicone,700.0,screw-5.08,ferrule,7.397,bed,,13.6,board fuse 20 A (shared; no fuse per branch)
+bed heater tail,bed_tco.b,bed_heater.in,16,1.309,2,silicone,90.0,ferrule,ferrule,7.397,,,13.6,board fuse 20 A (shared; no fuse per branch)
+bed thermistor,control_board.THB,bed_ntc.out,26,0.129,2,silicone,790.0,JST-XH,JST-XH,0.001,bed,,3.36,board fuse 20 A (shared; no fuse per branch)
+hotend heater,control_board.E0,hotend.in,20,0.518,2,silicone,1360.0,screw-5.08,molex-microfit,1.65,tray_right; drop_right; toolhead,,4.61,board fuse 20 A (shared; no fuse per branch)
+hotend thermistor,control_board.TH0,hotend_thermistor.out,26,0.129,2,silicone,1410.0,JST-XH,molex-microfit,0.001,tray_right; drop_right; toolhead,,2.03,board fuse 20 A (shared; no fuse per branch)
+heat-sink fan 5 V,control_board.5V,hotend_fan.out,26,0.129,2,pvc,1340.0,dupont,JST-XH,0.14,tray_right; drop_right; toolhead,"the Roto's fan is a 5 V part: always on from the board's 5 V pins, never on a 24 V fan output",1.77,board fuse 20 A (shared; no fuse per branch)
+part fan,control_board.FAN0,part_fan.in,26,0.129,2,pvc,1370.0,JST-XH,JST-XH,0.07,tray_right; drop_right; toolhead,,1.77,board fuse 20 A (shared; no fuse per branch)
+bed probe,control_board.Z-STOP,bed_probe.out,26,0.129,3,silicone,1360.0,JST-XH,JST-XH,0.001,tray_right; drop_right; toolhead,"signal and 0 V on the Z-STOP header; BAT85 diode in the signal lead at the board end, cathode to the sensor, heat-shrunk",2.03,board fuse 20 A (shared; no fuse per branch)
+bed probe 24 V,psu.V+2,bed_probe.vcc,26,0.129,1,silicone,1450.0,screw-psu,JST-XH,0.0,tray_right; drop_right; toolhead,the sensor's brown lead; runs in the toolhead loom with the probe's signal pair,2.03,none between supply and board (the supply's own current limit); board input fuse 20 A
+extruder motor,control_board.EM,extruder.coils,24,0.205,4,pvc,1350.0,JST-XH,molex-microfit,0.4,tray_right; drop_right; toolhead,,2.34,board fuse 20 A (shared; no fuse per branch)
+X motor,control_board.XM,x_motor.coils,24,0.205,4,pvc,1230.0,JST-XH,JST-XH,0.28,front; drop_left; gantry,,3.14,board fuse 20 A (shared; no fuse per branch)
+X endstop,control_board.X-STOP,x_endstop.out,26,0.129,3,pvc,1200.0,JST-XH,JST-XH,0.001,front; drop_left; gantry,,2.38,board fuse 20 A (shared; no fuse per branch)
+Y endstop,control_board.Y-STOP,y_endstop.out,26,0.129,3,pvc,840.0,JST-XH,JST-XH,0.001,tray_right; drop_right,,1.77,board fuse 20 A (shared; no fuse per branch)
+Y motor left,control_board.ZBM,y_motor_l.coils,24,0.205,4,pvc,1150.0,JST-XH,JST-XH,0.6,front; drop_left; top_left,mirror-image motor: swap one coil pair at the connector so both turn the belts the same way,3.14,board fuse 20 A (shared; no fuse per branch)
+Y motor right,control_board.ZAM,y_motor.coils,24,0.205,4,pvc,780.0,JST-XH,JST-XH,0.6,tray_right; drop_right,,2.34,board fuse 20 A (shared; no fuse per branch)
+Z motor,control_board.YM,z_motor.coils,24,0.205,4,pvc,450.0,JST-XH,JST-XH,1.0,tray_right; back,,2.34,board fuse 20 A (shared; no fuse per branch)
+host serial + 5 V,control_board.TFT,host.GPIO,26,0.129,4,pvc,180.0,dupont,dupont,0.5,,,3.66,board fuse 20 A (shared; no fuse per branch)
