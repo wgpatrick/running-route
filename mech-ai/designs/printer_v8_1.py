@@ -24,6 +24,9 @@ What changed from v8 (part by part in the doc):
 4. NO TAPPED ALUMINIUM WE MAKE, no tapped extrusion ends. Through-bolts with nuts and washers; captive nuts in
    laser-cut hex holes; PEM nuts in the 5052 tension anchors; steel thread inserts only in the bed plate, whose top face
    must stay flat for the print sheet. The bed carrier is a 2020 rectangle joined by corner brackets on T-nuts.
+   NO THREAD IN A PRINTED PART (owner review): every screw through a printed part is an M3 through-bolt with washers and
+   an ISO 10511 nyloc nut, on the side with access, or captured with its washer in a printed pocket where there is none
+   (the part duct); printed clearance holes are ISO 273 medium + 0.2 mm (M3 3.6).
 5. WASHERS under every head or nut on a slot, an oversize hole, thin aluminium or plastic; thread locking listed on
    the moving assemblies; rounded outside corners on every cut profile.
 6. Z: three T8 x 2 screws on one belt, one guide block per rail, as v8, but every nut stays seated at the lead budget:
@@ -52,7 +55,7 @@ from mechloop.electrical import Bay, Device, Electrical, Port, Waypoint
 from mechloop.model import MATERIALS, Belt, ThermalCase
 from mechloop.parts import (Stock, add_corner_bracket, add_nut, add_screw, add_washer, bearing, clearance_hole,
                             endstop_switch, extrusion_2020, gt2_idler, gt2_pulley, leadscrew_nut_t8, leadscrew_t8,
-                            mgn12_rail, mgn12h_carriage, nema17, place)
+                            mgn12_rail, mgn12h_carriage, nema17, place, printed_clearance_hole)
 from mechloop.parts.batch6 import fan_cg3010u24, print_sheet_pei180
 from mechloop.parts.electrical import (THERMISTORS, add_electrical_bom, bed_heater_pad, device_from, embedded_device,
                                        iec_inlet_c14, psu_lrs, raspberry_pi_zero2w, relay_btt_v12, skr_mini_e3_v3,
@@ -179,7 +182,14 @@ YM_Y = FY / 2 + 24.0
 Z_YA = Z_PLATE + T_YP + 0.7
 Z_YC = Z_YA - PR
 BELT_ADJ = 3.0
-PH3, PH5 = 4.2, 6.0
+# clearance holes in PRINTED parts (owner's practice, docs/DESIGN_GUIDELINES.md): ISO 273 medium + 0.2 mm FDM allowance for a
+# vertical hole (M3 3.6, M5 5.7); every printed clearance hole in v8.1 is vertical in its print orientation
+PH3, PH5 = printed_clearance_hole("M3"), printed_clearance_hole("M5")
+# captive nut pocket in a printed part: nyloc M3 (ISO 10511, 5.5 across flats, 4.0 high) with an M3 washer (7.0 x 0.5) in front
+# tightening torque for an M3 through-bolt that clamps a printed part (stated, not the 0.5 N.m the checker assumes for
+# plastic): about 520 N of preload, 18 MPa under an M3 washer, well under the printed yield (ABS 30.8, PETG 47 MPa)
+PRINTED_JOINT_TORQUE = 0.3
+POCKET_AF, POCKET_NUT, POCKET_WD, POCKET_W, POCKET_WALL = 5.5 + 0.3, 4.0 + 0.2, 7.0 + 0.4, 0.5 + 0.1, 2.0
 SH3 = 3.6
 YH3 = 3.5
 CB_TS = T_TPR
@@ -268,7 +278,9 @@ TY_F = TY + PRB_DY
 YI_Y = YB0 + PL_Y0 - (TY_F + ES_OT) - 10.5
 Z_PRB = Z_NOZZLE + PRB_H
 PRB_CLAMP = (15.0, 20.0)
-PM_T = 4.0                                        # printed probe holder plate on the Roto's rear face, with 3.5 mm aluminium sleeves
+PM_T = 4.0                                        # aluminium compression sleeves (4 mm long) through the printed probe holder
+PM_TP = PM_T - 0.6                                # the holder plate: 0.6 mm thinner than its sleeves (the printed minimum clearance
+                                                  # 0.5, and open in every simulated build), so the screw clamps metal only
 PM_Z0, PM_Z1 = Z_PRB + PRB_CLAMP[0] - Z_BEAM, Z_PRB + PRB_CLAMP[1] - Z_BEAM
 TPX = 23.0
 TP_Z0, TP_Z1 = -18.0, 38.0
@@ -454,6 +466,36 @@ def bolt_nut(d, name, size, length, head_at, direction, body, clamps, nut_at=Non
             d.bom_extra(f"NYLOC-{size}-UPGRADE", 1, 0.03)
 
 
+def captive_nut(d, screw, at, direction, part, body="world"):
+    """Washer and ISO 10511 nyloc nut captured in a printed pocket (nut_pocket) of `part`: at = the pocket face the washer
+    bears on, direction = along the screw, away from its head."""
+    dvec = np.array(direction, float)
+    add_washer(d, f"{screw}_nwasher", "M3", tuple(at), tuple(dvec), body=body, screw=screw)
+    add_nut(d, f"{screw}_nut", "M3", at=tuple(np.array(at) + dvec * WASHER["normal"]["M3"][2]), direction=tuple(dvec), body=body,
+            screw=screw, standard="iso10511")
+    d.join(f"{screw}_nut", part, "captive nut in a printed pocket (flats against the slot's walls), slid in on the bench")
+    d.join(f"{screw}_nwasher", part, "washer captured in the printed pocket, under the nut")
+
+
+def through_bolt_nyloc(d, name, length, head_at, direction, clamps, nut_face, body="world"):
+    """M3 through-bolt for a printed part: washer under the head, washer and ISO 10511 nyloc nut on `nut_face` (the face
+    the nut's washer bears on, on the side with access)."""
+    dvec = np.array(direction, float) / np.linalg.norm(direction)
+    sc = add_screw(d, name, "M3", length, at=head_at, direction=tuple(dvec), body=body, clamps=clamps, washer=True)
+    sc.meta["torque_nm"] = PRINTED_JOINT_TORQUE
+    add_washer(d, f"{name}_nwasher", "M3", tuple(nut_face), tuple(dvec), body=body, screw=name)
+    add_nut(d, f"{name}_nut", "M3", at=tuple(np.array(nut_face) + dvec * WASHER["normal"]["M3"][2]), direction=tuple(dvec),
+            body=body, screw=name, standard="iso10511")
+    d.join(f"{name}_nut", clamps[-1], "clamped through its washer")
+    return [name, f"{name}_washer", f"{name}_nwasher", f"{name}_nut"]
+
+
+def bolt_length(grip, nut_h=4.0, washers=2, past=1.0):
+    """Shortest standard M3 cap screw that passes a grip, two washers and a nyloc nut by at least `past` mm."""
+    need = grip + washers * WASHER["normal"]["M3"][2] + nut_h + past
+    return next(L for L in (10, 12, 16, 20, 25, 30, 35, 40, 45, 50) if L >= need - 1e-9)
+
+
 def convex_hull(pts):
     """Andrew's monotone chain; returns the hull counter-clockwise."""
     P = sorted(set((round(x, 4), round(y, 4)) for x, y in pts))
@@ -594,8 +636,27 @@ def tool_plate_rear_shape():
     return tp
 
 
+def nut_pocket(at, axis, up, extra_back=0.0):
+    """Captive nut pocket for an M3 nyloc with its washer, as a solid to cut: at = the face the washer bears on (towards
+    the screw head), axis = unit vector from that face away from the head, up = the direction the pocket opens (a slot the
+    nut and washer slide in along), back / front: how far the slot runs beyond the axis on the closed side (none: it
+    opens at `up`'s side). The nut sits flats-on against the slot's walls, so it cannot turn."""
+    a, u = np.array(axis, float), np.array(up, float)
+    w = np.cross(u, a)
+    def slab(y0, y1, width, below):
+        # from `below` under the axis (towards -u) to far out along +u (the opening), y0..y1 along the axis
+        L = 40.0
+        c = np.array(at, float) + a * (y0 + y1) / 2 + u * (L / 2 - below)
+        return Location(Plane(origin=tuple(c), x_dir=tuple(w), z_dir=tuple(a))) * Box(width, L, y1 - y0)
+    return (slab(0.0, POCKET_W, POCKET_WD, POCKET_WD / 2 + 0.2) +
+            slab(POCKET_W - 0.01, POCKET_W + POCKET_NUT + extra_back, POCKET_AF, POCKET_AF / math.sqrt(3) + 0.2))
+
+
 def part_duct_shape():
-    """Printed ABS duct (v8's), its flange and the fan bosses hold M3 heat-set inserts (no captive nuts in plastic)."""
+    """Printed ABS duct (v8's). No thread in the plastic: the two flange screws and the two fan screws are M3 through-bolts
+    into nyloc nuts captured, with their washers, in printed pockets (the flange's from below, the fan bosses' from
+    above), slid in on the bench before the duct is fitted: behind the flange is the duct's own air passage and behind the
+    fan bosses is the Roto, 1.5 mm away, so there is no access for a loose nut. Clearance holes 3.6 (printed, vertical)."""
     yf, yl, yr = YB0 + R_TPR, YB0 + FC_LUG_Y, YB0 + FC_LUG_Y + PLEN
     z0, zf, zd = Z_BEAM + FC_Z0, Z_BEAM + FC_ZF, Z_BEAM + DUCT_Z0
     zt = Z_BEAM + PFAN[2] + 15.0
@@ -609,11 +670,16 @@ def part_duct_shape():
     for sx in (-12.0, 12.0):
         xb = PFAN[0] + sx
         c += bx(xb - 4.5, xb + 4.5, yl, yr, zb - 5.0, zt)
-        c -= Pos(xb, yr - PLEN / 2, zb) * ycyl(1.25, PLEN)             # ruthex M3 insert (4.0 mm hole): drawn solid to its thread
+    for sx in (-12.0, 12.0):
+        xb = PFAN[0] + sx
+        c -= Pos(xb, yr - PLEN / 2, zb) * ycyl(PH3 / 2, PLEN)
+        # pocket open at the top (+Z) and at the back (towards the Roto): the nut and washer drop in from above
+        c -= nut_pocket((xb, yr - POCKET_WALL, zb), (0, -1, 0), (0, 0, 1), extra_back=1.0)
     y0, y1, oz0, oz1 = DUCT_OUT
     c -= bx(FC_X0 - 0.1, FC_X0 + w + 0.1, YB0 + y0, YB0 + y1, Z_BEAM + oz0, Z_BEAM + oz1)
     for x, z in FC_SCREWS:
-        c -= Pos(x, yf + FC_FL / 2, Z_BEAM + z) * ycyl(1.25, FC_FL)
+        c -= Pos(x, yf + FC_FL / 2, Z_BEAM + z) * ycyl(PH3 / 2, FC_FL)
+        c -= nut_pocket((x, yf + POCKET_WALL, Z_BEAM + z), (0, 1, 0), (0, 0, -1))     # opens at the flange's underside
     return c
 
 
@@ -622,10 +688,12 @@ PM_X = 12.0
 
 def probe_mount_shape():
     """Printed ABS holder for the M12 probe on the Roto's rear face. The Roto's two screws pass through 6 mm aluminium
-    sleeves pressed into it (compression limiters): the clamp load goes through metal, the plastic only carries the
-    sensor. Closed 13 mm hole, the sensor clamped by its own two nuts."""
+    sleeves (compression limiters) in 6.6 mm holes in it; the holder is 0.6 mm thinner than the sleeves, so the washer
+    under each screw head bears on the sleeve's end only: the clamp load goes through metal, and the plastic is located on
+    the sleeves and held between the Roto's face and the washers (0.6 mm play), carrying only the sensor. Closed 13 mm
+    hole, the sensor clamped by its own two nuts."""
     y0 = YB0 + R_TPR + ROTO_W
-    y1 = y0 + PM_T
+    y1 = y0 + PM_TP
     ye = YB0 + PRB_Y + 10.5
     z0, z1 = Z_BEAM + PM_Z0, Z_BEAM + PM_Z1
     zt = ROTO_O[2] + ROTO_H2[2] + 5.0
@@ -637,7 +705,8 @@ def probe_mount_shape():
     a -= bx(-10.2, 10.2, y0, y1, z1, z1 + 6.6)
     a -= Pos(PRB_X, YB0 + PRB_Y, (z0 + z1) / 2) * Cylinder(13.0 / 2, z1 - z0)
     for x, z in ROTO_HOLES():
-        a -= Pos(x, (y0 + y1) / 2, z) * ycyl(6.6 / 2, PM_T)
+        a -= Pos(x, (y0 + y1) / 2, z) * ycyl(6.6 / 2, PM_TP)
+        a -= Pos(x, y1 + 2.5, z) * ycyl(4.6, 5.0)        # relief round each screw's washer and head (the probe clamp's cheek)
     return a
 
 
@@ -945,6 +1014,22 @@ def build_frame_z():
         add_nut(d, f"nut_pin{tg}_nut", "M2.5", at=(cx, py, Z_TAB - 3.5), direction=(0, 0, -1), body="zbody", screw=f"nut_pin{tg}")
         d.allow_overlap(f"nut_pin{tg}", f"z_nut{tg}", max_volume=40.0)     # passes the flange's hole: the catalogue solid does not show the holes
         d.join(f"z_nut{tg}", f"nut_plate{tg}", "floating: the carrier sits on its flange; the pin in the slot stops it turning")
+        lift = tnp + 0.2               # the pin's sleeve stands this far above the plate's underside: it stays in the slot up to here
+        how = (f"How the bed is lifted: the T8 brass nut z_nut{tg} rides lead screw leadscrew{tg}. Its 22 mm flange is under this "
+               f"{tnp:g} mm plate and its 10.2 mm barrel goes up through the plate's {NP_HOLE:.1f} mm hole. The carrier's weight rests on "
+               f"the flange, so when the screw turns, the nut climbs it and lifts the plate (and the carrier and bed) with it; turned "
+               f"the other way, the nut goes down and the carrier follows it under its own weight. The M2.5 pin screw nut_pin{tg} "
+               f"(through a 5 mm aluminium sleeve, fixed in the flange) sits in a radial slot in the plate: it stops the nut turning "
+               f"with the screw while letting it float {NUT_FLOAT:g} mm sideways, so a screw that is not exactly where the plate's hole "
+               f"is does not push the carrier sideways. Nothing clamps the plate to the flange: gravity alone holds it down, which "
+               f"is why the nut-seating study (every nut keeps a positive load with the screws at opposite lead limits) matters. "
+               f"Pushed up: in normal running nothing pushes the bed upward (a nozzle crash pushes it down onto the flanges, and "
+               f"the inductive probe does not touch it), but a hand lifting the bed, or something trapped under the carrier while Z "
+               f"moves down, lifts the plate off the flange with no stop. It re-seats by itself up to about {lift:.1f} mm of lift, "
+               f"while the pin's sleeve is still in its slot (the barrel stays in the hole to 10 mm); beyond that the nut can turn "
+               f"and must be lined up by hand before the bed is lowered onto it.")
+        d.get(f"nut_plate{tg}").meta["description"] = f"Laser-cut 6061 nut plate on the carrier. " + how
+        d.get(f"z_nut{tg}").meta["description"] = f"T8 flanged brass nut, floating under nut_plate{tg}. " + how
     d.bom_extra("NYLOC-M2.5 (nut pins, in place of the hex nuts drawn)", 3, 0.05)
 
     # ================= bed: MIC-6 plate, PEI180 sheet, threaded-rod posts, tie ======
@@ -1081,15 +1166,16 @@ def build_frame_z():
 
 def cover_hood(x0, x1, y0, y1, z0, z1, t=1.6, bosses=()):
     """Printed hood over live terminals: a top plate and two walls along Y (at x0 and x1), open at the two ends for the
-    wires. Full-height square columns outside the walls hold M3 heat-set inserts at their feet (screwed from below the
-    tray). Printed upside down (top plate on the bed): no bridges, no supports."""
+    wires. Full-height square columns outside the walls take M3 through-bolts from below the tray, with a washer and nyloc
+    nut on the column's top (outside the hood, where there is access); clearance hole 3.6 the full height (printed,
+    vertical). Printed upside down (top plate on the bed): no bridges, no supports."""
     s = bx(x0, x1, y0, y1, z1 - t, z1) + bx(x0, x0 + t, y0, y1, z0, z1) + bx(x1 - t, x1, y0, y1, z0, z1)
     yb = [b[1] for b in bosses]
     if yb and min(yb) > y1:      # bosses beyond the hood's open end: carry the walls out to them
         s += bx(x0, x0 + t, y1, max(yb) + 4.0, z0, z1) + bx(x1 - t, x1, y1, max(yb) + 4.0, z0, z1)
     for bxx, byy in bosses:
         s += bx(bxx - 4.0, bxx + 4.0, byy - 4.0, byy + 4.0, z0, z1)
-        s -= zc(bxx, byy, z0, z0 + 8.0, 1.25)            # ruthex M3 insert (4.0 mm hole), drawn solid to its thread
+        s -= zc(bxx, byy, z0, z1, PH3 / 2)
     return s
 
 
@@ -1161,11 +1247,13 @@ def build() -> Design:
         place(d, f"probe_mount_sleeve_{i}", spacer_round("M3", PM_T, "aluminium"), Location(Plane(origin=(hx, yb_pm, hz), z_dir=(0, 1, 0))), body="xbody")
         # the nut is a PEM S-M3-1 clinched in the front plate (SendCutSend hardware service), its head in a hex hole of
         # the rear plate: the screw clamps sleeve, Roto, rear plate and front plate
+        # a washer under the head bears on the sleeve's end, 0.6 mm clear of the printed holder (PM_TP)
         add_screw(d, f"extruder_screw_{i}", "M3", 50, at=(hx, yb_pm + PM_T, hz), direction=(0, -1, 0), body="xbody",
-                  clamps=(f"probe_mount_sleeve_{i}", "extruder", "tool_plate_rear", "tool_plate"))
+                  clamps=(f"probe_mount_sleeve_{i}", "extruder", "tool_plate_rear", "tool_plate"), washer=True)
         add_nut(d, f"extruder_nut_{i}", "M3", at=(hx, ymid, hz), direction=(0, 1, 0), body="xbody", screw=f"extruder_screw_{i}")
         d.join(f"extruder_nut_{i}", "tool_plate", "PEM self-clinching nut (SendCutSend hardware service)")
-        d.join(f"probe_mount_sleeve_{i}", "probe_mount", "compression sleeve pressed into the printed holder")
+        d.join(f"probe_mount_sleeve_{i}", "probe_mount", "compression sleeve: the holder is located on it, held between the Roto's face "
+               "and the screw's washer with 0.6 mm play, not clamped")
     seat = d.get("extruder").meta["interfaces"]["hotend_seat"][0]
     place(d, "hotend", hotend_revo(40, 24.0, 0.4), Location(tuple(seat), (0, 0, 190)), body="xbody")
     d.allow_overlap("hotend", "extruder")
@@ -1178,13 +1266,21 @@ def build() -> Design:
     d.add("part_duct", part_duct_shape(), material=HOT, body="xbody", process="printed",
           meta={"print_up": "-Y", "print": {**PRINT_ABS, "orientation": "-Y"}, "service_temp_c": 45.0})
     for i, (x, z) in enumerate(FC_SCREWS):
+        # through both tool plates and the duct's flange into a nyloc nut and washer captured in the flange
         add_screw(d, f"part_duct_screw_{i}", "M3", 16, at=(x, yf, Z_BEAM + z), direction=(0, 1, 0), body="xbody",
-                  clamps=("tool_plate", "tool_plate_rear"), threads_into="part_duct", insert=True, washer=True)
+                  clamps=("tool_plate", "tool_plate_rear", "part_duct"), washer=True).meta["torque_nm"] = PRINTED_JOINT_TORQUE
+        captive_nut(d, f"part_duct_screw_{i}", (x, YB0 + R_TPR + POCKET_WALL, Z_BEAM + z), (0, 1, 0), "part_duct", "xbody")
     place(d, "part_fan", fan_cg3010u24(), Location(Plane(origin=(PFAN[0], YB0 + PFAN[1], Z_BEAM + PFAN[2]), x_dir=(1, 0, 0), z_dir=(0, 1, 0))),
           body="xbody")
     for i, sxo in enumerate((-12.0, 12.0)):
-        add_screw(d, f"part_fan_screw_{i}", "M3", 16, at=(PFAN[0] + sxo, YB0 + PFAN[1] + 5.0, Z_BEAM + PFAN[2] + 12.0),
-                  direction=(0, -1, 0), body="xbody", clamps=("part_fan",), threads_into="part_duct", insert=True)
+        # through the fan's frame (washer on the plastic frame) and the duct's boss into a captured nyloc nut and washer
+        fs = add_screw(d, f"part_fan_screw_{i}", "M3", 18, at=(PFAN[0] + sxo, YB0 + PFAN[1] + 5.0, Z_BEAM + PFAN[2] + 12.0),
+                       direction=(0, -1, 0), body="xbody", clamps=("part_fan", "part_duct"), washer=True)
+        # snug only: plastic fan frame on a printed boss, the nyloc holds it; at the 0.5 N.m assumed for plastic joints the
+        # captured washer (on a 9 mm boss) would crush the ABS
+        fs.meta["torque_nm"] = 0.2
+        captive_nut(d, f"part_fan_screw_{i}", (PFAN[0] + sxo, YB0 + FC_LUG_Y + PLEN - POCKET_WALL, Z_BEAM + PFAN[2] + 12.0), (0, -1, 0),
+                    "part_duct", "xbody")
     # ================= X drive ===================================================
     # belt bracket: 5052 2.286 mm bent L on the front tool plate (two M3 into captive nuts in the rear plate); the two belt
     # ends are squeezed between its horizontal leg and a 2.54 mm clamp plate by four M3 with nuts
@@ -1401,7 +1497,8 @@ def finish_build(d, zs, bed_own, towers, tower_parts) -> Design:
             if use is not None and i not in use:
                 continue
             tray -= zc(hx, hy, 20.0, Z_TRAY, tray_hole[size] / 2)
-    # mains covers (printed PETG hoods over the live terminals, M3 into heat-set inserts from below the tray)
+    # mains covers (printed PETG hoods over the live terminals): M3 through-bolts from below the tray, nyloc nut and washer on
+    # each column's top
     rx, ry = RELAY_XY
     covers = [("mains_cover_relay", (rx - 21.0, rx + 21.0, ry + 18.0, ry + 43.0, Z_TRAY, Z_TRAY + 6.0 + 19.6 + 3.8),
                [(rx - 17.0, ry + 47.0), (rx + 17.0, ry + 47.0)]),
@@ -1409,11 +1506,11 @@ def finish_build(d, zs, bed_own, towers, tower_parts) -> Design:
     for nm, (x0, x1, y0, y1, z0, z1), bosses in covers:
         d.add(nm, cover_hood(x0, x1, y0, y1, z0, z1, bosses=bosses), material=COOL, process="printed",
               meta={"print_up": "-Z", "print": {**PRINT_ABS, "orientation": "-Z", "infill": 0.3}})
+        grp.append(nm)
         for i, (bxx, byy) in enumerate(bosses):
             tray -= zc(bxx, byy, 20.0, Z_TRAY, 3.6 / 2)
-            add_screw(d, f"{nm}_screw_{i}", "M3", 10, at=(bxx, byy, 20.0), direction=(0, 0, 1), clamps=("electronics_tray",),
-                      threads_into=nm, insert=True, washer=True)
-        grp += [nm] + [f"{nm}_screw_{i}" for i in range(len(bosses))] + [f"{nm}_screw_{i}_washer" for i in range(len(bosses))]
+            grp += through_bolt_nyloc(d, f"{nm}_screw_{i}", bolt_length(z1 - 20.0), (bxx, byy, 20.0), (0, 0, 1),
+                                      ("electronics_tray", nm), (bxx, byy, z1))
     sheet(d, "electronics_tray", tray, AL, r=3.0)
     for i, (x, y) in enumerate(tray_bolts):
         add_screw(d, f"tray_bolt_{i}", "M5", 10, at=(x, y, Z_TRAY), threads_into=f"frame_bot_{'left' if x < 0 else 'right'}",
@@ -1459,12 +1556,13 @@ def finish_build(d, zs, bed_own, towers, tower_parts) -> Design:
     for y, z in HOOD_SCREWS:
         yw = IN_Y + (18.0 if y > IN_Y else -18.0)
         hood += bx(XP, XP + 9.0, min(yw, y - 4.0), max(yw, y + 4.0), z - 4.0, z + 4.0)
-        hood -= Pos(XP + 4.0, y, z) * xcyl(1.25, 8.0)
+        hood -= Pos(XP + 4.5, y, z) * xcyl(PH3 / 2, 9.0)              # printed clearance, vertical in the print (-X up)
     d.add("mains_cover_inlet", hood, material=COOL, process="printed",
           meta={"print_up": "-X", "print": {**PRINT_ABS, "orientation": "-X", "infill": 0.3}})
     for i, (y, z) in enumerate(HOOD_SCREWS):
-        add_screw(d, f"mains_cover_inlet_screw_{i}", "M3", 10, at=(XP - T_IP, y, z), direction=(1, 0, 0), clamps=("inlet_panel",),
-                  threads_into="mains_cover_inlet", insert=True, washer=True)
+        # owner review: a through-bolt, head and washer outside the panel, washer and nyloc nut on the boss's inner face
+        through_bolt_nyloc(d, f"mains_cover_inlet_screw_{i}", bolt_length(T_IP + 9.0), (XP - T_IP, y, z), (1, 0, 0),
+                           ("inlet_panel", "mains_cover_inlet"), (XP + 9.0, y, z))
     add_screw(d, "earth_stud", "M5", 10, at=(XP - 2.0, 80.0, 10.0), direction=(1, 0, 0), threads_into="frame_bot_left", tnut=True)
     d.bom_extra("WASHER-M5-SERRATED (earth stud)", 1, 0.05)
     # ================= bench sub-assemblies =======================================
@@ -1477,7 +1575,8 @@ def finish_build(d, zs, bed_own, towers, tower_parts) -> Design:
         d.subassemblies[f"z_tower{tg or '_rear'}"] = [n for n in parts if n in have]
     d.subassemblies["x_drive"] = ["x_motor_mount", "x_motor", "x_pulley"] + [f"x_motor_screw_{i}{s}" for i in range(4) for s in ("", "_washer")]
     d.subassemblies["x_idler_unit"] = ["x_idler_mount", "x_idler_spacer", "x_idler", "x_idler_bolt", "x_idler_bolt_washer", "x_idler_nut"]
-    d.subassemblies["part_cooling"] = ["part_duct", "part_fan"] + [f"part_fan_screw_{i}" for i in range(2)]
+    d.subassemblies["part_cooling"] = ["part_duct", "part_fan"] + [f"part_fan_screw_{i}{s}" for i in range(2)
+                                                                   for s in ("", "_washer", "_nwasher", "_nut")]
     for tag in ("", "_l"):
         d.subassemblies[f"y_drive{tag}"] = ([f"y_motor_mount{tag}", f"y_motor{tag}", f"y_pulley{tag}"]
                                             + [f"y_motor{tag}_screw_{i}{s}" for i in range(4) for s in ("", "_washer")])

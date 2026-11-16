@@ -66,9 +66,10 @@ final file, against `out/printer_v8/scores.jsonl` (2026-11-15). v8's FEA and bed
 |---|---|---|---|
 | geometry | 0 | 0 | |
 | interference | 0 | 0 | |
-| tolerance | 0 | 5 | (1) `sheet_bends_not_recognised`, the three 8 x 12 shims: they are flat rings with two flats, not bent (checker note 3). (2) `z_fl_r1` to `psu_relay` 0.54 mm, closes in 0.30 % (sd 0.10 %) of builds: the relay sits on the tray next to the front-left tower's base plate; both are on the frame's bottom rails. (3) `back_plate` to `z_rear_r4` 0.77 mm at the bottom over-travel, 0.07 %: the carrier's back plate passes the rear tower's top plate at Z -3. (4) extruder to part duct 1.35 mm, 0.03 % (printed duct, as v8's duct). (5) X carriage to the Roto's screw tip 0.42 mm, none of 3,000 builds closed it (normal estimate 0.06 %). All five are under the 1 % the checker calls an error |
+| tolerance | 0 | 5 | (1) `sheet_bends_not_recognised`, the three 8 x 12 shims: they are flat rings with two flats, not bent (checker note 3). (2) `extruder_screw_0` to `bed_probe` 1.31 mm, closes in 0.73 % of builds: the washer now under the Roto screw's head (owner review) brings the head 0.5 mm nearer the probe. (3, 4) `frame_top_back` to `part_fan_screw_0` / `_1` 1.44 mm at the end of Y travel, 0.07 % / 0.27 %: the fan screws now carry a washer on the fan's plastic frame. (5) `z_fl_r1` to `psu_relay` 0.54 mm, 0.17 %: the relay sits on the tray next to the front-left tower's base plate. All under the 1 % the checker calls an error. (Before the owner review: back plate to the rear tower's top plate, extruder to duct and X carriage to a Roto screw tip; those gaps no longer come up.) |
 | manufacture | 0 | 17 | (1) `front_plate`, 2 holes 11.6 mm from the edge (12.7 wanted, 1 x t; shop minimum 6.35 met): 12.8 mm holes for the large washers, the plate is 12.7 thick. (2, 3) `nut_plate` (rear, 9.525): 6.5 mm bolt holes narrower than the sheet and 6.75 mm to the edge; the plate sits on the rear 2020 beam with the back plate 10 mm behind the bolts, so the edge cannot move. (4) `bed_plate`, six 5.2 mm pilot holes in 9.525 mm MIC-6: they are drilled out and tapped for the inserts by the builder anyway (FABRICATION). (5) `z_drive_plate` 5 hole pairs 7.1 mm apart (12.7 wanted): NEMA 17's own 31 mm pattern next to the 22 mm boss hole. (6 to 8) `mostly_holes`, the three shims: a 12.1 mm ring with an 8.55 mm bore is 50 % hole by area; it is a washer, not a grille (checker note 4). (9 to 14) both Y plates: 3.5 mm guide-block screw holes in 4.75 mm sheet (MGN12H's M3 pattern), 3.35 mm from a belt slot to the plate edge and 2.56 mm between a belt slot and a block screw hole (4.75 wanted; above SendCutSend's 2.38 minimum). v8 had the same pattern at 2.05 mm. (15) `tool_plate`: the PEM nuts' 4.22 mm holes are 6.23 mm from the block screws' holes (6.35 wanted, 2 x t). (16, 17) `tool_plate_rear`: 3.1 mm from a hole to the edge and 3.0 mm between the belt bracket's nut pocket and the lightening window (4.75 wanted; SendCutSend's minimum 2.38 met); the outline is the Roto's own footprint and the block's 20 mm pattern |
-| ratings | 0 | 8 | (1) `screw_head_seat_too_small`, five M3 PEM nuts (three tension anchors, the two Roto screws' nuts in the front tool plate): the checker sees a hex nut over a 4.2 mm hole, 65 % of a standard seat (marginal, the checker's word). A PEM nut is clinched into the sheet; it does not bear on a seat (checker note 8). The jack screws are turned to 0.3 N m and only push. (2 to 8) `uncatalogued_cots`: the seven declared stand-ins (magnetic base, four threaded rods, two thread inserts) |
+| practice | 0 | 35 | FST-070 on 93 screws over four bodies (no locking declared; the nylocs added in the owner review are declared and counted), SHF-011 9 and BRG-020 6 (the Z screws' 608s and pulleys on thread crests; owner decision), SHF-010 4 (motor pulley set screws), BLT-040 4 (12 mm Y belt on 12 mm pulleys), BLT-030 / BLT-031 (Z belt's back-side idler), FST-050, FST-020 (bed plate pilot holes), FST-051 (bed tie), FST-081, FST-101, LOC-006. DG-01, DG-04 and DG-05: none (see "Owner review changes") |
+| ratings | 0 | 10 | (1) `screw_head_seat_too_small`, five M3 PEM nuts (three tension anchors, the two Roto screws' nuts in the front tool plate): the checker sees a hex nut over a 4.2 mm hole, 65 % of a standard seat (marginal, the checker's word). A PEM nut is clinched into the sheet; it does not bear on a seat (checker note 8). The jack screws are turned to 0.3 N m and only push. (2, 3) `screw_head_bearing_pressure` (PRT-030, derived limit): the washers under the new through-bolts' nuts and heads bear on printed plastic, 18 MPa at the stated 0.3 N m (ABS duct, against 2.5 MPa sustained at 45 degC; PETG covers, against 5 MPa); under the printed yield (ABS 30.8, PETG 47 MPa), so the surface does not crush; the plastic creeps and the nyloc keeps the nut. (4 to 10) `uncatalogued_cots`: the seven declared stand-ins (magnetic base, four threaded rods, two thread inserts) |
 | motion | 0 | 0 | |
 | subsystems | 0 | 1 | `bed_mesh_does_not_cover_print_area`: 12 mm strips at the sheet's edge. The print area is the whole 180 mm PEI sheet and the probe keeps 12 mm inside the plate edge; the firmware holds the nearest probed value there. As v8 under today's check (owner decision 4) |
 | electrical | 0 | 1 | `cutoff_depends_on_mcu`, hotend: as v7 and v8 |
@@ -76,6 +77,44 @@ final file, against `out/printer_v8/scores.jsonl` (2026-11-15). v8's FEA and bed
 | fea | 0 | 0 | |
 | printing | 0 | 0 | |
 | requirements | 0 | 0 | all 20 pass |
+
+## Owner review changes
+
+From the design-review page, joint `mains_cover_inlet`: "make this a bolt and make sure there are holes in the 3dp part
+to allow for the bolt to have a through hole ... use the standard through hole size for the bolt, but because it's FDM
+you'll need to give more room". Applied to every printed part, written into docs/DESIGN_GUIDELINES.md (Fasteners and
+threads) and checked by two new practice rules, DG-04 (no thread in a printed part) and DG-05 (printed clearance holes).
+
+- **Printed clearance holes**: ISO 273 medium + 0.2 mm FDM allowance, `printed_clearance_hole()`: M2.5 3.1, M3 3.6,
+  M4 4.7, M5 5.7, M6 6.8 (+0.3 and a teardrop for a hole in the build plane; none in v8.1). Replaces the M3 4.2 / M5 6.0
+  convention. A starting value: print the coupon (M3 3.4 to 3.8 in 0.1 mm steps) on the owner's printer first.
+- **mains_cover_inlet**: two M3 x 20 through-bolts, head and washer outside the inlet panel, through a 3.6 mm hole the
+  length of each 9 mm boss, washer and ISO 10511 nyloc nut on the boss's inner face (reached from inside the frame).
+  Before: M3 x 10 into heat-set inserts, and the build package called the hole "TAP M3 x 8 deep, 2.5" (the hole-table
+  generator ignored `insert=True`; fixed: inserts and PEM nuts are now named as such).
+- **mains_cover_relay, mains_cover_psu**: the full-height columns are drilled 3.6 through; M3 x 40 (relay) and M3 x 45
+  (PSU) from below the tray with a washer under the head, washer and nyloc nut on top of each column, outside the hood.
+- **part_duct**: no access for a nut behind either joint (behind the flange is the duct's air passage; behind the fan
+  bosses is the Roto, 1.5 mm away). Each joint is an M3 through-bolt into a nyloc nut and washer captured in a printed
+  pocket (5.8 mm across flats, the nut flats-on against the slot walls so it cannot turn), slid in on the bench: the
+  flange's two pockets open at its underside (M3 x 16 from the front tool plate, through both plates), the fan bosses'
+  open at the top and back (M3 x 18 through the fan frame, washer on the frame). 2 mm of plastic between pocket and
+  clamped face. Fan screws: 0.2 N m stated (snug: at the 0.5 N m the checker assumes for plastic, the washer captured
+  in the 9 mm boss would crush the ABS, a ratings error in the first run).
+- **probe_mount**: no screw threads into it. The Roto's two screws clamp the 4 mm aluminium sleeves; the holder is now
+  3.4 mm, 0.6 mm thinner than the sleeves, and each screw has a washer on the sleeve's end, with a relief round
+  washer and head: the clamp goes head - washer - sleeve - Roto, and the plastic is located on the sleeves with 0.6 mm
+  axial play. A first try at 0.2 mm closed under tolerance in 8 % of builds (tolerance error) and touched the probe
+  clamp's cheek. The practice DG-01 check now recognises this (a metal sleeve declared in the printed part, the head
+  bearing on it, the plastic touching neither head nor washer), so its one error on v8.1 is gone without a waiver.
+- **Locking and heat (FST-072)**: all ten new nuts are ISO 10511 nylocs (drawn 4.0 mm high, SKU NUT-M3-NYLOC). The
+  nylon element is good to about 120 degC; the duct and probe holder are declared at 45 degC, and the ABS itself
+  softens near 100 degC, so a nyloc on a printed part that survives is within its limit. No all-metal nuts needed.
+- **Torque**: 0.3 N m stated on the eight bolts through printed parts (about 520 N, 18 MPa under the washer), 0.2 N m
+  on the fan.
+- Results: 13 verifiers, 0 errors; practice 0 errors / 35 warnings (DG-01, DG-04, DG-05: none). Warnings that
+  changed: ratings +2 (washers on printed plastic, PRT-030), tolerance: three gaps moved (see the table). Moving mass
+  X 0.359 kg (+0.001), BOM $823.
 
 ## What changed, part by part
 
@@ -161,16 +200,17 @@ error over 183 mm), and its nut blocks, Z drive mount, sleeve and pedestals were
   pockets of the front plate: those screws then held only the Roto to the rear plate, and the two plates were
   clamped together only by the duct screws. The FEA's screwed-joint bound showed it (nozzle stiffness X 349 N/mm,
   Y 632, against v8's 1,542 and 2,075); with the PEM nuts it is X 1,443 and Y 1,917 N/mm. No machining.
-- **Probe holder** (printed ABS, 4 mm): the Roto's two screws pass through 3.5 mm aluminium compression sleeves in
-  it, so the screws clamp metal, not plastic; the OMRON E2E's own nuts clamp it with washers.
-- **Part duct** (printed ABS) with brass heat-set inserts drawn solid to their thread; **part fan** CG3010U24
-  (catalogue).
+- **Probe holder** (printed ABS, 3.4 mm): the Roto's two screws pass through 4 mm aluminium compression sleeves in
+  it, with a washer under each head on the sleeve's end, so the screws clamp metal, not plastic (owner review:
+  see "Owner review changes"); the OMRON E2E's own nuts clamp it with washers.
+- **Part duct** (printed ABS): M3 through-bolts into nyloc nuts captured with their washers in printed pockets (owner
+  review); **part fan** CG3010U24 (catalogue).
 
 ### Frame and electronics
 
 - **Electronics tray**: 6061 3.175 mm (v8 3.0, not stocked). Boards on nylon spacers with washers and nuts.
 - **Mains covers** (printed PETG): over the relay, the PSU's terminal strip and the inlet's terminals, each held by
-  two screws into heat-set inserts in printed bosses. Open item A3 (live terminals uncovered) is closed.
+  two M3 through-bolts with washers and nyloc nuts (owner review). Open item A3 (live terminals uncovered) is closed.
 - **Earth**: an M5 ring terminal on an M5 earth stud (they now match); the frame's protective conductor is
   2.5 mm^2 (AWG 13) and runs on its own; the supply's earth AWG 18 like the line conductors.
 - **Probe supply**: a "bed probe 24 V" wire from the PSU's V+ to the probe connector (v8's probe had no supply in
@@ -181,7 +221,7 @@ error over 183 mm), and its nut blocks, Z drive mount, sleeve and pedestals were
 
 | Part | Material | Why printed | Print settings |
 |---|---|---|---|
-| probe_mount | ABS | holds the probe's position only; the toolhead screws clamp aluminium sleeves through it | 4 walls, 5 top/bottom, 40 % gyroid, 0.2 mm |
+| probe_mount | ABS | holds the probe's position only; the toolhead screws clamp aluminium sleeves through it, the plastic is 0.6 mm thinner than the sleeves | 4 walls, 5 top/bottom, 40 % gyroid, 0.2 mm |
 | part_duct | ABS | air guide near the hotend | as above |
 | mains_cover_relay, _psu, _inlet | PETG | touch covers over live terminals | 4 walls, 5 top/bottom, 40 % gyroid, 0.2 mm |
 
