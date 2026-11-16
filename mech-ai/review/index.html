@@ -1,4 +1,4 @@
-<title>Printer v8 Design Review</title>
+<title>Printer v8.1 Design Review</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
@@ -126,11 +126,11 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
 
 <header class="top wrap" id="hdr">
   <div class="row">
-    <h1>Printer v8 design review</h1>
+    <h1>Printer v8.1 design review</h1>
     <span class="sub">Bed-slinger, 180 mm cube, three-screw Z. Pick an assembly, part or bolted joint; leave feedback on any of them.</span>
   </div>
   <div class="stats" id="stats"></div>
-  <div class="banner">Simulated design, never built. v8.1 is next and will change the bed drive, every load-bearing printed part, the steel plates and the tapped holes (see the guideline flags). Feedback here goes into v8.1.</div>
+  <div class="banner">Simulated design, never built. v8.1 replaces every load-bearing printed part and the steel plates with laser-cut aluminium and stainless, has no CNC parts, and has no tapped aluminium apart from steel inserts in the bed. Feedback here goes into the next revision.</div>
 </header>
 
 <main id="main">
@@ -373,7 +373,7 @@ function renderFB(){
   else h+=`<p class="note">No feedback on this ${sel.t==='asm'?'assembly':sel.t} yet.</p>`;
   if(db){
     const dv=draft[k]||{v:'change',t:''};
-    h+=`<form id="fbform" style="margin-top:10px"><div class="verdicts" role="radiogroup" aria-label="Verdict">${Object.entries(VERDICT).map(([v,l])=>`<label><input type="radio" name="vd" id="vd-${v}" value="${v}" ${dv.v===v?'checked':''}>${l}</label>`).join('')}</div><textarea id="fbtext" placeholder="What should change, or what you checked. Name a feature (hole H5, the slot, the edge) where you can.">${esc(dv.t)}</textarea><div class="fbrow"><button class="btn" id="fbsend" type="submit">Save feedback</button><span class="note" id="fbmsg">Saved feedback is shared with everyone who can open this page, and Claude reads it for v8.1.</span></div></form>`;
+    h+=`<form id="fbform" style="margin-top:10px"><div class="verdicts" role="radiogroup" aria-label="Verdict">${Object.entries(VERDICT).map(([v,l])=>`<label><input type="radio" name="vd" id="vd-${v}" value="${v}" ${dv.v===v?'checked':''}>${l}</label>`).join('')}</div><textarea id="fbtext" placeholder="What should change, or what you checked. Name a feature (hole H5, the slot, the edge) where you can.">${esc(dv.t)}</textarea><div class="fbrow"><button class="btn" id="fbsend" type="submit">Save feedback</button><span class="note" id="fbmsg">Saved feedback is shared with everyone who can open this page, and Claude reads it for the next revision.</span></div></form>`;
   } else h+=`<p class="note" style="margin-top:8px">${fbReady?'Feedback can be saved when this page is opened on claude.ai while signed in.':'Connecting to feedback storage…'}</p>`;
   box.innerHTML=h;
   const form=$('fbform'); if(!form)return;
