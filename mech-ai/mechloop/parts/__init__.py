@@ -678,6 +678,36 @@ def shcs(size: str = "M3", length: float = 10.0) -> Stock:
                  source=_source("iso_fasteners", "standard", f"ISO 4762 {size}", unverified=("proof_load_n",)))
 
 
+# ISO 10642 hexagon socket countersunk head screws (90 deg head): size: (dk theoretical max, dk actual max, hex key).
+# RECALLED from the standard's table (not fetched): check against the screw you buy.
+CSK = {"M3": (6.72, 5.54, 2.0), "M4": (8.96, 7.53, 2.5), "M5": (11.2, 9.43, 3.0), "M6": (13.44, 11.34, 4.0)}
+
+
+@part
+def fhcs(size: str = "M5", length: float = 16.0) -> Stock:
+    """Hexagon socket countersunk head screw (ISO 10642, 90 deg). Local frame: the TOP of the head (the face that lies
+    flush in its countersink) at Z=0, head cone and thread along -Z; `length` is overall, head included, as the standard
+    gives it. Head drawn at its actual maximum diameter dk; a countersink cut to the theoretical dk (interfaces
+    "csk_dia") leaves the head (dk_theo - dk) / 2 below the surface. Head dimensions recalled (ISO 10642 table)."""
+    if size not in CSK:
+        raise ValueError(f"fhcs size must be one of {sorted(CSK)}")
+    d = SCREW[size][0]
+    dk_t, dk, key = CSK[size]
+    hk = (dk - d) / 2.0
+    from build123d import Cone
+
+    shape = Pos(0, 0, -hk / 2) * Cone(d / 2, dk / 2, hk) + Pos(0, 0, -(hk + length) / 2) * Cylinder(d / 2, length - hk)
+    mass = (math.pi * (d / 2) ** 2 * length + math.pi / 12 * hk * (dk ** 2 + dk * d + d * d) / 1.0 * 0.25) * 7.85e-6
+    return Stock(shape, f"FHCS-{size}x{length:g}", f"Countersunk socket screw {size} x {length:g} (ISO 10642)", mass,
+                 ratings={"proof_load_n": SCREW[size][6] * 0.8, "head": "countersunk"},
+                 interfaces={"thread_d": d, "head_d": dk, "head_h": 0.0, "hex_key": key, "head": "countersunk", "csk_dia": dk_t,
+                             "head_below_surface": round((dk_t - dk) / 2.0, 2)},
+                 cost_usd=0.12,
+                 source=_source("iso_fasteners", "partial", f"ISO 10642 {size}",
+                                unverified=("head diameter and height (recalled)", "proof_load_n"),
+                                note="countersunk head dimensions recalled from ISO 10642, not fetched"))
+
+
 NUT = {"M2.5": (5.0, 2.0), "M3": (5.5, 2.4), "M4": (7.0, 3.2), "M5": (8.0, 4.7), "M6": (10.0, 5.2), "M8": (13.0, 6.8)}
 
 
@@ -802,7 +832,7 @@ def add_washer(design: Design, name: str, size: str, at, direction=(0, 0, 1), bo
 def add_screw(design: Design, name: str, size: str, length: float, at, direction=(0, 0, -1),
               body: str = "world", threads_into: str | list[str] | None = None, clamps=(),
               tnut: bool = False, washer: bool | str = False, insert: bool | str = False,
-              locking: str | None = None, insert_reason: str | None = None) -> Component:
+              locking: str | None = None, insert_reason: str | None = None, head: str = "socket") -> Component:
     """Place a cap screw with the underside of its head at `at`, pointing along `direction`.
     Registers it as a Fastener (tool access is checked), allows the thread to overlap the
     part(s) it screws into and records that it holds them. tnut=True means it threads into
@@ -818,7 +848,9 @@ def add_screw(design: Design, name: str, size: str, length: float, at, direction
     `PEM-NUT-<size>`): the thread in an aluminium part we make is not tapped into the aluminium (practice rule DG-02).
     locking="nyloc" | "adhesive" | "all_metal" | "serrated" | "jam": the screw's locking provision (practice rule
     FST-070), recorded in meta["locking"]; "adhesive" adds a THREADLOCKER line to the BOM."""
-    st = shcs(size, length)
+    # head="countersunk": an ISO 10642 screw; `at` is then the surface its head lies flush in (the countersink's mouth),
+    # not the underside of a head. The washer / seat check does not judge countersunk heads (bearing.py).
+    st = fhcs(size, length) if head == "countersunk" else shcs(size, length)
     dvec = Vector(*direction).normalized()
     washer_at = None
     if washer:

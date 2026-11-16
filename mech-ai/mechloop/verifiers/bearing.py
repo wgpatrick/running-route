@@ -236,6 +236,8 @@ def head_bearing(design: Design, r: VerifierResult) -> dict:
         if size not in SCREW:
             continue
         ifc = c.meta.get("interfaces") or {}
+        if ifc.get("head") == "countersunk":      # not judged (module docstring): the head bears on the cone of its countersink
+            continue
         hd, hh = float(ifc.get("head_d", SCREW[size][1])), float(ifc.get("head_h", SCREW[size][2]))
         ax = np.array(f.axis, dtype=float)
         ax /= np.linalg.norm(ax)
