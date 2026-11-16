@@ -226,7 +226,7 @@ def t8_nut():
     bottom on Z=0, a 1.5 mm stub of the barrel below it)."""
     f = _file("t8_flange_nut")
     rec = _rec("community CAD", "t8_flange_nut.step", f"{FCL}: T8_Flange_nut.step", inbox=["T8-NUT"],
-               mates_with=("T8x",),      # its thread form overlaps the lead screw's plain cylinder by design
+               mates_with=("T8x", "TR8x"),   # its thread form overlaps the lead screw's plain cylinder by design (TR8x: an integral motor screw)
                features=[hole_feature("barrel_dia", (0, 0, 10.0), 10.2, (0, 0, 1), tol_dia=0.25),
                          hole_feature("flange_dia", (0, 0, 2.0), 22.0, (0, 0, 1), tol_dia=0.1)])
     if f is None:

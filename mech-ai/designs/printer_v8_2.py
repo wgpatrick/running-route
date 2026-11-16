@@ -1,48 +1,36 @@
-"""printer_v8_1: printer_v8 rebuilt to the owner's design guidelines (docs/DESIGN_GUIDELINES.md). docs/PRINTER_V8_1.md has
-the numbers, every change and its reason.
+"""printer_v8_2: printer_v8_1 with the Z drive replaced: three lead-screw motors, one per screw, no belt. docs/PRINTER_V8_2.md
+has the numbers, every change and its reason.
 
-TARGET: a 180 x 180 x 180 mm open-frame printer the owner intends to build; functionality first. Part count, assembly
-time and cost are reported, not limits.
-    - envelope 420 x 420 x 480 mm (unchanged)
-    - direct-drive toolhead, <= 0.40 kg moving mass in X (unchanged)
-    - both Y belts within 1 mm of plane in >= 98 % of builds (unchanged)
-    - a bed probe that reaches the whole print area (unchanged)
-    - bed sag under 1 kg at the worst print corner <= 0.02 mm on the screw-only bound, and every lead-screw nut seated at
-      the LSC-015 lead budget (two screws at opposite lead limits)
+The owner: "there are belts that drive 3 z shafts from one motor... that seems a bit like a nightmare. it seems a lot easier
+to have 3 separate steppers that are directly coupled to a z shaft. no belts".
 
-What changed from v8 (part by part in the doc):
+TARGET (unchanged from v8.1): a 180 x 180 x 180 mm open-frame printer the owner intends to build; functionality first.
+    - envelope 420 x 420 x 480 mm; direct-drive toolhead, <= 0.40 kg moving in X; both Y belts within 1 mm of plane in
+      >= 98 % of builds; a probe that reaches the whole print area
+    - bed sag under 1 kg at the worst print corner <= 0.02 mm (screw-only bound); every nut seated at the LSC-015 budget
 
-1. NO LOAD-BEARING PRINTED PART. The nut blocks, Z drive mount, Z sleeve, Z pedestals, X belt block and the three belt
-   tension anchors are now laser-cut aluminium. The only printed parts are the probe holder (clamped through two
-   aluminium compression sleeves, so the Roto's screws do not clamp plastic), the part-cooling duct and three covers
-   over the mains terminals. Every printed part declares its print settings (meta["print"]).
-2. LASER-CUT FIRST. Every metal part is a 2D laser-cut profile at a SendCutSend stocked gauge (6061-T6 1.6 / 2.54 / 3.175
-   / 4.75 / 6.35 / 9.525, 5052-H32 2.286 / 3.175 for the bent parts, 304 1.524 for the bed tie, MIC-6 9.525 for the bed)
-   or a purchased part. Nothing is CNC machined: the tool plate is two stacked plates (the rear one is the counterbore
-   for the guide-block screws), the bed is cast plate laser-cut with its faces as cast. assign(sheet="sendcutsend").
-3. NAMED MATERIALS: no generic steel. Moving plates are 6061-T6; bent parts 5052-H32; the bed tie 304 stainless.
-4. NO TAPPED ALUMINIUM WE MAKE, no tapped extrusion ends. Through-bolts with nuts and washers; captive nuts in
-   laser-cut hex holes; PEM nuts in the 5052 tension anchors; steel thread inserts only in the bed plate, whose top face
-   must stay flat for the print sheet. The bed carrier is a 2020 rectangle joined by corner brackets on T-nuts.
-   NO THREAD IN A PRINTED PART (owner review): every screw through a printed part is an M3 through-bolt with washers and
-   an ISO 10511 nyloc nut, on the side with access, or captured with its washer in a printed pocket where there is none
-   (the part duct); printed clearance holes are ISO 273 medium + 0.2 mm (M3 3.6).
-5. WASHERS under every head or nut on a slot, an oversize hole, thin aluminium or plastic; thread locking listed on
-   the moving assemblies; rounded outside corners on every cut profile.
-6. Z: three T8 x 2 screws on one belt, one guide block per rail, as v8, but every nut stays seated at the lead budget:
-   the blocks are Hiwin's clearance class ZF (they locate the carrier, they do not hold its tilt against the screws), the
-   carrier is heavier (9.5 mm bed, aluminium floor of nut plates) and its mass centre sits over the screws' triangle.
-   Each screw stands in a laser-cut plate tower with two 608s clamped between plates: the upper bearing is the axial
-   bearing (a brass T8 nut screwed down on its inner ring carries the bed: no set screw in the weight path), the
-   pulley under it is set-screwed for torque only and holds the screw down through an 8 x 12 shim.
-7. Catalogue parts: TRONXY PEI180 sheet, Coolerguys CG3010U24 part fan. Stand-ins: the PEI180's magnetic base (its
-   thickness is not published), the four M5 threaded-rod bed posts and the two M3 thread inserts in the bed plate.
+What changed from v8.1 (the rest is v8.1's, docstring of designs/printer_v8_1.py):
+
+1. Z DRIVE: three StepperOnline 17E19S1684AB4-330RA lead-screw motors (NEMA 17, 0.44 N.m, 1.68 A). Each screw IS its
+   motor's shaft: Tr8x2 (0.01 mm per full step; lead angle 5.2 deg, so it does not back-drive and the bed stays put with
+   the motors off), cut to 252 mm above the motor face, free-ended (no top bearing). Removed: the closed Z belt, the
+   40 mm Z motor and its drive plate, the tensioner idler, four pulleys, the three laser-cut bearing towers with their six
+   608s, shims and top nuts.
+2. MOTOR MOUNTS: each motor hangs under a 6.35 mm laser-cut 6061 plate, its pilot in the plate's hole, four M3 x 10 from
+   above into the motor's own threads (3.65 mm engaged of 4.5). Two 10 mm aluminium spacer posts carry the plate; M5 x 70
+   bolts with washers clamp plate, spacer (and the tray, at the front) to T-nuts in the bottom rails. Thread-locked.
+3. CARRIER: the floating T8 nuts, nut plates and pins are v8.1's. The front beam is 36 mm shorter (ends at +/-152, clear
+   of the front mounts' post bolts), so the front nut plates bolt to it inboard of the nut and are now 9.525 mm thick
+   (were 6.35).
+4. ELECTRONICS: BIGTREETECH Octopus V1.1 (eight drivers) in place of the SKR Mini E3 V3.0 (four): X, Y, Y left, Z, Z1,
+   Z2, E, one spare. The two Y motors are on their own drivers now. Klipper [z_tilt] with the three screw positions;
+   Z_TILT_ADJUST levels the screws against each other (the belt could not).
 
 Layout (X = width, Y = depth with the front at -Y, Z = up) is v4's; see designs/printer_v4.py for the history.
 
 Not modelled (flagged): the Roto's solid is E3D's reference CAD envelope in solid aluminium; T-nuts, PEM nuts' clinch
 features, the BAT85 diode and the Revo's spring clip are BOM lines or notes; payload is extra mass on the bed plate; no
-airflow model for the duct; pulley set screws; belt teeth.
+airflow model for the duct; pulley set screws; belt teeth; screw rotation and whip (worked by hand in the doc).
 """
 import math
 
@@ -215,11 +203,12 @@ BP_W = 215.0
 # ---- carrier: a 2020 rectangle (rear beam on the back plate, two arms, front beam) with 9.5 mm nut plates on top ----
 RB_Y = Y_PF - 10.0                                # rear beam centre (its rear face on the back plate)
 RB_X = 95.0                                       # rear beam half length
-FB_FACE = FS_Y + 35.5                             # front beam's front face: clear of the front motor mounts' post bolts below it
+FB_FACE = FS_Y + 26.0                             # front beam's front face (as v8.1)
 FB_Y = FB_FACE + 10.0
-FB_X = FX / 2                                     # front beam half length (flush with the frame's sides)
+FB_X = 152.0                                      # front beam half length: ends 3 mm short of the front motor mounts' post bolts
+NPF_BOLT_X = (135.0, 147.0)                       # front nut plates' two M5 into the front beam's top slot (|x|)
 ARM_Y0, ARM_Y1 = FB_Y + 10.0, RB_Y - 10.0         # arms run between the beams
-T_NP = G95                                        # front nut plates (9.525 mm 6061: 9.5 mm longer to the beam than v8.1's)
+T_NP = G95                                        # front nut plates (9.525 mm 6061: bolted inboard of the nut now, v8.1 6.35)
 T_NPR = G95                                       # rear nut plate (9.525 mm 6061): its tongue is a 48 mm cantilever
 NP_HOLE = 2 * (5.1 + NUT_FLOAT) + 0.8             # the nut's barrel floats in a round hole
 PIN_SP_D = 5.0                                    # anti-rotation pin: an M2.5 screw through a 5 mm aluminium sleeve
@@ -734,7 +723,7 @@ def build_electrical(d: Design) -> Electrical:
     el.wire("bed heater", "control_board.HB", "bed_tco.a", BED_AWG, insulation=BED_INS, via=["bed"])
     el.wire("bed heater tail", "bed_tco.b", "bed_heater.in", BED_AWG, insulation=BED_INS, length=90.0)
     el.wire("bed thermistor", "control_board.THB", "bed_ntc.out", 26, insulation="silicone", via=["bed"])
-    el.wire("hotend heater", "control_board.E0", "hotend.in", 20, insulation="silicone", via=tool, pigtail=(115.0, "fiberglass"))
+    el.wire("hotend heater", "control_board.HE0", "hotend.in", 20, insulation="silicone", via=tool, pigtail=(115.0, "fiberglass"))
     el.wire("hotend thermistor", "control_board.TH0", "hotend_thermistor.out", 26, insulation="silicone", via=tool,
             pigtail=(130.0, "fiberglass"))
     el.wire("heat-sink fan 5 V", "control_board.5V", "hotend_fan.out", 26, via=tool,
@@ -933,9 +922,9 @@ def build_frame_z():
     rnp = bx(-39.0, 39.0, RB_Y - 13.0, RB_Y + 10.0, zn0, zn1) + bx(-RNP_TW / 2, RNP_TW / 2, RB_Y, LS_Y + 21.5, zn0, zn1)
     nut_sets.append(("", 0.0, LS_Y, 1, rnp, [(-26.0, RB_Y), (26.0, RB_Y)], "rear_beam", T_NPR))
     for sx, tg in ((-1, "_fl"), (1, "_fr")):
-        xa, xb_ = sorted((sx * (FS_X - 25.0), sx * (FS_X + 15.0)))
+        xa, xb_ = sorted((sx * (NPF_BOLT_X[0] - 5.0), sx * (FS_X + 15.0)))
         npl = bx(xa, xb_, FS_Y - 21.5, ARM_Y0, zn0, Z_FL + T_NP)
-        nut_sets.append((tg, sx * FS_X, FS_Y, -1, npl, [(sx * (FS_X - 15.0), FB_Y), (sx * (FS_X + 5.4), FB_Y)], "front_beam", T_NP))
+        nut_sets.append((tg, sx * FS_X, FS_Y, -1, npl, [(sx * NPF_BOLT_X[0], FB_Y), (sx * NPF_BOLT_X[1], FB_Y)], "front_beam", T_NP))
     for tg, cx, ly, sgn, shp, bolts, beam, tnp in nut_sets:
         zn1 = Z_FL + tnp
         py = ly + sgn * NUT_PIN[1]
@@ -1573,7 +1562,7 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
     d.loadcases.append(LoadCase("nut_thrust", "nut_plate",
                                 fixed=lambda f: any(hole_at(x, y, 3.25)(f) for x, y in rb),
                                 loaded=hole_at(0.0, LS_Y, NP_HOLE / 2), force=(0.0, 0.0, w_bed), min_fos=3.0, max_deflection=0.05))
-    fb = [(FS_X - 15.0, FB_Y), (FS_X + 5.4, FB_Y)]
+    fb = [(NPF_BOLT_X[0], FB_Y), (NPF_BOLT_X[1], FB_Y)]
     d.loadcases.append(LoadCase("nut_thrust_front", "nut_plate_fr",
                                 fixed=lambda f: any(hole_at(x, y, 3.25)(f) for x, y in fb),
                                 loaded=hole_at(FS_X, FS_Y, NP_HOLE / 2), force=(0.0, 0.0, w_bed), min_fos=3.0, max_deflection=0.05))

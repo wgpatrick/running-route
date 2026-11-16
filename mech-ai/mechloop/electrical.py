@@ -2060,6 +2060,10 @@ KLIPPER_REQUIRED = {   # section prefix -> options klippy refuses to start witho
     "fan": ["pin"], "heater_fan": ["pin"], "controller_fan": ["pin"], "output_pin": ["pin"], "verify_heater": [],
     "input_shaper": [], "probe": ["pin", "z_offset"], "safe_z_home": ["home_xy_position"],
     "bed_mesh": [],     # [bed_mesh] itself is checked below; [bed_mesh <name>] is a stored profile
+    # Klipper Config_Reference "Additional stepper motors (cartesian)": [stepper_z1] ... take step, dir, enable, microsteps
+    # and rotation_distance; endstop_pin is optional and position_* come from the axis's first stepper
+    "stepper_extra": ["step_pin", "dir_pin", "enable_pin", "microsteps", "rotation_distance"],
+    "z_tilt": ["z_positions", "points"],
 }
 
 
@@ -2078,7 +2082,8 @@ def check_klipper_config(text: str, board_pins: set, sensor_types: set) -> list:
         return [f"does not parse: {e}"]
     used = {}
     for sec in cp.sections():
-        key = next((k for k in KLIPPER_REQUIRED if sec == k or sec.startswith(k + " ") or (k.endswith("_") and sec.startswith(k))), None)
+        key = "stepper_extra" if re.fullmatch(r"stepper_[xyz]\d+", sec) else \
+            next((k for k in KLIPPER_REQUIRED if sec == k or sec.startswith(k + " ") or (k.endswith("_") and sec.startswith(k))), None)
         if key is None:
             problems.append(f"[{sec}]: section not known to this checker")
             continue
