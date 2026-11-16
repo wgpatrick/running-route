@@ -35,13 +35,15 @@ import numpy as np
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from OCP.BRepClass3d import BRepClass3d_SolidClassifier  # noqa: E402
-from OCP.gp import gp_Pnt  # noqa: E402
-from OCP.TopAbs import TopAbs_IN  # noqa: E402
-
 from mechloop.geom import forward_kinematics  # noqa: E402
 from mechloop.runner import load_design  # noqa: E402
 from mechloop.verifiers.belts import route  # noqa: E402
+# the measuring core now lives in mechloop (shared with the practice verifier, so the two measure alike)
+from mechloop.verifiers.fastener_stack import Probe  # noqa: E402,F401
+from mechloop.verifiers.fastener_stack import counterbored as _counterbored  # noqa: E402
+from mechloop.verifiers.fastener_stack import frame as _frame  # noqa: E402
+from mechloop.verifiers.fastener_stack import hole as _hole  # noqa: E402
+from mechloop.verifiers.fastener_stack import ring as _ring  # noqa: E402
 
 PLASTICS = {"pla", "petg", "abs", "nylon_pa12"}
 # ---- rule data (ids refer to research_notes/practice/rules.yaml) -------------------------------------------------
@@ -72,51 +74,6 @@ GATES_2MGT = {"teeth_full_rating": 6, "min_wrap_deg": 60.0, "backside_idler_od_m
               "inside_flat_idler_od_mm": 25.4, "legacy_backside_od_mm": 1.3 * 12 * 2.0 / math.pi}   # current GT3 table 9; legacy GT2 1.3 x 12-groove PD
 BRG_ABUT = {"BRG-608": {"da_min": 10.0, "d1": 12.15, "Da_max": 20.0}}       # SKF 608 product data
 LEAD_DEV = 0.1 / 300.0                    # mm per mm of travel: Elesa GN 103 and igus DryLin TR (maker figures, not the generic T8)
-
-
-class Probe:
-    """Point-in-solid tests against the design's parts, one classifier per solid, bounding boxes first."""
-
-    def __init__(self, design):
-        self.comps = {c.name: c for c in design.components}
-        self.cls, self.bb = {}, {}
-        for c in design.components:
-            b = c.shape.bounding_box()
-            self.bb[c.name] = (np.array([b.min.X, b.min.Y, b.min.Z]), np.array([b.max.X, b.max.Y, b.max.Z]))
-        self.calls = 0
-
-    def _classifiers(self, name):
-        if name not in self.cls:
-            self.cls[name] = [BRepClass3d_SolidClassifier(s.wrapped) for s in self.comps[name].shape.solids()]
-        return self.cls[name]
-
-    def inside(self, name, p) -> bool:
-        lo, hi = self.bb[name]
-        if np.any(p < lo - 1e-6) or np.any(p > hi + 1e-6):
-            return False
-        g = gp_Pnt(float(p[0]), float(p[1]), float(p[2]))
-        for k in self._classifiers(name):
-            self.calls += 1
-            k.Perform(g, 1e-7)
-            if k.State() == TopAbs_IN:
-                return True
-        return False
-
-    def near(self, lo, hi, exclude=()):
-        return [n for n, (a, b) in self.bb.items() if n not in exclude and np.all(b >= lo) and np.all(a <= hi)]
-
-
-def _frame(axis):
-    a = np.array(axis, float)
-    a /= np.linalg.norm(a)
-    h = np.array([1.0, 0, 0]) if abs(a[0]) < 0.9 else np.array([0, 1.0, 0])
-    u = np.cross(a, h)
-    u /= np.linalg.norm(u)
-    return a, u, np.cross(a, u)
-
-
-def _ring(c, u, v, r, n):
-    return [c + r * (math.cos(t) * u + math.sin(t) * v) for t in np.linspace(0, 2 * math.pi, n, endpoint=False)]
 
 
 def _size(sku):
@@ -302,54 +259,6 @@ def fastener_schedule(design, pr: Probe):
         row["moving"] = c.body != "world"
         rows.append(row)
     return rows
-
-
-def _counterbored(pr: Probe, part, under, a, u, v, hd):
-    """True when the part has material beside the head (the head sits in a counterbore of that part)."""
-    pts = _ring(under + a * 1.0, u, v, 0.5 * hd + 0.6, 12)
-    return sum(pr.inside(part, p) for p in pts) >= 9
-
-
-def _hole(pr: Probe, part, cen, u, v, d):
-    """Hole diameter (smallest diameter over 8 directions), slot length (largest), nearest edge beyond the hole."""
-    n_ang, out = 16, {}
-    r_in, r_out = [], []
-    for t in np.linspace(0, 2 * math.pi, n_ang, endpoint=False):
-        w = math.cos(t) * u + math.sin(t) * v
-        r = 0.5 * d - 0.1
-        while r < 3.0 * d and not pr.inside(part, cen + r * w):
-            r += 0.05
-        if 0.5 * d - 0.1 < r < 3.0 * d:                  # refine the wall position by bisection (to about 0.003 mm)
-            lo_r, hi_r = r - 0.05, r
-            for _ in range(4):
-                mid = 0.5 * (lo_r + hi_r)
-                lo_r, hi_r = (lo_r, mid) if pr.inside(part, cen + mid * w) else (mid, hi_r)
-            r = 0.5 * (lo_r + hi_r)
-        r_in.append(r if r < 3.0 * d else None)
-        if r >= 3.0 * d:
-            r_out.append(None)
-            continue
-        r2 = r + 0.25
-        while r2 < 4.0 * d + 3 and pr.inside(part, cen + r2 * w):
-            r2 += 0.25
-        r_out.append(r2 if r2 < 4.0 * d + 3 else None)
-    dia = [(r_in[i] + r_in[i + n_ang // 2]) if r_in[i] is not None and r_in[i + n_ang // 2] is not None else None for i in range(n_ang // 2)]
-    known = [x for x in dia if x is not None]
-    if not known:
-        return {"hole_mm": None, "open": True}
-    out["hole_mm"] = round(min(known), 2)
-    longest = None if any(x is None for x in dia) else round(max(known), 2)
-    out["slot"] = longest is None or longest - min(known) > 0.3
-    if out["slot"]:
-        out["slot_length_mm"] = longest if longest is not None else "open"
-    edges = [x for x in r_out if x is not None]
-    out["edge_mm"] = round(min(edges), 2) if edges else None           # None: no edge within 4 d + 3 mm
-    f, m, c = ISO273.get(f"M{d:g}", (None,) * 3)
-    if f and not out["slot"]:
-        h = out["hole_mm"]
-        out["iso273"] = ("tighter than fine" if h < f - 0.08 else "fine" if h < (f + m) / 2 else "medium" if h < (m + c) / 2
-                         else "coarse" if h <= c + 0.08 else "larger than coarse")
-    return out
 
 
 def standardisation(design, rows):

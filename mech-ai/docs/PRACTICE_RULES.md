@@ -646,3 +646,76 @@ at error severity until sourced.
 - The PRT-030 limit is a derivation to keep printed plastic in its linear viscoelastic range, not a strength; the
   ranking does not depend on it (bare seats exceed it 70-fold).
 - The lead-difference figures are a linear scaling of PRINTER_V8.md's trade-study numbers, not a verifier result.
+
+## 8. Implemented
+
+The thirteenth verifier, `practice` (`mechloop/verifiers/practice.py`), runs after `manufacture` and by default in
+`mechloop verify`; `--only practice` runs it alone. The audit's measuring core was promoted to
+`mechloop/verifiers/fastener_stack.py` (`Probe`, `fastener_stack`, `bearing_contacts`), which `tools/practice_audit.py`
+now imports, so audit and verifier measure alike. The rule registry (`RULES`, with evidence, source and status) is in
+the verifier; `metrics.practice.rules` reports each rule's status and finding count; a test keeps every recalled or
+derived rule below error. Declarations, control and waivers: AGENT.md, "Practice". Known-answer tests, bad and good case
+for every implemented rule: `tests/test_practice.py`.
+
+### 8.1 The first 25 (section 5.2)
+
+| # | Rule | Status | Check / reason |
+|---|---|---|---|
+| 1 | FST-031 | cross-referenced | `ratings.head_bearing`: `screw_head_seat_too_small` (washers, ISO 7089 / 7093) |
+| 2 | PRT-030 | cross-referenced | `ratings.head_bearing`: `screw_head_bearing_pressure` on printed seats (derived 5 / 2.5 MPa) |
+| 3 | FST-060 | implemented | `nut_on_plain_shank` (error): nut or tapped part before the thread start of an ISO 4762 screw; T-nut screws and `meta["fully_threaded"]` skipped |
+| 4 | FST-070 | implemented | `no_locking_feature` (warning, grouped per body): screws on a moving body or holding a motor without `locking=` on screw or nut, or a join naming a locknut / adhesive; serrated or jam accepted on metal seats only, split washers never |
+| 5 | BLT-010 / BLT-011 | implemented | `pulley_few_teeth` (warning; error under 2 teeth), `pulley_low_wrap` on every loaded pulley; a joint's drive pulley stays with `motion.belt_low_wrap` (cross-referenced) |
+| 6 | BLT-030 / BLT-031 | implemented | `toothed_backside_idler`, `idler_too_small` (back side 12.7 mm, legacy GT2 rule quoted; inside idlers 12 grooves, flat 25.4 mm) |
+| 7 | BRG-020 | implemented | `bearing_not_retained`: a ring face with nothing against it within 0.4 mm; the error for a declared axial load without a path is not implemented (no axial loads are declared) |
+| 8 | MCH-015 / SHT-014 / DOC-010 | cross-referenced | `manufacture.edges`: `edges_not_broken`, edge-break declaration (`edge_break_mm`) |
+| 9 | SHT-013 | cross-referenced | `manufacture.edges`: `sharp_profile_corners` |
+| 10 | FST-051 | implemented | `single_screw_joint`: pairs of parts held by one screw and no other screw, T-nut screw or non-screw join; parts that turn on the screw (idlers, bearings, axle joins) and round standoffs coaxial with it are exempt |
+| 11 | FST-101 | implemented | `single_tnut` (recalled: warning): a part whose only fixing is one T-nut screw |
+| 12 | FST-050 | implemented | `hole_near_edge`: hole centre to edge or cut-out under 1.5 d (`limits["FST-050.min_edge_d"]`), made parts only |
+| 13 | FST-020 | implemented | `hole_under_fine` (warning, metal parts, axle joins exempt); `hole_over_coarse` under a head (info; the seat is FST-031's); class counts in the metrics |
+| 14 | BRG-024 | cross-referenced | `ratings.ring_abutment`: `bearing_abutment` |
+| 15 | LSC-015 | cross-referenced | `fea.bed_support.nut_seating_and_lead_error`: `z_tilt_over_constrained`, `z_nut_unseats` |
+| 16 | FST-081 | implemented | `lookalike_screw_lengths` (recalled: warning): lengths of one size within 2 mm into one catalogue part's blind maker thread |
+| 17 | SHF-010 / SHF-011 | implemented | `set_screw_without_flat` (the join kind must say flat and threadlocked); `seat_on_thread`: a set screw or a bearing on a T8 lead screw without `meta["journal"]` |
+| 18 | BRG-023 | implemented | `axial_load_through_set_screw`: an inner-ring face whose only abutment is a set-screwed hub |
+| 19 | FST-030 / FST-034 | FST-030 cross-referenced, FST-034 implemented | `ratings.head_bearing` (metal seats, VDI 2230); `counterbore_floor_thin`: floor under a counterbored head under 1 d |
+| 20 | LOC-006 | implemented (part) | `adjustment_without_lock` (recalled: warning) from `Adjustment(lock=, mover=)`; z_offset and float exempt. Access in the finished machine: deferred (needs a tool-access search for adjustments at the assembled pose) |
+| 21 | FST-052 / STR-013 | deferred | needs the service shear across each slotted joint (belt pull on a motor mount), which no design declares |
+| 22 | BLT-040 / BLT-041 | BLT-040 implemented, BLT-041 deferred | `pulley_narrower_than_belt`; every catalogue GT2 pulley and idler is drawn double-flanged, so BLT-041 has nothing to find until an unflanged part exists |
+| 23 | FST-100 | deferred | T-nuts are BOM lines without a type and without geometry; the check needs both and the assembly sequence |
+| 24 | ASM-030 | deferred | needs a `design.service` list and a removal-path search |
+| 25 | FST-040 / DOC-012 | implemented (part) | `torque_not_stated` (info) and `metrics.practice.torque_table` (Bossard 8.8 at mu 0.14 for metal joints, the assumed torque for printed seats, locking declared per group); BUILD.md does not yet print it |
+
+Also cross-referenced: FST-010 (`interference.thread_engagement`), FST-012 (`interference.thread_bottoms_out`), BRG-022
+(`fea.bed_support`, `bearing_axial_overload`).
+
+### 8.2 The owner's rules (docs/DESIGN_GUIDELINES.md)
+
+| Id | Rule | Severity | How it is found |
+|---|---|---|---|
+| DG-01 | no printed part in a load path | error, unless `d.waive("DG-01", part, reason=...)` | a printed part sharing a screw (one it is clamped by or threads into, measured or declared), a declared join, or contact with: a guide (rail, block, a part with `guides=`), a bearing, a lead-screw nut or screw, a motor or an extruder, a pulley or idler, a belt end (anchor within 3 mm), the bed, or a part with `meta["load_path"]`; also a jack screw held in the printed part whose tip pushes a part that holds one of those |
+| DG-02 | no tapped thread in aluminium we make; no tapped extrusion ends | warning | `tapped_aluminium`: a screw threading into a made aluminium part (sheet or machined) without `insert="pem"` / `"steel"`; `tapped_extrusion_end`: into a 2020 extrusion without a T-nut |
+| DG-03 | a machined part with only through-features is a laser-cut candidate | info | `cnc_2d_candidate`: a 2.5D plate with no blind level, countersink or fitted bore (a shaft, pin or bearing of another part coaxial in it, or a press join); `meta["cnc_reason"]` suppresses it and is listed |
+
+### 8.3 Results
+
+`printer_v8` (`verify designs/printer_v8.py --only practice --no-render`, 172 screws and 6 bearings probed, about
+30 s): 16 errors, 41 warnings, 2 info. Errors: FST-060 on the four bed posts (each `nut_top` entirely on the plain shank
+of the M5 x 90, each `nut_arm` 2.2 mm onto it); DG-01 on twelve printed parts (`nut_block`, `nut_block_fl`,
+`nut_block_fr`: lead-screw nuts; `z_drive_mount`: the Z motor, two bearings, the Z idler; `z_sleeve`, `z_pedestal_fl`,
+`z_pedestal_fr`: bearings; `probe_mount`: clamps the extruder; `x_belt_block`: the X belt ends; `x_tension_anchor`,
+`y_tension_anchor`, `y_tension_anchor_l`: jack screws carrying belt tension). Warnings, in line with the section 4
+audit: FST-070 on 103 screws, SHF-011 on the three Z screws (bearings and pulleys on thread), BRG-020 on all six 608s,
+BRG-023 on the three upper bearings, SHF-010 on four motor pulleys, BLT-040 on the 12 mm Y belts, BLT-030 / BLT-031 /
+BLT-010 on the Z belt, FST-050 on 15 parts, FST-034 on the bed plate, FST-081 (M3 x 6 and x 8 into MGN12H), FST-051
+(arm-end bolts), FST-101 (five parts on one T-nut), LOC-006 (8 adjustments), DG-02 (`tool_plate` tapped; four arm-end
+taps). Neither machined part is a DG-03 candidate (both have counterbores).
+
+`ref_vminion` (the Rat Rig V-Minion reference model): 8 errors, 14 warnings, 1 info. The eight errors are DG-01 on the
+machine's printed motor cages, idler blocks, belt mount, Z cap and carriage: the owner's practice is stricter than the
+reference machine's, so these are true by the rule, not false alarms. False alarms found on it and on `z_axis_v2` /
+`pan_tilt` were fixed in the checker (each with a test): a T-nut screw was not counted as the second fixing of a block
+also held by an end tap; round standoffs and retainers on their own screw were reported as single-screw joints; one
+T-nut in each of two extrusions was reported as two single T-nuts; parts merely beside a screw's shank (inside its head
+radius, no hole) were counted as held by it.
