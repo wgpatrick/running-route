@@ -19,15 +19,20 @@ What changed from v8.1 (the rest is v8.1's, docstring of designs/printer_v8_1.py
 2. MOTOR MOUNTS: each motor hangs under a 6.35 mm laser-cut 6061 plate, its pilot in the plate's hole, four M3 x 10 from
    above into the motor's own threads (3.65 mm engaged of 4.5). Two 10 mm aluminium spacer posts carry the plate; M5 x 70
    bolts with washers clamp plate, spacer (and the tray, at the front) to T-nuts in the bottom rails. Thread-locked.
-3. CARRIER: the floating T8 nuts, nut plates and pins are v8.1's. The front beam is 36 mm shorter (ends at +/-152, clear
+3. CARRIER: the floating T8 nuts, nut plates and pins are v8.1's (nuts now captive, item 6). The front beam is 36 mm shorter (ends at +/-152, clear
    of the front mounts' post bolts), so the front nut plates bolt to it inboard of the nut and are now 9.525 mm thick
    (were 6.35).
 4. ELECTRONICS: BIGTREETECH Octopus V1.1 (eight drivers) in place of the SKR Mini E3 V3.0 (four): X, Y, Y left, Z, Z1,
    Z2, E, one spare. The two Y motors are on their own drivers now. Klipper [z_tilt] with the three screw positions;
    Z_TILT_ADJUST levels the screws against each other (the belt could not).
 5. FRAME (owner review): the top front rail is flush with the other three top rails (v8.1: 30 mm lower so the gantry
-   passed over it). The frame is 26 mm deeper, all at the front: the side rails are 386 mm (v8.1 360), the front rails
-   and posts sit 26 mm further forward, so the gantry's lowest front parts clear the flush rail by 3.6 mm at full travel.
+   passed over it). The frame is 13 mm deeper, all at the front: the side rails are 373 mm (v8.1 360), the front rails
+   and posts sit 13 mm further forward, and the X idler mount's lug and the X tension anchor's fin start 4 mm above the
+   rail, so the gantry's front parts clear the flush rail by 3.5 mm at full travel; the machine stays inside 420 mm.
+6. Z NUTS CAPTIVE, NO BALLAST (owner review): a laser-cut keeper under each nut's flange (0.1 mm play, float kept) holds
+   the carrier on the nuts both ways; v8.1's 12.7 mm, 871 g front plate (mostly ballast for nut seating) is deleted.
+7. BED POSTS AND TIE (owner review): no tapped holes or thread inserts in the bed plate: M5 countersunk screws from the
+   top face into a coupling nut on each post, and through the tie into nyloc nuts.
 
 Layout (X = width, Y = depth with the front at -Y, Z = up) is v4's; see designs/printer_v4.py for the history.
 
@@ -95,7 +100,7 @@ PRINT_ABS = {"walls": 4, "top_layers": 5, "bottom_layers": 5, "infill": 0.4, "in
 FX, FY, FZ = 340.0, 360.0, 394.0
 RAIL_X = FX / 2 - 10
 TX, TY = PRINT_X / 2, PRINT_Y / 2
-FRONT_EXT = 13.0       # v8.2 (owner review): the frame's front is 26 mm further forward and its top front rail flush with the
+FRONT_EXT = 13.0       # v8.2 (owner review): the frame's front is 13 mm further forward and its top front rail flush with the
                        # other three (v8.1: 30 mm lower, FT_DROP, so the gantry's front parts passed over it). At full -Y
                        # over-travel the gantry's front-most parts below z 407 (the X mounts' M5 bolt heads on the beam's
                        # front face) reach y -169.5; the flush rail's inner face is now at -173.0 (3.5 mm clear). The X idler
@@ -138,7 +143,7 @@ FS_X = FX / 2 - 10     # front lead screws over the bottom side rails
 FS_Y = -101.0
 NUT_PIN = (0.0, 8.0)
 NUT_FLOAT = 2.8
-KEEP_GAP, T_KEEP, KEEP_BX = 0.1, 3.175, 18.5   # v8.2 nut keeper: axial play, thickness (6061), bolts +/- along X from the nut
+KEEP_GAP, T_KEEP, KEEP_BX = 0.1, 3.175, 17.6   # v8.2 nut keeper: axial play, thickness (6061), bolts +/- along X from the nut
 Z_DN = 3.0
 Z_UP = 1.65
 Z_RAIL_L = 245.0
@@ -714,8 +719,8 @@ def build_electrical(d: Design) -> Electrical:
     el.loom("tray_right", [("world", (145.0, 150.0, 34.0)), ("world", (150.0, 60.0, zt)), ("world", (150.0, -40.0, zt))])
     el.loom("back", [("world", (140.0, 152.0, 30.0)), ("world", (130.0, 160.0, 12.0)), ("world", (66.0, 160.0, 12.0)),
                      ("world", (10.0, 140.0, 32.0))])
-    el.loom("gantry", [Waypoint("ybody", (-150.0, YB0 + PL_Y0 - 2.5, Z_PLATE + T_YP / 2), clamp="y_plate_left"),
-                       Waypoint("world", (XL - 0.8, -176.0, ZL), clamp="frame_top_left"), ("world", (XL, -124.0, ZL))],
+    el.loom("gantry", [Waypoint("ybody", (-142.0, YB0 + PL_Y0 + 5.0, Z_PLATE - 1.5), clamp="y_plate_left"),
+                       Waypoint("world", (XL - 2.0, FRONT_Y + 13.0, FZ - 12.0), clamp="frame_top_left"), ("world", (XL, -124.0, ZL))],
             flex_length={0: 270.0})
     el.loom("top_left", [("world", (XL, -118.0, ZL)), ("world", (XL, 136.0, ZL))])
     el.loom("drop_left", [("world", (XL, -120.0, ZL)),
@@ -953,8 +958,8 @@ def build_frame_z():
         shp -= slot_z(cx, py, 90.0, NUT_FLOAT, PIN_SP_D + 1.2, zn0, zn1)
         for bxy in bolts:
             shp -= zc(*bxy, zn0, zn1, 3.25)
-        for bx_ in (cx - KEEP_BX, cx + KEEP_BX):                      # the nut keeper's two M3 through-bolts
-            shp -= zc(bx_, ly, zn0, zn1, clearance_hole("M3") / 2)
+        for bx_ in (cx - KEEP_BX, cx + KEEP_BX):                      # the nut keeper's two M3 through-bolts (4.8: the
+            shp -= zc(bx_, ly, zn0, zn1, 4.8 / 2)                        # smallest hole SendCutSend cuts in 9.525; large washer)
         sheet(d, f"nut_plate{tg}", shp, AL, body="zbody")
         for i, (x, y) in enumerate(bolts):
             add_screw(d, f"nut_plate{tg}_bolt_{i}", "M5", 16, at=(x, y, zn1), body="zbody", threads_into=beam, tnut=True,
@@ -981,7 +986,9 @@ def build_frame_z():
             spn = f"nut_keeper{tg}_spacer_{k_}"
             place(d, spn, spacer_round("M3", KEEP_GAP + 3.5, "aluminium"), Location((bx_, by_, kz1)), body="zbody")
             bolt_nut(d, f"nut_keeper{tg}_bolt_{k_}", "M3", screw_len(tnp + KEEP_GAP + 3.5 + T_KEEP + 1.0, 4.0, 1.0, choices=(20, 25, 30)),
-                     (bx_, by_, Z_FL + tnp), (0, 0, -1), "zbody", (f"nut_plate{tg}", spn, f"nut_keeper{tg}"), nut_at=(bx_, by_, kz0))
+                     (bx_, by_, Z_FL + tnp), (0, 0, -1), "zbody", (f"nut_plate{tg}", spn, f"nut_keeper{tg}"), nut_at=(bx_, by_, kz0),
+                     large=True, nyloc=True)
+            d.get(f"nut_keeper{tg}_bolt_{k_}").meta["locking"] = "nyloc"
         d.join(f"z_nut{tg}", f"nut_keeper{tg}", "captive: the flange sits between plate and keeper, 0.1 mm play, free to float sideways")
         how = (f"How the bed is lifted: the T8 brass nut z_nut{tg} rides lead screw leadscrew{tg}. Its 22 mm flange is under this "
                f"{tnp:g} mm plate and its 10.2 mm barrel goes up through the plate's {NP_HOLE:.1f} mm hole. The carrier's weight rests on "
@@ -1062,7 +1069,7 @@ def build_frame_z():
         coup = Stock(cshape, f"COUPLING-NUT-M5x{COUP_L:g}-A2", f"Coupling (long) nut M5 x {COUP_L:g}, 8 mm A/F, A2 stainless, DIN 6334 type "
                      "(stand-in: not in the catalogue)", (COUP_AF ** 2 * 0.866 - math.pi * 2.24 ** 2) * COUP_L * 8.0e-6, material=SS, cost_usd=0.5)
         place(d, cp, coup, Location((x, y, z_cb)), body="zbody")
-        d.join(p, cp, "thread: the rod is screwed 9 mm into the coupling nut's lower half")
+        d.join(p, cp, "thread: the rod is screwed 9 mm into the coupling nut's lower half (interference: the thread is drawn as an overlap)")
         d.allow_overlap(p, cp)
         wt = f"{p}_washer_top"
         add_washer(d, wt, "M5", (x, y, Z_BED), (0, 0, -1), body="zbody")
