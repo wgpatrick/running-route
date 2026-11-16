@@ -6,9 +6,13 @@ SHCS-M2.5x16,cap screw ISO 4762,M2.5,16,2,0,2,3,2,,
 SHCS-M2.5x18,cap screw ISO 4762,M2.5,18,1,0,1,2,2,,
 SHCS-M3x6,cap screw ISO 4762,M3,6,12,0,12,14,2.5,91290A111,confirmed by the delivered STEP file
 SHCS-M3x8,cap screw ISO 4762,M3,8,47,0,47,52,2.5,91290A400,confirmed by the delivered STEP file
-SHCS-M3x10,cap screw ISO 4762,M3,10,18,0,18,20,2.5,91290A115,confirmed by the delivered STEP file
+SHCS-M3x10,cap screw ISO 4762,M3,10,12,0,12,14,2.5,91290A115,confirmed by the delivered STEP file
 SHCS-M3x12,cap screw ISO 4762,M3,12,2,0,2,3,2.5,91290A500,confirmed by the delivered STEP file
-SHCS-M3x16,cap screw ISO 4762,M3,16,16,0,16,18,2.5,91290A120,confirmed by the delivered STEP file
+SHCS-M3x16,cap screw ISO 4762,M3,16,14,0,14,16,2.5,91290A120,confirmed by the delivered STEP file
+SHCS-M3x18,cap screw ISO 4762,M3,18,2,0,2,3,2.5,,
+SHCS-M3x20,cap screw ISO 4762,M3,20,2,0,2,3,2.5,,
+SHCS-M3x40,cap screw ISO 4762,M3,40,2,0,2,3,2.5,,
+SHCS-M3x45,cap screw ISO 4762,M3,45,2,0,2,3,2.5,,
 SHCS-M3x50,cap screw ISO 4762,M3,50,2,0,2,3,2.5,,
 SHCS-M4x6,cap screw ISO 4762,M4,6,4,0,4,5,3,91290A139,confirmed by the delivered STEP file
 SHCS-M5x8,cap screw ISO 4762,M5,8,0,64,64,71,,,
@@ -22,10 +26,11 @@ SHCS-M5x65,cap screw ISO 4762,M5,65,6,0,6,7,4,,
 NUT-M5-DIN934,hex nut DIN 934,M5,,1,0,1,2,,90591A260,confirmed by the delivered STEP file
 NUT-M2.5,hex nut ISO 4032,M2.5,,5,0,5,6,,90591A270,confirmed by the delivered STEP file
 NUT-M3,hex nut ISO 4032,M3,,24,0,24,27,,90591A250,confirmed by the delivered STEP file
+NUT-M3-NYLOC,hex nut ISO 4032,M3,,10,0,10,11,,,
 NUT-M5,hex nut ISO 4032,M5,,23,0,23,26,,90591A260,"that McMaster number is the DIN 934 nut, 4 mm high, not this ISO 4032 nut (4.7 mm): buy ISO 4032 nuts, or declare hex_nut('M5', 'din934') / add_nut(..., standard='din934')"
 "NYLOC-M2.5 (nut pins, in place of the hex nuts drawn)",nyloc nut,M2.5,,0,3,3,4,,,
 WASHER-M2.5,star washer,M2.5,,2,0,2,3,,,
-WASHER-M3,star washer,M3,,49,0,49,54,,,
+WASHER-M3,star washer,M3,,63,0,63,70,,,
 WASHER-M3-LARGE,star washer,M3,,6,0,6,7,,,
 WASHER-M5,star washer,M5,,85,0,85,94,,,
 WASHER-M5-LARGE,star washer,M5,,5,0,5,6,,,

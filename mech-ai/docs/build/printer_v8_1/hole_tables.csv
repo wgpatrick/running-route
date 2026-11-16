@@ -144,9 +144,9 @@ tool_plate,H4,hole,Z,27.0,32.058,1.588,4.22,,3.175,True,,,clearance M3,extruder_
 tool_plate,H5,hole,Z,47.25,32.5,1.588,3.4,,3.175,True,,,clearance M3,x_belt_bracket_screw_1,,d,
 tool_plate,H6,hole,Z,17.0,33.0,1.588,3.4,,3.175,True,,,clearance M3,tool_screw_1,,a,locates guide block x_carriage
 tool_plate,H7,hole,Z,37.0,33.0,1.588,3.4,,3.175,True,,,clearance M3,tool_screw_3,,a,locates guide block x_carriage
-tool_plate,H8,hole,Z,57.5,38.858,1.588,4.22,,3.175,True,,,clearance M3,extruder_screw_1,,c,
-tool_plate,H9,hole,Z,6.5,42.0,1.588,3.4,,3.175,True,,,clearance M3,part_duct_screw_0,,e,
-tool_plate,H10,hole,Z,6.5,53.5,1.588,3.4,,3.175,True,,,clearance M3,part_duct_screw_1,,f,
+tool_plate,H8,hole,Z,57.5,38.858,1.588,4.22,,3.175,True,,,clearance M3,extruder_screw_1,,e,
+tool_plate,H9,hole,Z,6.5,42.0,1.588,3.4,,3.175,True,,,clearance M3,part_duct_screw_0,,f,
+tool_plate,H10,hole,Z,6.5,53.5,1.588,3.4,,3.175,True,,,clearance M3,part_duct_screw_1,,g,
 tool_plate_rear,H1,hole,Z,17.0,13.0,2.375,6.5,,4.75,True,,,clearance M3,tool_screw_0,,a,locates guide block x_carriage
 tool_plate_rear,H2,hole,Z,37.0,13.0,2.375,6.5,,4.75,True,,,clearance M3,tool_screw_2,,a,locates guide block x_carriage
 tool_plate_rear,H3,hole,Z,17.0,33.0,2.375,6.5,,4.75,True,,,clearance M3,tool_screw_1,,a,locates guide block x_carriage
@@ -154,12 +154,14 @@ tool_plate_rear,H4,hole,Z,37.0,33.0,2.375,6.5,,4.75,True,,,clearance M3,tool_scr
 tool_plate_rear,H5,hole,Z,6.5,42.0,2.375,4.8,,4.75,True,,,clearance M3,part_duct_screw_0,,b,
 tool_plate_rear,H6,hole,Z,6.5,53.5,2.375,4.8,,4.75,True,,,clearance M3,part_duct_screw_1,,c,
 probe_mount,H1,hole,Z,12.0,11.19,2.5,13.0,,5.0,True,,,bore / opening,,bed_probe (PROBE-OMRON-E2E-X5ME1),,probe clamp hole: locates the probe
-probe_mount,H2,hole,Y,21.058,2.0,16.55,6.6,,4.0,True,,,clearance M3,extruder_screw_0,,a,
-probe_mount,H3,hole,Y,27.858,2.0,47.05,6.6,,4.0,True,,,clearance M3,extruder_screw_1,,a,
-part_duct,H1,hole,X,43.5,4.5,27.0,2.5,,7.0,True,,,TAP M3 through,part_fan_screw_1,,a,
-part_duct,H2,hole,X,4.25,16.3,10.5,2.5,,8.5,False,,,TAP M3 x 8.5 deep,part_duct_screw_1,,b,
-part_duct,H3,hole,X,4.25,27.8,10.5,2.5,,8.5,False,,,TAP M3 x 8.5 deep,part_duct_screw_0,,c,
-part_duct,H4,hole,X,43.5,28.5,27.0,2.5,,7.0,True,,,TAP M3 through,part_fan_screw_0,,a,
+probe_mount,H2,hole,Y,21.058,1.7,16.55,6.6,,3.4,True,,,clearance M3,extruder_screw_0,,a,
+probe_mount,H3,hole,Y,27.858,1.7,47.05,6.6,,3.4,True,,,clearance M3,extruder_screw_1,,b,
+part_duct,H1,hole,X,46.0,4.5,27.0,3.6,,2.0,True,,,clearance M3,part_fan_screw_1,,a,
+part_duct,H2,hole,X,1.0,16.3,10.5,3.6,,2.0,False,,,clearance M3,part_duct_screw_1,,b,
+part_duct,H3,hole,X,7.65,16.3,10.5,3.6,,1.7,False,,,clearance M3,part_duct_screw_1,,b,
+part_duct,H4,hole,X,1.0,27.8,10.5,3.6,,2.0,False,,,clearance M3,part_duct_screw_0,,c,
+part_duct,H5,hole,X,7.65,27.8,10.5,3.6,,1.7,False,,,clearance M3,part_duct_screw_0,,c,
+part_duct,H6,hole,X,46.0,28.5,27.0,3.6,,2.0,True,,,clearance M3,part_fan_screw_0,,d,
 x_belt_bracket,H1,hole,Z,6.2,5.0,11.457,3.4,,2.286,True,,,clearance M3,x_belt_clamp_screw_2,,a,
 x_belt_bracket,H2,hole,Z,20.2,5.0,11.457,3.4,,2.286,True,,,clearance M3,x_belt_clamp_screw_3,,b,
 x_belt_bracket,H3,hole,Z,6.2,25.0,11.457,3.4,,2.286,True,,,clearance M3,x_belt_clamp_screw_0,,c,
@@ -213,10 +215,10 @@ y_endstop_mount,H1,hole,Z,8.0,6.5,1.588,5.5,,3.175,True,,,clearance M5,y_endstop
 y_endstop_mount,H2,hole,Z,34.5,9.865,1.588,3.6,,3.175,True,,,clearance M3,y_endstop_screw_0,,b,carries endstop y_endstop (set at assembly)
 y_endstop_mount,H3,hole,Z,49.5,9.865,1.588,3.6,,3.175,True,,,clearance M3,y_endstop_screw_1,,c,carries endstop y_endstop (set at assembly)
 y_endstop_mount,H4,hole,Z,8.0,18.5,1.588,5.5,,3.175,True,,,clearance M5,y_endstop_mount_bolt_0,,d,
-mains_cover_relay,H1,hole,Z,4.0,29.0,4.0,2.5,,8.0,False,,,TAP M3 x 8 deep,mains_cover_relay_screw_0,,a,
-mains_cover_relay,H2,hole,Z,38.0,29.0,4.0,2.5,,8.0,False,,,TAP M3 x 8 deep,mains_cover_relay_screw_1,,b,
-mains_cover_psu,H1,hole,Z,4.0,4.0,4.0,2.5,,8.0,False,,,TAP M3 x 8 deep,mains_cover_psu_screw_0,,a,
-mains_cover_psu,H2,hole,Z,135.0,4.0,4.0,2.5,,8.0,False,,,TAP M3 x 8 deep,mains_cover_psu_screw_1,,b,
+mains_cover_relay,H1,hole,Z,4.0,29.0,14.7,3.6,,29.4,True,,,clearance M3,mains_cover_relay_screw_0,,a,
+mains_cover_relay,H2,hole,Z,38.0,29.0,14.7,3.6,,29.4,True,,,clearance M3,mains_cover_relay_screw_1,,b,
+mains_cover_psu,H1,hole,Z,4.0,4.0,16.433,3.6,,32.865,True,,,clearance M3,mains_cover_psu_screw_0,,a,
+mains_cover_psu,H2,hole,Z,135.0,4.0,16.433,3.6,,32.865,True,,,clearance M3,mains_cover_psu_screw_1,,b,
 electronics_tray,H1,hole,Z,222.435,6.655,1.587,3.4,,3.175,True,,,clearance M3,control_board_screw_4,,a,
 electronics_tray,H2,hole,Z,10.0,11.0,1.587,5.5,,3.175,True,,,clearance M5,z_fl_rail_bolt_0,,b,
 electronics_tray,H3,hole,Z,330.0,11.0,1.587,5.5,,3.175,True,,,clearance M5,z_fr_rail_bolt_0,,c,
@@ -252,5 +254,5 @@ inlet_panel,H3,hole,Z,30.0,40.0,1.27,3.4,,2.54,True,,,clearance M3,inlet_screw_1
 inlet_panel,H4,hole,Z,86.0,40.0,1.27,3.4,,2.54,True,,,clearance M3,inlet_screw_0,,d,
 inlet_panel,H5,hole,Z,78.0,63.0,1.27,3.4,,2.54,True,,,clearance M3,mains_cover_inlet_screw_0,,e,
 inlet_panel,H6,hole,Z,8.0,70.0,1.27,5.5,,2.54,True,,,clearance M5,inlet_panel_bolt_0,,f,
-mains_cover_inlet,H1,hole,Y,4.0,28.0,54.0,2.5,,8.0,False,,,TAP M3 x 8 deep,mains_cover_inlet_screw_0,,a,
-mains_cover_inlet,H2,hole,Y,50.0,28.0,54.0,2.5,,8.0,False,,,TAP M3 x 8 deep,mains_cover_inlet_screw_1,,b,
+mains_cover_inlet,H1,hole,Y,4.0,27.5,54.0,3.6,,9.0,True,,,clearance M3,mains_cover_inlet_screw_0,,a,
+mains_cover_inlet,H2,hole,Y,50.0,27.5,54.0,3.6,,9.0,True,,,clearance M3,mains_cover_inlet_screw_1,,b,

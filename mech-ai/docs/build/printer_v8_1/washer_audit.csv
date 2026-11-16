@@ -11,8 +11,6 @@ tool_screw_0,SHCS-M3x6,screw head,tool_plate,sheet,al6061,3.0,1.0,on thin alumin
 tool_screw_1,SHCS-M3x6,screw head,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
 tool_screw_2,SHCS-M3x6,screw head,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
 tool_screw_3,SHCS-M3x6,screw head,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
-part_fan_screw_0,SHCS-M3x16,screw head,part_fan,purchased,abs,9.8,1.0,on a plastic fan frame,False
-part_fan_screw_1,SHCS-M3x16,screw head,part_fan,purchased,abs,9.8,1.0,on a plastic fan frame,False
 psu_screw_0,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
 psu_screw_1,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
 psu_screw_2,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False

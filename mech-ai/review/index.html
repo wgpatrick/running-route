@@ -280,7 +280,7 @@ function partSheet(p){
   if(fab&&m.cut_length_mm)rows.push(['Cut',`${fx(m.cut_length_mm,0)} mm, ${m.pierces} pierces`]);
   rows.push(['CAD source',esc(p.model)]);
   h+=factsHTML(rows);
-  if(p.desc&&!fab)h+=`<p>${esc(p.desc)}${p.key_spec?`<br><span class="note">${esc(p.key_spec)}</span>`:''}</p>`;
+  if(p.desc)h+=`<p>${esc(p.desc)}${p.key_spec?`<br><span class="note">${esc(p.key_spec)}</span>`:''}</p>`;
   h+=`<h3>Guideline flags</h3>`+flagsHTML(p.flags);
   if(fab){
     h+=`<h3>Tolerances and key features</h3><dl class="crit"><dt>General tolerance</dt><dd>${esc(GEN_TOL[p.process_code]||'')}</dd>`;

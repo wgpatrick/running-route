@@ -1,6 +1,6 @@
 # Build instructions: printer_v8_1
 
-583 parts, 180 screws, about 136 minutes (rough allowance). Tools: 2 mm hex key, 2.5 mm hex key, 3 mm hex key, 4 mm hex key.
+607 parts, 180 screws, about 144 minutes (rough allowance). Tools: 2 mm hex key, 2.5 mm hex key, 3 mm hex key, 4 mm hex key.
 
 ## Sub-assembly: z_tower_rear
 
@@ -48,59 +48,66 @@
 
 ## Sub-assembly: electronics
 
-1. Start with **psu** on the bench, upside down.
-2. Fit **electronics_tray** onto psu: bring it in from the side (-X).
-3. Drive 4 screws from above with the 3 mm hex key: psu_screw_3, psu_screw_2, psu_screw_1, psu_screw_0.
-4. Turn the assembly upright (as designed).
-5. Fit **psu_relay_spacer_2** onto electronics_tray: bring it in from above (-Z).
-6. Fit **psu_relay** onto psu_relay_spacer_2: bring it in from above (-Z). Hold it until fastened (it would tip or slide off (centre of mass is 34 mm outside what it rests on)).
-7. Fit **psu_relay_nut_2** onto electronics_tray: bring it in from the side (-X).
-8. Fit **psu_relay_washer_2** onto electronics_tray, psu_relay_nut_2: bring it in from the side (-X).
-9. Drive 1 screw from above with the 2.5 mm hex key: psu_relay_screw_2.
-10. Fit **psu_relay_spacer_1** onto electronics_tray, psu_relay: bring it in from the side (+X).
-11. Fit **psu_relay_nut_1** onto electronics_tray: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
-12. Fit **psu_relay_washer_1** onto electronics_tray, psu_relay_nut_1: bring it in from the side (-X).
-13. Drive 1 screw from above with the 2.5 mm hex key: psu_relay_screw_1.
-14. Fit **psu_relay_spacer_0** onto electronics_tray, psu_relay: bring it in from the side (+Y).
-15. Fit **psu_relay_nut_0** onto electronics_tray: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
-16. Fit **psu_relay_washer_0** onto electronics_tray, psu_relay_nut_0: bring it in from the side (-X).
-17. Drive 1 screw from above with the 2.5 mm hex key: psu_relay_screw_0.
-18. Fit **control_board_spacer_4** onto electronics_tray: bring it in from above (-Z).
-19. Fit **control_board** onto control_board_spacer_4: bring it in from above (-Z). Hold it until fastened (it would tip or slide off (centre of mass is 58 mm outside what it rests on)).
-20. Fit **control_board_nut_4** onto electronics_tray: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
-21. Fit **control_board_washer_4** onto control_board_nut_4, electronics_tray: bring it in from the side (-X).
-22. Drive 1 screw from above with the 2.5 mm hex key: control_board_screw_4.
-23. Fit **control_board_spacer_2** onto control_board, electronics_tray: bring it in from the side (-X).
-24. Fit **control_board_nut_2** onto electronics_tray: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
-25. Fit **control_board_washer_2** onto control_board_nut_2, electronics_tray: bring it in from the side (-X).
-26. Drive 1 screw from above with the 2.5 mm hex key: control_board_screw_2.
-27. Fit **control_board_spacer_1** onto control_board, electronics_tray: bring it in from the side (-X).
-28. Fit **control_board_nut_1** onto electronics_tray: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
-29. Fit **control_board_washer_1** onto control_board_nut_1, electronics_tray: bring it in from the side (-X).
-30. Drive 1 screw from above with the 2.5 mm hex key: control_board_screw_1.
-31. Fit **control_board_spacer_0** onto control_board, electronics_tray: bring it in from the side (-X).
-32. Fit **control_board_nut_0** onto electronics_tray: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
-33. Fit **control_board_washer_0** onto control_board_nut_0, electronics_tray: bring it in from the side (-X).
-34. Drive 1 screw from above with the 2.5 mm hex key: control_board_screw_0.
-35. Fit **mains_cover_relay** onto electronics_tray: bring it in from above (-Z).
-36. Fit **mains_cover_relay_screw_1_washer** onto electronics_tray: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
-37. Drive 1 screw from below with the 2.5 mm hex key: mains_cover_relay_screw_1.
-38. Fit **mains_cover_relay_screw_0_washer** onto electronics_tray: bring it in from the side (+X). Hold it until fastened (nothing stops it falling).
-39. Drive 1 screw from below with the 2.5 mm hex key: mains_cover_relay_screw_0.
-40. Fit **mains_cover_psu** onto electronics_tray: bring it in from above (-Z).
-41. Fit **mains_cover_psu_screw_1_washer** onto electronics_tray: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
-42. Drive 1 screw from below with the 2.5 mm hex key: mains_cover_psu_screw_1.
-43. Fit **mains_cover_psu_screw_0_washer** onto electronics_tray: bring it in from the side (+X). Hold it until fastened (nothing stops it falling).
-44. Drive 1 screw from below with the 2.5 mm hex key: mains_cover_psu_screw_0.
-45. Fit **host_spacer_3** onto electronics_tray: bring it in from above (-Z).
-46. Fit **host** onto host_spacer_3: bring it in from above (-Z). Hold it until fastened (it would tip or slide off (centre of mass is 29 mm outside what it rests on)).
-47. Fit **host_nut_3** onto electronics_tray: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
-48. Fit **host_washer_3** onto electronics_tray, host_nut_3: bring it in from the side (-X).
-49. Drive 1 screw from above with the 2 mm hex key: host_screw_3.
-50. Fit **host_nut_0** onto electronics_tray: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
-51. Fit **host_spacer_0** onto electronics_tray, host: bring it in from the side (-X).
-52. Fit **host_washer_0** onto electronics_tray, host_nut_0: bring it in from the side (-X).
-53. Drive 1 screw from above with the 2 mm hex key: host_screw_0.
+1. Start with **psu** on the bench.
+2. Fit **electronics_tray** onto psu: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
+3. Fit **mains_cover_psu** onto electronics_tray: bring it in from above (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
+4. Fit **mains_cover_psu_screw_1_nut** onto mains_cover_psu: bring it in from above (-Z). Hold it until fastened (it would tip or slide off (no surface underneath it)).
+5. Fit **mains_cover_psu_screw_1_washer** onto electronics_tray: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
+6. Fit **mains_cover_psu_screw_1_nwasher** onto mains_cover_psu, mains_cover_psu_screw_1_nut: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
+7. Drive 1 screw from below with the 2.5 mm hex key: mains_cover_psu_screw_1.
+8. Fit **mains_cover_psu_screw_0_nut** onto mains_cover_psu: bring it in from above (-Z). Hold it until fastened (it would tip or slide off (no surface underneath it)).
+9. Fit **mains_cover_psu_screw_0_washer** onto electronics_tray: bring it in from the side (+X). Hold it until fastened (nothing stops it falling).
+10. Fit **mains_cover_psu_screw_0_nwasher** onto mains_cover_psu, mains_cover_psu_screw_0_nut: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
+11. Drive 1 screw from below with the 2.5 mm hex key: mains_cover_psu_screw_0.
+12. Fit **psu_relay_spacer_2** onto electronics_tray: bring it in from above (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
+13. Fit **psu_relay** onto psu_relay_spacer_2: bring it in from above (-Z). Hold it until fastened (it would tip or slide off (centre of mass is 34 mm outside what it rests on)).
+14. Fit **psu_relay_nut_2** onto electronics_tray: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
+15. Fit **psu_relay_washer_2** onto electronics_tray, psu_relay_nut_2: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
+16. Drive 1 screw from above with the 2.5 mm hex key: psu_relay_screw_2.
+17. Fit **mains_cover_relay** onto electronics_tray: bring it in from above (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
+18. Fit **mains_cover_relay_screw_1_nut** onto mains_cover_relay: bring it in from above (-Z). Hold it until fastened (it would tip or slide off (no surface underneath it)).
+19. Fit **mains_cover_relay_screw_1_washer** onto electronics_tray: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
+20. Fit **mains_cover_relay_screw_1_nwasher** onto mains_cover_relay, mains_cover_relay_screw_1_nut: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
+21. Drive 1 screw from below with the 2.5 mm hex key: mains_cover_relay_screw_1.
+22. Fit **mains_cover_relay_screw_0_nut** onto mains_cover_relay: bring it in from above (-Z). Hold it until fastened (it would tip or slide off (no surface underneath it)).
+23. Fit **mains_cover_relay_screw_0_washer** onto electronics_tray: bring it in from the side (+X). Hold it until fastened (nothing stops it falling).
+24. Fit **mains_cover_relay_screw_0_nwasher** onto mains_cover_relay, mains_cover_relay_screw_0_nut: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
+25. Drive 1 screw from below with the 2.5 mm hex key: mains_cover_relay_screw_0.
+26. Drive 4 screws from below with the 3 mm hex key: psu_screw_3, psu_screw_2, psu_screw_1, psu_screw_0.
+27. Fit **psu_relay_spacer_1** onto electronics_tray, psu_relay: bring it in from the side (+X).
+28. Fit **psu_relay_nut_1** onto electronics_tray: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
+29. Fit **psu_relay_washer_1** onto electronics_tray, psu_relay_nut_1: bring it in from the side (-X).
+30. Drive 1 screw from above with the 2.5 mm hex key: psu_relay_screw_1.
+31. Fit **psu_relay_spacer_0** onto electronics_tray, psu_relay: bring it in from the side (+Y).
+32. Fit **psu_relay_nut_0** onto electronics_tray: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
+33. Fit **psu_relay_washer_0** onto electronics_tray, psu_relay_nut_0: bring it in from the side (-X).
+34. Drive 1 screw from above with the 2.5 mm hex key: psu_relay_screw_0.
+35. Fit **control_board_spacer_4** onto electronics_tray: bring it in from above (-Z).
+36. Fit **control_board** onto control_board_spacer_4: bring it in from above (-Z). Hold it until fastened (it would tip or slide off (centre of mass is 58 mm outside what it rests on)).
+37. Fit **control_board_nut_4** onto electronics_tray: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
+38. Fit **control_board_washer_4** onto control_board_nut_4, electronics_tray: bring it in from the side (-X).
+39. Drive 1 screw from above with the 2.5 mm hex key: control_board_screw_4.
+40. Fit **control_board_spacer_2** onto control_board, electronics_tray: bring it in from the side (-X).
+41. Fit **control_board_nut_2** onto electronics_tray: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
+42. Fit **control_board_washer_2** onto control_board_nut_2, electronics_tray: bring it in from the side (-X).
+43. Drive 1 screw from above with the 2.5 mm hex key: control_board_screw_2.
+44. Fit **control_board_spacer_1** onto control_board, electronics_tray: bring it in from the side (-X).
+45. Fit **control_board_nut_1** onto electronics_tray: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
+46. Fit **control_board_washer_1** onto control_board_nut_1, electronics_tray: bring it in from the side (-X).
+47. Drive 1 screw from above with the 2.5 mm hex key: control_board_screw_1.
+48. Fit **control_board_spacer_0** onto control_board, electronics_tray: bring it in from the side (-X).
+49. Fit **control_board_nut_0** onto electronics_tray: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
+50. Fit **control_board_washer_0** onto control_board_nut_0, electronics_tray: bring it in from the side (-X).
+51. Drive 1 screw from above with the 2.5 mm hex key: control_board_screw_0.
+52. Fit **host_spacer_3** onto electronics_tray: bring it in from above (-Z).
+53. Fit **host** onto host_spacer_3: bring it in from above (-Z). Hold it until fastened (it would tip or slide off (centre of mass is 29 mm outside what it rests on)).
+54. Fit **host_nut_3** onto electronics_tray: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
+55. Fit **host_washer_3** onto electronics_tray, host_nut_3: bring it in from the side (-X).
+56. Drive 1 screw from above with the 2 mm hex key: host_screw_3.
+57. Fit **host_nut_0** onto electronics_tray: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
+58. Fit **host_spacer_0** onto electronics_tray, host: bring it in from the side (-X).
+59. Fit **host_washer_0** onto electronics_tray, host_nut_0: bring it in from the side (-X).
+60. Drive 1 screw from above with the 2 mm hex key: host_screw_0.
 
 ## Sub-assembly: z_tower_fr
 
@@ -201,9 +208,16 @@
 
 ## Sub-assembly: part_cooling
 
-1. Start with **part_duct** on the bench.
-2. Fit **part_fan** onto part_duct: bring it in from above (-Z).
-3. Drive 2 screws from the side with the 2.5 mm hex key: part_fan_screw_1, part_fan_screw_0.
+1. Start with **part_duct** on the bench, on its front (back face up).
+2. Fit **part_fan** onto part_duct: bring it in from the side (-Z).
+3. Fit **part_fan_screw_1_nut** onto part_duct: bring it in from the side (-Z). Hold it until fastened (nothing stops it falling).
+4. Fit **part_fan_screw_1_washer** onto part_fan: bring it in from the side (-Z).
+5. Fit **part_fan_screw_1_nwasher** onto part_duct, part_fan_screw_1_nut: bring it in from the side (-Z).
+6. Drive 1 screw from above with the 2.5 mm hex key: part_fan_screw_1.
+7. Fit **part_fan_screw_0_nut** onto part_duct: bring it in from the side (-Z). Hold it until fastened (nothing stops it falling).
+8. Fit **part_fan_screw_0_washer** onto part_fan: bring it in from the side (-Z).
+9. Fit **part_fan_screw_0_nwasher** onto part_duct, part_fan_screw_0_nut: bring it in from the side (-Z).
+10. Drive 1 screw from above with the 2.5 mm hex key: part_fan_screw_0.
 
 ## Main assembly
 
@@ -429,181 +443,192 @@
 220. Fit **extruder_nut_1** onto tool_plate, tool_plate_rear: bring it in from above (-Y).
 221. Fit **extruder_nut_0** onto tool_plate, tool_plate_rear: bring it in from above (-Y).
 222. Fit **extruder** onto tool_plate_rear: bring it in from the side (-Z).
-223. Fit **probe_mount_sleeve_1** onto extruder: bring it in from the side (-Z).
-224. Drive 1 screw from above with the 2.5 mm hex key: extruder_screw_1.
-225. Fit **probe_mount_sleeve_0** onto extruder: bring it in from the side (-Z).
-226. Drive 1 screw from above with the 2.5 mm hex key: extruder_screw_0.
-227. Fit **y_tension_nut_l** onto y_tension_anchor_l: bring it in from the side (-Z).
-228. Drive 1 screw from below with the 2.5 mm hex key: y_tension_screw_l.
-229. Fit **y_tension_nut** onto y_tension_anchor: bring it in from the side (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
-230. Drive 1 screw from below with the 2.5 mm hex key: y_tension_screw.
-231. Fit **x_tension_nut** onto x_tension_anchor: bring it in from the side (-Z). Hold it until fastened (nothing stops it falling).
-232. Drive 1 screw from the side with the 2.5 mm hex key: x_tension_screw.
-233. Drive 1 screw from above with the 2.5 mm hex key: x_rail_screw_0.
-234. Fit **x_endstop_spacer_1** onto y_plate_left: bring it in from the side (+X). Hold it until fastened (nothing stops it falling).
-235. Fit **x_endstop** onto x_endstop_spacer_1: move it -Y then +Z by 353 mm. Hold it until fastened (nothing stops it falling).
-236. Fit **x_endstop_nut_1** onto x_endstop: move it -Y then +Z by 358 mm. Hold it until fastened (nothing stops it falling).
-237. Turn the assembly upright (as designed).
-238. Fit **x_endstop_screw_1_washer** onto y_plate_left: bring it in from above (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
-239. Drive 1 screw from above with the 2.5 mm hex key: x_endstop_screw_1.
-240. Fit **x_endstop_nut_0** onto x_endstop: move it -Y then +Z by 356 mm. Hold it until fastened (nothing stops it falling).
-241. Fit **x_endstop_screw_0_washer** onto y_plate_left: bring it in from above (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
-242. Fit **x_endstop_spacer_0** onto x_endstop, y_plate_left: move it -Z then -X by 100 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
-243. Drive 1 screw from above with the 2.5 mm hex key: x_endstop_screw_0.
-244. Fit the **part_cooling** sub-assembly onto tool_plate_rear: bring it in from the side (-Y). Hold it until fastened (nothing stops it falling).
-245. Fit **part_duct_screw_1_washer** onto tool_plate: bring it in from above (-Z). Hold it until fastened (nothing stops it falling).
-246. Drive 1 screw from the side with the 2.5 mm hex key: part_duct_screw_1.
-247. Fit **part_duct_screw_0_washer** onto tool_plate: bring it in from the side (+Y). Hold it until fastened (nothing stops it falling).
-248. Drive 1 screw from the side with the 2.5 mm hex key: part_duct_screw_0.
-249. Fit **y_endstop_spacer_1** onto y_endstop_mount: bring it in from above (-Z). Hold it until fastened (nothing stops it falling).
-250. Fit **y_endstop** onto y_endstop_spacer_1: bring it in from above (-Z). Hold it until fastened (nothing stops it falling).
-251. Fit **y_endstop_nut_1** onto y_endstop: bring it in from above (-Z). Hold it until fastened (nothing stops it falling).
-252. Fit **y_endstop_screw_1_washer** onto y_endstop_mount: bring it in from above (-Z). Hold it until fastened (nothing stops it falling).
-253. Drive 1 screw from the side with the 2.5 mm hex key: y_endstop_screw_1.
-254. Fit **y_endstop_nut_0** onto y_endstop: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
-255. Fit **y_endstop_spacer_0** onto y_endstop, y_endstop_mount: move it -Z then -Y by 60 mm. Hold it until fastened (nothing stops it falling).
-256. Fit **y_endstop_screw_0_washer** onto y_endstop_mount: bring it in from the side (+X). Hold it until fastened (nothing stops it falling).
-257. Drive 1 screw from the side with the 2.5 mm hex key: y_endstop_screw_0.
-258. Fit **x_belt_bracket** onto tool_plate: bring it in from above (-Z). Hold it until fastened (nothing stops it falling).
-259. Fit **x_belt_bracket_screw_1_washer** onto x_belt_bracket: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
-260. Drive 1 screw from the side with the 2.5 mm hex key: x_belt_bracket_screw_1.
-261. Fit **x_belt_clamp** onto x_belt_bracket: bring it in from the side (+Y). Hold it until fastened (nothing stops it falling).
-262. Fit **x_belt_clamp_screw_3_nut** onto x_belt_clamp: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
-263. Fit **x_belt_clamp_screw_3_washer** onto x_belt_bracket: bring it in from above (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
-264. Fit **x_belt_clamp_screw_3_nwasher** onto x_belt_clamp, x_belt_clamp_screw_3_nut: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
-265. Drive 1 screw from above with the 2.5 mm hex key: x_belt_clamp_screw_3.
-266. Fit **x_belt_clamp_screw_2_nut** onto x_belt_clamp: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
-267. Fit **x_belt_clamp_screw_2_washer** onto x_belt_bracket: bring it in from above (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
-268. Fit **x_belt_clamp_screw_2_nwasher** onto x_belt_clamp, x_belt_clamp_screw_2_nut: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
-269. Drive 1 screw from above with the 2.5 mm hex key: x_belt_clamp_screw_2.
-270. Fit **x_belt_bracket_screw_0_washer** onto x_belt_bracket: bring it in from the side (+Y). Hold it until fastened (nothing stops it falling).
-271. Drive 1 screw from the side with the 2.5 mm hex key: x_belt_bracket_screw_0.
-272. Fit **x_belt_clamp_screw_1_nut** onto x_belt_clamp: bring it in from the side (+X). Hold it until fastened (nothing stops it falling).
-273. Fit **x_belt_clamp_screw_1_washer** onto x_belt_bracket: bring it in from above (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
-274. Fit **x_belt_clamp_screw_1_nwasher** onto x_belt_clamp, x_belt_clamp_screw_1_nut: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
-275. Drive 1 screw from above with the 2.5 mm hex key: x_belt_clamp_screw_1.
-276. Fit **x_belt_clamp_screw_0_nut** onto x_belt_clamp: bring it in from the side (+X). Hold it until fastened (nothing stops it falling).
-277. Fit **x_belt_clamp_screw_0_washer** onto x_belt_bracket: bring it in from above (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
-278. Fit **x_belt_clamp_screw_0_nwasher** onto x_belt_clamp, x_belt_clamp_screw_0_nut: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
-279. Drive 1 screw from above with the 2.5 mm hex key: x_belt_clamp_screw_0.
-280. Fit **mains_cover_inlet** onto inlet_panel: move it +X then -Z by 288 mm. Hold it until fastened (nothing stops it falling).
-281. Fit **mains_cover_inlet_screw_1_washer** onto inlet_panel: bring it in from above (-Z). Hold it until fastened (nothing stops it falling).
-282. Drive 1 screw from the side with the 2.5 mm hex key: mains_cover_inlet_screw_1.
-283. Fit **mains_cover_inlet_screw_0_washer** onto inlet_panel: bring it in from the side (+X). Hold it until fastened (nothing stops it falling).
-284. Drive 1 screw from the side with the 2.5 mm hex key: mains_cover_inlet_screw_0.
-285. Fit **inlet** onto inlet_panel: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
-286. Turn the assembly on its left side (right side up).
-287. Fit **inlet_washer_1** onto inlet_panel: move it -Y then -X by 247 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
-288. Fit **inlet_nut_1** onto inlet_panel, inlet_washer_1: move it -Y then -X by 245 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
-289. Drive 1 screw from below with the 2.5 mm hex key: inlet_screw_1.
-290. Fit **inlet_washer_0** onto inlet_panel: move it -Z then -X by 47 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
-291. Fit **inlet_nut_0** onto inlet_panel, inlet_washer_0: move it -Y then -X by 46 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
-292. Turn the assembly on its back (front face up).
-293. Drive 1 screw from the side with the 2.5 mm hex key: inlet_screw_0.
-294. Fit **nut_pin_sleeve** onto z_nut: bring it in from the side (-Z). Hold it until fastened (nothing stops it falling).
-295. Fit **nut_pin_nut** onto z_nut: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
-296. Drive 1 screw from the side with the 2 mm hex key: nut_pin.
-297. Drive 6 screws from above with the 2.5 mm hex key: z_rail_right_screw_4, z_rail_right_screw_3, z_rail_right_screw_2, z_rail_left_screw_4, z_rail_left_screw_3, z_rail_left_screw_2.
-298. Fit **z_carriage_right** onto back_plate, z_rail_right: bring it in from the side (-Z).
-299. Fit **z_carriage_right_screw_3_washer** onto back_plate: bring it in from the side (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
-300. Drive 1 screw from above with the 2.5 mm hex key: z_carriage_right_screw_3.
-301. Fit **z_carriage_right_screw_2_washer** onto back_plate: bring it in from the side (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
-302. Drive 1 screw from above with the 2.5 mm hex key: z_carriage_right_screw_2.
-303. Fit **z_carriage_right_screw_1_washer** onto back_plate: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
-304. Drive 1 screw from above with the 2.5 mm hex key: z_carriage_right_screw_1.
-305. Fit **z_carriage_right_screw_0_washer** onto back_plate: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
-306. Drive 1 screw from above with the 2.5 mm hex key: z_carriage_right_screw_0.
-307. Fit **z_carriage_left** onto back_plate, z_rail_left: bring it in from the side (-Z).
-308. Fit **z_carriage_left_screw_3_washer** onto back_plate: bring it in from the side (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
-309. Drive 1 screw from above with the 2.5 mm hex key: z_carriage_left_screw_3.
-310. Fit **z_carriage_left_screw_2_washer** onto back_plate: bring it in from the side (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
-311. Drive 1 screw from above with the 2.5 mm hex key: z_carriage_left_screw_2.
-312. Fit **z_carriage_left_screw_1_washer** onto back_plate: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
-313. Drive 1 screw from above with the 2.5 mm hex key: z_carriage_left_screw_1.
-314. Fit **z_carriage_left_screw_0_washer** onto back_plate: bring it in from above (+Y). Hold it until fastened (it rests only on parts that are themselves still loose).
-315. Turn the assembly upright (as designed).
-316. Drive 1 screw from the side with the 2.5 mm hex key: z_carriage_left_screw_0.
-317. Drive 18 screws from above with the 2.5 mm hex key: y_rail_right_screw_5, y_rail_right_screw_4, y_rail_right_screw_2, y_rail_right_screw_1, y_rail_right_screw_0, y_rail_left_screw_5, y_rail_left_screw_4, y_rail_left_screw_2 ....
-318. Drive 2 screws from the side with the 2.5 mm hex key: x_rail_screw_4, x_rail_screw_1.
-319. Fit **nut_pin_fr_sleeve** onto z_nut_fr: move it -Y then -Z by 275 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
-320. Fit **nut_pin_fr_nut** onto z_nut_fr: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
-321. Drive 1 screw from above with the 2 mm hex key: nut_pin_fr.
-322. Fit **nut_pin_fl_sleeve** onto z_nut_fl: move it -Y then -Z by 275 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
-323. Fit **nut_pin_fl_nut** onto z_nut_fl: bring it in from the side (+X). Hold it until fastened (nothing stops it falling).
-324. Drive 1 screw from above with the 2 mm hex key: nut_pin_fl.
-325. Fit **post_rb** onto frame_bot_back, frame_bot_right, frame_top_right: bring it in from the side (-X).
-326. Fit **post_lf** onto frame_bot_left, frame_top_left, y_idler_mount_l: bring it in from the side (+X).
-327. Fit **post_lb** onto frame_bot_back, frame_bot_left, frame_top_left: bring it in from the side (+X).
-328. Fit **frame_top_front** onto post_lf, post_rf: bring it in from above (-Z). Hold it until fastened (nothing stops it falling).
-329. Fit **frame_top_back** onto frame_top_left, frame_top_right, post_lb: bring it in from above (-Z).
-330. Fit **frame_bot_front** onto frame_bot_left, frame_bot_right, post_lf: bring it in from the side (+Y).
-331. Fit **bed_heater** onto bed_plate: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
-332. Fit **bed_post_3_washer_top** onto bed_plate: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
-333. Fit **bed_post_3** onto bed_plate, bed_post_3_washer_top: move it -X then -Z by 156 mm. Hold it until fastened (nothing stops it falling).
-334. Fit **bed_post_2_washer_top** onto bed_plate: bring it in from the side (+X). Hold it until fastened (nothing stops it falling).
-335. Fit **bed_post_2** onto bed_plate, bed_post_2_washer_top: bring it in from above (-Z). Hold it until fastened (nothing stops it falling).
-336. Fit **bed_post_3_washer_arm** onto bed_post_3, bed_post_tab_3: move it +Y then -Z by 285 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
-337. Fit **bed_post_2_washer_arm** onto bed_post_2, bed_post_tab_2: bring it in from above (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
-338. Fit **bed_magnet** onto bed_plate: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
-339. Fit **bed** onto bed_magnet: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
-340. Fit **probe_mount** onto extruder, probe_mount_sleeve_0, probe_mount_sleeve_1: move it -Z then -Y by 93 mm.
-341. Fit **bed_probe_nut_rear** onto probe_mount: move it -Z then -Y by 95 mm.
-342. Fit **bed_probe** onto bed_probe_nut_rear, probe_mount: bring it in from above (-Z). Hold it until fastened (nothing stops it falling).
-343. Fit **hotend** onto extruder: move it -X then +Z by 180 mm.
-344. Fit **brkt_up_top_out_right** onto frame_top_back, upright_right: bring it in from the side (-Y). Hold it until fastened (nothing stops it falling).
-345. Fit **brkt_up_top_out_left** onto frame_top_back, upright_left: bring it in from the side (-Y). Hold it until fastened (nothing stops it falling).
-346. Fit **brkt_up_top_in_right** onto frame_top_back, upright_right: bring it in from the side (-Y). Hold it until fastened (nothing stops it falling).
-347. Fit **brkt_up_top_in_left** onto frame_top_back, upright_left: bring it in from the side (-Y). Hold it until fastened (nothing stops it falling).
-348. Fit **brkt_up_bot_out_right** onto frame_bot_back, upright_right: bring it in from the side (-Y).
-349. Fit **brkt_up_bot_out_left** onto frame_bot_back, upright_left: bring it in from the side (-Y).
-350. Fit **brkt_up_bot_in_right** onto frame_bot_back, upright_right: bring it in from the side (-Y).
-351. Fit **brkt_up_bot_in_left** onto frame_bot_back, upright_left: bring it in from the side (-Y).
-352. Fit **bracket_9** onto frame_top_front, post_rf: bring it in from the side (-Y). Hold it until fastened (nothing stops it falling).
-353. Fit **bracket_8** onto frame_top_right, post_rf: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
-354. Fit **bracket_7** onto frame_bot_back, frame_bot_left: bring it in from above (-Z). Hold it until fastened (nothing stops it falling).
-355. Fit **bracket_6** onto frame_bot_left, post_lb: bring it in from the side (+X).
-356. Fit **bracket_5** onto frame_top_back, frame_top_left, post_lb: bring it in from the side (-Y). Hold it until fastened (nothing stops it falling).
-357. Fit **bracket_4** onto frame_top_left, post_lb: bring it in from the side (+X). Hold it until fastened (nothing stops it falling).
-358. Fit **bracket_3** onto frame_bot_front, frame_bot_left: bring it in from above (-Z). Hold it until fastened (nothing stops it falling).
-359. Fit **bracket_2** onto frame_bot_left, post_lf: bring it in from the side (-X).
-360. Fit **bracket_15** onto frame_bot_back, frame_bot_right: bring it in from above (-Z). Hold it until fastened (nothing stops it falling).
-361. Fit **bracket_14** onto frame_bot_right, post_rb: bring it in from the side (-X).
-362. Turn the assembly upside down.
-363. Fit **bracket_13** onto frame_top_back, frame_top_right, post_rb: bring it in from the side (-Y).
-364. Fit **bracket_12** onto frame_top_right, post_rb: bring it in from the side (-X).
-365. Fit **bracket_11** onto frame_bot_front, frame_bot_right: bring it in from below (-Z). Hold it until fastened (nothing stops it falling).
-366. Fit **bracket_10** onto frame_bot_right, post_rf: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
-367. Fit **bracket_1** onto frame_top_front, post_lf: bring it in from the side (-Y).
-368. Fit **bracket_0** onto frame_top_left, post_lf: bring it in from the side (+X).
-369. Fit **bed_arm_right_rbracket_u** onto bed_arm_right, rear_beam: bring it in from the side (-X).
-370. Fit **bed_arm_right_rbracket_i** onto bed_arm_right, rear_beam: move it +Z then +X by 90 mm. Hold it until fastened (nothing stops it falling).
-371. Fit **bed_arm_right_fbracket_u** onto bed_arm_right, front_beam: bring it in from the side (-X).
-372. Fit **bed_arm_right_fbracket_i** onto bed_arm_right, front_beam: move it -X then +Z by 44 mm. Hold it until fastened (nothing stops it falling).
-373. Fit **bed_arm_left_rbracket_u** onto bed_arm_left, rear_beam: bring it in from the side (+X).
-374. Fit **bed_arm_left_rbracket_i** onto bed_arm_left, rear_beam: bring it in from above (+Z). Hold it until fastened (nothing stops it falling).
-375. Fit **bed_arm_left_fbracket_u** onto bed_arm_left, front_beam: bring it in from the side (+X).
-376. Fit **bed_arm_left_fbracket_i** onto bed_arm_left, front_beam: move it +Y then +Z by 35 mm. Hold it until fastened (nothing stops it falling).
-377. Fit **bed_post_1_washer_top** onto bed_plate: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
-378. Fit **bed_post_1_washer_arm** onto bed_post_tab_1: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
-379. Fit **bed_post_1** onto bed_plate, bed_post_1_washer_arm, bed_post_1_washer_top: bring it in from above (+Z). Hold it until fastened (nothing stops it falling).
-380. Fit **bed_post_0_washer_top** onto bed_plate: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
-381. Fit **bed_post_0_washer_arm** onto bed_post_tab_0: bring it in from the side (+X). Hold it until fastened (nothing stops it falling).
-382. Fit **bed_post_0** onto bed_plate, bed_post_0_washer_arm, bed_post_0_washer_top: bring it in from above (+Z). Hold it until fastened (nothing stops it falling).
-383. Fit **bed_probe_nut_front** onto bed_probe, probe_mount: move it -X then +Z by 150 mm.
-384. Fit **bed_post_3_nut_top** onto bed_post_3, bed_post_3_washer_top: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
-385. Fit **bed_post_3_washer_low** onto bed_post_3, bed_post_tab_3: bring it in from above (+Z). Hold it until fastened (it rests only on parts that are themselves still loose).
-386. Fit **bed_post_3_nut_low** onto bed_post_3, bed_post_3_washer_low: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
-387. Fit **bed_post_3_nut_arm** onto bed_post_3, bed_post_3_washer_arm: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
-388. Fit **bed_post_2_nut_top** onto bed_post_2, bed_post_2_washer_top: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
-389. Fit **bed_post_2_washer_low** onto bed_post_2, bed_post_tab_2: move it -X then +Z by 53 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
-390. Fit **bed_post_2_nut_low** onto bed_post_2, bed_post_2_washer_low: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
-391. Fit **bed_post_2_nut_arm** onto bed_post_2, bed_post_2_washer_arm: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
-392. Fit **bed_post_1_nut_top** onto bed_post_1, bed_post_1_washer_top: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
-393. Fit **bed_post_1_washer_low** onto bed_post_1, bed_post_tab_1: bring it in from above (+Z). Hold it until fastened (it rests only on parts that are themselves still loose).
-394. Fit **bed_post_1_nut_low** onto bed_post_1, bed_post_1_washer_low: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
-395. Fit **bed_post_1_nut_arm** onto bed_post_1, bed_post_1_washer_arm: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
-396. Fit **bed_post_0_nut_top** onto bed_post_0, bed_post_0_washer_top: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
-397. Fit **bed_post_0_washer_low** onto bed_post_0, bed_post_tab_0: bring it in from above (+Z). Hold it until fastened (it rests only on parts that are themselves still loose).
-398. Fit **bed_post_0_nut_low** onto bed_post_0, bed_post_0_washer_low: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
-399. Fit **bed_post_0_nut_arm** onto bed_post_0, bed_post_0_washer_arm: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
-400. Fit **bed_tco** onto bed_plate: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
+223. Fit **probe_mount** onto extruder: bring it in from the side (-Z).
+224. Fit **probe_mount_sleeve_1** onto extruder, probe_mount: bring it in from above (-Y).
+225. Fit **extruder_screw_1_washer** onto probe_mount_sleeve_1: bring it in from the side (-Z).
+226. Drive 1 screw from above with the 2.5 mm hex key: extruder_screw_1.
+227. Fit **probe_mount_sleeve_0** onto extruder, probe_mount: bring it in from above (-Y).
+228. Fit **extruder_screw_0_washer** onto probe_mount_sleeve_0: bring it in from the side (-Z).
+229. Drive 1 screw from above with the 2.5 mm hex key: extruder_screw_0.
+230. Turn the assembly on its left side (right side up).
+231. Fit **mains_cover_inlet** onto inlet_panel: move it +X then -Z by 288 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
+232. Fit **mains_cover_inlet_screw_1_nut** onto mains_cover_inlet: bring it in from above (-X). Hold it until fastened (it would tip or slide off (no surface underneath it)).
+233. Fit **mains_cover_inlet_screw_1_washer** onto inlet_panel: bring it in from the side (-Z). Hold it until fastened (nothing stops it falling).
+234. Fit **mains_cover_inlet_screw_1_nwasher** onto mains_cover_inlet, mains_cover_inlet_screw_1_nut: bring it in from the side (-Y). Hold it until fastened (it rests only on parts that are themselves still loose).
+235. Drive 1 screw from below with the 2.5 mm hex key: mains_cover_inlet_screw_1.
+236. Fit **mains_cover_inlet_screw_0_nut** onto mains_cover_inlet: bring it in from above (-X). Hold it until fastened (it would tip or slide off (no surface underneath it)).
+237. Fit **mains_cover_inlet_screw_0_washer** onto inlet_panel: bring it in from below (+X). Hold it until fastened (nothing stops it falling).
+238. Fit **mains_cover_inlet_screw_0_nwasher** onto mains_cover_inlet, mains_cover_inlet_screw_0_nut: move it -Y then -Z by 306 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
+239. Drive 1 screw from below with the 2.5 mm hex key: mains_cover_inlet_screw_0.
+240. Fit **y_tension_nut_l** onto y_tension_anchor_l: bring it in from the side (-Z). Hold it until fastened (nothing stops it falling).
+241. Drive 1 screw from the side with the 2.5 mm hex key: y_tension_screw_l.
+242. Fit **y_tension_nut** onto y_tension_anchor: bring it in from the side (-Z). Hold it until fastened (nothing stops it falling).
+243. Drive 1 screw from the side with the 2.5 mm hex key: y_tension_screw.
+244. Fit **x_tension_nut** onto x_tension_anchor: bring it in from the side (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
+245. Drive 1 screw from below with the 2.5 mm hex key: x_tension_screw.
+246. Drive 1 screw from the side with the 2.5 mm hex key: x_rail_screw_0.
+247. Fit **x_endstop_spacer_1** onto y_plate_left: bring it in from below (+X). Hold it until fastened (nothing stops it falling).
+248. Fit **x_endstop** onto x_endstop_spacer_1: move it -Y then +Z by 353 mm. Hold it until fastened (nothing stops it falling).
+249. Fit **x_endstop_nut_1** onto x_endstop: move it -Y then +Z by 358 mm. Hold it until fastened (nothing stops it falling).
+250. Fit **x_endstop_screw_1_washer** onto y_plate_left: bring it in from the side (-Z). Hold it until fastened (nothing stops it falling).
+251. Drive 1 screw from the side with the 2.5 mm hex key: x_endstop_screw_1.
+252. Fit **x_endstop_nut_0** onto x_endstop: move it -Y then +Z by 356 mm. Hold it until fastened (nothing stops it falling).
+253. Fit **x_endstop_screw_0_washer** onto y_plate_left: bring it in from the side (-Z). Hold it until fastened (nothing stops it falling).
+254. Fit **x_endstop_spacer_0** onto x_endstop, y_plate_left: move it -Z then -X by 100 mm. Hold it until fastened (nothing stops it falling).
+255. Drive 1 screw from the side with the 2.5 mm hex key: x_endstop_screw_0.
+256. Fit the **part_cooling** sub-assembly onto tool_plate_rear: bring it in from the side (-Y). Hold it until fastened (nothing stops it falling).
+257. Fit **part_duct_screw_1_nut** onto part_duct: move it -X then +Z by 191 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
+258. Fit **part_duct_screw_1_washer** onto tool_plate: bring it in from the side (-Z). Hold it until fastened (nothing stops it falling).
+259. Fit **part_duct_screw_1_nwasher** onto part_duct, part_duct_screw_1_nut: move it -X then +Z by 191 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
+260. Drive 1 screw from the side with the 2.5 mm hex key: part_duct_screw_1.
+261. Fit **part_duct_screw_0_nut** onto part_duct: move it -X then +Z by 191 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
+262. Fit **part_duct_screw_0_washer** onto tool_plate: bring it in from the side (+Y). Hold it until fastened (nothing stops it falling).
+263. Fit **part_duct_screw_0_nwasher** onto part_duct, part_duct_screw_0_nut: move it -X then +Z by 191 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
+264. Drive 1 screw from the side with the 2.5 mm hex key: part_duct_screw_0.
+265. Fit **y_endstop_spacer_1** onto y_endstop_mount: bring it in from the side (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
+266. Fit **y_endstop** onto y_endstop_spacer_1: bring it in from the side (-Z). Hold it until fastened (it would tip or slide off (centre of mass is 7 mm outside what it rests on)).
+267. Fit **y_endstop_nut_1** onto y_endstop: bring it in from the side (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
+268. Fit **y_endstop_screw_1_washer** onto y_endstop_mount: bring it in from the side (-Z). Hold it until fastened (nothing stops it falling).
+269. Drive 1 screw from below with the 2.5 mm hex key: y_endstop_screw_1.
+270. Fit **y_endstop_nut_0** onto y_endstop: bring it in from above (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
+271. Fit **y_endstop_spacer_0** onto y_endstop, y_endstop_mount: move it -Z then -Y by 60 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
+272. Turn the assembly upright (as designed).
+273. Fit **y_endstop_screw_0_washer** onto y_endstop_mount: bring it in from the side (+X). Hold it until fastened (nothing stops it falling).
+274. Drive 1 screw from the side with the 2.5 mm hex key: y_endstop_screw_0.
+275. Fit **x_belt_bracket** onto tool_plate: bring it in from above (-Z). Hold it until fastened (nothing stops it falling).
+276. Fit **x_belt_bracket_screw_1_washer** onto x_belt_bracket: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
+277. Drive 1 screw from the side with the 2.5 mm hex key: x_belt_bracket_screw_1.
+278. Fit **x_belt_clamp** onto x_belt_bracket: bring it in from the side (+Y). Hold it until fastened (nothing stops it falling).
+279. Fit **x_belt_clamp_screw_3_nut** onto x_belt_clamp: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
+280. Fit **x_belt_clamp_screw_3_washer** onto x_belt_bracket: bring it in from above (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
+281. Fit **x_belt_clamp_screw_3_nwasher** onto x_belt_clamp, x_belt_clamp_screw_3_nut: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
+282. Drive 1 screw from above with the 2.5 mm hex key: x_belt_clamp_screw_3.
+283. Fit **x_belt_clamp_screw_2_nut** onto x_belt_clamp: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
+284. Fit **x_belt_clamp_screw_2_washer** onto x_belt_bracket: bring it in from above (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
+285. Fit **x_belt_clamp_screw_2_nwasher** onto x_belt_clamp, x_belt_clamp_screw_2_nut: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
+286. Drive 1 screw from above with the 2.5 mm hex key: x_belt_clamp_screw_2.
+287. Fit **x_belt_bracket_screw_0_washer** onto x_belt_bracket: bring it in from the side (+Y). Hold it until fastened (nothing stops it falling).
+288. Drive 1 screw from the side with the 2.5 mm hex key: x_belt_bracket_screw_0.
+289. Fit **x_belt_clamp_screw_1_nut** onto x_belt_clamp: bring it in from the side (+X). Hold it until fastened (nothing stops it falling).
+290. Fit **x_belt_clamp_screw_1_washer** onto x_belt_bracket: bring it in from above (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
+291. Fit **x_belt_clamp_screw_1_nwasher** onto x_belt_clamp, x_belt_clamp_screw_1_nut: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
+292. Drive 1 screw from above with the 2.5 mm hex key: x_belt_clamp_screw_1.
+293. Fit **x_belt_clamp_screw_0_nut** onto x_belt_clamp: bring it in from the side (+X). Hold it until fastened (nothing stops it falling).
+294. Fit **x_belt_clamp_screw_0_washer** onto x_belt_bracket: bring it in from above (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
+295. Fit **x_belt_clamp_screw_0_nwasher** onto x_belt_clamp, x_belt_clamp_screw_0_nut: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
+296. Drive 1 screw from above with the 2.5 mm hex key: x_belt_clamp_screw_0.
+297. Fit **inlet** onto inlet_panel: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
+298. Turn the assembly on its left side (right side up).
+299. Fit **inlet_washer_1** onto inlet_panel: move it -Y then -X by 247 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
+300. Fit **inlet_nut_1** onto inlet_panel, inlet_washer_1: move it -Y then -X by 245 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
+301. Drive 1 screw from below with the 2.5 mm hex key: inlet_screw_1.
+302. Fit **inlet_washer_0** onto inlet_panel: move it -Z then -X by 47 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
+303. Fit **inlet_nut_0** onto inlet_panel, inlet_washer_0: move it -Y then -X by 46 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
+304. Turn the assembly on its back (front face up).
+305. Drive 1 screw from the side with the 2.5 mm hex key: inlet_screw_0.
+306. Fit **nut_pin_sleeve** onto z_nut: bring it in from the side (-Z). Hold it until fastened (nothing stops it falling).
+307. Fit **nut_pin_nut** onto z_nut: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
+308. Drive 1 screw from the side with the 2 mm hex key: nut_pin.
+309. Drive 6 screws from above with the 2.5 mm hex key: z_rail_right_screw_4, z_rail_right_screw_3, z_rail_right_screw_2, z_rail_left_screw_4, z_rail_left_screw_3, z_rail_left_screw_2.
+310. Fit **z_carriage_right** onto back_plate, z_rail_right: bring it in from the side (-Z).
+311. Fit **z_carriage_right_screw_3_washer** onto back_plate: bring it in from the side (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
+312. Drive 1 screw from above with the 2.5 mm hex key: z_carriage_right_screw_3.
+313. Fit **z_carriage_right_screw_2_washer** onto back_plate: bring it in from the side (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
+314. Drive 1 screw from above with the 2.5 mm hex key: z_carriage_right_screw_2.
+315. Fit **z_carriage_right_screw_1_washer** onto back_plate: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
+316. Drive 1 screw from above with the 2.5 mm hex key: z_carriage_right_screw_1.
+317. Fit **z_carriage_right_screw_0_washer** onto back_plate: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
+318. Drive 1 screw from above with the 2.5 mm hex key: z_carriage_right_screw_0.
+319. Fit **z_carriage_left** onto back_plate, z_rail_left: bring it in from the side (-Z).
+320. Fit **z_carriage_left_screw_3_washer** onto back_plate: bring it in from the side (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
+321. Drive 1 screw from above with the 2.5 mm hex key: z_carriage_left_screw_3.
+322. Fit **z_carriage_left_screw_2_washer** onto back_plate: bring it in from the side (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
+323. Drive 1 screw from above with the 2.5 mm hex key: z_carriage_left_screw_2.
+324. Fit **z_carriage_left_screw_1_washer** onto back_plate: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
+325. Drive 1 screw from above with the 2.5 mm hex key: z_carriage_left_screw_1.
+326. Fit **z_carriage_left_screw_0_washer** onto back_plate: bring it in from above (+Y). Hold it until fastened (it rests only on parts that are themselves still loose).
+327. Turn the assembly upright (as designed).
+328. Drive 1 screw from the side with the 2.5 mm hex key: z_carriage_left_screw_0.
+329. Drive 18 screws from above with the 2.5 mm hex key: y_rail_right_screw_5, y_rail_right_screw_4, y_rail_right_screw_2, y_rail_right_screw_1, y_rail_right_screw_0, y_rail_left_screw_5, y_rail_left_screw_4, y_rail_left_screw_2 ....
+330. Drive 2 screws from the side with the 2.5 mm hex key: x_rail_screw_4, x_rail_screw_1.
+331. Fit **nut_pin_fr_sleeve** onto z_nut_fr: move it -Y then -Z by 275 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
+332. Fit **nut_pin_fr_nut** onto z_nut_fr: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
+333. Drive 1 screw from above with the 2 mm hex key: nut_pin_fr.
+334. Fit **nut_pin_fl_sleeve** onto z_nut_fl: move it -Y then -Z by 275 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
+335. Fit **nut_pin_fl_nut** onto z_nut_fl: bring it in from the side (+X). Hold it until fastened (nothing stops it falling).
+336. Drive 1 screw from above with the 2 mm hex key: nut_pin_fl.
+337. Fit **post_rb** onto frame_bot_back, frame_bot_right, frame_top_right: bring it in from the side (-X).
+338. Fit **post_lf** onto frame_bot_left, frame_top_left, y_idler_mount_l: bring it in from the side (+X).
+339. Fit **post_lb** onto frame_bot_back, frame_bot_left, frame_top_left: bring it in from the side (+X).
+340. Fit **frame_top_front** onto post_lf, post_rf: bring it in from above (-Z). Hold it until fastened (nothing stops it falling).
+341. Fit **frame_top_back** onto frame_top_left, frame_top_right, post_lb: bring it in from above (-Z).
+342. Fit **frame_bot_front** onto frame_bot_left, frame_bot_right, post_lf: bring it in from the side (+Y).
+343. Fit **bed_heater** onto bed_plate: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
+344. Fit **bed_post_3_washer_top** onto bed_plate: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
+345. Fit **bed_post_3** onto bed_plate, bed_post_3_washer_top: move it -X then -Z by 156 mm. Hold it until fastened (nothing stops it falling).
+346. Fit **bed_post_2_washer_top** onto bed_plate: bring it in from the side (+X). Hold it until fastened (nothing stops it falling).
+347. Fit **bed_post_2** onto bed_plate, bed_post_2_washer_top: bring it in from above (-Z). Hold it until fastened (nothing stops it falling).
+348. Fit **bed_post_3_washer_arm** onto bed_post_3, bed_post_tab_3: move it +Y then -Z by 285 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
+349. Fit **bed_post_2_washer_arm** onto bed_post_2, bed_post_tab_2: bring it in from above (-Z). Hold it until fastened (it rests only on parts that are themselves still loose).
+350. Fit **bed_magnet** onto bed_plate: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
+351. Fit **bed** onto bed_magnet: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
+352. Fit **bed_probe_nut_rear** onto probe_mount: move it -Z then -Y by 95 mm.
+353. Fit **bed_probe** onto bed_probe_nut_rear, probe_mount: bring it in from above (-Z). Hold it until fastened (nothing stops it falling).
+354. Fit **hotend** onto extruder: move it -X then +Z by 180 mm.
+355. Fit **brkt_up_top_out_right** onto frame_top_back, upright_right: bring it in from the side (-Y). Hold it until fastened (nothing stops it falling).
+356. Fit **brkt_up_top_out_left** onto frame_top_back, upright_left: bring it in from the side (-Y). Hold it until fastened (nothing stops it falling).
+357. Fit **brkt_up_top_in_right** onto frame_top_back, upright_right: bring it in from the side (-Y). Hold it until fastened (nothing stops it falling).
+358. Fit **brkt_up_top_in_left** onto frame_top_back, upright_left: bring it in from the side (-Y). Hold it until fastened (nothing stops it falling).
+359. Fit **brkt_up_bot_out_right** onto frame_bot_back, upright_right: bring it in from the side (-Y).
+360. Fit **brkt_up_bot_out_left** onto frame_bot_back, upright_left: bring it in from the side (-Y).
+361. Fit **brkt_up_bot_in_right** onto frame_bot_back, upright_right: bring it in from the side (-Y).
+362. Fit **brkt_up_bot_in_left** onto frame_bot_back, upright_left: bring it in from the side (-Y).
+363. Fit **bracket_9** onto frame_top_front, post_rf: bring it in from the side (-Y). Hold it until fastened (nothing stops it falling).
+364. Fit **bracket_8** onto frame_top_right, post_rf: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
+365. Fit **bracket_7** onto frame_bot_back, frame_bot_left: bring it in from above (-Z). Hold it until fastened (nothing stops it falling).
+366. Fit **bracket_6** onto frame_bot_left, post_lb: bring it in from the side (+X).
+367. Fit **bracket_5** onto frame_top_back, frame_top_left, post_lb: bring it in from the side (-Y). Hold it until fastened (nothing stops it falling).
+368. Fit **bracket_4** onto frame_top_left, post_lb: bring it in from the side (+X). Hold it until fastened (nothing stops it falling).
+369. Fit **bracket_3** onto frame_bot_front, frame_bot_left: bring it in from above (-Z). Hold it until fastened (nothing stops it falling).
+370. Fit **bracket_2** onto frame_bot_left, post_lf: bring it in from the side (-X).
+371. Fit **bracket_15** onto frame_bot_back, frame_bot_right: bring it in from above (-Z). Hold it until fastened (nothing stops it falling).
+372. Fit **bracket_14** onto frame_bot_right, post_rb: bring it in from the side (-X).
+373. Turn the assembly upside down.
+374. Fit **bracket_13** onto frame_top_back, frame_top_right, post_rb: bring it in from the side (-Y).
+375. Fit **bracket_12** onto frame_top_right, post_rb: bring it in from the side (-X).
+376. Fit **bracket_11** onto frame_bot_front, frame_bot_right: bring it in from below (-Z). Hold it until fastened (nothing stops it falling).
+377. Fit **bracket_10** onto frame_bot_right, post_rf: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
+378. Fit **bracket_1** onto frame_top_front, post_lf: bring it in from the side (-Y).
+379. Fit **bracket_0** onto frame_top_left, post_lf: bring it in from the side (+X).
+380. Fit **bed_arm_right_rbracket_u** onto bed_arm_right, rear_beam: bring it in from the side (-X).
+381. Fit **bed_arm_right_rbracket_i** onto bed_arm_right, rear_beam: move it +Z then +X by 90 mm. Hold it until fastened (nothing stops it falling).
+382. Fit **bed_arm_right_fbracket_u** onto bed_arm_right, front_beam: bring it in from the side (-X).
+383. Fit **bed_arm_right_fbracket_i** onto bed_arm_right, front_beam: move it -X then +Z by 44 mm. Hold it until fastened (nothing stops it falling).
+384. Fit **bed_arm_left_rbracket_u** onto bed_arm_left, rear_beam: bring it in from the side (+X).
+385. Fit **bed_arm_left_rbracket_i** onto bed_arm_left, rear_beam: bring it in from above (+Z). Hold it until fastened (nothing stops it falling).
+386. Fit **bed_arm_left_fbracket_u** onto bed_arm_left, front_beam: bring it in from the side (+X).
+387. Fit **bed_arm_left_fbracket_i** onto bed_arm_left, front_beam: move it +Y then +Z by 35 mm. Hold it until fastened (nothing stops it falling).
+388. Fit **bed_post_1_washer_top** onto bed_plate: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
+389. Fit **bed_post_1_washer_arm** onto bed_post_tab_1: bring it in from the side (-X). Hold it until fastened (nothing stops it falling).
+390. Fit **bed_post_1** onto bed_plate, bed_post_1_washer_arm, bed_post_1_washer_top: bring it in from above (+Z). Hold it until fastened (nothing stops it falling).
+391. Fit **bed_post_0_washer_top** onto bed_plate: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
+392. Fit **bed_post_0_washer_arm** onto bed_post_tab_0: bring it in from the side (+X). Hold it until fastened (nothing stops it falling).
+393. Fit **bed_post_0** onto bed_plate, bed_post_0_washer_arm, bed_post_0_washer_top: bring it in from above (+Z). Hold it until fastened (nothing stops it falling).
+394. Fit **bed_probe_nut_front** onto bed_probe, probe_mount: move it -X then +Z by 150 mm.
+395. Fit **bed_post_3_nut_top** onto bed_post_3, bed_post_3_washer_top: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
+396. Fit **bed_post_3_washer_low** onto bed_post_3, bed_post_tab_3: bring it in from above (+Z). Hold it until fastened (it rests only on parts that are themselves still loose).
+397. Fit **bed_post_3_nut_low** onto bed_post_3, bed_post_3_washer_low: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
+398. Fit **bed_post_3_nut_arm** onto bed_post_3, bed_post_3_washer_arm: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
+399. Fit **bed_post_2_nut_top** onto bed_post_2, bed_post_2_washer_top: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
+400. Fit **bed_post_2_washer_low** onto bed_post_2, bed_post_tab_2: move it -X then +Z by 53 mm. Hold it until fastened (it rests only on parts that are themselves still loose).
+401. Fit **bed_post_2_nut_low** onto bed_post_2, bed_post_2_washer_low: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
+402. Fit **bed_post_2_nut_arm** onto bed_post_2, bed_post_2_washer_arm: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
+403. Fit **bed_post_1_nut_top** onto bed_post_1, bed_post_1_washer_top: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
+404. Fit **bed_post_1_washer_low** onto bed_post_1, bed_post_tab_1: bring it in from above (+Z). Hold it until fastened (it rests only on parts that are themselves still loose).
+405. Fit **bed_post_1_nut_low** onto bed_post_1, bed_post_1_washer_low: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
+406. Fit **bed_post_1_nut_arm** onto bed_post_1, bed_post_1_washer_arm: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).
+407. Fit **bed_post_0_nut_top** onto bed_post_0, bed_post_0_washer_top: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
+408. Fit **bed_post_0_washer_low** onto bed_post_0, bed_post_tab_0: bring it in from above (+Z). Hold it until fastened (it rests only on parts that are themselves still loose).
+409. Fit **bed_post_0_nut_low** onto bed_post_0, bed_post_0_washer_low: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
+410. Fit **bed_post_0_nut_arm** onto bed_post_0, bed_post_0_washer_arm: bring it in from the side (+X). Hold it until fastened (it rests only on parts that are themselves still loose).
+411. Fit **bed_tco** onto bed_plate: bring it in from the side (-X). Hold it until fastened (it rests only on parts that are themselves still loose).

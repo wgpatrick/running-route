@@ -1,22 +1,22 @@
 {
  "design": "printer_v8_1",
- "design_md5": "2ef19c279f225acbbc1db1bd47b06546",
- "report_md5": "90b3a9af98f32e354cfb503b4388cee4",
- "report_time": "2026-11-16 07:51:33",
+ "design_md5": "55c09c8cc5dd5178daf9a2c4bc0cc34a",
+ "report_md5": "c8096a4e1a4a1587e24408c7f04ce57f",
+ "report_time": "2026-11-16 19:23:38",
  "stale": [],
  "warnings": [
   "the parts catalogue has changed since the report was written (the package uses the catalogue as it is NOW; re-run verify to make the report agree): WASHER-M3 mass differs from the report; SHCS-M5x10 mass differs from the report; WASHER-M5 mass differs from the report; NUT-M5 mass differs from the report; NUT-M3 mass differs from the report; SHCS-M3x16 mass differs from the report"
  ],
  "recon": {
-  "components": 583,
-  "purchased_components": 524,
+  "components": 607,
+  "purchased_components": 548,
   "custom_components": 59,
-  "bom_lines": 110,
-  "report_skus": 108,
-  "qty_modelled": 524,
-  "qty_bom_only": 437,
-  "cost": 823.41,
-  "report_cost": 823.41,
+  "bom_lines": 114,
+  "report_skus": 112,
+  "qty_modelled": 548,
+  "qty_bom_only": 427,
+  "cost": 823.39,
+  "report_cost": 823.39,
   "sku_quantities_equal_report": true,
   "modelled_equals_components": true
  },
@@ -36,10 +36,10 @@
  ],
  "open_items": {
   "A": 15,
-  "B": 38,
+  "B": 75,
   "C": 19
  },
- "washer_audit_rows": 44,
+ "washer_audit_rows": 42,
  "commissioning_steps": 39,
  "dxf_cut_length_check": {
   "back_plate": {
