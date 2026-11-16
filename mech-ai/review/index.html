@@ -843,7 +843,7 @@ async function initCaps(){
 }
 $('mic').onclick=()=>{if(!dictNS)return;if($('mic').getAttribute('aria-pressed')==='true'){dictNS.stop().catch(()=>{});return}
   dictNS.start().catch(e=>{$('micmsg').textContent=e&&e.code==='not_granted'?'Dictation is off for this page.':'Dictation could not start.'})};
-function viewParts(){const {main}=selection();return main}
+function viewParts(){const {main}=selection();return main.filter(n=>meshes[n]?meshes[n].visible:true)}   // hidden parts are not what the viewer is looking at
 $('snap').onclick=()=>{
   if(!renderer){return}
   draw(); const src=$('gl'); const W=src.width,H=src.height;
@@ -854,7 +854,7 @@ $('snap').onclick=()=>{
   MK={base,W,H,marks:[],cur:null,parts,
       camera:{pos:camera.position.toArray().map(v=>+v.toFixed(2)),target:controls.target.toArray().map(v=>+v.toFixed(2)),fov:camera.fov,aspect:+camera.aspect.toFixed(4)},
       cam:camera.clone(),
-      target:sel?key(sel.t,sel.id):null, meas:MEAS.list.map(measSave), section:SEC.on?{axis:SEC.ax,at_mm:+secMM().toFixed(1),keep:SEC.flip?'above':'below'}:null};
+      target:sel&&!(sel.t==='part'&&meshes[sel.id]&&!meshes[sel.id].visible)?key(sel.t,sel.id):null, meas:MEAS.list.map(measSave), section:SEC.on?{axis:SEC.ax,at_mm:+secMM().toFixed(1),keep:SEC.flip?'above':'below'}:null};
   const c=$('mkc'); c.width=W; c.height=H;
   $('mkparts').textContent=parts.length?parts.join(', '):'None selected: the comment is about the whole view.';
   $('mkmsg').textContent=db?'The marked-up image, the camera, the parts and your text are saved with the review, and a comment thread is opened for Claude.':'Saving needs this page open on claude.ai while signed in.';
@@ -913,7 +913,7 @@ $('mksend').onclick=async()=>{
   const text=$('mktext').value.trim(); const verdict=document.querySelector('input[name=mkvd]:checked')?.value||'change';
   if(!text&&!MK.marks.length&&verdict!=='ok'){$('mkmsg').textContent='Write a note or draw a mark first.';return}
   $('mksend').disabled=true; $('mkmsg').textContent='Sending…';
-  const marks=marksInfo(), parts=MK.parts.slice(), ref=db.collection('feedback').doc(), fid=ref.id;
+  const marks=marksInfo(), parts=[...new Set(MK.parts.concat(marks.map(m=>m.at).filter(Boolean)))], ref=db.collection('feedback').doc(), fid=ref.id;
   const target=parts.length===1?key('part',parts[0]):(MK.target||'view:'+fid);
   const tname=parts.length===1?parts[0]:parts.length?`${parts.length} parts: ${parts.slice(0,3).join(', ')}${parts.length>3?' …':''}`:'View of the machine';
   // what Claude reads in the thread: enough to act on even before it opens the saved record
