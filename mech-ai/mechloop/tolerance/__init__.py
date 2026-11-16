@@ -259,6 +259,14 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
             cpl = comps.get(drv.get("coupler")) if drv.get("coupler") else None
             cpl_deg = (cpl.ratings.get("angular_misalignment_deg") if cpl else None)
             follows = bool(cpl_deg) and _rng99(ang) <= cpl_deg
+            # An integral lead-screw motor's screw (the motor's own shaft, ratings["integral_with"]) with no bearing at its
+            # far end is a cantilever from the motor's bearings: the part of the drift the nut's float does not take, it
+            # takes by bending, at the force 3 E I x / L^3 (L: the nut's height above the motor face at that end of the
+            # travel). That force, not a binding nut, is then what is judged (as a drag against the drive force).
+            bends = bool(scr.ratings.get("integral_with")) and not follows and not any(
+                (c.meta.get("interfaces") or {}).get("axial_limit_n") and c.meta.get("placement") and
+                np.linalg.norm(np.cross(np.array(c.meta["placement"], float)[:3, 3] - np.array(scr.meta["placement"], float)[:3, 3], ax)) < 0.5
+                for c in design.components if scr.meta.get("placement"))
             err = e0 if follows else e0 + run
             d_root = 0.78 * (2 * float(np.max((hi - lo)[np.abs(ax) < 0.5])) / 2)
             I = math.pi * d_root ** 4 / 64
@@ -267,6 +275,17 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
             side = k_side * err
             drag = MU_NUT * side
             avail = j.max_effort or 0.0
+            bend = None
+            if bends and adj:
+                d_sc = float(np.sort(hi - lo)[1]) if len(hi) else 8.0
+                I_s = math.pi * (0.78 * d_sc) ** 4 / 64
+                L_far = max(abs(npos + q * float(np.sign(ax @ np.abs(ax))) - s_lo) for q in j.range) if nut else (s_hi - s_lo)
+                excess = np.maximum(err - adj.range_mm, 0.0)
+                f_b = 3 * 193000.0 * I_s * excess / L_far ** 3
+                bend = {"screw_follows_by_bending": True, "excess_over_float_mm_99": round(_rng99(excess), 2),
+                        "bending_side_force_n_99": round(_rng99(f_b), 1), "bending_drag_n_99": round(_rng99(MU_NUT * f_b), 2),
+                        "free_length_at_far_end_mm": round(L_far, 0),
+                        "basis": "integral screw, no bearing at its far end: a cantilever from the motor's bearings (root 0.78 d)"}
             screws_m[jn] = {"nut_misalignment_mm_99": round(_rng99(err), 2), "offset_at_nut_mm_99": round(_rng99(e0), 2),
                             "drift_over_travel_mm_99": round(_rng99(run), 2), "screw_to_rail_angle_deg_99": round(_rng99(ang), 2),
                             "coupler_angle_rating_deg": cpl_deg, "drift_taken_by_coupler": follows,
@@ -285,7 +304,18 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
             if adj:
                 screws_m[jn]["float_available_mm"] = adj.range_mm
                 screws_m[jn].update(thin_adjustment(r, adj, _rng99(err), f"Axis {jn}: the nut's float against the screw's axis", n, joint=jn))
-            if adj and _rng99(err) > adj.range_mm:
+            if bend is not None:
+                screws_m[jn].update(bend)
+                if avail and bend["bending_drag_n_99"] > 0.3 * avail:
+                    r.add("error", "leadscrew_binding",
+                          f"Axis {jn}: the integral screw must bend {bend['excess_over_float_mm_99']:.2f} mm beyond the nut's float to follow "
+                          f"it ({bend['bending_side_force_n_99']:.0f} N sideways, {bend['bending_drag_n_99']:.1f} N of drag against {avail:.0f} N).",
+                          joint=jn)
+                elif avail and bend["bending_drag_n_99"] > 0.1 * avail:
+                    r.add("warning", "leadscrew_side_load",
+                          f"Axis {jn}: the integral screw bends {bend['excess_over_float_mm_99']:.2f} mm beyond the nut's float to follow it, "
+                          f"adding {bend['bending_drag_n_99']:.1f} N of drag ({bend['bending_drag_n_99'] / avail:.0%} of the drive force).", joint=jn)
+            if adj and _rng99(err) > adj.range_mm and bend is None:
                 r.add("error", "adjustment_too_small",
                       f"Axis {jn}: the nut is up to {_rng99(err):.2f} mm off the screw's axis as built, but '{adj.name}' lets it "
                       f"move only +/-{adj.range_mm} mm. Past that the nut is forced sideways and the screw binds.",

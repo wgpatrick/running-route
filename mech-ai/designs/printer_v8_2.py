@@ -809,6 +809,9 @@ def motor_plate_shape(x0, y0, posts):
             s -= zc(x0 + ox, y0 + oy, Z_MF, Z_MPT, clearance_hole("M3") / 2)
     for px, py in posts:
         s -= zc(px, py, Z_MF, Z_MPT, clearance_hole("M5") / 2)
+    if abs(y0 - FS_Y) < 1e-6:     # front plates: notched clear of the front beam's end (it passes over them at the low end of Z)
+        sx = 1.0 if x0 > 0 else -1.0
+        s -= bx(sx * (FB_X + 2.0), sx * 0.0, FB_FACE - 2.0, FB_FACE + 25.0, Z_MF, Z_MPT)
     return s
 
 
