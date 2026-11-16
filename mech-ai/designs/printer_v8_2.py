@@ -206,7 +206,7 @@ RB_X = 95.0                                       # rear beam half length
 FB_FACE = FS_Y + 26.0                             # front beam's front face (as v8.1)
 FB_Y = FB_FACE + 10.0
 FB_X = 152.0                                      # front beam half length: ends 3 mm short of the front motor mounts' post bolts
-NPF_BOLT_X = (135.0, 147.0)                       # front nut plates' two M5 into the front beam's top slot (|x|)
+NPF_BOLT_X = (134.0, 146.0)                       # front nut plates' two M5 into the front beam's top slot (|x|)
 ARM_Y0, ARM_Y1 = FB_Y + 10.0, RB_Y - 10.0         # arms run between the beams
 T_NP = G95                                        # front nut plates (9.525 mm 6061: bolted inboard of the nut now, v8.1 6.35)
 T_NPR = G95                                       # rear nut plate (9.525 mm 6061): its tongue is a 48 mm cantilever
@@ -654,7 +654,8 @@ USE_CUTOFFS = True
 
 def build_electrical(d: Design) -> Electrical:
     """As v8.1, with the BTT Octopus V1.1 in place of the SKR Mini E3 V3.0: seven drivers used, one motor each (X M0, Y
-    M1, Y left M2, Z rear M3, extruder M4, Z front-left M5, Z front-right M6; M7 spare); X and Y switches and the probe on
+    M1, Y left M2, Z rear M3, extruder M4, Z front-left M6, Z front-right M7; M5 spare: the Klipper the twin runs is built for
+    the STM32G0B1 and reserves M5's dir pin PF0 for its crystal, which the Octopus's STM32F446 does not); X and Y switches and the probe on
     STOP0 / STOP1 / STOP2 (their DIAG jumpers removed), the probe still through a BAT85 on an ordinary 3.3 V input; the
     Pi Zero 2 W on the Octopus's Raspberry Pi header (5 V, GND, UART2); Klipper [z_tilt] with the three screw positions."""
     from mechloop.electrical import add_board_5v_port
@@ -752,8 +753,8 @@ def build_electrical(d: Design) -> Electrical:
     # v8.2: three Z motors, each on its own driver; their 500 mm leads plug straight into the Octopus (front-right: a short
     # stub; front-left: along the front loom; rear: along the back loom)
     el.wire("Z motor rear", "control_board.M3", "z_motor.coils", 24, conductors=4, via=["tray_right", "back"])
-    el.wire("Z motor front left", "control_board.M5", "z_motor_fl.coils", 24, conductors=4, via=["front"])
-    el.wire("Z motor front right", "control_board.M6", "z_motor_fr.coils", 24, conductors=4)
+    el.wire("Z motor front left", "control_board.M6", "z_motor_fl.coils", 24, conductors=4, via=["front"])
+    el.wire("Z motor front right", "control_board.M7", "z_motor_fr.coils", 24, conductors=4)
     el.wire("host serial + 5 V", "control_board.RPI", "host.GPIO", 26, conductors=4,
             note="Octopus 'Raspberry Pi' header (5 V, GND, PD6 RX, PD5 TX: USART2) to the Pi's GPIO 2/6/8/10; Klipper serial /dev/ttyAMA0")
     el.firmware = {
@@ -922,8 +923,10 @@ def build_frame_z():
     rnp = bx(-39.0, 39.0, RB_Y - 13.0, RB_Y + 10.0, zn0, zn1) + bx(-RNP_TW / 2, RNP_TW / 2, RB_Y, LS_Y + 21.5, zn0, zn1)
     nut_sets.append(("", 0.0, LS_Y, 1, rnp, [(-26.0, RB_Y), (26.0, RB_Y)], "rear_beam", T_NPR))
     for sx, tg in ((-1, "_fl"), (1, "_fr")):
-        xa, xb_ = sorted((sx * (NPF_BOLT_X[0] - 5.0), sx * (FS_X + 15.0)))
+        xa, xb_ = sorted((sx * (FP_X + 2.0), sx * (FS_X + 15.0)))
         npl = bx(xa, xb_, FS_Y - 21.5, ARM_Y0, zn0, Z_FL + T_NP)
+        # lobe round the inner bolt, behind the front stiffener plate (which ends at |x| = FP_X, in front of the beam)
+        npl += bx(*sorted((sx * (NPF_BOLT_X[0] - 8.5), sx * (NPF_BOLT_X[0] - 3.0))), FB_FACE + 1.0, ARM_Y0, zn0, Z_FL + T_NP)
         nut_sets.append((tg, sx * FS_X, FS_Y, -1, npl, [(sx * NPF_BOLT_X[0], FB_Y), (sx * NPF_BOLT_X[1], FB_Y)], "front_beam", T_NP))
     for tg, cx, ly, sgn, shp, bolts, beam, tnp in nut_sets:
         zn1 = Z_FL + tnp

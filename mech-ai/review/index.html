@@ -121,6 +121,7 @@ dialog .db{overflow:auto;max-height:calc(92vh - 50px);background:#fff}
 dialog img{display:block;width:100%;min-width:700px}
 button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .legendtbl td:first-child{white-space:nowrap}
+[hidden]{display:none!important}
 /* 3D view controls: segmented view mode, multi-select, assembly visibility, selection tray */
 .vtools .seg{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden;padding:0;gap:0;background:var(--panel)}
 .vtools .seg button{border:0;border-radius:0;border-right:1px solid var(--line)}
@@ -128,7 +129,7 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
 .vtools button[aria-pressed="true"],.vtools button[aria-expanded="true"]{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
 .vtools .seg button[aria-pressed="true"]{border-color:var(--line)}
 .vtools button.pri{background:var(--accent);color:var(--panel);border-color:var(--accent);font-weight:600}
-.asmpanel{position:absolute;left:10px;top:52px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 10px;min-width:220px;max-width:calc(100% - 20px);box-shadow:0 6px 20px rgba(0,0,0,.12);z-index:3}
+.asmpanel{position:absolute;left:10px;top:52px;max-height:60%;overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 10px;min-width:220px;max-width:calc(100% - 20px);box-shadow:0 6px 20px rgba(0,0,0,.12);z-index:3}
 .asmpanel label{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:13px;cursor:pointer}
 .asmpanel input{accent-color:var(--accent)}
 .asmpanel .acts{display:flex;gap:10px;border-top:1px solid var(--line);margin-top:6px;padding-top:6px;font-size:12px}
@@ -139,6 +140,16 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
 .tray b{font-weight:600}
 .item .eye{border:0;background:none;color:var(--muted);cursor:pointer;padding:0 2px;font-size:14px;line-height:1}
 .item .eye.off{opacity:.35}
+.item.phid .nm{color:var(--muted);text-decoration:line-through}
+.secpanel{position:absolute;left:10px;top:52px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 8px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:12px;z-index:3;max-width:calc(100% - 20px)}
+.secpanel .seg{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.secpanel .seg button{border:0;border-right:1px solid var(--line);background:var(--panel);color:var(--ink);padding:3px 10px;cursor:pointer;font:600 12px var(--f-mono)}
+.secpanel .seg button:last-child{border-right:0}
+.secpanel .seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+.secpanel input[type=range]{width:min(220px,40vw);accent-color:var(--accent)}
+.secpanel button#secflip{font:500 12px var(--f-body);background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:3px 9px;cursor:pointer}
+.secpanel label{display:flex;align-items:center;gap:4px;cursor:pointer}
+.secpanel #secval{min-width:72px;color:var(--muted)}
 .item.hid .nm{color:var(--muted);text-decoration:line-through}
 .thumb{display:block;max-width:100%;border:1px solid var(--line);border-radius:4px;margin-top:6px;cursor:zoom-in;background:var(--soft)}
 .marks{font:12px var(--f-mono);color:var(--muted);margin-top:4px}
@@ -203,6 +214,9 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
       </div>
       <button id="multi" type="button" aria-pressed="false" title="Each click adds or removes a part. Shift- or Ctrl-click does the same at any time.">Multi-select</button>
       <button id="asmbtn" type="button" aria-expanded="false" aria-controls="asmpanel">Assemblies</button>
+      <button id="hidesel" type="button" title="Hide the selected parts (H)">Hide</button>
+      <button id="unhide" type="button" hidden title="Show every part you hid (Alt+H)">Show hidden</button>
+      <button id="secbtn" type="button" aria-pressed="false" aria-controls="secpanel" title="Cut the model with a plane">Section</button>
       <button id="fit" type="button">Fit</button>
       <button id="all" type="button">Whole machine</button>
       <label><input type="checkbox" id="hidefast"> Hide fasteners</label>
@@ -210,6 +224,15 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
     </div>
     <div class="asmpanel" id="asmpanel" hidden></div>
     <div class="tray" id="tray" hidden></div>
+    <div class="secpanel" id="secpanel" hidden>
+      <div class="seg" role="group" aria-label="Section plane">
+        <button type="button" data-ax="x" aria-pressed="true">X</button><button type="button" data-ax="y" aria-pressed="false">Y</button><button type="button" data-ax="z" aria-pressed="false">Z</button>
+      </div>
+      <input type="range" id="secpos" min="0" max="1000" value="500" aria-label="Section position">
+      <span class="mono" id="secval"></span>
+      <button type="button" id="secflip" title="Keep the other side">Flip</button>
+      <label title="Colour the cut faces"><input type="checkbox" id="seccap" checked> Caps</label>
+    </div>
     <div class="hover" id="hover" hidden></div>
     <div class="legend"><span><i style="background:var(--sel)"></i>selected</span><span><i style="background:var(--accent)"></i>related</span><span>drag to orbit · right-drag to pan · scroll to zoom · click a part · shift-click to add</span></div>
     <div class="vmsg" id="vmsg">Loading 3D model (11 MB)…</div>
@@ -270,13 +293,14 @@ const S={tab:'asm',q:'',kind:'custom'};
 /* view state: SET = parts picked with multi-select; VM = what happens to everything else; HIDDEN = assemblies switched off */
 const SET=new Set(); let MULTI=false, PART_ASM={};
 const LS={get(k,d){try{const v=localStorage.getItem('rv:'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('rv:'+k,JSON.stringify(v))}catch(e){}}};
-let VM=LS.get('vm','ghost'); const HIDDEN=new Set(LS.get('hidden',[]));
+let VM=LS.get('vm','ghost'); const HIDDEN=new Set(LS.get('hidden',[])); const HIDP=new Set(LS.get('hidp',[]));
+const SEC={on:false,ax:'x',t:0.5,flip:false,caps:true,lo:0,hi:1};
 
 /* ---------- routing: #p-name, #j-n, #a-n (letters, digits, hyphens only) ---------- */
 const slug=s=>s.replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,'');
 let BYSLUG={};
 function key(t,id){return t+':'+id}
-function go(t,id,push=true){sel={t,id}; SET.clear(); renderTray(); renderDetail(); renderList(); highlight(); if(push){const h=t[0]+'-'+slug(id); if(location.hash!=='#'+h) history.replaceState(null,'','#'+h);} }
+function go(t,id,push=true){sel={t,id}; SET.clear(); if(t==='part'&&HIDP.has(id)){HIDP.delete(id);LS.set('hidp',[...HIDP])} renderTray(); renderDetail(); renderList(); highlight(); if(push){const h=t[0]+'-'+slug(id); if(location.hash!=='#'+h) history.replaceState(null,'','#'+h);} }
 function fromHash(){const h=location.hash.slice(1); const r=BYSLUG[h]; if(r) go(r.t,r.id,false); else if(D) go('asm',D.assemblies[0].id,false);}
 addEventListener('hashchange',fromHash);
 
@@ -286,7 +310,7 @@ fetch('data.json').then(r=>r.json()).then(d=>{
   d.joints.forEach(j=>BYSLUG['j-'+slug(j.id)]={t:'joint',id:j.id});
   d.assemblies.forEach(a=>BYSLUG['a-'+slug(a.id)]={t:'asm',id:a.id});
   d.assemblies.forEach(a=>a.parts.forEach(n=>PART_ASM[n]=a.id));
-  [...HIDDEN].forEach(id=>{if(!A[id])HIDDEN.delete(id)});
+  [...HIDDEN].forEach(id=>{if(!A[id])HIDDEN.delete(id)}); [...HIDP].forEach(n=>{if(!P[n])HIDP.delete(n)});
   const s=d.summary;
   $('stats').innerHTML=`<span><b>${s.parts}</b> parts</span><span><b>${s.custom}</b> custom</span><span><b>${s.joints}</b> bolted joints</span><span><b>${fx(s.mass_kg,2)}</b> kg</span><span>BOM <b>$${fx(s.bom_cost,0)}</b></span><span>assembly <b>${fx(s.assembly_min,0)}</b> min</span><span>resonance X <b>${s.resonance_hz.x}</b> / Y <b>${s.resonance_hz.y}</b> Hz</span><span id="fbstat"></span>`;
   sizeMain(); fromHash(); renderList(); initFeedback(); load3D();
@@ -302,7 +326,7 @@ $('kindf').onchange=e=>{S.kind=e.target.value;renderList()};
 const errs=fl=>fl.filter(f=>f.sev==='error').length, warns=fl=>fl.filter(f=>f.sev==='warning').length;
 function fbCount(k){return FB.filter(f=>f.target===k&&f.status!=='resolved').length}
 function badges(flags,k){let h='';const e=errs(flags||[]),w=warns(flags||[]);if(e)h+=`<span class="bd e" title="guideline errors">${e}</span>`;if(w)h+=`<span class="bd w" title="warnings">${w}</span>`;const n=fbCount(k);if(n)h+=`<span class="bd f" title="open feedback">💬${n}</span>`;const ok=FB.some(f=>f.target===k&&f.verdict==='ok');if(ok)h+=`<span class="bd k" title="marked looks good">✓</span>`;return `<span class="badges">${h}</span>`}
-function itemHTML(t,id,label,meta,dotVar,flags){const k=key(t,id),on=(sel&&sel.t===t&&sel.id===id)||(t==='part'&&SET.has(id)),hid=t==='asm'&&HIDDEN.has(id);return `<div class="item${on?' on':''}${t==='asm'?' asm':''}${hid?' hid':''}" tabindex="0" data-t="${t}" data-id="${esc(id)}">${t==='asm'?`<button class="eye${hid?' off':''}" type="button" data-eye="${esc(id)}" aria-pressed="${!hid}" aria-label="${hid?'Show':'Hide'} ${esc(label)} in the 3D view" title="${hid?'Show':'Hide'} in the 3D view">👁</button>`:''}${dotVar?`<span class="dot" style="background:var(${dotVar})"></span>`:''}<span class="nm" title="${esc(label)}">${esc(label)}</span>${meta?`<span class="meta">${esc(meta)}</span>`:''}${badges(flags,k)}</div>`}
+function itemHTML(t,id,label,meta,dotVar,flags){const k=key(t,id),on=(sel&&sel.t===t&&sel.id===id)||(t==='part'&&SET.has(id)),hid=t==='asm'&&HIDDEN.has(id),phid=t==='part'&&HIDP.has(id);return `<div class="item${on?' on':''}${t==='asm'?' asm':''}${hid?' hid':''}${phid?' phid':''}" tabindex="0" data-t="${t}" data-id="${esc(id)}">${t==='asm'?`<button class="eye${hid?' off':''}" type="button" data-eye="${esc(id)}" aria-pressed="${!hid}" aria-label="${hid?'Show':'Hide'} ${esc(label)} in the 3D view" title="${hid?'Show':'Hide'} in the 3D view">👁</button>`:''}${t==='part'?`<button class="eye${phid?' off':''}" type="button" data-peye="${esc(id)}" aria-pressed="${!phid}" aria-label="${phid?'Show':'Hide'} ${esc(id)}" title="${phid?'Show':'Hide'} this part">👁</button>`:''}${dotVar?`<span class="dot" style="background:var(${dotVar})"></span>`:''}<span class="nm" title="${esc(label)}">${esc(label)}</span>${meta?`<span class="meta">${esc(meta)}</span>`:''}${badges(flags,k)}</div>`}
 function match(...xs){return !S.q||xs.some(x=>String(x??'').toLowerCase().includes(S.q))}
 function renderList(){
   if(!D)return; let h='';
@@ -341,6 +365,7 @@ function renderList(){
 }
 $('list').addEventListener('click',e=>{
   const eye=e.target.closest('[data-eye]'); if(eye){e.stopPropagation();toggleAsm(eye.dataset.eye);return}
+  const pe=e.target.closest('[data-peye]'); if(pe){e.stopPropagation();setHidden([pe.dataset.peye],!HIDP.has(pe.dataset.peye));return}
   const it=e.target.closest('.item'); if(!it)return;
   if(it.dataset.fb){const f=FB.find(x=>x.id===it.dataset.fb);if(f){restoreView(f);return}}
   if(it.dataset.t==='part'&&(MULTI||e.shiftKey||e.ctrlKey||e.metaKey)){togglePick(it.dataset.id);return}
@@ -513,7 +538,7 @@ function init3D(buf){
   resize3D(); fit(true); highlight();
 }
 function pick(e,adding=false){const r=$('gl').getBoundingClientRect();ptr.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ptr,camera);
-  const hits=ray.intersectObjects(Object.values(meshes).filter(m=>m.visible&&(adding||m.material.opacity>0.5)),false);return hits.length?hits[0].object.userData.name:null}
+  const hits=secKeep(ray.intersectObjects(Object.values(meshes).filter(m=>m.visible&&(adding||m.material.opacity>0.5)),false));return hits.length?hits[0].object.userData.name:null}
 function resize3D(){if(!renderer)return;const v=$('view');const w=v.clientWidth,h=v.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/Math.max(h,1);camera.updateProjectionMatrix();draw()}
 function draw(){if(renderer)renderer.render(scene,camera)}
 function selection(){
@@ -531,12 +556,14 @@ function highlight(refit=true){
   for(const [n,m] of Object.entries(meshes)){
     const p=P[n], mat=m.material, isF=p.kind==='fastener';
     // a selected part always shows; otherwise fastener and assembly visibility apply, then the view mode
-    m.visible=M.has(n)||!((hideF&&isF)||HIDDEN.has(PART_ASM[n]));
+    m.visible=!HIDP.has(n)&&(M.has(n)||!((hideF&&isF)||HIDDEN.has(PART_ASM[n])));
     if(M.has(n)){mat.color.copy(cs);mat.transparent=false;mat.opacity=1;mat.depthWrite=true}
     else if(R.has(n)){mat.color.copy(ca);mat.transparent=false;mat.opacity=1;mat.depthWrite=true;if(VM==='hide'&&SET.size)m.visible=false}
     else{mat.color.copy(p.kind==='fabricated'?cb:cf); if(any&&VM==='hide')m.visible=false; const g=VM==='ghost'&&any; mat.transparent=g; mat.opacity=g?0.12:1; mat.depthWrite=!g}
     mat.needsUpdate=true;
+    if(m.userData.cap){m.userData.cap.visible=SEC.on&&SEC.caps&&m.visible&&mat.opacity===1}
   }
+  $('unhide').hidden=!HIDP.size; $('unhide').textContent=`Show hidden (${HIDP.size})`;
   if(any&&refit)fit(false); else draw();
 }
 /* ---------- multi-select, view modes, assembly visibility ---------- */
@@ -567,7 +594,7 @@ function renderAsmPanel(){
   $('asmpanel').innerHTML=D.assemblies.map(a=>`<label><input type="checkbox" data-asm="${esc(a.id)}" ${HIDDEN.has(a.id)?'':'checked'}>${esc(a.name)} <span class="note">${a.parts.length}</span></label>`).join('')+
     `<div class="acts"><button class="lnk" type="button" id="asmall">Show all</button><button class="lnk" type="button" id="asmnone">Hide all</button></div>`;
 }
-$('asmbtn').onclick=()=>{const p=$('asmpanel');p.hidden=!p.hidden;$('asmbtn').setAttribute('aria-expanded',!p.hidden);if(!p.hidden)renderAsmPanel()};
+$('asmbtn').onclick=()=>{const p=$('asmpanel');p.hidden=!p.hidden;$('asmbtn').setAttribute('aria-expanded',!p.hidden);if(!p.hidden){renderAsmPanel();placePanels()}};
 $('asmpanel').addEventListener('change',e=>{const id=e.target.dataset.asm;if(id)toggleAsm(id)});
 $('asmpanel').addEventListener('click',e=>{
   if(e.target.id==='asmall'){HIDDEN.clear()} else if(e.target.id==='asmnone'){D.assemblies.forEach(a=>HIDDEN.add(a.id))} else return;
@@ -579,9 +606,54 @@ function restoreView(f){
   if(f.viewMode)setVMsilent(f.viewMode);
   if(Array.isArray(f.hiddenAsm)){HIDDEN.clear();f.hiddenAsm.forEach(id=>A[id]&&HIDDEN.add(id));LS.set('hidden',[...HIDDEN])}
   if(typeof f.hideFasteners==='boolean')$('hidefast').checked=f.hideFasteners;
+  if(Array.isArray(f.hiddenParts)){HIDP.clear();f.hiddenParts.forEach(n=>P[n]&&HIDP.add(n));LS.set('hidp',[...HIDP])}
+  if(f.section&&['x','y','z'].includes(f.section.axis)&&typeof f.section.at_mm==='number'){setSection(true,f.section.axis,f.section.at_mm,f.section.keep==='above')} else if(f.kind==='view')setSection(false);
   renderTray(); renderList(); highlight(false);
   const c=f.camera; if(renderer&&c&&Array.isArray(c.pos)&&Array.isArray(c.target)){camera.position.fromArray(c.pos);controls.target.fromArray(c.target);controls.update();draw()}
 }
+/* ---------- hide / show individual parts ---------- */
+function setHidden(ns,hide){ns.forEach(n=>{if(hide)HIDP.add(n);else HIDP.delete(n)});if(hide)ns.forEach(n=>SET.delete(n));LS.set('hidp',[...HIDP]);renderTray();renderList();highlight(false)}
+$('hidesel').onclick=()=>{const {main}=selection();if(main.length)setHidden(main,true)};
+$('unhide').onclick=()=>{HIDP.clear();LS.set('hidp',[]);renderList();highlight(false)};
+document.addEventListener('keydown',e=>{if(e.target.closest('input,textarea,select,dialog'))return;
+  if(e.key==='h'&&!e.altKey&&!e.ctrlKey&&!e.metaKey){$('hidesel').click()} else if((e.key==='h'||e.key==='˙')&&e.altKey){$('unhide').click()}});
+/* ---------- section view: one clipping plane on X, Y or Z; back faces drawn as caps ---------- */
+const AXI={x:0,y:1,z:2};
+function secBox(){const b=new THREE.Box3();Object.values(meshes).forEach(m=>{if(m.visible&&m.material.opacity===1)b.expandByObject(m)});return b.isEmpty()?box3.clone():b}
+function secMM(){return SEC.lo+(SEC.hi-SEC.lo)*SEC.t}
+function ensureCaps(){
+  if(ensureCaps.done)return; ensureCaps.done=true;
+  const cm=new THREE.MeshBasicMaterial({color:new THREE.Color(css('--err')),side:THREE.BackSide});
+  ensureCaps.mat=cm;
+  Object.values(meshes).forEach(m=>{const c=new THREE.Mesh(m.geometry,cm);c.visible=false;c.raycast=()=>{};m.add(c);m.userData.cap=c});
+}
+function applySection(){
+  if(!renderer)return;
+  if(!SEC.on){renderer.clippingPlanes=[];Object.values(meshes).forEach(m=>{m.material.side=THREE.DoubleSide;m.material.needsUpdate=true});highlight(false);return}
+  ensureCaps(); ensureCaps.mat.color.set(css('--err'));
+  const n=new THREE.Vector3(); n.setComponent(AXI[SEC.ax],SEC.flip?1:-1);
+  const d=secMM(); const plane=new THREE.Plane(n,SEC.flip?-d:d); renderer.clippingPlanes=[plane]; SEC.plane=plane;
+  Object.values(meshes).forEach(m=>{m.material.side=SEC.caps?THREE.FrontSide:THREE.DoubleSide;m.material.needsUpdate=true});
+  $('secval').textContent=`${SEC.ax.toUpperCase()} ${SEC.flip?'≥':'≤'} ${d.toFixed(1)} mm`;
+  highlight(false);
+}
+function secKeep(hits){return SEC.on&&SEC.plane?hits.filter(h=>SEC.plane.distanceToPoint(h.point)>=-1e-3):hits}
+function placePanels(){const t=$('view').querySelector('.vtools');const y=t.offsetTop+t.offsetHeight+6;$('secpanel').style.top=y+'px';$('asmpanel').style.top=y+($('secpanel').hidden?0:$('secpanel').offsetHeight+6)+'px'}
+addEventListener('resize',placePanels);
+function faceCam(){SEC.flip=camera.position.getComponent(AXI[SEC.ax])<secMM()}
+function secRange(){const b=secBox();const i=AXI[SEC.ax];SEC.lo=b.min.getComponent(i)-1;SEC.hi=b.max.getComponent(i)+1}
+function setSection(on,ax,mm,flip){
+  SEC.on=on; if(ax){SEC.ax=ax} if(typeof flip==='boolean')SEC.flip=flip;
+  $('secbtn').setAttribute('aria-pressed',on); $('secpanel').hidden=!on;
+  document.querySelectorAll('[data-ax]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.ax===SEC.ax));
+  if(on){secRange(); if(typeof mm==='number')SEC.t=Math.min(1,Math.max(0,(mm-SEC.lo)/((SEC.hi-SEC.lo)||1))); else {SEC.t=0.5;faceCam()} $('secpos').value=Math.round(SEC.t*1000)}
+  placePanels(); applySection();
+}
+$('secbtn').onclick=()=>setSection(!SEC.on);
+document.querySelectorAll('[data-ax]').forEach(b=>b.onclick=()=>{SEC.ax=b.dataset.ax;secRange();faceCam();applySection();document.querySelectorAll('[data-ax]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+$('secpos').oninput=e=>{SEC.t=e.target.value/1000;applySection()};
+$('secflip').onclick=()=>{SEC.flip=!SEC.flip;applySection()};
+$('seccap').onchange=e=>{SEC.caps=e.target.checked;applySection()};
 function setVMsilent(v){if(!['all','ghost','hide'].includes(v))return;VM=v;LS.set('vm',v);document.querySelectorAll('[data-vm]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.vm===v))}
 function fit(whole){
   if(!renderer)return; const b=new THREE.Box3(); const {main,rel}=selection();
@@ -619,7 +691,7 @@ $('snap').onclick=()=>{
   MK={base,W,H,marks:[],cur:null,parts,
       camera:{pos:camera.position.toArray().map(v=>+v.toFixed(2)),target:controls.target.toArray().map(v=>+v.toFixed(2)),fov:camera.fov,aspect:+camera.aspect.toFixed(4)},
       cam:camera.clone(),
-      target:sel?key(sel.t,sel.id):null};
+      target:sel?key(sel.t,sel.id):null, section:SEC.on?{axis:SEC.ax,at_mm:+secMM().toFixed(1),keep:SEC.flip?'above':'below'}:null};
   const c=$('mkc'); c.width=W; c.height=H;
   $('mkparts').textContent=parts.length?parts.join(', '):'None selected: the comment is about the whole view.';
   $('mkmsg').textContent=db?'The marked-up image, the camera, the parts and your text are saved with the review, and a comment thread is opened for Claude.':'Saving needs this page open on claude.ai while signed in.';
@@ -664,7 +736,8 @@ function redrawMK(){const c=$('mkc'),x=c.getContext('2d');x.clearRect(0,0,c.widt
 /* the point a mark "points at": arrow tip, circle centre, callout dot, start of a pen stroke */
 function tipOf(m){const p=m.pts;if(m.type==='arrow')return p[1];if(m.type==='circle')return [(p[0][0]+p[1][0])/2,(p[0][1]+p[1][1])/2];return p[0]}
 function partAt(nx,ny){if(!MK||!MK.cam)return null;const v=new THREE.Vector2(nx*2-1,-(ny*2-1));ray.setFromCamera(v,MK.cam);
-  const hits=ray.intersectObjects(Object.values(meshes).filter(m=>m.visible&&m.material.opacity>0.5),false);
+  let hits=ray.intersectObjects(Object.values(meshes).filter(m=>m.visible&&m.material.opacity>0.5),false);
+  hits=secKeep(hits);
   return hits.length?{part:hits[0].object.userData.name,xyz:hits[0].point.toArray().map(v=>+v.toFixed(1))}:null}
 const MKNAME={arrow:'arrow',circle:'circle',pen:'sketch',callout:'callout'};
 function marksInfo(){number();return MK.marks.map(m=>{const t=tipOf(m),h=partAt(t[0],t[1]);return {n:m.n,type:MKNAME[m.type],at:h?h.part:null,xyz:h?h.xyz:null,col:m.col,pts:m.pts.map(p=>[+p[0].toFixed(4),+p[1].toFixed(4)])}})}
@@ -680,7 +753,7 @@ $('mksend').onclick=async()=>{
   // what Claude reads in the thread: enough to act on even before it opens the saved record
   let msg=`[View feedback ${fid} · ${D.design} · ${VERDICT[verdict]}]\n${text||'(no text)'}\n\nParts (${parts.length}): ${parts.slice(0,40).join(', ')||'none selected'}${parts.length>40?' …':''}`;
   if(marks.length)msg+=`\nMarkup: `+marks.map(m=>`${m.n} ${m.type} → ${m.at||'background'}${m.xyz?' @'+m.xyz.join(','):''}`).join('; ');
-  msg+=`\nView: ${({all:'show all',ghost:'rest ghosted',hide:'isolated'})[VM]}${HIDDEN.size?`, hidden assemblies: ${[...HIDDEN].map(id=>A[id]?A[id].name:id).join(', ')}`:''}. Screenshot and camera are in feedback/${fid}.`;
+  msg+=`\nView: ${({all:'show all',ghost:'rest ghosted',hide:'isolated'})[VM]}${HIDDEN.size?`, hidden assemblies: ${[...HIDDEN].map(id=>A[id]?A[id].name:id).join(', ')}`:''}${HIDP.size?`, ${HIDP.size} parts hidden`:''}${MK.section?`, section ${MK.section.axis.toUpperCase()} ${MK.section.keep} ${MK.section.at_mm} mm`:''}. Screenshot and camera are in feedback/${fid}.`;
   if(new TextEncoder().encode(msg).length>4000)msg=msg.slice(0,3900)+'…';
   // send first, straight from the click (Send to Claude must follow the viewer's gesture); upload and save in parallel
   let sendP=Promise.resolve(null); const sendState=MK.sendState||'off';
@@ -690,7 +763,7 @@ $('mksend').onclick=async()=>{
     let image=null, imgErr=null;
     if(assetsNS){try{const blob=await new Promise(r=>out.toBlob(r,'image/png'));const up=await assetsNS.upload(blob,{type:'image/png'});image=up.id}catch(e){imgErr=e.code||e.message}}
     else imgErr='image storage needs edit access';
-    await ref.set({kind:'view',target,targetName:tname,verdict,text,parts,marks,image,camera:MK.camera,viewMode:VM,hiddenAsm:[...HIDDEN],hideFasteners:$('hidefast').checked,
+    await ref.set({kind:'view',target,targetName:tname,verdict,text,parts,marks,image,camera:MK.camera,viewMode:VM,hiddenAsm:[...HIDDEN],hiddenParts:[...HIDP],section:MK.section,hideFasteners:$('hidefast').checked,
       viewport:[MK.W,MK.H],author:me||null,at:new Date().toISOString(),status:'open',design:D.design});
     return imgErr;
   })();
