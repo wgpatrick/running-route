@@ -119,7 +119,10 @@ def build():
   back at the pulley), and `("anchor", body, (x, y, z))` where a belt end is clamped (home-pose world point
   on that body). Open belt = anchor ... anchor; closed loop = pulleys only. The motion verifier checks that
   the path length stays constant over the travel, pulleys are coplanar, the drive pulley has enough teeth
-  engaged, a closed loop matches `stock_length`, and no straight run passes through a part. Pulley centre
+  engaged, a closed loop matches `stock_length`, and no straight run passes through a part. Clearance warnings
+  (BLT-060 / BLT-061): a straight run within 3 mm of a part it slides past (not the belt's pulleys, not parts on the body
+  its anchors ride on), or a pulley within 2 mm of a made part (`belt_run_near_part`, `pulley_near_plate`; limits
+  `d.practice["limits"]["BLT-060.run_clearance_mm"]` / `["BLT-061.pulley_plate_clearance_mm"]`). Pulley centre
   heights are in `part.meta["interfaces"]["belt_center"]`. A belt-driven joint without a `Belt` is not
   checked for routing; add one.
 - Belt tension: `Belt(..., tension=<N per span>)` is the installation tension the tensioner is set to. Left out, it is
@@ -858,11 +861,10 @@ straightness of the extrusion a rail is screwed to is not catalogued and not inc
 meshed with the catalogue's stand-in rubber (real silicone is softer).
 Several lead screws on one Z are NOT supported by: the digital twin (it models one Z drive: travel per turn and
 summed motor torque, no tilt between screws); the motion verifier's dynamics (one joint, one effort); a generated
-`[z_tilt]` from geometry (you state z_positions and points); `quad_gantry_level`; and the catalogue has no board with
-more than four drivers (SKR Mini E3 V3.0: X, Y, Z, E), so independent Z motors beyond the one driver cannot be wired
-from catalogue parts, and no integrated lead-screw motor (the one vendor record, StepperOnline 17E19S1684MB4-300RS,
-holds only screw diameter and lead: holding torque, current, resistance, inductance, rotor inertia, mass, body and
-nut dimensions and thrust rating are missing).
+`[z_tilt]` from geometry (you state z_positions and points); `quad_gantry_level`. Boards with more drivers: `manta_m5p()` (five) and `octopus_v11()` (eight). Integrated lead-screw
+motors: `leadscrew_motor_17e19()` (Tr8x8, one fused part) and `leadscrew_motor_17e19_ab4()` with
+`leadscrew_screw_17e19_ab4(length)` (Tr8x2, body and screw as two parts); neither maker states a thrust rating
+(`axial_load_rating_unknown`).
 
 ## Firmware in the loop
 

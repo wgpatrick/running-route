@@ -962,3 +962,4 @@ from .toolhead import extruder_roto, hotend_revo, hotend_v6  # noqa: E402,F401
 from .probes import add_probe_nuts, e2e_nut, probe_omron_e2e  # noqa: E402,F401
 from .batch6 import (fan_cg3010u24, leadscrew_motor_17e19, leadscrew_nut_17e19, manta_m5p, mgn15_rail,  # noqa: E402,F401
                      mgn15h_carriage, print_sheet_pei180)
+from .batch7 import leadscrew_motor_17e19_ab4, leadscrew_screw_17e19_ab4, octopus_v11  # noqa: E402,F401

@@ -34,7 +34,7 @@ def test_vendor_files_exist():
 def test_every_vendor_file_has_a_source(path):
     d = json.loads(path.read_text(encoding="utf-8"))
     assert d["source_url"].startswith("https://"), path.name
-    assert d["retrieved"] in ("2026-11-14", "2026-11-15")
+    assert d["retrieved"] in ("2026-11-14", "2026-11-15", "2026-11-16")
     assert d.get("family") and d.get("vendor")
     for node in _walk(d):  # every URL recorded anywhere is https, every stored copy is present and small
         if "source_url" in node:

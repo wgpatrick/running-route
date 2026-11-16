@@ -245,3 +245,12 @@ New Drive subfolder `practice_refs` (id 1nlRypMgn7mdHPGyPKnV7zYL3XaSd-kjt, no ne
 ### Batch 7 failures
 
 None.
+
+## Batch 7 (2026-11-16, fetched over HTTPS in a cloud session; untrusted data, nothing executed)
+
+| File | From | Notes |
+|---|---|---|
+| BIGTREETECH Octopus V1.0-V1.1 User Manual (EN, 2021-07-19).pdf | github.com/bigtreetech/BIGTREETECH-OCTOPUS-V1.0 (BIGTREETECH_Octopus_EN_updated_0719.pdf) | text PDF; read with pdftotext. V1.1 has the same schematic (repository Hardware/readme.txt) |
+| BIGTREETECH Octopus - PIN (rev 2026-02-01).jpg | same repository, Hardware/ | pin-out drawing; read by eye |
+| BIGTREETECH Octopus - SIZE.pdf | same repository, Hardware/ | component placement; outline and hole pattern taken from the manual's text |
+| 17E19S1684AB4-330RA_properties.txt | omc-stepperonline.com product pages of the AB4-330RA and its discontinued predecessor AB2-330RA | specification lines of the HTML pages; the datasheet PDF host (files.omc-stepperonline.com) was refused by the session's network proxy |

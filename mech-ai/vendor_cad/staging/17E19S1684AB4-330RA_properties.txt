@@ -1,0 +1,156 @@
+17E19S1684AB4-330RA: StepperOnline product page, fetched 2026-11-16 (HTML text, tags stripped; specification lines only).
+URL: https://www.omc-stepperonline.com/anti-backlash-screw-nut-nema-17-external-48mm-stack-1-68a-lead-2mm-0-07874-length-330mm-17e19s1684ab4-330ra
+Datasheet (not fetched, host refused by the session's network proxy): https://files.omc-stepperonline.com/17E19S1684AB4-330RA_Full_Datasheet.pdf
+
+Anti-backlash Screw Nut Nema 17 External 48mm Stack 1.68A Lead 2mm(0.07874") Length 330mm
+This linear motor integrated with 330mm Tr8x2 threaded rod and a Anti-backlash screw nut move along ...
+Read More
+0 reviews
+•
+from
+$46.30
+5 or more: $44.39
+10 or more: $42.63
+50 or more: $41.01
+100 or more: $39.50
+Select a country to see live inventory
+Ships from
+China
+Qty
+Add to Cart
+" class="btn btn-cart" >
+Add to Cart
+Notify Me
+" class="btn btn-cart notify-button-j3" >
+Notify Me
+Add to Wish List
+Compare this Product
+Easy Returns
+Return within 30 days of delivery. Contact us first and we'll take it from there.
+Read more
+Ships within 24 hours!
+Ships within 24 hours basically means that your product will be shipped out or dispatched from our warehouse within 24 hours if it has enough stock.
+Read more
+.
+Choose a Local Warehouse, Get More Benefits!
+Customers in the US, UK, EU, Australia and Russia: choose your local warehouse for faster delivery, easier after-sales support and no customs clearance. All other countries: please choose the China warehouse.
+Description
+Specifications
+Reviews
+This linear motor integrated with 330mm Tr8x2 threaded rod and a Anti-backlash screw nut move along the threaded rod. With Anti-backlash screw nut, the motor part is a 1.68A 48mm 1.8 degree 4 wires Nema 17 stepper motor.
+Electrical Specification
+Manufacturer Part Number: 17E19S1684AB4-330RA
+Motor Type: External (Trapezoidal)
+Step Angle: 1.8deg
+Holding Torque: 0.44Nm(62.31oz.in)
+Rated Current/phase: 1.68A
+Phase Resistance: 1.65ohms
+Inductance: 2.8mH ± 20%(1KHz)
+Physical Specification
+Frame Size: 42 x 42mm
+Body Length: 48mm
+Lead Screw Length: 330mm(12.992")
+Lead Screw Diameter: Φ8mm(0.315")
+Lead/Step: 0.01mm(0.0003937")
+Lead/Revolution: 2mm(0.0787")
+Number of Leads: 4
+Cable Length: 500mm
+Connection
+A+
+A-
+B+
+B-
+Red
+Gray
+Yellow
+Green
+Electrical Specification
+Bipolar/Unipolar
+Bipolar
+Has Torque/Thrust Curve?
+No
+Holding Torque(Ncm)
+44
+Inductance(mH)
+2.8
+Phase Resistance(ohms)
+1.65
+Rated Current(A)
+1.68
+Step Angle(deg.)
+1.8
+Physical Specification
+Body Length(mm)
+48
+Frame Size(mm)
+Nema 17 (42 x 42)
+IP Rating
+40
+Lead Length(mm)
+500
+Lead Screw Diameter(mm)
+8
+Lead Screw Length(mm)
+330
+Lead Travel/Revolution(mm)
+2
+Lead Travel/Step(mm)
+0.01
+Linear Motor Type
+External (Trapezoidal)
+No. of Lead
+4
+
+Price block:
+from
+$46.30
+5 or more: $44.39
+10 or more: $42.63
+50 or more: $41.01
+100 or more: $39.50
+Select a country to see live inventory
+Ships from
+China
+Qty
+Add to Cart
+
+Predecessor 17E19S1684AB2-330RA page (discontinued), specification lines:
+Anti-backlash Screw Nut Nema 17 External 48mm Stack 1.68A Lead 2mm(0.07874") Length 330mm
+Electrical Specification
+Manufacturer Part Number: 17E19S1684AB2-330RA(17E19S1684AB-330RA)
+Mot...
+Read More
+0 reviews
+•
+Add to Wish List
+Compare this Product
+Easy Returns
+Return within 30 days of delivery. Contact us first and we'll take it from there.
+Read more
+Choose a Local Warehouse, Get More Benefits!
+Customers in the US, UK, EU, Australia and Russia: choose your local warehouse for faster delivery, easier after-sales support and no customs clearance. All other countries: please choose the China warehouse.
+Description
+Specifications
+Reviews
+Electrical Specification
+Manufacturer Part Number: 17E19S1684AB2-330RA(17E19S1684AB-330RA)
+Motor Type: External Linear Stepper
+Step Angle: 1.8deg
+Holding Torque: 0.44Nm(62.31oz.in)
+Rated Current/phase: 1.68A
+Phase Resistance: 1.65ohms
+Voltage: 2.8V
+Inductance: 2.8mH ± 20%(1KHz)
+Physical Specification
+Frame Size: 42 x 42mm
+Body Length: 48mm
+Lead Screw Length: 330mm(12.992")
+Lead Screw Diameter: Φ8mm(0.315")
+Lead/Step: 0.01mm(0.0003937")
+Lead/Revolution: 2mm(0.0787")
+Number of Leads: 4
+Cable Length: 500mm
+Weight: 350g
+Connection
+A+
+
