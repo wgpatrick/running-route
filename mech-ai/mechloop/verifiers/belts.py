@@ -1,6 +1,12 @@
 """Belt checks: the route must keep a constant length as the machine moves
 (otherwise the belt goes slack or binds), must fit the belt you intend to buy,
-and its straight runs must not pass through other parts."""
+and its straight runs must not pass through other parts.
+
+Clearance (warnings, BLT-060 / BLT-061): a straight run that comes within RUN_CLEARANCE_MM of a part the belt slides
+past, or a pulley or idler within PULLEY_PLATE_CLEARANCE_MM of a made (non-bought) part, rubs as soon as the belt
+flutters, the tension changes or a flange wobbles. The overlap test above only catches a run that is already inside a
+part (more than 0.5 mm^3). Override the thresholds with design.practice["limits"]["BLT-060.run_clearance_mm"] and
+["BLT-061.pulley_plate_clearance_mm"]."""
 from __future__ import annotations
 
 import math
@@ -13,6 +19,29 @@ from ..model import Belt, Design
 from ..report import VerifierResult
 
 LEN_TOL = 0.3  # mm of length change over travel a tensioned belt can absorb
+# Clearance a straight belt run keeps from any part it slides past (the belt flutters a millimetre or two at speed and
+# rides up a flange edge when out of tension), and a pulley or idler from a stationary made part next to it (axial play
+# of the bearing or set-screw hub, flange run-out). RECALLED shop practice, not a published figure: warnings only.
+RUN_CLEARANCE_MM = 3.0
+PULLEY_PLATE_CLEARANCE_MM = 2.0
+
+
+def clearance_limits(design: Design) -> tuple[float, float]:
+    """(run clearance, pulley-to-plate clearance) in mm: the module constants unless design.practice["limits"] says."""
+    lim = ((getattr(design, "practice", None) or {}).get("limits") or {})
+    return (float(lim.get("BLT-060.run_clearance_mm", RUN_CLEARANCE_MM)),
+            float(lim.get("BLT-061.pulley_plate_clearance_mm", PULLEY_PLATE_CLEARANCE_MM)))
+
+
+def _world_bbox(lb, T):
+    """Axis-aligned world box of a local bounding box moved by T (8 corners)."""
+    cs = np.array([[x, y, z, 1.0] for x in (lb.min.X, lb.max.X) for y in (lb.min.Y, lb.max.Y) for z in (lb.min.Z, lb.max.Z)])
+    w = (T @ cs.T).T[:, :3]
+    return w.min(axis=0), w.max(axis=0)
+
+
+def _boxes_near(a, b, gap):
+    return bool(np.all(a[0] - gap <= b[1]) and np.all(b[0] - gap <= a[1]))
 
 
 def _basis(axis):
@@ -194,5 +223,101 @@ def verify_belts(design: Design, r: VerifierResult, poses: list[dict]) -> None:
                   belt=belt.name, part=name, **hdat,
                   hint="Move the pulleys/anchors so the run clears the part, or cut a slot for the belt.")
         m["clear_of_parts"] = not hit
+        m["clearance"] = belt_clearances(design, belt, check, skip=set(hit), r=r)
         out[belt.name] = m
     r.metrics["belts"] = out
+
+
+def belt_clearances(design: Design, belt: Belt, poses: list[dict], skip=frozenset(), r: VerifierResult | None = None) -> dict:
+    """BLT-060 / BLT-061. Runs: every straight run, at each pose, against every part the belt slides past, that is every
+    part except the belt's own pulleys and the parts on the body (or bodies) its anchors ride on, which move with the
+    belt. A run is trimmed at each pulley end by the pulley's outer radius (its own flanges and axle hardware are there
+    by design). Pulleys: each pulley or idler of the belt against every made part (not bought) other than those joined to
+    it; parts on another body are taken at every pose. Returns the closest approach per part; warnings when under the
+    limits (parts already reported as a collision are skipped)."""
+    run_lim, pul_lim = clearance_limits(design)
+    comps = {c.name: c for c in design.components}
+    own = {n[1] for n in belt.path if n[0] == "pulley"}
+    moving_with = {n[1] for n in belt.path if n[0] == "anchor"}
+    joined = {}
+    for pair in (getattr(design, "joins", None) or {}):
+        pr = tuple(pair)
+        if len(pr) == 2:
+            joined.setdefault(pr[0], set()).add(pr[1])
+            joined.setdefault(pr[1], set()).add(pr[0])
+    lbb = {c.name: c.shape.bounding_box() for c in design.components}
+    rad = {}
+    for pn in own:
+        b = lbb[pn]
+        rad[pn] = max(b.max.X - b.min.X, b.max.Y - b.min.Y) / 2.0
+    a, _, _ = _basis(belt.axis)
+    runs_close: dict[str, dict] = {}
+    pul_close: dict[tuple, dict] = {}
+    path_names = [n[1] if n[0] == "pulley" else None for n in belt.path]
+    for q in poses:
+        T = forward_kinematics(design, q)
+        rt = route(design, belt, T)
+        wbb = {n: _world_bbox(lbb[n], T[comps[n].body]) for n in comps}
+        nseg = len(rt["segments"])
+        for k, (p0, p1) in enumerate(rt["segments"]):
+            L = float(np.linalg.norm(p1 - p0))
+            if L < 2.0:
+                continue
+            t = (p1 - p0) / L
+            i0, i1 = k, (k + 1) % len(path_names)
+            c0 = rad.get(path_names[i0], 1.0) if path_names[i0] else 1.0
+            c1 = rad.get(path_names[i1], 1.0) if path_names[i1] else 1.0
+            if L - c0 - c1 < 1.0:
+                continue
+            q0, q1 = p0 + t * c0, p1 - t * c1
+            seg = Plane(origin=tuple((q0 + q1) / 2), x_dir=tuple(t), z_dir=tuple(a)) * Box(float(np.linalg.norm(q1 - q0)), belt.thickness, belt.width)
+            sb = seg.bounding_box()
+            sbb = (np.array([sb.min.X, sb.min.Y, sb.min.Z]), np.array([sb.max.X, sb.max.Y, sb.max.Z]))
+            for c in design.components:
+                if c.name in own or c.name in skip or c.body in moving_with:
+                    continue
+                if not _boxes_near(sbb, wbb[c.name], run_lim):
+                    continue
+                try:
+                    dist = float(seg.distance_to(c.shape.moved(location_from_matrix(T[c.body]))))
+                except Exception:
+                    continue
+                if dist < run_lim and dist < runs_close.get(c.name, {}).get("distance_mm", 1e9):
+                    runs_close[c.name] = {"distance_mm": round(dist, 2), "pose": {kk: round(v, 1) for kk, v in q.items()} or "home",
+                                          "run": k}
+        for pn in own:
+            pc = comps[pn]
+            pshape = None
+            for c in design.components:
+                if c.cots or c.name in own or c.name in skip or c.name in joined.get(pn, ()):
+                    continue
+                if (pn, c.name) in pul_close and c.body == pc.body:
+                    continue
+                if not _boxes_near(wbb[pn], wbb[c.name], pul_lim):
+                    continue
+                if pshape is None:
+                    pshape = pc.shape.moved(location_from_matrix(T[pc.body]))
+                try:
+                    dist = float(pshape.distance_to(c.shape.moved(location_from_matrix(T[c.body]))))
+                except Exception:
+                    continue
+                key = (pn, c.name)
+                if dist < pul_lim and dist < pul_close.get(key, {}).get("distance_mm", 1e9):
+                    pul_close[key] = {"distance_mm": round(dist, 2), "pose": {kk: round(v, 1) for kk, v in q.items()} or "home"}
+    if r is not None:
+        for name, h in sorted(runs_close.items()):
+            r.add("warning", "belt_run_near_part",
+                  f"Belt {belt.name}: a straight run passes {h['distance_mm']:.2f} mm from {name} (pose {h['pose']}), which it slides "
+                  f"past; under {run_lim:g} mm it rubs when the belt flutters or slackens (BLT-060).",
+                  belt=belt.name, part=name, rule="BLT-060", value=h["distance_mm"], limit=run_lim, pose=h["pose"],
+                  hint="Move the part or the pulleys/anchors so the run keeps the clearance, or open the slot the belt passes through. "
+                       "Limit: design.practice['limits']['BLT-060.run_clearance_mm'].")
+        for (pn, name), h in sorted(pul_close.items()):
+            r.add("warning", "pulley_near_plate",
+                  f"Belt {belt.name}: pulley {pn} is {h['distance_mm']:.2f} mm from {name} (pose {h['pose']}); under {pul_lim:g} mm a "
+                  f"flange rubs the plate with the bearing's axial play or the hub's run-out (BLT-061).",
+                  belt=belt.name, part=name, pulley=pn, rule="BLT-061", value=h["distance_mm"], limit=pul_lim, pose=h["pose"],
+                  hint="Space the pulley off the plate (a thicker spacer or a second washer, moving the belt plane with it), or relieve "
+                       "the plate. Limit: design.practice['limits']['BLT-061.pulley_plate_clearance_mm'].")
+    return {"run_clearance_limit_mm": run_lim, "pulley_plate_clearance_limit_mm": pul_lim,
+            "runs_near": runs_close, "pulleys_near": {f"{p} / {c}": v for (p, c), v in pul_close.items()}}
