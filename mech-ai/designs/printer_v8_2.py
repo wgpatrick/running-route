@@ -25,6 +25,9 @@ What changed from v8.1 (the rest is v8.1's, docstring of designs/printer_v8_1.py
 4. ELECTRONICS: BIGTREETECH Octopus V1.1 (eight drivers) in place of the SKR Mini E3 V3.0 (four): X, Y, Y left, Z, Z1,
    Z2, E, one spare. The two Y motors are on their own drivers now. Klipper [z_tilt] with the three screw positions;
    Z_TILT_ADJUST levels the screws against each other (the belt could not).
+5. FRAME (owner review): the top front rail is flush with the other three top rails (v8.1: 30 mm lower so the gantry
+   passed over it). The frame is 26 mm deeper, all at the front: the side rails are 386 mm (v8.1 360), the front rails
+   and posts sit 26 mm further forward, so the gantry's lowest front parts clear the flush rail by 3.6 mm at full travel.
 
 Layout (X = width, Y = depth with the front at -Y, Z = up) is v4's; see designs/printer_v4.py for the history.
 
@@ -91,7 +94,12 @@ PRINT_ABS = {"walls": 4, "top_layers": 5, "bottom_layers": 5, "infill": 0.4, "in
 FX, FY, FZ = 340.0, 360.0, 394.0
 RAIL_X = FX / 2 - 10
 TX, TY = PRINT_X / 2, PRINT_Y / 2
-FT_DROP = 30.0
+FRONT_EXT = 26.0       # v8.2 (owner review): the frame's front is 26 mm further forward and its top front rail flush with the
+                       # other three (v8.1: 30 mm lower, FT_DROP, so the gantry's front parts passed over it). At full -Y
+                       # over-travel the gantry's lowest front parts (X idler mount and tension anchor lugs, z 399-404) reach
+                       # y -182.4; the flush rail's inner face is now at -186.0 (3.6 mm clear)
+FD = FY + FRONT_EXT    # frame depth, outside to outside of the front and back rails
+FRONT_Y = -(FY / 2 - 10) - FRONT_EXT   # centre line of the front rails and posts (v8.1 -170)
 
 # ---- Z axis -----------------------------------------------------------------------
 BED = 220.0
@@ -215,6 +223,7 @@ PIN_SP_D = 5.0                                    # anti-rotation pin: an M2.5 s
 FP_X = 128.0                                      # front stiffener plate half width (clear of the motors and nut plates)
 T_FP = G127                                       # 12.7 mm: stiff, and its weight seats the front nuts (docs)
 FP_Z1 = Z_BED - 6.0
+FRONT_PLATE = True     # v8.2 study (docs/PRINTER_V8_2.md, 'Front plate'): False builds the carrier without it
 # ---- Z drive: three integrated lead-screw motors, one per screw, no belt ----------------------------------------------
 # Each screw is the shaft of its own StepperOnline 17E19S1684AB4-330RA (Tr8x2, no coupler). The motor hangs from the
 # underside of a laser-cut 6061 plate (its 22 mm pilot in the plate's hole, four M3 x 10 from above into the motor's own
@@ -701,10 +710,10 @@ def build_electrical(d: Design) -> Electrical:
             flex_length={0: 270.0})
     el.loom("top_left", [("world", (XL, -118.0, ZL)), ("world", (XL, 136.0, ZL))])
     el.loom("drop_left", [("world", (XL, -120.0, ZL)),
-                          ("world", (-143.0, -140.0, FZ - 24.0)), ("world", (-143.0, -150.0, FZ - FT_DROP - 30.0)),
-                          ("world", (-143.0, -170.0, FZ - FT_DROP - 60.0)),
-                          ("world", (-143.0, -170.0, 70.0)), ("world", (-140.0, -166.0, 26.0))])
-    el.loom("front", [("world", (-140.0, -166.0, 26.0)), ("world", (60.0, -166.0, 26.0)), ("world", (72.0, -142.0, zt))])
+                          ("world", (-143.0, -140.0, FZ - 24.0)), ("world", (-143.0, -150.0 - FRONT_EXT, FZ - 60.0)),
+                          ("world", (-143.0, FRONT_Y, FZ - 90.0)),
+                          ("world", (-143.0, FRONT_Y, 70.0)), ("world", (-140.0, FRONT_Y + 4.0, 26.0))])
+    el.loom("front", [("world", (-140.0, FRONT_Y + 4.0, 26.0)), ("world", (60.0, FRONT_Y + 4.0, 26.0)), ("world", (72.0, -142.0, zt))])
     el.loom("bed", [Waypoint("zbody", (-40.0, Y_CAR + 3.0, BP_Z0 + 30.0), clamp="back_plate"),
                     Waypoint("zbody", (-40.0, Y_CAR + 3.0, BP_Z0 + 4.0), clamp="back_plate"),
                     Waypoint("world", (-40.0, TRAY_Y1 - 1.0, Z_TRAY + 3.0), clamp="electronics_tray")], flex_length={1: 330.0})
@@ -841,28 +850,31 @@ def build_frame_z():
                        "printer": {"build_volume": (220.0, 220.0, 220.0), "nozzle": 0.4},
                        "print_settings": dict(PRINT_ABS)}
     # ================= frame (v8) ================================================
+    # v8.2: the side rails are FRONT_EXT longer, all at the front; the front rails and posts move forward with them and
+    # the top front rail is flush with the other three
+    yrail = lambda sy: (FY / 2 - 10) if sy > 0 else FRONT_Y
     for sx, n in ((-1, "left"), (1, "right")):
         for z, lvl in ((FZ, "top"), (10, "bot")):
-            place(d, f"frame_{lvl}_{n}", extrusion_2020(FY), Location((sx * RAIL_X, 0, z), (0, 0, 90)))
+            place(d, f"frame_{lvl}_{n}", extrusion_2020(FD), Location((sx * RAIL_X, -FRONT_EXT / 2, z), (0, 0, 90)))
     for sy, n in ((-1, "front"), (1, "back")):
-        for z, lvl in ((FZ - (FT_DROP if sy < 0 else 0.0), "top"), (10, "bot")):
-            place(d, f"frame_{lvl}_{n}", extrusion_2020(FX - 40), Location((0, sy * (FY / 2 - 10), z)))
+        for z, lvl in ((FZ, "top"), (10, "bot")):
+            place(d, f"frame_{lvl}_{n}", extrusion_2020(FX - 40), Location((0, yrail(sy), z)))
     for sx in (-1, 1):
         for sy in (-1, 1):
             place(d, f"post_{'l' if sx < 0 else 'r'}{'f' if sy < 0 else 'b'}", extrusion_2020(FZ - 30),
-                  Location((sx * RAIL_X, sy * (FY / 2 - 10), (FZ + 10) / 2), (0, 90, 0)))
+                  Location((sx * RAIL_X, yrail(sy), (FZ + 10) / 2), (0, 90, 0)))
     k = 0
     for sx in (-1, 1):
         side = "left" if sx < 0 else "right"
         for sy in (-1, 1):
             post = f"post_{'l' if sx < 0 else 'r'}{'f' if sy < 0 else 'b'}"
             cross = "front" if sy < 0 else "back"
-            yi = sy * (FY / 2 - 20)
+            yi = yrail(sy) - sy * 10.0
             for lvl, zcen, zdir in (("top", FZ - 10, -1), ("bot", 20, 1)):
                 add_corner_bracket(d, f"bracket_{k}", f"frame_{lvl}_{side}", post, (sx * RAIL_X, yi, zcen), (0, -sy, 0), (0, 0, zdir)); k += 1
                 if lvl == "top":
                     add_corner_bracket(d, f"bracket_{k}", f"frame_{lvl}_{cross}", post,
-                                       (sx * (RAIL_X - 10), sy * (FY / 2 - 10), FZ - (FT_DROP if sy < 0 else 0.0) - 10.0),
+                                       (sx * (RAIL_X - 10), yrail(sy), FZ - 10.0),
                                        (-sx, 0, 0), (0, 0, -1)); k += 1
                 else:
                     add_corner_bracket(d, f"bracket_{k}", f"frame_{lvl}_{cross}", f"frame_{lvl}_{side}",
@@ -906,14 +918,15 @@ def build_frame_z():
         add_corner_bracket(d, f"bed_arm_{n}_rbracket_u", f"bed_arm_{n}", "rear_beam", (sx * ARM_X, ARM_Y1, Z_ARM - 10.0), (0, -1, 0), (0, 0, -1), body="zbody")
         add_corner_bracket(d, f"bed_arm_{n}_fbracket_u", f"bed_arm_{n}", "front_beam", (sx * ARM_X, ARM_Y0, Z_ARM - 10.0), (0, 1, 0), (0, 0, -1), body="zbody")
     # front stiffener: 6.35 mm 6061 on the front beam's front face (a deep beam between the arms and the nut plates)
-    fp = bx(-FP_X, FP_X, FB_FACE - T_FP, FB_FACE, Z_ARM - 19.2, FP_Z1)
-    FP_BOLTS = (-110.0, -40.0, 40.0, 110.0)
-    for x in FP_BOLTS:
-        fp -= Pos(x, FB_FACE - T_FP / 2, Z_ARM) * ycyl(12.8 / 2, T_FP)
-    sheet(d, "front_plate", fp, AL, body="zbody")
-    for i, x in enumerate(FP_BOLTS):
-        add_screw(d, f"front_plate_bolt_{i}", "M5", 18, at=(x, FB_FACE - T_FP, Z_ARM), direction=(0, 1, 0), body="zbody",
-                  threads_into="front_beam", tnut=True, clamps=("front_plate",), washer="large")
+    if FRONT_PLATE:
+        fp = bx(-FP_X, FP_X, FB_FACE - T_FP, FB_FACE, Z_ARM - 19.2, FP_Z1)
+        FP_BOLTS = (-110.0, -40.0, 40.0, 110.0)
+        for x in FP_BOLTS:
+            fp -= Pos(x, FB_FACE - T_FP / 2, Z_ARM) * ycyl(12.8 / 2, T_FP)
+        sheet(d, "front_plate", fp, AL, body="zbody")
+        for i, x in enumerate(FP_BOLTS):
+            add_screw(d, f"front_plate_bolt_{i}", "M5", 18, at=(x, FB_FACE - T_FP, Z_ARM), direction=(0, 1, 0), body="zbody",
+                      threads_into="front_beam", tnut=True, clamps=("front_plate",), washer="large")
     # nut plates: 6061 on the beams' top faces (9.525 mm rear, 6.35 mm front); each floating T8 nut hangs under one (the carrier sits on its
     # flange), its barrel in a 16 mm hole, turned by a pin: an M3 through a 6 mm aluminium sleeve in a radial slot
     zn0 = Z_FL
@@ -1053,7 +1066,7 @@ def build_frame_z():
         mount_parts[tg] = build_z_mount(d, tg, x0, y0, turn, posts, rail, on_tray)
     zs = {"tags": ("", "_fl", "_fr"), "zcars": ["z_carriage_left", "z_carriage_right"],
           "rails": {"z_carriage_left": "z_rail_left", "z_carriage_right": "z_rail_right"},
-          "carrier": ["back_plate", "rear_beam", "front_beam", "bed_arm_left", "bed_arm_right", "front_plate", "bed_tie",
+          "carrier": ["back_plate", "rear_beam", "front_beam", "bed_arm_left", "bed_arm_right"] + (["front_plate"] if FRONT_PLATE else []) + ["bed_tie",
                       "bed_tie_spacer_0", "bed_tie_spacer_1"]
                      + [f"bed_arm_{n}_{e}bracket_{s}" for n in ("left", "right") for e in ("r", "f") for s in ("i", "u")],
           "nut_plates": ["nut_plate", "nut_plate_fl", "nut_plate_fr"],
