@@ -1,0 +1,456 @@
+<title>Printer v8 Design Review</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: navigator | detail sheet | sticky 3D view. Tokens below; a drawing-office palette, cobalt ink on cool paper. */
+:root{
+  --bg:#f3f5f8; --panel:#ffffff; --ink:#18212e; --muted:#5a6678; --line:#d9dee6; --soft:#eaeef4;
+  --accent:#2453c2; --accent-soft:#e2e9f8; --sel:#e8890c;
+  --err:#c23a2b; --err-soft:#fbe9e6; --warn:#a86d00; --warn-soft:#fdf1d8; --ok:#23845a; --ok-soft:#e1f3ea; --info:#4f6075; --info-soft:#e9edf2;
+  --f-head:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#10151d; --panel:#171e28; --ink:#e3e8ef; --muted:#97a3b5; --line:#2a3443; --soft:#1e2733;
+  --accent:#7ea2f2; --accent-soft:#1d2a45; --sel:#f5a23a;
+  --err:#f07a6b; --err-soft:#3a1d1a; --warn:#e7b04a; --warn-soft:#3a2d12; --ok:#5cc691; --ok-soft:#14301f; --info:#a5b3c6; --info-soft:#222c39; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10151d; --panel:#171e28; --ink:#e3e8ef; --muted:#97a3b5; --line:#2a3443; --soft:#1e2733;
+  --accent:#7ea2f2; --accent-soft:#1d2a45; --sel:#f5a23a;
+  --err:#f07a6b; --err-soft:#3a1d1a; --warn:#e7b04a; --warn-soft:#3a2d12; --ok:#5cc691; --ok-soft:#14301f; --info:#a5b3c6; --info-soft:#222c39; color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.5 var(--f-body)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--panel)}
+.wrap{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{background:var(--panel);border-bottom:1px solid var(--line);padding-block:12px}
+header.top .row{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 20px}
+h1{font:600 22px/1.2 var(--f-head);margin:0;letter-spacing:.01em}
+.sub{color:var(--muted);font-size:13px}
+.stats{display:flex;flex-wrap:wrap;gap:4px 18px;font:500 12px var(--f-mono);color:var(--muted);margin-top:6px}
+.stats b{color:var(--ink);font-weight:500}
+.banner{margin-top:8px;font-size:13px;color:var(--warn);background:var(--warn-soft);border-radius:4px;padding:6px 10px}
+main{display:grid;grid-template-columns:300px minmax(0,1fr) minmax(0,42%);gap:0;height:calc(100% - var(--hh,120px))}
+@media (max-width:1100px){main{grid-template-columns:270px minmax(0,1fr);height:auto} .view{grid-column:1/-1;order:-1;height:46vh;position:relative!important;top:0!important}}
+@media (max-width:720px){main{grid-template-columns:minmax(0,1fr)} nav.side{max-height:44vh}}
+nav.side{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;overflow:hidden}
+.tabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto}
+.tabs button{flex:1;font:600 12px var(--f-head);letter-spacing:.06em;text-transform:uppercase;padding:10px 6px;border:0;background:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.navtools{padding:8px 10px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
+input[type=search],select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px 8px;width:100%;box-sizing:border-box}
+textarea{min-height:76px;resize:vertical}
+.list{overflow:auto;flex:1;min-height:0;padding-block:4px}
+.grp{font:600 11px var(--f-head);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);padding:10px 12px 4px;display:flex;justify-content:space-between}
+.item{display:flex;align-items:center;gap:8px;padding:5px 12px;cursor:pointer;border-left:3px solid transparent}
+.item:hover{background:var(--soft)}
+.item.on{background:var(--accent-soft);border-left-color:var(--accent)}
+.item .nm{font:13px var(--f-mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.item.asm .nm{font:600 13px var(--f-head);letter-spacing:.03em;text-transform:uppercase}
+.item .meta{font-size:11px;color:var(--muted);white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;flex:none}
+.badges{display:flex;gap:3px}
+.bd{font:500 10px var(--f-mono);border-radius:3px;padding:0 4px;line-height:16px}
+.bd.e{background:var(--err-soft);color:var(--err)} .bd.w{background:var(--warn-soft);color:var(--warn)} .bd.f{background:var(--accent-soft);color:var(--accent)} .bd.k{background:var(--ok-soft);color:var(--ok)}
+section.detail{overflow:auto;min-width:0;padding-block:16px}
+.detail .wrap{max-width:900px}
+.empty{color:var(--muted);padding:40px 0}
+.eyebrow{font:600 11px var(--f-head);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h2{font:600 24px/1.2 var(--f-head);margin:2px 0 6px;text-wrap:balance;overflow-wrap:anywhere}
+h3{font:600 13px var(--f-head);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin:22px 0 8px;border-bottom:1px solid var(--line);padding-bottom:4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.chip{font:500 12px var(--f-body);border:1px solid var(--line);border-radius:3px;padding:1px 8px;background:var(--panel)}
+.chip.k-fabricated{border-color:var(--accent);color:var(--accent)}
+.facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.facts div{background:var(--panel);padding:8px 10px;min-width:0}
+.facts dt{font:600 10.5px var(--f-head);letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.facts dd{margin:2px 0 0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.mono{font-family:var(--f-mono);font-size:12.5px}
+.flag{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;padding:8px 10px;border-radius:4px;margin-bottom:6px;border-left:3px solid}
+.flag.error{background:var(--err-soft);border-color:var(--err)} .flag.warning{background:var(--warn-soft);border-color:var(--warn)} .flag.info{background:var(--info-soft);border-color:var(--info)}
+.flag .r{font:600 11px var(--f-head);letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+.flag.error .r{color:var(--err)} .flag.warning .r{color:var(--warn)} .flag.info .r{color:var(--info)}
+.crit{display:grid;grid-template-columns:minmax(120px,200px) 1fr;gap:4px 14px;margin:0}
+.crit dt{color:var(--muted);font-size:13px} .crit dd{margin:0;font-variant-numeric:tabular-nums}
+@media (max-width:520px){.crit{grid-template-columns:1fr} .crit dd{margin-bottom:6px}}
+.tw{overflow-x:auto;margin:8px 0;border:1px solid var(--line);border-radius:4px}
+table{border-collapse:collapse;width:100%;font-size:12.5px;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 11px var(--f-head);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:var(--soft);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.fab ul{padding-left:18px;margin:6px 0} .fab li{margin:3px 0} .fab p{margin:6px 0}
+code{font:12px var(--f-mono);background:var(--soft);padding:0 3px;border-radius:2px}
+a.lnk,button.lnk{color:var(--accent);background:none;border:0;padding:0;font:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.drawing{background:#fff;border:1px solid var(--line);border-radius:4px;padding:6px;cursor:zoom-in}
+.drawing img{display:block;width:100%}
+.oi{border:1px solid var(--line);border-radius:4px;padding:8px 10px;margin-bottom:6px;background:var(--panel)}
+.oi .t{font-weight:600} .oi .k{font-size:13px;color:var(--muted);margin-top:4px}
+.rank{font:600 10px var(--f-mono);border-radius:3px;padding:0 5px;margin-right:6px}
+.rank.A{background:var(--err-soft);color:var(--err)} .rank.B{background:var(--warn-soft);color:var(--warn)} .rank.C{background:var(--info-soft);color:var(--info)}
+.fb{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;margin-top:8px}
+.verdicts{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.verdicts label{display:flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:4px;padding:4px 10px;cursor:pointer;font-size:13px}
+.verdicts input{accent-color:var(--accent)}
+.verdicts label:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.btn{font:600 13px var(--f-body);background:var(--accent);color:var(--panel);border:0;border-radius:4px;padding:7px 14px;cursor:pointer}
+.btn[disabled]{opacity:.5;cursor:default}
+.btn.ghost{background:none;color:var(--accent);border:1px solid var(--line)}
+.fbrow{display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap}
+.note{font-size:12px;color:var(--muted)}
+.cm{border-top:1px solid var(--line);padding:9px 0}
+.cm:first-child{border-top:0}
+.cm .h{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center;font-size:12px;color:var(--muted)}
+.cm .h b{color:var(--ink);font-weight:600}
+.cm .x{white-space:pre-wrap;margin-top:3px;overflow-wrap:anywhere}
+.cm.resolved .x{color:var(--muted)}
+.vd{font:600 10.5px var(--f-head);letter-spacing:.05em;text-transform:uppercase;border-radius:3px;padding:0 6px}
+.vd.ok{background:var(--ok-soft);color:var(--ok)} .vd.question{background:var(--info-soft);color:var(--info)} .vd.change{background:var(--err-soft);color:var(--err)}
+.view{position:sticky;top:0;height:100%;background:var(--soft);border-left:1px solid var(--line);min-width:0}
+.view canvas{display:block;width:100%;height:100%;touch-action:none}
+.vtools{position:absolute;left:10px;top:10px;display:flex;flex-wrap:wrap;gap:6px;max-width:calc(100% - 20px)}
+.vtools button,.vtools label{font:500 12px var(--f-body);background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:4px 9px;cursor:pointer;display:flex;align-items:center;gap:5px}
+.legend{position:absolute;left:10px;bottom:10px;font-size:11.5px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:4px 8px;display:flex;gap:10px;flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.vmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;padding:20px;text-align:center}
+.hover{position:absolute;right:10px;top:10px;font:12px var(--f-mono);background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:3px 8px;pointer-events:none}
+dialog{border:1px solid var(--line);border-radius:6px;padding:0;background:var(--panel);color:var(--ink);width:min(1100px,94vw);max-height:92vh}
+dialog::backdrop{background:rgba(10,15,25,.55)}
+dialog .dh{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line)}
+dialog .db{overflow:auto;max-height:calc(92vh - 50px);background:#fff}
+dialog img{display:block;width:100%;min-width:700px}
+button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.legendtbl td:first-child{white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top wrap" id="hdr">
+  <div class="row">
+    <h1>Printer v8 design review</h1>
+    <span class="sub">Bed-slinger, 180 mm cube, three-screw Z. Pick an assembly, part or bolted joint; leave feedback on any of them.</span>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="banner">Simulated design, never built. v8.1 is next and will change the bed drive, every load-bearing printed part, the steel plates and the tapped holes (see the guideline flags). Feedback here goes into v8.1.</div>
+</header>
+
+<main id="main">
+  <nav class="side" aria-label="Design navigator">
+    <div class="tabs" role="tablist">
+      <button role="tab" data-tab="asm" aria-selected="true">Assemblies</button>
+      <button role="tab" data-tab="parts" aria-selected="false">Parts</button>
+      <button role="tab" data-tab="joints" aria-selected="false">Joints</button>
+      <button role="tab" data-tab="fb" aria-selected="false">Feedback</button>
+    </div>
+    <div class="navtools">
+      <input type="search" id="q" placeholder="Filter by name, SKU or material" aria-label="Filter">
+      <select id="kindf" aria-label="Show">
+        <option value="custom">Custom parts only (fabricated)</option>
+        <option value="nofast">All parts except fasteners</option>
+        <option value="all">Everything, fasteners included</option>
+        <option value="flagged">Parts with guideline flags (errors)</option>
+      </select>
+    </div>
+    <div class="list" id="list"></div>
+  </nav>
+
+  <section class="detail" id="detail" aria-live="polite"><div class="wrap" id="dw"><p class="empty">Loading the design…</p></div></section>
+
+  <div class="view" id="view">
+    <canvas id="gl" aria-label="3D view of the printer. Click a part to open it."></canvas>
+    <div class="vtools">
+      <button id="fit" type="button">Fit selection</button>
+      <button id="all" type="button">Whole machine</button>
+      <label><input type="checkbox" id="ghost" checked> Ghost the rest</label>
+      <label><input type="checkbox" id="hidefast"> Hide fasteners</label>
+    </div>
+    <div class="hover" id="hover" hidden></div>
+    <div class="legend"><span><i style="background:var(--sel)"></i>selected</span><span><i style="background:var(--accent)"></i>related</span><span>drag to orbit · scroll to zoom · click a part</span></div>
+    <div class="vmsg" id="vmsg">Loading 3D model (11 MB)…</div>
+  </div>
+</main>
+
+<dialog id="dlg"><div class="dh"><b id="dlgt"></b><button class="btn ghost" id="dlgx" type="button">Close</button></div><div class="db"><img id="dlgi" alt=""></div></dialog>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fx=(x,d=1)=>x==null||isNaN(x)?'–':Number(x).toFixed(d);
+const KIND={fabricated:'Fabricated',purchased:'Purchased',fastener:'Fastener',electrical:'Electrical'};
+const KCOL={fabricated:'--accent',purchased:'--ok',fastener:'--muted',electrical:'--warn'};
+const GEN_TOL={sheet:'Position ±0.16 mm, pattern ±0.08 mm, hole ±0.08 mm, flatness 0.20 mm (model). SendCutSend publishes ±0.127 mm under 12 in.',
+  machined:'Position ±0.08 mm, pattern ±0.04 mm, hole ±0.04 mm, mating-face flatness 0.04 mm. Xometry default ±0.127 mm unless called out.',
+  printed:'Position ±0.24 mm, pattern ±0.10 mm, holes drawn oversize for 0.15 mm shrink (±0.14), flatness 0.20 mm.'};
+const VERDICT={ok:'Looks good',question:'Question',change:'Change needed'};
+let D, P={}, J={}, A={}, OI={}, sel=null, FB=[], db=null, user=null, me=null, names={};
+const S={tab:'asm',q:'',kind:'custom'};
+
+/* ---------- routing: #p-name, #j-n, #a-n (letters, digits, hyphens only) ---------- */
+const slug=s=>s.replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,'');
+let BYSLUG={};
+function key(t,id){return t+':'+id}
+function go(t,id,push=true){sel={t,id}; renderDetail(); renderList(); highlight(); if(push){const h=t[0]+'-'+slug(id); if(location.hash!=='#'+h) history.replaceState(null,'','#'+h);} }
+function fromHash(){const h=location.hash.slice(1); const r=BYSLUG[h]; if(r) go(r.t,r.id,false); else if(D) go('asm',D.assemblies[0].id,false);}
+addEventListener('hashchange',fromHash);
+
+fetch('data.json').then(r=>r.json()).then(d=>{
+  D=d; d.parts.forEach(p=>P[p.name]=p); d.joints.forEach(j=>J[j.id]=j); d.assemblies.forEach(a=>A[a.id]=a); d.open_items.forEach(o=>OI[o.id]=o);
+  d.parts.forEach(p=>BYSLUG['p-'+slug(p.name)]={t:'part',id:p.name});
+  d.joints.forEach(j=>BYSLUG['j-'+slug(j.id)]={t:'joint',id:j.id});
+  d.assemblies.forEach(a=>BYSLUG['a-'+slug(a.id)]={t:'asm',id:a.id});
+  const s=d.summary;
+  $('stats').innerHTML=`<span><b>${s.parts}</b> parts</span><span><b>${s.custom}</b> custom</span><span><b>${s.joints}</b> bolted joints</span><span><b>${fx(s.mass_kg,2)}</b> kg</span><span>BOM <b>$${fx(s.bom_cost,0)}</b></span><span>assembly <b>${fx(s.assembly_min,0)}</b> min</span><span>resonance X <b>${s.resonance_hz.x}</b> / Y <b>${s.resonance_hz.y}</b> Hz</span><span id="fbstat"></span>`;
+  sizeMain(); fromHash(); renderList(); initFeedback(); load3D();
+}).catch(e=>{$('dw').innerHTML='<p class="empty">Could not load the design data: '+esc(e.message)+'</p>'});
+function sizeMain(){document.documentElement.style.setProperty('--hh',$('hdr').offsetHeight+'px')}
+addEventListener('resize',()=>{sizeMain();resize3D()});
+
+/* ---------- navigator ---------- */
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));$('kindf').hidden=S.tab!=='parts';renderList()});
+$('kindf').hidden=true;
+$('q').oninput=e=>{S.q=e.target.value.toLowerCase();renderList()};
+$('kindf').onchange=e=>{S.kind=e.target.value;renderList()};
+const errs=fl=>fl.filter(f=>f.sev==='error').length, warns=fl=>fl.filter(f=>f.sev==='warning').length;
+function fbCount(k){return FB.filter(f=>f.target===k&&f.status!=='resolved').length}
+function badges(flags,k){let h='';const e=errs(flags||[]),w=warns(flags||[]);if(e)h+=`<span class="bd e" title="guideline errors">${e}</span>`;if(w)h+=`<span class="bd w" title="warnings">${w}</span>`;const n=fbCount(k);if(n)h+=`<span class="bd f" title="open feedback">💬${n}</span>`;const ok=FB.some(f=>f.target===k&&f.verdict==='ok');if(ok)h+=`<span class="bd k" title="marked looks good">✓</span>`;return `<span class="badges">${h}</span>`}
+function itemHTML(t,id,label,meta,dotVar,flags){const k=key(t,id),on=sel&&sel.t===t&&sel.id===id;return `<div class="item${on?' on':''}${t==='asm'?' asm':''}" tabindex="0" data-t="${t}" data-id="${esc(id)}">${dotVar?`<span class="dot" style="background:var(${dotVar})"></span>`:''}<span class="nm" title="${esc(label)}">${esc(label)}</span>${meta?`<span class="meta">${esc(meta)}</span>`:''}${badges(flags,k)}</div>`}
+function match(...xs){return !S.q||xs.some(x=>String(x??'').toLowerCase().includes(S.q))}
+function renderList(){
+  if(!D)return; let h='';
+  if(S.tab==='asm'){
+    D.assemblies.forEach(a=>{
+      const fabs=a.parts.map(n=>P[n]).filter(p=>p.kind==='fabricated'&&match(p.name,p.material,p.sku));
+      if(!match(a.name)&&!fabs.length)return;
+      h+=itemHTML('asm',a.id,a.name,`${a.parts.length}`,null,[]);
+      fabs.forEach(p=>{h+=itemHTML('part',p.name,'  '+p.name,p.process_code,KCOL[p.kind],p.flags).replace('class="nm"','class="nm" style="padding-left:12px"')});
+    });
+  } else if(S.tab==='parts'){
+    D.assemblies.forEach(a=>{
+      const ps=a.parts.map(n=>P[n]).filter(p=>{
+        if(S.kind==='custom'&&p.kind!=='fabricated')return false;
+        if(S.kind==='nofast'&&p.kind==='fastener')return false;
+        if(S.kind==='flagged'&&!errs(p.flags))return false;
+        return match(p.name,p.sku,p.material,p.desc)});
+      if(!ps.length)return;
+      h+=`<div class="grp"><span>${esc(a.name)}</span><span>${ps.length}</span></div>`;
+      ps.forEach(p=>h+=itemHTML('part',p.name,p.name,p.kind==='fabricated'?p.process_code:(p.sku||''),KCOL[p.kind],p.flags));
+    });
+  } else if(S.tab==='joints'){
+    D.assemblies.forEach(a=>{
+      const js=a.joints.map(id=>J[id]).filter(j=>match(j.name,...Object.keys(j.hardware)));
+      if(!js.length)return;
+      h+=`<div class="grp"><span>${esc(a.name)}</span><span>${js.length}</span></div>`;
+      js.forEach(j=>{const n=Object.values(j.hardware).reduce((s,x)=>s+x,0);h+=itemHTML('joint',j.id,j.name,n+' pcs',null,j.flags)});
+    });
+  } else {
+    const rows=FB.filter(f=>match(f.targetName,f.text)).slice().sort((a,b)=>(b.at||'').localeCompare(a.at||''));
+    if(!db) h+=`<p class="note" style="padding:12px">${fbReady?'Feedback storage is not available in this view (sign in to claude.ai to leave and see feedback).':'Connecting to feedback storage…'}</p>`;
+    else if(!rows.length) h+=`<p class="note" style="padding:12px">No feedback yet. Open any assembly, part or joint and use the feedback box at the bottom of its sheet.</p>`;
+    rows.forEach(f=>{const [t,...r]=f.target.split(':');const id=r.join(':');h+=`<div class="item" tabindex="0" data-t="${t}" data-id="${esc(id)}"><span class="vd ${f.verdict}">${esc(VERDICT[f.verdict]||f.verdict)}</span><span class="nm">${esc(f.targetName)}</span><span class="meta">${f.status==='resolved'?'resolved':''}</span></div>`});
+  }
+  $('list').innerHTML=h||'<p class="note" style="padding:12px">Nothing matches the filter.</p>';
+}
+$('list').addEventListener('click',e=>{const it=e.target.closest('.item');if(it)go(it.dataset.t,it.dataset.id)});
+$('list').addEventListener('keydown',e=>{if(e.key==='Enter'){const it=e.target.closest('.item');if(it)go(it.dataset.t,it.dataset.id)}});
+
+/* ---------- detail sheets ---------- */
+const plink=n=>P[n]?`<button class="lnk mono" data-go="part" data-id="${esc(n)}">${esc(n)}</button>`:`<span class="mono">${esc(n)}</span>`;
+const jlink=id=>J[id]?`<button class="lnk mono" data-go="joint" data-id="${esc(id)}">${esc(J[id].name)}</button>`:'';
+function flagsHTML(fl){if(!fl||!fl.length)return '<p class="note">No guideline flags.</p>';const o={error:0,warning:1,info:2};
+  // collapse repeated washer flags on joints
+  return fl.slice().sort((a,b)=>o[a.sev]-o[b.sev]).map(f=>`<div class="flag ${f.sev}"><span class="r">${esc(f.rule)}</span><span>${esc(f.text)}</span></div>`).join('')}
+function factsHTML(rows){return `<dl class="facts">${rows.filter(r=>r[1]!=null&&r[1]!=='').map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${v}</dd></div>`).join('')}</dl>`}
+function oiHTML(ids){if(!ids||!ids.length)return '';return `<h3>Open items from the build package</h3>`+ids.map(id=>{const o=OI[id];return `<div class="oi"><div class="t"><span class="rank ${o.rank}">${o.rank}${o.n}</span>${esc(o.title)}</div><div class="k">${o.known}</div><div class="k"><b>Check:</b> ${o.check}</div></div>`}).join('')}
+function findingsHTML(fs){if(!fs||!fs.length)return '';return `<h3>Verifier findings</h3>`+fs.map(f=>`<div class="flag ${f.severity==='info'?'info':f.severity}"><span class="r">${esc(f.verifier)}</span><span>${esc(f.message)}${f.hint?`<br><span class="note">${esc(f.hint)}</span>`:''}</span></div>`).join('')}
+function size(p){const b=p.bbox;return `${fx(b[3]-b[0],1)} × ${fx(b[4]-b[1],1)} × ${fx(b[5]-b[2],1)} mm`}
+
+function partSheet(p){
+  const fab=p.kind==='fabricated', m=p.mfg||{};
+  let h=`<div class="eyebrow">${esc(p.group)} · ${KIND[p.kind]} part</div><h2 class="mono" style="font-family:var(--f-mono);font-size:21px">${esc(p.name)}</h2>`;
+  h+=`<div class="chips"><span class="chip k-${p.kind}">${KIND[p.kind]}</span><span class="chip">${esc(p.material)}</span>${p.process?`<span class="chip">${esc(p.process)}</span>`:''}${p.shop?`<span class="chip">${esc(p.shop)}</span>`:''}${p.sku?`<span class="chip mono">${esc(p.sku)}</span>`:''}</div>`;
+  const rows=[['Material',esc(p.material)],['Fabrication',fab?esc(p.process):(p.kind==='fastener'?'Purchased hardware':'Purchased')],['Supplier',fab?esc(p.shop):esc(p.maker&&p.maker!=='not specified'?p.maker:'not specified')]];
+  if(fab&&p.thickness_mm)rows.push(['Stock',`${fx(p.thickness_mm,2)} mm ${m.form||''}`]);
+  if(fab&&m.flat_size_mm)rows.push(['Flat size',`${m.flat_size_mm.map(x=>fx(x,1)).join(' × ')} mm`]);
+  rows.push(['Envelope',size(p)],['Mass',p.mass!=null?fx(p.mass*1000,1)+' g':null],['Unit cost',p.cost!=null?'$'+fx(p.cost,2):(fab?'not quoted':null)]);
+  if(p.maker_pn&&p.maker_pn!=='not specified')rows.push(['Maker part no.',`<span class="mono">${esc(p.maker_pn)}</span>`]);
+  if(p.mcmaster)rows.push(['McMaster',`<span class="mono">${esc(p.mcmaster)}</span>`]);
+  if(p.fastener)rows.push(['Fastener',esc(`${p.fastener.kind} ${p.fastener.size}${p.fastener.length?' × '+p.fastener.length:''}`)+(p.fastener.hex_key?`, ${esc(p.fastener.hex_key)} mm key`:'')]);
+  if(fab&&m.cut_length_mm)rows.push(['Cut',`${fx(m.cut_length_mm,0)} mm, ${m.pierces} pierces`]);
+  rows.push(['CAD source',esc(p.model)]);
+  h+=factsHTML(rows);
+  if(p.desc&&!fab)h+=`<p>${esc(p.desc)}${p.key_spec?`<br><span class="note">${esc(p.key_spec)}</span>`:''}</p>`;
+  h+=`<h3>Guideline flags</h3>`+flagsHTML(p.flags);
+  if(fab){
+    h+=`<h3>Tolerances and key features</h3><dl class="crit"><dt>General tolerance</dt><dd>${esc(GEN_TOL[p.process_code]||'')}</dd>`;
+    if(p.critical&&p.critical.length)h+=`<dt>Critical features</dt><dd>${p.critical.map(c=>`<span class="mono">${esc(c.id)}</span> ⌀${esc(c.dia)} ${esc(c.function)}: ${esc(c.what)}`).join('<br>')}</dd>`;
+    else h+=`<dt>Critical features</dt><dd>None marked; every hole is general tolerance.</dd>`;
+    h+=`</dl>`;
+  }
+  if(p.fea&&p.fea.length){h+=`<h3>Design criteria: load cases</h3><div class="tw"><table><thead><tr><th>Load case</th><th>Material</th><th>Peak stress</th><th>Factor of safety</th><th>Deflection</th></tr></thead><tbody>${p.fea.map(f=>`<tr><td class="mono">${esc(f.case)}</td><td>${esc(f.material)}</td><td>${fx(f.peak_mpa,2)} MPa (yield ${f.yield_mpa})</td><td>${fx(f.fos,1)} (need ${f.min_fos})</td><td>${fx(f.deflection_mm,3)} mm</td></tr>`).join('')}</tbody></table></div><p class="note">Linear static FEA, solid isotropic material. Printed parts are analysed as solid plastic, not as printed.</p>`}
+  if(p.through&&p.through.length){h+=`<h3>Passes through</h3><div class="tw"><table><thead><tr><th>Part</th><th>Hole</th><th>Size</th><th>Function</th></tr></thead><tbody>${p.through.map(t=>`<tr><td>${plink(t.part)}</td><td class="mono">${esc(t.id)}</td><td>⌀${esc(t.dia)}${t.slot?` × ${esc(t.slot)} slot`:''}</td><td>${esc(t.function)}</td></tr>`).join('')}</tbody></table></div>`}
+  if(p.joints&&p.joints.length)h+=`<h3>Bolted joints</h3><p>${p.joints.map(jlink).join(' · ')}</p>`;
+  h+=findingsHTML(p.findings);
+  h+=oiHTML(p.open_items);
+  if(fab&&p.drawing)h+=`<h3>Drawing</h3><div class="drawing" data-dwg="${esc(p.drawing)}" data-name="${esc(p.name)}" role="button" tabindex="0" title="Open full size"><img loading="lazy" src="${esc(p.drawing)}" alt="Drawing sheet for ${esc(p.name)}"></div>`;
+  if(fab&&p.fab_html)h+=`<h3>Fabrication notes and hole table</h3><div class="fab">${p.fab_html}</div>`;
+  if(p.catalogue)h+=`<h3>Catalogue record</h3><p class="note">Level: ${esc(p.catalogue.level)}; vendor: ${esc(p.catalogue.vendor)}; part: ${esc(p.catalogue.part)}${p.catalogue.unverified&&p.catalogue.unverified.length?`; unverified fields: ${esc(p.catalogue.unverified.join(', '))}`:''}. ${esc(p.model_source)}</p>`;
+  return h;
+}
+function jointSheet(j){
+  let h=`<div class="eyebrow">${esc(j.group)} · bolted joint</div><h2>${j.members.map(m=>`<span class="mono" style="font-size:19px">${esc(m)}</span>`).join(' <span class="note">+</span> ')}</h2>`;
+  const n=Object.values(j.hardware).reduce((s,x)=>s+x,0);
+  h+=factsHTML([['Clamps',j.members.map(plink).join('<br>')],['Hardware',Object.entries(j.hardware).map(([k,v])=>`${v} × <span class="mono">${esc(k)}</span>`).join('<br>')],['Threads into',esc(j.into)],['Tool',esc(j.tools.join(', ')||'–')],['Inserted',esc(j.directions.join(', ')||'–')],['Assembly steps',esc(j.steps.join(', '))]]);
+  // condense flags: washer flags grouped
+  const w=j.flags.filter(f=>f.rule==='Washer needed'), other=j.flags.filter(f=>f.rule!=='Washer needed');
+  let fl=other.slice(); if(w.length){const on=[...new Set(j.washers.map(x=>x.bears_on))];fl.push({sev:'warning',rule:'Washer needed',text:`${w.length} of ${n} pieces bear on ${on.join(', ')} without a washer (${j.washers[0].why}).`})}
+  h+=`<h3>Guideline flags</h3>`+flagsHTML(fl);
+  if(j.holes.length)h+=`<h3>Holes used</h3><div class="tw"><table><thead><tr><th>Fastener</th><th>Part</th><th>Hole</th><th>Size</th><th>Function</th></tr></thead><tbody>${j.holes.map(x=>`<tr><td>${plink(x.screw)}</td><td>${plink(x.part)}</td><td class="mono">${esc(x.id)}</td><td>⌀${esc(x.dia)}${x.slot?` × ${esc(x.slot)} slot`:''}</td><td>${esc(x.function)}</td></tr>`).join('')}</tbody></table></div>`;
+  else h+=`<p class="note">These holes are in purchased parts or extrusion slots; no drawn hole table covers them.</p>`;
+  h+=`<h3>All pieces</h3><p>${j.fasteners.map(plink).join(' · ')}</p>`;
+  return h;
+}
+function asmSheet(a){
+  let h=`<div class="eyebrow">Assembly</div><h2>${esc(a.name)}</h2>`;
+  h+=factsHTML([['Parts',`${a.parts.length}: ${a.counts.fabricated} fabricated, ${a.counts.purchased} purchased, ${a.counts.electrical} electrical, ${a.counts.fastener} fasteners`],['Mass',fx(a.mass,2)+' kg'],['Purchased cost','$'+fx(a.cost,0)],['Bolted joints',a.joints.length]]);
+  h+=`<h3>Design criteria and results</h3><dl class="crit">${a.criteria.map(c=>`<dt>${esc(c.label)}</dt><dd>${esc(c.value)}</dd>`).join('')}</dl>`;
+  const fabs=a.parts.map(n=>P[n]).filter(p=>p.kind==='fabricated');
+  if(fabs.length)h+=`<h3>Custom parts</h3><div class="tw"><table><thead><tr><th>Part</th><th>Material</th><th>Process</th><th>Stock</th><th>Mass</th><th>Flags</th></tr></thead><tbody>${fabs.map(p=>`<tr><td>${plink(p.name)}</td><td>${esc(p.material)}</td><td>${esc(p.process)}</td><td>${p.thickness_mm?fx(p.thickness_mm,2)+' mm':'–'}</td><td>${fx(p.mass*1000,0)} g</td><td>${badges(p.flags,key('part',p.name))}</td></tr>`).join('')}</tbody></table></div>`;
+  const buys=a.parts.map(n=>P[n]).filter(p=>p.kind==='purchased'||p.kind==='electrical');
+  if(buys.length)h+=`<h3>Purchased parts</h3><div class="tw"><table><thead><tr><th>Part</th><th>SKU</th><th>Description</th><th>Material</th></tr></thead><tbody>${buys.map(p=>`<tr><td>${plink(p.name)}</td><td class="mono">${esc(p.sku||'')}</td><td>${esc(p.desc||'')}</td><td>${esc(p.material)}</td></tr>`).join('')}</tbody></table></div>`;
+  if(a.joints.length)h+=`<h3>Bolted joints</h3><p>${a.joints.map(jlink).join(' · ')}</p>`;
+  if(a.subassemblies.length)h+=`<h3>Sub-assemblies built on the bench</h3>`+a.subassemblies.map(s=>`<p><b class="mono">${esc(s.name)}</b>: ${s.steps} steps, ${fx(s.minutes,1)} min, ${esc(s.tools.join(', '))}</p>`).join('');
+  h+=oiHTML(a.open_items);
+  if(a.name==='Frame')h+=`<h3>How tolerances are set</h3><div class="fab">${D.tolerance_html}</div>`;
+  if(a.name==='Toolhead (X carriage)')h+=`<h3>Printed parts: settings</h3><div class="fab">${D.printing_html}</div>`;
+  return h;
+}
+function renderDetail(){
+  if(!sel||!D)return; let h='';
+  const k=key(sel.t,sel.id);
+  if(sel.t==='part'&&P[sel.id])h=partSheet(P[sel.id]);
+  else if(sel.t==='joint'&&J[sel.id])h=jointSheet(J[sel.id]);
+  else if(sel.t==='asm'&&A[sel.id])h=asmSheet(A[sel.id]);
+  else h='<p class="empty">Not found.</p>';
+  h+=`<h3 id="fbh">Review feedback</h3><div class="fb" id="fbbox"></div>`;
+  $('dw').innerHTML=h; $('detail').scrollTop=0; renderFB();
+}
+$('dw').addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g){go(g.dataset.go,g.dataset.id);return}
+  const d=e.target.closest('[data-dwg]'); if(d){openDwg(d.dataset.dwg,d.dataset.name);return}
+});
+$('dw').addEventListener('keydown',e=>{const d=e.target.closest('[data-dwg]');if(d&&e.key==='Enter')openDwg(d.dataset.dwg,d.dataset.name)});
+function openDwg(src,name){$('dlgi').src=src;$('dlgt').textContent=name+' drawing';$('dlg').showModal()}
+$('dlgx').onclick=()=>$('dlg').close();
+
+/* ---------- feedback (db) ---------- */
+let fbReady=false;
+function targetName(k){const [t,...r]=k.split(':');const id=r.join(':');return t==='joint'?(J[id]?J[id].name:id):t==='asm'?(A[id]?A[id].name:id):id}
+async function initFeedback(){
+  const timer=setTimeout(()=>{fbReady=true;renderFB();renderList()},10000);
+  try{
+    if(!window.claude||!claude.use){clearTimeout(timer);fbReady=true;renderFB();return}
+    db=await claude.use('db'); user=await claude.use('user');
+    clearTimeout(timer); fbReady=true;
+    if(user){try{me=await user.id()}catch(e){}}
+    if(!db){renderFB();renderList();return}
+    db.collection('feedback').onSnapshot(async snap=>{
+      FB=snap.docs.map(d=>({id:d.id,...d.data()}));
+      const ids=[...new Set(FB.map(f=>f.author).filter(Boolean))];
+      if(user&&ids.length){try{const ps=await user.profiles(ids);ids.forEach(i=>names[i]=(ps[i]&&ps[i].name)||'Someone')}catch(e){}}
+      $('fbstat').innerHTML=`feedback <b>${FB.length}</b>`;
+      renderFB(); renderList();
+    },err=>{$('fbbox')&&($('fbbox').innerHTML=`<p class="note">Feedback could not load: ${esc(err.message||err.code)}.</p>`)});
+  }catch(e){clearTimeout(timer);fbReady=true;renderFB()}
+}
+const draft={};
+function renderFB(){
+  const box=$('fbbox'); if(!box||!sel)return; const k=key(sel.t,sel.id);
+  const items=FB.filter(f=>f.target===k).sort((a,b)=>(a.at||'').localeCompare(b.at||''));
+  let h='';
+  if(items.length)h+=items.map(f=>`<div class="cm ${f.status==='resolved'?'resolved':''}"><div class="h"><span class="vd ${esc(f.verdict)}">${esc(VERDICT[f.verdict]||f.verdict)}</span><b>${esc(names[f.author]||'Someone')}</b><span>${f.at?new Date(f.at).toLocaleString():''}</span>${f.status==='resolved'?'<span>resolved</span>':''}${db?`<button class="lnk" data-res="${esc(f.id)}" data-to="${f.status==='resolved'?'open':'resolved'}">${f.status==='resolved'?'Reopen':'Mark resolved'}</button>`:''}</div><div class="x">${esc(f.text)}</div></div>`).join('');
+  else h+=`<p class="note">No feedback on this ${sel.t==='asm'?'assembly':sel.t} yet.</p>`;
+  if(db){
+    const dv=draft[k]||{v:'change',t:''};
+    h+=`<form id="fbform" style="margin-top:10px"><div class="verdicts" role="radiogroup" aria-label="Verdict">${Object.entries(VERDICT).map(([v,l])=>`<label><input type="radio" name="vd" id="vd-${v}" value="${v}" ${dv.v===v?'checked':''}>${l}</label>`).join('')}</div><textarea id="fbtext" placeholder="What should change, or what you checked. Name a feature (hole H5, the slot, the edge) where you can.">${esc(dv.t)}</textarea><div class="fbrow"><button class="btn" id="fbsend" type="submit">Save feedback</button><span class="note" id="fbmsg">Saved feedback is shared with everyone who can open this page, and Claude reads it for v8.1.</span></div></form>`;
+  } else h+=`<p class="note" style="margin-top:8px">${fbReady?'Feedback can be saved when this page is opened on claude.ai while signed in.':'Connecting to feedback storage…'}</p>`;
+  box.innerHTML=h;
+  const form=$('fbform'); if(!form)return;
+  form.oninput=()=>{draft[k]={v:form.querySelector('input[name=vd]:checked')?.value||'change',t:$('fbtext').value}};
+  form.onsubmit=async e=>{e.preventDefault(); const text=$('fbtext').value.trim(); const v=form.querySelector('input[name=vd]:checked')?.value||'change';
+    if(!text&&v!=='ok'){$('fbmsg').textContent='Write a note first (a bare "Looks good" needs no text).';return}
+    $('fbsend').disabled=true;
+    try{await db.collection('feedback').add({target:k,targetName:targetName(k),verdict:v,text,author:me||null,at:new Date().toISOString(),status:'open',design:D.design});
+      delete draft[k]; $('fbmsg').textContent='Saved.';}
+    catch(err){$('fbmsg').textContent='Not saved: '+(err.code==='not_granted'?'you need edit or contributor access to this page.':(err.message||err.code));$('fbsend').disabled=false}
+  };
+  box.querySelectorAll('[data-res]').forEach(b=>b.onclick=async()=>{try{await db.doc('feedback/'+b.dataset.res).update({status:b.dataset.to})}catch(err){b.textContent='Could not update'}});
+}
+
+/* ---------- 3D ---------- */
+let scene,camera,renderer,controls,meshes={},ray,box3,ptr=null,downAt=null;
+function load3D(){
+  if(!window.THREE){$('vmsg').textContent='3D library did not load.';return}
+  fetch('meshes.txt').then(r=>r.text()).then(t=>{const bin=atob(t),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);init3D(u.buffer);$('vmsg').remove()}).catch(e=>{$('vmsg').textContent='Could not load the 3D model: '+e.message});
+}
+function init3D(buf){
+  renderer=new THREE.WebGLRenderer({canvas:$('gl'),antialias:true,alpha:true}); renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+  scene=new THREE.Scene(); camera=new THREE.PerspectiveCamera(30,1,2,20000); camera.up.set(0,0,1); camera.position.set(700,-900,620);
+  controls=new THREE.OrbitControls(camera,renderer.domElement); controls.addEventListener('change',draw);
+  scene.add(new THREE.HemisphereLight(0xffffff,0x556070,.9)); const dl=new THREE.DirectionalLight(0xffffff,.55); camera.add(dl); dl.position.set(1,1,2); scene.add(camera);
+  box3=new THREE.Box3();
+  D.parts.forEach(p=>{
+    const g=new THREE.BufferGeometry();
+    g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(buf.slice(p.v[0],p.v[0]+p.v[1]*12)),3));
+    g.setIndex(new THREE.BufferAttribute(new Uint32Array(buf.slice(p.t[0],p.t[0]+p.t[1]*12)),1));
+    g.computeVertexNormals(); g.computeBoundingBox();
+    const m=new THREE.Mesh(g,new THREE.MeshStandardMaterial({roughness:.65,metalness:.1,side:THREE.DoubleSide}));
+    m.userData.name=p.name; scene.add(m); meshes[p.name]=m; box3.expandByObject(m);
+  });
+  ray=new THREE.Raycaster(); ptr=new THREE.Vector2();
+  const c=$('gl');
+  c.addEventListener('pointerdown',e=>downAt=[e.clientX,e.clientY]);
+  c.addEventListener('pointerup',e=>{if(!downAt||Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1])>4)return;const n=pick(e);if(n)go('part',n)});
+  c.addEventListener('pointermove',e=>{if(e.buttons)return;const n=pick(e);const hv=$('hover');if(n){hv.hidden=false;hv.textContent=n}else hv.hidden=true});
+  c.addEventListener('pointerleave',()=>$('hover').hidden=true);
+  resize3D(); fit(true); highlight();
+}
+function pick(e){const r=$('gl').getBoundingClientRect();ptr.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ptr,camera);
+  const hits=ray.intersectObjects(Object.values(meshes).filter(m=>m.visible&&m.material.opacity>0.5),false);return hits.length?hits[0].object.userData.name:null}
+function resize3D(){if(!renderer)return;const v=$('view');const w=v.clientWidth,h=v.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/Math.max(h,1);camera.updateProjectionMatrix();draw()}
+function draw(){if(renderer)renderer.render(scene,camera)}
+function selection(){
+  if(!sel)return {main:[],rel:[]};
+  if(sel.t==='part'){const p=P[sel.id];const rel=new Set();(p.joints||[]).forEach(id=>J[id]&&J[id].members.forEach(m=>m!==p.name&&rel.add(m)));return {main:[p.name],rel:[...rel]}}
+  if(sel.t==='joint'){const j=J[sel.id];return {main:j.fasteners,rel:j.members}}
+  if(sel.t==='asm'){const a=A[sel.id];return {main:a.parts.filter(n=>P[n].kind==='fabricated'),rel:a.parts.filter(n=>P[n].kind!=='fabricated')}}
+  return {main:[],rel:[]};
+}
+function highlight(){
+  if(!renderer)return; const {main,rel}=selection(); const M=new Set(main),R=new Set(rel);
+  const cs=new THREE.Color(css('--sel')),ca=new THREE.Color(css('--accent')),cb=new THREE.Color(css('--muted')),cf=new THREE.Color(css('--line'));
+  const ghost=$('ghost').checked, hideF=$('hidefast').checked, any=M.size+R.size>0;
+  for(const [n,m] of Object.entries(meshes)){
+    const p=P[n], mat=m.material, isF=p.kind==='fastener';
+    m.visible=!(hideF&&isF&&!M.has(n));
+    if(M.has(n)){mat.color.copy(cs);mat.transparent=false;mat.opacity=1;mat.depthWrite=true}
+    else if(R.has(n)){mat.color.copy(ca);mat.transparent=false;mat.opacity=1;mat.depthWrite=true}
+    else{mat.color.copy(p.kind==='fabricated'?cb:cf); const g=ghost&&any; mat.transparent=g; mat.opacity=g?0.12:1; mat.depthWrite=!g}
+    mat.needsUpdate=true;
+  }
+  if(any)fit(false); else draw();
+}
+function fit(whole){
+  if(!renderer)return; const b=new THREE.Box3(); const {main,rel}=selection();
+  const ns=whole?Object.keys(meshes):(main.length?main.concat(sel&&sel.t==='part'?[]:rel):[]);
+  if(!ns.length){b.copy(box3)} else ns.forEach(n=>meshes[n]&&b.expandByObject(meshes[n]));
+  const c=b.getCenter(new THREE.Vector3()), r=Math.max(b.getSize(new THREE.Vector3()).length()/2,30);
+  const dir=camera.position.clone().sub(controls.target).normalize(); const dist=r/Math.sin(THREE.MathUtils.degToRad(camera.fov/2))*1.05;
+  controls.target.copy(c); camera.position.copy(c.clone().add(dir.multiplyScalar(dist))); controls.update(); draw();
+}
+$('fit').onclick=()=>fit(false); $('all').onclick=()=>fit(true);
+$('ghost').onchange=highlight; $('hidefast').onchange=highlight;
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',highlight);
+new MutationObserver(highlight).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+</script>
