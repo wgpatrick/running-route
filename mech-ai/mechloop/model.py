@@ -279,6 +279,10 @@ class Adjustment:
     range_mm: float
     joint: Optional[str] = None
     note: str = ""
+    # How it is moved and what holds it once set (practice rule LOC-006): mover e.g. "M3 jack screw", "slot by hand";
+    # lock e.g. "two M3 screws" or ["jam nut", "thread adhesive"]. A mechanical adjustment without a lock drifts.
+    mover: str = ""
+    lock: object = ""
 
 
 @dataclass
@@ -339,8 +343,23 @@ class Design:
     # Electrical system (mechloop.electrical.Electrical): devices, wires, looms, firmware settings. Checked by the
     # electrical verifier; its motor data replaces the catalog's class torque curve (see ratings.resolve_drives).
     electrical: Optional[object] = None
+    # Practice verifier (mechloop/verifiers/practice.py): per-rule control, {"disable": [rule ids], "severity":
+    # {rule id: "info" | "warning" | "error"}, "limits": {"FST-050.min_edge_d": 1.2}}.
+    practice: dict = field(default_factory=dict)
+    # Declared exceptions to practice rules, each {"rule", "parts", "reason"}: see `waive`.
+    waivers: list = field(default_factory=list)
 
     # -- helpers ---------------------------------------------------------
+    def waive(self, rule: str, parts=None, reason: str = "") -> None:
+        """Declare a deliberate exception to a practice rule. `rule` is the rule id ("DG-01", "FST-070"), its finding
+        code ("printed_load_path") or either with a "practice." prefix. `parts`: a part name, a list of names, or
+        fnmatch patterns ("nut_pin*"); a finding is waived when any part it names matches (for a screw rule the screw's
+        name); None waives the rule for the whole design. `reason` is required: a waiver whose
+        reason is under 20 characters is itself an error, and one that suppresses nothing is a warning."""
+        if isinstance(parts, str):
+            parts = [parts]
+        self.waivers.append({"rule": str(rule), "parts": list(parts) if parts is not None else None, "reason": str(reason or "")})
+
     def add(self, name: str, shape: Shape, **kw) -> Component:
         if any(c.name == name for c in self.components):
             raise ValueError(f"duplicate component name: {name}")
@@ -444,6 +463,8 @@ class Design:
                                    tuple(nm(x) for x in b.outboard_support)))
         for sku, e in other.bom_extras.items():
             self.bom_extra(sku, e["qty"], e["unit_cost_usd"])
+        for w in other.waivers:
+            self.waivers.append({**w, "parts": [nm(p) for p in w["parts"]] if w.get("parts") is not None else None})
         if not moved:
             for lst_o, lst_s in ((other.loadcases, self.loadcases), (other.modalcases, self.modalcases)):
                 for case in lst_o:

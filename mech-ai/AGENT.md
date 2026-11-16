@@ -773,6 +773,42 @@ three-point one:
   bound) and screwed joints held only around their screws (`stiffness_low_n_per_mm`, the lower bound).
   Deflection limits are judged on the lower bound, and the digital twin uses it.
 
+## Practice (the practice verifier)
+
+Runs after manufacture (`--only practice`; about 30 s on a full printer). It probes the B-rep along every screw and
+round every ball bearing (`mechloop/verifiers/fastener_stack.py`, shared with `tools/practice_audit.py`) and applies the
+rules listed in docs/PRACTICE_RULES.md section 8. Every finding carries `rule`, `parts`, `value`, `limit`, `evidence`,
+`source` and a `hint`. A rule whose number is only recalled or derived is never an error. Rules already enforced
+elsewhere (washers and seat pressure, FST-010 engagement, sharp edges, BRG-022 / BRG-024, LSC-015) are not repeated:
+`metrics.practice.rules` names the verifier that checks each.
+
+- **Errors**: FST-060 (a nut or tapped part on the plain shank of a partly threaded ISO 4762 screw: thread length b is
+  M3 18, M4 20, M5 22 mm, full thread up to M3 x 20, M4 / M5 x 25; a screw you buy fully threaded:
+  `screw.meta["fully_threaded"] = True`), BLT-010 under 2 teeth in mesh, and the owner's **DG-01**: a printed part that
+  carries a guide, bearing, lead-screw nut or screw, motor (an extruder counts), belt tension (pulley, idler, belt end,
+  or a jack screw pushing a part that holds one), the bed, or a part with `meta["load_path"] = True`, through a shared
+  screw, a declared join or contact.
+- **Owner's warnings**: DG-02 a screw threaded into an aluminium part we make (sheet or machined) or into a 2020
+  extrusion's end. Accepted: a nut, a T-nut, `add_screw(..., insert="pem")` (self-clinching nut in sheet, BOM
+  `PEM-NUT-<size>`) or `insert="steel"` (wire / solid thread insert, `INSERT-STEEL-<size>`). DG-03 (info): a machined
+  part that is a 2.5D plate with only through-features (no blind level, countersink or fitted bore) is a laser-cut
+  candidate unless `meta["cnc_reason"] = "..."` says why it is machined.
+- **Declarations the rules read**: `add_screw(..., locking="nyloc" | "adhesive" | "all_metal" | "serrated" | "jam")` and
+  `add_nut(..., locking=...)` (FST-070: every screw on a moving body or holding a motor; serrated and jam depend on
+  preload and are not accepted on printed seats; "adhesive" adds one THREADLOCKER bottle to the BOM); a join kind that
+  says so, `d.join(pulley, motor, "set_screw on flat, threadlocked")` (SHF-010); `leadscrew.meta["journal"] = True` once
+  the lead screw has machined journal ends (SHF-011: no bearing or set screw on a thread);
+  `Adjustment(..., mover="M3 jack screw", lock="two M3 screws")` (LOC-006; z_offset and float need no lock);
+  `d.manufacturing["tightening_torque_nm"]` or `meta["torque_nm"]` (FST-040; the generated table is
+  `metrics.practice.torque_table`).
+- **Control**: `d.practice = {"disable": ["FST-081"], "severity": {"FST-050": "info"}, "limits": {"FST-050.min_edge_d":
+  1.2}}`. **Waivers**: `d.waive("DG-01", "probe_mount", reason="...")` (rule id or finding code, optionally prefixed
+  `practice.`; parts as names or fnmatch patterns; `None` for the whole design). A reason under 20 characters is the
+  error `waiver_without_reason`; a waiver that suppresses nothing is `waiver_unused`; every waiver is listed with what it
+  suppressed in `metrics.practice.waivers`. `design.include` carries waivers across with the prefix.
+- Not checked by it: friction-joint slip (FST-052 / STR-013), T-nut type against assembly order (FST-100), service
+  removal paths (ASM-030), belt flanges (BLT-041), whether an adjustment can be reached in the finished machine.
+
 ## What each verifier tells you
 
 | Verifier | Checks | Typical fix |
@@ -784,6 +820,7 @@ three-point one:
 | assemblability | a build order exists in which each part (or declared bench sub-assembly) goes on in a straight line onto something already there, parts go on before the screws that hold them, and every screw has driver access when it is installed (home pose only) | split parts, add access holes, reorder, declare a sub-assembly |
 | tolerance | fits, stack-ups and binding over thousands of imperfect builds; adjustment needed against adjustment provided; gaps that close under tolerance and clearances below the process minimum; bend scatter of bent sheet parts | open clearances, add adjustment, locate from one part, declare real contacts |
 | manufacture | each custom part against its process (sheet, printed, machined), with the limit and its source on every finding | radius corners, stock thickness, move holes off edges and bends, split blocks, re-orient prints |
+| practice | the habits of an experienced designer (docs/PRACTICE_RULES.md section 8) and the owner's practice (docs/DESIGN_GUIDELINES.md): nuts on a plain shank, locking on moving parts, belt wrap / idlers, bearing retention, set screws, single-screw joints, edge distance, hole classes, counterbore floors, look-alike screws, adjustment locks, torque table; printed parts in a load path (error), tapped aluminium, CNC parts that could be laser-cut | fully threaded screw or move the nut, `locking=`, a second screw, metal part instead of printed, `insert="pem"`, `process="sheet"`, or a waiver with a reason |
 | subsystems | homing, cables, extruder, cooling, electronics | add the parts and declare them |
 | electrical | devices wired and off the shelf, power budget, wires and connectors, stepper torque at speed, heaters and their faults by simulation, mains safety, looms in the CAD | bigger supply or gauge, external MOSFET module, lower run current, thermal fuse / relay, re-route |
 | requirements | your `Requirement`s, evaluated last with all metrics | fix the design |

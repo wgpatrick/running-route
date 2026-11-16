@@ -18,11 +18,12 @@ until a check exists.
   - Bearing seats in plates come from flanged bearings or clamping between plates, not precise bores.
   - Bends only in 5052 (6061-T6 cracks).
 - **CNC only where it earns its place** (a precise bore, a 3D pocket, a flatness-critical face). Each CNC
-  part carries a written reason in the design doc. Planned check: machined part with only through
-  features is flagged as a 2D candidate (advisory).
+  part carries a written reason in the design doc. Check: `practice` DG-03, a machined part with only
+  through features is flagged as a 2D candidate (info) unless `meta["cnc_reason"]` records the reason.
 - **3D printing only for light, non-load-bearing parts**: sensor holders, ducts, cable clips, electronics
   covers. Nothing that carries a guide, bearing, lead-screw nut, motor, belt tension, the bed's weight or a
-  screw clamp in a load path. Planned check: `practice` rule, error unless waived with a written reason.
+  screw clamp in a load path. Check: `practice` DG-01 (`printed_load_path`), an error unless waived with a
+  written reason (`d.waive("DG-01", part, reason=...)`).
 - Printed parts declare print settings (material, walls, top/bottom layers, infill and pattern,
   orientation); mass and strength follow from them, not from solid plastic.
 
@@ -45,10 +46,12 @@ until a check exists.
 - **Do not tap aluminium parts we make** (strips easily). In order of preference: through-bolt with nut and
   washer; self-clinching (PEM) nut in sheet; steel thread insert where a thread in thick aluminium is
   unavoidable. Vendor parts with factory threads (guide blocks, rails, motors, extruder) follow the maker.
-  No tapped extrusion ends: use corner brackets or T-nut fixings. Planned check: `practice` rule.
+  No tapped extrusion ends: use corner brackets or T-nut fixings. Check: `practice` DG-02 (`tapped_aluminium`,
+  `tapped_extrusion_end`, warnings); declare a PEM nut or steel insert with `add_screw(..., insert="pem" | "steel")`.
 - **Washers** wherever a head or nut bears on a slot, an oversized hole, thin aluminium or plastic; not as a
   blanket rule on steel-on-steel joints. Check: washer / head-bearing check.
-- Thread locking (nyloc or adhesive) on fasteners of moving or vibrating assemblies.
+- Thread locking (nyloc or adhesive) on fasteners of moving or vibrating assemblies. Check: `practice`
+  FST-070 (declare it with `add_screw(..., locking=...)` / `add_nut(..., locking=...)`).
 - Thread engagement where a thread in aluminium is unavoidable: 6061 error below 1.5 d, warning 1.5 to 2 d
   on load-bearing or often-removed joints; softer alloys 2 d minimum.
 

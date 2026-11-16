@@ -720,12 +720,16 @@ def hex_nut(size: str = "M3", standard: str = "iso4032") -> Stock:
 
 
 def add_nut(design: Design, name: str, size: str, at, direction=(0, 0, 1), body: str = "world",
-            screw: str | None = None, standard: str = "iso4032") -> Component:
+            screw: str | None = None, standard: str = "iso4032", locking: str | None = None) -> Component:
     """Place a hex nut with its bearing face at `at`, body extending along `direction`.
     Pass `screw=` to record that this nut is what that screw threads into. standard="din934" places the McMaster
-    DIN 934 nut where it differs from ISO 4032 (M5: 4.0 mm high instead of 4.7)."""
+    DIN 934 nut where it differs from ISO 4032 (M5: 4.0 mm high instead of 4.7).
+    locking="nyloc" (or "all_metal", "adhesive", "serrated", "jam"): the nut's locking provision (practice rule FST-070),
+    recorded in meta["locking"]; the BOM line stays the nut's own (say the type in your BOM notes)."""
     dvec = Vector(*direction).normalized()
     c = place(design, name, hex_nut(size, standard), Location(Plane(origin=at, z_dir=dvec)), body=body)
+    if locking:
+        c.meta["locking"] = str(locking)
     if screw:
         design.join(screw, name, "thread")
         design.allow_overlap(screw, name)
@@ -761,7 +765,8 @@ def add_washer(design: Design, name: str, size: str, at, direction=(0, 0, 1), bo
 
 def add_screw(design: Design, name: str, size: str, length: float, at, direction=(0, 0, -1),
               body: str = "world", threads_into: str | list[str] | None = None, clamps=(),
-              tnut: bool = False, washer: bool | str = False, insert: bool = False) -> Component:
+              tnut: bool = False, washer: bool | str = False, insert: bool | str = False,
+              locking: str | None = None) -> Component:
     """Place a cap screw with the underside of its head at `at`, pointing along `direction`.
     Registers it as a Fastener (tool access is checked), allows the thread to overlap the
     part(s) it screws into and records that it holds them. tnut=True means it threads into
@@ -770,7 +775,11 @@ def add_screw(design: Design, name: str, size: str, length: float, at, direction
     WASHER bears on; the head sits one washer thickness higher, so the same screw reaches that much less far into its
     thread (the engagement check sees it: choose the length with the washer in).
     insert=True: it threads into a heat-set insert in the (printed) part it threads into; the manufacture verifier checks
-    that part's perimeters against the insert maker's minimum wall (mechloop.printsettings.INSERT_WALL_MIN)."""
+    that part's perimeters against the insert maker's minimum wall (mechloop.printsettings.INSERT_WALL_MIN).
+    insert="steel" (wire thread insert / Helicoil / Keensert, `INSERT-STEEL-<size>`) or "pem" (self-clinching nut in sheet,
+    `PEM-NUT-<size>`): the thread in an aluminium part we make is not tapped into the aluminium (practice rule DG-02).
+    locking="nyloc" | "adhesive" | "all_metal" | "serrated" | "jam": the screw's locking provision (practice rule
+    FST-070), recorded in meta["locking"]; "adhesive" adds a THREADLOCKER line to the BOM."""
     st = shcs(size, length)
     dvec = Vector(*direction).normalized()
     washer_at = None
@@ -785,8 +794,22 @@ def add_screw(design: Design, name: str, size: str, length: float, at, direction
               threads_into=[threads_into] if isinstance(threads_into, str) else list(threads_into or []),
               tnut=tnut)
     if insert:
-        c.meta["insert"] = True
-        design.bom_extra(f"INSERT-HEATSET-{size}", 1, 0.08)
+        kind = "heatset" if insert is True else str(insert).lower()
+        if kind in ("heatset", "heat_set", "heat-set"):
+            c.meta["insert"] = True
+            design.bom_extra(f"INSERT-HEATSET-{size}", 1, 0.08)
+        elif kind in ("steel", "helicoil", "keensert", "wire"):
+            c.meta["thread_insert"] = "steel"
+            design.bom_extra(f"INSERT-STEEL-{size}", 1, 0.3)
+        elif kind in ("pem", "clinch", "self_clinching"):
+            c.meta["thread_insert"] = "pem"
+            design.bom_extra(f"PEM-NUT-{size}", 1, 0.25)
+        else:
+            raise ValueError(f"add_screw('{name}'): insert must be True / 'heatset', 'steel' or 'pem', not {insert!r}")
+    if locking:
+        c.meta["locking"] = str(locking)
+        if str(locking).lower() in ("adhesive", "threadlocker", "loctite") and "THREADLOCKER-MEDIUM" not in design.bom_extras:
+            design.bom_extra("THREADLOCKER-MEDIUM", 1, 6.0)       # one bottle for the machine
     head_top = Vector(*at) - dvec * st.interfaces["head_h"]
     design.fasteners.append(Fastener(name, tuple(-dvec), tuple(head_top),
                                      tool_diameter=st.interfaces["hex_key"] * 1.6, tool_length=50.0,
