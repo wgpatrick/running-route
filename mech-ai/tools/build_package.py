@@ -735,7 +735,13 @@ def analyse_part(cx: Ctx, c) -> dict:
             perp = float(np.linalg.norm(rel - along * dv))
             if perp <= ft["reach"] and -hh - 0.5 * ft["depth"] - 0.6 <= along <= L + 0.5 * ft["depth"] + 0.6:
                 tapped = c.name in (sc.meta.get("threads_into") or []) and not sc.meta.get("tnut")
-                ft["screws"].append({"name": f.name, "sku": sc.sku, "size": m_.group(1) if m_ else "", "tapped": tapped,
+                # the thread is not cut in this part when the screw runs into an insert or a clinched nut fitted in it
+                insert = None
+                if tapped:
+                    insert = ("HEAT-SET INSERT" if sc.meta.get("insert") else
+                              {"pem": "PEM NUT", "steel": "STEEL THREAD INSERT"}.get(str(sc.meta.get("thread_insert") or "")))
+                ft["screws"].append({"name": f.name, "sku": sc.sku, "size": m_.group(1) if m_ else "", "tapped": tapped and not insert,
+                                     "insert": insert,
                                      "head_here": abs(along) < 0.5 * ft["depth"] + hh + 1.0 and along <= 0.5 * ft["depth"] + 0.2})
                 partners = set(sc.meta.get("threads_into") or []) | set(f.clamps or ())
                 for pn in partners - {c.name}:
@@ -784,8 +790,11 @@ def analyse_part(cx: Ctx, c) -> dict:
         if ft["steps"]:      # the narrow part of the hole lies towards one face: the counterbore is cut from the other
             ft["cb_side"] = ("+" if ft["center"][k_ax] < 0.5 * size[k_ax] else "-") + "XYZ"[k_ax] + " face"
         tp = [s for s in ft["screws"] if s["tapped"]]
+        ins = [s for s in ft["screws"] if s.get("insert")]
         if tp:
             ft["type"] = f"TAP {tp[0]['size']}" + (" through" if ft["through"] else f" x {f2(ft['depth'], 1)} deep")
+        elif ins:
+            ft["type"] = f"{ins[0]['insert']} {ins[0]['size']} (hole as drawn" + (", through)" if ft["through"] else f", {f2(ft['depth'], 1)} deep)")
         elif ft["screws"]:
             ft["type"] = f"clearance {ft['screws'][0]['size']}"
         elif ft["occupants"]:
@@ -1020,8 +1029,10 @@ def draw_sheet(cx: Ctx, a: dict, path_svg: Path, path_pdf: Path, pdf_pages=None,
     if tapped:
         tn += [f"Tapped holes (drawn as tap-drill holes): {', '.join(tapped)}."]
     if proc == "printed":
-        tn += ["No threads in plastic and no heat-set inserts: every screw runs into a steel nut.",
-               "Clearance holes are drawn oversize for print shrink: do not 'correct' them."]
+        inserts = [ft["id"] for ft in feats if ft["type"].startswith("HEAT-SET")]
+        tn += [("No threads in plastic: every screw runs into a steel nut." if not tapped else "Threads in plastic: see the hole table.")
+               + (f" Heat-set inserts: {', '.join(inserts)}." if inserts else " No heat-set inserts."),
+               "Clearance holes: ISO 273 medium + 0.2 mm FDM allowance (M3 3.6, M5 5.7): do not 'correct' them."]
         if any("bearing" in fl for ft in feats for fl in ft["flags"]):
             tn += ["Bearing seats: check with the real bearing (sliding fit, no play); ream or re-print if tight."]
     if a["stock_flat"]:
@@ -1320,8 +1331,14 @@ def write_fabrication(cx: Ctx, drawings: bool = True) -> dict:
          + str(next((dig(p, "estimate", "basis") for p in man.get("parts", {}).values() if p.get("process") == "printed"), "not stated")) + ".",
          "- **The FEA load cases treat every printed part as solid, isotropic material.** A part printed at 20 % infill is not the part that was analysed. For the parts with a load "
          "case (" + ", ".join(sorted({lc.component for lc in d.loadcases if lc.component in parts and parts[lc.component]["proc"] == "printed"})) + "), print solid or accept that the factor of safety is unverified.",
-         "- No threads in plastic, no heat-set inserts: every screw in a printed part runs into a steel nut (captive pockets and slots are in the models).",
-         "- Printed holes are drawn oversize (M3 4.2, M5 6.0) for an assumed 0.15 mm shrink; bearing seats are drawn 22.4 for a 22 mm bearing on the same assumption.", ""]
+         ("- No threads in plastic, no heat-set inserts: every screw in a printed part runs into a steel nut (captive pockets and slots are in the models)."
+          if not any(ft["type"].startswith(("TAP", "HEAT-SET")) for a in parts.values() if a["proc"] == "printed" for ft in a["feats"]) else
+          "- Threads or heat-set inserts in printed parts: " + "; ".join(f"{n} {ft['id']} {ft['type']}" for n, a in parts.items() if a["proc"] == "printed"
+                                                                         for ft in a["feats"] if ft["type"].startswith(("TAP", "HEAT-SET"))) + "."),
+         "- Printed clearance holes are drawn at ISO 273 medium + 0.2 mm FDM allowance (M2.5 3.1, M3 3.6, M4 4.7, M5 5.7, M6 6.8; +0.3 and a teardrop or flat "
+         "top for a hole whose axis lies in the build plane): vertical holes print undersize. Starting values: print a coupon of M3 holes 3.4 to 3.8 in "
+         "0.1 mm steps on the printer that will make the parts, then set the allowance and the slicer's hole compensation (docs/DESIGN_GUIDELINES.md). "
+         "Bearing seats and insert pockets are drawn to their own figures.", ""]
     cx.need("print settings per printed part (layer height, wall count, infill)", "strength results assume solid material; the estimate assumed 1.2 mm walls / 20 % infill")
     cx.need("steel grade and finish for the laser-cut steel parts", "material 'steel' is a generic entry (E 200 GPa, yield 250 MPa); no corrosion protection is specified")
     T += ["## Parts", "",
@@ -1357,7 +1374,9 @@ def write_fabrication(cx: Ctx, drawings: bool = True) -> dict:
                   f"{dig(mp, 'bridges', 'max_span_mm')} mm; bed contact {mp.get('bed_contact_fraction')}; thinnest wall {mp.get('min_wall_mm')} mm; {est.get('filament_g')} g, "
                   f"{est.get('print_hours')} h (estimate). Holes opening on the bed face: {mp.get('holes_opening_on_bed', 0)} (first-layer squash makes them tight)."]
         tapped = [ft for ft in a["feats"] if ft["type"].startswith("TAP")]
-        T += ["- Threads: " + (", ".join(f"{ft['id']} {ft['type']}" for ft in tapped) if tapped else "none") + ". Heat-set inserts: none. Reaming: "
+        hs = [ft for ft in a["feats"] if ft["type"].startswith(("HEAT-SET", "PEM", "STEEL THREAD"))]
+        T += ["- Threads: " + (", ".join(f"{ft['id']} {ft['type']}" for ft in tapped) if tapped else "none") + ". Inserts and clinch nuts: "
+              + (", ".join(f"{ft['id']} {ft['type']}" for ft in hs) if hs else "none") + ". Reaming: "
               + (", ".join(ft["id"] for ft in a["feats"] if any("bearing" in fl for fl in ft["flags"])) + " if the bearing does not slide in" if any("bearing" in fl for ft in a["feats"] for fl in ft["flags"]) else "none") + "."]
         if c.material in METALS:
             T += [f"- Drawing note, not yet in the model: {DEBURR_NOTE}."]
@@ -2183,7 +2202,10 @@ CURATED_V8_1 = [
     ("B", "Print sheet is the print area: 12 mm edge strips are not probed",
      "The TRONXY PEI180 sheet is 180 x 180 mm, the print area's size; the inductive probe is kept 12 mm inside the sheet's edge, so the mesh holds the nearest measured value over the outer 12 mm.",
      "print a full-area first layer during commissioning; a larger sheet (220 mm, stand-in in v8) removes this"),
-    ("B", "Part cooling is not modelled", "The duct has no airflow model; it is v8's duct with heat-set inserts.", "bridging and overhang test prints"),
+    ("B", "Part cooling is not modelled", "The duct has no airflow model; it is v8's duct, now held by M3 through-bolts into nyloc nuts captured with their washers in printed pockets (no inserts).", "bridging and overhang test prints"),
+    ("B", "Printed clearance holes and nut pockets rest on an assumed FDM allowance",
+     "Clearance holes in the five printed parts are drawn ISO 273 medium + 0.2 mm (M3 3.6) and the captive-nut pockets 5.8 across flats for a 5.5 mm nut; how much undersize the owner's printer prints a vertical hole is not known.",
+     "print the calibration coupon (M3 holes 3.4 to 3.8 in 0.1 mm steps, one nut pocket) on the owner's printer first; set the allowance and the slicer's hole compensation from it"),
     ("B", "Frame stiffness is not in the twin", "The twin's resonances use belts, guide blocks and the gantry's FEA only.", "resonance measurement E13; diagonal bracing if the frame rocks"),
     ("C", "Closed Z belt length is computed", "The route needs a closed 6 mm GT2 loop of the length on the BOM; that this length is stocked is not confirmed. The tensioner slot gives +/-3 mm.",
      "confirm the stock length before ordering; re-place the idler if the nearest stock length differs"),

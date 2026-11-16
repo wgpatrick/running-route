@@ -48,6 +48,33 @@ until a check exists.
   unavoidable. Vendor parts with factory threads (guide blocks, rails, motors, extruder) follow the maker.
   No tapped extrusion ends: use corner brackets or T-nut fixings. Check: `practice` DG-02 (`tapped_aluminium`,
   `tapped_extrusion_end`, warnings); declare a PEM nut or steel insert with `add_screw(..., insert="pem" | "steel")`.
+- **Screws through printed parts are through-bolts with a nut**, with a washer under the head and under the nut
+  wherever either bears on plastic. No thread is tapped, cut or self-tapped into a printed part. A heat-set insert is
+  allowed only with a written reason, for example where there is no access for a nut; where a nut cannot be reached,
+  first try a nut (with its washer) captured in a printed pocket, or a PEM stud in the metal part with the nut outside.
+  Check: `practice` DG-04 (`thread_in_printed_part`; a warning, an error when the joint is in a load path; it covers
+  FST-090). Declare an accepted insert with `add_screw(..., insert=True, insert_reason="...")`.
+- **Printed clearance holes: ISO 273 medium plus an FDM allowance of 0.2 mm on the diameter**, because vertical holes
+  print undersize: M2.5 3.1, M3 3.6, M4 4.7, M5 5.7, M6 6.8 (`mechloop.parts.printed_clearance_hole(size)`). A hole
+  whose axis lies in the build plane gets 0.3 mm (M3 3.7) and a teardrop or flat top, so it prints without support.
+  Holes in metal parts stay at ISO 273 (`clearance_hole`, FST-020). This replaces the older convention of drawing
+  printed holes M3 4.2 and M5 6.0. Bearing seats and insert pockets are not clearance holes and keep their own figures.
+  The allowance is a starting value: print a calibration coupon on the owner's printer with M3 holes from 3.4 to 3.8 mm
+  in 0.1 mm steps, then set the allowance (`d.practice["limits"]["DG-05.allowance_vertical_mm"]`, and
+  `"DG-05.allowance_in_plane_mm"`) and the slicer's hole (horizontal-expansion) compensation to match. Check:
+  `practice` DG-05 (`printed_hole_too_small` under medium + allowance; `printed_hole_oversize_no_washer` over coarse
+  + 0.4 mm under a bare head or nut). Sources read for this guidance:
+  - zbotic, "3D print tolerances: hole sizes and clearance guide"
+    (https://zbotic.in/3d-print-tolerances-hole-sizes-and-clearance-guide/): an M3 hole drawn 3.0 mm in PETG prints at
+    about 2.7 mm; a 3.4 mm clearance is used.
+  - FIRST Tech Challenge docs, tolerancing
+    (https://ftc-docs.firstinspires.org/manufacturing/3d_printing/designing_and_slicing/tolerancing/tolerancing.html):
+    the slicer's horizontal-expansion compensation, and test coupons to find the printer's offset.
+  - GrabCAD, "Fused deposition modeling (FDM) design guidelines"
+    (https://grabcad.com/tutorials/fused-deposition-modeling-fdm-design-guidelines): vertical holes print undersize; the
+    amount varies by printer and material; drill holes that are critical.
+- Nylon-insert lock nuts only where the part stays below about 120 degC; nearer heat use all-metal lock nuts. Check:
+  `practice` FST-072 (from each part's `meta["service_temp_c"]`).
 - **Washers** wherever a head or nut bears on a slot, an oversized hole, thin aluminium or plastic; not as a
   blanket rule on steel-on-steel joints. Check: washer / head-bearing check.
 - Thread locking (nyloc or adhesive) on fasteners of moving or vibrating assemblies. Check: `practice`

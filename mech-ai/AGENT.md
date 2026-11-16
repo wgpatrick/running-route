@@ -222,7 +222,11 @@ def build():
   seating study against 0.25 C0 = 342 N (`bearing_axial_loads`; `bearing_axial_overload`). Other bearings carry no
   abutment data yet and are not checked.
 - `add_screw(..., insert=True)`: the screw threads into a heat-set insert in the printed part (`INSERT-HEATSET-M3` in
-  the BOM); see print settings below for the wall it needs.
+  the BOM); see print settings below for the wall it needs. The owner's practice wants a through-bolt and nut instead
+  (practice DG-04): give an insert its reason, `insert_reason="no access for a nut inside the hood"`.
+- Printed parts: draw clearance holes with `printed_clearance_hole(size)` (ISO 273 medium + 0.2 mm: M3 3.6, M5 5.7;
+  `in_plane=True` + 0.3 mm for a hole whose axis lies in the build plane, with a teardrop or flat top); metal parts keep
+  `clearance_hole(size)`. Nyloc nuts as drawn: `add_nut(..., standard="iso10511")` (M3 4.0 mm high, SKU NUT-M3-NYLOC).
 
 ### Printed parts: print settings
 
@@ -792,7 +796,13 @@ elsewhere (washers and seat pressure, FST-010 engagement, sharp edges, BRG-022 /
   extrusion's end. Accepted: a nut, a T-nut, `add_screw(..., insert="pem")` (self-clinching nut in sheet, BOM
   `PEM-NUT-<size>`) or `insert="steel"` (wire / solid thread insert, `INSERT-STEEL-<size>`). DG-03 (info): a machined
   part that is a 2.5D plate with only through-features (no blind level, countersink or fitted bore) is a laser-cut
-  candidate unless `meta["cnc_reason"] = "..."` says why it is machined.
+  candidate unless `meta["cnc_reason"] = "..."` says why it is machined. DG-04 a screw threaded into a printed part
+  (tapped, self-tapped or a heat-set insert without `insert_reason`): warning, an error when the joint is in a load path.
+  DG-05 a printed clearance hole under ISO 273 medium + the FDM allowance (0.2 / 0.3 mm, limits
+  `DG-05.allowance_vertical_mm` / `DG-05.allowance_in_plane_mm`), or over coarse + 0.4 mm under a bare head or nut.
+  DG-01 does not count contact with a load part whose clamp goes through a metal sleeve declared in the printed part
+  (`d.join(sleeve, printed, "compression sleeve")`) when the head bears on the sleeve and the plastic touches neither
+  the head nor its washers. FST-072: a nyloc on a part whose `meta["service_temp_c"]` is over 120 degC.
 - **Declarations the rules read**: `add_screw(..., locking="nyloc" | "adhesive" | "all_metal" | "serrated" | "jam")` and
   `add_nut(..., locking=...)` (FST-070: every screw on a moving body or holding a motor; serrated and jam depend on
   preload and are not accepted on printed seats; "adhesive" adds one THREADLOCKER bottle to the BOM); a join kind that
