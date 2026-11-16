@@ -682,6 +682,9 @@ NUT = {"M2.5": (5.0, 2.0), "M3": (5.5, 2.4), "M4": (7.0, 3.2), "M5": (8.0, 4.7),
 
 
 NUT_DIN934 = {"M5": 4.0}      # where DIN 934 (what McMaster's 90591A series is) differs in height from ISO 4032
+# Prevailing-torque hex nuts with a nylon insert, ISO 10511 (the thin type; DIN 985 has the same heights): height m max, mm.
+# Across flats as ISO 4032. RECALLED from the standard's table (not fetched): check against the nut you buy.
+NUT_ISO10511 = {"M3": 4.0, "M4": 5.0, "M5": 5.0, "M6": 6.0, "M8": 8.0}
 
 
 @part
@@ -689,12 +692,26 @@ def hex_nut(size: str = "M3", standard: str = "iso4032") -> Stock:
     """Hex nut. Local frame: axis Z, bearing face at Z=0, nut body above.
     standard "iso4032" (default): the generated ISO 4032 solid (M5: 8.0 across flats, 4.7 high).
     standard "din934": only where it differs, i.e. M5, 4.0 mm high (McMaster 90591A260, measured in its STEP file);
-    SKU NUT-M5-DIN934. Name it when that is the nut you will buy: 0.7 mm more thread then shows past it. The default
+    SKU NUT-M5-DIN934.
+    standard "iso10511": nylon-insert lock nut (nyloc), M3 to M8, ISO 10511 height (M3 4.0 mm; recalled, not fetched),
+    SKU NUT-<size>-NYLOC; its nylon element is rated to about 120 degC (practice rule FST-072). Name it when that is the nut you will buy: 0.7 mm more thread then shows past it. The default
     M5 nut records McMaster's height beside its own (interfaces["height_din934_mcmaster"]) but is not changed by it."""
     from build123d import RegularPolygon, extrude
 
-    if standard not in ("iso4032", "din934"):
-        raise ValueError("hex_nut standard must be 'iso4032' or 'din934'")
+    if standard not in ("iso4032", "din934", "iso10511"):
+        raise ValueError("hex_nut standard must be 'iso4032', 'din934' or 'iso10511'")
+    if standard == "iso10511":
+        if size not in NUT_ISO10511:
+            raise ValueError(f"hex_nut: ISO 10511 nylon-insert nuts here are {sorted(NUT_ISO10511)}, not {size}")
+        af, h = NUT[size][0], NUT_ISO10511[size]
+        body = extrude(RegularPolygon(af / 2, 6, major_radius=False), h)
+        return Stock(body, f"NUT-{size}-NYLOC", f"Nylon-insert lock nut {size} (ISO 10511, {h:g} mm high)",
+                     af * af * 0.866 * h * 7.85e-6 * 0.7, ratings={"locking": "nyloc", "max_temp_c": 120.0},
+                     interfaces={"across_flats": af, "height": h, "thread_d": SCREW[size][0]}, cost_usd=0.05,
+                     model={"source": "simulation solid only: ISO 10511 height (recalled), ISO 4032 across flats"},
+                     source=_source("iso_fasteners", "standard", f"ISO 10511 {size}", unverified=("height", "max_temp_c"),
+                                    note="height m max from the ISO 10511 / DIN 985 table, recalled; nylon element about "
+                                         "120 degC (NASA RP-1228)"))
     af, h = NUT[size]
     d = SCREW[size][0]
     mc = mcmaster_part(f"NUT-{size}")
@@ -725,7 +742,10 @@ def add_nut(design: Design, name: str, size: str, at, direction=(0, 0, 1), body:
     Pass `screw=` to record that this nut is what that screw threads into. standard="din934" places the McMaster
     DIN 934 nut where it differs from ISO 4032 (M5: 4.0 mm high instead of 4.7).
     locking="nyloc" (or "all_metal", "adhesive", "serrated", "jam"): the nut's locking provision (practice rule FST-070),
-    recorded in meta["locking"]; the BOM line stays the nut's own (say the type in your BOM notes)."""
+    recorded in meta["locking"]; the BOM line stays the nut's own (say the type in your BOM notes), unless
+    standard="iso10511" places the real nylon-insert nut (taller, SKU NUT-<size>-NYLOC; locking is then "nyloc")."""
+    if standard == "iso10511" and not locking:
+        locking = "nyloc"
     dvec = Vector(*direction).normalized()
     c = place(design, name, hex_nut(size, standard), Location(Plane(origin=at, z_dir=dvec)), body=body)
     if locking:
@@ -739,7 +759,23 @@ def add_nut(design: Design, name: str, size: str, at, direction=(0, 0, 1), body:
 
 
 def clearance_hole(size: str) -> float:
+    """Clearance hole for a made METAL part (ISO 273 medium). For a printed part use printed_clearance_hole."""
     return SCREW[size][4]
+
+
+# ISO 273 medium clearance (mm) and the FDM allowance on the diameter for printed clearance holes (owner's practice,
+# docs/DESIGN_GUIDELINES.md, Fasteners and threads): vertical holes (axis along the print direction) print undersize, so
+# they are drawn medium + 0.2; holes whose axis lies in the build plane are drawn medium + 0.3 with a teardrop or flat
+# top. Starting values: calibrate on the printer with a coupon (M3 holes 3.4 to 3.8 in 0.1 steps). Practice rule DG-05.
+ISO273_MEDIUM = {"M2.5": 2.9, "M3": 3.4, "M4": 4.5, "M5": 5.5, "M6": 6.6, "M8": 9.0}
+FDM_HOLE_ALLOWANCE = {"vertical": 0.2, "in_plane": 0.3}
+
+
+def printed_clearance_hole(size: str, in_plane: bool = False, allowance: float | None = None) -> float:
+    """Clearance hole to DRAW in a printed part: ISO 273 medium + the FDM allowance (0.2 mm for a vertical hole, 0.3 mm
+    for one whose axis lies in the build plane). M2.5 3.1, M3 3.6, M4 4.7, M5 5.7, M6 6.8 (vertical)."""
+    a = FDM_HOLE_ALLOWANCE["in_plane" if in_plane else "vertical"] if allowance is None else float(allowance)
+    return round(ISO273_MEDIUM[size] + a, 2)
 
 
 def tap_drill(size: str) -> float:
@@ -766,7 +802,7 @@ def add_washer(design: Design, name: str, size: str, at, direction=(0, 0, 1), bo
 def add_screw(design: Design, name: str, size: str, length: float, at, direction=(0, 0, -1),
               body: str = "world", threads_into: str | list[str] | None = None, clamps=(),
               tnut: bool = False, washer: bool | str = False, insert: bool | str = False,
-              locking: str | None = None) -> Component:
+              locking: str | None = None, insert_reason: str | None = None) -> Component:
     """Place a cap screw with the underside of its head at `at`, pointing along `direction`.
     Registers it as a Fastener (tool access is checked), allows the thread to overlap the
     part(s) it screws into and records that it holds them. tnut=True means it threads into
@@ -775,7 +811,9 @@ def add_screw(design: Design, name: str, size: str, length: float, at, direction
     WASHER bears on; the head sits one washer thickness higher, so the same screw reaches that much less far into its
     thread (the engagement check sees it: choose the length with the washer in).
     insert=True: it threads into a heat-set insert in the (printed) part it threads into; the manufacture verifier checks
-    that part's perimeters against the insert maker's minimum wall (mechloop.printsettings.INSERT_WALL_MIN).
+    that part's perimeters against the insert maker's minimum wall (mechloop.printsettings.INSERT_WALL_MIN). The owner's
+    practice (practice rule DG-04) wants a through-bolt and nut in printed parts; a heat-set insert is accepted only with
+    a written reason, insert_reason="no access for a nut inside the hood" (at least 20 characters).
     insert="steel" (wire thread insert / Helicoil / Keensert, `INSERT-STEEL-<size>`) or "pem" (self-clinching nut in sheet,
     `PEM-NUT-<size>`): the thread in an aluminium part we make is not tapped into the aluminium (practice rule DG-02).
     locking="nyloc" | "adhesive" | "all_metal" | "serrated" | "jam": the screw's locking provision (practice rule
@@ -797,6 +835,8 @@ def add_screw(design: Design, name: str, size: str, length: float, at, direction
         kind = "heatset" if insert is True else str(insert).lower()
         if kind in ("heatset", "heat_set", "heat-set"):
             c.meta["insert"] = True
+            if insert_reason:
+                c.meta["insert_reason"] = str(insert_reason)
             design.bom_extra(f"INSERT-HEATSET-{size}", 1, 0.08)
         elif kind in ("steel", "helicoil", "keensert", "wire"):
             c.meta["thread_insert"] = "steel"

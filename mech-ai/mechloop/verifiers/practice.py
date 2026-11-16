@@ -4,7 +4,8 @@ Rules and their evidence: docs/PRACTICE_RULES.md (section 5.2 lists the first 25
 which are cross-referenced to the verifier that already enforces them, and which are deferred) and
 research_notes/practice/rules.yaml. Three more rules are the owner's standing practice (docs/DESIGN_GUIDELINES.md):
 DG-01 no 3D-printed part in a load path, DG-02 no tapped thread in aluminium we make (nor in an extrusion end), DG-03 a
-machined part with only through-features is a 2D laser-cut candidate.
+machined part with only through-features is a 2D laser-cut candidate, DG-04 no thread in a printed part (through-bolt and
+nut; a heat-set insert only with a written reason), DG-05 printed clearance holes at ISO 273 medium plus the FDM allowance.
 
 Measurement is shared with the read-only audit (`mechloop/verifiers/fastener_stack.py`, promoted from
 tools/practice_audit.py): point-in-solid probing of the B-rep at the home pose along and round every screw and round
@@ -98,6 +99,9 @@ RULES: dict[str, Rule] = {r.id: r for r in [
     Rule("LOC-006", "Every adjustment has a mover, a lock and access", "warning", "recalled", "practice", "implemented",
          note="mover and lock are read from Adjustment(mover=, lock=); access in the finished machine is not checked; "
               "z_offset (firmware) and float adjustments need no lock"),
+    Rule("FST-072", "Nylon-insert lock nuts only below about 120 degC", "warning", "fetched", "NASA RP-1228 (nylon element)",
+         "implemented", note="a screw or nut declared nyloc whose stack touches a part with meta['service_temp_c'] over the limit "
+                             "(limit 'FST-072.max_temp_c', default 120) or a hotend / heater part"),
     Rule("FST-040", "State a tightening torque for every structural joint", "info", "document",
          "Bossard / VDI 2230 2015 at mu 0.14", "implemented",
          note="with DOC-012: a generated torque and locking table (metrics.practice.torque_table)"),
@@ -114,6 +118,16 @@ RULES: dict[str, Rule] = {r.id: r for r in [
     Rule("DG-03", "A machined part with only through-features is a 2D laser-cut candidate", "info", "owner",
          "docs/DESIGN_GUIDELINES.md, Process choice", "implemented",
          note="2.5D profile, no blind pocket, counterbore or countersink, no fitted bore; meta['cnc_reason'] records why not"),
+    Rule("DG-04", "No thread in a printed part: through-bolt with nut and washers; heat-set insert only with a reason",
+         "error", "owner", "docs/DESIGN_GUIDELINES.md, Fasteners and threads", "implemented",
+         note="a screw that threads into a printed part (tapped, self-tapped or a heat-set insert): warning, error when the "
+              "joint is in a load path (DG-01's load parts); accepted: add_screw(..., insert=True, insert_reason='...') or a "
+              "DG-04 waiver. Covers FST-090 (screws straight into plastic)"),
+    Rule("DG-05", "Printed clearance holes: ISO 273 medium plus the FDM allowance", "warning", "owner",
+         "docs/DESIGN_GUIDELINES.md, Fasteners and threads; ISO 273 (MMCC)", "implemented",
+         note="smallest section of the hole under medium + allowance (0.2 vertical / 0.3 in the build plane, limits "
+              "'DG-05.allowance_vertical_mm' / 'DG-05.allowance_in_plane_mm'), or over coarse + 0.4 under a bare head or nut; "
+              "the metal-part classes stay FST-020's"),
     # ---- enforced by another verifier: cross-referenced, not duplicated ------------------------------------------------
     Rule("FST-031", "Washer under any head or nut on a slot or oversize hole", "warning", "document", "ISO 7089 / 7093",
          "xref", "ratings.head_bearing (screw_head_seat_too_small)"),
@@ -123,6 +137,9 @@ RULES: dict[str, Rule] = {r.id: r for r in [
          "VDI 2230 2015 via Bossard", "xref", "ratings.head_bearing (screw_head_bearing_pressure, metal seats)"),
     Rule("FST-010", "Thread engagement by tapped material", "error", "document", "Bossard engagement table", "xref",
          "interference.thread_engagement (thread_engagement, thread_engagement_marginal)"),
+    Rule("FST-090", "Screws driven straight into printed plastic are for one-time, low-load joints", "warning", "fetched",
+         "CNC Kitchen (inserts vs. direct threads)", "xref",
+         "practice.DG-04 (thread_in_printed_part); interference.thread_engagement (2 d in plastic)"),
     Rule("FST-012", "Screw shorter than a catalogue part's tapped depth", "error", "repo", "maker drawings", "xref",
          "interference.thread_bottoms_out"),
     Rule("MCH-015", "Break all machined edges", "warning", "recalled", "ISO 13715 notation", "xref",
