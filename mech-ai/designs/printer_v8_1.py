@@ -559,15 +559,16 @@ BRK_Z = 20.25                          # belt bracket bolts, from Z_BEAM
 
 
 def tool_plate_front_shape():
-    """3.175 mm 6061 on the X guide block (four M3x8, heads from the rear). Hex pockets hold the Roto screws' nuts
-    (they bear on the rear plate); clearance holes for the belt bracket and the duct."""
+    """3.175 mm 6061 on the X guide block (four M3x6, heads from the rear). PEM M3 nuts clinched in it take the Roto's
+    screws, so those screws clamp the Roto, the rear plate and this plate together; clearance holes for the belt
+    bracket and the duct."""
     y0, y1 = YB0 + R_TPF, YB0 + R_TPF + T_TPF
     tp = tool_plate_outline(y0, y1)
     for x in (-10, 10):
         for z in (-10, 10):
             tp -= Pos(x, (y0 + y1) / 2, Z_BEAM + z) * ycyl(clearance_hole("M3") / 2, T_TPF)
     for x, z in ROTO_HOLES():
-        tp -= Location(Plane(origin=(x, y1, z), z_dir=(0, -1, 0))) * extrude(RegularPolygon(5.65 / 2, 6, major_radius=False), T_TPF)
+        tp -= Pos(x, (y0 + y1) / 2, z) * ycyl(4.22 / 2, T_TPF)          # PEM S-M3-1 mounting hole
     for x, z in BLK_SCREWS:
         tp -= Pos(x, (y0 + y1) / 2, Z_BEAM + BRK_Z) * ycyl(clearance_hole("M3") / 2, T_TPF)
     for x, z in FC_SCREWS:
@@ -577,14 +578,15 @@ def tool_plate_front_shape():
 
 def tool_plate_rear_shape():
     """4.75 mm 6061 behind the front plate: 6.5 mm holes are the counterbores of the block screws' heads; hex pockets hold
-    the belt bracket's nuts (they bear on the front plate); the Roto's flat side sits on its rear face."""
+    the belt bracket's nuts (they bear on the front plate) and clear the PEM nuts' heads; the Roto's flat side sits on
+    its rear face."""
     y0, y1 = YB0 + R_TPF + T_TPF, YB0 + R_TPR
     tp = tool_plate_outline(y0, y1)
     for x in (-10, 10):
         for z in (-10, 10):
             tp -= Pos(x, (y0 + y1) / 2, Z_BEAM + z) * ycyl(3.25, T_TPR)
     for x, z in ROTO_HOLES():
-        tp -= Pos(x, (y0 + y1) / 2, z) * ycyl(clearance_hole("M3") / 2, T_TPR)
+        tp -= Location(Plane(origin=(x, y0, z), z_dir=(0, 1, 0))) * extrude(RegularPolygon(5.65 / 2, 6, major_radius=False), T_TPR)
     for x, z in BLK_SCREWS:
         tp -= Location(Plane(origin=(x, y0, Z_BEAM + BRK_Z), z_dir=(0, 1, 0))) * extrude(RegularPolygon(5.65 / 2, 6, major_radius=False), T_TPR)
     for x, z in FC_SCREWS:
@@ -1157,10 +1159,12 @@ def build() -> Design:
     yb_pm = yrr + ROTO_W
     for i, (hx, hy, hz) in enumerate(d.get("extruder").meta["interfaces"]["mount_holes_m3"]):
         place(d, f"probe_mount_sleeve_{i}", spacer_round("M3", PM_T, "aluminium"), Location(Plane(origin=(hx, yb_pm, hz), z_dir=(0, 1, 0))), body="xbody")
+        # the nut is a PEM S-M3-1 clinched in the front plate (SendCutSend hardware service), its head in a hex hole of
+        # the rear plate: the screw clamps sleeve, Roto, rear plate and front plate
         add_screw(d, f"extruder_screw_{i}", "M3", 50, at=(hx, yb_pm + PM_T, hz), direction=(0, -1, 0), body="xbody",
-                  clamps=(f"probe_mount_sleeve_{i}", "extruder", "tool_plate_rear"))
-        add_nut(d, f"extruder_nut_{i}", "M3", at=(hx, ymid, hz), direction=(0, -1, 0), body="xbody", screw=f"extruder_screw_{i}")
-        d.join(f"extruder_nut_{i}", "tool_plate", "captive in a hex pocket")
+                  clamps=(f"probe_mount_sleeve_{i}", "extruder", "tool_plate_rear", "tool_plate"))
+        add_nut(d, f"extruder_nut_{i}", "M3", at=(hx, ymid, hz), direction=(0, 1, 0), body="xbody", screw=f"extruder_screw_{i}")
+        d.join(f"extruder_nut_{i}", "tool_plate", "PEM self-clinching nut (SendCutSend hardware service)")
         d.join(f"probe_mount_sleeve_{i}", "probe_mount", "compression sleeve pressed into the printed holder")
     seat = d.get("extruder").meta["interfaces"]["hotend_seat"][0]
     place(d, "hotend", hotend_revo(40, 24.0, 0.4), Location(tuple(seat), (0, 0, 190)), body="xbody")
@@ -1266,7 +1270,7 @@ def build() -> Design:
               threads_into="x_tension_nut")
     d.get("x_tension_screw").meta["torque_nm"] = 0.3
     d.join("x_tension_screw", "x_idler_mount", "jack screw bears on the lug")
-    d.bom_extra("PEM-S-M3-1 (x and y tension anchors, installed by SendCutSend)", 3, 0.4)
+    d.bom_extra("PEM-S-M3-1 (x and y tension anchors, Roto screws in the front tool plate; installed by SendCutSend)", 5, 0.4)
     # X endstop: hangs under the left Y plate's land (slots + large washers)
     xsw = place(d, "x_endstop", endstop_switch(),
                 Location(Plane(origin=(X_ES_X0, X_ES_Y0, zp0 - ES_SP), x_dir=(0, 1, 0), z_dir=(0, 0, -1))), body="ybody")
