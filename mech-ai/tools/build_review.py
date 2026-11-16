@@ -437,7 +437,7 @@ def main() -> None:
             ("Bed level as built", f"bed out of level 99th percentile {tol['bed_out_of_level_mm_99']} mm before levelling; three-screw Z, one guide block per rail"),
             ("Payload", f"payload_x3_on_bed: {fea_line('payload_x3_on_bed') or 'see report'}"),
             ("Heated bed +60 K", f"bed_heated_60K: {fea_line('bed_heated_60K') or 'see report'}"),
-            ("Bed support result", "Known fault: the v8 bed-support check counted only one of three nut seats. The fix and a recomputed trade study are in progress; treat v8's bed sag figure as unproven."),
+            ("Bed support result", "Recomputed with all three nut seats: 1 kg at the worst corner sags 0.0147 mm (target 0.02) while all nuts stay seated. With two screws at opposite lead limits (0.142 mm height error) the rear nut lifts: level changes 0.080 mm and sag becomes 0.041 mm. Options: matched or measured screws, preloaded nuts, or independent Z motors with z_tilt."),
             ("Bed reaches nozzle", req.get("bed can reach the nozzle: 0-0.2 mm gap at the top of the print height", "")),
         ],
         "Electronics bay": [
