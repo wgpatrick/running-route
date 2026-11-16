@@ -171,8 +171,25 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
 #mk .mlist{font:12px var(--f-mono);margin:0;padding-left:18px}
 #mic[aria-pressed="true"]{color:var(--err);border-color:var(--err)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+.measpanel{position:absolute;left:10px;top:52px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:12px;z-index:3;max-width:min(560px,calc(100% - 20px));max-height:45%;overflow:auto}
+.measpanel .mrow{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.measpanel .seg{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.measpanel .seg button{border:0;border-right:1px solid var(--line);background:var(--panel);color:var(--ink);padding:3px 10px;cursor:pointer;font:500 12px var(--f-body)}
+.measpanel .seg button:last-child{border-right:0}
+.measpanel .seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+.measpanel label{display:flex;align-items:center;gap:4px;cursor:pointer}
+.measpanel .mb{font:500 12px var(--f-body);background:var(--panel);color:var(--accent);border:1px solid var(--line);border-radius:4px;padding:3px 9px;cursor:pointer}
+.measpanel .note{margin-top:4px}
+.mres{margin:4px 0 0;padding-left:20px;font:12px var(--f-mono)}
+.mres li{padding:2px 0}
+.mres b{font-weight:600;color:var(--ink)}
+.mres .sub2{color:var(--muted);display:block}
+.mres button{border:0;background:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0 4px}
+.mlabels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.mlabel{position:absolute;transform:translate(-50%,-130%);font:600 12px var(--f-mono);background:#b0126a;color:#fff;border-radius:4px;padding:1px 6px;white-space:nowrap}
+.mlabel i{font-style:normal;opacity:.7;margin-right:4px}
 /* phone layout: keep last so it overrides the desktop rules above */
-.fab{position:absolute;right:10px;top:10px;font:600 13px var(--f-body);background:var(--accent);color:var(--panel);border:0;border-radius:6px;padding:7px 12px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18);z-index:4}
+.cfab{position:absolute;right:10px;top:10px;font:600 13px var(--f-body);background:var(--accent);color:var(--panel);border:0;border-radius:6px;padding:7px 12px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18);z-index:4}
 .vtools{right:190px;max-width:none!important}
 .vexp{display:none}
 .hover{top:auto!important;bottom:44px}
@@ -190,16 +207,21 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
   .vtools::-webkit-scrollbar{display:none}
   .vtools button,.vtools label{min-height:34px;white-space:nowrap;flex:none}
   .vtools .seg{flex:none}
-  .fab{top:auto;bottom:8px;right:8px;min-height:34px;padding:6px 12px;border-radius:18px}
+  .cfab{top:auto;bottom:8px;right:8px;min-height:34px;padding:6px 12px;border-radius:18px}
   .vexp{display:block;position:absolute;right:8px;top:8px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:16px;z-index:4;cursor:pointer}
   .legend{display:none}
   .tray{top:8px!important;bottom:auto;left:8px;right:52px;flex-wrap:nowrap;overflow-x:auto;max-height:none;scrollbar-width:none}
   .tray .tc,.tray b,.tray .tb{flex:none}
   .tray .tc button{padding:6px 8px}
-  .secpanel{top:auto!important;bottom:54px;left:8px;right:8px}
+  .secpanel{left:8px;right:8px}
+  .measpanel{left:8px;right:8px;max-width:none;max-height:34%}
+  .measpanel .mres{max-height:64px;overflow:auto}
+  .measpanel .mres .sub2{display:none}
+  .measpanel .seg button{padding:7px 10px}
+  .measpanel .mb{padding:7px 10px}
   .secpanel input[type=range]{flex:1;min-width:120px;width:auto}
   .secpanel .seg button{padding:7px 14px}
-  .asmpanel{top:auto!important;bottom:54px;left:8px;right:8px;max-height:60%}
+  .asmpanel{left:8px;right:8px;max-height:50%}
   .asmpanel label{padding:7px 0}
   nav.side{max-height:none}
   .list{max-height:46svh}
@@ -263,15 +285,29 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
       <button id="asmbtn" type="button" aria-expanded="false" aria-controls="asmpanel">Assemblies</button>
       <button id="hidesel" type="button" title="Hide the selected parts (H)">Hide</button>
       <button id="unhide" type="button" hidden title="Show every part you hid (Alt+H)">Show hidden</button>
+      <button id="measbtn" type="button" aria-pressed="false" aria-controls="measpanel" title="Measure distances, gaps, angles and diameters (M)">Measure</button>
       <button id="secbtn" type="button" aria-pressed="false" aria-controls="secpanel" title="Cut the model with a plane">Section</button>
       <button id="fit" type="button">Fit</button>
       <button id="all" type="button">Whole machine</button>
       <label><input type="checkbox" id="hidefast"> Hide fasteners</label>
     </div>
-    <button id="snap" class="fab" type="button" title="Capture this view, mark it up and send it with a comment">💬 Comment on view</button>
+    <button id="snap" class="cfab" type="button" title="Capture this view, mark it up and send it with a comment">💬 Comment on view</button>
     <button id="vexp" class="vexp" type="button" aria-pressed="false" aria-label="Enlarge the 3D view">⤢</button>
     <div class="asmpanel" id="asmpanel" hidden></div>
     <div class="tray" id="tray" hidden></div>
+    <div class="measpanel" id="measpanel" hidden>
+      <div class="mrow">
+        <div class="seg" role="group" aria-label="Measurement">
+          <button type="button" data-mm="dist" aria-pressed="true" title="Two points">Distance</button><button type="button" data-mm="face" aria-pressed="false" title="Two faces: gap and angle">Faces</button><button type="button" data-mm="dia" aria-pressed="false" title="Three points on a hole or round edge">Diameter</button>
+        </div>
+        <label title="Snap picks to the nearest corner of the mesh"><input type="checkbox" id="msnap" checked> Snap</label>
+        <button type="button" class="mb" id="msize">Size of selection</button>
+        <button type="button" class="mb" id="mclear">Clear</button>
+      </div>
+      <div class="note" id="mhint"></div>
+      <ol class="mres" id="mres"></ol>
+    </div>
+    <div class="mlabels" id="mlabels"></div>
     <div class="secpanel" id="secpanel" hidden>
       <div class="seg" role="group" aria-label="Section plane">
         <button type="button" data-ax="x" aria-pressed="true">X</button><button type="button" data-ax="y" aria-pressed="false">Y</button><button type="button" data-ax="z" aria-pressed="false">Z</button>
@@ -579,8 +615,9 @@ function init3D(buf){
   ray=new THREE.Raycaster(); ptr=new THREE.Vector2();
   const c=$('gl');
   c.addEventListener('pointerdown',e=>downAt=[e.clientX,e.clientY]);
-  c.addEventListener('pointerup',e=>{if(e.button!==0||!downAt||Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1])>(e.pointerType==='touch'?10:4))return;const n=pick(e,MULTI||e.shiftKey||e.ctrlKey||e.metaKey);if(!n)return;
+  c.addEventListener('pointerup',e=>{if(MEAS.on||e.button!==0||!downAt||Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1])>(e.pointerType==='touch'?10:4))return;const n=pick(e,MULTI||e.shiftKey||e.ctrlKey||e.metaKey);if(!n)return;
     if(MULTI||e.shiftKey||e.ctrlKey||e.metaKey)togglePick(n); else go('part',n)});
+  c.addEventListener('pointerup',e=>{if(!MEAS.on||e.button!==0||!downAt||Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1])>(e.pointerType==='touch'?10:4))return;measClick(e)},true);
   c.addEventListener('pointermove',e=>{if(e.buttons)return;const n=pick(e,MULTI||e.shiftKey);const hv=$('hover');if(n){hv.hidden=false;hv.textContent=n}else hv.hidden=true});
   c.addEventListener('pointerleave',()=>$('hover').hidden=true);
   resize3D(); fit(true); highlight();
@@ -589,7 +626,7 @@ function init3D(buf){
 function pick(e,adding=false){const r=$('gl').getBoundingClientRect();ptr.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ptr,camera);
   const hits=secKeep(ray.intersectObjects(Object.values(meshes).filter(m=>m.visible&&(adding||m.material.opacity>0.5)),false));return hits.length?hits[0].object.userData.name:null}
 function resize3D(){if(!renderer)return;const v=$('view');const w=v.clientWidth,h=v.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/Math.max(h,1);camera.updateProjectionMatrix();draw()}
-function draw(){if(renderer)renderer.render(scene,camera)}
+function draw(){if(renderer){renderer.render(scene,camera);if(window.measLabels)measLabels()}}
 function selection(){
   if(SET.size)return {main:[...SET],rel:[]};
   if(!sel)return {main:[],rel:[]};
@@ -656,6 +693,7 @@ function restoreView(f){
   if(Array.isArray(f.hiddenAsm)){HIDDEN.clear();f.hiddenAsm.forEach(id=>A[id]&&HIDDEN.add(id));LS.set('hidden',[...HIDDEN])}
   if(typeof f.hideFasteners==='boolean')$('hidefast').checked=f.hideFasteners;
   if(Array.isArray(f.hiddenParts)){HIDP.clear();f.hiddenParts.forEach(n=>P[n]&&HIDP.add(n));LS.set('hidp',[...HIDP])}
+  if(Array.isArray(f.measurements)){measClear();f.measurements.forEach(measLoad)}
   if(f.section&&['x','y','z'].includes(f.section.axis)&&typeof f.section.at_mm==='number'){setSection(true,f.section.axis,f.section.at_mm,f.section.keep==='above')} else if(f.kind==='view')setSection(false);
   renderTray(); renderList(); highlight(false);
   const c=f.camera; if(renderer&&c&&Array.isArray(c.pos)&&Array.isArray(c.target)){camera.position.fromArray(c.pos);controls.target.fromArray(c.target);controls.update();draw()}
@@ -665,6 +703,8 @@ function setHidden(ns,hide){ns.forEach(n=>{if(hide)HIDP.add(n);else HIDP.delete(
 $('hidesel').onclick=()=>{const {main}=selection();if(main.length)setHidden(main,true)};
 $('unhide').onclick=()=>{HIDP.clear();LS.set('hidp',[]);renderList();highlight(false)};
 document.addEventListener('keydown',e=>{if(e.target.closest('input,textarea,select,dialog'))return;
+  if(e.key==='m'&&!e.ctrlKey&&!e.metaKey&&!e.altKey){$('measbtn').click();return}
+  if(e.key==='Escape'&&MEAS.on&&MEAS.pts.length){MEAS.pts=[];measRebuild();return}
   if(e.key==='h'&&!e.altKey&&!e.ctrlKey&&!e.metaKey){$('hidesel').click()} else if((e.key==='h'||e.key==='˙')&&e.altKey){$('unhide').click()}});
 /* ---------- section view: one clipping plane on X, Y or Z; back faces drawn as caps ---------- */
 const AXI={x:0,y:1,z:2};
@@ -688,11 +728,14 @@ function applySection(){
 }
 function secKeep(hits){return SEC.on&&SEC.plane?hits.filter(h=>SEC.plane.distanceToPoint(h.point)>=-1e-3):hits}
 const MOB=matchMedia('(max-width:720px)');
-function placePanels(){if(MOB.matches){$('secpanel').style.top='';$('asmpanel').style.top='';return}const t=$('view').querySelector('.vtools');const y=t.offsetTop+t.offsetHeight+6;$('secpanel').style.top=y+'px';$('asmpanel').style.top=y+($('secpanel').hidden?0:$('secpanel').offsetHeight+6)+'px'}
+function placePanels(){const ps=['secpanel','measpanel','asmpanel'].map(id=>$(id));
+  if(MOB.matches){let y=54;ps.forEach(p=>{p.style.top='auto';p.style.bottom=y+'px';if(!p.hidden)y+=p.offsetHeight+6});return}
+  const t=$('view').querySelector('.vtools');let y=t.offsetTop+t.offsetHeight+6;ps.forEach(p=>{p.style.bottom='auto';p.style.top=y+'px';if(!p.hidden)y+=p.offsetHeight+6})}
 addEventListener('resize',placePanels);
 function faceCam(){SEC.flip=camera.position.getComponent(AXI[SEC.ax])<secMM()}
 function secRange(){const b=secBox();const i=AXI[SEC.ax];SEC.lo=b.min.getComponent(i)-1;SEC.hi=b.max.getComponent(i)+1}
 function setSection(on,ax,mm,flip){
+  if(on)mobBig();
   SEC.on=on; if(ax){SEC.ax=ax} if(typeof flip==='boolean')SEC.flip=flip;
   $('secbtn').setAttribute('aria-pressed',on); $('secpanel').hidden=!on;
   document.querySelectorAll('[data-ax]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.ax===SEC.ax));
@@ -704,6 +747,74 @@ document.querySelectorAll('[data-ax]').forEach(b=>b.onclick=()=>{SEC.ax=b.datase
 $('secpos').oninput=e=>{SEC.t=e.target.value/1000;applySection()};
 $('secflip').onclick=()=>{SEC.flip=!SEC.flip;applySection()};
 $('seccap').onchange=e=>{SEC.caps=e.target.checked;applySection()};
+/* ---------- measure: picks on surfaces (section-aware), optional vertex snap; results drawn on top ---------- */
+const MEAS={on:false,mode:'dist',pts:[],list:[],group:null};
+const MHINT={dist:'Tap two points. Snap jumps to the nearest mesh corner.',face:'Tap two faces: parallel faces give the gap, any two give the angle.',dia:'Tap three points round a hole or a round edge.'};
+const f2=v=>(Math.abs(v)<0.005?0:v).toFixed(2);
+function pickHit(e){const r=$('gl').getBoundingClientRect();ptr.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ptr,camera);
+  const hits=secKeep(ray.intersectObjects(Object.values(meshes).filter(m=>m.visible&&m.material.opacity>0.5),false));return hits[0]||null}
+function toScreen(v){const r=$('gl').getBoundingClientRect();const p=v.clone().project(camera);return {x:(p.x+1)/2*r.width,y:(1-p.y)/2*r.height,z:p.z}}
+function measClick(e){
+  const h=pickHit(e); if(!h)return;
+  let p=h.point.clone();
+  if($('msnap').checked&&h.face){const pos=h.object.geometry.attributes.position,r=$('gl').getBoundingClientRect(),cx=e.clientX-r.left,cy=e.clientY-r.top;let best=null,bd=14;
+    [h.face.a,h.face.b,h.face.c].forEach(i=>{const v=new THREE.Vector3().fromBufferAttribute(pos,i).applyMatrix4(h.object.matrixWorld);const s=toScreen(v);const d=Math.hypot(s.x-cx,s.y-cy);if(d<bd){bd=d;best=v}});if(best)p=best}
+  const n=h.face?h.face.normal.clone().transformDirection(h.object.matrixWorld).normalize():new THREE.Vector3(0,0,1);
+  MEAS.pts.push({p,n,part:h.object.userData.name});
+  const need={dist:2,face:2,dia:3}[MEAS.mode];
+  if(MEAS.pts.length>=need){const r=measCompute(MEAS.mode,MEAS.pts);MEAS.pts=[];if(r)MEAS.list.push(r);else $('mhint').textContent='Those points are in a line; pick three points spread round the circle.'}
+  measRebuild();
+}
+function measCompute(mode,pts){
+  const P=pts.map(x=>x.p),parts=[...new Set(pts.map(x=>x.part))];
+  if(mode==='dist'){const d=P[1].clone().sub(P[0]);return {mode,pts,parts,value:d.length(),label:P[0].clone().add(P[1]).multiplyScalar(.5),
+    text:`distance ${f2(d.length())} mm (ΔX ${f2(d.x)}, ΔY ${f2(d.y)}, ΔZ ${f2(d.z)})`}}
+  if(mode==='face'){const [a,b]=pts;const ang=THREE.MathUtils.radToDeg(Math.acos(Math.min(1,Math.abs(a.n.dot(b.n)))));
+    const par=ang<1.5, gap=Math.abs(b.p.clone().sub(a.p).dot(a.n)), foot=b.p.clone().sub(a.n.clone().multiplyScalar(b.p.clone().sub(a.p).dot(a.n)));
+    return {mode,pts,parts,value:par?gap:ang,foot,label:par?b.p.clone().add(foot).multiplyScalar(.5):a.p.clone().add(b.p).multiplyScalar(.5),
+      text:par?`gap ${f2(gap)} mm between parallel faces (angle ${ang.toFixed(2)}°)`:`angle ${ang.toFixed(1)}° between faces (not parallel; point distance ${f2(b.p.distanceTo(a.p))} mm)`}}
+  if(mode==='dia'){const [p1,p2,p3]=P;const a=p1.clone().sub(p3),b=p2.clone().sub(p3),axb=a.clone().cross(b),l=axb.lengthSq();if(l<1e-6)return null;
+    const c=p3.clone().add(b.clone().multiplyScalar(a.lengthSq()).sub(a.clone().multiplyScalar(b.lengthSq())).cross(axb).divideScalar(2*l));
+    const r=c.distanceTo(p3);return {mode,pts,parts,value:2*r,center:c,axis:axb.normalize(),label:c.clone(),
+      text:`diameter ${f2(2*r)} mm (radius ${f2(r)}), centre ${c.toArray().map(v=>v.toFixed(1)).join(', ')}`}}
+}
+function measRebuild(){
+  if(!renderer)return;
+  if(MEAS.group){scene.remove(MEAS.group);MEAS.group.traverse(o=>{if(o.geometry)o.geometry.dispose()})}
+  const g=new THREE.Group();MEAS.group=g;scene.add(g);
+  const col=new THREE.Color('#ff1f8e'),lm=new THREE.LineBasicMaterial({color:col,depthTest:false,transparent:true}),pm=new THREE.PointsMaterial({color:col,size:9,sizeAttenuation:false,depthTest:false,transparent:true});
+  const line=(arr)=>{const o=new THREE.Line(new THREE.BufferGeometry().setFromPoints(arr),lm);o.renderOrder=999;g.add(o)};
+  const dots=(arr)=>{const o=new THREE.Points(new THREE.BufferGeometry().setFromPoints(arr),pm);pm.size=11;o.renderOrder=1000;g.add(o)};
+  MEAS.list.forEach(m=>{const P=m.pts.map(x=>x.p);dots(P);
+    if(m.short){const [lo,hi]=P,c=[0,1,2,3,4,5,6,7].map(i=>new THREE.Vector3(i&1?hi.x:lo.x,i&2?hi.y:lo.y,i&4?hi.z:lo.z));[[0,1],[1,3],[3,2],[2,0],[4,5],[5,7],[7,6],[6,4],[0,4],[1,5],[2,6],[3,7]].forEach(([i,j])=>line([c[i],c[j]]))}
+    else if(m.mode==='dist')line(P);
+    else if(m.mode==='face'){if(m.foot)line([m.pts[1].p,m.foot]);}
+    else if(m.mode==='dia'){const u=P[0].clone().sub(m.center).normalize(),v=m.axis.clone().cross(u),r=m.value/2,c=[];for(let i=0;i<=64;i++){const t=i/64*Math.PI*2;c.push(m.center.clone().add(u.clone().multiplyScalar(r*Math.cos(t))).add(v.clone().multiplyScalar(r*Math.sin(t))))}line(c);dots([m.center])}});
+  if(MEAS.pts.length)dots(MEAS.pts.map(x=>x.p));
+  const need={dist:2,face:2,dia:3}[MEAS.mode];
+  $('mhint').textContent=MEAS.pts.length?`Point ${MEAS.pts.length} of ${need} placed (Esc to cancel).`:MHINT[MEAS.mode];
+  $('mres').innerHTML=MEAS.list.map((m,i)=>`<li><b>${esc(m.text.split(' (')[0])}</b> <button type="button" data-mdel="${i}" aria-label="Delete measurement ${i+1}">×</button><span class="sub2">${esc(m.text.includes(' (')?m.text.slice(m.text.indexOf(' (')+2,-1)+' · ':'')}${esc(m.parts.join(' → '))}</span></li>`).join('');
+  placePanels(); draw();
+}
+window.measLabels=function(){const box=$('mlabels');if(!MEAS.list.length){box.innerHTML='';return}
+  box.innerHTML=MEAS.list.map((m,i)=>{const s=toScreen(m.label);if(s.z>1)return '';const v=m.short?m.short:m.mode==='face'&&m.text.startsWith('angle')?m.value.toFixed(1)+'°':(m.mode==='dia'?'Ø':'')+f2(m.value)+' mm';return `<div class="mlabel" style="left:${s.x}px;top:${s.y}px"><i>M${i+1}</i>${v}</div>`}).join('')};
+function measPaint(x,k){$('mlabels').querySelectorAll('.mlabel').forEach(el=>{const t=el.textContent,l=parseFloat(el.style.left)*k,tp=parseFloat(el.style.top)*k,fs=12*k;
+  x.font=`600 ${fs}px ui-monospace,monospace`;const w=x.measureText(t).width+10*k,h=fs*1.5;x.fillStyle='#b0126a';x.fillRect(l-w/2,tp-h*1.3,w,h);x.fillStyle='#fff';x.textAlign='center';x.textBaseline='middle';x.fillText(t,l,tp-h*0.8)})}
+function measSave(m){return {mode:m.mode,text:m.text,short:m.short||null,value:+m.value.toFixed(3),parts:m.parts,pts:m.pts.map(x=>({p:x.p.toArray().map(v=>+v.toFixed(3)),n:x.n.toArray().map(v=>+v.toFixed(4)),part:x.part}))}}
+function measLoad(s){if(!s||!Array.isArray(s.pts)||!['dist','face','dia'].includes(s.mode))return;const pts=s.pts.filter(x=>Array.isArray(x.p)&&x.p.length===3).map(x=>({p:new THREE.Vector3().fromArray(x.p),n:new THREE.Vector3().fromArray(Array.isArray(x.n)?x.n:[0,0,1]),part:String(x.part||'')}));
+  const r=pts.length>=2?measCompute(s.mode,pts):null;if(r&&typeof s.text==='string'&&s.text.startsWith('size ')){r.text=s.text;r.short=s.short||s.text.slice(5).split(' mm')[0]}if(r){MEAS.list.push(r);measRebuild()}}
+function measClear(){MEAS.list=[];MEAS.pts=[];measRebuild()}
+function mobBig(){if(MOB.matches&&!$('view').classList.contains('big'))$('vexp').click()}
+function setMeasure(on){if(on)mobBig();MEAS.on=on;$('measbtn').setAttribute('aria-pressed',on);$('measpanel').hidden=!on;$('gl').style.cursor=on?'crosshair':'';if(on&&MULTI){MULTI=false;$('multi').setAttribute('aria-pressed',false)}MEAS.pts=[];measRebuild()}
+$('measbtn').onclick=()=>setMeasure(!MEAS.on);
+document.querySelectorAll('[data-mm]').forEach(b=>b.onclick=()=>{MEAS.mode=b.dataset.mm;MEAS.pts=[];document.querySelectorAll('[data-mm]').forEach(x=>x.setAttribute('aria-pressed',x===b));measRebuild()});
+$('mclear').onclick=measClear;
+$('mres').addEventListener('click',e=>{const d=e.target.closest('[data-mdel]');if(d){MEAS.list.splice(+d.dataset.mdel,1);measRebuild()}});
+$('msize').onclick=()=>{const {main}=selection();if(!main.length){$('mhint').textContent='Select a part (or several) first.';return}
+  const b=new THREE.Box3();main.forEach(n=>meshes[n]&&meshes[n].visible!==false&&b.expandByObject(meshes[n]));const s=b.getSize(new THREE.Vector3());
+  const lo=b.min,hi=b.max,name=main.length===1?main[0]:`${main.length} parts`;
+  MEAS.list.push({mode:'dist',pts:[{p:lo.clone(),n:new THREE.Vector3(0,0,1),part:name},{p:hi.clone(),n:new THREE.Vector3(0,0,1),part:name}],parts:[name],value:s.length(),short:`${f2(s.x)}×${f2(s.y)}×${f2(s.z)}`,label:lo.clone().add(hi).multiplyScalar(.5),
+    text:`size ${f2(s.x)} × ${f2(s.y)} × ${f2(s.z)} mm (X × Y × Z bounding box of ${name}; diagonal ${f2(s.length())})`});measRebuild()};
 function setVMsilent(v){if(!['all','ghost','hide'].includes(v))return;VM=v;LS.set('vm',v);document.querySelectorAll('[data-vm]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.vm===v))}
 function fit(whole){
   if(!renderer)return; const b=new THREE.Box3(); const {main,rel}=selection();
@@ -737,11 +848,12 @@ $('snap').onclick=()=>{
   draw(); const src=$('gl'); const W=src.width,H=src.height;
   const base=document.createElement('canvas'); base.width=W; base.height=H; const bx=base.getContext('2d');
   bx.fillStyle=css('--soft')||'#eaeef4'; bx.fillRect(0,0,W,H); bx.drawImage(src,0,0);   // read in the same task as the render
+  measPaint(bx,W/src.clientWidth);
   const parts=viewParts();
   MK={base,W,H,marks:[],cur:null,parts,
       camera:{pos:camera.position.toArray().map(v=>+v.toFixed(2)),target:controls.target.toArray().map(v=>+v.toFixed(2)),fov:camera.fov,aspect:+camera.aspect.toFixed(4)},
       cam:camera.clone(),
-      target:sel?key(sel.t,sel.id):null, section:SEC.on?{axis:SEC.ax,at_mm:+secMM().toFixed(1),keep:SEC.flip?'above':'below'}:null};
+      target:sel?key(sel.t,sel.id):null, meas:MEAS.list.map(measSave), section:SEC.on?{axis:SEC.ax,at_mm:+secMM().toFixed(1),keep:SEC.flip?'above':'below'}:null};
   const c=$('mkc'); c.width=W; c.height=H;
   $('mkparts').textContent=parts.length?parts.join(', '):'None selected: the comment is about the whole view.';
   $('mkmsg').textContent=db?'The marked-up image, the camera, the parts and your text are saved with the review, and a comment thread is opened for Claude.':'Saving needs this page open on claude.ai while signed in.';
@@ -752,7 +864,7 @@ $('snap').onclick=()=>{
 };
 $('mkx').onclick=()=>{$('mk').close()};
 $('banner').onclick=()=>$('banner').classList.toggle('open');
-$('vexp').onclick=()=>{const v=$('view');v.classList.toggle('big');$('vexp').setAttribute('aria-pressed',v.classList.contains('big'));setTimeout(()=>{resize3D();sizeMain()},230)};
+$('vexp').onclick=()=>{const v=$('view');v.classList.toggle('big');$('vexp').setAttribute('aria-pressed',v.classList.contains('big'));setTimeout(()=>{resize3D();sizeMain();placePanels();if(selection().main.length)fit(false)},230)};
 MOB.addEventListener('change',()=>{placePanels();resize3D()});
 $('mk').addEventListener('close',()=>{if(dictNS&&$('mic').getAttribute('aria-pressed')==='true')dictNS.stop().catch(()=>{})});
 document.querySelectorAll('#mk [data-tool]').forEach(b=>b.onclick=()=>{MKS.tool=b.dataset.tool;document.querySelectorAll('#mk [data-tool]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
@@ -806,7 +918,7 @@ $('mksend').onclick=async()=>{
   // what Claude reads in the thread: enough to act on even before it opens the saved record
   let msg=`[View feedback ${fid} · ${D.design} · ${VERDICT[verdict]}]\n${text||'(no text)'}\n\nParts (${parts.length}): ${parts.slice(0,40).join(', ')||'none selected'}${parts.length>40?' …':''}`;
   if(marks.length)msg+=`\nMarkup: `+marks.map(m=>`${m.n} ${m.type} → ${m.at||'background'}${m.xyz?' @'+m.xyz.join(','):''}`).join('; ');
-  msg+=`\nView: ${({all:'show all',ghost:'rest ghosted',hide:'isolated'})[VM]}${HIDDEN.size?`, hidden assemblies: ${[...HIDDEN].map(id=>A[id]?A[id].name:id).join(', ')}`:''}${HIDP.size?`, ${HIDP.size} parts hidden`:''}${MK.section?`, section ${MK.section.axis.toUpperCase()} ${MK.section.keep} ${MK.section.at_mm} mm`:''}. Screenshot and camera are in feedback/${fid}.`;
+  msg+=`\nView: ${({all:'show all',ghost:'rest ghosted',hide:'isolated'})[VM]}${HIDDEN.size?`, hidden assemblies: ${[...HIDDEN].map(id=>A[id]?A[id].name:id).join(', ')}`:''}${HIDP.size?`, ${HIDP.size} parts hidden`:''}${MK.section?`, section ${MK.section.axis.toUpperCase()} ${MK.section.keep} ${MK.section.at_mm} mm`:''}.${MK.meas.length?`\nMeasurements: `+MK.meas.map((m,i)=>`M${i+1} ${m.text}`).join('; '):''}\nScreenshot and camera are in feedback/${fid}.`;
   if(new TextEncoder().encode(msg).length>4000)msg=msg.slice(0,3900)+'…';
   // send first, straight from the click (Send to Claude must follow the viewer's gesture); upload and save in parallel
   let sendP=Promise.resolve(null); const sendState=MK.sendState||'off';
@@ -816,7 +928,7 @@ $('mksend').onclick=async()=>{
     let image=null, imgErr=null;
     if(assetsNS){try{const blob=await new Promise(r=>out.toBlob(r,'image/png'));const up=await assetsNS.upload(blob,{type:'image/png'});image=up.id}catch(e){imgErr=e.code||e.message}}
     else imgErr='image storage needs edit access';
-    await ref.set({kind:'view',target,targetName:tname,verdict,text,parts,marks,image,camera:MK.camera,viewMode:VM,hiddenAsm:[...HIDDEN],hiddenParts:[...HIDP],section:MK.section,hideFasteners:$('hidefast').checked,
+    await ref.set({kind:'view',target,targetName:tname,verdict,text,parts,marks,image,camera:MK.camera,viewMode:VM,hiddenAsm:[...HIDDEN],hiddenParts:[...HIDP],section:MK.section,measurements:MK.meas,hideFasteners:$('hidefast').checked,
       viewport:[MK.W,MK.H],author:me||null,at:new Date().toISOString(),status:'open',design:D.design});
     return imgErr;
   })();
