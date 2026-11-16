@@ -1812,7 +1812,8 @@ def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict
     L += [""]
     board = next((d for d in el.devices.values() if d.kind == "board"), None)
     host = next((d for d in el.devices.values() if d.kind == "host"), None)
-    L += ["[mcu]", f"serial: {fw.get('serial', '/dev/ttyAMA0' if host else '/dev/serial/by-id/usb-Klipper')}", "restart_method: command", ""]
+    L += ["[mcu]"] + ([f"# klipper_mcu: {board.ratings['klipper_mcu']}"] if board is not None and board.ratings.get("klipper_mcu") else []) + \
+         [f"serial: {fw.get('serial', '/dev/ttyAMA0' if host else '/dev/serial/by-id/usb-Klipper')}", "restart_method: command", ""]
     vmax = min((joints[pr[a]].max_speed for a in "xy" if pr.get(a) in joints), default=200.0)
     amax = min((joints[pr[a]].max_accel for a in "xy" if pr.get(a) in joints), default=1000.0)
     zj = joints.get(pr.get("z", "z"))

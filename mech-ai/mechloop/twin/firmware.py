@@ -89,16 +89,34 @@ def find_klipper():
     return kdir, py, commit
 
 
+MCU_MARK = re.compile(r"^#\s*klipper_mcu:\s*(\w+)", re.M)
+
+
+def mcu_dictionary(cfg_text: str, kdir: Path) -> Path:
+    """The Klipper data dictionary to plan against: the default build (out/, STM32G0B1, tools/setup_klipper.sh) unless the
+    generated printer.cfg names its board's MCU with a '# klipper_mcu: <name>' line (written from the board's catalogue
+    rating `klipper_mcu`); then out_<name>/klipper.dict, which tools/setup_klipper.sh also builds. Pin names are checked
+    against that MCU's own pins: an STM32F446 board's PG pins do not exist on the G0B1."""
+    m = MCU_MARK.search(cfg_text or "")
+    if not m:
+        return kdir / "out" / "klipper.dict"
+    f = kdir / f"out_{m.group(1)}" / "klipper.dict"
+    if not f.exists():
+        raise FirmwareNotAvailable(f"printer.cfg names MCU '{m.group(1)}' but {f} does not exist: run tools/setup_klipper.sh")
+    return f
+
+
 def run_klippy(cfg_text: str, gcode_text: str, workdir: Path) -> dict:
     """Run klippy offline. Returns {"dump": path, "messages": [...], "commit": ...}; raises FirmwareError when
     Klipper rejects the configuration or stops."""
     kdir, py, commit = find_klipper()
+    kdict = mcu_dictionary(cfg_text, kdir)
     workdir = Path(workdir)
     workdir.mkdir(parents=True, exist_ok=True)
     (workdir / "printer.cfg").write_text(cfg_text)
     (workdir / "job.gcode").write_text(gcode_text)
     p = subprocess.run([str(py), str(kdir / "klippy" / "klippy.py"), "printer.cfg", "-i", "job.gcode", "-o", "out.serial",
-                        "-d", str(kdir / "out" / "klipper.dict")], cwd=workdir, capture_output=True, text=True, timeout=3600)
+                        "-d", str(kdict)], cwd=workdir, capture_output=True, text=True, timeout=3600)
     log = p.stdout + p.stderr
     (workdir / "klippy.log").write_text(log)
     msgs: dict[str, int] = {}
@@ -115,12 +133,12 @@ def run_klippy(cfg_text: str, gcode_text: str, workdir: Path) -> dict:
              or re.match(r"^[\w.]*\b(error|Error|CommandError): ", ln)]      # the exception line carries the reason
     if fatal or not (workdir / "out.serial").exists():
         raise FirmwareError("Klipper stopped: " + " | ".join(fatal[:4] or log.splitlines()[-3:]))
-    d = subprocess.run([str(py), str(kdir / "klippy" / "parsedump.py"), str(kdir / "out" / "klipper.dict"), "out.serial"],
+    d = subprocess.run([str(py), str(kdir / "klippy" / "parsedump.py"), str(kdict), "out.serial"],
                        cwd=workdir, capture_output=True, text=True, timeout=3600)
     (workdir / "commands.txt").write_text(d.stdout)
     import json
 
-    mcu = json.loads((kdir / "out" / "klipper.dict").read_text())["config"]
+    mcu = json.loads(kdict.read_text())["config"]
     return {"dump": workdir / "commands.txt", "messages": msgs, "commit": commit, "mcu": mcu.get("MCU"),
             "clock_hz": float(mcu["CLOCK_FREQ"]), "log": log}
 

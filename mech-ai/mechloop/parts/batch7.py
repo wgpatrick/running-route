@@ -183,7 +183,8 @@ def octopus_v11(drivers: str = "TMC2209") -> Stock:
                "driver_abs_max_rms_a": dm["driver_abs_max_rms_a"], "driver_rds_on_ohm": dm["driver_rds_on_ohm"], "driver_max_v": dm["driver_max_v"],
                "output_resistance_ohm": 0.012, "logic_w": 1.5, "adc_bits": 12, "thermistor_pullup_ohm": 4700.0,
                "rail_5v_max_a": rails["5V_a"], "rail_12v_max_a": rails["12V_a"], "bed_max_w": v["bed"]["max_w"], "max_ambient_c": 60.0,
-               "power_inputs": v["power_inputs"]["value"]}
+               "power_inputs": v["power_inputs"]["value"],
+               "klipper_mcu": "stm32f446"}      # firmware-in-the-loop dictionary (out_stm32f446/, tools/setup_klipper.sh); some boards carry an F429
     TU = "typical, unverified"
     sources = {"outline_holes": "[BTT] Octopus manual 1.2: 160 x 100 mm, holes 150 x 90 mm (hole diameter not transcribed)",
                "HB.max_a": f"[BTT] manual 8 item 3: beds up to 300 W; {bed_a} A at 24 V DERIVED",
