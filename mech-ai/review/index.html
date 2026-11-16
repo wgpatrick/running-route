@@ -121,6 +121,44 @@ dialog .db{overflow:auto;max-height:calc(92vh - 50px);background:#fff}
 dialog img{display:block;width:100%;min-width:700px}
 button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
 .legendtbl td:first-child{white-space:nowrap}
+/* 3D view controls: segmented view mode, multi-select, assembly visibility, selection tray */
+.vtools .seg{display:flex;border:1px solid var(--line);border-radius:4px;overflow:hidden;padding:0;gap:0;background:var(--panel)}
+.vtools .seg button{border:0;border-radius:0;border-right:1px solid var(--line)}
+.vtools .seg button:last-child{border-right:0}
+.vtools button[aria-pressed="true"],.vtools button[aria-expanded="true"]{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+.vtools .seg button[aria-pressed="true"]{border-color:var(--line)}
+.vtools button.pri{background:var(--accent);color:var(--panel);border-color:var(--accent);font-weight:600}
+.asmpanel{position:absolute;left:10px;top:52px;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 10px;min-width:220px;max-width:calc(100% - 20px);box-shadow:0 6px 20px rgba(0,0,0,.12);z-index:3}
+.asmpanel label{display:flex;align-items:center;gap:8px;padding:3px 0;font-size:13px;cursor:pointer}
+.asmpanel input{accent-color:var(--accent)}
+.asmpanel .acts{display:flex;gap:10px;border-top:1px solid var(--line);margin-top:6px;padding-top:6px;font-size:12px}
+.tray{position:absolute;left:10px;right:10px;bottom:44px;background:var(--panel);border:1px solid var(--sel);border-radius:6px;padding:6px 8px;display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;max-height:30%;overflow:auto;z-index:2}
+.tray .tc{font:500 11.5px var(--f-mono);border:1px solid var(--line);border-radius:3px;padding:0 2px 0 6px;display:inline-flex;align-items:center;gap:2px;background:var(--bg)}
+.tray .tc button{border:0;background:none;color:var(--muted);cursor:pointer;font-size:13px;line-height:1;padding:2px 4px}
+.tray .tb{font:600 12px var(--f-body);border:1px solid var(--line);background:var(--panel);color:var(--accent);border-radius:4px;padding:2px 8px;cursor:pointer}
+.tray b{font-weight:600}
+.item .eye{border:0;background:none;color:var(--muted);cursor:pointer;padding:0 2px;font-size:14px;line-height:1}
+.item .eye.off{opacity:.35}
+.item.hid .nm{color:var(--muted);text-decoration:line-through}
+.thumb{display:block;max-width:100%;border:1px solid var(--line);border-radius:4px;margin-top:6px;cursor:zoom-in;background:var(--soft)}
+.marks{font:12px var(--f-mono);color:var(--muted);margin-top:4px}
+.cm .go{margin-left:auto}
+/* markup dialog */
+#mk{width:min(1280px,96vw)}
+#mk .mkbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line)}
+#mk .mkbar button{font:500 12.5px var(--f-body);background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:4px 10px;cursor:pointer}
+#mk .mkbar button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+#mk .sw{width:22px;height:22px;border-radius:50%;padding:0!important;border:2px solid var(--panel)!important;box-shadow:0 0 0 1px var(--line)}
+#mk .sw[aria-pressed="true"]{box-shadow:0 0 0 2px var(--ink)}
+#mk .mkbody{display:grid;grid-template-columns:minmax(0,1fr) 320px;max-height:calc(92vh - 100px)}
+@media (max-width:860px){#mk .mkbody{grid-template-columns:1fr;overflow:auto}}
+#mk .stage{overflow:auto;background:var(--soft);display:flex;align-items:flex-start;justify-content:center;padding:8px;min-height:0}
+#mk canvas{max-width:100%;max-height:calc(92vh - 120px);touch-action:none;cursor:crosshair;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+#mk .side{padding:12px;border-left:1px solid var(--line);overflow:auto;display:flex;flex-direction:column;gap:8px}
+#mk .side textarea{min-height:120px}
+#mk .plist{font:12px var(--f-mono);color:var(--muted);max-height:96px;overflow:auto;overflow-wrap:anywhere}
+#mk .mlist{font:12px var(--f-mono);margin:0;padding-left:18px}
+#mic[aria-pressed="true"]{color:var(--err);border-color:var(--err)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -158,18 +196,61 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
   <div class="view" id="view">
     <canvas id="gl" aria-label="3D view of the printer. Click a part to open it."></canvas>
     <div class="vtools">
-      <button id="fit" type="button">Fit selection</button>
+      <div class="seg" role="group" aria-label="Everything not selected">
+        <button type="button" data-vm="all" title="Show every part normally">Show all</button>
+        <button type="button" data-vm="ghost" title="Show the rest of the machine faintly">Ghost rest</button>
+        <button type="button" data-vm="hide" title="Show only the selection">Isolate</button>
+      </div>
+      <button id="multi" type="button" aria-pressed="false" title="Each click adds or removes a part. Shift- or Ctrl-click does the same at any time.">Multi-select</button>
+      <button id="asmbtn" type="button" aria-expanded="false" aria-controls="asmpanel">Assemblies</button>
+      <button id="fit" type="button">Fit</button>
       <button id="all" type="button">Whole machine</button>
-      <label><input type="checkbox" id="ghost" checked> Ghost the rest</label>
       <label><input type="checkbox" id="hidefast"> Hide fasteners</label>
+      <button id="snap" class="pri" type="button" title="Capture this view, mark it up and send it with a comment">Comment on view</button>
     </div>
+    <div class="asmpanel" id="asmpanel" hidden></div>
+    <div class="tray" id="tray" hidden></div>
     <div class="hover" id="hover" hidden></div>
-    <div class="legend"><span><i style="background:var(--sel)"></i>selected</span><span><i style="background:var(--accent)"></i>related</span><span>drag to orbit · scroll to zoom · click a part</span></div>
+    <div class="legend"><span><i style="background:var(--sel)"></i>selected</span><span><i style="background:var(--accent)"></i>related</span><span>drag to orbit · right-drag to pan · scroll to zoom · click a part · shift-click to add</span></div>
     <div class="vmsg" id="vmsg">Loading 3D model (11 MB)…</div>
   </div>
 </main>
 
 <dialog id="dlg"><div class="dh"><b id="dlgt"></b><button class="btn ghost" id="dlgx" type="button">Close</button></div><div class="db"><img id="dlgi" alt=""></div></dialog>
+
+<dialog id="mk" aria-labelledby="mkt">
+  <div class="dh"><b id="mkt">Comment on this view</b><button class="btn ghost" id="mkx" type="button">Cancel</button></div>
+  <div class="mkbar" role="toolbar" aria-label="Markup tools">
+    <button type="button" data-tool="arrow" aria-pressed="true">↗ Arrow</button>
+    <button type="button" data-tool="circle" aria-pressed="false">◯ Circle</button>
+    <button type="button" data-tool="pen" aria-pressed="false">✎ Pen</button>
+    <button type="button" data-tool="pin" aria-pressed="false" title="Numbered callout you can refer to in the text">① Callout</button>
+    <span style="width:8px"></span>
+    <button type="button" class="sw" data-col="#e5322d" aria-label="Red" aria-pressed="true" style="background:#e5322d"></button>
+    <button type="button" class="sw" data-col="#f2a20c" aria-label="Amber" aria-pressed="false" style="background:#f2a20c"></button>
+    <button type="button" class="sw" data-col="#1f8fff" aria-label="Blue" aria-pressed="false" style="background:#1f8fff"></button>
+    <button type="button" class="sw" data-col="#14a05a" aria-label="Green" aria-pressed="false" style="background:#14a05a"></button>
+    <span style="width:8px"></span>
+    <button type="button" id="mkundo">Undo</button>
+    <button type="button" id="mkclear">Clear</button>
+  </div>
+  <div class="mkbody">
+    <div class="stage"><canvas id="mkc" aria-label="Captured view. Drag to draw the selected markup."></canvas></div>
+    <div class="side">
+      <div class="verdicts" role="radiogroup" aria-label="Verdict">
+        <label><input type="radio" name="mkvd" value="change" checked>Change needed</label>
+        <label><input type="radio" name="mkvd" value="question">Question</label>
+        <label><input type="radio" name="mkvd" value="ok">Looks good</label>
+      </div>
+      <textarea id="mktext" maxlength="2500" placeholder="What should Claude look at? Refer to callouts by number: “1: this gap looks too small”."></textarea>
+      <div class="fbrow" style="margin-top:0"><button type="button" class="btn ghost" id="mic" aria-pressed="false" hidden>🎤 Dictate</button><span class="note" id="micmsg"></span></div>
+      <div><div class="eyebrow">Parts in this comment</div><div class="plist" id="mkparts"></div></div>
+      <div><div class="eyebrow">Markup points at</div><ol class="mlist" id="mkmarks"></ol><p class="note" id="mknomarks">Nothing drawn yet. Marks are optional; each one records the part under its tip.</p></div>
+      <div class="fbrow"><button type="button" class="btn" id="mksend">Send to Claude</button></div>
+      <p class="note" id="mkmsg">The marked-up image, the camera, the parts and your text are saved with the review, and a comment thread is opened for Claude.</p>
+    </div>
+  </div>
+</dialog>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
@@ -186,12 +267,16 @@ const GEN_TOL={sheet:'Position ±0.16 mm, pattern ±0.08 mm, hole ±0.08 mm, fla
 const VERDICT={ok:'Looks good',question:'Question',change:'Change needed'};
 let D, P={}, J={}, A={}, OI={}, sel=null, FB=[], db=null, user=null, me=null, names={};
 const S={tab:'asm',q:'',kind:'custom'};
+/* view state: SET = parts picked with multi-select; VM = what happens to everything else; HIDDEN = assemblies switched off */
+const SET=new Set(); let MULTI=false, PART_ASM={};
+const LS={get(k,d){try{const v=localStorage.getItem('rv:'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('rv:'+k,JSON.stringify(v))}catch(e){}}};
+let VM=LS.get('vm','ghost'); const HIDDEN=new Set(LS.get('hidden',[]));
 
 /* ---------- routing: #p-name, #j-n, #a-n (letters, digits, hyphens only) ---------- */
 const slug=s=>s.replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,'');
 let BYSLUG={};
 function key(t,id){return t+':'+id}
-function go(t,id,push=true){sel={t,id}; renderDetail(); renderList(); highlight(); if(push){const h=t[0]+'-'+slug(id); if(location.hash!=='#'+h) history.replaceState(null,'','#'+h);} }
+function go(t,id,push=true){sel={t,id}; SET.clear(); renderTray(); renderDetail(); renderList(); highlight(); if(push){const h=t[0]+'-'+slug(id); if(location.hash!=='#'+h) history.replaceState(null,'','#'+h);} }
 function fromHash(){const h=location.hash.slice(1); const r=BYSLUG[h]; if(r) go(r.t,r.id,false); else if(D) go('asm',D.assemblies[0].id,false);}
 addEventListener('hashchange',fromHash);
 
@@ -200,6 +285,8 @@ fetch('data.json').then(r=>r.json()).then(d=>{
   d.parts.forEach(p=>BYSLUG['p-'+slug(p.name)]={t:'part',id:p.name});
   d.joints.forEach(j=>BYSLUG['j-'+slug(j.id)]={t:'joint',id:j.id});
   d.assemblies.forEach(a=>BYSLUG['a-'+slug(a.id)]={t:'asm',id:a.id});
+  d.assemblies.forEach(a=>a.parts.forEach(n=>PART_ASM[n]=a.id));
+  [...HIDDEN].forEach(id=>{if(!A[id])HIDDEN.delete(id)});
   const s=d.summary;
   $('stats').innerHTML=`<span><b>${s.parts}</b> parts</span><span><b>${s.custom}</b> custom</span><span><b>${s.joints}</b> bolted joints</span><span><b>${fx(s.mass_kg,2)}</b> kg</span><span>BOM <b>$${fx(s.bom_cost,0)}</b></span><span>assembly <b>${fx(s.assembly_min,0)}</b> min</span><span>resonance X <b>${s.resonance_hz.x}</b> / Y <b>${s.resonance_hz.y}</b> Hz</span><span id="fbstat"></span>`;
   sizeMain(); fromHash(); renderList(); initFeedback(); load3D();
@@ -215,7 +302,7 @@ $('kindf').onchange=e=>{S.kind=e.target.value;renderList()};
 const errs=fl=>fl.filter(f=>f.sev==='error').length, warns=fl=>fl.filter(f=>f.sev==='warning').length;
 function fbCount(k){return FB.filter(f=>f.target===k&&f.status!=='resolved').length}
 function badges(flags,k){let h='';const e=errs(flags||[]),w=warns(flags||[]);if(e)h+=`<span class="bd e" title="guideline errors">${e}</span>`;if(w)h+=`<span class="bd w" title="warnings">${w}</span>`;const n=fbCount(k);if(n)h+=`<span class="bd f" title="open feedback">💬${n}</span>`;const ok=FB.some(f=>f.target===k&&f.verdict==='ok');if(ok)h+=`<span class="bd k" title="marked looks good">✓</span>`;return `<span class="badges">${h}</span>`}
-function itemHTML(t,id,label,meta,dotVar,flags){const k=key(t,id),on=sel&&sel.t===t&&sel.id===id;return `<div class="item${on?' on':''}${t==='asm'?' asm':''}" tabindex="0" data-t="${t}" data-id="${esc(id)}">${dotVar?`<span class="dot" style="background:var(${dotVar})"></span>`:''}<span class="nm" title="${esc(label)}">${esc(label)}</span>${meta?`<span class="meta">${esc(meta)}</span>`:''}${badges(flags,k)}</div>`}
+function itemHTML(t,id,label,meta,dotVar,flags){const k=key(t,id),on=(sel&&sel.t===t&&sel.id===id)||(t==='part'&&SET.has(id)),hid=t==='asm'&&HIDDEN.has(id);return `<div class="item${on?' on':''}${t==='asm'?' asm':''}${hid?' hid':''}" tabindex="0" data-t="${t}" data-id="${esc(id)}">${t==='asm'?`<button class="eye${hid?' off':''}" type="button" data-eye="${esc(id)}" aria-pressed="${!hid}" aria-label="${hid?'Show':'Hide'} ${esc(label)} in the 3D view" title="${hid?'Show':'Hide'} in the 3D view">👁</button>`:''}${dotVar?`<span class="dot" style="background:var(${dotVar})"></span>`:''}<span class="nm" title="${esc(label)}">${esc(label)}</span>${meta?`<span class="meta">${esc(meta)}</span>`:''}${badges(flags,k)}</div>`}
 function match(...xs){return !S.q||xs.some(x=>String(x??'').toLowerCase().includes(S.q))}
 function renderList(){
   if(!D)return; let h='';
@@ -248,11 +335,16 @@ function renderList(){
     const rows=FB.filter(f=>match(f.targetName,f.text)).slice().sort((a,b)=>(b.at||'').localeCompare(a.at||''));
     if(!db) h+=`<p class="note" style="padding:12px">${fbReady?'Feedback storage is not available in this view (sign in to claude.ai to leave and see feedback).':'Connecting to feedback storage…'}</p>`;
     else if(!rows.length) h+=`<p class="note" style="padding:12px">No feedback yet. Open any assembly, part or joint and use the feedback box at the bottom of its sheet.</p>`;
-    rows.forEach(f=>{const [t,...r]=f.target.split(':');const id=r.join(':');h+=`<div class="item" tabindex="0" data-t="${t}" data-id="${esc(id)}"><span class="vd ${f.verdict}">${esc(VERDICT[f.verdict]||f.verdict)}</span><span class="nm">${esc(f.targetName)}</span><span class="meta">${f.status==='resolved'?'resolved':''}</span></div>`});
+    rows.forEach(f=>{const [t,...r]=f.target.split(':');const id=r.join(':');h+=`<div class="item" tabindex="0" data-t="${t}" data-id="${esc(id)}" ${f.kind==='view'?`data-fb="${esc(f.id)}"`:''}><span class="vd ${esc(f.verdict)}">${esc(VERDICT[f.verdict]||f.verdict)}</span><span class="nm">${f.kind==='view'?'📷 ':''}${esc(f.targetName)}</span><span class="meta">${f.status==='resolved'?'resolved':''}</span></div>`});
   }
   $('list').innerHTML=h||'<p class="note" style="padding:12px">Nothing matches the filter.</p>';
 }
-$('list').addEventListener('click',e=>{const it=e.target.closest('.item');if(it)go(it.dataset.t,it.dataset.id)});
+$('list').addEventListener('click',e=>{
+  const eye=e.target.closest('[data-eye]'); if(eye){e.stopPropagation();toggleAsm(eye.dataset.eye);return}
+  const it=e.target.closest('.item'); if(!it)return;
+  if(it.dataset.fb){const f=FB.find(x=>x.id===it.dataset.fb);if(f){restoreView(f);return}}
+  if(it.dataset.t==='part'&&(MULTI||e.shiftKey||e.ctrlKey||e.metaKey)){togglePick(it.dataset.id);return}
+  go(it.dataset.t,it.dataset.id)});
 $('list').addEventListener('keydown',e=>{if(e.key==='Enter'){const it=e.target.closest('.item');if(it)go(it.dataset.t,it.dataset.id)}});
 
 /* ---------- detail sheets ---------- */
@@ -367,9 +459,10 @@ async function initFeedback(){
 const draft={};
 function renderFB(){
   const box=$('fbbox'); if(!box||!sel)return; const k=key(sel.t,sel.id);
-  const items=FB.filter(f=>f.target===k).sort((a,b)=>(a.at||'').localeCompare(b.at||''));
+  const items=FB.filter(f=>f.target===k||(sel.t==='part'&&Array.isArray(f.parts)&&f.parts.includes(sel.id))).sort((a,b)=>(a.at||'').localeCompare(b.at||''));
   let h='';
-  if(items.length)h+=items.map(f=>`<div class="cm ${f.status==='resolved'?'resolved':''}"><div class="h"><span class="vd ${esc(f.verdict)}">${esc(VERDICT[f.verdict]||f.verdict)}</span><b>${esc(names[f.author]||'Someone')}</b><span>${f.at?new Date(f.at).toLocaleString():''}</span>${f.status==='resolved'?'<span>resolved</span>':''}${db?`<button class="lnk" data-res="${esc(f.id)}" data-to="${f.status==='resolved'?'open':'resolved'}">${f.status==='resolved'?'Reopen':'Mark resolved'}</button>`:''}</div><div class="x">${esc(f.text)}</div></div>`).join('');
+  const okId=s=>typeof s==='string'&&/^[0-9a-f]{32}$/.test(s);
+  if(items.length)h+=items.map(f=>`<div class="cm ${f.status==='resolved'?'resolved':''}"><div class="h"><span class="vd ${esc(f.verdict)}">${esc(VERDICT[f.verdict]||f.verdict)}</span><b>${esc(names[f.author]||'Someone')}</b><span>${f.at?new Date(f.at).toLocaleString():''}</span>${f.status==='resolved'?'<span>resolved</span>':''}${f.claude_thread?'<span>sent to Claude</span>':''}${db?`<button class="lnk" data-res="${esc(f.id)}" data-to="${f.status==='resolved'?'open':'resolved'}">${f.status==='resolved'?'Reopen':'Mark resolved'}</button>`:''}${f.kind==='view'?`<button class="lnk go" data-view="${esc(f.id)}">Go to this view</button>`:''}</div><div class="x">${esc(f.text)}</div>${f.kind==='view'&&Array.isArray(f.parts)?`<div class="marks">${f.parts.length} part${f.parts.length===1?'':'s'}: ${esc(f.parts.slice(0,12).join(', '))}${f.parts.length>12?' …':''}</div>`:''}${Array.isArray(f.marks)&&f.marks.length?`<div class="marks">${f.marks.map(m=>`${esc(m.n)} ${esc(m.type)} → ${esc(m.at||'background')}`).join(' · ')}</div>`:''}${okId(f.image)?`<img class="thumb" loading="lazy" src="/_blob/${f.image}" alt="Marked-up view sent with this comment" data-big="/_blob/${f.image}">`:''}</div>`).join('');
   else h+=`<p class="note">No feedback on this ${sel.t==='asm'?'assembly':sel.t} yet.</p>`;
   if(db){
     const dv=draft[k]||{v:'change',t:''};
@@ -386,6 +479,8 @@ function renderFB(){
     catch(err){$('fbmsg').textContent='Not saved: '+(err.code==='not_granted'?'you need edit or contributor access to this page.':(err.message||err.code));$('fbsend').disabled=false}
   };
   box.querySelectorAll('[data-res]').forEach(b=>b.onclick=async()=>{try{await db.doc('feedback/'+b.dataset.res).update({status:b.dataset.to})}catch(err){b.textContent='Could not update'}});
+  box.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{const f=FB.find(x=>x.id===b.dataset.view);if(f)restoreView(f)});
+  box.querySelectorAll('[data-big]').forEach(im=>{im.onclick=()=>openDwg(im.dataset.big,'Marked-up view');im.onerror=()=>{im.replaceWith(Object.assign(document.createElement('p'),{className:'note',textContent:'Image not available in this view.'}))}});
 }
 
 /* ---------- 3D ---------- */
@@ -411,36 +506,83 @@ function init3D(buf){
   ray=new THREE.Raycaster(); ptr=new THREE.Vector2();
   const c=$('gl');
   c.addEventListener('pointerdown',e=>downAt=[e.clientX,e.clientY]);
-  c.addEventListener('pointerup',e=>{if(!downAt||Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1])>4)return;const n=pick(e);if(n)go('part',n)});
-  c.addEventListener('pointermove',e=>{if(e.buttons)return;const n=pick(e);const hv=$('hover');if(n){hv.hidden=false;hv.textContent=n}else hv.hidden=true});
+  c.addEventListener('pointerup',e=>{if(e.button!==0||!downAt||Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1])>4)return;const n=pick(e,MULTI||e.shiftKey||e.ctrlKey||e.metaKey);if(!n)return;
+    if(MULTI||e.shiftKey||e.ctrlKey||e.metaKey)togglePick(n); else go('part',n)});
+  c.addEventListener('pointermove',e=>{if(e.buttons)return;const n=pick(e,MULTI||e.shiftKey);const hv=$('hover');if(n){hv.hidden=false;hv.textContent=n}else hv.hidden=true});
   c.addEventListener('pointerleave',()=>$('hover').hidden=true);
   resize3D(); fit(true); highlight();
 }
-function pick(e){const r=$('gl').getBoundingClientRect();ptr.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ptr,camera);
-  const hits=ray.intersectObjects(Object.values(meshes).filter(m=>m.visible&&m.material.opacity>0.5),false);return hits.length?hits[0].object.userData.name:null}
+function pick(e,adding=false){const r=$('gl').getBoundingClientRect();ptr.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ptr,camera);
+  const hits=ray.intersectObjects(Object.values(meshes).filter(m=>m.visible&&(adding||m.material.opacity>0.5)),false);return hits.length?hits[0].object.userData.name:null}
 function resize3D(){if(!renderer)return;const v=$('view');const w=v.clientWidth,h=v.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/Math.max(h,1);camera.updateProjectionMatrix();draw()}
 function draw(){if(renderer)renderer.render(scene,camera)}
 function selection(){
+  if(SET.size)return {main:[...SET],rel:[]};
   if(!sel)return {main:[],rel:[]};
   if(sel.t==='part'){const p=P[sel.id];const rel=new Set();(p.joints||[]).forEach(id=>J[id]&&J[id].members.forEach(m=>m!==p.name&&rel.add(m)));return {main:[p.name],rel:[...rel]}}
   if(sel.t==='joint'){const j=J[sel.id];return {main:j.fasteners,rel:j.members}}
   if(sel.t==='asm'){const a=A[sel.id];return {main:a.parts.filter(n=>P[n].kind==='fabricated'),rel:a.parts.filter(n=>P[n].kind!=='fabricated')}}
   return {main:[],rel:[]};
 }
-function highlight(){
+function highlight(refit=true){
   if(!renderer)return; const {main,rel}=selection(); const M=new Set(main),R=new Set(rel);
   const cs=new THREE.Color(css('--sel')),ca=new THREE.Color(css('--accent')),cb=new THREE.Color(css('--muted')),cf=new THREE.Color(css('--line'));
-  const ghost=$('ghost').checked, hideF=$('hidefast').checked, any=M.size+R.size>0;
+  const hideF=$('hidefast').checked, any=M.size+R.size>0;
   for(const [n,m] of Object.entries(meshes)){
     const p=P[n], mat=m.material, isF=p.kind==='fastener';
-    m.visible=!(hideF&&isF&&!M.has(n));
+    // a selected part always shows; otherwise fastener and assembly visibility apply, then the view mode
+    m.visible=M.has(n)||!((hideF&&isF)||HIDDEN.has(PART_ASM[n]));
     if(M.has(n)){mat.color.copy(cs);mat.transparent=false;mat.opacity=1;mat.depthWrite=true}
-    else if(R.has(n)){mat.color.copy(ca);mat.transparent=false;mat.opacity=1;mat.depthWrite=true}
-    else{mat.color.copy(p.kind==='fabricated'?cb:cf); const g=ghost&&any; mat.transparent=g; mat.opacity=g?0.12:1; mat.depthWrite=!g}
+    else if(R.has(n)){mat.color.copy(ca);mat.transparent=false;mat.opacity=1;mat.depthWrite=true;if(VM==='hide'&&SET.size)m.visible=false}
+    else{mat.color.copy(p.kind==='fabricated'?cb:cf); if(any&&VM==='hide')m.visible=false; const g=VM==='ghost'&&any; mat.transparent=g; mat.opacity=g?0.12:1; mat.depthWrite=!g}
     mat.needsUpdate=true;
   }
-  if(any)fit(false); else draw();
+  if(any&&refit)fit(false); else draw();
 }
+/* ---------- multi-select, view modes, assembly visibility ---------- */
+function togglePick(n){
+  if(!SET.size&&sel&&sel.t==='part'&&sel.id!==n)SET.add(sel.id);   // shift-click after opening a part keeps that part
+  if(SET.has(n))SET.delete(n); else SET.add(n);
+  if(SET.has(n)){sel={t:'part',id:n};renderDetail()}
+  renderList(); renderTray(); highlight(false);
+}
+function renderTray(){
+  const t=$('tray'); if(!SET.size){t.hidden=true;t.innerHTML='';return}
+  t.hidden=false;
+  t.innerHTML=`<b>${SET.size} selected</b>`+[...SET].map(n=>`<span class="tc">${esc(n)}<button type="button" data-unpick="${esc(n)}" aria-label="Remove ${esc(n)}">×</button></span>`).join('')+
+    `<button class="tb" type="button" id="trfit">Fit</button><button class="tb" type="button" id="trclr">Clear</button>`;
+}
+$('tray').addEventListener('click',e=>{
+  const u=e.target.closest('[data-unpick]'); if(u){SET.delete(u.dataset.unpick);renderTray();renderList();highlight(false);return}
+  if(e.target.id==='trfit')fit(false);
+  if(e.target.id==='trclr'){SET.clear();renderTray();renderList();highlight(false)}
+});
+function setVM(v){VM=v;LS.set('vm',v);document.querySelectorAll('[data-vm]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.vm===v));highlight(false)}
+document.querySelectorAll('[data-vm]').forEach(b=>b.onclick=()=>setVM(b.dataset.vm));
+document.querySelectorAll('[data-vm]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.vm===VM));
+$('multi').onclick=()=>{MULTI=!MULTI;$('multi').setAttribute('aria-pressed',MULTI)};
+function toggleAsm(id){if(HIDDEN.has(id))HIDDEN.delete(id);else HIDDEN.add(id);LS.set('hidden',[...HIDDEN]);renderAsmPanel();renderList();highlight(false)}
+function renderAsmPanel(){
+  if(!D)return;
+  $('asmpanel').innerHTML=D.assemblies.map(a=>`<label><input type="checkbox" data-asm="${esc(a.id)}" ${HIDDEN.has(a.id)?'':'checked'}>${esc(a.name)} <span class="note">${a.parts.length}</span></label>`).join('')+
+    `<div class="acts"><button class="lnk" type="button" id="asmall">Show all</button><button class="lnk" type="button" id="asmnone">Hide all</button></div>`;
+}
+$('asmbtn').onclick=()=>{const p=$('asmpanel');p.hidden=!p.hidden;$('asmbtn').setAttribute('aria-expanded',!p.hidden);if(!p.hidden)renderAsmPanel()};
+$('asmpanel').addEventListener('change',e=>{const id=e.target.dataset.asm;if(id)toggleAsm(id)});
+$('asmpanel').addEventListener('click',e=>{
+  if(e.target.id==='asmall'){HIDDEN.clear()} else if(e.target.id==='asmnone'){D.assemblies.forEach(a=>HIDDEN.add(a.id))} else return;
+  LS.set('hidden',[...HIDDEN]);renderAsmPanel();renderList();highlight(false)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('asmpanel').hidden){$('asmpanel').hidden=true;$('asmbtn').setAttribute('aria-expanded',false)}});
+function restoreView(f){
+  if(f.target&&f.target.includes(':')){const [t,...r]=f.target.split(':');const id=r.join(':');if((t==='part'&&P[id])||(t==='joint'&&J[id])||(t==='asm'&&A[id])){sel={t,id};renderDetail()}}
+  SET.clear(); if(Array.isArray(f.parts)&&f.parts.length>1)f.parts.forEach(n=>P[n]&&SET.add(n));
+  if(f.viewMode)setVMsilent(f.viewMode);
+  if(Array.isArray(f.hiddenAsm)){HIDDEN.clear();f.hiddenAsm.forEach(id=>A[id]&&HIDDEN.add(id));LS.set('hidden',[...HIDDEN])}
+  if(typeof f.hideFasteners==='boolean')$('hidefast').checked=f.hideFasteners;
+  renderTray(); renderList(); highlight(false);
+  const c=f.camera; if(renderer&&c&&Array.isArray(c.pos)&&Array.isArray(c.target)){camera.position.fromArray(c.pos);controls.target.fromArray(c.target);controls.update();draw()}
+}
+function setVMsilent(v){if(!['all','ghost','hide'].includes(v))return;VM=v;LS.set('vm',v);document.querySelectorAll('[data-vm]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.vm===v))}
 function fit(whole){
   if(!renderer)return; const b=new THREE.Box3(); const {main,rel}=selection();
   const ns=whole?Object.keys(meshes):(main.length?main.concat(sel&&sel.t==='part'?[]:rel):[]);
@@ -450,7 +592,117 @@ function fit(whole){
   controls.target.copy(c); camera.position.copy(c.clone().add(dir.multiplyScalar(dist))); controls.update(); draw();
 }
 $('fit').onclick=()=>fit(false); $('all').onclick=()=>fit(true);
-$('ghost').onchange=highlight; $('hidefast').onchange=highlight;
-matchMedia('(prefers-color-scheme: dark)').addEventListener('change',highlight);
-new MutationObserver(highlight).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+$('hidefast').onchange=()=>highlight(false);
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>highlight(false));
+new MutationObserver(()=>highlight(false)).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+/* ---------- comment on view: capture, mark up, send to Claude ---------- */
+let MK=null; const MKS={tool:'arrow',col:'#e5322d'}; let assetsNS=null, commentsNS=null, dictNS=null;
+async function initCaps(){
+  if(!window.claude||!claude.use)return;
+  try{assetsNS=await claude.use('assets')}catch(e){}
+  try{commentsNS=await claude.use('comments')}catch(e){}
+  try{dictNS=await claude.use('dictation')}catch(e){}
+  if(dictNS){$('mic').hidden=false;
+    dictNS.onFinal(({text})=>{const t=$('mktext');t.value=(t.value&&!/\s$/.test(t.value)?t.value+' ':t.value)+text});
+    dictNS.onState(({state})=>{$('mic').setAttribute('aria-pressed',state==='listening'||state==='starting');$('micmsg').textContent=state==='listening'?'Listening…':''})}
+}
+$('mic').onclick=()=>{if(!dictNS)return;if($('mic').getAttribute('aria-pressed')==='true'){dictNS.stop().catch(()=>{});return}
+  dictNS.start().catch(e=>{$('micmsg').textContent=e&&e.code==='not_granted'?'Dictation is off for this page.':'Dictation could not start.'})};
+function viewParts(){const {main}=selection();return main}
+$('snap').onclick=()=>{
+  if(!renderer){return}
+  draw(); const src=$('gl'); const W=src.width,H=src.height;
+  const base=document.createElement('canvas'); base.width=W; base.height=H; const bx=base.getContext('2d');
+  bx.fillStyle=css('--soft')||'#eaeef4'; bx.fillRect(0,0,W,H); bx.drawImage(src,0,0);   // read in the same task as the render
+  const parts=viewParts();
+  MK={base,W,H,marks:[],cur:null,parts,
+      camera:{pos:camera.position.toArray().map(v=>+v.toFixed(2)),target:controls.target.toArray().map(v=>+v.toFixed(2)),fov:camera.fov,aspect:+camera.aspect.toFixed(4)},
+      cam:camera.clone(),
+      target:sel?key(sel.t,sel.id):null};
+  const c=$('mkc'); c.width=W; c.height=H;
+  $('mkparts').textContent=parts.length?parts.join(', '):'None selected: the comment is about the whole view.';
+  $('mkmsg').textContent=db?'The marked-up image, the camera, the parts and your text are saved with the review, and a comment thread is opened for Claude.':'Saving needs this page open on claude.ai while signed in.';
+  $('mksend').disabled=!db;
+  $('mkt').textContent=parts.length===1?`Comment on ${parts[0]}`:parts.length?`Comment on ${parts.length} parts`:'Comment on this view';
+  MK.sendState='off'; if(commentsNS)commentsNS.canSendToClaude().then(s=>{if(MK)MK.sendState=s;$('mksend').textContent=s==='available'?'Send to Claude':'Save feedback'}).catch(()=>{$('mksend').textContent='Save feedback'}); else $('mksend').textContent='Save feedback';
+  redrawMK(); renderMarks(); $('mk').showModal(); $('mktext').focus();
+};
+$('mkx').onclick=()=>{$('mk').close()};
+$('mk').addEventListener('close',()=>{if(dictNS&&$('mic').getAttribute('aria-pressed')==='true')dictNS.stop().catch(()=>{})});
+document.querySelectorAll('#mk [data-tool]').forEach(b=>b.onclick=()=>{MKS.tool=b.dataset.tool;document.querySelectorAll('#mk [data-tool]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+document.querySelectorAll('#mk [data-col]').forEach(b=>b.onclick=()=>{MKS.col=b.dataset.col;document.querySelectorAll('#mk [data-col]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+$('mkundo').onclick=()=>{if(MK){MK.marks.pop();redrawMK();renderMarks()}};
+$('mkclear').onclick=()=>{if(MK){MK.marks=[];redrawMK();renderMarks()}};
+$('mk').addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'&&e.target.tagName!=='TEXTAREA'){e.preventDefault();$('mkundo').click()}});
+function mkPt(e){const r=$('mkc').getBoundingClientRect();return [Math.min(1,Math.max(0,(e.clientX-r.left)/r.width)),Math.min(1,Math.max(0,(e.clientY-r.top)/r.height))]}
+$('mkc').addEventListener('pointerdown',e=>{if(!MK)return;e.preventDefault();$('mkc').setPointerCapture(e.pointerId);const p=mkPt(e);
+  if(MKS.tool==='pin'){MK.marks.push({type:'callout',col:MKS.col,pts:[p]});redrawMK();renderMarks();return}
+  MK.cur={type:MKS.tool,col:MKS.col,pts:[p,p]}});
+$('mkc').addEventListener('pointermove',e=>{if(!MK||!MK.cur)return;const p=mkPt(e);if(MK.cur.type==='pen')MK.cur.pts.push(p);else MK.cur.pts[1]=p;redrawMK()});
+$('mkc').addEventListener('pointerup',()=>{if(!MK||!MK.cur)return;const m=MK.cur;MK.cur=null;const [a,b]=[m.pts[0],m.pts[m.pts.length-1]];
+  if(m.type!=='pen'&&Math.hypot((a[0]-b[0])*MK.W,(a[1]-b[1])*MK.H)<8){redrawMK();return}   // a click, not a drag
+  MK.marks.push(m);redrawMK();renderMarks()});
+function drawMarks(x,W,H,marks){
+  const lw=Math.max(3,Math.round(Math.min(W,H)/180));
+  x.lineCap='round';x.lineJoin='round';
+  marks.forEach((m,i)=>{
+    const P2=m.pts.map(p=>[p[0]*W,p[1]*H]); x.strokeStyle=m.col; x.fillStyle=m.col; x.lineWidth=lw;
+    x.shadowColor='rgba(255,255,255,.85)'; x.shadowBlur=lw*1.2;
+    if(m.type==='arrow'){const [a,b]=P2;const ang=Math.atan2(b[1]-a[1],b[0]-a[0]),hl=lw*5;
+      x.beginPath();x.moveTo(a[0],a[1]);x.lineTo(b[0]-Math.cos(ang)*hl*.6,b[1]-Math.sin(ang)*hl*.6);x.stroke();
+      x.beginPath();x.moveTo(b[0],b[1]);x.lineTo(b[0]-hl*Math.cos(ang-.45),b[1]-hl*Math.sin(ang-.45));x.lineTo(b[0]-hl*Math.cos(ang+.45),b[1]-hl*Math.sin(ang+.45));x.closePath();x.fill()}
+    else if(m.type==='circle'){const [a,b]=P2;x.beginPath();x.ellipse((a[0]+b[0])/2,(a[1]+b[1])/2,Math.abs(b[0]-a[0])/2||1,Math.abs(b[1]-a[1])/2||1,0,0,Math.PI*2);x.stroke()}
+    else if(m.type==='pen'){x.beginPath();P2.forEach((p,k)=>k?x.lineTo(p[0],p[1]):x.moveTo(p[0],p[1]));x.stroke()}
+    else if(m.type==='callout'){const [a]=P2,r=lw*4.2;x.beginPath();x.arc(a[0],a[1],r,0,Math.PI*2);x.fill();x.shadowBlur=0;x.fillStyle='#fff';x.font=`600 ${Math.round(r*1.15)}px system-ui,sans-serif`;x.textAlign='center';x.textBaseline='middle';x.fillText(String(m.n||''),a[0],a[1]+1)}
+    x.shadowBlur=0;
+    if(m.type!=='callout'&&m.n){const t=tipOf(m),tx=t[0]*W,ty=t[1]*H,r=lw*3;x.fillStyle=m.col;x.beginPath();x.arc(tx+r*1.6,ty-r*1.6,r,0,Math.PI*2);x.fill();x.fillStyle='#fff';x.font=`600 ${Math.round(r*1.2)}px system-ui,sans-serif`;x.textAlign='center';x.textBaseline='middle';x.fillText(String(m.n),tx+r*1.6,ty-r*1.6+1)}
+  });
+}
+function number(){MK.marks.forEach((m,i)=>m.n=i+1)}
+function redrawMK(){const c=$('mkc'),x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);x.drawImage(MK.base,0,0);number();drawMarks(x,MK.W,MK.H,MK.cur?MK.marks.concat([MK.cur]):MK.marks)}
+/* the point a mark "points at": arrow tip, circle centre, callout dot, start of a pen stroke */
+function tipOf(m){const p=m.pts;if(m.type==='arrow')return p[1];if(m.type==='circle')return [(p[0][0]+p[1][0])/2,(p[0][1]+p[1][1])/2];return p[0]}
+function partAt(nx,ny){if(!MK||!MK.cam)return null;const v=new THREE.Vector2(nx*2-1,-(ny*2-1));ray.setFromCamera(v,MK.cam);
+  const hits=ray.intersectObjects(Object.values(meshes).filter(m=>m.visible&&m.material.opacity>0.5),false);
+  return hits.length?{part:hits[0].object.userData.name,xyz:hits[0].point.toArray().map(v=>+v.toFixed(1))}:null}
+const MKNAME={arrow:'arrow',circle:'circle',pen:'sketch',callout:'callout'};
+function marksInfo(){number();return MK.marks.map(m=>{const t=tipOf(m),h=partAt(t[0],t[1]);return {n:m.n,type:MKNAME[m.type],at:h?h.part:null,xyz:h?h.xyz:null,col:m.col,pts:m.pts.map(p=>[+p[0].toFixed(4),+p[1].toFixed(4)])}})}
+function renderMarks(){const info=marksInfo();$('mknomarks').hidden=info.length>0;$('mkmarks').innerHTML=info.map(m=>`<li>${esc(m.type)} → ${esc(m.at||'background (no part under it)')}</li>`).join('')}
+$('mksend').onclick=async()=>{
+  if(!MK||!db)return;
+  const text=$('mktext').value.trim(); const verdict=document.querySelector('input[name=mkvd]:checked')?.value||'change';
+  if(!text&&!MK.marks.length&&verdict!=='ok'){$('mkmsg').textContent='Write a note or draw a mark first.';return}
+  $('mksend').disabled=true; $('mkmsg').textContent='Sending…';
+  const marks=marksInfo(), parts=MK.parts.slice(), ref=db.collection('feedback').doc(), fid=ref.id;
+  const target=parts.length===1?key('part',parts[0]):(MK.target||'view:'+fid);
+  const tname=parts.length===1?parts[0]:parts.length?`${parts.length} parts: ${parts.slice(0,3).join(', ')}${parts.length>3?' …':''}`:'View of the machine';
+  // what Claude reads in the thread: enough to act on even before it opens the saved record
+  let msg=`[View feedback ${fid} · ${D.design} · ${VERDICT[verdict]}]\n${text||'(no text)'}\n\nParts (${parts.length}): ${parts.slice(0,40).join(', ')||'none selected'}${parts.length>40?' …':''}`;
+  if(marks.length)msg+=`\nMarkup: `+marks.map(m=>`${m.n} ${m.type} → ${m.at||'background'}${m.xyz?' @'+m.xyz.join(','):''}`).join('; ');
+  msg+=`\nView: ${({all:'show all',ghost:'rest ghosted',hide:'isolated'})[VM]}${HIDDEN.size?`, hidden assemblies: ${[...HIDDEN].map(id=>A[id]?A[id].name:id).join(', ')}`:''}. Screenshot and camera are in feedback/${fid}.`;
+  if(new TextEncoder().encode(msg).length>4000)msg=msg.slice(0,3900)+'…';
+  // send first, straight from the click (Send to Claude must follow the viewer's gesture); upload and save in parallel
+  let sendP=Promise.resolve(null); const sendState=MK.sendState||'off';
+  if(sendState==='available')sendP=commentsNS.anchorFor($('gl')).then(anchor=>commentsNS.sendToClaude({anchor,text:msg}));
+  const out=document.createElement('canvas'); out.width=MK.W; out.height=MK.H; const ox=out.getContext('2d'); ox.drawImage(MK.base,0,0); drawMarks(ox,MK.W,MK.H,MK.marks);
+  const saveP=(async()=>{
+    let image=null, imgErr=null;
+    if(assetsNS){try{const blob=await new Promise(r=>out.toBlob(r,'image/png'));const up=await assetsNS.upload(blob,{type:'image/png'});image=up.id}catch(e){imgErr=e.code||e.message}}
+    else imgErr='image storage needs edit access';
+    await ref.set({kind:'view',target,targetName:tname,verdict,text,parts,marks,image,camera:MK.camera,viewMode:VM,hiddenAsm:[...HIDDEN],hideFasteners:$('hidefast').checked,
+      viewport:[MK.W,MK.H],author:me||null,at:new Date().toISOString(),status:'open',design:D.design});
+    return imgErr;
+  })();
+  const [sendR,saveR]=await Promise.allSettled([sendP,saveP]);
+  let note=[];
+  if(saveR.status==='rejected'){note.push('Not saved: '+(saveR.reason&&(saveR.reason.code==='not_granted'?'you need edit or contributor access':saveR.reason.message||saveR.reason.code)))}
+  else{note.push('Saved.'); if(saveR.value)note.push('The image was not stored ('+saveR.value+'); the camera and marks were.')}
+  if(sendR.status==='fulfilled'&&sendR.value){note.push('Sent to Claude; the reply will appear in the comment thread.');try{await ref.update({claude_thread:sendR.value.threadId})}catch(e){}}
+  else if(sendState!=='available')note.push(sendState==='no_session'?'No Claude session is listening right now; Claude will read it from the review on the next pass.':'Send to Claude is not available here; Claude will read it from the review on the next pass.');
+  else{const c=sendR.reason&&sendR.reason.code;note.push(c==='consent_required'?'Not sent to Claude: allow this page to comment for you, then send again.':'Not sent to Claude ('+(c||'error')+'); it is saved, so Claude will still see it.')}
+  $('mkmsg').textContent=note.join(' ');
+  if(saveR.status==='fulfilled'){$('mktext').value='';MK.marks=[];setTimeout(()=>{if($('mk').open)$('mk').close()},2600)} else $('mksend').disabled=false;
+};
+initCaps();
 </script>
