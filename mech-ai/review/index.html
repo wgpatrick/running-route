@@ -171,6 +171,53 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
 #mk .mlist{font:12px var(--f-mono);margin:0;padding-left:18px}
 #mic[aria-pressed="true"]{color:var(--err);border-color:var(--err)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* phone layout: keep last so it overrides the desktop rules above */
+.fab{position:absolute;right:10px;top:10px;font:600 13px var(--f-body);background:var(--accent);color:var(--panel);border:0;border-radius:6px;padding:7px 12px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18);z-index:4}
+.vtools{right:190px;max-width:none!important}
+.vexp{display:none}
+.hover{top:auto!important;bottom:44px}
+@media (max-width:720px){
+  header.top{padding-block:8px}
+  h1{font-size:18px}
+  header.top .sub{display:none}
+  .stats{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;font-size:11px;gap:4px 12px;margin-top:4px;white-space:nowrap}
+  .banner{font-size:12px;padding:4px 8px;margin-top:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;cursor:pointer}
+  .banner.open{-webkit-line-clamp:unset;display:block}
+  main{height:auto!important}
+  .view{position:sticky!important;top:0!important;height:52svh!important;z-index:5;border-left:0;border-bottom:1px solid var(--line);transition:height .2s}
+  .view.big{height:86svh!important}
+  .vtools{top:auto!important;bottom:8px;left:8px;right:8px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-right:150px;-webkit-overflow-scrolling:touch}
+  .vtools::-webkit-scrollbar{display:none}
+  .vtools button,.vtools label{min-height:34px;white-space:nowrap;flex:none}
+  .vtools .seg{flex:none}
+  .fab{top:auto;bottom:8px;right:8px;min-height:34px;padding:6px 12px;border-radius:18px}
+  .vexp{display:block;position:absolute;right:8px;top:8px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:16px;z-index:4;cursor:pointer}
+  .legend{display:none}
+  .tray{top:8px!important;bottom:auto;left:8px;right:52px;flex-wrap:nowrap;overflow-x:auto;max-height:none;scrollbar-width:none}
+  .tray .tc,.tray b,.tray .tb{flex:none}
+  .tray .tc button{padding:6px 8px}
+  .secpanel{top:auto!important;bottom:54px;left:8px;right:8px}
+  .secpanel input[type=range]{flex:1;min-width:120px;width:auto}
+  .secpanel .seg button{padding:7px 14px}
+  .asmpanel{top:auto!important;bottom:54px;left:8px;right:8px;max-height:60%}
+  .asmpanel label{padding:7px 0}
+  nav.side{max-height:none}
+  .list{max-height:46svh}
+  .item{padding:9px 12px}
+  .item .eye{padding:4px 6px;font-size:16px}
+  .tabs button{padding:12px 6px}
+  #mk{width:100vw;max-width:100vw;height:100svh;max-height:100svh;margin:0;border-radius:0;border:0}
+  #mk .mkbody{grid-template-columns:1fr;max-height:calc(100svh - 104px);overflow:auto}
+  #mk .mkbar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  #mk .mkbar button{flex:none;min-height:36px}
+  #mk .sw{width:30px;height:30px;min-height:0!important}
+  #mk canvas{max-height:52svh}
+  #mk .side{border-left:0;border-top:1px solid var(--line)}
+  #mk .side textarea{min-height:90px;font-size:16px}
+  dialog{width:100vw;max-width:100vw;max-height:100svh;margin:auto 0}
+  input[type=search],select,textarea{font-size:16px}
+}
+
 </style>
 
 <header class="top wrap" id="hdr">
@@ -179,7 +226,7 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
     <span class="sub">Bed-slinger, 180 mm cube, three-screw Z. Pick an assembly, part or bolted joint; leave feedback on any of them.</span>
   </div>
   <div class="stats" id="stats"></div>
-  <div class="banner">Simulated design, never built. v8.1 replaces every load-bearing printed part and the steel plates with laser-cut aluminium and stainless, has no CNC parts, and has no tapped aluminium apart from steel inserts in the bed. Feedback here goes into the next revision.</div>
+  <div class="banner" id="banner" title="Tap to expand">Simulated design, never built. v8.1 replaces every load-bearing printed part and the steel plates with laser-cut aluminium and stainless, has no CNC parts, and has no tapped aluminium apart from steel inserts in the bed. Feedback here goes into the next revision.</div>
 </header>
 
 <main id="main">
@@ -220,8 +267,9 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
       <button id="fit" type="button">Fit</button>
       <button id="all" type="button">Whole machine</button>
       <label><input type="checkbox" id="hidefast"> Hide fasteners</label>
-      <button id="snap" class="pri" type="button" title="Capture this view, mark it up and send it with a comment">Comment on view</button>
     </div>
+    <button id="snap" class="fab" type="button" title="Capture this view, mark it up and send it with a comment">💬 Comment on view</button>
+    <button id="vexp" class="vexp" type="button" aria-pressed="false" aria-label="Enlarge the 3D view">⤢</button>
     <div class="asmpanel" id="asmpanel" hidden></div>
     <div class="tray" id="tray" hidden></div>
     <div class="secpanel" id="secpanel" hidden>
@@ -531,11 +579,12 @@ function init3D(buf){
   ray=new THREE.Raycaster(); ptr=new THREE.Vector2();
   const c=$('gl');
   c.addEventListener('pointerdown',e=>downAt=[e.clientX,e.clientY]);
-  c.addEventListener('pointerup',e=>{if(e.button!==0||!downAt||Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1])>4)return;const n=pick(e,MULTI||e.shiftKey||e.ctrlKey||e.metaKey);if(!n)return;
+  c.addEventListener('pointerup',e=>{if(e.button!==0||!downAt||Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1])>(e.pointerType==='touch'?10:4))return;const n=pick(e,MULTI||e.shiftKey||e.ctrlKey||e.metaKey);if(!n)return;
     if(MULTI||e.shiftKey||e.ctrlKey||e.metaKey)togglePick(n); else go('part',n)});
   c.addEventListener('pointermove',e=>{if(e.buttons)return;const n=pick(e,MULTI||e.shiftKey);const hv=$('hover');if(n){hv.hidden=false;hv.textContent=n}else hv.hidden=true});
   c.addEventListener('pointerleave',()=>$('hover').hidden=true);
   resize3D(); fit(true); highlight();
+  if(window.ResizeObserver)new ResizeObserver(()=>resize3D()).observe($('view'));
 }
 function pick(e,adding=false){const r=$('gl').getBoundingClientRect();ptr.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ptr,camera);
   const hits=secKeep(ray.intersectObjects(Object.values(meshes).filter(m=>m.visible&&(adding||m.material.opacity>0.5)),false));return hits.length?hits[0].object.userData.name:null}
@@ -584,7 +633,7 @@ $('tray').addEventListener('click',e=>{
   if(e.target.id==='trfit')fit(false);
   if(e.target.id==='trclr'){SET.clear();renderTray();renderList();highlight(false)}
 });
-function setVM(v){VM=v;LS.set('vm',v);document.querySelectorAll('[data-vm]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.vm===v));highlight(false)}
+function setVM(v){VM=v;LS.set('vm',v);document.querySelectorAll('[data-vm]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.vm===v));highlight(v!=='all')}
 document.querySelectorAll('[data-vm]').forEach(b=>b.onclick=()=>setVM(b.dataset.vm));
 document.querySelectorAll('[data-vm]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.vm===VM));
 $('multi').onclick=()=>{MULTI=!MULTI;$('multi').setAttribute('aria-pressed',MULTI)};
@@ -638,7 +687,8 @@ function applySection(){
   highlight(false);
 }
 function secKeep(hits){return SEC.on&&SEC.plane?hits.filter(h=>SEC.plane.distanceToPoint(h.point)>=-1e-3):hits}
-function placePanels(){const t=$('view').querySelector('.vtools');const y=t.offsetTop+t.offsetHeight+6;$('secpanel').style.top=y+'px';$('asmpanel').style.top=y+($('secpanel').hidden?0:$('secpanel').offsetHeight+6)+'px'}
+const MOB=matchMedia('(max-width:720px)');
+function placePanels(){if(MOB.matches){$('secpanel').style.top='';$('asmpanel').style.top='';return}const t=$('view').querySelector('.vtools');const y=t.offsetTop+t.offsetHeight+6;$('secpanel').style.top=y+'px';$('asmpanel').style.top=y+($('secpanel').hidden?0:$('secpanel').offsetHeight+6)+'px'}
 addEventListener('resize',placePanels);
 function faceCam(){SEC.flip=camera.position.getComponent(AXI[SEC.ax])<secMM()}
 function secRange(){const b=secBox();const i=AXI[SEC.ax];SEC.lo=b.min.getComponent(i)-1;SEC.hi=b.max.getComponent(i)+1}
@@ -701,6 +751,9 @@ $('snap').onclick=()=>{
   redrawMK(); renderMarks(); $('mk').showModal(); $('mktext').focus();
 };
 $('mkx').onclick=()=>{$('mk').close()};
+$('banner').onclick=()=>$('banner').classList.toggle('open');
+$('vexp').onclick=()=>{const v=$('view');v.classList.toggle('big');$('vexp').setAttribute('aria-pressed',v.classList.contains('big'));setTimeout(()=>{resize3D();sizeMain()},230)};
+MOB.addEventListener('change',()=>{placePanels();resize3D()});
 $('mk').addEventListener('close',()=>{if(dictNS&&$('mic').getAttribute('aria-pressed')==='true')dictNS.stop().catch(()=>{})});
 document.querySelectorAll('#mk [data-tool]').forEach(b=>b.onclick=()=>{MKS.tool=b.dataset.tool;document.querySelectorAll('#mk [data-tool]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
 document.querySelectorAll('#mk [data-col]').forEach(b=>b.onclick=()=>{MKS.col=b.dataset.col;document.querySelectorAll('#mk [data-col]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
