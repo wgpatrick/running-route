@@ -1065,11 +1065,11 @@ def build_frame_z():
         p = f"bed_post_{i}"
         place(d, p, rod, Location((x, y, z_low)), body="zbody")
         cp = f"{p}_coupling"
-        cshape = extrude(RegularPolygon(COUP_AF / 2, 6, major_radius=False), COUP_L) - Pos(0, 0, COUP_L / 2) * Cylinder(2.1, COUP_L)   # minor dia
+        cshape = extrude(RegularPolygon(COUP_AF / 2, 6, major_radius=False), COUP_L)    # solid, as the catalogue's nuts: the thread is the overlap
         coup = Stock(cshape, f"COUPLING-NUT-M5x{COUP_L:g}-A2", f"Coupling (long) nut M5 x {COUP_L:g}, 8 mm A/F, A2 stainless, DIN 6334 type "
                      "(stand-in: not in the catalogue)", (COUP_AF ** 2 * 0.866 - math.pi * 2.24 ** 2) * COUP_L * 8.0e-6, material=SS, cost_usd=0.5)
         place(d, cp, coup, Location((x, y, z_cb)), body="zbody")
-        d.join(p, cp, "thread: the rod is screwed 9 mm into the coupling nut's lower half (interference: the thread is drawn as an overlap)")
+        d.join(p, cp, "thread: the rod is screwed 9 mm into the coupling nut's lower half")
         d.allow_overlap(p, cp)
         wt = f"{p}_washer_top"
         add_washer(d, wt, "M5", (x, y, Z_BED), (0, 0, -1), body="zbody")
@@ -1546,6 +1546,14 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
     for tg, x0, y0, turn, posts, rail, on_tray in mounts:
         # motor, its screw and plate go in as one unit onto the two spacers; the post bolts follow
         d.subassemblies[f"z_drive{tg or '_rear'}"] = [n for n in mount_parts[tg] if "_bolt_" not in n and "_spacer_" not in n and n in have]
+    # v8.2: the bed is a bench unit: plate with its countersunk post and tie screws, coupling nuts, rods (upper levelling
+    # nuts on), heater and cut-off; it goes down onto the tabs, the magnetic base and sheet go on last
+    bed_unit = ["bed_plate", "bed_heater", "bed_tco", "bed_tie"]
+    for i in range(len(BED_MOUNTS)):
+        bed_unit += [f"bed_post_{i}{x}" for x in ("", "_coupling", "_washer_top", "_screw", "_washer_arm", "_nut_arm")]
+    for i in range(len(TIE_X)):
+        bed_unit += [f"bed_tie_spacer_{i}", f"bed_tie_screw_{i}", f"bed_tie_screw_{i}_nwasher", f"bed_tie_screw_{i}_nut"]
+    d.subassemblies["bed_unit"] = [n for n in bed_unit if n in have]
     d.subassemblies["x_drive"] = ["x_motor_mount", "x_motor", "x_pulley"] + [f"x_motor_screw_{i}{s}" for i in range(4) for s in ("", "_washer")]
     d.subassemblies["x_idler_unit"] = ["x_idler_mount", "x_idler_spacer", "x_idler", "x_idler_bolt", "x_idler_bolt_washer", "x_idler_nut"]
     d.subassemblies["part_cooling"] = ["part_duct", "part_fan"] + [f"part_fan_screw_{i}{s}" for i in range(2)

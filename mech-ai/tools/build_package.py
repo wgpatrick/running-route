@@ -1405,17 +1405,18 @@ def write_fabrication(cx: Ctx, drawings: bool = True) -> dict:
 # =================================================================================================== 3. ASSEMBLY
 STAGES = [  # the order a person builds in (generator's; the simulation's own order is kept in data/assembly_plan.json)
     ("frame", "Frame"), ("zguides", "Z uprights, rails and blocks"), ("yguides", "Y rails and blocks"),
-    ("bay", "Electronics tray, mains inlet, earth"), ("zdrive", "Z drive: bearing supports, screws, pulleys, motor, belt"),
+    ("bay", "Electronics tray, mains inlet, earth"), ("zdrive", "Z drive: screws and motors (with their supports, pulleys and belt where the design has them)"),
     ("carrier", "Bed carrier onto its blocks and nuts"), ("bed", "Bed: tabs, posts, plate, tie, heater, magnet, sheet"),
     ("gantry", "Gantry: Y plates, X beam, X rail, X drive"), ("ydrive", "Y drives, idlers, tensioners, Y endstop"),
     ("toolhead", "Toolhead: plate, extruder, hotend, probe, part cooling")]
 SUB_STAGE = {"electronics": "bay", "z_drive": "zdrive", "bed_carrier": "carrier", "x_drive": "gantry", "x_idler_unit": "gantry",
-             "part_cooling": "toolhead", "z_tower_rear": "zdrive", "z_tower_fl": "zdrive", "z_tower_fr": "zdrive"}
+             "part_cooling": "toolhead", "z_tower_rear": "zdrive", "z_tower_fl": "zdrive", "z_tower_fr": "zdrive",
+             "z_drive_rear": "zdrive", "z_drive_fl": "zdrive", "z_drive_fr": "zdrive"}
 NAME_STAGE = [(("bed_probe",), "toolhead"), (("frame_", "post_", "bracket_"), "frame"), (("upright_", "brkt_up", "z_rail", "z_carriage"), "zguides"),
               (("y_rail", "y_carriage"), "yguides"), (("inlet", "earth", "tray_", "electronics_tray", "psu", "control_board", "host"), "bay"),
               (("z_pedestal", "z_bearing", "z_pulley", "leadscrew", "z_idler", "z_sleeve", "z_drive_mount", "z_motor", "z_rear_", "z_fl_", "z_fr_",
-                "z_drive_plate"), "zdrive"),
-              (("z_nut", "nut_pin", "nut_block", "nut_plate", "back_plate", "front_plate", "bed_arm", "rear_beam", "front_beam"), "carrier"),
+                "z_drive_plate", "z_mount"), "zdrive"),
+              (("z_nut", "nut_pin", "nut_keeper", "nut_block", "nut_plate", "back_plate", "front_plate", "bed_arm", "rear_beam", "front_beam"), "carrier"),
               (("mains_cover",), "bay"), (("bed",), "bed"),
               (("y_motor", "y_idler", "y_tension", "y_endstop", "y_pulley", "y_drive"), "ydrive")]
 
@@ -1823,6 +1824,26 @@ STAGE_NOTES_BY_DESIGN = {"printer_v8_1": {
             "jam nut and washer, heater pad and thermal cut-off under the plate, plate onto the tabs, tie, tram (adjustment section), THEN the "
             "PEI180's magnetic base and the sheet."],
     "gantry": STAGE_NOTES["gantry"],
+}, "printer_v8_2": {
+    "frame": ["Build the bottom rectangle flat on a surface plate or a known-flat table, then the four posts, then the top; all four top rails are flush "
+              "(v8.2). The side rails are 373 mm, the front and back rails 300 mm. Check: diagonals of the bottom and top rectangles equal within "
+              "0.5 mm; the frame does not rock."],
+    "zguides": STAGE_NOTES["zguides"] + ["Use clearance-class (ZF) blocks on Z: the three screws hold the carrier's tilt, the blocks only locate it."],
+    "zdrive": ["Cut each lead-screw motor's screw to 252 mm above the motor face (hacksaw, file a 0.5 mm chamfer, run the nut over the cut end) "
+               "before fitting. Each motor is a bench unit: motor under its plate, pilot in the plate's 22.3 mm hole, four M3 x 10 from above with "
+               "medium thread locker (they reach 3.65 mm into the motor's 4.5 mm threads: do not substitute longer screws). Stand the two spacers on "
+               "the rail (rear) or the tray over the rail (front), the unit on them, the M5 x 70 post bolts with washers into the T-nuts, thread "
+               "locker. The screw must turn freely by hand, and its top end is free: no bearing."],
+    "carrier": ["Build the 2020 rectangle on a flat table: cast brackets on T-nuts in both legs, inboard corner and under each arm. Bolt the three nut plates "
+                "on the beams' top slots. Each T8 nut: flange under its plate, barrel up through the float hole, pin (M2.5 through the 5 mm sleeve, "
+                "nylon-insert nut), then the keeper under the flange on its two M3 bolts and 3.6 mm spacers (0.1 mm play: the nut must slide sideways "
+                "by hand). Turn the three motors by hand (or drive them together) until the nuts sit at the same height, lower the carrier onto the "
+                "screws, bolt the back plate to the two Z blocks. Check: the carrier runs the full travel without binding; then Z_TILT_ADJUST."],
+    "bed": ["No tapping in the bed plate (v8.2). Countersink the six holes from the top face if SendCutSend did not (90 degrees to 11.2 mm). Then: each "
+            "post's coupling nut on its rod (9 mm of thread), the M5 x 16 countersunk screw from the top through plate and washer into the coupling nut "
+            "with medium thread locker; heater pad and thermal cut-off under the plate; plate onto the tabs; tie (two M5 x 30 countersunk screws through "
+            "plate, spacers and tie into washers and nyloc nuts); tram (adjustment section); THEN the PEI180's magnetic base and the sheet."],
+    "gantry": STAGE_NOTES["gantry"],
 }}
 
 
@@ -2212,7 +2233,35 @@ CURATED_V8_1 = [
 ]
 
 
-CURATED_BY_DESIGN = {"printer_v8_1": CURATED_V8_1}
+CURATED_V8_2 = [
+    ("A", "Lead-screw motors: no thrust rating, datasheet not in hand",
+     "Each StepperOnline 17E19S1684AB4-330RA carries about 15 N of the bed along its screw on its own bearings; the maker states no axial rating. Its "
+     "datasheet (nut drawing, rotor inertia, mass) could not be fetched; those figures are the sister model's.",
+     "get the datasheet and an axial rating from StepperOnline before ordering three; check the screw's run-out on arrival"),
+    ("B", "Screw cut to length by the builder",
+     "The screw is sold 330 mm long (328 above the face, assumed) and must be cut to 252 mm so its top stays under the top rails and out of the toolhead's way.",
+     "cut, chamfer and run the nut over the end on the bench; or ask StepperOnline for a 254 mm custom length"),
+    ("B", "Remaining thread backlash at the Z nuts",
+     "The keepers hold the brass nuts both ways at the carrier, but each nut's own thread backlash (0.1 mm assumed) is free when a screw stands low by more "
+     "than the bed's weight seats it. The supplied anti-backlash nut would remove it; its drawing is not in hand.",
+     "measure the backlash on the built machine (dial indicator, reverse Z); fit the anti-backlash nuts if it is over 0.05 mm"),
+    ("B", "Bed posts: bending stress and fatigue are a hand estimate",
+     "The four M5 threaded rods bend as the hot plate grows; their free length is 48.7 mm (v8.1 59) with the coupling nuts. No verifier computes the bending stress.",
+     "after 20 heat cycles on the real machine: levelling nuts still tight, tram unchanged within 0.05 mm, no visible bend"),
+    ("B", "Bed on four slender posts: its own vibration was never analysed", "No modal case exists for the plate on its posts and tie.",
+     "tap test / accelerometer on the bed plate during commissioning"),
+    ("B", "Print sheet is the print area: 12 mm edge strips are not probed",
+     "The TRONXY PEI180 sheet is 180 x 180 mm, the print area's size; the inductive probe is kept 12 mm inside the sheet's edge.",
+     "print a full-area first layer during commissioning"),
+    ("B", "Part cooling is not modelled", "The duct has no airflow model.", "bridging and overhang test prints"),
+    ("B", "Printed clearance holes and nut pockets rest on an assumed FDM allowance",
+     "Clearance holes in the printed parts are ISO 273 medium + 0.2 mm (M3 3.6); the owner's printer's real undersize is not known.",
+     "print the calibration coupon first"),
+    ("B", "Frame stiffness is not in the twin", "The twin's resonances use belts, guide blocks and the gantry's FEA only.", "resonance measurement E13"),
+]
+
+
+CURATED_BY_DESIGN = {"printer_v8_1": CURATED_V8_1, "printer_v8_2": CURATED_V8_2}
 
 
 def write_open_items(cx: Ctx, bom: dict, fab: dict, asm: dict, wash: list, lead: list) -> dict:
