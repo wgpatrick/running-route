@@ -340,6 +340,7 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
     <button type="button" class="sw" data-col="#14a05a" aria-label="Green" aria-pressed="false" style="background:#14a05a"></button>
     <span style="width:8px"></span>
     <button type="button" id="mkundo">Undo</button>
+    <span class="note" id="mktoolnote" style="white-space:nowrap"></span>
     <button type="button" id="mkclear">Clear</button>
   </div>
   <div class="mkbody">
@@ -860,6 +861,7 @@ $('snap').onclick=()=>{
   $('mkmsg').textContent=db?'The marked-up image, the camera, the parts and your text are saved with the review, and a comment thread is opened for Claude.':'Saving needs this page open on claude.ai while signed in.';
   $('mksend').disabled=!db;
   $('mkt').textContent=parts.length===1?`Comment on ${parts[0]}`:parts.length?`Comment on ${parts.length} parts`:'Comment on this view';
+  MKS.tool='arrow';document.querySelectorAll('#mk [data-tool]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.tool==='arrow'));$('mkc').style.cursor='crosshair';
   MK.sendState='off'; if(commentsNS)commentsNS.canSendToClaude().then(s=>{if(MK)MK.sendState=s;$('mksend').textContent=s==='available'?'Send to Claude':'Save feedback'}).catch(()=>{$('mksend').textContent='Save feedback'}); else $('mksend').textContent='Save feedback';
   redrawMK(); renderMarks(); $('mk').showModal(); $('mktext').focus();
 };
@@ -868,13 +870,13 @@ $('banner').onclick=()=>$('banner').classList.toggle('open');
 $('vexp').onclick=()=>{const v=$('view');v.classList.toggle('big');$('vexp').setAttribute('aria-pressed',v.classList.contains('big'));setTimeout(()=>{resize3D();sizeMain();placePanels();if(selection().main.length)fit(false)},230)};
 MOB.addEventListener('change',()=>{placePanels();resize3D()});
 $('mk').addEventListener('close',()=>{if(dictNS&&$('mic').getAttribute('aria-pressed')==='true')dictNS.stop().catch(()=>{})});
-document.querySelectorAll('#mk [data-tool]').forEach(b=>b.onclick=()=>{MKS.tool=b.dataset.tool;document.querySelectorAll('#mk [data-tool]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+document.querySelectorAll('#mk [data-tool]').forEach(b=>b.onclick=()=>{MKS.tool=MKS.tool===b.dataset.tool?null:b.dataset.tool;document.querySelectorAll('#mk [data-tool]').forEach(x=>x.setAttribute('aria-pressed',x.dataset.tool===MKS.tool));$('mkc').style.cursor=MKS.tool?'crosshair':'default';renderMarks()});
 document.querySelectorAll('#mk [data-col]').forEach(b=>b.onclick=()=>{MKS.col=b.dataset.col;document.querySelectorAll('#mk [data-col]').forEach(x=>x.setAttribute('aria-pressed',x===b))});
 $('mkundo').onclick=()=>{if(MK){MK.marks.pop();redrawMK();renderMarks()}};
 $('mkclear').onclick=()=>{if(MK){MK.marks=[];redrawMK();renderMarks()}};
 $('mk').addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='z'&&e.target.tagName!=='TEXTAREA'){e.preventDefault();$('mkundo').click()}});
 function mkPt(e){const r=$('mkc').getBoundingClientRect();return [Math.min(1,Math.max(0,(e.clientX-r.left)/r.width)),Math.min(1,Math.max(0,(e.clientY-r.top)/r.height))]}
-$('mkc').addEventListener('pointerdown',e=>{if(!MK)return;e.preventDefault();$('mkc').setPointerCapture(e.pointerId);const p=mkPt(e);
+$('mkc').addEventListener('pointerdown',e=>{if(!MK||!MKS.tool)return;e.preventDefault();$('mkc').setPointerCapture(e.pointerId);const p=mkPt(e);
   if(MKS.tool==='pin'){MK.marks.push({type:'callout',col:MKS.col,pts:[p]});redrawMK();renderMarks();return}
   MK.cur={type:MKS.tool,col:MKS.col,pts:[p,p]}});
 $('mkc').addEventListener('pointermove',e=>{if(!MK||!MK.cur)return;const p=mkPt(e);if(MK.cur.type==='pen')MK.cur.pts.push(p);else MK.cur.pts[1]=p;redrawMK()});
@@ -907,7 +909,9 @@ function partAt(nx,ny){if(!MK||!MK.cam)return null;const v=new THREE.Vector2(nx*
   return hits.length?{part:hits[0].object.userData.name,xyz:hits[0].point.toArray().map(v=>+v.toFixed(1))}:null}
 const MKNAME={arrow:'arrow',circle:'circle',pen:'sketch',callout:'callout'};
 function marksInfo(){number();return MK.marks.map(m=>{const t=tipOf(m),h=partAt(t[0],t[1]);return {n:m.n,type:MKNAME[m.type],at:h?h.part:null,xyz:h?h.xyz:null,col:m.col,pts:m.pts.map(p=>[+p[0].toFixed(4),+p[1].toFixed(4)])}})}
-function renderMarks(){const info=marksInfo();$('mknomarks').hidden=info.length>0;$('mkmarks').innerHTML=info.map(m=>`<li>${esc(m.type)} → ${esc(m.at||'background (no part under it)')}</li>`).join('')}
+function renderMarks(){const info=marksInfo();$('mknomarks').hidden=info.length>0;$('mkmarks').innerHTML=info.map((m,i)=>`<li>${esc(m.type)} → ${esc(m.at||'background (no part under it)')} <button type="button" class="lnk" data-mkdel="${i}" aria-label="Remove mark ${i+1}">remove</button></li>`).join('');
+  $('mktoolnote').textContent=MKS.tool?'Tap the highlighted tool again to stop drawing.':'No tool selected: taps on the image do nothing.'}
+$('mkmarks').addEventListener('click',e=>{const b=e.target.closest('[data-mkdel]');if(b&&MK){MK.marks.splice(+b.dataset.mkdel,1);redrawMK();renderMarks()}});
 $('mksend').onclick=async()=>{
   if(!MK||!db)return;
   const text=$('mktext').value.trim(); const verdict=document.querySelector('input[name=mkvd]:checked')?.value||'change';
