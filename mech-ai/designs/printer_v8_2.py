@@ -51,6 +51,7 @@ from mechloop.parts.batch6 import fan_cg3010u24, print_sheet_pei180
 from mechloop.parts.batch7 import leadscrew_motor_17e19_ab4, leadscrew_screw_17e19_ab4, octopus_v11
 from mechloop.parts.electrical import (THERMISTORS, add_electrical_bom, bed_heater_pad, device_from, embedded_device,
                                        iec_inlet_c14, psu_lrs, raspberry_pi_zero2w, relay_btt_v12, thermal_fuse)
+from mechloop.parts import CSK
 from mechloop.parts.hardware import WASHER, spacer_round
 from mechloop.parts.probes import add_probe_nuts, probe_omron_e2e
 from mechloop.parts.toolhead import extruder_roto, hotend_revo
@@ -94,10 +95,12 @@ PRINT_ABS = {"walls": 4, "top_layers": 5, "bottom_layers": 5, "infill": 0.4, "in
 FX, FY, FZ = 340.0, 360.0, 394.0
 RAIL_X = FX / 2 - 10
 TX, TY = PRINT_X / 2, PRINT_Y / 2
-FRONT_EXT = 26.0       # v8.2 (owner review): the frame's front is 26 mm further forward and its top front rail flush with the
+FRONT_EXT = 13.0       # v8.2 (owner review): the frame's front is 26 mm further forward and its top front rail flush with the
                        # other three (v8.1: 30 mm lower, FT_DROP, so the gantry's front parts passed over it). At full -Y
-                       # over-travel the gantry's lowest front parts (X idler mount and tension anchor lugs, z 399-404) reach
-                       # y -182.4; the flush rail's inner face is now at -186.0 (3.6 mm clear)
+                       # over-travel the gantry's front-most parts below z 407 (the X mounts' M5 bolt heads on the beam's
+                       # front face) reach y -169.5; the flush rail's inner face is now at -173.0 (3.5 mm clear). The X idler
+                       # mount's and tension anchor's lugs are trimmed to start 4 mm above the rail (z 408). 13 mm keeps the
+                       # machine inside its 420 mm envelope (26 mm, lugs untrimmed, made it 431)
 FD = FY + FRONT_EXT    # frame depth, outside to outside of the front and back rails
 FRONT_Y = -(FY / 2 - 10) - FRONT_EXT   # centre line of the front rails and posts (v8.1 -170)
 
@@ -118,13 +121,12 @@ BED_Y1 = Y_PF - 10.5
 BED_Y0 = BED_Y1 - BED
 BED_CY = (BED_Y0 + BED_Y1) / 2
 ARM_X = 65.0
-# bed posts: M5 threaded rods (DIN 976-1) screwed into steel thread inserts in the bed plate, a jam nut and washer under
-# the plate, POST_FREE of free rod (the flexure that lets the hot plate grow), then a laser-cut tab on the arm with a
-# washer and nut above and below it (the levelling adjustment)
+# bed posts: the column height H_COL is v8.1's (washer + nut + 59 mm free rod + nut + washer + tab). v8.2: the top joint
+# is an M5 countersunk screw into a 15 mm coupling nut under the plate (no thread insert), so the rod's free length is
+# 48.7 mm; then a laser-cut tab on the arm with a washer and nut above and below it (the levelling adjustment)
 POST_NUT, W5 = 4.7, WASHER["normal"]["M5"][2]
 POST_FREE = 59.0
 T_TAB = G48
-POST_INSERT = 7.5      # M5 x 1.5 D thread insert from the plate's underside
 H_COL = W5 + POST_NUT + POST_FREE + POST_NUT + W5 + T_TAB
 POST_X = ARM_X + 21.0
 BED_MOUNTS = [(-POST_X, BED_Y1 - 19.5), (POST_X, BED_Y1 - 19.5), (-POST_X, BED_Y1 - 177.0), (POST_X, BED_Y1 - 177.0)]
@@ -136,6 +138,7 @@ FS_X = FX / 2 - 10     # front lead screws over the bottom side rails
 FS_Y = -101.0
 NUT_PIN = (0.0, 8.0)
 NUT_FLOAT = 2.8
+KEEP_GAP, T_KEEP, KEEP_BX = 0.1, 3.175, 18.5   # v8.2 nut keeper: axial play, thickness (6061), bolts +/- along X from the nut
 Z_DN = 3.0
 Z_UP = 1.65
 Z_RAIL_L = 245.0
@@ -169,11 +172,12 @@ NOZZLE_GAP = 0.1
 XM_X, XI_X = -118.0, 118.0
 BEAM_L = 288.0
 XD_Z = Z_BEAM + 33.0
+LUG_Z0 = FZ + 10.0 + 4.0  # v8.2: the X idler mount's lug and the X tension anchor's fin start 4 mm above the flush top front rail
 X_PG = 2.75
 XB_Y = YB0 - 10.0 + X_PG + P_BC(BWX)
 X_SP = XB_Y - I_H(BWX) / 2 - (YB0 - 10.0)
 Z_XL = XD_Z - PR
-Y_SP = W5                          # a real M5 washer between each Y idler and its mount
+Y_SP = 2 * W5                      # v8.2: two M5 washers between each Y idler and its mount (BLT-061: 2 mm to the plate; v8.1 one)
 YB_X = FX / 2 + MT_Y + Y_SP + I_H(BWY) / 2
 YM_Y = FY / 2 + 24.0
 Z_YA = Z_PLATE + T_YP + 0.7
@@ -190,7 +194,7 @@ POCKET_AF, POCKET_NUT, POCKET_WD, POCKET_W, POCKET_WALL = 5.5 + 0.3, 4.0 + 0.2, 
 SH3 = 3.6
 YH3 = 3.5
 CB_TS = T_TPR
-PL_Y0, PL_Y1 = -24.0, 19.5
+PL_Y0, PL_Y1 = -23.5, 19.5     # v8.2: front edge 0.5 mm back (BLT-061: 2.05 mm from the Y idler at full travel)
 BELT_SLOTS = (-15.3, -5.5, 5.5, 15.3)   # v8.1: slots as wide as the sheet is thick, webs >= 4.75
 SLOT_W = 4.8
 YP_IN = RAIL_X - 33.0
@@ -220,10 +224,6 @@ T_NP = G95                                        # front nut plates (9.525 mm 6
 T_NPR = G95                                       # rear nut plate (9.525 mm 6061): its tongue is a 48 mm cantilever
 NP_HOLE = 2 * (5.1 + NUT_FLOAT) + 0.8             # the nut's barrel floats in a round hole
 PIN_SP_D = 5.0                                    # anti-rotation pin: an M2.5 screw through a 5 mm aluminium sleeve
-FP_X = 128.0                                      # front stiffener plate half width (clear of the motors and nut plates)
-T_FP = G127                                       # 12.7 mm: stiff, and its weight seats the front nuts (docs)
-FP_Z1 = Z_BED - 6.0
-FRONT_PLATE = True     # v8.2 study (docs/PRINTER_V8_2.md, 'Front plate'): False builds the carrier without it
 # ---- Z drive: three integrated lead-screw motors, one per screw, no belt ----------------------------------------------
 # Each screw is the shaft of its own StepperOnline 17E19S1684AB4-330RA (Tr8x2, no coupler). The motor hangs from the
 # underside of a laser-cut 6061 plate (its 22 mm pilot in the plate's hole, four M3 x 10 from above into the motor's own
@@ -258,7 +258,7 @@ PRB_X = 0.0
 PRB_DY = 34.5
 PRB_Y = HOT_OFF + PRB_DY
 TY_F = TY + PRB_DY
-YI_Y = YB0 + PL_Y0 - (TY_F + ES_OT) - 10.5
+YI_Y = YB0 - 24.0 - (TY_F + ES_OT) - 10.5      # as v8.1 (the Y plates' front edge was at YB0 - 24.0)
 # Klipper [z_tilt]: firmware X = world x + TX (X homes at -TX), firmware Y = world y - (nozzle's home y) + TY_F
 _FW = lambda x, y: (round(x + TX, 2), round(y - (YB0 + HOT_OFF) + TY_F, 2))
 Z_TILT = {"z_positions": [_FW(0.0, LS_Y), _FW(-FS_X, FS_Y), _FW(FS_X, FS_Y)],       # rear, front-left, front-right screw
@@ -520,14 +520,23 @@ TIE_LEG = 20.0                        # vertical leg of the bent tie, down the b
 TIE_BOLT_Z = TIE_ZT - 14.0
 
 
+def countersink_z(x, y, z_top, depth_total, d_csk, d_hole):
+    """A 90-degree countersink from the top face z_top (mouth d_csk) with a through clearance hole d_hole, as a solid to cut."""
+    from build123d import Cone
+    h = (d_csk - d_hole) / 2.0
+    return Pos(x, y, z_top - h / 2) * Cone(d_hole / 2, d_csk / 2, h) + zc(x, y, z_top - depth_total, z_top, d_hole / 2)
+
+
 def bed_shape_():
-    """9.525 mm MIC-6 cast plate, laser cut (faces as cast): only through holes. The posts and the tie screw into steel
-    thread inserts (drilled 5.2, STI tapped, insert fitted by the builder): the top face stays flat for the sheet."""
+    """9.525 mm MIC-6 cast plate, laser cut (faces as cast). v8.2 (owner review): no tapped holes. The four posts and the
+    two tie screws are ISO 10642 M5 countersunk screws from the top, in 90-degree countersinks (11.2 mm, SendCutSend's
+    countersinking service or the builder's countersink bit), heads 0.9 mm below the surface: the magnetic base lies flat."""
     b = bx(-BED / 2, BED / 2, BED_Y0 - BED_FX, BED_Y1, Z_BED, Z_BED + T_BED)
+    dk = CSK["M5"][0]
     for x, y in BED_MOUNTS:
-        b -= zc(x, y, Z_BED, Z_BED + T_BED, 2.6)       # 5.2: drilled for an M5 STI tap, insert fitted by the builder
+        b -= countersink_z(x, y, Z_BED + T_BED, T_BED, dk, clearance_hole("M5"))
     for x in TIE_X:
-        b -= zc(x, TIE_Y, Z_BED, Z_BED + T_BED, 2.6)
+        b -= countersink_z(x, TIE_Y, Z_BED + T_BED, T_BED, dk, clearance_hole("M5"))
     return b
 
 
@@ -829,6 +838,10 @@ def build_z_mount(d, tag, x0, y0, turn, posts, rail, on_tray):
     place(d, mot, leadscrew_motor_17e19_ab4(), Location((x0, y0, Z_MF), (0, 0, turn)))
     place(d, scr, leadscrew_screw_17e19_ab4(Z_SCREW_ABOVE), Location((x0, y0, Z_MF)))
     d.join(scr, mot, "integral screw: the motor's shaft")
+    d.get(scr).meta["description"] = (f"Tr8x2 lead screw: the shaft of {mot} itself (StepperOnline 17E19S1684AB4-330RA), cut to "
+                                      f"{Z_SCREW_ABOVE:g} mm above the motor face; free at its top end (no bearing). Not a separate part to buy.")
+    d.get(mot).meta["description"] = (f"Lead-screw stepper hanging under {plate}: its 22 mm pilot locates in the plate's hole, four M3 x 10 "
+                                      f"from above thread into its own housing. Its shaft is the lead screw {scr}.")
     d.allow_overlap(scr, mot)                    # the screw enters the motor through its pilot (the solids meet there)
     d.join(mot, plate, "pilot located in the plate's 22.3 mm hole, face on the plate")
     for i, (ox, oy) in enumerate([(-15.5, -15.5), (-15.5, 15.5), (15.5, -15.5), (15.5, 15.5)]):
@@ -920,16 +933,8 @@ def build_frame_z():
         add_corner_bracket(d, f"bed_arm_{n}_fbracket_i", f"bed_arm_{n}", "front_beam", (xs, ARM_Y0, Z_ARM), (0, 1, 0), (-sx, 0, 0), body="zbody")
         add_corner_bracket(d, f"bed_arm_{n}_rbracket_u", f"bed_arm_{n}", "rear_beam", (sx * ARM_X, ARM_Y1, Z_ARM - 10.0), (0, -1, 0), (0, 0, -1), body="zbody")
         add_corner_bracket(d, f"bed_arm_{n}_fbracket_u", f"bed_arm_{n}", "front_beam", (sx * ARM_X, ARM_Y0, Z_ARM - 10.0), (0, 1, 0), (0, 0, -1), body="zbody")
-    # front stiffener: 6.35 mm 6061 on the front beam's front face (a deep beam between the arms and the nut plates)
-    if FRONT_PLATE:
-        fp = bx(-FP_X, FP_X, FB_FACE - T_FP, FB_FACE, Z_ARM - 19.2, FP_Z1)
-        FP_BOLTS = (-110.0, -40.0, 40.0, 110.0)
-        for x in FP_BOLTS:
-            fp -= Pos(x, FB_FACE - T_FP / 2, Z_ARM) * ycyl(12.8 / 2, T_FP)
-        sheet(d, "front_plate", fp, AL, body="zbody")
-        for i, x in enumerate(FP_BOLTS):
-            add_screw(d, f"front_plate_bolt_{i}", "M5", 18, at=(x, FB_FACE - T_FP, Z_ARM), direction=(0, 1, 0), body="zbody",
-                      threads_into="front_beam", tnut=True, clamps=("front_plate",), washer="large")
+    # v8.2: no front plate. v8.1's 12.7 mm "front stiffener" (871 g) was mostly ballast to keep the floating nuts seated;
+    # the nuts are captive now (nut keepers), and without it the 1 kg bed sag is 0.0057 mm against 0.0043 (limit 0.02)
     # nut plates: 6061 on the beams' top faces (9.525 mm rear, 6.35 mm front); each floating T8 nut hangs under one (the carrier sits on its
     # flange), its barrel in a 16 mm hole, turned by a pin: an M3 through a 6 mm aluminium sleeve in a radial slot
     zn0 = Z_FL
@@ -938,10 +943,8 @@ def build_frame_z():
     rnp = bx(-39.0, 39.0, RB_Y - 13.0, RB_Y + 10.0, zn0, zn1) + bx(-RNP_TW / 2, RNP_TW / 2, RB_Y, LS_Y + 21.5, zn0, zn1)
     nut_sets.append(("", 0.0, LS_Y, 1, rnp, [(-26.0, RB_Y), (26.0, RB_Y)], "rear_beam", T_NPR))
     for sx, tg in ((-1, "_fl"), (1, "_fr")):
-        xa, xb_ = sorted((sx * (FP_X + 2.0), sx * (FS_X + 15.0)))
+        xa, xb_ = sorted((sx * (NPF_BOLT_X[0] - 8.5), sx * (FS_X + 25.0)))
         npl = bx(xa, xb_, FS_Y - 21.5, ARM_Y0, zn0, Z_FL + T_NP)
-        # lobe round the inner bolt, behind the front stiffener plate (which ends at |x| = FP_X, in front of the beam)
-        npl += bx(*sorted((sx * (NPF_BOLT_X[0] - 8.5), sx * (NPF_BOLT_X[0] - 3.0))), FB_FACE + 1.0, ARM_Y0, zn0, Z_FL + T_NP)
         nut_sets.append((tg, sx * FS_X, FS_Y, -1, npl, [(sx * NPF_BOLT_X[0], FB_Y), (sx * NPF_BOLT_X[1], FB_Y)], "front_beam", T_NP))
     for tg, cx, ly, sgn, shp, bolts, beam, tnp in nut_sets:
         zn1 = Z_FL + tnp
@@ -950,6 +953,8 @@ def build_frame_z():
         shp -= slot_z(cx, py, 90.0, NUT_FLOAT, PIN_SP_D + 1.2, zn0, zn1)
         for bxy in bolts:
             shp -= zc(*bxy, zn0, zn1, 3.25)
+        for bx_ in (cx - KEEP_BX, cx + KEEP_BX):                      # the nut keeper's two M3 through-bolts
+            shp -= zc(bx_, ly, zn0, zn1, clearance_hole("M3") / 2)
         sheet(d, f"nut_plate{tg}", shp, AL, body="zbody")
         for i, (x, y) in enumerate(bolts):
             add_screw(d, f"nut_plate{tg}_bolt_{i}", "M5", 16, at=(x, y, zn1), body="zbody", threads_into=beam, tnut=True,
@@ -960,22 +965,39 @@ def build_frame_z():
         add_nut(d, f"nut_pin{tg}_nut", "M2.5", at=(cx, py, Z_TAB - 3.5), direction=(0, 0, -1), body="zbody", screw=f"nut_pin{tg}")
         d.allow_overlap(f"nut_pin{tg}", f"z_nut{tg}", max_volume=40.0)     # passes the flange's hole: the catalogue solid does not show the holes
         d.join(f"z_nut{tg}", f"nut_plate{tg}", "floating: the carrier sits on its flange; the pin in the slot stops it turning")
-        lift = tnp + 0.2               # the pin's sleeve stands this far above the plate's underside: it stays in the slot up to here
+        # v8.2: the nut is CAPTIVE. A 3.175 mm 6061 keeper under the flange, 0.1 mm clear of it, on two M3 through-bolts with
+        # 3.6 mm spacers, holds the flange between plate and keeper: it still floats sideways, but the carrier can no longer
+        # lift off it, so no ballast is needed to keep the nuts seated (v8.1's 12.7 mm front plate)
+        kz1 = Z_TAB - 3.5 - KEEP_GAP
+        kz0 = kz1 - T_KEEP
+        kp = bx(cx - 25.0, cx + 25.0, ly - 18.0, ly + 18.0, kz0, kz1)
+        kp -= zc(cx, ly, kz0, kz1, NP_HOLE / 2)
+        kp -= slot_z(cx, py, 90.0, NUT_FLOAT, 7.0, kz0, kz1)          # the pin's nut moves in it with the float
+        kb = [(cx - KEEP_BX, ly), (cx + KEEP_BX, ly)]
+        for bx_, by_ in kb:
+            kp -= zc(bx_, by_, kz0, kz1, clearance_hole("M3") / 2)
+        sheet(d, f"nut_keeper{tg}", kp, AL, body="zbody")
+        for k_, (bx_, by_) in enumerate(kb):
+            spn = f"nut_keeper{tg}_spacer_{k_}"
+            place(d, spn, spacer_round("M3", KEEP_GAP + 3.5, "aluminium"), Location((bx_, by_, kz1)), body="zbody")
+            bolt_nut(d, f"nut_keeper{tg}_bolt_{k_}", "M3", screw_len(tnp + KEEP_GAP + 3.5 + T_KEEP + 1.0, 4.0, 1.0, choices=(20, 25, 30)),
+                     (bx_, by_, Z_FL + tnp), (0, 0, -1), "zbody", (f"nut_plate{tg}", spn, f"nut_keeper{tg}"), nut_at=(bx_, by_, kz0))
+        d.join(f"z_nut{tg}", f"nut_keeper{tg}", "captive: the flange sits between plate and keeper, 0.1 mm play, free to float sideways")
         how = (f"How the bed is lifted: the T8 brass nut z_nut{tg} rides lead screw leadscrew{tg}. Its 22 mm flange is under this "
                f"{tnp:g} mm plate and its 10.2 mm barrel goes up through the plate's {NP_HOLE:.1f} mm hole. The carrier's weight rests on "
                f"the flange, so when the screw turns, the nut climbs it and lifts the plate (and the carrier and bed) with it; turned "
                f"the other way, the nut goes down and the carrier follows it under its own weight. The M2.5 pin screw nut_pin{tg} "
                f"(through a 5 mm aluminium sleeve, fixed in the flange) sits in a radial slot in the plate: it stops the nut turning "
                f"with the screw while letting it float {NUT_FLOAT:g} mm sideways, so a screw that is not exactly where the plate's hole "
-               f"is does not push the carrier sideways. Nothing clamps the plate to the flange: gravity alone holds it down, which "
-               f"is why the nut-seating study (every nut keeps a positive load with the screws at opposite lead limits) matters. "
-               f"Pushed up: in normal running nothing pushes the bed upward (a nozzle crash pushes it down onto the flanges, and "
-               f"the inductive probe does not touch it), but a hand lifting the bed, or something trapped under the carrier while Z "
-               f"moves down, lifts the plate off the flange with no stop. It re-seats by itself up to about {lift:.1f} mm of lift, "
-               f"while the pin's sleeve is still in its slot (the barrel stays in the hole to 10 mm); beyond that the nut can turn "
-               f"and must be lined up by hand before the bed is lowered onto it.")
+               f"is does not push the carrier sideways. v8.2: the nut is captive: the laser-cut keeper nut_keeper{tg}, bolted 0.1 mm "
+               f"under the flange on two M3 through-bolts and spacers, stops the plate lifting off it, so the carrier is held both "
+               f"ways (a hand lifting the bed, or the screws standing at different heights, cannot unseat it) and no ballast is "
+               f"needed. Within the 0.1 mm play and the thread's own backlash the nut is free; Z_TILT_ADJUST and the bed mesh are "
+               f"measured with the weight on the flange.")
         d.get(f"nut_plate{tg}").meta["description"] = f"Laser-cut 6061 nut plate on the carrier. " + how
-        d.get(f"z_nut{tg}").meta["description"] = f"T8 flanged brass nut, floating under nut_plate{tg}. " + how
+        d.get(f"z_nut{tg}").meta["description"] = f"T8 flanged brass nut, floating and captive under nut_plate{tg}. " + how
+        d.get(f"nut_keeper{tg}").meta["description"] = (f"Keeper: holds z_nut{tg}'s flange up against nut_plate{tg} (0.1 mm play, free to float "
+                                                       f"sideways) so the carrier cannot lift off the nut. " + how)
     d.bom_extra("NYLOC-M2.5 (nut pins, in place of the hex nuts drawn)", 3, 0.05)
 
     # ================= bed: MIC-6 plate, PEI180 sheet, threaded-rod posts, tie ======
@@ -996,9 +1018,23 @@ def build_frame_z():
     d.join("bed_heater", "bed_plate", "bond")
     place(d, "bed_tco", thermal_fuse(133.0, 109.0, 15.0), Location((-45.0, BED_Y1 - 5.0, Z_BED - 2.0)), body="zbody")
     d.join("bed_tco", "bed_plate", "bond")
-    # posts
+    # joints the viewer cannot show (bond, magnet, clamp): said in each part's description
+    for nm_, txt in (("bed_heater", "Silicone heater pad, adhesive-backed, bonded to bed_plate's underside (no fasteners)."),
+                     ("bed_magnet", "Magnetic base sheet of the PEI180, adhesive-backed, bonded to bed_plate's top face (no fasteners)."),
+                     ("bed", "TRONXY PEI180 spring-steel print sheet, held on bed_magnet by magnetism alone: lift it off to remove prints."),
+                     ("bed_tco", "Thermal fuse, bonded to bed_plate's underside with high-temperature adhesive (thermal contact), in series with the heater."),
+                     ("bed_plate", "MIC-6 bed plate: carried by four posts (M5 countersunk screws from its top face into coupling nuts) and the "
+                                   "bed tie (two M5 countersunk screws); the heater pad is bonded under it, the magnetic base on top.")):
+        d.get(nm_).meta["description"] = txt
+    # posts (v8.2, owner review: a visible bolted joint, no tapped hole): an ISO 10642 M5 x 16 countersunk screw from the
+    # bed's top face, flush, through the plate and a washer into an M5 x 15 coupling nut (DIN 6334 type, A2) under the
+    # plate; the M5 threaded rod is screwed 9 mm up into the coupling nut's lower half. The two nuts at the tab level the
+    # bed as in v8.1; the rod's free length below the coupling nut is the flexure that lets the hot plate grow.
+    COUP_L, COUP_AF = 15.0, 8.0
+    z_cb = Z_BED - W5 - COUP_L                       # coupling nut's lower end
     z_low = Z_FL - W5 - POST_NUT - 3.0
-    rod_l = round(Z_BED + POST_INSERT - z_low, 1)
+    rod_top = z_cb + 9.0
+    rod_l = round(rod_top - z_low, 1)
     for i, (x, y) in enumerate(BED_MOUNTS):
         sx, sy = (1 if x > 0 else -1), (1 if y > BED_CY else -1)
         arm = f"bed_arm_{'left' if x < 0 else 'right'}"
@@ -1021,9 +1057,26 @@ def build_frame_z():
                     math.pi * 2.5 ** 2 * rod_l * 8.0e-6 * 0.85, material=SS, cost_usd=0.6)
         p = f"bed_post_{i}"
         place(d, p, rod, Location((x, y, z_low)), body="zbody")
-        d.join(p, "bed_plate", "screwed into a steel thread insert, jam nut")
-        stack = [("top", Z_BED, (0, 0, -1), "bed_plate"), ("arm", Z_FL + T_TAB, (0, 0, 1), f"bed_post_tab_{i}"),
-                 ("low", Z_FL, (0, 0, -1), f"bed_post_tab_{i}")]
+        cp = f"{p}_coupling"
+        cshape = extrude(RegularPolygon(COUP_AF / 2, 6, major_radius=False), COUP_L) - Pos(0, 0, COUP_L / 2) * Cylinder(2.1, COUP_L)   # minor dia
+        coup = Stock(cshape, f"COUPLING-NUT-M5x{COUP_L:g}-A2", f"Coupling (long) nut M5 x {COUP_L:g}, 8 mm A/F, A2 stainless, DIN 6334 type "
+                     "(stand-in: not in the catalogue)", (COUP_AF ** 2 * 0.866 - math.pi * 2.24 ** 2) * COUP_L * 8.0e-6, material=SS, cost_usd=0.5)
+        place(d, cp, coup, Location((x, y, z_cb)), body="zbody")
+        d.join(p, cp, "thread: the rod is screwed 9 mm into the coupling nut's lower half")
+        d.allow_overlap(p, cp)
+        wt = f"{p}_washer_top"
+        add_washer(d, wt, "M5", (x, y, Z_BED), (0, 0, -1), body="zbody")
+        d.join(cp, wt, "clamped by the countersunk screw")
+        d.join(wt, "bed_plate", "clamped by the countersunk screw")
+        sc = add_screw(d, f"{p}_screw", "M5", 16, at=(x, y, Z_BED + T_BED), direction=(0, 0, -1), body="zbody",
+                       clamps=("bed_plate", wt), threads_into=cp, head="countersunk", locking="adhesive")
+        desc = (f"Bed post {i}: an M5 countersunk screw from the bed's top face (head 0.9 mm below it, under the magnetic base) clamps "
+                f"bed_plate and a washer to an M5 x {COUP_L:g} coupling nut; this M5 threaded rod is screwed into the coupling nut and "
+                f"passes the tab bed_post_tab_{i} on the arm, where two nuts and washers clamp it (they set the bed's level). The rod's "
+                f"free length between coupling nut and tab is the flexure that lets the heated plate grow.")
+        for nm_ in (p, cp, sc.name):
+            d.get(nm_).meta["description"] = desc
+        stack = [("arm", Z_FL + T_TAB, (0, 0, 1), f"bed_post_tab_{i}"), ("low", Z_FL, (0, 0, -1), f"bed_post_tab_{i}")]
         for lv, zf, dv, on in stack:
             wn, nn = f"{p}_washer_{lv}", f"{p}_nut_{lv}"
             add_washer(d, wn, "M5", (x, y, zf), dv, body="zbody")
@@ -1033,25 +1086,23 @@ def build_frame_z():
             d.join(nn, p, "thread")
             d.allow_overlap(nn, p)
             d.join(wn, p, "on the rod")
-        d.join("bed_plate", f"bed_post_tab_{i}", "post with jam nuts")
-    d.bom_extra("INSERT-THREAD-M5x1.5D-STAINLESS (posts)", len(BED_MOUNTS), 0.8)
-    # tie: bent 304 stainless (stiff in X, Y and yaw, soft vertically), bolted to the back plate, two M5 into inserts in
-    # the bed plate through 8 mm spacers
+        d.join("bed_plate", f"bed_post_tab_{i}", "post with levelling nuts")
+    # tie: bent 304 stainless (stiff in X, Y and yaw, soft vertically), bolted to the back plate; v8.2: two M5 x 30
+    # countersunk screws from the bed's top face through the plate, 8 mm spacers and the tie into washers and nyloc nuts
     tl = bent_L(SS15, R_SS15, TIE_LEG, Y_PF - (TIE_Y - 8.0), TIE_W,
                 holes_a=[(-x, TIE_ZT - TIE_BOLT_Z, clearance_hole("M5")) for x in TIE_BOLT_X],
                 holes_b=[(Y_PF - TIE_Y, -x, clearance_hole("M5")) for x in TIE_X])
     tie_loc = Location(Plane(origin=(0, Y_PF, TIE_ZT), x_dir=(0, -1, 0), z_dir=(0, 0, -1)))
     d.add("bed_tie", round_profile(tie_loc * tl, 1.0, SS15), material=SS, body="zbody", process="sheet", meta={"finish": "bare"})
     for i, x in enumerate(TIE_X):
-        ins = Stock(Pos(0, 0, POST_INSERT / 2) * (Cylinder(3.1, POST_INSERT) - Cylinder(2.1, POST_INSERT)),
-                    "INSERT-THREAD-M5x1.5D-STAINLESS", "Wire thread insert M5 x 1.5 D, stainless (Helicoil type; stand-in: not in the catalogue)",
-                    0.001, material=SS, cost_usd=0.8)
-        place(d, f"bed_insert_{i}", ins, Location((x, TIE_Y, Z_BED)), body="zbody")
-        d.allow_overlap(f"bed_insert_{i}", "bed_plate")
-        d.join(f"bed_insert_{i}", "bed_plate", "thread insert in an STI-tapped hole")
         place(d, f"bed_tie_spacer_{i}", spacer_round("M5", TIE_SP, "aluminium"), Location((x, TIE_Y, TIE_ZT)), body="zbody")
-        add_screw(d, f"bed_tie_screw_{i}", "M5", 16, at=(x, TIE_Y, TIE_ZT - SS15), direction=(0, 0, 1), body="zbody",
-                  clamps=("bed_tie", f"bed_tie_spacer_{i}", "bed_plate"), threads_into=f"bed_insert_{i}", washer=True)
+        tn = f"bed_tie_screw_{i}"
+        add_screw(d, tn, "M5", 30, at=(x, TIE_Y, Z_BED + T_BED), direction=(0, 0, -1), body="zbody",
+                  clamps=("bed_plate", f"bed_tie_spacer_{i}", "bed_tie"), head="countersunk")
+        z_w = TIE_ZT - SS15
+        add_washer(d, f"{tn}_nwasher", "M5", (x, TIE_Y, z_w), (0, 0, -1), body="zbody", screw=tn)
+        add_nut(d, f"{tn}_nut", "M5", at=(x, TIE_Y, z_w - W5), direction=(0, 0, -1), body="zbody", screw=tn, standard="iso10511")
+        d.join(f"{tn}_nut", "bed_tie", "clamped through its washer")
     for i, x in enumerate(TIE_BOLT_X):
         bolt_nut(d, f"bed_tie_bolt_{i}", "M5", 16, (x, Y_PF - SS15, TIE_BOLT_Z), (0, 1, 0), "zbody", ("bed_tie", "back_plate"),
                  nut_at=(x, Y_CAR, TIE_BOLT_Z))
@@ -1069,7 +1120,7 @@ def build_frame_z():
         mount_parts[tg] = build_z_mount(d, tg, x0, y0, turn, posts, rail, on_tray)
     zs = {"tags": ("", "_fl", "_fr"), "zcars": ["z_carriage_left", "z_carriage_right"],
           "rails": {"z_carriage_left": "z_rail_left", "z_carriage_right": "z_rail_right"},
-          "carrier": ["back_plate", "rear_beam", "front_beam", "bed_arm_left", "bed_arm_right"] + (["front_plate"] if FRONT_PLATE else []) + ["bed_tie",
+          "carrier": ["back_plate", "rear_beam", "front_beam", "bed_arm_left", "bed_arm_right", "bed_tie",
                       "bed_tie_spacer_0", "bed_tie_spacer_1"]
                      + [f"bed_arm_{n}_{e}bracket_{s}" for n in ("left", "right") for e in ("r", "f") for s in ("i", "u")],
           "nut_plates": ["nut_plate", "nut_plate_fl", "nut_plate_fr"],
@@ -1171,6 +1222,7 @@ def build() -> Design:
     place(d, "hotend", hotend_revo(40, 24.0, 0.4), Location(tuple(seat), (0, 0, 190)), body="xbody")
     d.allow_overlap("hotend", "extruder")
     d.join("hotend", "extruder", "clamp")
+    d.get("hotend").meta["description"] = "E3D Revo hotend, held in the Roto's hotend seat by the Roto's own clamp (no separate fasteners)."
     d.add("probe_mount", probe_mount_shape(), material=HOT, body="xbody", process="printed",
           meta={"print_up": "+Z", "print": {**PRINT_ABS, "orientation": "+Z"}, "service_temp_c": 45.0})
     place(d, "bed_probe", probe_omron_e2e(PRB_MODEL, clamp=PRB_CLAMP, nuts="separate"), Location((PRB_X, YB0 + PRB_Y, Z_PRB)), body="xbody")
@@ -1253,7 +1305,9 @@ def build() -> Design:
     im = bent_L(MT, R_B32, LUG, 50.0, w_im,
                 holes_b=[(25.0, XD_Z - zc_im, clearance_hole("M5"))] + [(xb - (XI_X - 25.0), Z_BEAM - zc_im, clearance_hole("M5")) for xb in XIM_BOLTS])
     im_loc = Location(Plane(origin=(XI_X - 25.0, yb_r, zc_im), x_dir=(1, 0, 0), z_dir=(0, -1, 0)))
-    d.add("x_idler_mount", round_profile(im_loc * im, 1.0, MT), material=AL_BEND, body="ybody", process="sheet", meta={"finish": "bare"})
+    im = im_loc * im
+    im -= bx(XI_X - 40.0, XI_X - 10.0, yb_f - 40.0, yb_r - MT - R_B32 - 0.5, Z_BEAM - 20.0, LUG_Z0)     # v8.2: lug starts at z 408
+    d.add("x_idler_mount", round_profile(im, 1.0, MT), material=AL_BEND, body="ybody", process="sheet", meta={"finish": "bare"})
     for i, x in enumerate(XIM_BOLTS):
         add_screw(d, f"x_idler_mount_bolt_{i}", "M5", 10, at=(x, yb_f, Z_BEAM), direction=(0, 1, 0), body="ybody",
                   threads_into="x_beam", tnut=True, clamps=("x_idler_mount",), washer=True)
@@ -1269,7 +1323,9 @@ def build() -> Design:
     xa = bent_L(MT, R_B32, LUG, 34.0, 30.0, holes_a=[(zc_xa - JACK_Z, yb_r - JACK_Y, 4.27)],
                 holes_b=[(16.0, zc_xa - Z_BEAM, clearance_hole("M5")), (28.0, zc_xa - Z_BEAM, clearance_hole("M5"))])
     xa_loc = Location(Plane(origin=(XA_FIN, yb_r, zc_xa), x_dir=(-1, 0, 0), z_dir=(0, -1, 0)))
-    d.add("x_tension_anchor", round_profile(xa_loc * xa, 1.0, MT), material=AL_BEND, body="ybody", process="sheet", meta={"finish": "bare"})
+    xa = xa_loc * xa
+    xa -= bx(XA_FIN - 10.0, XA_FIN + 10.0, yb_f - 40.0, yb_r - MT - R_B32 - 0.5, Z_BEAM - 20.0, LUG_Z0)  # v8.2: fin starts at z 408
+    d.add("x_tension_anchor", round_profile(xa, 1.0, MT), material=AL_BEND, body="ybody", process="sheet", meta={"finish": "bare"})
     for i, lx in enumerate((16.0, 28.0)):
         add_screw(d, f"x_tension_anchor_bolt_{i}", "M5", 10, at=(XA_FIN - lx, yb_f, Z_BEAM), direction=(0, 1, 0), body="ybody",
                   threads_into="x_beam", tnut=True, clamps=("x_tension_anchor",), washer=True)
@@ -1351,6 +1407,7 @@ def build() -> Design:
         add_screw(d, f"y_idler{tag}_bolt", "M5", 30, at=(sg * (YB_X + I_H(BWY) / 2), YI_Y, Z_YC), direction=(-sg, 0, 0),
                   clamps=(f"y_idler_mount{tag}",))
         add_washer(d, f"y_idler{tag}_spacer", "M5", (sg * (xf + MT_YI), YI_Y, Z_YC), (sg, 0, 0), screw=f"y_idler{tag}_bolt")
+        add_washer(d, f"y_idler{tag}_spacer_b", "M5", (sg * (xf + MT_YI + W5), YI_Y, Z_YC), (sg, 0, 0), screw=f"y_idler{tag}_bolt")
         add_washer(d, f"y_idler{tag}_nwasher", "M5", (sg * xf, YI_Y, Z_YC), (-sg, 0, 0), screw=f"y_idler{tag}_bolt")
         add_nut(d, f"y_idler{tag}_nut", "M5", at=(sg * (xf - W5), YI_Y, Z_YC), direction=(-sg, 0, 0), screw=f"y_idler{tag}_bolt")
         d.join(f"y_idler{tag}_nut", f"y_idler_mount{tag}", "clamped through its washer")
@@ -1518,7 +1575,7 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
                           max_speed=V_Z, max_accel=A_Z, min_drive_margin=MARGIN,
                           drive={"motor": [f"z_motor{t}" for t in zs["tags"]], "kind": "leadscrew",
                                  "screw": [f"leadscrew{t}" for t in zs["tags"]],
-                                 "nut": [f"z_nut{t}" for t in zs["tags"]], "sync": "independent", "nut_seating": "gravity"}))
+                                 "nut": [f"z_nut{t}" for t in zs["tags"]], "sync": "independent", "nut_seating": "captive"}))
     d.program = [{"to": {"z": PRINT_Z}},
                  {"to": {"x": -75, "y": -75}}, {"to": {"x": 75, "y": -75}}, {"to": {"x": 75, "y": 75}},
                  {"to": {"x": -75, "y": 75}}, {"to": {"x": -75, "y": -75}}, {"to": {"x": 0, "y": 0}},
@@ -1556,7 +1613,7 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
                                             probe=nozzle, max_deflection=0.03, min_fos=5.0))
     w_bed = 3.0 * (PAYLOAD_KG + bed_own) * 9.81
     posts = [f"bed_post_{i}{sfx}" for i in range(len(BED_MOUNTS))
-             for sfx in ("", "_nut_top", "_nut_arm", "_nut_low", "_washer_top", "_washer_arm", "_washer_low")] \
+             for sfx in ("", "_coupling", "_nut_arm", "_nut_low", "_washer_top", "_washer_arm", "_washer_low")] \
         + [f"bed_post_tab_{i}" for i in range(len(BED_MOUNTS))]
     zcars, on_rail, carrier, nplates = zs["zcars"], zs["on_rail"], zs["carrier"], zs["nut_plates"]
     bed_stack = ["bed_plate", "bed_magnet", "bed"]
@@ -1701,15 +1758,23 @@ def add_requirements(d, zs):
     d.requirements.append(Requirement("the bed probe switches before the nozzle touches for every unit, and over-travel ends short of its face", lambda dd, m: (
         (pz := m["subsystems"]["homing"]["z"])["z_offset_range_mm"][0] > 0.3 and Z_UP < PRB_H,
         f"nozzle {pz['z_offset_range_mm'][0]:.2f} .. {pz['z_offset_range_mm'][1]:.2f} mm above the bed when the probe switches")))
-    STANDINS = sorted(["bed_magnet"] + [f"bed_post_{i}" for i in range(len(BED_MOUNTS))] + ["bed_insert_0", "bed_insert_1"])
+    STANDINS = sorted(["bed_magnet"] + [f"bed_post_{i}{x}" for i in range(len(BED_MOUNTS)) for x in ("", "_coupling")])
     d.requirements.append(Requirement("target: no purchased part is a stand-in where the catalogue has a real one", lambda dd: (
         sorted(px := [c.name for c in dd.components if c.cots and not c.meta.get("catalog")]) == STANDINS,
-        f"hand-made purchased parts: {px} (the PEI180's magnetic base, threaded rod and thread inserts: the catalogue has none)")))
+        f"hand-made purchased parts: {px} (the PEI180's magnetic base, threaded rod and coupling nuts: the catalogue has none)")))
     d.requirements.append(Requirement("no printed part in a load path (owner's guideline): printed parts are only the probe holder, duct and covers", lambda dd: (
         sorted(pp := [c.name for c in dd.components if c.material in ("abs", "petg", "pla") and not c.cots]) ==
         sorted(["probe_mount", "part_duct", "mains_cover_relay", "mains_cover_psu", "mains_cover_inlet"]), f"printed: {pp}")))
     d.requirements.append(Requirement("bed sag under 1 kg at the worst print corner <= 0.02 mm (screw-only bound)", lambda dd, m: (
         (pw := m["fea"]["bed_support"]["print_weight"])["judged_mm"] <= 0.02 + 1e-9, f"{pw['judged_mm']:.4f} mm at {pw.get('worst_point')}")))
-    d.requirements.append(Requirement("every lead-screw nut stays seated with two screws at opposite lead limits (LSC-015)", lambda dd, m: (
-        not (lv := m["fea"]["bed_support"]["nut_seating_and_lead_error"]["levels"][2])["a_nut_unseats"],
-        f"height error {lv['height_error_mm']} mm; least nut load margin {min(lv['nut_load_margin_n'].values()):.1f} N")))
+    def nuts_held(dd, m):
+        bs = m["fea"]["bed_support"]
+        lv = bs["nut_seating_and_lead_error"]["levels"][2]
+        kind = bs["nut_seating_and_lead_error"]["nut_seating"]["kind"]
+        wc = lv["worst_case"]
+        ok = (not lv["a_nut_unseats"]) or (kind == "captive" and wc["print_weight_sag_on_supports_mm"] <= 0.02 + 1e-9)
+        return ok, (f"nuts {kind}; height error {lv['height_error_mm']} mm; least nut load margin {min(lv['nut_load_margin_n'].values()):.1f} N; "
+                    f"worst case: {wc['nuts_not_seated'] or 'all seated'} off their weight-bearing flank, bed level change "
+                    f"{wc['bed_level_change_across_print_area_mm']} mm, 1 kg sag on the supports {wc['print_weight_sag_on_supports_mm']} mm")
+    d.requirements.append(Requirement("every lead-screw nut stays held with two screws at opposite lead limits (LSC-015): seated, or "
+                                      "captive with the bed's 1 kg sag on its supports <= 0.02 mm", nuts_held))
