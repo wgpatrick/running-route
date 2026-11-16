@@ -203,11 +203,12 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
   main{height:auto!important}
   .view{position:sticky!important;top:0!important;height:52svh!important;z-index:5;border-left:0;border-bottom:1px solid var(--line);transition:height .2s}
   .view.big{height:86svh!important}
-  .vtools{top:auto!important;bottom:8px;left:8px;right:8px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-right:150px;-webkit-overflow-scrolling:touch}
+  .vtools{top:auto!important;bottom:8px;left:8px;right:62px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
   .vtools::-webkit-scrollbar{display:none}
   .vtools button,.vtools label{min-height:34px;white-space:nowrap;flex:none}
   .vtools .seg{flex:none}
-  .cfab{top:auto;bottom:8px;right:8px;min-height:34px;padding:6px 12px;border-radius:18px}
+  .cfab{top:auto;bottom:6px;right:8px;width:46px;height:46px;padding:0;border-radius:50%;font-size:20px;line-height:46px;text-align:center}
+  .cfab .lbl{display:none}
   .vexp{display:block;position:absolute;right:8px;top:8px;width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--ink);font-size:16px;z-index:4;cursor:pointer}
   .legend{display:none}
   .tray{top:8px!important;bottom:auto;left:8px;right:52px;flex-wrap:nowrap;overflow-x:auto;max-height:none;scrollbar-width:none}
@@ -291,7 +292,7 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
       <button id="all" type="button">Whole machine</button>
       <label><input type="checkbox" id="hidefast"> Hide fasteners</label>
     </div>
-    <button id="snap" class="cfab" type="button" title="Capture this view, mark it up and send it with a comment">💬 Comment on view</button>
+    <button id="snap" class="cfab" type="button" title="Capture this view, mark it up and send it with a comment" aria-label="Comment on view">💬<span class="lbl"> Comment on view</span></button>
     <button id="vexp" class="vexp" type="button" aria-pressed="false" aria-label="Enlarge the 3D view">⤢</button>
     <div class="asmpanel" id="asmpanel" hidden></div>
     <div class="tray" id="tray" hidden></div>
