@@ -750,7 +750,9 @@ three-point one:
   nut unseats the result says which, how far the bed's level then changes, the force on a guide block and how far 1 kg
   then lowers the bed on the supports that are left. Findings: `z_tilt_over_constrained` (warning: rails and screws
   both hold the tilt and a nut unseats at the expected error; the deflection figures then do not describe the machine)
-  and `z_nut_unseats` (warning: a nut unseats without that). Flexure is not in these figures.
+  and `z_nut_unseats` (warning: a nut unseats without that), both judged at the third level, two screws at opposite
+  lead limits (LSC-015: belt-tied screws can differ by up to twice the class error over the travel). Each lead
+  screw's coaxial 608s are given the largest nut load against 0.25 C0 (BRG-022). Flexure is not in these figures.
 - `bed_not_held` (error): the declared supports leave the bed free in some direction (three screws and no guides).
   `bed_support_not_evaluated`: no named nut, or the nozzle rides Z. Not evaluated is not a pass.
 
@@ -826,7 +828,7 @@ pass nor a failed print (`not_run` in the print report). In `score --firmware kl
 "highest clean" and of "first failure", listed under `not_run` with a warning, and printed on stderr. Both of Klipper's
 runs (planned, and as configured) are checked: the configured run must end where the planned one ends. Independently,
 a print whose nozzle is ever more than 1 mm sideways from its commanded path is `nozzle_off_path` (error), whatever
-the outline comparison says. `dynamics.axis_mass_kg` is the EFFECTIVE mass (carried mass plus the rotors' inertia
+the outline comparison says. A sweep row is labelled with the max_accel set; each row also gives `peak_accel_reached_mm_s2` (the firmware's own 99.9th percentile per axis), and when the highest clean row's test part never got near its label `highest_clean_note` says so (printer_v8, shaping on: "48,000" reached 15,600 / 13,300): quote what was reached. `dynamics.axis_mass_kg` is the EFFECTIVE mass (carried mass plus the rotors' inertia
 reflected through the drive, tens of kg behind a 2 mm lead screw); `axis_carried_mass_kg` and
 `axis_reflected_rotor_mass_kg` give the two parts. Add `--trajectory` to save the
 nozzle path, then `python tools/export_viewer.py <printer.py> --no-assembly --print <print folder>` to replay it

@@ -976,3 +976,31 @@ def test_what_bears_on_a_608_must_stay_on_the_ring_it_abuts():
     m, f = run(Pos(0, 0, 3.5 + 2) * (Box(40, 40, 4) - Cylinder(4.5, 4)))
     assert "both rings" in f["bearing_abutment"].data["contacts"][0]["problem"]
     assert brg("608").interfaces["axial_limit_n"] == pytest.approx(342.5)
+
+
+def test_nut_findings_are_judged_at_two_screws_at_opposite_lead_limits():
+    """LSC-015: two screws tied by a belt can differ by up to 2 x 0.1 mm / 300 mm x travel. The nut finding is judged at
+    that level (levels[2]): whenever a nut unseats there, `z_nut_unseats` or `z_tilt_over_constrained` is raised; and
+    the level's height error is the synchronisation error plus twice the per-screw lead error."""
+    m, r = support(floating(bed_machine(screws=THREE, blocks_per_rail=1, sync="belt")))
+    st = m["nut_seating_and_lead_error"]
+    lv = st["levels"][2]
+    assert lv["height_error_mm"] == pytest.approx(m["screw_synchronisation"]["height_error_mm"] + 2 * st["lead_error_over_travel_mm"], abs=1e-4)
+    raised = find(r, "z_nut_unseats") + find(r, "z_tilt_over_constrained")
+    assert bool(raised) == lv["a_nut_unseats"]
+    if raised:
+        assert raised[0].data["rule"] == "LSC-015" and raised[0].data["height_error_mm"] == lv["height_error_mm"]
+
+
+def test_a_sweep_row_says_when_the_test_part_never_reached_its_acceleration_limit():
+    """Klipper shaper-on sweep for printer_v8: the row labelled 48,000 mm/s^2 was clean, but on the 20 mm test cube the
+    firmware's own 99.9th-percentile acceleration was 15,568 / 13,337 mm/s^2. The summary keeps the label and says what
+    was reached; when the label is within reach (16,000 against 13,481) nothing is added."""
+    from mechloop.twin.score import sweep_summary
+
+    ok = lambda pk: {"ok": True, "errors": [], "not_run": None, "peak_accel_mm_s2": pk}
+    s = sweep_summary({4: ok([12689, 11575, 203]), 12: ok([15568, 13337, 202])}, 4000.0)
+    assert s["highest_clean_accel_mm_s2"] == 48000.0 and s["highest_clean_peak_reached_mm_s2"] == 15568
+    assert "never reached" in s["highest_clean_note"] and s["table"][1]["peak_accel_reached_mm_s2"][0] == 15568
+    s = sweep_summary({4: ok([13481, 12733, 203])}, 4000.0)
+    assert "highest_clean_note" not in s and s["highest_clean_peak_reached_mm_s2"] == 13481

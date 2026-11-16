@@ -376,7 +376,8 @@ def ring_abutment(design: Design, r: VerifierResult) -> dict:
         u = np.cross(ax, [1.0, 0, 0] if abs(ax[0]) < 0.9 else [0, 1.0, 0])
         u /= np.linalg.norm(u)
         v = np.cross(ax, u)
-        radii = np.linspace(itf["bore"] / 2 + 0.3, itf["od"] / 2 - 0.2, 14)
+        radii = np.linspace(itf["bore"] / 2 + 0.3, itf["od"] / 2 - 0.2, 27)       # 0.25 mm apart on a 608
+        tol = 2 * (radii[1] - radii[0])                                           # one sample step, as a diameter
         for side in (1.0, -1.0):
             face_c = o + side * ax * (itf["width"] / 2 + 0.05)
             hits: dict = {}
@@ -398,7 +399,7 @@ def ring_abutment(design: Design, r: VerifierResult) -> dict:
                        "contact_to_mm": round(dmax, 1)}
                 inner = dmin < itf["d1"]
                 outer = dmax > itf["D2"]
-                shield = any(itf["d1"] < x < itf["D2"] for x in (dmin, dmax)) or (dmin < itf["d1"] and dmax > itf["d1"] + 0.5)
+                shield = any(itf["d1"] + tol < x < itf["D2"] - tol for x in (dmin, dmax))
                 if inner and outer:
                     row["problem"] = "touches both rings: the turning ring drags on it"
                 elif shield:

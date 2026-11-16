@@ -81,7 +81,10 @@ def summarise(rep: dict) -> dict:
            "resonance_hz": d.get("load_resonance_hz"), "sim_seconds": rep.get("seconds"),
            "lost_step_axes": sorted({f["data"].get("axis") for f in rep.get("findings", []) if f["code"] == "lost_steps"}),
            "cross_track_rms_mm": d.get("cross_track_rms_mm"), "cross_track_worst_mm": d.get("cross_track_worst_mm"),
-           "machine_collisions": rep.get("machine_collisions")}
+           "machine_collisions": rep.get("machine_collisions"),
+           # what the firmware actually commanded (99.9th percentile per axis): a short test part at a high max_accel
+           # may never reach it, so a sweep row's label is the limit set, not the acceleration printed
+           "peak_accel_mm_s2": (rep.get("firmware") or {}).get("peak_accel_mm_s2")}
     for k in KEYS:
         v = p.get(k)
         out[k] = v["worst"] if isinstance(v, dict) and "worst" in v else (v["span_mm"] if isinstance(v, dict) else v)

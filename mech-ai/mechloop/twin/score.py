@@ -97,7 +97,8 @@ def sweep_summary(by_accel: dict, a_nom: float) -> dict:
              "status": "NOT RUN" if a in nr else ("clean" if by_accel[a]["ok"] else "failed"),
              "errors": sorted(set(by_accel[a]["errors"])),
              "cross_track_rms_mm": by_accel[a].get("cross_track_rms_mm"), "cross_track_worst_mm": by_accel[a].get("cross_track_worst_mm"),
-             "max_bulge_mm": by_accel[a].get("max_bulge_mm"), "print_time_s": by_accel[a].get("print_time_s")} for a in accels]
+             "max_bulge_mm": by_accel[a].get("max_bulge_mm"), "print_time_s": by_accel[a].get("print_time_s"),
+             "peak_accel_reached_mm_s2": by_accel[a].get("peak_accel_mm_s2")} for a in accels]
     top = (max(passing) * a_nom) if passing else 0.0
     out = {"highest_clean_accel_mm_s2": top, "max_clean_accel_mm_s2": top,      # the second is the old name of the first
            "accel_margin": max(passing) if passing else 0.0,
@@ -105,6 +106,14 @@ def sweep_summary(by_accel: dict, a_nom: float) -> dict:
            "first_failure": ({"accel_mm_s2": first_fail * a_nom, "errors": sorted(set(by_accel[first_fail]["errors"])),
                               "axes_losing_steps": by_accel[first_fail].get("lost_step_axes")} if first_fail else None),
            "table": rows}
+    top_row = next((r_ for r_ in rows if r_["accel_mm_s2"] == top), None) if passing else None
+    if top_row and top_row.get("peak_accel_reached_mm_s2"):
+        reached = max(top_row["peak_accel_reached_mm_s2"][:2])
+        out["highest_clean_peak_reached_mm_s2"] = reached
+        if reached < 0.7 * top:
+            out["highest_clean_note"] = (f"the test part never reached the {top:g} mm/s^2 limit: the firmware's own peak there was "
+                                         f"{reached:g} mm/s^2 (99.9th percentile, X/Y {top_row['peak_accel_reached_mm_s2'][:2]}); its moves are too "
+                                         f"short. The machine is shown clean to what was reached, not to the label")
     if nr:
         hi = max(passing) if passing else 0.0
         open_ = [a for a in nr if a > hi and (first_fail is None or a < first_fail)]

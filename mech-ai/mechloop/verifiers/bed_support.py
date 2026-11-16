@@ -1059,7 +1059,8 @@ def bed_support(design: Design, r: VerifierResult, with_fea: bool = True) -> dic
             lvl["from_screw_lead_error_note"] = (f"one screw at its lead-accuracy limit over the {travel:g} mm travel "
                                                  f"({st['lead_error_over_travel_mm']:g} mm; {st['lead_accuracy']['basis']})")
         half = lay["layer"] / 2
-        expected = st["levels"][1] if st is not None else None
+        # judged at the LSC-015 budget: two belt-tied screws can differ by up to twice the class lead error over the travel
+        expected = st["levels"][2] if st is not None else None
         sync_only = st["levels"][0] if st is not None else None
         seat_txt = ""
         if expected is not None:
@@ -1067,7 +1068,8 @@ def bed_support(design: Design, r: VerifierResult, with_fea: bool = True) -> dic
             least = min(expected["nut_load_margin_n"].values())
             seat_txt = (f" Nut seating ({st['nut_seating']['kind']}: {st['nut_seating']['basis']}): the moving mass seats the nuts with "
                         + ", ".join(f"{v['seating_load_n']:.1f}" for v in st["nuts"].values()) + f" N. With the screws' lead error (LSC-015) over the "
-                        f"{travel:g} mm travel added ({st['lead_error_over_travel_mm']:.3f} mm, {'ASSUMED class value' if st['lead_accuracy']['assumed'] else 'catalogue'}) "
+                        f"{travel:g} mm travel added ({st['lead_error_over_travel_mm']:.3f} mm per screw, {'ASSUMED class value' if st['lead_accuracy']['assumed'] else 'catalogue'}; "
+                        f"two screws at opposite limits, the budget LSC-015 asks for) "
                         f"the height error is {expected['height_error_mm']:.3f} mm and the least nut load would be {least:.1f} N"
                         + (f": {', '.join(wc_['nuts_not_seated'])} unseat(s) ({wc_['screw']} standing {wc_['stands']}); the bed's level then "
                            f"changes {wc_['bed_level_change_across_print_area_mm']:.3f} mm across the print area, a guide block carries "
