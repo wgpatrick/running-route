@@ -504,3 +504,118 @@ def test_waivers_come_across_with_include():
     top = Design("top")
     top.include(sub, prefix="a_")
     assert top.waivers[0]["parts"] == ["a_mount"]
+
+
+# ---------------------------------------------------------------------------------------------------- DG-04: no thread in plastic
+def printed_thread_case(how="tapped", reason=None, load=False):
+    """A steel lid on a printed block. how: 'tapped' (screw threads into the plastic), 'insert' (heat-set insert),
+    'bolt' (clearance hole through the block, nut underneath). load: the lid is declared in a load path."""
+    d = Design("pt")
+    d.add("lid", Pos(0, 0, 21.5) * (Box(30, 30, 3) - Cylinder(1.7, 3)), material="steel", process="sheet",
+          meta={"load_path": True} if load else {})
+    blk = Pos(0, 0, 10) * Box(30, 30, 20)
+    if how == "bolt":
+        blk -= Pos(0, 0, 10) * Cylinder(1.8, 20)
+    d.add("block", blk, material="petg", process="printed", meta={"print_up": "+Z"})
+    if how == "bolt":
+        add_screw(d, "s", "M3", 30, at=(0, 0, 23), clamps=("lid", "block"))
+        add_nut(d, "n", "M3", at=(0, 0, 0), direction=(0, 0, -1), screw="s", standard="iso10511")
+    else:
+        add_screw(d, "s", "M3", 10, at=(0, 0, 23), threads_into="block", clamps=("lid",), insert=(how == "insert"),
+                  insert_reason=reason)
+    return d
+
+
+def test_dg04_thread_in_a_printed_part():
+    f = found(run(printed_thread_case("tapped")), "thread_in_printed_part", "warning")
+    assert f and f[0].data["part"] == "block" and f[0].data["value"] == 1 and "FST-090" in f[0].data["see_also"]
+    assert found(run(printed_thread_case("insert")), "thread_in_printed_part", "warning")          # an insert without a reason
+    assert found(run(printed_thread_case("insert", reason="short")), "thread_in_printed_part")     # a reason under 20 characters
+    r = run(printed_thread_case("insert", reason="blind hood: no access for a nut inside it"))
+    assert not found(r, "thread_in_printed_part") and r.metrics["threads_in_printed_parts"]["accepted_inserts"][0]["screw"] == "s"
+    assert not found(run(printed_thread_case("bolt")), "thread_in_printed_part")
+    assert found(run(printed_thread_case("tapped", load=True)), "thread_in_printed_part", "error")  # in a load path
+    d = printed_thread_case("tapped")
+    d.waive("DG-04", "block", reason="test fixture, opened once and never loaded")
+    assert not found(run(d), "thread_in_printed_part")
+    assert RULES["FST-090"].status == "xref" and "DG-04" in RULES["FST-090"].checked_by
+
+
+# ---------------------------------------------------------------------------------------------------- DG-05: printed holes
+def printed_hole_case(hole, axis="z", washer=False):
+    """A 4 mm printed plate (printed +Z up) on a 3 mm steel plate, an M3 through-bolt with a nut. axis 'z': the hole is
+    vertical in the print; 'x': its axis lies in the build plane."""
+    d = Design("ph")
+    if axis == "z":
+        d.add("pp", Pos(0, 0, 2) * (Box(30, 30, 4) - Cylinder(hole / 2, 4)), material="petg", process="printed",
+              meta={"print_up": "+Z"})
+        d.add("base", Pos(0, 0, -1.5) * (Box(30, 30, 3) - Cylinder(1.7, 3)), material="steel", process="sheet")
+        add_screw(d, "s", "M3", 12, at=(0, 0, 4), clamps=("pp", "base"), washer=washer)
+        add_nut(d, "n", "M3", at=(0, 0, -3), direction=(0, 0, -1), screw="s")
+    else:
+        from build123d import Rot
+        d.add("pp", Pos(2, 0, 0) * (Box(4, 30, 30) - Rot(0, 90, 0) * Cylinder(hole / 2, 4)), material="petg", process="printed",
+              meta={"print_up": "+Z"})
+        d.add("base", Pos(-1.5, 0, 0) * (Box(3, 30, 30) - Rot(0, 90, 0) * Cylinder(1.7, 3)), material="steel", process="sheet")
+        add_screw(d, "s", "M3", 12, at=(4, 0, 0), direction=(-1, 0, 0), clamps=("pp", "base"), washer=washer)
+        add_nut(d, "n", "M3", at=(-3, 0, 0), direction=(-1, 0, 0), screw="s")
+    return d
+
+
+def test_dg05_printed_clearance_holes():
+    from mechloop.parts import printed_clearance_hole
+
+    assert [printed_clearance_hole(s) for s in ("M2.5", "M3", "M4", "M5", "M6")] == [3.1, 3.6, 4.7, 5.7, 6.8]
+    assert printed_clearance_hole("M3", in_plane=True) == 3.7
+    f = found(run(printed_hole_case(3.4)), "printed_hole_too_small", "warning")         # medium 3.4 + 0.2 = 3.6
+    assert f and f[0].data["value"] == pytest.approx(3.4, abs=0.03) and f[0].data["limit"] == pytest.approx(3.6)
+    r = run(printed_hole_case(3.6))
+    assert not found(r, "printed_hole_too_small") and not found(r, "printed_hole_oversize_no_washer")
+    assert r.metrics["printed_clearance_holes"][0]["orientation"] == "vertical"
+    f = found(run(printed_hole_case(3.6, axis="x")), "printed_hole_too_small")            # in the build plane: 3.7
+    assert f and f[0].data["limit"] == pytest.approx(3.7)
+    assert not found(run(printed_hole_case(3.7, axis="x")), "printed_hole_too_small")
+    d = printed_hole_case(3.4)
+    d.practice = {"limits": {"DG-05.allowance_vertical_mm": 0.0}}                         # the owner's calibrated allowance
+    assert not found(run(d), "printed_hole_too_small")
+    f = found(run(printed_hole_case(4.4)), "printed_hole_oversize_no_washer", "warning")  # coarse 3.6 + 0.4 = 4.0, bare head
+    assert f and f[0].data["limit"] == pytest.approx(4.0)
+    assert not found(run(printed_hole_case(4.4, washer=True)), "printed_hole_oversize_no_washer")
+    assert not found(run(plate_pair(hole=7.0, nscrews=2)), "printed_hole_oversize_no_washer")    # metal: FST-020's
+
+
+# ---------------------------------------------------------------------------------------------------- DG-01: metal sleeves
+def sleeve_case(plastic_t=3.8, join=True):
+    """A printed plate on a loaded aluminium block, located on a 4 mm aluminium sleeve the screw clamps through; a
+    washer under the head bears on the sleeve's end."""
+    from mechloop.parts.hardware import spacer_round
+
+    d = Design("sl")
+    d.add("block", Pos(0, 0, -5) * (Box(40, 40, 10) - Cylinder(1.7, 10)), material="al6061", process="sheet",
+          meta={"load_path": True})
+    d.add("holder", Pos(0, 0, plastic_t / 2) * (Box(30, 30, plastic_t) - Cylinder(3.3, plastic_t)), material="abs",
+          process="printed", meta={"print_up": "+Z"})
+    place(d, "sleeve", spacer_round("M3", 4.0, "aluminium"), Location((0, 0, 0)))
+    add_screw(d, "s", "M3", 18, at=(0, 0, 4.0), clamps=("sleeve", "block"), washer=True)
+    add_nut(d, "n", "M3", at=(0, 0, -10), direction=(0, 0, -1), screw="s", locking="nyloc")
+    if join:
+        d.join("sleeve", "holder", "located on the compression sleeve")
+    return d
+
+
+def test_dg01_clamp_through_a_declared_metal_sleeve_is_not_a_load_path():
+    r = run(sleeve_case())
+    assert not found(r, "printed_load_path")
+    assert r.metrics["printed_parts_on_metal_sleeves"]["holder"]["block"][0]["sleeve"] == "sleeve"
+    assert found(run(sleeve_case(join=False)), "printed_load_path", "error")            # no declared sleeve: contact counts
+    assert found(run(sleeve_case(plastic_t=4.0)), "printed_load_path", "error")         # the washer bears on the plastic too
+
+
+# ---------------------------------------------------------------------------------------------------- FST-072
+def test_fst072_nyloc_temperature():
+    d = sleeve_case()
+    d.get("block").meta["service_temp_c"] = 150.0
+    f = found(run(d), "nyloc_too_hot", "warning")
+    assert f and f[0].data["value"] == 150.0 and f[0].data["limit"] == 120.0
+    d.get("block").meta["service_temp_c"] = 60.0
+    assert not found(run(d), "nyloc_too_hot")

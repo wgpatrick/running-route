@@ -111,7 +111,9 @@ RULES: dict[str, Rule] = {r.id: r for r in [
     Rule("DG-01", "No 3D-printed part in a load path unless waived with a reason", "error", "owner",
          "docs/DESIGN_GUIDELINES.md, Process choice", "implemented",
          note="carries a guide, bearing, lead-screw nut or screw, motor (incl. an extruder), belt tension (pulley, idler, "
-              "belt clamp), the bed, or a part declared meta['load_path']; by a shared screw, a declared join or contact"),
+              "belt clamp), the bed, or a part declared meta['load_path']; by a shared screw, a declared join or contact. Contact is "
+              "not a load path where the clamp goes through a metal sleeve declared in the printed part (a join) and the "
+              "printed part touches neither the head nor its washers"),
     Rule("DG-02", "No tapped thread in aluminium we make; no tapped extrusion ends", "warning", "owner",
          "docs/DESIGN_GUIDELINES.md, Fasteners and threads", "implemented",
          note="accepted: a through-bolt and nut, add_screw(insert='steel' | 'pem'), a T-nut"),
@@ -192,6 +194,7 @@ class _Ctx:
         self.count = collections.Counter()
         self.waivers = [dict(w, suppressed=[]) for w in (design.waivers or [])]
         self.turned = {}
+        self.sleeved = {}             # DG-01: printed part -> load part -> the screws whose clamp a metal sleeve carries
 
     def limit(self, key: str, default: float) -> float:
         return float(self.limits.get(key, default))
@@ -568,7 +571,7 @@ def _holes(x: _Ctx, rows):
                 edge[e["part"]]["holes"] = edge[e["part"]].get("holes", 0) + 1
             if e.get("iso273") == "tighter than fine" and c.material not in PLASTICS and frozenset((row["screw"], e["part"])) not in axle:
                 tight.append({"part": e["part"], "screw": row["screw"], "hole_mm": e["hole_mm"], "fine_mm": FS.ISO273[row["size"]][0]})
-            if e.get("iso273") == "larger than coarse" and i == 0:
+            if e.get("iso273") == "larger than coarse" and i == 0 and not _printed(c):     # printed holes: DG-05
                 loose.append({"part": e["part"], "screw": row["screw"], "hole_mm": e["hole_mm"], "coarse_mm": FS.ISO273[row["size"]][2]})
     items = [v for v in sorted(edge.values(), key=lambda v: v["edge_d"]) if not x.waived("FST-050", "hole_near_edge", [v["part"]])]
     if items and x.on("FST-050"):
@@ -773,10 +776,16 @@ def _dg01(x: _Ctx, rows):
             if not bboxes_overlap(c.shape, qc.shape, 0.05):
                 continue
             try:
-                if c.shape.distance_to(qc.shape) < 0.05:
-                    links[c.name][q].add("contact")
+                touching = c.shape.distance_to(qc.shape) < 0.05
             except Exception:
                 continue
+            if not touching:
+                continue
+            via = _sleeves_carry(x, c.name, q, rows)
+            if via:
+                x.sleeved.setdefault(c.name, {})[q] = via
+                continue
+            links[c.name][q].add("contact")
     for b in x.d.belts:
         for node in b.path:
             if node[0] != "anchor":
@@ -807,6 +816,193 @@ def _dg01(x: _Ctx, rows):
                hint=f"Make it a laser-cut or machined aluminium part (two or three stacked plates where it is a block), or declare "
                     f"the exception: d.waive('DG-01', '{c.name}', reason='...').", part=c.name, carries=via)
     return flagged
+
+
+METALS_PREFIX = ("al", "steel", "stainless", "brass", "bronze")
+
+
+def _printed(c) -> bool:
+    from ..tolerance.process import process_of
+
+    return not c.cots and _proc(c, process_of) == "printed"
+
+
+def _sleeves_carry(x: _Ctx, p: str, q: str, rows) -> list:
+    """DG-01: printed part p touches load part q, but the screws that clamp q next to p pass through metal sleeves
+    (compression limiters) declared in p (a join between sleeve and p), the head bears on the sleeve (directly or
+    through washers), and p touches neither the head nor those washers: the clamp load goes through the metal, and p is
+    only located on it. Returns [{screw, sleeve}] when that holds for at least one screw and p is clamped by none; [] when
+    p is clamped by a screw that holds q, or no declared sleeve is found."""
+    from ..geom import bboxes_overlap
+
+    P = x.comps[p]
+    out = []
+    for row in rows:
+        if q not in row["held"]:
+            continue
+        if p in row["held"] or any(e["part"] == p for e in row["stack"]):
+            return []
+        sl = [e for e in row["stack"] if e["role"] == "clamped" and FS.is_spacer(x.comps[e["part"]])
+              and str(x.comps[e["part"]].material).startswith(METALS_PREFIX) and frozenset((e["part"], p)) in x.d.joins]
+        head_chain = [row["screw"]]
+        if sl:
+            before = [e["part"] for e in row["stack"] if e["from_mm"] < sl[0]["from_mm"] - 1e-6]
+            if any(not FS.is_washer(x.comps[n]) for n in before):
+                sl = []
+            head_chain += before
+        for n in head_chain:          # p under the head or its washer: p is in the clamp, whatever the sleeve does
+            o = x.comps[n]
+            try:
+                if bboxes_overlap(P.shape, o.shape, 0.05) and P.shape.distance_to(o.shape) < 0.05:
+                    return []
+            except Exception:
+                return []
+        if sl:
+            out.append({"screw": row["screw"], "sleeve": sl[0]["part"], "sleeve_length_mm": sl[0]["thickness_mm"]})
+    return out
+
+
+def _dg04(x: _Ctx, rows, flagged_dg01):
+    """Screws that thread into a printed part: tapped, self-tapped or into a heat-set insert (FST-090's case)."""
+    loads = _load_kinds(x)
+    per_part = collections.defaultdict(list)
+    accepted = []
+    for row in rows:
+        if row["tnut"]:
+            continue
+        for t in row["threads_into"]:
+            c = x.comps[t]
+            if FS.is_nut(c) or not _printed(c):
+                continue
+            reason = str(x.comps[row["screw"]].meta.get("insert_reason") or "").strip()
+            if row["heatset_insert"] and len(reason) >= MIN_WAIVER_REASON:
+                accepted.append({"screw": row["screw"], "part": t, "insert_reason": reason})
+                continue
+            load = sorted({loads[n] for n in row["joint"] if n != t and n in loads})
+            per_part[t].append({"screw": row["screw"], "kind": "heat-set insert" if row["heatset_insert"] else "thread in the plastic",
+                                "load_path": bool(load or t in flagged_dg01), "loads": load,
+                                **({"insert_reason_too_short": reason} if reason else {})})
+    if x.on("DG-04"):
+        for part, items in sorted(per_part.items()):
+            if x.waived("DG-04", "thread_in_printed_part", [part]):
+                continue
+            in_load = [i for i in items if i["load_path"]]
+            kinds = sorted({i["kind"] for i in items})
+            x.flag("DG-04", "thread_in_printed_part",
+                   f"{part} (printed) takes {len(items)} screw(s) threaded into it ({', '.join(kinds)}: "
+                   f"{', '.join(i['screw'] for i in items[:6])}{' ...' if len(items) > 6 else ''})"
+                   + (f", {len(in_load)} of them in a load path ({', '.join(sorted({l for i in in_load for l in i['loads']}) or ['the part is in DG-01'])})" if in_load else "")
+                   + ". The owner's practice: through-bolt with a nut and washers; no thread in plastic (FST-090).",
+                   [part, *[i["screw"] for i in items][:40]], value=len(items), limit=0, unit="threads in a printed part",
+                   severity="error" if in_load else "warning",
+                   hint="Through-bolt: clearance hole at printed_clearance_hole(size), washer under head and nut, nyloc nut on the "
+                        "side with access; no access: a nut captured in a printed pocket or a PEM stud in the metal part; a "
+                        "heat-set insert only with add_screw(..., insert=True, insert_reason='...').",
+                   part=part, screws=items[:80], see_also=["FST-090", "FST-010"])
+    return {"threads": {p: [i["screw"] for i in v] for p, v in sorted(per_part.items())}, "accepted_inserts": accepted}
+
+
+def _up_vector(c):
+    up = c.meta.get("print_up") or (c.meta.get("print") or {}).get("orientation")
+    if not isinstance(up, str) or len(up) != 2 or up[0] not in "+-" or up[1].upper() not in "XYZ":
+        return None
+    v = np.zeros(3)
+    v["XYZ".index(up[1].upper())] = 1.0 if up[0] == "+" else -1.0
+    return v
+
+
+def _dg05(x: _Ctx, rows, pr):
+    """Printed clearance holes against ISO 273 medium + the FDM allowance; oversize ones under a bare head or nut."""
+    av = x.limit("DG-05.allowance_vertical_mm", 0.2)
+    ah = x.limit("DG-05.allowance_in_plane_mm", 0.3)
+    small, big, seen = [], [], []
+    for row in rows:
+        size = row["size"]
+        if size not in FS.ISO273:
+            continue
+        a = np.asarray(row["axis_towards_head"], float)
+        _, u, v = FS.frame(a)
+        under, tdir, L, d = np.asarray(row["under_head"], float), -a, row["length_mm"], row["d"]
+        stack = sorted(row["stack"], key=lambda e: e["from_mm"])
+        for i, e in enumerate(stack):
+            c = x.comps[e["part"]]
+            if e["role"] != "clamped" or not _printed(c):
+                continue
+            lo, hi = e["from_mm"] + 0.15, min(e["to_mm"], L) - 0.15
+            best = None
+            for s_ in np.arange(lo, max(hi, lo) + 1e-9, 0.5):       # the narrowest closed section is the clearance hole
+                h = FS.hole(pr, e["part"], under + tdir * s_, u, v, d)
+                if h.get("hole_mm") is None or h.get("slot"):
+                    continue
+                best = h["hole_mm"] if best is None else min(best, h["hole_mm"])
+            if best is None:
+                continue
+            up = _up_vector(c)
+            in_plane = up is not None and abs(float(up @ a)) < 0.5
+            allow = ah if in_plane else av
+            fine, med, coarse = FS.ISO273[size]
+            item = {"part": e["part"], "screw": row["screw"], "hole_mm": best, "orientation": "in the build plane" if in_plane else
+                    ("vertical" if up is not None else "vertical (assumed: no print_up)"), "allowance_mm": allow,
+                    "min_mm": round(med + allow, 2), "max_bare_mm": round(coarse + 0.4, 2)}
+            seen.append(item)
+            if best < med + allow - 0.02:
+                small.append(item)
+            elif best > coarse + 0.4 + 0.02:
+                prev = stack[i - 1] if i else None
+                nxt = stack[i + 1] if i + 1 < len(stack) else None
+                bare_head = i == 0 and e["from_mm"] < 0.5
+                bare_nut = any(n is not None and n["role"] == "nut" and abs(n["from_mm"] - (e["to_mm"] if n is nxt else e["from_mm"])) < 0.6
+                               for n in (prev, nxt))
+                if bare_head or bare_nut:
+                    big.append(dict(item, under="head" if bare_head else "nut"))
+    if x.on("DG-05"):
+        small = [t for t in small if not x.waived("DG-05", "printed_hole_too_small", [t["part"]])]
+        if small:
+            w = min(small, key=lambda t: t["hole_mm"] - t["min_mm"])
+            x.flag("DG-05", "printed_hole_too_small",
+                   f"{len(small)} clearance hole(s) in printed parts are drawn under ISO 273 medium plus the FDM allowance, e.g. "
+                   f"{w['part']} {w['hole_mm']} mm for {w['screw']} ({w['orientation']}: at least {w['min_mm']} mm); vertical holes "
+                   f"print about 0.2 to 0.3 mm small, so the screw binds or the hole needs drilling.",
+                   sorted({t["part"] for t in small}), value=w["hole_mm"], limit=w["min_mm"], unit="mm",
+                   hint="Draw printed_clearance_hole(size) (M3 3.6, M5 5.7; +0.1 more and a teardrop for a hole in the build "
+                        "plane); calibrate the allowance with a coupon on the printer.", items=small[:80], see_also=["FST-020"])
+        big = [t for t in big if not x.waived("DG-05", "printed_hole_oversize_no_washer", [t["part"]])]
+        if big:
+            w = max(big, key=lambda t: t["hole_mm"])
+            x.flag("DG-05", "printed_hole_oversize_no_washer",
+                   f"{len(big)} clearance hole(s) in printed parts are larger than ISO 273 coarse + 0.4 mm under a bare {w['under']}, "
+                   f"e.g. {w['part']} {w['hole_mm']} mm for {w['screw']} (over {w['max_bare_mm']} mm): the head or nut sinks into the plastic.",
+                   sorted({t["part"] for t in big}), value=w["hole_mm"], limit=w["max_bare_mm"], unit="mm",
+                   hint="A washer under the head and the nut (add_screw(..., washer=True), add_washer), or a smaller hole.",
+                   items=big[:80], see_also=["FST-020", "FST-031", "PRT-030"])
+    return seen
+
+
+def _fst072(x: _Ctx, rows):
+    lim = x.limit("FST-072.max_temp_c", 120.0)
+    items = []
+    for row in rows:
+        lk = [str(row["locking"] or "").lower()] + [str(x.comps[e["part"]].meta.get("locking") or "").lower()
+                                                    for e in row["stack"] if e["role"] == "nut"]
+        if not any("nyloc" in k or "nylon" in k for k in lk):
+            continue
+        parts = [e["part"] for e in row["stack"]] + list(row["threads_into"])
+        temps = [(float(x.comps[n].meta["service_temp_c"]), n) for n in parts if x.comps[n].meta.get("service_temp_c") is not None]
+        hot = [n for n in parts if (x.comps[n].sku or "").startswith(("HOTEND", "HEATER", "BED-HEATER"))]
+        t = max(temps) if temps else None
+        if hot or (t and t[0] > lim):
+            if not x.waived("FST-072", "nyloc_too_hot", [row["screw"]]):
+                items.append({"screw": row["screw"], "temp_c": t[0] if t else None, "part": (hot or [t[1]])[0]})
+    if items and x.on("FST-072"):
+        w = items[0]
+        x.flag("FST-072", "nyloc_too_hot",
+               f"{len(items)} nylon-insert lock nut(s) sit on parts hotter than {lim:g} degC or on a heater, e.g. {w['screw']} on {w['part']}"
+               + (f" ({w['temp_c']:g} degC)" if w["temp_c"] is not None else "") + ".",
+               [i["screw"] for i in items], value=w["temp_c"], limit=lim, unit="degC",
+               hint="An all-metal lock nut (ISO 7042 / DIN 980) or a thread adhesive rated for the temperature.", items=items[:80])
+    return {"nyloc_screws": sum(any("nyloc" in str(k).lower() for k in [row["locking"]] + [x.comps[e["part"]].meta.get("locking")
+                                                                                       for e in row["stack"] if e["role"] == "nut"]) for row in rows),
+            "too_hot": items}
 
 
 def _proc(c, process_of):
@@ -945,7 +1141,9 @@ def verify_practice(design: Design) -> VerifierResult:
                  ("bearings", lambda: _bearings(x, bcs)), ("set screws", lambda: _set_screws(x)),
                  ("FST-051/101", lambda: _fst051_101(x, rows)), ("holes", lambda: _holes(x, rows)), ("FST-034", lambda: _fst034(x, rows)),
                  ("FST-081", lambda: _fst081(x, rows)), ("LOC-006", lambda: _loc006(x)), ("FST-040", lambda: _torque_table(x, rows)),
-                 ("DG-01", lambda: _dg01(x, rows)), ("DG-02", lambda: _dg02(x, rows)), ("DG-03", lambda: _dg03(x))]
+                 ("FST-072", lambda: _fst072(x, rows)),
+                 ("DG-01", lambda: _dg01(x, rows)), ("DG-02", lambda: _dg02(x, rows)), ("DG-03", lambda: _dg03(x)),
+                 ("DG-04", lambda: _dg04(x, rows, results.get("DG-01") or [])), ("DG-05", lambda: _dg05(x, rows, pr))]
         results = {}
         for name, fn in steps:
             try:
@@ -992,6 +1190,10 @@ def verify_practice(design: Design) -> VerifierResult:
             "torque_table": results.get("FST-040"),
             "belt_pulleys": results.get("belts"),
             "printed_parts_in_load_path": results.get("DG-01"),
+            "printed_parts_on_metal_sleeves": x.sleeved or None,
+            "threads_in_printed_parts": results.get("DG-04"),
+            "printed_clearance_holes": results.get("DG-05"),
+            "nyloc_temperature": results.get("FST-072"),
             "machined_parts": results.get("DG-03"),
             "limits_overridden": dict(x.limits) or None, "disabled": sorted(x.disabled) or None,
             "method": "point-in-solid probing of the B-rep at the home pose (mechloop/verifiers/fastener_stack.py); "
