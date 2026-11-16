@@ -654,8 +654,7 @@ USE_CUTOFFS = True
 
 def build_electrical(d: Design) -> Electrical:
     """As v8.1, with the BTT Octopus V1.1 in place of the SKR Mini E3 V3.0: seven drivers used, one motor each (X M0, Y
-    M1, Y left M2, Z rear M3, extruder M4, Z front-left M6, Z front-right M7; M5 spare: the Klipper the twin runs is built for
-    the STM32G0B1 and reserves M5's dir pin PF0 for its crystal, which the Octopus's STM32F446 does not); X and Y switches and the probe on
+    M1, Y left M2, Z rear M3, extruder M4, Z front-left M5, Z front-right M6; M7 spare); X and Y switches and the probe on
     STOP0 / STOP1 / STOP2 (their DIAG jumpers removed), the probe still through a BAT85 on an ordinary 3.3 V input; the
     Pi Zero 2 W on the Octopus's Raspberry Pi header (5 V, GND, UART2); Klipper [z_tilt] with the three screw positions."""
     from mechloop.electrical import add_board_5v_port
@@ -753,8 +752,8 @@ def build_electrical(d: Design) -> Electrical:
     # v8.2: three Z motors, each on its own driver; their 500 mm leads plug straight into the Octopus (front-right: a short
     # stub; front-left: along the front loom; rear: along the back loom)
     el.wire("Z motor rear", "control_board.M3", "z_motor.coils", 24, conductors=4, via=["tray_right", "back"])
-    el.wire("Z motor front left", "control_board.M6", "z_motor_fl.coils", 24, conductors=4, via=["front"])
-    el.wire("Z motor front right", "control_board.M7", "z_motor_fr.coils", 24, conductors=4)
+    el.wire("Z motor front left", "control_board.M5", "z_motor_fl.coils", 24, conductors=4, via=["front"])
+    el.wire("Z motor front right", "control_board.M6", "z_motor_fr.coils", 24, conductors=4)
     el.wire("host serial + 5 V", "control_board.RPI", "host.GPIO", 26, conductors=4,
             note="Octopus 'Raspberry Pi' header (5 V, GND, PD6 RX, PD5 TX: USART2) to the Pi's GPIO 2/6/8/10; Klipper serial /dev/ttyAMA0")
     el.firmware = {
