@@ -403,46 +403,73 @@ def main() -> None:
     req = {r["data"]["requirement"]: r["message"] for r in v["requirements"] if r.get("data")}
     sc = v["score"]
     bs = v["fea"].get("bed_support", {})
+
+    def reqf(key):
+        # Requirement text by its name; designs word the same requirement slightly differently, so fall back to the
+        # requirement whose name shares the most words with the key.
+        if key in req:
+            return req[key]
+        words = set(key.lower().split())
+        best = max(req, key=lambda k: len(words & set(k.lower().split())), default=None)
+        return req[best] if best and len(words & set(best.lower().split())) >= max(3, len(words) // 2) else ""
+
+    def bed_support_text():
+        # Read from the design's own bed requirements (sag and nut seating) when it states them, else the bed_support study.
+        lines = [m for k, m in req.items() if "sag" in k.lower() or "seated" in k.lower()]
+        if lines:
+            return " ".join(lines)[:600]
+        pw = bs.get("print_weight", {})
+        return f"print weight at the worst corner: {pw.get('judged_mm', '?')} mm (limit {pw.get('limit_mm', '?')} mm)" if pw else ""
+
+    def mains_text():
+        covers = [p["name"] for p in v["parts"] if p["name"].startswith("mains_cover")]
+        if covers:
+            return f"Live terminals under {len(covers)} printed covers ({', '.join(covers)}), each held by screws into inserts."
+        return "Open frame; live terminals not covered."
+
+    def board_text():
+        b = next((p for p in v["parts"] if p["name"] == "control_board"), None)
+        return f"{b['sku']}: {b.get('desc') or ''}".strip(": ") if b else ""
+
     crit = {
         "Frame": [
             ("Frame stiffness at the nozzle", f"X {sc['frame_stiffness_n_per_mm']['x']:.0f} N/mm, Y {sc['frame_stiffness_n_per_mm']['y']:.0f} N/mm (FEA, bonded joints: optimistic)"),
-            ("Print volume", req.get("print volume: travel >= 180 x 180 x 180 mm", "")),
+            ("Print volume", reqf("print volume: travel >= 180 x 180 x 180 mm")),
             ("General tolerance, extrusion", "position ±0.30 mm, cut length ±0.20 %"),
         ],
         "Y drive and rails": [
-            ("Belt plane", req.get("target: both Y belts within 1 mm of plane in >= 98% of builds", "")),
+            ("Belt plane", reqf("target: both Y belts within 1 mm of plane in >= 98% of builds")),
             ("Resonance (Y)", f"{sc['resonance_hz']['y']} Hz"),
-            ("Drive margin", req.get("drive margin >= 3x on every axis", "")),
-            ("Carriage on rail", req.get("every carriage stays >= 5 mm inside its rail ends over the mechanical travel (over-travel included)", "")[:200]),
+            ("Drive margin", reqf("drive margin >= 3x on every axis")),
+            ("Carriage on rail", reqf("every carriage stays >= 5 mm inside its rail ends over the mechanical travel (over-travel included)")[:200]),
         ],
         "Gantry beam (moves in Y)": [
             ("Nozzle stiffness", f"Y: {fea_line('nozzle_stiffness_y')}; X: {fea_line('nozzle_stiffness_x')}"),
             ("Resonance (X)", f"{sc['resonance_hz']['x']} Hz"),
         ],
         "Toolhead (X carriage)": [
-            ("Moving mass on X", req.get("target: direct drive, at most 0.4 kg moving in X", "")),
+            ("Moving mass on X", reqf("target: direct drive, at most 0.4 kg moving in X")),
             ("Belt clamp", f"x_belt_pull: {fea_line('x_belt_pull')}"),
             ("Nozzle-to-bed gap scatter", f"99 % of builds within ±{tol['gap_error_mm_99']} mm; biggest contributors: "
              + ", ".join(c["joint"] for c in tol["largest_contributors_to_gap"][:3])),
-            ("Probe", req.get("the bed probe switches before the nozzle touches for every unit, and over-travel ends short of its face", "")[:220]),
+            ("Probe", reqf("the bed probe switches before the nozzle touches for every unit, and over-travel ends short of its face")[:220]),
         ],
         "Z drive and rails": [
-            ("Lead screws", "three T8×2 screws on one closed belt from one motor; self-locking " + req.get("Z lead screw self-locking (efficiency < 0.5)", "")),
-            ("Nut thrust (rear)", f"nut_block: {fea_line('nut_thrust')}"),
-            ("Drive mount", f"z_drive_mount: {fea_line('z_drive_mount_thrust')}"),
-            ("Pedestal", f"z_pedestal_fr: {fea_line('z_pedestal_thrust')}"),
-            ("Rail and screw tops", req.get("Z rails and lead screw end below the top back extrusion (no rubbing)", "")),
+            ("Lead screws", "three T8×2 screws on one closed belt from one motor; self-locking " + reqf("Z lead screw self-locking (efficiency < 0.5)")),
+        ] + [(f"Load case {c}", f"{', '.join(v['fea'][c].get('parts', [])[:2]) or c}: {fea_line(c)}")
+             for c in v["fea"] if ("thrust" in c) and fea_line(c)] + [
+            ("Rail and screw tops", reqf("Z rails and lead screw end below the top back extrusion (no rubbing)")),
         ],
         "Bed and Z stage": [
             ("Bed level as built", f"bed out of level 99th percentile {tol['bed_out_of_level_mm_99']} mm before levelling; three-screw Z, one guide block per rail"),
             ("Payload", f"payload_x3_on_bed: {fea_line('payload_x3_on_bed') or 'see report'}"),
             ("Heated bed +60 K", f"bed_heated_60K: {fea_line('bed_heated_60K') or 'see report'}"),
-            ("Bed support result", "Recomputed with all three nut seats: 1 kg at the worst corner sags 0.0147 mm (target 0.02) while all nuts stay seated. With two screws at opposite lead limits (0.142 mm height error) the rear nut lifts: level changes 0.080 mm and sag becomes 0.041 mm. Options: matched or measured screws, preloaded nuts, or independent Z motors with z_tilt."),
-            ("Bed reaches nozzle", req.get("bed can reach the nozzle: 0-0.2 mm gap at the top of the print height", "")),
+            ("Bed support result", bed_support_text()),
+            ("Bed reaches nozzle", reqf("bed can reach the nozzle: 0-0.2 mm gap at the top of the print height")),
         ],
         "Electronics bay": [
-            ("Mains", "Open frame; live terminals not covered (open item A3). Supply earthed plus one extrusion."),
-            ("Board", "BTT SKR Mini E3 V3.0 in v8 (four drivers). v8.1 candidate: BTT Manta M5P (two Z drivers)."),
+            ("Mains", mains_text()),
+            ("Board", board_text()),
         ],
     }
     subs_of_group = defaultdict(list)

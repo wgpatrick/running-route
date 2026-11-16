@@ -538,7 +538,7 @@ def write_bom(cx: Ctx) -> dict:
               "to the head on every length, so no verifier sees this. These need **fully threaded** screws (or studding):", "",
               table(["Screw", "SKU", "Thread needed for", "Starts, mm from under the head", "Standard thread starts at, mm"],
                     [[t["screw"], t["sku"], t["into"], t["starts_mm_from_head"], t["thread_starts_mm_from_head"]] for t in tl]), ""]
-    notin = NOT_IN_MODEL
+    notin = not_in_model(cx)
     T += ["## Not in the model: the buyer must add", "",
           "The design file has no line for these. They are listed so the order is complete; quantities and types are the builder's choice (generator's list, not design data).", "",
           "\n".join(f"- {x}" for x in notin), ""]
@@ -572,6 +572,25 @@ NOT_IN_MODEL = [
     "Adhesive / cleaning materials for bonding the heater pad, thermal cut-off and magnetic sheet to the plate; high-temperature tape for the cut-off.",
     "Crimp tools for JST-XH, Micro-Fit, ferrules and quick-connects.",
 ]
+
+
+def not_in_model(cx) -> list[str]:
+    """NOT_IN_MODEL without the lines the design already covers (washers drawn, mains covers drawn, thread locker on the BOM)."""
+    comps = list(cx.d.components)
+    have_washers = any((c.sku or "").startswith("WASHER-") for c in comps)
+    have_covers = any(c.name.startswith("mains_cover") for c in comps)
+    have_lock = any("THREADLOCKER" in k for k in (cx.d.bom_extras or {}))
+    out = []
+    for x in NOT_IN_MODEL:
+        if have_washers and x.startswith("Washers:"):
+            continue
+        if have_covers and x.startswith("Covers for the mains terminals"):
+            x = ("Insulated (fully shrouded) 6.3 mm receptacles on the inlet's tabs; the printed hoods in the design cover the relay, "
+                 "supply and inlet terminals from above and the sides only.")
+        if have_lock and x.startswith("Thread-locking compound"):
+            x = "Grease for the rails and lead screws (thread locker is on the BOM)."
+        out.append(x)
+    return out
 
 
 def _group(ext):
@@ -1366,16 +1385,18 @@ def write_fabrication(cx: Ctx, drawings: bool = True) -> dict:
 # =================================================================================================== 3. ASSEMBLY
 STAGES = [  # the order a person builds in (generator's; the simulation's own order is kept in data/assembly_plan.json)
     ("frame", "Frame"), ("zguides", "Z uprights, rails and blocks"), ("yguides", "Y rails and blocks"),
-    ("bay", "Electronics tray, mains inlet, earth"), ("zdrive", "Z drive: mount, pedestals, bearings, screws, pulleys, belt"),
+    ("bay", "Electronics tray, mains inlet, earth"), ("zdrive", "Z drive: bearing supports, screws, pulleys, motor, belt"),
     ("carrier", "Bed carrier onto its blocks and nuts"), ("bed", "Bed: tabs, posts, plate, tie, heater, magnet, sheet"),
     ("gantry", "Gantry: Y plates, X beam, X rail, X drive"), ("ydrive", "Y drives, idlers, tensioners, Y endstop"),
     ("toolhead", "Toolhead: plate, extruder, hotend, probe, part cooling")]
 SUB_STAGE = {"electronics": "bay", "z_drive": "zdrive", "bed_carrier": "carrier", "x_drive": "gantry", "x_idler_unit": "gantry",
-             "part_cooling": "toolhead"}
+             "part_cooling": "toolhead", "z_tower_rear": "zdrive", "z_tower_fl": "zdrive", "z_tower_fr": "zdrive"}
 NAME_STAGE = [(("bed_probe",), "toolhead"), (("frame_", "post_", "bracket_"), "frame"), (("upright_", "brkt_up", "z_rail", "z_carriage"), "zguides"),
               (("y_rail", "y_carriage"), "yguides"), (("inlet", "earth", "tray_", "electronics_tray", "psu", "control_board", "host"), "bay"),
-              (("z_pedestal", "z_bearing", "z_pulley", "leadscrew", "z_idler", "z_sleeve", "z_drive_mount", "z_motor"), "zdrive"),
-              (("z_nut", "nut_pin", "nut_block", "back_plate", "front_plate", "bed_arm"), "carrier"), (("bed",), "bed"),
+              (("z_pedestal", "z_bearing", "z_pulley", "leadscrew", "z_idler", "z_sleeve", "z_drive_mount", "z_motor", "z_rear_", "z_fl_", "z_fr_",
+                "z_drive_plate"), "zdrive"),
+              (("z_nut", "nut_pin", "nut_block", "nut_plate", "back_plate", "front_plate", "bed_arm", "rear_beam", "front_beam"), "carrier"),
+              (("mains_cover",), "bay"), (("bed",), "bed"),
               (("y_motor", "y_idler", "y_tension", "y_endstop", "y_pulley", "y_drive"), "ydrive")]
 
 
@@ -1678,7 +1699,7 @@ def write_assembly(cx: Ctx, bom: dict, rerun: bool, images: bool) -> dict:
         T += [table(["#", "Fit", "Touches (simulation)", "Screws that hold it (count x size, key, direction)", "Check before moving on", "Sim. step"], rows), ""]
         if late.get(key):
             T += ["Also in this stage, into parts fitted earlier: " + fast_words(late[key]).replace("<br>", "; ") + ".", ""]
-        T += STAGE_NOTES.get(key, []) + [""]
+        T += STAGE_NOTES_BY_DESIGN.get(cx.name, STAGE_NOTES).get(key, []) + [""]
     # ---- adjustments
     tol = m.get("tolerance", {})
     hm = dig(m, "subsystems", "homing", default={})
@@ -1767,6 +1788,24 @@ STAGE_NOTES = {   # builder's notes per stage (generator)
 }
 
 
+STAGE_NOTES_BY_DESIGN = {"printer_v8_1": {
+    "frame": STAGE_NOTES["frame"],
+    "zguides": STAGE_NOTES["zguides"] + ["Use clearance-class (ZF) blocks on Z: the three screws hold the carrier's tilt, the blocks only locate it."],
+    "zdrive": ["Each tower is a bench unit: R1 (captive nuts in its hex pockets) and H1 on the bench, lower 608 into H1's three flats, spacers, upper 608 into "
+               "R3 / H2a / H2b, R4, post bolts. Then the screw with its pulley and shim from below, the brass T8 nut screwed down onto the upper inner ring with "
+               "medium thread locker, the pulley pulled up against the shim and its set screws tightened (torque only). The screw must turn freely by hand.",
+               "Fit the closed Z belt over the tower tops before the bed carrier goes on. Set its tension in the adjustment section."],
+    "carrier": ["Build the 2020 rectangle on a flat table: cast brackets on T-nuts in both legs, inboard corner and under each arm. Bolt the three nut plates "
+                "on the beams' top slots. Wind each T8 nut onto its screw to the same height (count turns from the pulley), lower the carrier so each nut "
+                "plate sits on its nut's flange, fit the pins (M2.5 through the 5 mm sleeves, nylon-insert nuts under the flanges), then bolt the back "
+                "plate to the two Z blocks. Check: turning the belt by hand raises all three corners together without binding."],
+    "bed": ["Fit the six thread inserts in the bed plate first (drill 5.2, STI tap, insert, break the tang). Then: posts screwed into their inserts with "
+            "jam nut and washer, heater pad and thermal cut-off under the plate, plate onto the tabs, tie, tram (adjustment section), THEN the "
+            "PEI180's magnetic base and the sheet."],
+    "gantry": STAGE_NOTES["gantry"],
+}}
+
+
 # =================================================================================================== 4. WIRING
 MAINS_WARNING = ("> **MAINS VOLTAGE. This design has NOT been safety-certified, tested or inspected by anyone.** The mains side (inlet, fuse, relay module, "
                  "supply terminals, protective earth) must be wired, or checked before first power, by a person competent to do so under your local rules. "
@@ -1827,7 +1866,10 @@ def write_wiring(cx: Ctx, bom: dict) -> dict:
          + str(dig(el.devices["psu"].product, "builder_work") if el and "psu" in el.devices else "") + "'). 230 V on the 115 V setting destroys the supply.",
          "- The inlet's fuse drawer and fuse-link are ordered separately from the inlet (see BOM.md).",
          "- Live terminals that are open to touch in this open-frame design: the inlet's rear quick-connect tabs, the relay module's screw terminals and solder side, the supply's terminal block. "
-         "**No cover for any of them is in the design.** Fit covers or an enclosure before the machine is powered with hands near it.", ""]
+         (("Printed hoods in the design cover them: " + ", ".join(f"`{c.name}`" for c in cx.d.components if c.name.startswith("mains_cover"))
+           + ". They are open where the wires enter: use fully insulated receptacles on the inlet's tabs and keep the hoods fitted whenever "
+             "the machine is powered.") if any(c.name.startswith("mains_cover") for c in cx.d.components) else
+          "**No cover for any of them is in the design.** Fit covers or an enclosure before the machine is powered with hands near it."), ""]
     mrows = [w for w in wires if w["insulation"] == "pvc105" or "mains" in w["wire"] or "earth" in w["wire"]]
     T += [table(["Wire", "From", "To", "AWG (mm2)", "Length mm", "Connector at from / to", "Protected by"],
                 [[w["wire"], w["from"], w["to"], f"{w['awg']} ({w['mm2']})", w["length_mm"], f"{w['connector_from']} / {w['connector_to']}", fuse_for(w)] for w in mrows]), "",
@@ -1859,7 +1901,8 @@ def write_wiring(cx: Ctx, bom: dict) -> dict:
     missing = []
     for name, dev in (el.devices.items() if el else []):
         sf = dig(dev.params, "supply_from") if isinstance(getattr(dev, "params", None), dict) else None
-        if sf:
+        supply_wired = any(p.kind == "power_in" and el.wires_at(f"{name}.{p.name}") for p in getattr(dev, "ports", {}).values())
+        if sf and not supply_wired:
             missing.append(f"`{name}`: its supply ({dig(dev.params, 'supply_v')} V, from '{sf}') is declared on the device and **not routed as a wire**: no length, no BOM quantity, no loom check for the + lead. "
                            f"Its 0 V return is carried in the signal cable's conductor count.")
         if isinstance(getattr(dev, "params", None), dict) and dev.params.get("series_diode"):
@@ -1869,6 +1912,7 @@ def write_wiring(cx: Ctx, bom: dict) -> dict:
             missing.append(f"`{w['wire']}`: {w['note']}")
     if missing:
         T += ["## Declared but not drawn as wires", ""] + [f"- {x}" for x in missing] + [""]
+    if any("not routed as a wire" in x for x in missing):
         cx.problem("A", "Probe supply lead is not a wire in the electrical model", "the sensor's +24 V lead is declared on the device only: no length, no BOM metres, no loom check; the diode's place is not defined",
                    "add about the 'bed probe' wire's length of one more conductor to the order and decide where the diode sits")
     pm = cx.eldir / "wiring.md"
@@ -2079,10 +2123,20 @@ def write_commissioning(cx: Ctx, asm: dict) -> dict:
 
 
 # =================================================================================================== 6. OPEN ITEMS
+def _sheet_words(cx) -> str:
+    c = cx.comps.get((cx.d.printer or {}).get("bed", "bed"))
+    if c is None:
+        return "the print sheet"
+    t = (c.meta.get("interfaces") or {}).get("thickness")
+    return (f"{c.meta.get('description') or c.sku}" + (f", {t:g} mm" if t else "") + (" (a catalogue part)" if c.meta.get("catalog") else " (a stand-in)")
+            + " on its magnetic base")
+
+
 RANKS = {"A": "A - would stop the build (or is a safety matter)", "B": "B - would degrade prints or reliability", "C": "C - cosmetic, convenience or maintenance"}
 
 # Items that exist only as prose in docs/<NAME>.md ("Still unverified", "Thinnest margins") or that only a reader of the
 # design file sees. No verifier metric holds them, so they are written here and marked "curated". (generator)
+# Per design: CURATED_BY_DESIGN[name]; a design without an entry gets CURATED_OPEN_ITEMS (printer_v8's list).
 CURATED_OPEN_ITEMS = [
     ("A", "Lead screws: plain T8 thread in 608 bearings, pulley set screws carry the bed, nothing holds a screw down",
      "Each catalogue screw is a plain threaded T8 bar, 300 mm, no machined journals. It stands in two 608 bearings on its thread crests (the fit is 'catalogue fit, trusted', not simulated), the 8 mm-bore "
@@ -2109,6 +2163,35 @@ CURATED_OPEN_ITEMS = [
 ]
 
 
+CURATED_V8_1 = [
+    ("A", "Lead screws stand in 608 bearings on their thread crests",
+     "Each catalogue screw is a plain threaded T8 bar, no machined journals: both 608s ride on the thread crests (the fit is 'catalogue fit, trusted', not simulated). "
+     "The bed's share goes screw thread -> brass T8 nut screwed down on the upper inner ring -> bearing -> plate tower (no set screw in that path); the pulley's set screws carry torque and hold the screw down through the 8 x 12 shim.",
+     "buy one screw, two 608s and one T8 nut first: check the screw's outside diameter in the 608 bore and that the nut, thread-locked and snug on the inner ring, stays put after 50 reversals"),
+    ("B", "Three-flat bearing seats: the fit rests on the laser's tolerance",
+     "Each 608 is located by three laser-cut flats inscribed at 22.0 mm (SendCutSend +/-0.127 mm per feature): between a 0.25 mm clearance and a light press. The tolerance verifier does not simulate a fit that is not a cylinder.",
+     "measure the flats on arrival; a loose seat gets a drop of retaining compound, a tight one is eased with a file"),
+    ("B", "Every nut stays seated at the lead budget only with clearance-class (ZF) Z blocks",
+     "The nut-seating study uses Hiwin's ZF class with the harness's assumed 40 N/um (no rigidity is published for ZF); with Z0 blocks (63 N/um) the front nuts would unseat at the two-screws-at-opposite-limits budget.",
+     "order MGN12H blocks in class ZF for Z; commissioning M7 measures the screws' height difference"),
+    ("B", "Bed posts: bending stress and fatigue are a hand estimate",
+     "The four M5 threaded rods bend as the hot plate grows (about 0.3 mm at 60 K). No verifier computes the bending stress at the thread root or fatigue.",
+     "after 20 heat cycles on the real machine: jam nuts still tight, tram unchanged within 0.05 mm, no visible bend"),
+    ("B", "Bed on four slender posts: its own vibration was never analysed", "No modal case exists for the plate on its posts and tie.",
+     "tap test / accelerometer on the bed plate during commissioning"),
+    ("B", "Print sheet is the print area: 12 mm edge strips are not probed",
+     "The TRONXY PEI180 sheet is 180 x 180 mm, the print area's size; the inductive probe is kept 12 mm inside the sheet's edge, so the mesh holds the nearest measured value over the outer 12 mm.",
+     "print a full-area first layer during commissioning; a larger sheet (220 mm, stand-in in v8) removes this"),
+    ("B", "Part cooling is not modelled", "The duct has no airflow model; it is v8's duct with heat-set inserts.", "bridging and overhang test prints"),
+    ("B", "Frame stiffness is not in the twin", "The twin's resonances use belts, guide blocks and the gantry's FEA only.", "resonance measurement E13; diagonal bracing if the frame rocks"),
+    ("C", "Closed Z belt length is computed", "The route needs a closed 6 mm GT2 loop of the length on the BOM; that this length is stocked is not confirmed. The tensioner slot gives +/-3 mm.",
+     "confirm the stock length before ordering; re-place the idler if the nearest stock length differs"),
+]
+
+
+CURATED_BY_DESIGN = {"printer_v8_1": CURATED_V8_1}
+
+
 def write_open_items(cx: Ctx, bom: dict, fab: dict, asm: dict, wash: list, lead: list) -> dict:
     d, m = cx.d, cx.m
     items = []
@@ -2122,7 +2205,7 @@ def write_open_items(cx: Ctx, bom: dict, fab: dict, asm: dict, wash: list, lead:
     # ---- A: the probe on the sheet
     add("A", "Bed probe on a thin spring-steel sheet: sensing distance unverified",
         f"Every probe figure (z_offset {hz.get('z_offset')} mm, range {hz.get('z_offset_range_mm')}, face window {pn.get('face_window_mm')} mm) assumes the sensor switches at {hz.get('sensing_distance_mm')} mm, "
-        f"the maker's figure for a 1 mm iron target. The target here is a stand-in 0.5 mm spring-steel sheet on a magnet. Basis recorded by the report: {dig(hz, 'sources', 'switching_distance_steel_mm')}.",
+        f"the maker's figure for a 1 mm iron target. The target here is {_sheet_words(cx)}. Basis recorded by the report: {dig(hz, 'sources', 'switching_distance_steel_mm')}.",
         "COMMISSIONING.md step B1 with the real sensor, sheet and magnet BEFORE ordering anything else; pass window there", "report: subsystems.homing.z; design: stand-in sheet", prio=0)
     for t in bom.get("thread_length_issues", []):
         pass
@@ -2148,8 +2231,12 @@ def write_open_items(cx: Ctx, bom: dict, fab: dict, asm: dict, wash: list, lead:
         if len(keys) > 1:
             add("A", f"One SKU for two different parts: `{sku}`", f"The catalogue names {', '.join(sorted(keys))} identically (belt width is not in the SKU for 6 and 12 mm parts). report.json's BOM shows one line; ordering by SKU buys the wrong width for some positions.",
                 "order from BOM.md / bom.csv (split by width), not from report.json", "generator: build_bom()")
-    add("A", "Mains side: no touch protection, one bonded extrusion, not certified",
-        "Open frame; live terminals on the inlet's rear, the relay module and the supply are exposed and no cover is in the design. The model earths the supply and one extrusion; everything else relies on anodised joints. "
+    covers = [c.name for c in d.components if c.name.startswith("mains_cover")]
+    add("A", "Mains side: " + ("printed hoods only, one bonded extrusion, not certified" if covers else "no touch protection, one bonded extrusion, not certified"),
+        ("Open frame; the inlet's rear, the relay module and the supply terminals are under printed hoods (" + ", ".join(covers) + ") that are open where the wires enter: "
+         "touch protection depends on fully insulated receptacles and the hoods being fitted. " if covers else
+         "Open frame; live terminals on the inlet's rear, the relay module and the supply are exposed and no cover is in the design. ")
+        + "The model earths the supply and one extrusion; everything else relies on anodised joints. "
         "The supply has a 115 / 230 V selector that must be set by hand.", "WIRING.md mains section; continuity test E1; a competent person signs off the mains side", "generator, from the electrical model", prio=2)
     for p in cx.problems:
         add(p["rank"], p["title"], p["detail"], p["check"], "generator")
@@ -2224,19 +2311,55 @@ def write_open_items(cx: Ctx, bom: dict, fab: dict, asm: dict, wash: list, lead:
         for r in wash:
             for w in r["why"].split("; "):
                 cat[w.split(" (")[0]] += 1
-        add("B", f"No washers anywhere: {len(wash)} screw heads and nuts bear on a slot, a printed part, thin aluminium or a circuit board",
-            "; ".join(f"{v} {k}" for k, v in cat.most_common()) + ". Printed parts creep under a bare head or nut (belt tensioners, pedestals, the Z idler's slot, nut blocks); heads on slots have half their bearing area; "
-            "M3 heads on 3 mm aluminium and nuts on boards mark the surface. Thread engagement and head clearances were verified WITHOUT washers. Full list below.",
-            "decide per joint before assembly; where a washer is added check the screw still reaches (ISO 7089 M3: 0.5 mm, M5: 1.0 mm thick)", "generator: washer_audit()")
+        if getattr(cx, "has_washers", False):
+            add("C", f"{len(wash)} screw heads and nuts bear without a washer on a slot, thin aluminium or a circuit board",
+                "; ".join(f"{v} {k}" for k, v in cat.most_common()) + ". The design draws washers elsewhere; these are the ones left bare "
+                "(captive nuts in laser-cut hex pockets, heads in the cast brackets' own slots, nuts on boards, heads on bought parts). Full list below.",
+                "decide per joint before assembly", "generator: washer_audit()")
+        else:
+            add("B", f"No washers anywhere: {len(wash)} screw heads and nuts bear on a slot, a printed part, thin aluminium or a circuit board",
+                "; ".join(f"{v} {k}" for k, v in cat.most_common()) + ". Printed parts creep under a bare head or nut (belt tensioners, pedestals, the Z idler's slot, nut blocks); heads on slots have half their bearing area; "
+                "M3 heads on 3 mm aluminium and nuts on boards mark the surface. Thread engagement and head clearances were verified WITHOUT washers. Full list below.",
+                "decide per joint before assembly; where a washer is added check the screw still reaches (ISO 7089 M3: 0.5 mm, M5: 1.0 mm thick)", "generator: washer_audit()")
+    procs = {}
+    for c in d.components:
+        if not c.cots:
+            from mechloop.tolerance.process import process_of
+            procs[c.name] = process_of(c)
+    n_mach = sum(1 for v in procs.values() if v == "machined")
     if lead:
-        add("C", f"No lead-in chamfer on any hand-assembled bore ({len(lead)} features)", "The model has no chamfers at all (no cone faces on any custom part): bearing seats, the sleeve's bore, the probe's hole and the idler axles' holes start with a sharp edge. List below.",
-            "add 0.5 x 45 degree lead-ins on the drawings or break the edges by hand", "generator: leadin_audit()")
-    add("C", "Sharp edges: the model has almost no fillets and no chamfers", f"Every laser-cut and machined part is drawn with sharp edges and corners. The drawings carry the note '{DEBURR_NOTE}', which is NOT yet in the CAD. "
-        "The Y belts pass through laser-cut slots in 3 mm steel: a burr there cuts the belt.", "deburr everything; stone the belt slots", "generator; owner's review")
-    add("B", "Fabricated-part assumptions the builder must make true", "FEA treats printed parts as solid; print settings are not declared. Steel parts have no grade and no finish. The bed plate's faces are used as supplied (0.381 mm stock flatness against 0.02 mm assumed for mating faces). "
-        "Only 2 mm of plate lies under each post head's counterbore, clamped between head and jam nut, and the magnetic sheet covers the heads.", "FABRICATION.md per part", "generator")
+        if n_mach:
+            add("C", f"No lead-in chamfer on any hand-assembled bore ({len(lead)} features)", "The model has no chamfers at all (no cone faces on any custom part): bearing seats, the sleeve's bore, the probe's hole and the idler axles' holes start with a sharp edge. List below.",
+                "add 0.5 x 45 degree lead-ins on the drawings or break the edges by hand", "generator: leadin_audit()")
+        else:
+            add("C", f"Hand-assembled holes in laser-cut and printed parts have no lead-in ({len(lead)} features)",
+                "A laser cut is square through the plate: no chamfer can be drawn. Bearing seats are three flats or clearance holes, the bought parts carry their own edge radii; "
+                "the builder breaks the cut edges by hand. List below.", "deburr each listed hole with a countersink tool before fitting", "generator: leadin_audit()")
+    sharp = [f for f in cx.rep.get("findings", []) if f.get("code") in ("sharp_profile_corners", "edges_not_broken")]
+    if sharp:
+        add("C", "Sharp edges: the model has almost no fillets and no chamfers", f"Every laser-cut and machined part is drawn with sharp edges and corners. The drawings carry the note '{DEBURR_NOTE}', which is NOT yet in the CAD. "
+            "The Y belts pass through laser-cut slots in 3 mm steel: a burr there cuts the belt.", "deburr everything; stone the belt slots", "generator; owner's review")
+    else:
+        add("C", "Edges: profile corners are rounded in the CAD, cut edges are not broken", f"Every outside corner of every cut profile has a radius in the model (no `sharp_profile_corners` finding). "
+            f"The cut edges themselves are square: SendCutSend's deburring brushes the faces only, tumbling rounds edges only on parts up to 102 x 178 mm. Drawing note: '{DEBURR_NOTE}'.",
+            "tumble what qualifies; break the remaining edges by hand; stone the Y belt slots", "generator; owner's review")
+    printed = [c for c in d.components if procs.get(c.name) == "printed"]
+    no_ps = [c.name for c in printed if not c.meta.get("print")]
+    steel = [c.name for c in d.components if not c.cots and c.material == "steel"]
+    bp = cx.comps.get("bed_plate")
+    txt = []
+    txt.append("Printed parts without declared print settings: " + ", ".join(no_ps) + ". " if no_ps else
+               f"All {len(printed)} printed parts declare their print settings (walls, layers, infill, orientation); FEA and mass follow them. ")
+    txt.append("Steel parts with no grade and no finish: " + ", ".join(steel) + ". " if steel else "No generic steel: every metal part names its alloy and finish. ")
+    if bp is not None:
+        txt.append(f"The bed plate ({bp.material}) is used with its faces as supplied (0.381 mm stock flatness against 0.02 mm assumed for mating faces). ")
+    if any(c.name.startswith("bed_post_") and "ROD" in (c.sku or "") for c in d.components):
+        txt.append("The bed posts are threaded rod screwed into thread inserts the builder fits in the bed plate (drill 5.2, STI tap, insert).")
+    else:
+        txt.append("Only 2 mm of plate lies under each post head's counterbore, clamped between head and jam nut, and the magnetic sheet covers the heads.")
+    add("B", "Fabricated-part assumptions the builder must make true", "".join(txt), "FABRICATION.md per part", "generator")
     add("C", "Not in the design at all", "; ".join(x.split(":")[0].split(".")[0] for x in NOT_IN_MODEL), "BOM.md, last section", "generator")
-    for rank, title, detail, check in CURATED_OPEN_ITEMS:
+    for rank, title, detail, check in CURATED_BY_DESIGN.get(cx.name, CURATED_OPEN_ITEMS):
         add(rank, title, detail, check, f"curated from docs/{cx.name.upper()}.md and the design file", prio=2 if rank == "A" else 6)
     # heater pad against the plate; firmware coordinates of the print area
     hp, bp = cx.comps.get("bed_heater"), cx.comps.get(dig(d.printer or {}, "bed_plate", default="bed_plate"))
