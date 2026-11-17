@@ -1,0 +1,188 @@
+{
+ "design": "printer_v8_2",
+ "design_md5": "b9b30ccc71ea5d677a3fcc640bf599c4",
+ "report_md5": "2b09cd97db9265df4e4b5e2a05d75250",
+ "report_time": "2026-11-16 23:39:06",
+ "stale": [],
+ "warnings": [
+  "the parts catalogue has changed since the report was written (the package uses the catalogue as it is NOW; re-run verify to make the report agree): WASHER-M3 mass differs from the report; SHCS-M5x10 mass differs from the report; WASHER-M5 mass differs from the report; WASHER-M3-LARGE mass differs from the report; NUT-M3 mass differs from the report; SHCS-M3x16 mass differs from the report"
+ ],
+ "recon": {
+  "components": 584,
+  "purchased_components": 543,
+  "custom_components": 41,
+  "bom_lines": 108,
+  "report_skus": 108,
+  "qty_modelled": 543,
+  "qty_bom_only": 445,
+  "cost": 962.74,
+  "report_cost": 962.74,
+  "sku_quantities_equal_report": true,
+  "modelled_equals_components": true
+ },
+ "custom_by_process": {
+  "sheet": 36,
+  "printed": 5
+ },
+ "standins": [
+  "GT2-20T-B5 [12 mm belt]",
+  "GT2-BELT-12MM-OPEN-1M",
+  "GT2-IDLER-20T-B5 [12 mm belt]",
+  "BED-MAGNET-PEI180-BASE-STANDIN",
+  "COUPLING-NUT-M5x15-A2",
+  "ROD-M5-DIN976-A2-76.9"
+ ],
+ "open_items": {
+  "A": 11,
+  "B": 72,
+  "C": 21
+ },
+ "washer_audit_rows": 36,
+ "commissioning_steps": 37,
+ "dxf_cut_length_check": {
+  "back_plate": {
+   "written_mm": 964.8,
+   "report_mm": null
+  },
+  "nut_plate": {
+   "written_mm": 449.8,
+   "report_mm": null
+  },
+  "nut_keeper": {
+   "written_mm": 254.1,
+   "report_mm": null
+  },
+  "nut_plate_fl": {
+   "written_mm": 385.0,
+   "report_mm": null
+  },
+  "nut_keeper_fl": {
+   "written_mm": 254.1,
+   "report_mm": null
+  },
+  "nut_plate_fr": {
+   "written_mm": 385.0,
+   "report_mm": null
+  },
+  "nut_keeper_fr": {
+   "written_mm": 254.1,
+   "report_mm": null
+  },
+  "bed_plate": {
+   "written_mm": 1160.7,
+   "report_mm": null
+  },
+  "bed_post_tab_0": {
+   "written_mm": 218.3,
+   "report_mm": null
+  },
+  "bed_post_tab_1": {
+   "written_mm": 218.3,
+   "report_mm": null
+  },
+  "bed_post_tab_2": {
+   "written_mm": 218.3,
+   "report_mm": null
+  },
+  "bed_post_tab_3": {
+   "written_mm": 218.3,
+   "report_mm": null
+  },
+  "bed_tie": {
+   "written_mm": 232.1,
+   "report_mm": null
+  },
+  "z_motor_plate": {
+   "written_mm": 351.3,
+   "report_mm": null
+  },
+  "z_motor_plate_fl": {
+   "written_mm": 339.2,
+   "report_mm": null
+  },
+  "z_motor_plate_fr": {
+   "written_mm": 339.2,
+   "report_mm": null
+  },
+  "y_plate_left": {
+   "written_mm": 537.6,
+   "report_mm": null
+  },
+  "y_plate_right": {
+   "written_mm": 447.5,
+   "report_mm": null
+  },
+  "x_rail_stop_left": {
+   "written_mm": 108.2,
+   "report_mm": null
+  },
+  "x_rail_stop_right": {
+   "written_mm": 108.2,
+   "report_mm": null
+  },
+  "tool_plate": {
+   "written_mm": 411.6,
+   "report_mm": null
+  },
+  "tool_plate_rear": {
+   "written_mm": 487.7,
+   "report_mm": null
+  },
+  "x_belt_bracket": {
+   "written_mm": 157.8,
+   "report_mm": null
+  },
+  "x_belt_clamp": {
+   "written_mm": 146.0,
+   "report_mm": null
+  },
+  "x_motor_mount": {
+   "written_mm": 378.3,
+   "report_mm": null
+  },
+  "x_idler_mount": {
+   "written_mm": 244.3,
+   "report_mm": null
+  },
+  "x_tension_anchor": {
+   "written_mm": 149.0,
+   "report_mm": null
+  },
+  "y_motor_mount": {
+   "written_mm": 39.8,
+   "report_mm": null
+  },
+  "y_tension_anchor": {
+   "written_mm": 103.9,
+   "report_mm": null
+  },
+  "y_idler_mount": {
+   "written_mm": 286.7,
+   "report_mm": null
+  },
+  "y_motor_mount_l": {
+   "written_mm": 452.1,
+   "report_mm": null
+  },
+  "y_tension_anchor_l": {
+   "written_mm": 103.9,
+   "report_mm": null
+  },
+  "y_idler_mount_l": {
+   "written_mm": 286.7,
+   "report_mm": null
+  },
+  "y_endstop_mount": {
+   "written_mm": 212.7,
+   "report_mm": null
+  },
+  "electronics_tray": {
+   "written_mm": 1455.7,
+   "report_mm": null
+  },
+  "inlet_panel": {
+   "written_mm": 570.5,
+   "report_mm": null
+  }
+ }
+}

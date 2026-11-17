@@ -1,0 +1,35 @@
+sku,kind,size,length,in_model,bom_only,total,order,hex_key,mcmaster,mcmaster_status
+TNUT-2020-M3,T-nut 2020,M3,,0,27,27,30,,,
+TNUT-2020-M5,T-nut 2020,M5,,0,120,120,132,,,
+SHCS-M2.5x12,cap screw ISO 4762,M2.5,12,2,0,2,3,2,91290A008,confirmed by the delivered STEP file
+SHCS-M2.5x18,cap screw ISO 4762,M2.5,18,3,0,3,4,2,,
+SHCS-M3x6,cap screw ISO 4762,M3,6,12,0,12,14,2.5,91290A111,confirmed by the delivered STEP file
+SHCS-M3x8,cap screw ISO 4762,M3,8,47,0,47,52,2.5,91290A400,confirmed by the delivered STEP file
+SHCS-M3x10,cap screw ISO 4762,M3,10,20,0,20,22,2.5,91290A115,confirmed by the delivered STEP file
+SHCS-M3x12,cap screw ISO 4762,M3,12,2,0,2,3,2.5,91290A500,confirmed by the delivered STEP file
+SHCS-M3x16,cap screw ISO 4762,M3,16,14,0,14,16,2.5,91290A120,confirmed by the delivered STEP file
+SHCS-M3x18,cap screw ISO 4762,M3,18,2,0,2,3,2.5,,
+SHCS-M3x20,cap screw ISO 4762,M3,20,2,0,2,3,2.5,,
+SHCS-M3x25,cap screw ISO 4762,M3,25,6,0,6,7,2.5,,
+SHCS-M3x40,cap screw ISO 4762,M3,40,2,0,2,3,2.5,,
+SHCS-M3x45,cap screw ISO 4762,M3,45,2,0,2,3,2.5,,
+SHCS-M3x50,cap screw ISO 4762,M3,50,2,0,2,3,2.5,,
+SHCS-M4x6,cap screw ISO 4762,M4,6,4,0,4,5,3,91290A139,confirmed by the delivered STEP file
+SHCS-M5x8,cap screw ISO 4762,M5,8,0,64,64,71,,,
+SHCS-M5x10,cap screw ISO 4762,M5,10,44,0,44,49,4,91290A224,confirmed by the delivered STEP file
+SHCS-M5x16,cap screw ISO 4762,M5,16,8,0,8,9,4,,
+SHCS-M5x30,cap screw ISO 4762,M5,30,2,0,2,3,4,91290A194,confirmed by the delivered STEP file
+SHCS-M5x35,cap screw ISO 4762,M5,35,1,0,1,2,4,91290A195,confirmed by the delivered STEP file
+SHCS-M5x70,cap screw ISO 4762,M5,70,6,0,6,7,4,,
+NUT-M2.5,hex nut ISO 4032,M2.5,,5,0,5,6,,90591A270,confirmed by the delivered STEP file
+NUT-M3,hex nut ISO 4032,M3,,30,0,30,33,,90591A250,confirmed by the delivered STEP file
+NUT-M3-NYLOC,hex nut ISO 4032,M3,,10,0,10,11,,,
+NUT-M5,hex nut ISO 4032,M5,,13,0,13,15,,90591A260,"that McMaster number is the DIN 934 nut, 4 mm high, not this ISO 4032 nut (4.7 mm): buy ISO 4032 nuts, or declare hex_nut('M5', 'din934') / add_nut(..., standard='din934')"
+NUT-M5-NYLOC,hex nut ISO 4032,M5,,2,0,2,3,,,
+"NYLOC-M2.5 (nut pins, in place of the hex nuts drawn)",nyloc nut,M2.5,,0,3,3,4,,,
+NYLOC-M3-UPGRADE,nyloc nut,M3,,0,6,6,7,,,
+WASHER-M2.5,star washer,M2.5,,2,0,2,3,,,
+WASHER-M3,star washer,M3,,63,0,63,70,,,
+WASHER-M3-LARGE,star washer,M3,,14,0,14,16,,,
+WASHER-M5,star washer,M5,,80,0,80,88,,,
+WASHER-M5-SERRATED (earth stud),star washer,M5,,0,1,1,2,,,
