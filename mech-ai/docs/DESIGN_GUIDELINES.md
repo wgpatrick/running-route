@@ -105,3 +105,6 @@ until a check exists.
 - A purchased part may be re-made from the supplier's drawing only if it is faithful: every dimension on the
   drawing is in the model, and no feature of the model is un-dimensioned (nothing guessed or scaled). Record the
   drawing it was made from. Anything less is a stand-in and is reported as one.
+- Purchased parts are used at stock sizes, as sold. Do not assume a purchased part is cut, shortened or
+  otherwise modified (rails, lead screws, shafts, belts sold in closed lengths). Where a part is only sold
+  cut to order (T-slot extrusion), say so and name the supplier's cutting service.
