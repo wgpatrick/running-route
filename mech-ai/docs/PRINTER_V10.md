@@ -413,7 +413,7 @@ the spring preload (factor 1.79, limit 2). The design was changed for both (6.35
 | Bed plate | MIC-6 265 x 265 x 6.35, 1.25 kg | MIC-6 241 x 241 x 12.7, 2.07 kg | |
 | Levelling points | four | **three** | |
 | Bed to deck gap | 18.8 mm | 16.8 mm | |
-| Total mass | 13.65 kg | 14.47 kg | +0.82 kg: the plate (+0.82), nut plates (+0.05), rail (+0.02), less a stud set, two stop plates and a smaller sheet |
+| Total mass | 13.65 kg | 14.47 kg | +0.82 kg net: the plate alone is +0.82; nut plates and rail add about 0.08, the smaller sheet and base, one stud set and the two stop plates take about as much off |
 | Moving mass X / Y / Z | 0.359 / 1.236 / 4.715 kg | 0.360 / 1.261 / **5.510 kg** | Z with the 1 kg payload in both |
 | Drive margin X / Y / Z | 8.4 / 16.1 / 7.9 | 8.4 / 15.9 / 7.2 | requirement 3 |
 | BOM cost (estimate) | $1,008 | $1,007 | the cut-to-length HIWIN rail is priced by the catalogue's generic rail formula ($17.5): expect more |
@@ -431,11 +431,11 @@ the spring preload (factor 1.79, limit 2). The design was changed for both (6.35
 | Nut misalignment over the travel (99.7 %) | 2.3 to 2.5 mm | 2.4 to 2.6 mm of 2.6 mm float | two warnings instead of one |
 | Hot bed (+60 K): surface rise at centre / plate out of flat | 0.083 / 0.035 mm | 0.0985 / 0.016 mm | limit 0.1 |
 | Bed heat-up to 60 / 80 degC | 295 / 538 s | 469 / 847 s | same 180 W |
-| Resonance X / Y | 77.4 / 69.0 Hz | 74.8 / 68.6 Hz | X: the belt is 49 mm longer between pulleys. Ranges 69 to 83 and 64 to 76 Hz: inside v9's |
+| Resonance X / Y | 77.4 / 69.0 Hz | 74.8 / 68.6 Hz | X: the pulleys are 49 mm further apart (belt and toolhead in series: 127 N/mm against 141). Ranges 69 to 83 and 64 to 76 Hz overlap v9's |
 | Acceleration an owner would run | 8,400 (5,800 to 13,500) mm/s^2 | 8,400 (5,700 to 13,400) mm/s^2 | not a change |
 | Step-loss ceiling | 24,000 mm/s^2 | 24,000 mm/s^2 | |
 | Cross-track RMS / worst | 0.0101 / 0.101 mm | 0.0107 / 0.103 mm | inside each other's ranges |
-| Frame stiffness at the nozzle, screwed X / Y | 1,450 / 1,920 N/mm | 1,570 / 2,011 N/mm | the Y plates are shorter over the beam; the nozzle is 15.5 mm off the block's centre |
+| Frame stiffness at the nozzle, screwed X / Y | 1,450 / 1,920 N/mm | 1,570 / 2,011 N/mm | +5 to +8 %; cause not traced (the Y plates, the tool plates and the nozzle's place on the block all changed) |
 | X belt within 1 mm of plane | 97.9 % of builds | 94.2 % | warning under 95 % |
 | Benchmark time | 2,571 s | 2,571 s | melt-rate bound |
 | Envelope (bounding box at home) | 389 x 419 x 463 mm | 389 x 419 x 471 mm | the X motor stands 8 mm higher; limit 420 x 420 x 480 |
