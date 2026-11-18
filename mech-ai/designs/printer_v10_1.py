@@ -1,4 +1,19 @@
-"""printer_v10: printer_v9 with the gantry's ends and the toolhead redrawn for X travel, the bed sized to the nozzle's reach,
+"""printer_v10_1: printer_v10 with every fastener drawn and every T-slot screw checked for length. docs/PRINTER_V10_1.md has
+what changed, what the new checks found and what is assumed.
+
+What v10.1 changes against v10 (frame, envelope, travel, bed, cooling fan and duct, belt tension brackets and probe mount are v10's):
+- d.tnut_style = "drop_in": every tnut=True screw and every corner-bracket leg has its own drawn drop-in T-nut (catalogue
+  tnut_2020, a STAND-IN: mechloop/parts/tslot.py), and every bracket leg its own M5 x 10 cap screw with two washers.
+- T-slot screw lengths, chosen so the tip ends 4.5 to 5.5 mm below the extrusion's face (0.5 d of thread behind an assumed
+  2.0 mm lip, 0.5 mm clear of an assumed 6.0 mm slot floor): a second washer under the M5 x 10 on 3.2 mm plates (deck, X motor,
+  idler and tension-anchor plates, Y tension anchors, tray, inlet panel), M5 x 12 on the 6.35 mm nut plates, M5 x 12 with two
+  washers on the 4.75 mm Y plates, M5 x 8 on the 1.9 mm Y motor and idler mounts, M5 x 6 on the earth stud.
+- No BOM-only hardware: the PEM nuts are catalogue parts (stand-in solids), the nut keepers' nylocs are drawn as nylocs, the
+  earth stud's toothed washer is drawn, the nut pins' hex nuts are thread-locked instead of swapped for M2.5 nylocs.
+
+Below: printer_v10's own description, unchanged.
+
+printer_v10: printer_v9 with the gantry's ends and the toolhead redrawn for X travel, the bed sized to the nozzle's reach,
 and three levelling points instead of four. docs/PRINTER_V10.md has the numbers, every judgement call and the open items.
 
 The frame (every extrusion, the 340 x 373 x 404 mm cube and the 420 mm envelope) is v9's, untouched. What changed:
@@ -56,6 +71,7 @@ from mechloop.parts.batch6 import fan_cg3010u24
 from mechloop.parts.batch7 import leadscrew_motor_17e19_ab4, leadscrew_screw_17e19_ab4, octopus_v11
 from mechloop.parts.batch8 import add_thumb_nut, die_spring_dj8x20
 from mechloop.parts.batch9 import print_sheet_pei235
+from mechloop.parts.hardware import washer_toothed
 from mechloop.parts.electrical import (THERMISTORS, add_electrical_bom, bed_heater_pad, device_from, embedded_device,
                                        iec_inlet_c14, psu_lrs, raspberry_pi_zero2w, relay_btt_v12, thermal_fuse)
 from mechloop.parts import CSK
@@ -476,11 +492,11 @@ def bolt_nut(d, name, size, length, head_at, direction, body, clamps, nut_at=Non
             add_washer(d, f"{name}_nwasher", size, tuple(at), tuple(dvec), body=body, screw=name,
                        series="large" if large else "normal")
             at = at + dvec * WASHER["large" if large else "normal"][size][2]
-        add_nut(d, f"{name}_nut", size, at=tuple(at), direction=tuple(dvec), body=body, screw=name)
+        # v10.1: a nyloc is drawn as the nyloc it is (ISO 10511, taller), not as a hex nut with a BOM-only upgrade line
+        add_nut(d, f"{name}_nut", size, at=tuple(at), direction=tuple(dvec), body=body, screw=name,
+                standard="iso10511" if nyloc else "iso4032")
         if washer_nut and clamps:
             d.join(f"{name}_nut", clamps[-1], "clamped through its washer")
-        if nyloc:
-            d.bom_extra(f"NYLOC-{size}-UPGRADE", 1, 0.03)
 
 
 def captive_nut(d, screw, at, direction, part, body="world"):
@@ -980,7 +996,8 @@ def build_z_mount(d, tag, x0, y0, turn, posts, rail, on_tray):
 
 
 def build_frame_z():
-    d = Design("printer_v10", envelope=ENVELOPE, base="frame_bot_left")
+    d = Design("printer_v10_1", envelope=ENVELOPE, base="frame_bot_left")
+    d.tnut_style = "drop_in"      # v10.1: T-nuts and bracket screws are drawn parts; T-slot screw lengths are checked
     d.manufacturing = {"shop": "sendcutsend", "sheet": {"method": "laser"},
                        "printer": {"build_volume": (220.0, 220.0, 220.0), "nozzle": 0.4},
                        "print_settings": dict(PRINT_ABS)}
@@ -1021,6 +1038,11 @@ def build_frame_z():
     # the wall, so left and right hold Y and yaw and the rear holds X: three stiff directions, none redundant.
     up = np.array([0.0, 0.0, 1.0])
     guide_parts = {}
+    # v10.1: the carrier's four members are placed before anything is screwed to them (a drawn T-nut goes into its slot)
+    for sx, n in ((-1, "left"), (1, "right")):
+        place(d, f"sq_{n}", extrusion_2020(SQ_Y1 - SQ_Y0), Location((sx * (SQ_X - 10.0), BED_CY, Z_SQ), (0, 0, 90)), body="zbody")
+    for sy, n, yc in ((-1, "front", SQ_Y0 + 10.0), (1, "rear", SQ_Y1 - 10.0)):
+        place(d, f"sq_{n}", extrusion_2020(2 * (SQ_X - 20.0)), Location((0, yc, Z_SQ)), body="zbody")
     for nm, (bx_, by_), nrm, wall in GUIDES:
         nv = np.array(nrm)
         tv = np.cross(up, nv)                            # along the wall
@@ -1068,10 +1090,7 @@ def build_frame_z():
         guide_parts[nm] = (nv, np.array([bx_, by_]))
 
     # ================= carrier (v9): a closed 2020 rectangle, a deck on top =====================
-    for sx, n in ((-1, "left"), (1, "right")):
-        place(d, f"sq_{n}", extrusion_2020(SQ_Y1 - SQ_Y0), Location((sx * (SQ_X - 10.0), BED_CY, Z_SQ), (0, 0, 90)), body="zbody")
     for sy, n, yc in ((-1, "front", SQ_Y0 + 10.0), (1, "rear", SQ_Y1 - 10.0)):
-        place(d, f"sq_{n}", extrusion_2020(2 * (SQ_X - 20.0)), Location((0, yc, Z_SQ)), body="zbody")
         for sx, sn in ((-1, "left"), (1, "right")):
             # one cast bracket in each inside corner, both legs on T-nuts
             add_corner_bracket(d, f"sq_bracket_{n[0]}{sn[0]}", f"sq_{sn}", f"sq_{n}", (sx * (SQ_X - 20.0), yc - sy * 10.0, Z_SQ),
@@ -1083,7 +1102,7 @@ def build_frame_z():
     for i, (x, y) in enumerate(DECK_BOLTS):
         member = ("sq_left" if x < 0 else "sq_right") if abs(abs(x) - (SQ_X - 10.0)) < 1e-6 else ("sq_front" if y < BED_CY else "sq_rear")
         add_screw(d, f"z_deck_bolt_{i}", "M5", 10, at=(x, y, Z_DECK1), body="zbody", threads_into=member, tnut=True,
-                  clamps=("z_deck",), washer=True, locking="adhesive")
+                  clamps=("z_deck",), washer=True, washers=2, locking="adhesive")      # v10.1: second washer (tip 4.8 mm into the slot, was 5.8)
 
     # ================= nut plates (three identical) and captive floating nuts (v8.2's) ==========
     zn0, zn1 = Z_TAB, Z_SQB
@@ -1091,12 +1110,13 @@ def build_frame_z():
         W = lambda u, r_: rxy(u, r_, cx, cy, ang)
         d.add(f"nut_plate{tg}", rz(nut_plate_local(zn0, zn1), cx, cy, ang), material=AL, body="zbody", process="sheet", meta={"finish": "bare"})
         for i, u in enumerate((-NP_BOLT_U, NP_BOLT_U)):
-            add_screw(d, f"nut_plate{tg}_bolt_{i}", "M5", 10, at=(*W(u, -NUT_OUT - 10.0), zn0), direction=(0, 0, 1), body="zbody",
+            add_screw(d, f"nut_plate{tg}_bolt_{i}", "M5", 12, at=(*W(u, -NUT_OUT - 10.0), zn0), direction=(0, 0, 1), body="zbody",
                       threads_into=member, tnut=True, clamps=(f"nut_plate{tg}",), washer=True, locking="adhesive")
         px, py = W(*NUT_PIN)
         place(d, f"z_nut{tg}", leadscrew_nut_t8(), Location((cx, cy, Z_TAB - 3.5)), body="zbody")
         place(d, f"nut_pin{tg}_sleeve", spacer_round("M2.5", T_NP + 0.2, "aluminium"), Location((px, py, Z_TAB)), body="zbody")
-        add_screw(d, f"nut_pin{tg}", "M2.5", 16, at=(px, py, Z_TAB + T_NP + 0.2), body="zbody", clamps=(f"nut_pin{tg}_sleeve", f"z_nut{tg}"))
+        add_screw(d, f"nut_pin{tg}", "M2.5", 16, at=(px, py, Z_TAB + T_NP + 0.2), body="zbody", clamps=(f"nut_pin{tg}_sleeve", f"z_nut{tg}"),
+                  locking="adhesive")      # v10.1: the drawn hex nut, thread-locked (v10: an M2.5 nyloc on the BOM only)
         add_nut(d, f"nut_pin{tg}_nut", "M2.5", at=(px, py, Z_TAB - 3.5), direction=(0, 0, -1), body="zbody", screw=f"nut_pin{tg}")
         d.allow_overlap(f"nut_pin{tg}", f"z_nut{tg}", max_volume=40.0)     # passes the flange's hole: the catalogue solid does not show the holes
         d.join(f"z_nut{tg}", f"nut_plate{tg}", "floating: the carrier sits on its flange; the pin in the slot stops it turning")
@@ -1126,7 +1146,6 @@ def build_frame_z():
         d.get(f"z_nut{tg}").meta["description"] = f"T8 flanged brass nut, floating and captive under nut_plate{tg}. " + how
         d.get(f"nut_keeper{tg}").meta["description"] = (f"Keeper: holds z_nut{tg}'s flange up against nut_plate{tg} (0.1 mm play, free to float "
                                                        f"sideways) so the carrier cannot lift off the nut. " + how)
-    d.bom_extra("NYLOC-M2.5 (nut pins, in place of the hex nuts drawn)", 3, 0.05)
 
     # ================= bed (v10): MIC-6 plate, 235 mm sheet, three sprung levelling studs ==========
     bed_own = BED * BED * T_BED * MATERIALS[CAST].density * 1e-9
@@ -1240,6 +1259,7 @@ def build() -> Design:
     X_ES_Y0 = YB0 + X_ES_Y
     PC = YB0 - 1.55
     YA0, YA1 = PC + BELT_SLOTS[0] - SLOT_W / 2, PC + BELT_SLOTS[-1] + SLOT_W / 2
+    beam_bolts = []
     for sx, n in ((-1, "left"), (1, "right")):
         yr = place(d, f"y_rail_{n}", mgn12_rail(300), Location((sx * RAIL_X, Y_RAIL_C, Z_RAIL), (0, 0, 90)))
         for i, (hx, hy, hz) in enumerate(yr.meta["interfaces"]["mount_holes_m3"][::2]):
@@ -1274,10 +1294,11 @@ def build() -> Design:
         for i, (x, y) in enumerate([(-10, -10), (-10, 10), (10, -10), (10, 10)]):
             add_screw(d, f"y_plate_{n}_screw_{i}", "M3", 8, at=(sx * RAIL_X + x, YB0 + y, Z_PLATE + T_YP), body="ybody", threads_into=f"y_carriage_{n}")
         for i, xb in enumerate(BEAM_BOLT_X):
-            add_screw(d, f"beam_bolt_{n}" + ("" if i == 0 else f"_{i}"), "M5", 10, at=(sx * xb, YB0, zp1), body="ybody",
-                      threads_into="x_beam", tnut=True, clamps=(f"y_plate_{n}",), washer=True)
+            beam_bolts.append((f"beam_bolt_{n}" + ("" if i == 0 else f"_{i}"), (sx * xb, YB0, zp1), f"y_plate_{n}"))
     # ================= X axis ====================================================
     place(d, "x_beam", extrusion_2020(BEAM_L), Location((0, YB0, Z_BEAM)), body="ybody")
+    for nm_, at_, pl_ in beam_bolts:      # v10.1: after the beam (the T-nut is placed in its slot); M5 x 12 with two washers
+        add_screw(d, nm_, "M5", 12, at=at_, body="ybody", threads_into="x_beam", tnut=True, clamps=(pl_,), washer=True, washers=2)
     rear = lambda x: Location(Plane(origin=(x, YB0 + 10.0, Z_BEAM), x_dir=(1, 0, 0), z_dir=(0, 1, 0)))
     # v10: the rail is as long as the beam (HIWIN MGNR12R cut to 288 mm). v9's two rail-stop plates are gone: the hard stops
     # are the Y plates' tabs against the tool plates' edges
@@ -1305,7 +1326,7 @@ def build() -> Design:
         # a washer under the head bears on the sleeve's end, 0.6 mm clear of the printed holder (PM_TP)
         add_screw(d, f"extruder_screw_{i}", "M3", 50, at=(hx, yb_pm + PM_T, hz), direction=(0, -1, 0), body="xbody",
                   clamps=(f"probe_mount_sleeve_{i}", "extruder", "tool_plate_rear", "tool_plate"), washer=True)
-        add_nut(d, f"extruder_nut_{i}", "M3", at=(hx, ymid, hz), direction=(0, 1, 0), body="xbody", screw=f"extruder_screw_{i}")
+        add_nut(d, f"extruder_nut_{i}", "M3", at=(hx, ymid, hz), direction=(0, 1, 0), body="xbody", screw=f"extruder_screw_{i}", standard="pem")
         d.join(f"extruder_nut_{i}", "tool_plate", "PEM self-clinching nut (SendCutSend hardware service)")
         d.join(f"probe_mount_sleeve_{i}", "probe_mount", "compression sleeve: the holder is located on it, held between the Roto's face "
                "and the screw's washer with 0.6 mm play, not clamped")
@@ -1399,7 +1420,7 @@ def build() -> Design:
                       threads_into="x_motor", clamps=("x_motor_mount",), washer=True); k += 1
     for i, x in enumerate(X_MOUNT_BOLTS):
         add_screw(d, f"x_motor_mount_bolt_{i}", "M5", 10, at=(x, yb_fm, Z_BEAM), direction=(0, 1, 0), body="ybody",
-                  threads_into="x_beam", tnut=True, clamps=("x_motor_mount",), washer=True)
+                  threads_into="x_beam", tnut=True, clamps=("x_motor_mount",), washer=True, washers=2)
     d.join("x_pulley", "x_motor", "set_screw")
     zc_im = (Z_BEAM - 8.0 + XD_Z + 12.0) / 2
     w_im = XD_Z + 12.0 - (Z_BEAM - 8.0)
@@ -1418,7 +1439,7 @@ def build() -> Design:
     d.add("x_idler_mount", round_profile(im, 1.0, MT), material=AL_BEND, body="ybody", process="sheet", meta={"finish": "bare"})
     for i, x in enumerate(XIM_BOLTS):
         add_screw(d, f"x_idler_mount_bolt_{i}", "M5", 10, at=(x, yb_f, Z_BEAM), direction=(0, 1, 0), body="ybody",
-                  threads_into="x_beam", tnut=True, clamps=("x_idler_mount",), washer=True)
+                  threads_into="x_beam", tnut=True, clamps=("x_idler_mount",), washer=True, washers=2)
     place(d, "x_idler_spacer", spacer_round("M5", X_SP, "aluminium"), fwd(XI_X, yb_r, XD_Z), body="ybody")
     place(d, "x_idler", gt2_idler(20, belt_width=BWX), fwd(XI_X, yb_r + X_SP, XD_Z), body="ybody")
     add_screw(d, "x_idler_bolt", "M5", 35, at=(XI_X, yb_f, XD_Z), direction=(0, 1, 0), body="ybody",
@@ -1436,14 +1457,14 @@ def build() -> Design:
     d.add("x_tension_anchor", round_profile(xa, 1.0, MT), material=AL_BEND, body="ybody", process="sheet", meta={"finish": "bare"})
     for i, lx in enumerate((16.0, 28.0)):
         add_screw(d, f"x_tension_anchor_bolt_{i}", "M5", 10, at=(XA_FIN - lx, yb_f, Z_BEAM), direction=(0, 1, 0), body="ybody",
-                  threads_into="x_beam", tnut=True, clamps=("x_tension_anchor",), washer=True)
-    add_nut(d, "x_tension_nut", "M3", at=(XA_FIN, JACK_Y, JACK_Z), direction=(1, 0, 0), body="ybody")
+                  threads_into="x_beam", tnut=True, clamps=("x_tension_anchor",), washer=True, washers=2)
+    add_nut(d, "x_tension_nut", "M3", at=(XA_FIN, JACK_Y, JACK_Z), direction=(1, 0, 0), body="ybody", standard="pem")
     d.join("x_tension_nut", "x_tension_anchor", "PEM self-clinching nut (SendCutSend hardware service)")
     add_screw(d, "x_tension_screw", "M3", 16, at=(LUG_X - 16.0, JACK_Y, JACK_Z), direction=(1, 0, 0), body="ybody",
               threads_into="x_tension_nut")
     d.get("x_tension_screw").meta["torque_nm"] = 0.3
     d.join("x_tension_screw", "x_idler_mount", "jack screw bears on the lug")
-    d.bom_extra("PEM-S-M3-1 (x and y tension anchors, Roto screws in the front tool plate; installed by SendCutSend)", 5, 0.4)
+    # v10.1: the five PEM nuts are catalogue parts now (hex_nut(standard="pem"), SKU NUT-PEM-S-M3-1), not a BOM-only line
     # X endstop (v10): on TOP of the right Y plate's land, behind the tool plates' plane and outboard of the Roto's reach; the
     # striker tab on the front tool plate's right edge works its lever at the right end of the travel (X homes at maximum).
     # Screws from above through board, spacer and the land's slot; large washer and nut under the land, 1.3 mm above the Y rail
@@ -1487,7 +1508,7 @@ def build() -> Design:
                 add_screw(d, f"y_motor{tag}_screw_{k}", "M3", 6, at=(sg * (xf + MT_Y), YM_Y + y, Z_YC + z), direction=(-sg, 0, 0),
                           threads_into=f"y_motor{tag}", clamps=(f"y_motor_mount{tag}",), washer=True); k += 1
         for i, y in enumerate(YMB):
-            add_screw(d, f"y_motor_mount{tag}_bolt_{i}", "M5", 10, at=(sg * (xf + MT_Y), y, FZ), direction=(-sg, 0, 0),
+            add_screw(d, f"y_motor_mount{tag}_bolt_{i}", "M5", 8, at=(sg * (xf + MT_Y), y, FZ), direction=(-sg, 0, 0),
                       threads_into=rail, tnut=True, clamps=(f"y_motor_mount{tag}",), washer=True)
         d.join(f"y_pulley{tag}", f"y_motor{tag}", "set_screw")
         # tension anchor: 5052 3.175 mm bent L on the rail's outer face (two T-nuts), PEM nut in its fin
@@ -1497,8 +1518,8 @@ def build() -> Design:
         d.add(f"y_tension_anchor{tag}", round_profile(yal * ya, 1.0, B32), material=AL_BEND, process="sheet", meta={"finish": "bare"})
         for i, ly in enumerate((16.0, 28.0)):
             add_screw(d, f"y_tension_anchor{tag}_bolt_{i}", "M5", 10, at=(sg * (xf + B32), 117.0 - ly, FZ), direction=(-sg, 0, 0),
-                      threads_into=rail, tnut=True, clamps=(f"y_tension_anchor{tag}",), washer=True)
-        add_nut(d, f"y_tension_nut{tag}", "M3", at=(sg * (xf + 15.0), 117.0, FZ), direction=(0, 1, 0))
+                      threads_into=rail, tnut=True, clamps=(f"y_tension_anchor{tag}",), washer=True, washers=2)
+        add_nut(d, f"y_tension_nut{tag}", "M3", at=(sg * (xf + 15.0), 117.0, FZ), direction=(0, 1, 0), standard="pem")
         d.join(f"y_tension_nut{tag}", f"y_tension_anchor{tag}", "PEM self-clinching nut (SendCutSend hardware service)")
         add_screw(d, f"y_tension_screw{tag}", "M3", 16, at=(sg * (xf + 15.0), 109.0, FZ), direction=(0, 1, 0), threads_into=f"y_tension_nut{tag}")
         d.get(f"y_tension_screw{tag}").meta["torque_nm"] = 0.3      # a jack screw is turned by hand, not torqued
@@ -1514,7 +1535,7 @@ def build() -> Design:
             imy -= Pos(xm, y, FZ) * xcyl(clearance_hole("M5") / 2, MT_YI)
         sheet(d, f"y_idler_mount{tag}", imy, SS)
         for i, y in enumerate(YIM_BOLTS):
-            add_screw(d, f"y_idler_mount{tag}_bolt_{i}", "M5", 10, at=(sg * (xf + MT_YI), y, FZ), direction=(-sg, 0, 0),
+            add_screw(d, f"y_idler_mount{tag}_bolt_{i}", "M5", 8, at=(sg * (xf + MT_YI), y, FZ), direction=(-sg, 0, 0),
                       threads_into=rail, tnut=True, clamps=(f"y_idler_mount{tag}",), washer=True)
         place(d, f"y_idler{tag}", gt2_idler(20, belt_width=BWY), side(sg * (YB_X - I_H(BWY) / 2), YI_Y, Z_YC, sg))
         add_screw(d, f"y_idler{tag}_bolt", "M5", 30, at=(sg * (YB_X + I_H(BWY) / 2), YI_Y, Z_YC), direction=(-sg, 0, 0),
@@ -1607,7 +1628,7 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
     sheet(d, "electronics_tray", tray, AL, r=3.0)
     for i, (x, y) in enumerate(tray_bolts):
         add_screw(d, f"tray_bolt_{i}", "M5", 10, at=(x, y, Z_TRAY), threads_into=f"frame_bot_{'left' if x < 0 else 'right'}",
-                  tnut=True, washer=True)
+                  tnut=True, washer=True, washers=2)
     for i, (hx, hy, hz) in enumerate(psu.meta["interfaces"]["mount_holes_m4"]):
         add_screw(d, f"psu_screw_{i}", "M4", 6, at=(hx, hy, 20.0), direction=(0, 0, 1), threads_into="psu")
         grp.append(f"psu_screw_{i}")
@@ -1635,7 +1656,7 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
     sheet(d, "inlet_panel", panel, AL, r=2.0)
     for i, y in enumerate(PANEL_BOLTS):
         add_screw(d, f"inlet_panel_bolt_{i}", "M5", 10, at=(XP - T_IP, y, 10.0), direction=(1, 0, 0), threads_into="frame_bot_left", tnut=True,
-                  clamps=("inlet_panel",), washer=True)
+                  clamps=("inlet_panel",), washer=True, washers=2)
     for i, (hx, hy, hz) in enumerate(inlet.meta["interfaces"]["mount_holes_m3"]):
         add_screw(d, f"inlet_screw_{i}", "M3", 10, at=(XP - T_IP - 2.5, hy, hz), direction=(1, 0, 0), clamps=("inlet", "inlet_panel"))
         add_washer(d, f"inlet_washer_{i}", "M3", (XP, hy, hz), (1, 0, 0), screw=f"inlet_screw_{i}")
@@ -1656,8 +1677,15 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
         # owner review: a through-bolt, head and washer outside the panel, washer and nyloc nut on the boss's inner face
         through_bolt_nyloc(d, f"mains_cover_inlet_screw_{i}", bolt_length(T_IP + 9.0), (XP - T_IP, y, z), (1, 0, 0),
                            ("inlet_panel", "mains_cover_inlet"), (XP + 9.0, y, z))
-    add_screw(d, "earth_stud", "M5", 10, at=(XP - 2.0, 80.0, 10.0), direction=(1, 0, 0), threads_into="frame_bot_left", tnut=True)
-    d.bom_extra("WASHER-M5-SERRATED (earth stud)", 1, 0.05)
+    # v10.1: the earth stud's stack is drawn: a DIN 6797 toothed washer on the rail's face, the earth wire's ring terminal on
+    # it (a line of the electrical BOM, not drawn: its tongue is taken as 0.8 mm), the head of an M5 x 6 on that. The tip ends
+    # 4.6 mm below the rail's face (v10's M5 x 10 went 8 mm into a 6 mm slot).
+    EARTH_TONGUE = 0.8
+    ew = place(d, "earth_stud_washer", washer_toothed("M5"), Location(Plane(origin=(XP, 80.0, 10.0), z_dir=(-1, 0, 0))))
+    add_screw(d, "earth_stud", "M5", 6, at=(XP - ew.meta["interfaces"]["thickness"] - EARTH_TONGUE, 80.0, 10.0), direction=(1, 0, 0),
+              threads_into="frame_bot_left", tnut=True, clamps=("earth_stud_washer",))
+    d.join("earth_stud", "earth_stud_washer", "washer")
+    d.join("earth_stud_washer", "frame_bot_left", "clamped under the earth stud (teeth bite through the anodising)")
     # ================= bench sub-assemblies =======================================
     have = {c.name for c in d.components}
     for tg, x0, y0, turn, posts, rail, on_tray in mounts:

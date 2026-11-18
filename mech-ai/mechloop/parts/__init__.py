@@ -942,6 +942,10 @@ def _place_tnut(design: Design, screw: Component, name: str, size: str, length: 
     from .tslot import slot_frame, tnut_2020
 
     st = tnut_2020(size)
+    known = {c.name for c in design.components}
+    if any(t not in known for t in targets):
+        raise ValueError(f"add_screw('{name}', tnut=True): {[t for t in targets if t not in known]} is not in the design yet. With "
+                         f"design.tnut_style set, place the extrusion before the screws that go into its slot.")
     ext = next((design.get(t) for t in targets if "slot" in (design.get(t).meta.get("interfaces") or {})), None)
     if ext is None:
         raise ValueError(f"add_screw('{name}', tnut=True): none of {targets} is a slotted extrusion (threads_into must name it).")
