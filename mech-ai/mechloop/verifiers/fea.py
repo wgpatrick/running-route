@@ -451,10 +451,30 @@ def run_modal(design: Design, mc, r: VerifierResult) -> dict:
         shutil.rmtree(workdir, ignore_errors=True)
 
 
+ASM_CURVATURE_STEPS = (8, 16, 24)      # elements per full circle on curved faces: the usual, then finer after a failed mesh
+
+
 def _asm_mesh(design: Design, names, selections: dict, size: float | None, workdir: Path) -> dict:
     """Mesh several parts as one body (shared nodes wherever they touch).
     selections: {label: [(component, face predicate), ...]} -> surface triangles per label.
-    Also returns, for every interface between two parts, the nodes on it."""
+    Also returns, for every interface between two parts, the nodes on it.
+
+    Eight elements round a circle is enough for stiffness, but two concentric circles a few tenths apart (a screw in a
+    washer on a nut's face: a ring 0.15 mm wide) then mesh as two octagons that cut each other, and the volume mesher
+    stops ("PLC Error: a segment and a facet intersect"). On a failed mesh the whole model is meshed again with the
+    curved faces finer (ASM_CURVATURE_STEPS); the smallest element size is unchanged, so only round features above
+    about 1 mm radius refine. "elements_per_circle" in the result says which step was used."""
+    for attempt, curv in enumerate(ASM_CURVATURE_STEPS):
+        try:
+            return _asm_mesh_once(design, names, selections, size, workdir, curv)
+        except ValueError:
+            raise                # a selection that names a part outside the case: not a meshing failure
+        except Exception:
+            if attempt == len(ASM_CURVATURE_STEPS) - 1:
+                raise
+
+
+def _asm_mesh_once(design: Design, names, selections: dict, size: float | None, workdir: Path, curv: int) -> dict:
     import gmsh
     from build123d import Vertex, export_brep
 
@@ -518,11 +538,12 @@ def _asm_mesh(design: Design, names, selections: dict, size: float | None, workd
             sel_tags[label], sel_area[label] = tg, ar
         gmsh.option.setNumber("Mesh.MeshSizeMax", size)
         gmsh.option.setNumber("Mesh.MeshSizeMin", size / 8)
-        gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", 8)
         gmsh.option.setNumber("Mesh.SecondOrderLinear", 1)  # straight edges: no inverted elements at coarse holes
         gmsh.option.setNumber("Mesh.ElementOrder", 2)
         gmsh.option.setNumber("Mesh.Algorithm3D", 1)
+        gmsh.option.setNumber("Mesh.MeshSizeFromCurvature", curv)
         gmsh.model.mesh.generate(3)
+        curv_used = curv
         tags, xyz, _ = gmsh.model.mesh.getNodes()
         xyz = xyz.reshape(-1, 3)
         idx = np.zeros(int(tags.max()) + 1, dtype=int)
@@ -563,23 +584,29 @@ def _asm_mesh(design: Design, names, selections: dict, size: float | None, workd
     finally:
         gmsh.finalize()
     return {"comps": comps, "xyz": xyz, "part_tets": part_tets, "sel_tris": sel_tris, "sel_tags": sel_tags,
-            "sel_area": sel_area, "part_faces": part_faces, "ifaces": ifaces, "size": size, "cad_counts": counts}
+            "sel_area": sel_area, "part_faces": part_faces, "ifaces": ifaces, "size": size, "cad_counts": counts,
+            "elements_per_circle": curv_used}
 
 
-def _slide_interfaces(design: Design, mesh: dict, names) -> tuple:
+def _slide_interfaces(design: Design, mesh: dict, names, stick=()) -> tuple:
     """Interfaces declared as sliding (Design.slides_on: a magnet-held sheet, a declared sliding contact): the second
     part gets its own nodes there, tied to the first part's in the direction normal to the face only. In the plane
     the pair is located at one point (the node nearest the middle of the face, both directions) and kept from turning
     by one more tie (the node furthest from it, across the line between them); everywhere else it slides freely.
     Frictionless, and the normal tie holds both ways (the magnet holds the sheet down).
+    A join whose kind starts with "sliding free" is NOT located in its plane: only the normal tie is made (a washer
+    held on a plate by a spring, slipping as the plate grows). The two parts must then be located by something else.
+    `stick`: pairs of part names whose sliding contact is left bonded in this solve (the bound where friction holds).
     Returns (xyz, part_tets, equations [(dependent node, dof 1..3, independent node)], info, not_done)."""
+    stuck = {frozenset(p) for p in stick}
     xyz = mesh["xyz"].copy()
     part_tets = [t.copy() for t in mesh["part_tets"]]
     eqs, info, not_done, new_nodes = [], [], [], []
     for i, j, nodes in mesh["ifaces"]:
         a, b = names[i], names[j]
-        if not design.slides_on(a, b) or len(nodes) < 3:
+        if not design.slides_on(a, b) or len(nodes) < 3 or frozenset((a, b)) in stuck:
             continue
+        free = str(design.joins.get(frozenset((a, b)), "")).strip().lower().startswith("sliding free")
         P = xyz[nodes]
         c = P.mean(axis=0)
         _, sv, vt = np.linalg.svd(P - c)
@@ -602,13 +629,14 @@ def _slide_interfaces(design: Design, mesh: dict, names) -> tuple:
         n1 = int(nodes[int(np.linalg.norm(P - xyz[n0], axis=1).argmax())])
         for n in nodes:
             eqs.append((remap[int(n)], k + 1, int(n)))
-        for d_ in inpl:
-            eqs.append((remap[n0], d_ + 1, n0))
-        dv = xyz[n1] - xyz[n0]
-        across = inpl[0] if abs(dv[inpl[1]]) >= abs(dv[inpl[0]]) else inpl[1]      # the in-plane direction across the line n0 -> n1
-        eqs.append((remap[n1], across + 1, n1))
+        if not free:
+            for d_ in inpl:
+                eqs.append((remap[n0], d_ + 1, n0))
+            dv = xyz[n1] - xyz[n0]
+            across = inpl[0] if abs(dv[inpl[1]]) >= abs(dv[inpl[0]]) else inpl[1]      # the in-plane direction across the line n0 -> n1
+            eqs.append((remap[n1], across + 1, n1))
         info.append({"joint": f"{a} / {b}", "kind": str(design.joins.get(frozenset((a, b)))), "normal": "xyz"[k],
-                     "nodes": int(len(nodes)), "located_in_plane_at": [round(float(v), 1) for v in xyz[n0]]})
+                     "nodes": int(len(nodes)), "located_in_plane_at": None if free else [round(float(v), 1) for v in xyz[n0]]})
     if new_nodes:
         xyz = np.vstack([xyz, np.array(new_nodes)])
     return xyz, part_tets, eqs, info, not_done
@@ -983,7 +1011,8 @@ def run_thermal(design: Design, tc, r: VerifierResult) -> dict:
             r.add("error", "fea_setup", f"{tc.name}: no fixed faces matched ({mesh['cad_counts']}).", case=tc.name)
             return {}
         temps = {i: float(tc.temps.get(n, tc.temps.get("*", 0.0))) for i, n in enumerate(names)}
-        xyz, part_tets, eqs, slid, not_slid = _slide_interfaces(design, mesh, names)
+        stick = [tuple(p) for p in (getattr(tc, "stick", None) or ())]
+        xyz, part_tets, eqs, slid, not_slid = _slide_interfaces(design, mesh, names, stick=stick)
         for msg in not_slid:
             r.add("warning", "sliding_contact_left_bonded", f"{tc.name}: {msg}. The result then contains a bimetal effect the real "
                   f"joint does not have.", case=tc.name)
@@ -999,6 +1028,9 @@ def run_thermal(design: Design, tc, r: VerifierResult) -> dict:
                                                        + ", ".join(f"{s_['joint']} ('{s_['kind']}')" for s_ in slid) if slid else "")}
         if slid:
             out["sliding_contacts"] = slid
+        if stick:
+            out["sliding_contacts_taken_as_stuck"] = [" / ".join(p) for p in stick]
+            out["joints"] += "; taken as stuck (bonded) in this case: " + ", ".join(" / ".join(p) for p in stick)
         moved = {}
         for label, pt in (tc.probes or {}).items():
             dist = np.linalg.norm(xyz - np.array(pt), axis=1)

@@ -236,7 +236,10 @@ class ThermalCase:
 
     Parts are bonded where they touch, except a pair joined with a sliding kind (`design.join(a, b, "magnet")` or
     `"sliding"`): that contact carries normal load and slides in its plane, so a steel sheet held by a magnet does
-    not bend the plate under it as a bonded bimetal would.
+    not bend the plate under it as a bonded bimetal would. A kind that starts with "sliding free" is not located in
+    its plane at all (only the normal tie): a washer held on a plate by a spring.
+    stick: pairs of part names whose sliding contact is taken as stuck (bonded) in THIS case: the bound where friction
+    never lets go.
     """
 
     name: str
@@ -247,6 +250,7 @@ class ThermalCase:
     gaps: dict = field(default_factory=dict)
     flatness: Optional[tuple] = None
     mesh_size: Optional[float] = None
+    stick: Sequence[tuple] = ()
 
 
 @dataclass

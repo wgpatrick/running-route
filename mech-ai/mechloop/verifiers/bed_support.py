@@ -390,6 +390,24 @@ def support_model(design: Design, lay: dict) -> dict:
         w = 0.45 * float(np.sort(size[np.abs(a) < 0.5])[0]) if np.sum(np.abs(a) < 0.5) else 5.0
         kt = k * P
         kap = k * L ** 2 / 12.0 * P + k * w ** 2 / 12.0 * np.outer(a, a)
+        gf = b.meta.get("guide_float") or None
+        mount = None
+        if gf:
+            # a block on a floating mount (a flexure or slot, meta["guide_float"]): the mount's stiffness is in series
+            # with the block's, along the float and, where the mount declares them, about its three axes
+            f_ = P @ np.array(gf["axis"], dtype=float)
+            f_ /= max(float(np.linalg.norm(f_)), 1e-12)
+            t_ = np.cross(a, f_)
+            ser = lambda x, y: x if not y else 1.0 / (1.0 / x + 1.0 / float(y))
+            rot = gf.get("rotation_n_mm_per_rad") or {}
+            kt = ser(k, gf["stiffness_n_per_mm"]) * np.outer(f_, f_) + k * np.outer(t_, t_)
+            kap = (ser(k * L ** 2 / 12.0, rot.get("about_float_axis")) * np.outer(f_, f_)
+                   + ser(k * L ** 2 / 12.0, rot.get("about_across")) * np.outer(t_, t_)
+                   + ser(k * w ** 2 / 12.0, rot.get("about_travel")) * np.outer(a, a))
+            mount = {"float_axis": [round(float(v), 3) for v in f_], "stiffness_n_per_mm": float(gf["stiffness_n_per_mm"]),
+                     "rotation_n_mm_per_rad": {k_: float(v) for k_, v in rot.items()}, "by": gf.get("by", "")}
+            assumed.add("floating guide mounts (meta['guide_float']): the declared mount stiffness in series with the block, each "
+                        "direction on its own (a flexure's coupling of shift and turn is not modelled)")
         r_ = _center(b) - O
         J = np.hstack([np.eye(3), -_skew(r_)])
         K += J.T @ kt @ J
@@ -397,7 +415,8 @@ def support_model(design: Design, lay: dict) -> dict:
         plain = "static_load_n" not in b.ratings or (b.sku or "").upper().startswith(("LM", "BUSH"))
         sup.append({"name": b.name, "kind": "guide", "r": r_, "k": kt, "kappa": kap, "k_n_per_um": k * 1e-3, "source": src, "track_mm": L,
                     "mu": float(b.ratings.get("friction_coefficient", MU_PLAIN if plain else MU_BALL)),
-                    "static_load_n": b.ratings.get("static_load_n"), "static_moment_nm": b.ratings.get("static_moment_nm")})
+                    "static_load_n": b.ratings.get("static_load_n"), "static_moment_nm": b.ratings.get("static_moment_nm"),
+                    **({"mount": mount} if mount else {})})
     assumed.add("guide block roll stiffness about the rail from an assumed ball gauge of 0.45 x the block's width")
     j = lay["joint"]
     floats = any(ad.kind == "float" and ad.joint in (None, j.name) for ad in design.adjustments)

@@ -181,3 +181,122 @@ def test_stiff_directions_through_one_point_do_not_locate_the_body():
           {"axis": (0, 0, 1), "stiffness_n_per_mm": 250.0, "range_mm": 1.0}]
     _, r = _solve([(-60, 0), (0, 0), (60, 0)], [(0, 0), (0, 0), (0, 0)], floats=fl, adjust=True)
     assert [x for x in r.findings if x.code == "guides_locate_through_floats"]
+
+
+# ---------------------------------------------------------------- bed support: a block on a floating mount
+def test_a_floating_mount_is_in_series_with_its_block_in_the_bed_support_model():
+    """Blocks of the test bed (rails standing on the back wall, normal -Y) declared on mounts that float along Y with
+    250 N/mm and turn about X with 2e6 N.mm/rad. Along the float the support is 1 / (1 / k_block + 1 / 250); across it
+    the block's own figure; about the float axis 1 / (1 / (k L^2 / 12) + 1 / 2e6), which is under the block's own. With
+    three screws the nuts then lose less load per mm of height error than on rigidly mounted blocks."""
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).parent))
+    from test_known_answers_fit import bed_machine, support
+
+    from mechloop.verifiers import bed_support as BS
+
+    three = ((-90.0, -90.0), (90.0, -90.0), (0.0, 120.0))
+
+    def machine(float_, per_rail=2):
+        d = bed_machine(screws=three, blocks_per_rail=per_rail, sync="belt")
+        d.adjustments.append(Adjustment("floating nut", "float", range_mm=0.5, joint="z"))
+        if float_:
+            for c in d.components:
+                if c.meta.get("guides") == "z":
+                    c.meta["guide_float"] = {"axis": (0, -1, 0), "stiffness_n_per_mm": 250.0, "range_mm": 0.3,
+                                             "rotation_n_mm_per_rad": {"about_float_axis": 2.0e6, "about_across": 2.0e4, "about_travel": 3.0e4}}
+        return d
+
+    rigid, soft = machine(False), machine(True)
+    g0 = next(s for s in BS.support_model(rigid, BS.layout(rigid))["supports"] if s["kind"] == "guide")
+    g1 = next(s for s in BS.support_model(soft, BS.layout(soft))["supports"] if s["kind"] == "guide")
+    k = g0["k"][0, 0]
+    assert g0["k"][1, 1] == pytest.approx(k) and "mount" not in g0
+    assert g1["k"][1, 1] == pytest.approx(1 / (1 / k + 1 / 250.0)) and g1["k"][0, 0] == pytest.approx(k) and g1["k"][2, 2] == pytest.approx(0.0)
+    kap = g0["kappa"][1, 1]                                    # about Y, the float axis: k L^2 / 12
+    assert g1["kappa"][1, 1] == pytest.approx(1 / (1 / kap + 1 / 2.0e6)) and g1["kappa"][0, 0] == pytest.approx(1 / (1 / kap + 1 / 2.0e4))
+    assert g1["mount"]["stiffness_n_per_mm"] == 250.0
+    sens = lambda d: support(d)[0]["nut_seating_and_lead_error"]["nuts"]["nut0"]["load_change_n_per_mm_of_height_error"]
+    assert sens(soft) < sens(rigid)
+    # one block per rail: only the blocks' moment stiffness resists a tilt, and the mounts take most of that away
+    assert sens(machine(True, 1)) < 0.5 * sens(machine(False, 1))
+
+
+# ---------------------------------------------------------------- FEA: the assembly mesher makes a second, finer attempt
+def test_assembly_mesher_retries_with_finer_curved_faces(tmp_path, monkeypatch):
+    """A countersunk M4 screw through a large washer into a thumb nut: on the nut's face the screw (4.0) and the washer's
+    bore (4.3) leave a ring 0.15 mm wide, which eight elements per circle cannot mesh. The mesher must still return a mesh,
+    and say how many elements per circle it used. A failure of the first attempt is retried; a wrong selection is not."""
+    from mechloop.verifiers import fea as F
+
+    d = Design("ring", base="plate")
+    d.add("plate", Pos(0, 0, 1.5) * (Box(30, 30, 3) - Pos(0, 0, 0) * __import__("build123d").Cylinder(2.75, 3)), material="al6061")
+    P.add_screw(d, "stud", "M4", 35, at=(0, 0, 20.0), clamps=("plate",), head="countersunk")
+    P.add_washer(d, "w", "M4", (0, 0, 0.0), (0, 0, -1), series="large")
+    P.add_thumb_nut(d, "thumb", "M4", (0, 0, -1.0), (0, 0, -1), screw="stud")
+    m = F._asm_mesh(d, ["plate", "stud", "w", "thumb"], {}, 7.5, tmp_path)
+    assert m["elements_per_circle"] in F.ASM_CURVATURE_STEPS and len(m["xyz"]) > 100 and all(len(t) for t in m["part_tets"])
+    calls = []
+    real = F._asm_mesh_once
+
+    def flaky(design, names, selections, size, workdir, curv):
+        calls.append(curv)
+        if len(calls) == 1:
+            raise Exception("PLC Error:  A segment and a facet intersect at point")
+        return real(design, names, selections, size, workdir, curv)
+
+    monkeypatch.setattr(F, "_asm_mesh_once", flaky)
+    m2 = F._asm_mesh(d, ["plate", "w"], {}, 7.5, tmp_path)
+    assert calls == list(F.ASM_CURVATURE_STEPS[:2]) and m2["elements_per_circle"] == F.ASM_CURVATURE_STEPS[1]
+    with pytest.raises(ValueError):
+        F._asm_mesh(d, ["plate", "w"], {"x": [("stud", lambda f: True)]}, 7.5, tmp_path)
+
+
+# ---------------------------------------------------------------- thermal: a contact that slips, and the bound where it sticks
+def _bar_on_pads(kind, stick=()):
+    """A cold steel base, two steel pads 100 mm apart on it, a hot aluminium bar across the pads: bonded to pad a, joined
+    `kind` to pad b."""
+    from mechloop.model import ThermalCase
+
+    d = Design("bar", base="base")
+    d.add("base", Pos(0, 0, -3) * Box(140, 20, 6), material="steel")
+    d.add("pad_a", Pos(-50, 0, 2) * Box(12, 12, 4), material="steel")
+    d.add("pad_b", Pos(50, 0, 2) * Box(12, 12, 4), material="steel")
+    d.add("bar", Pos(0, 0, 6) * Box(130, 12, 4), material="al6061")
+    for p in ("pad_a", "pad_b"):
+        d.join(p, "base", "bond")
+    d.join("bar", "pad_a", "bond")
+    d.join("bar", "pad_b", kind)
+    d.thermalcases.append(ThermalCase("hot", ["base", "pad_a", "pad_b", "bar"], fixed=[("base", lambda f: abs(f.center().Z + 6) < 1e-6)],
+                                      temps={"bar": 60.0}, probes={"end": (65.0, 0.0, 6.0)}, flatness=("bar", "z", None), mesh_size=3.0,
+                                      stick=stick))
+    return d
+
+
+def test_a_free_sliding_contact_lets_a_hot_bar_grow_and_the_stuck_bound_bows_it():
+    """Bar 60 K warmer than the base, held at pad a. On a "sliding free" contact at pad b it grows as if nothing held it:
+    its far end (115 mm from pad a's centre) moves about 23.6e-6 x 60 x 115 = 0.16 mm and it stays flat. With that
+    contact taken as stuck (ThermalCase.stick), or bonded outright, the pads hold 100 mm of it back and it bows."""
+    from mechloop.verifiers.fea import ALPHA, run_thermal
+
+    if not __import__("shutil").which("ccx"):
+        pytest.skip("CalculiX is not installed")
+
+    def solve(kind, stick=()):
+        d = _bar_on_pads(kind, stick)
+        r = VerifierResult("fea")
+        m = run_thermal(d, d.thermalcases[0], r)
+        assert not [f for f in r.findings if f.severity == "error"]
+        return m
+
+    free = solve("sliding free: a washer under a spring")
+    assert free["sliding_contacts"][0]["located_in_plane_at"] is None
+    assert free["probe_movement_mm"]["end"][0] == pytest.approx(ALPHA["al6061"] * 60.0 * 115.0, rel=0.12)
+    stuck = solve("sliding free: a washer under a spring", stick=[("bar", "pad_b")])
+    bonded = solve("bond")
+    assert "sliding_contacts" not in stuck and stuck["sliding_contacts_taken_as_stuck"] == ["bar / pad_b"]
+    assert stuck["bow_mm"]["bar"] == pytest.approx(bonded["bow_mm"]["bar"], rel=1e-6)
+    assert free["bow_mm"]["bar"] < 0.6 * stuck["bow_mm"]["bar"]          # what is left is the bimetal at the bonded pad a
+    assert stuck["probe_movement_mm"]["end"][0] < 0.6 * free["probe_movement_mm"]["end"][0]

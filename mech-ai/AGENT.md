@@ -796,7 +796,10 @@ three-point one:
   the middle of the face), so a steel sheet does not bend an aluminium plate as a bonded bimetal would. Put the sheet
   in the case's components: leaving it out is no longer needed. Everywhere else a sliding join is a join like any
   other (the parts are held). A contact face that is not one plane square to a world axis stays bonded, with the
-  warning `sliding_contact_left_bonded`.
+  warning `sliding_contact_left_bonded`. A kind that starts with `"sliding free"` is not located in its plane at all
+  (normal tie only: a washer held on a plate by a spring, slipping as the plate grows); the two parts must then be
+  located by something else, or the solve is singular. `ThermalCase(..., stick=[(a, b), ...])` takes those sliding
+  contacts as stuck (bonded) in that one case: the bound where friction never lets go (designs/printer_v9.py runs both).
 - Every `AssemblyCase` is solved twice: every touching face bonded (`stiffness_n_per_mm`, the upper
   bound) and screwed joints held only around their screws (`stiffness_low_n_per_mm`, the lower bound).
   Deflection limits are judged on the lower bound, and the digital twin uses it.
