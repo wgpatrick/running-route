@@ -27,7 +27,7 @@ v10). Every warning is listed below.
 | Levelling | Three sprung studs with thumb nuts: front left (fitted hole), front right (slot), rear centre (free). Same stack as v9, no tapped aluminium. |
 | What three points cost | The two rear print corners are 115 mm from the rear stud, so the plate went from 6.35 to 12.7 mm (+0.82 kg on Z). 1 kg on the worst print corner lowers it 0.012 mm (limit 0.02; v9 0.008). |
 | Motor tilt | One Z motor may stand **1.24 mm** out of the plane of the other two (0.97 mm across the print area) before the first limit (the nuts' seats); guide blocks and webs follow at 1.72 and 1.78 mm. Every nut stays on its weight-bearing flank up to **0.40 mm**. |
-| Division of labour | Thumb nuts: one-time coarse tram, until `Z_TILT_ADJUST`'s first pass asks for less than 0.40 mm at any screw (each nut has +/-2 mm). Motors: everything after that; routine need is 0.14 mm; never more than 1.24 mm. |
+| Division of labour | Thumb nuts: one-time coarse tram, until `Z_TILT_ADJUST`'s first pass asks for less than 0.40 mm at any screw (each nut has +/-1.5 mm). Motors: everything after that; routine need is 0.14 mm; never more than 1.24 mm. |
 | Proposal A (probe without Y offset) | Does not work with this sensor and toolhead; not built. The front 34.5 mm stays unprobed, and with the sheet now close to the reach so do 9.3 mm at each side (see "Proposal A"). |
 
 ## What changed against v9
@@ -36,7 +36,7 @@ v10). Every warning is listed below.
 |---|---|---|
 | X rail | stock MGN12 250 mm | HIWIN MGNR12R cut to 288 mm, the beam's length |
 | X hard stops | two rail-stop plates | a tab on each Y plate against the tool plates' edge, 1.5 mm beyond the travel; the two stop plates are gone |
-| X motor and idler | on the beam's front face, pulley centres at +/-118 | still bolted to the beam's front face, but standing outboard of the block's travel over the Y plates: pulley centres -141.8 / +142.8; belt plane 7 mm higher; motor plate 4.75 mm (was 3.175) |
+| X motor and idler | on the beam's front face, pulley centres at +/-118 | still bolted to the beam's front face, but standing outboard of the block's travel over the Y plates: pulley centres -141.8 / +142.8; belt plane 8 mm higher; plates of v9's gauges, each with a wing over the Y plate |
 | Y plates | 19.5 mm deep behind the beam's centre line over the beam; a land on the left for the X switch | 11 mm deep over the beam (in front of the X block's path); stop tabs; a land on the right for the X switch |
 | Toolhead | nozzle on the block's centre line; HeaterCore's lead sleeve to the left | nozzle 15.5 mm left of the block's centre, so the Roto and the fan's plenum are centred on the block (31.7 left, 31.3 right); lead sleeve forward, under the tool plates |
 | Tool plates | 46 x 56 mm outline, notch for the X switch, window | bottom edge 2 mm higher; front plate: striker tab for the X switch; both: upper right corner cut away for the Roto's motor lead |
@@ -45,11 +45,12 @@ v10). Every warning is listed below.
 | Toolhead loom | anchored on the right top rail's inner face, drops in the rear right corner | anchored on top of the back rail, drops down the outside of the back wall |
 | Print sheet | 257 x 257 | 235 x 235 |
 | Bed plate | MIC-6 265 x 265 x 6.35, 1.25 kg | MIC-6 241 x 241 x 12.7, 2.07 kg, centred at x -15.5 |
-| Bed mount | four studs at (+/-104, +/-98), M4 x 35, spring 14 mm (45.6 N), gap 18.8 mm | three studs at (-86, -105), (86, -105), (-15.5, 114), M4 x 40, spring 12.5 mm (57 N), gap 17.3 mm |
+| Bed mount | four studs at (+/-104, -93.5 and 102.5), M4 x 35, spring 14 mm (45.6 N), +/-2 mm, gap 18.8 mm | three studs at (-86, -105), (86, -105), (-15.5, 114), M4 x 40, spring 12 mm (60.8 N), +/-1.5 mm, gap 16.8 mm |
 | Deck | ten M5, four stud holes | twelve M5 (one straight outboard of each stud), three stud holes; outline unchanged |
 | Heater | 190 x 180 mm | 230 x 207 mm, same 180 W |
 | Z rails | centred on the blocks' travel | where v9 had them in the frame (the blocks ride 4.85 mm lower; the rails would otherwise meet the control board) |
-| Carrier square, nut plates, carriage plates, keepers, motor plates | | unchanged |
+| Nut plates | 4.75 mm 6061 | 6.35 mm 6061, same outline (the bed is heavier) |
+| Carrier square, carriage plates, keepers, motor plates | | unchanged |
 
 ## X travel: what was done and what limits it
 
@@ -57,12 +58,12 @@ v9's proposals B and C (redrawn rail stops, belt clamp, left Y plate's land; a l
 Going to the end of the beam needed four more things.
 
 1. **Rail as long as the beam.** 288 mm. HIWIN's catalogue (in the repository) allows any length to 2000 mm with end
-   distances of 5 to 20 mm; this one has 11 holes and 19 mm ends. It is not a stock length (see "Unverified").
+   distances of 5 to 20 mm; this one has 11 holes and 19 mm ends. It is not a stock length (see "Vendor data").
 2. **Motor and idler outboard of the block's travel.** The belt clamp on the toolhead is 30 mm wide, so the pulleys must
    stand 26 mm beyond the block's last position: over the Y plates, outboard of the beam's ends. They are not "above or
    behind" the beam as the brief suggested: the mounts keep their two M5 bolts on the beam's front face (inside its ends)
    and each has a wing that reaches outward 1.5 mm above the Y plate and the heads of the Y block's screws. That is why
-   the belt plane is 7 mm higher. Behind the beam is the X rail and the toolhead; above it the belt itself.
+   the belt plane is 8 mm higher. Behind the beam is the X rail and the toolhead; above it the belt itself.
 3. **Y plates out of the block's path.** Over the beam they now end 2 mm in front of the X block. From x 140.8 outward
    they reach back as before, and a tab reaches further back to stop the tool plates' edge.
 4. **Toolhead centred on the block.** The Roto reaches 16.2 mm left and 40.9 mm right of its nozzle, the fan's plenum 46.8 mm
@@ -79,7 +80,7 @@ whole travel; these are what would close first):
 | both | tool plates' edge to the Y plate's stop tab (the hard stop) | 1.5 mm |
 | left | Roto (fan side) to the left top rail's inner face | 2.0 mm |
 | right | part fan's plenum to the right top rail's inner face | 2.4 mm |
-| right | plenum to the Y switch's bracket (with Y at its rear end) | 2.2 mm |
+| right | plenum to the Y switch's bracket (with Y at its rear end) | 2.0 mm |
 | left / right | belt bracket to the X pulley / idler | 3.0 / 3.0 mm |
 | left | belt bracket to the X motor's plate | 2.0 mm (as v9) |
 | both | tool plates to the Y blocks | 7.2 mm |
@@ -99,7 +100,7 @@ the part fan. (c) A wider frame (v9's proposal D). The 5 mm figure and the H blo
 | End | What | Clearance at the end of over-travel |
 |---|---|---|
 | front | Y plates to the Y idlers | 2.05 mm |
-| front | X motor plate's bolt heads to the top front rail | 1.9 mm (v9 3.5: the plate is 1.6 mm thicker) |
+| front | the X mounts' bolt heads on the beam's front face to the top front rail | 3.5 mm (as v9) |
 | front | Y blocks on their 300 mm rails (5 mm kept) | 0.4 mm spare |
 | front | the 420 mm envelope: Y idlers at y -193.9, Y motors at 225.2 | 1 mm |
 | rear | part fan's screws to the top back rail | 1.44 mm |
@@ -113,8 +114,9 @@ rail. Moving the X mounts off the beam's front face would free 9 mm there, but t
 The probe is an unshielded OMRON E2E-X5ME1. Its data sheet asks for a 40 mm diameter round the head free of metal.
 
 - **Beside the nozzle in X.** The Roto's body is above the nozzle from 16.2 mm left to 40.9 mm right of it; a 12 mm barrel
-  has to stand outside that, 27 mm left or 48 mm right of the nozzle. That widens the toolhead by 21 mm or more, which
-  comes straight off the X travel, and then leaves an unprobed strip of the same 27 or 48 mm in X. Worse on both counts.
+  has to stand outside that, about 27 mm left or 49 mm right of the nozzle. That widens the toolhead by about 20 mm or
+  more, which comes straight off the X travel, and then leaves an unprobed strip of the same 27 or 49 mm in X. Worse on
+  both counts.
 - **In front of the nozzle.** The tool plates are 15 mm in front of it.
 - **Any fixed offset** leaves a strip as wide as the offset unprobed somewhere, unless the axis has that much travel beyond
   the print area. X now has none to spare (229.6 of 235) and Y never had.
@@ -149,8 +151,8 @@ screws carry 21.0 / 18.1 / 15.0 N (rear, front left, front right) instead of v9'
 Layout. Two studs at the front, 172 mm apart, 11.4 mm inside the square's front member; one at the rear on the bed's
 centre line, 11.4 mm inside the rear member. Each is 58 to 74 mm from a lead-screw nut and has a deck bolt straight
 outboard of it. They span a triangle of 188 cm2; the bed's own weight divides 0.30 / 0.20 / 0.50 between them (front left,
-front right, rear). All three are
-outside the print area in Y (2.25 mm in front of it, 2.25 mm behind), which is what lets the heater run the full width.
+front right, rear). All three are outside the print area in Y (2.25 mm in front of it, 2.25 mm behind), which is what lets
+the heater run the full width.
 
 Why this triangle and not a better one for sag. A plate on three points always leaves corners hanging. Plate theory (a
 thin-plate finite-element estimate, not the verifier) for 1 kg on the worst print corner of the plate alone:
@@ -172,7 +174,7 @@ What the verifiers say, against v9's four points:
 | Bed sag, 1 kg at the worst print corner (screw-only bound) | 0.0081 mm | **0.0119 mm** | limit 0.02. Worst: rear left. By corner: front left 0.0052, front right 0.0035, rear left 0.0119, rear right 0.0115; centre 0.0022 |
 | ... bonded bound | 0.0064 mm | 0.0108 mm | |
 | 20 N hand load, worst corner | 0.0166 mm | 0.0242 mm | limit 0.2 |
-| Does a 20 N hand lift the bed off a thumb nut? | yes, in the worst case of the requirement (16 N left at the weak end with 1 kg on that corner) | **no**: at least 16.1 N stays between every nut and the deck (weak end of the range, empty bed, hand on any print corner) | three points share any load by statics; a corner load cannot unload the stud next to it |
+| Does a 20 N hand lift the bed off a thumb nut? | in the worst case, yes: at the weak end of the range with the 1 kg print on that corner 16 N is left between nut and deck, less than the hand's 20 | **no**: the same worst case leaves 26 N at the rear stud, 6 N with the hand on that corner as well; on an empty bed a 20 N hand on any print corner leaves 16 N or more | the springs are set at 8 mm instead of 6: 49 N at the weak end against 30 |
 | Spring | 6 mm compressed, 45.6 N; 30.4 to 60.8 N over +/-2 mm | 8 mm compressed, 60.8 N; 49.4 to 72.2 N over +/-1.5 mm | the maker lists deflection to 10 mm; v10 uses 6.5 to 9.5 |
 | Worst stud's load (bed share + 1 kg where it loads that stud most) | 14.9 N | 23.4 N (the rear stud: half the bed, 13.5 N, and the payload on a rear corner) | bed without payload 2.70 kg (v9 1.95) |
 | Preload margin at the weak end of the levelling range | 2.04 | 2.11 | requirement: 2 |
@@ -189,8 +191,8 @@ What the verifiers say, against v9's four points:
 | Nut plates | 4.75 mm: 0.049 mm, safety 17.6 under 3 x the bed's weight on one plate | 6.35 mm: 0.029 mm, safety 22.6 | limit 0.05. With 4.75 mm the heavier bed gave 0.067 mm |
 | Bed heat-up to 60 / 80 degC (180 W, one-lump model) | 295 / 538 s | **469 / 847 s** | duty to hold: 28 % / 49 % |
 
-The hand-load row is the real gain of three points besides the twist: in v9 a firm press on a corner could lift that corner
-off its nut; here it cannot. The sag, the heat-up time and 0.8 kg on Z are what they cost.
+What three points buy: the mounts cannot twist the plate, the hot plate stays flatter, and one stud set less. What they
+cost: the sag at the rear corners, the heat-up time and 0.8 kg on Z, all through the thicker plate.
 
 ## Motor tilt: how far the Z motors may level the bed
 
@@ -203,7 +205,7 @@ carriage plate must turn in its own plane against its block: the 24 mm wide web 
 with the block's own 3.5e6. About the other axis the same web bends the easy way (1.9e4 N.mm/rad). So the two side blocks
 resist front-to-back tilt, the rear block resists side-to-side tilt, and each does it through one web.
 
-Per millimetre that one screw stands high (the rear screw; the front ones in brackets):
+Per millimetre that one screw stands high:
 
 | | rear screw | a front screw |
 |---|---|---|
@@ -287,9 +289,10 @@ the plate's own plane).
 
 ### 6. X belt out of plane in 6 % of builds
 
-New warning. With the pulleys 285 mm apart (v9 236) the same angular errors move the idler further from the clamp's plane:
-1.5 mm at the 99th percentile, more than 1 mm in 5.8 % of builds (limit 5 %, inside its sampling error). The fix is at
-assembly: shim the idler on its spacer. Not designed out.
+New warning. The idler and the belt clamp end up 1.5 mm out of plane at the 99th percentile and more than 1 mm apart in
+5.8 % of builds (limit 5 %, inside its sampling error; v9 2.1 %). A trial with the pulleys back at +/-118 gave 3.9 %, so
+about half of the loss comes with the pulleys' distance (285 mm apart against 236); the rest was not traced. Belt height
+and plate gauge made no difference. The fix is at assembly: shim the idler on its spacer. Not designed out.
 
 ### 7. Endstops
 
@@ -346,6 +349,26 @@ revision because the guideline arrived after the design had been verified. It is
 | SendCutSend gauges | 1.6, 2.286, 3.175, 4.75, 6.35 and 12.7 mm, all stocked for their alloys in the shop profile |
 | Bends only in 5052 | yes |
 | Conflict | **holes under the sheet's thickness** in the nut plates (5.5 and 4.8 mm in 6.35) and the bed plate (above); **countersinks**, three (v9 four); **a normal washer on a slot** where a large one does not fit (X switch) |
+
+### 13. Checker changes made for this design
+
+One, in `mechloop/` with tests in `tests/test_v10_support.py` (14 tests); it is a judgement in the checker and is said here.
+
+- **Bed support, allowable screw tilt** (`mechloop/verifiers/bed_support.py`, `tilt_allowance`; documented in `AGENT.md`).
+  For several screws on independent motors: the height at which a nut's seating load reaches zero, and the heights at
+  which a guide block's static moments and load (added, over a safety of 3), a declared flexure web (bending and torsion,
+  half of yield) or a declared nut seat (rocking angle) reach their limits. New metrics under
+  `fea.bed_support.tilt_allowance`; new findings `z_tilt_allowance` (info), `z_tilt_allowance_exceeded` (warning, when
+  the routine height error is already more than the allowance) and `z_tilt_allowance_not_evaluated` (warning). Nothing
+  that existed was changed: v9's report would gain the metrics and one info finding. The safety of 3, the half-yield
+  limit and the linear adding of moment shares are the judgements; the tests check the arithmetic against hand sums
+  (tilt per mm from the screws' triangle, block moment from the series stiffness, web stress from the declared section),
+  not the judgements.
+- No existing check, limit, load or tolerance was loosened for v10. Two of the design's own requirement texts were
+  re-pointed (spring preload and plate growth now work for three studs by statics), and v9's `carrier_square` check now
+  also asserts the deck's outline is v9's.
+- Catalogue: `print_sheet_pei235()` (batch 9, secondary source). `tools/build_package.py` gained v10's stage notes and
+  open items (generator text, not a check).
 
 ## Verify, per verifier
 
@@ -463,10 +486,12 @@ nut, the magnetic base stand-in, the lead-screw motors' thrust rating.
 - The assembly order in BUILD.md is the simulation's; the practical order is in the build package's stage notes.
 - As v9: bolt preload and contact, buckling, belt tooth load, the lead-screw motors' thrust rating.
 
-What was run for this revision, all on 2026-11-18 and all on the final code: the full `verify` twice (66 min each; the first
-failed on two items and the design was changed, the second is the report above); `score --assembly` (62 min); `tune`
+What was run for this revision, all on 2026-11-18. The full `verify` twice (66 min each): the first, on an earlier state of
+the design, failed on two items and the design was changed; the second, on the final code, is the report above. Then, all on
+the final code and that report: `score --assembly` (62 min); `tune`
 (Klipper's shaper, pressure-advance and bed-mesh code on the twin); one firmware-in-the-loop print; the viewer export with
-the assembly simulation; the build package with its drawings; the review data; and the whole test suite: 500 passed in 17 min (`pytest -q`, 14 of them new in `tests/test_v10_support.py`; the 14 were run again after the last export).
+the assembly simulation; the build package with its drawings; the review data; and the whole test suite: 500 passed in
+17 min (`pytest -q`, 14 of them new in `tests/test_v10_support.py`; those 14 were run again after the last export).
 Not run: `score --firmware klipper` (the real firmware planning every benchmark print); any test of the generated drawings
 beyond the generator's own checks; nothing physical.
 
