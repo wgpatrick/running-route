@@ -1,0 +1,25 @@
+{
+ "retrieved": "2026-11-18",
+ "family": "257 x 257 mm double-sided textured PEI spring-steel print sheet with magnetic base (the Bambu Lab X1 / P1 / A1 plate size)",
+ "vendor": "3DJAKE (niceshops GmbH); the same size is sold by many makers",
+ "source_level": "secondary",
+ "source_url": "https://www.3djake.com/3djake/textured-pei-build-plate-dual-sided",
+ "title": "3DJAKE Textured PEI Build Plate - Dual Sided, 257 x 257 mm (product page), read only through web-search result snippets on 2026-11-18",
+ "why_secondary": "3djake.com is outside this session's network allow-list",
+ "ref": "snippet: 'double-sided PEI coating ... magnetic base ... 257 x 257 mm ... The maximum print bed temperature is 120 degC ... Bambu Lab X1 series, P1 series, A1'",
+ "values": {
+  "size_mm": [257.0, 257.0],
+  "max_bed_temp_c": {"value": 120.0, "note": "the seller's figure for the plate; whether it also covers the magnetic base's adhesive is not said"},
+  "steel_thickness_mm": {"value": 0.4, "note": "NOT from 3DJAKE: a third-party listing of a generic dual-sided 257 mm PEI plate gives 'spring steel approx. 0.4 mm, overall approx. 0.65 mm'"},
+  "magnetic_base_thickness_mm": {"value": 1.5, "note": "NOT from 3DJAKE: two other sellers' kits (235 mm, 245 x 260 mm) state a 1.5 mm magnetic base; used for the stand-in base in the design"}
+ },
+ "not_published": [
+  "thickness of the steel and of the coated stack (3DJAKE)",
+  "magnetic base thickness, adhesive and its temperature limit",
+  "mass (catalogue: computed from 0.4 mm of steel)",
+  "steel grade, flatness",
+  "price (15 USD-class item; the catalogue's figure is an estimate)"
+ ],
+ "licence": "not stated",
+ "used_by_catalog": true
+}

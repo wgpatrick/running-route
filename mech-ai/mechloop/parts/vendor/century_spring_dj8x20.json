@@ -1,0 +1,28 @@
+{
+ "retrieved": "2026-11-18",
+ "family": "Century Spring DJ metric (JIS) die springs, 8 mm hole x 4 mm rod x 20 mm free length",
+ "vendor": "Century Spring (MW Components)",
+ "source_level": "secondary",
+ "source_url": "https://www.centuryspring.com/shop/dj-8x20ycs",
+ "title": "Century Spring product pages DJ-8X20YCS / BCS / RCS / GCS / BRCS, read only through web-search result snippets on 2026-11-18",
+ "why_secondary": "centuryspring.com and mwcomponents.com are outside this session's network allow-list; the figures below are the search tool's summary of those pages, not a page fetched here",
+ "ref": "snippet: 'DJ-8X20YCS ... extra light duty ... 20 mm free length, 8 mm hole size, 4 mm rod size, chrome alloy ... yellow powder coat ... rate 7.6 N/mm ... deflection 10 / 9 / 8 mm with loads 78.5 / 68.6 / 58.8 N'",
+ "values": {
+  "DJ-8X20YCS": {
+   "duty": "extra light", "colour": "yellow", "material": "chrome alloy steel, powder coated",
+   "hole_mm": 8.0, "rod_mm": 4.0, "free_length_mm": 20.0, "rate_n_per_mm": 7.6,
+   "load_points": [{"deflection_mm": 8.0, "load_n": 58.8}, {"deflection_mm": 9.0, "load_n": 68.6}, {"deflection_mm": 10.0, "load_n": 78.5}],
+   "note": "the three load points imply 9.8 N/mm between themselves and 7.35 to 7.85 N/mm from zero; the listed 7.6 N/mm is used"
+  },
+  "other_duties_same_size_rate_n_per_mm": {"DJ-8X20BCS (blue, light)": 12.3, "DJ-8X20RCS (red, medium)": 21.5, "DJ-8X20GCS (green, heavy)": 43.2, "DJ-8X20BRCS (brown, extra heavy)": 83.1}
+ },
+ "not_obtained": [
+  "outside and inside diameter of the coil (the catalogue solid is drawn 7.6 OD x 4.4 ID: it must pass an 8 mm hole and a 4 mm rod)",
+  "wire section, number of coils, solid height",
+  "mass (2.6 g estimated)",
+  "maximum service temperature (chrome-alloy die springs are commonly rated well above 100 degC: recalled, not sourced)",
+  "which deflection the maker allows for which life (JIS B 5012 class behaviour assumed: 40 / 45 / 50 % of free length)",
+  "price"
+ ],
+ "used_by_catalog": true
+}

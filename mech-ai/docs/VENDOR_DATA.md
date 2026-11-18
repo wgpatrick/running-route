@@ -433,3 +433,21 @@ Changed records:
 - **Coupler** (`stepperonline_coupler.json` `not_published_by_the_maker`): angular and parallel misalignment and axial
   stiffness are not published; 1.0 deg stays assumed, the other two are `None` on the part.
 - The Sunon sheet was renamed in staging (`MF30101V2-1000U-A99_12V_datasheet.pdf`); `fan(30, 12)` is unchanged.
+
+# Eighth batch (2026-11-18): parts for printer_v9's sprung bed
+
+None of the makers' or sellers' sites was reachable from the session (the network proxy refused centuryspring.com,
+mwcomponents.com, halder.com, halderusa.com, 3djake.com, mcmaster.com, leespring.com and every other spring, fastener and
+print-sheet seller tried). Every figure below is from web-search result snippets of the makers' own pages: source level
+`secondary`, so none of these parts counts as vendor-backed, and nothing was downloaded. Part functions are in
+`mechloop/parts/batch8.py`; tests in `tests/test_v9_support.py`.
+
+| Part function | What it is | Vendor record | From the snippets | Not obtained (marked on the part) |
+|---|---|---|---|---|
+| `die_spring_dj8x20(installed=None)` | Century Spring (MW Components) DJ-8X20YCS, metric (JIS) die spring, extra light duty, yellow | `century_spring_dj8x20.json` | 8 mm hole, 4 mm rod, 20 mm free length, chrome alloy, 7.6 N/mm; 58.8 / 68.6 / 78.5 N at 8 / 9 / 10 mm (those points imply 7.4 to 7.9 N/mm from zero: the listed 7.6 is used). Rates of the four heavier duties recorded | coil OD and ID (drawn as a 7.6 x 4.4 tube), wire, solid height, mass (2.6 g estimated), maximum temperature, life at each deflection, price |
+| `thumb_nut_din466("M4")`, `add_thumb_nut(...)` | High knurled nut DIN 466, stainless 1.4305, Halder EH 24780.0240 | `halder_din466.json` | M4: knurl 16 mm, collar 8 mm, height 9.5 mm, knurl height 3.5 mm, 6.7 g | M3 and M5 rows, the standard itself, thread length (taken as through), price |
+| `print_sheet_pei257()` | 257 x 257 mm double-sided textured PEI spring-steel sheet with magnetic base (3DJAKE; the Bambu Lab plate size) | `threedjake_pei257.json` | 257 x 257, magnetic base included, "maximum print bed temperature 120 degC" | steel thickness (0.4 mm is a third-party listing's figure for the same kind of plate), magnetic base thickness (1.5 mm from two other sellers' kits; the design draws a stand-in), mass (computed from the steel), flatness, price |
+
+The SKU of the thumb nut starts `THUMBNUT-`, not `NUT-`: the thread-engagement check then asks one diameter of thread in
+stainless (a tapped part) instead of the whole 9.5 mm height (a hex nut the screw must pass through).
+

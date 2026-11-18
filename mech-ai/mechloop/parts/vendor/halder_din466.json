@@ -1,0 +1,21 @@
+{
+ "retrieved": "2026-11-18",
+ "family": "High knurled nuts DIN 466 (knurled thumb nuts with a collar), stainless",
+ "vendor": "Erwin Halder KG",
+ "source_level": "secondary",
+ "source_url": "https://halderusa.com/PM/Standard-Parts/Operating-Elements/Knurled-Nuts-Knurled-Thumb-Screws/High-Knurled-Nuts-DIN-466/24780.0240",
+ "title": "Halder EH 24780 'High Knurled Nuts DIN 466' data sheet row, read only through web-search result snippets on 2026-11-18",
+ "why_secondary": "halder.com / halderusa.com are outside this session's network allow-list; only the M4 row was returned",
+ "ref": "snippet: 'High Knurled Nuts, Stainless steel, d1: M4, d2: 16 mm, d3: 8 mm, h: 9.5 mm, k: 3.5 mm' and 'Stainless steel 1.4305 | M 4 | 16 | 8 | 9.5 | 3.5 | 6.7' (weight in g); 'knurling pitch and knurling depth may differ from DIN'",
+ "values": {
+  "M4": {"article": "24780.0240", "material": "stainless steel 1.4305 (AISI 303)", "thread": "M4 x 0.7",
+         "knurl_dia_d2_mm": 16.0, "collar_dia_d3_mm": 8.0, "height_h_mm": 9.5, "knurl_height_k_mm": 3.5, "mass_g": 6.7}
+ },
+ "not_obtained": [
+  "the M3 and M5 rows (table cut off in the search result)",
+  "DIN 466 itself (licensed standard)",
+  "whether the thread runs the full 9.5 mm (assumed: a through thread)",
+  "price"
+ ],
+ "used_by_catalog": true
+}
