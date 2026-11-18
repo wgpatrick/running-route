@@ -130,6 +130,14 @@ RULES: dict[str, Rule] = {r.id: r for r in [
          note="smallest section of the hole under medium + allowance (0.2 vertical / 0.3 in the build plane, limits "
               "'DG-05.allowance_vertical_mm' / 'DG-05.allowance_in_plane_mm'), or over coarse + 0.4 under a bare head or nut; "
               "the metal-part classes stay FST-020's"),
+    Rule("DG-06", "Every fastener is a drawn part: the BOM and the model list the same hardware", "error", "owner",
+         "owner's instruction 2026-11-18 ('make sure all fasteners are in place'); docs/DESIGN_GUIDELINES.md, Purchased-part CAD",
+         "implemented",
+         note="hardware_bom_only: a screw, nut, washer, T-nut, insert or clinch nut that is only a BOM line (design.bom_extra); "
+              "hardware_count_mismatch: a hardware SKU whose BOM quantity is not the number of parts drawn; tnut_not_drawn / "
+              "tnut_without_screw: a tnut=True screw without its T-nut part, or the reverse; joint_without_fasteners: a declared "
+              "join whose kind names a fastener (m5_tnut, through_bolt, bolted...) with no drawn fastener holding both parts. "
+              "Set screws inside a bought pulley's hub are listed (metrics), not required as parts"),
     # ---- enforced by another verifier: cross-referenced, not duplicated ------------------------------------------------
     Rule("FST-031", "Washer under any head or nut on a slot or oversize hole", "warning", "document", "ISO 7089 / 7093",
          "xref", "ratings.head_bearing (screw_head_seat_too_small)"),
@@ -167,8 +175,9 @@ RULES: dict[str, Rule] = {r.id: r for r in [
          "deferred", note="needs the service load across each slotted joint (belt pull on a motor mount, etc.), which no design declares"),
     Rule("STR-013", "Friction joints: check slip", "warning", "fetched", "practice", "deferred",
          note="as FST-052: no declared shear load per joint"),
-    Rule("FST-100", "T-nut type against assembly order", "error", "recalled", "practice", "deferred",
-         note="T-nuts are BOM lines, not geometry, and carry no type; the check needs both and the assembly sequence"),
+    Rule("FST-100", "T-nut type against assembly order", "error", "recalled", "practice", "xref",
+         "interference.tslot_screws (tnut_needs_end_loading) and assemblability (a drawn drop-in T-nut goes in through its "
+         "slot's opening only, before what covers it); only in designs with design.tnut_style set"),
     Rule("ASM-030", "Service parts come out without tearing the machine down", "warning", "recalled", "practice",
          "deferred", note="needs a design.service list and a removal-path search like the assembly simulation's"),
 ]}
@@ -1123,6 +1132,82 @@ def _dg03(x: _Ctx):
 
 
 # ---------------------------------------------------------------------------------------------------------- the verifier
+HARDWARE_SKU = ("SHCS", "FHCS", "NUT-", "NUT_", "WASHER", "TNUT", "NYLOC", "PEM", "INSERT", "STUD", "SETSCREW", "RIVET")
+FASTENED_KIND = __import__("re").compile(r"(^|[^a-z0-9])m\d+(\.\d+)?[ _x-]|tnut|t-nut|through[_ ]bolt|bolted|screwed|riveted")
+
+
+def _is_hardware_sku(sku: str) -> bool:
+    return (sku or "").upper().startswith(HARDWARE_SKU)
+
+
+def _dg06(x: _Ctx):
+    """Completeness of the hardware: BOM-only lines, BOM quantity against parts drawn, T-nuts against their screws, and
+    declared joins that name a fastener against the fasteners drawn."""
+    d = x.d
+    drawn = collections.Counter(c.sku for c in d.components if _is_hardware_sku(c.sku))
+    bom_only = {sku: int(e.get("qty", 0)) for sku, e in (d.bom_extras or {}).items() if _is_hardware_sku(sku)}
+    for sku, qty in sorted(bom_only.items()):
+        base = sku.split(" ")[0]
+        if drawn.get(base):
+            if not x.waived("DG-06", "hardware_count_mismatch", [base]):
+                x.flag("DG-06", "hardware_count_mismatch",
+                       f"{base}: the BOM lists {drawn[base] + qty} ({qty} of them as a BOM-only line '{sku}') but {drawn[base]} are drawn.",
+                       [base], value=drawn[base], limit=drawn[base] + qty,
+                       hint="Draw the missing ones (add_screw / add_nut / add_washer) or remove the extra BOM line.")
+        elif not x.waived("DG-06", "hardware_bom_only", [base]):
+            x.flag("DG-06", "hardware_bom_only",
+                   f"{qty} x {sku} is on the BOM only: no part of that SKU is in the model, so its fit, length and access are not checked.",
+                   [base], value=0, limit=qty,
+                   hint="Draw it as a catalogue part (for T-nuts and bracket screws: design.tnut_style = 'drop_in'), or remove the line.")
+    # T-nuts against their screws
+    by_name = x.comps
+    tnut_screws = [c for c in d.components if c.meta.get("tnut")]
+    tnuts = [c for c in d.components if c.meta.get("tnut_of")]
+    missing = [c.name for c in tnut_screws if c.meta.get("tnut_part") not in by_name]
+    if missing and not any(k.startswith("TNUT") for k in bom_only) and not x.waived("DG-06", "tnut_not_drawn", missing):
+        x.flag("DG-06", "tnut_not_drawn", f"{len(missing)} screw(s) are declared into a T-nut but have neither a T-nut part nor a BOM line "
+               f"(e.g. {', '.join(missing[:4])}).", missing, value=0, limit=len(missing))
+    orphan = [c.name for c in tnuts if c.meta["tnut_of"] not in by_name or by_name[c.meta["tnut_of"]].meta.get("tnut_part") != c.name]
+    if orphan and not x.waived("DG-06", "tnut_without_screw", orphan):
+        x.flag("DG-06", "tnut_without_screw", f"{len(orphan)} T-nut(s) have no screw (e.g. {', '.join(orphan[:4])}).", orphan,
+               value=len(orphan), limit=0)
+    # declared joins that name a fastener: some drawn fastener must hold both parts
+    fast = {f.name: f for f in d.fasteners if f.name in by_name}
+    holds = {}
+    for n, f in fast.items():
+        c = by_name[n]
+        h = set(f.clamps) | set(c.meta.get("threads_into") or [])
+        for pair in d.joins:
+            if n in pair and len(pair) == 2:
+                h |= set(pair) - {n}
+        holds[n] = h
+    undrawn, integral = [], []
+    for pair, kind in d.joins.items():
+        if len(pair) != 2:
+            continue
+        a, b = sorted(pair)
+        if a not in by_name or b not in by_name or a in fast or b in fast or _is_hardware_sku(by_name[a].sku) or _is_hardware_sku(by_name[b].sku):
+            continue
+        k = str(kind).lower()
+        if any(w in k for w in SETSCREW_WORDS):
+            integral.append({"parts": [a, b], "kind": str(kind)})
+            continue
+        if not FASTENED_KIND.search(k):
+            continue
+        if not any(a in h and b in h for h in holds.values()):
+            undrawn.append((a, b, str(kind)))
+    for a, b, kind in undrawn:
+        if not x.waived("DG-06", "joint_without_fasteners", [a, b]):
+            x.flag("DG-06", "joint_without_fasteners",
+                   f"{a} and {b} are declared joined by '{kind}', but no drawn fastener holds both.", [a, b], value=0, limit=1,
+                   hint="Draw the screw (and its nut or T-nut): add_screw(..., clamps=..., threads_into=...).")
+    return {"hardware_parts_drawn": sum(drawn.values()), "hardware_skus_drawn": len(drawn), "bom_only_hardware": bom_only,
+            "tnut_screws": len(tnut_screws), "tnuts_drawn": len(tnuts), "tnut_screws_without_part": len(missing),
+            "joins_naming_fasteners_without_one": len(undrawn),
+            "set_screw_joins_not_drawn": integral,
+            "note": "set screws are inside the bought pulley's hub and come with it: listed here, not required as parts"}
+
+
 def verify_practice(design: Design) -> VerifierResult:
     r = VerifierResult("practice")
     with timed(r):
@@ -1143,7 +1228,8 @@ def verify_practice(design: Design) -> VerifierResult:
                  ("FST-081", lambda: _fst081(x, rows)), ("LOC-006", lambda: _loc006(x)), ("FST-040", lambda: _torque_table(x, rows)),
                  ("FST-072", lambda: _fst072(x, rows)),
                  ("DG-01", lambda: _dg01(x, rows)), ("DG-02", lambda: _dg02(x, rows)), ("DG-03", lambda: _dg03(x)),
-                 ("DG-04", lambda: _dg04(x, rows, results.get("DG-01") or [])), ("DG-05", lambda: _dg05(x, rows, pr))]
+                 ("DG-04", lambda: _dg04(x, rows, results.get("DG-01") or [])), ("DG-05", lambda: _dg05(x, rows, pr)),
+                 ("DG-06", lambda: _dg06(x))]
         results = {}
         for name, fn in steps:
             try:
@@ -1193,6 +1279,7 @@ def verify_practice(design: Design) -> VerifierResult:
             "printed_parts_on_metal_sleeves": x.sleeved or None,
             "threads_in_printed_parts": results.get("DG-04"),
             "printed_clearance_holes": results.get("DG-05"),
+            "hardware_completeness": results.get("DG-06"),
             "nyloc_temperature": results.get("FST-072"),
             "machined_parts": results.get("DG-03"),
             "limits_overridden": dict(x.limits) or None, "disabled": sorted(x.disabled) or None,
