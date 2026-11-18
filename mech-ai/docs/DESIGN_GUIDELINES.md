@@ -87,3 +87,12 @@ until a check exists.
 - No sharp edges or corners on metal parts: rounded outside profile corners on sheet parts, broken edges on
   machined parts ("deburr; break all sharp edges 0.2 to 0.5 mm"), lead-in chamfers on hand-assembled bores
   and pins. Check: sharp-edge check.
+
+## Sub-assemblies first
+
+- Design the machine as sub-assemblies of components. Create and validate each sub-assembly on its own
+  (fit, fastener access, alignment and adjustment, the checks that apply to it), then assemble the
+  validated sub-assemblies in place in the machine.
+- The assembly plan is written down as part of the design: what is built first, which sub-assemblies are
+  built and checked on the bench, and the order they go into the machine. Checks run against that plan.
+  Check: not implemented yet (today the order is found by the assemblability search, not stated).
