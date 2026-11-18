@@ -1,0 +1,29 @@
+{
+ "retrieved": "2026-11-18",
+ "family": "235 x 235 mm double-sided PEI spring-steel print sheet with magnetic base (the Ender-3 plate size)",
+ "vendor": "Creality (resold by Digitec / Galaxus, Bastelgarage); the same size is sold by SainSmart and many others",
+ "source_level": "secondary",
+ "source_url": "https://www.digitec.ch/en/s1/product/creality-235x235-pei-structured-double-sided-magnetic-spring-steel-building-board-plate-3d-printer-a-37662157",
+ "other_listings": [
+  "https://www.bastelgarage.ch/235x235-pei-structured-double-sided-magnetic-spring-steel-build-plate",
+  "https://www.sainsmart.com/products/3d-printer-build-plate-double-sided-printing-platform-for-ender-3-series-235x235x1-2mm"
+ ],
+ "title": "Creality 235x235 PEI Structured Double-Sided Magnetic Spring Steel Building Board (reseller product pages), read only through web-search result snippets on 2026-11-18",
+ "why_secondary": "no seller's page was fetched (the session's network proxy refuses most supplier sites); every figure is from search-result snippets of resellers' listings",
+ "ref": "snippets: 'Creality 235x235 PEI Structured Double-Sided Magnetic Spring Steel Building Board'; 'Dimensions: 235 x 235 x 1.2mm' (Bastelgarage); 'Size: 235x235x1.2mm' (SainSmart); 'Thickness: 0.4 mm' beside the same 1.2 mm dimension (Digitec); weights from about 430 g to 600 g by seller",
+ "values": {
+  "size_mm": [235.0, 235.0],
+  "steel_thickness_mm": {"value": 0.4, "note": "one reseller lists 'Thickness: 0.4 mm'; two list 235 x 235 x 1.2 mm, which may be the sheet with its coating or with its magnetic base: NOT resolved. 0.4 mm is drawn, as for the 257 mm sheet"},
+  "magnetic_base_thickness_mm": {"value": 1.5, "note": "NOT from these listings: carried over from the 257 mm record (two other sellers' kits state 1.5 mm); the design draws a stand-in"},
+  "max_bed_temp_c": {"value": 120.0, "note": "NOT read for this sheet: the 257 mm sheet's seller's figure, carried over as the class value; unverified"}
+ },
+ "not_published": [
+  "steel thickness (0.4 against 1.2 mm between listings)",
+  "magnetic base thickness, adhesive and its temperature limit",
+  "mass (listings give 430 to 600 g for the kit; the catalogue computes the steel alone)",
+  "steel grade, flatness, maximum temperature",
+  "price (the catalogue's figure is an estimate)"
+ ],
+ "licence": "not stated",
+ "used_by_catalog": true
+}
