@@ -102,3 +102,6 @@ until a check exists.
 - Hardware and purchased parts use the supplier's own CAD file (for fasteners: McMaster's STEP for the part
   number), not geometry generated to a standard or a stand-in solid. Generated or stand-in geometry is a
   placeholder until the supplier file is in `vendor_cad/inbox/`, and is reported as such.
+- A purchased part may be re-made from the supplier's drawing only if it is faithful: every dimension on the
+  drawing is in the model, and no feature of the model is un-dimensioned (nothing guessed or scaled). Record the
+  drawing it was made from. Anything less is a stand-in and is reported as one.
