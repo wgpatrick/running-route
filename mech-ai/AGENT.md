@@ -781,6 +781,21 @@ three-point one:
   and `z_nut_unseats` (warning: a nut unseats without that), both judged at the third level, two screws at opposite
   lead limits (LSC-015: belt-tied screws can differ by up to twice the class error over the travel). Each lead
   screw's coaxial 608s are given the largest nut load against 0.25 C0 (BRG-022). Flexure is not in these figures.
+- `tilt_allowance` (several screws, each on its own motor): how far ONE screw may stand out of the plane of the others.
+  The body is rigid on its blocks, their mounts and its nuts, every nut holding both ways, so each limit is a height in
+  mm: `seated_up_to_mm` (a nut's seating load reaches zero: up to here the bed follows the screws exactly);
+  per guide block the height at which its moments about its three axes and its force, each over its static rating,
+  added, reach 1 / 3 (`TILT_STATIC_SAFETY`); per floating mount with a declared web the height at which the web's
+  bending and torsion reach half its material's yield; and, with `drive["nut_tilt_allowance_rad"]` declared (how far a
+  nut's flange can rock in its seat, e.g. keeper play / flange diameter), the height at which the body's tilt reaches
+  it. `overload_free_mm` is the least of the last three over every screw, `across_print_area_mm` the bed-level change
+  it makes, `routine_height_error_mm` the LSC-015 budget it is compared with. Declare the web on the block:
+  `car.meta["guide_float"]["web"] = {"length_mm": 30, "width_mm": 24, "thickness_mm": 1.6, "material": "al6061",
+  "kt_in_plane": 1.7}` (kt: the stress concentration where the web meets the plate, on the in-plane bending term).
+  Findings: `z_tilt_allowance` (info, the figures) or `z_tilt_allowance_exceeded` (warning: the routine error alone is
+  more than the allowance). Not in it: a ZF block's clearance (free tilt, on the safe side), flexure of the carrier,
+  screw bending. Use it to split the work: manual levelling brings the bed inside `seated_up_to_mm`, the motors do the
+  rest and are never asked for more than `overload_free_mm`.
 - `bed_not_held` (error): the declared supports leave the bed free in some direction (three screws and no guides).
   `bed_support_not_evaluated`: no named nut, or the nozzle rides Z. Not evaluated is not a pass.
 
