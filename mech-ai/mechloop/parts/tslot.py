@@ -41,7 +41,7 @@ def tnut_dims() -> dict:
     t = vendor_data(FAMILY)["tnut"]
     return {"span": t["span_across_slot_mm"]["value"], "width": t["width_along_slot_mm"]["value"],
             "height": t["overall_height_mm"]["value"], "neck": t["neck_height_mm"]["value"],
-            "thread_length": t["thread_length_mm"]["value"]}
+            "thread_length": t["thread_length_mm"]["value"], "chamfer": t["underside_chamfer_mm"]["value"]}
 
 
 def assumed_dimensions() -> list[dict]:
@@ -75,21 +75,24 @@ def tnut_2020(size: str = "M5") -> Stock:
         raise ValueError(f"tnut_2020 size must be one of {TNUT_SIZES}")
     d = tnut_dims()
     body_h = d["height"] - d["neck"]
-    shape = (Pos(0, 0, -body_h / 2) * Box(d["width"], d["span"], body_h)
-             + Pos(0, 0, d["neck"] / 2) * Box(d["width"], 5.8, d["neck"]))
+    from build123d import Plane, Polygon, extrude
+
+    h, ch = d["span"] / 2, d["chamfer"]
+    wings = extrude(Plane.YZ * Polygon((-h, 0), (h, 0), (h, -(body_h - ch)), (h - ch, -body_h), (-(h - ch), -body_h),
+                                       (-h, -(body_h - ch)), align=None), d["width"] / 2, both=True)
+    shape = wings + Pos(0, 0, d["neck"] / 2) * Box(d["width"], 5.8, d["neck"])
     thread_d = float(size[1:])
-    mass = (d["width"] * d["span"] * body_h + d["width"] * 5.8 * d["neck"] - np.pi * (thread_d / 2) ** 2 * d["height"]) * 7.85e-6
+    mass = (float(shape.volume) - np.pi * (thread_d / 2) ** 2 * d["height"]) * 7.85e-6
     assumed = [f"{a['what']}: {a['value_mm']} mm ({a['status']})" for a in assumed_dimensions() if a["what"].startswith("T-nut")]
     return Stock(shape, f"TNUT-2020-{size}", f"Drop-in T-nut {size} for 2020 slot 6 (post-assembly insertion, spring-held)", float(mass),
                  material="steel", cost_usd=0.15,
-                 ratings={"approximate": True, "insertion": "drop-in"},
+                 ratings={"approximate": True, "insertion": "drop-in", "assumed": assumed},
                  interfaces={"thread_d": thread_d, "span": d["span"], "width": d["width"], "height": d["height"], "neck": d["neck"],
-                             "body_height": body_h, "thread_length": d["thread_length"], "insertion": "drop-in",
-                             "assumed": assumed},
+                             "body_height": body_h, "thread_length": d["thread_length"], "insertion": "drop-in"},
                  detail=shape,
                  model={"kind": "proxy", "state": "stand-in", "inbox": [f"TNUT-2020-{size}"],
-                        "source": "STAND-IN: a block and neck of assumed dimensions (search snippet 6 x 10.3 x 4.4 mm; neck 1.0 mm and thread "
-                                  "length 3.4 mm guessed). Wanted: the supplier's STEP as vendor_cad/inbox/TNUT-2020-" + size + ".step",
+                        "source": "STAND-IN: a block and neck of assumed dimensions (search snippet 6 x 10.3 x 4.4 mm; neck 1.0 mm, thread "
+                                  "length 3.4 mm and the 1.7 mm underside chamfers guessed). Wanted: the supplier's STEP as vendor_cad/inbox/TNUT-2020-" + size + ".step",
                         "tolerance": {"volume_ratio": (0.3, 3.0), "mass_ratio": (0.2, 5.0)}},
                  source=_source(FAMILY, "proxy", f"drop-in T-nut {size}, 2020 slot 6",
                                 unverified=("span", "width", "height", "neck", "thread_length", "mass_kg", "cost"),

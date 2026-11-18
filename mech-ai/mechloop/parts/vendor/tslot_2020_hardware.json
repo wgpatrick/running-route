@@ -31,21 +31,58 @@
    "status": "ASSUMED: a community file"
   },
   "secondary": [
-   {"claim": "20x20 B-type slot 6: groove width 6 mm, groove depth 5.5 mm", "source": "web-search snippet of motedis.es 'Profile 20x20 B type slot 6'", "status": "secondary, unverified (page not fetched)"},
-   {"claim": "2020 profile datasheet: slot width 6.2 mm", "source": "web-search snippet of a 2020 profile datasheet hosted on fab.academany.org", "status": "secondary, unverified (page not fetched)"}
+   {
+    "claim": "20x20 B-type slot 6: groove width 6 mm, groove depth 5.5 mm",
+    "source": "web-search snippet of motedis.es 'Profile 20x20 B type slot 6'",
+    "status": "secondary, unverified (page not fetched)"
+   },
+   {
+    "claim": "2020 profile datasheet: slot width 6.2 mm",
+    "source": "web-search snippet of a 2020 profile datasheet hosted on fab.academany.org",
+    "status": "secondary, unverified (page not fetched)"
+   }
   ],
   "simulation_solid": "extrusion_2020's simulation solid has plain rectangular slots 6.2 mm wide and 5.0 mm deep, with no T cavity and no lips: shallower than both drawings (6.0 / 5.3 mm) and without the 2.0 / 1.5 mm lip"
  },
  "tnut": {
   "type": "drop-in (post-assembly insertion: hammer-head / roll-in with a spring ball or leaf that holds it in the slot)",
-  "sizes": ["M3", "M5"],
-  "span_across_slot_mm": {"value": 10.3, "status": "ASSUMED from a search snippet: electrokit.com 'T-nut drop-in for 2020 M5', listed as 6 x 10.3 x 4.4 mm (the listing is marked discontinued); a second snippet gives 10 x 6 x 4 mm for a hammer nut sold for M3 / M4 / M5"},
-  "width_along_slot_mm": {"value": 6.0, "status": "ASSUMED, same snippet"},
-  "overall_height_mm": {"value": 4.4, "status": "ASSUMED, same snippet"},
-  "neck_height_mm": {"value": 1.0, "status": "ASSUMED, no source: the part of the overall height taken to stand in the slot opening between the lips; the rest, 3.4 mm, is the body under the lips"},
-  "thread_length_mm": {"value": 3.4, "status": "ASSUMED, no source: thread is counted only in the body under the lips (the neck's thread, if the bought nut has one, is not counted)"},
+  "sizes": [
+   "M3",
+   "M5"
+  ],
+  "span_across_slot_mm": {
+   "value": 10.3,
+   "status": "ASSUMED from a search snippet: electrokit.com 'T-nut drop-in for 2020 M5', listed as 6 x 10.3 x 4.4 mm (the listing is marked discontinued); a second snippet gives 10 x 6 x 4 mm for a hammer nut sold for M3 / M4 / M5"
+  },
+  "width_along_slot_mm": {
+   "value": 6.0,
+   "status": "ASSUMED, same snippet"
+  },
+  "overall_height_mm": {
+   "value": 4.4,
+   "status": "ASSUMED, same snippet"
+  },
+  "neck_height_mm": {
+   "value": 1.0,
+   "status": "ASSUMED, no source: the part of the overall height taken to stand in the slot opening between the lips; the rest, 3.4 mm, is the body under the lips"
+  },
+  "thread_length_mm": {
+   "value": 3.4,
+   "status": "ASSUMED, no source: thread is counted only in the body under the lips (the neck's thread, if the bought nut has one, is not counted)"
+  },
   "m3_body": "ASSUMED the same body as the M5 nut",
-  "not_modelled": ["the chamfered or rounded underside that clears the slot's 45 degree walls", "the spring ball / leaf", "the threaded hole (the thread is the overlap with the screw)"]
+  "not_modelled": [
+   "the spring ball / leaf",
+   "the threaded hole (the thread is the overlap with the screw)"
+  ],
+  "underside_chamfer_mm": {
+   "value": 1.7,
+   "status": "ASSUMED, no source: 45 degree chamfers on the two lower long edges, sized so the stand-in clears the slot's 45 degree walls of the section used"
+  },
+  "neck_width_mm": {
+   "value": 5.8,
+   "status": "ASSUMED, no source"
+  }
  },
  "engagement_rule": {
   "full": "0.8 d of thread in the nut (the height of an ISO 4032 style 1 hex nut is 0.8 to 0.94 d): no finding",
@@ -53,5 +90,8 @@
   "short": "under 0.5 d: error",
   "status": "DERIVED by us from standard nut heights (ISO 4035 height recalled, not fetched); T-nut makers publish no engagement figure that was read"
  },
- "bottoming_margin_mm": {"value": 0.5, "status": "DERIVED: ISO 4762 length tolerance js15 (+/-0.29 mm to 10 mm, +/-0.35 to 18 mm; recalled) plus about 0.1 mm each for washer and sheet thickness"}
+ "bottoming_margin_mm": {
+  "value": 0.5,
+  "status": "DERIVED: ISO 4762 length tolerance js15 (+/-0.29 mm to 10 mm, +/-0.35 to 18 mm; recalled) plus about 0.1 mm each for washer and sheet thickness"
+ }
 }

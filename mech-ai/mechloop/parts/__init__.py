@@ -943,8 +943,9 @@ def _place_tnut(design: Design, screw: Component, name: str, size: str, length: 
     design.join(tn.name, ext.name, "drop-in T-nut in the slot")
     design.allow_overlap(name, tn.name)
     design.allow_overlap(tn.name, ext.name, max_volume=float(st.shape.volume) + 1.0)
-    for t in targets:                                     # the screw itself: no blanket excuse any more
-        design.allow_overlap(name, t, max_volume=0.0)
+    r_ = SCREW[size][0] / 2
+    for t in targets:      # the screw itself: no blanket excuse any more, only what the real slot is deeper than the drawn one
+        design.allow_overlap(name, t, max_volume=math.pi * r_ * r_ * max(0.0, slot["depth"] - slot["sim_depth"]))
 
 
 @part
@@ -958,8 +959,11 @@ def corner_bracket_2020() -> Stock:
     return Stock(tri, "BRKT-2020", "2020 corner bracket", 0.012, material="al6061", cost_usd=0.6, detail=detail, model=model)
 
 
+BRACKET_SLOT_LEG = {"size": "M5", "length": 10, "washers": 2, "offsets": (13.2, 14.3)}
+
+
 def add_corner_bracket(design: Design, name: str, a: str, b: str, corner, u, v, body: str = "world",
-                       screw_offset: float = 11.5) -> Component:
+                       screw_offset: float = 11.5, slot_leg: dict | None = None) -> Component:
     """Brace two perpendicular members: bracket's inside corner at `corner`, legs along
     unit directions u (lying on part a) and v (lying on part b).
 
@@ -970,6 +974,11 @@ def add_corner_bracket(design: Design, name: str, a: str, b: str, corner, u, v, 
     and the hardware is real: an M5 cap screw `<name>_screw` (`_screw_a` on the first leg) with its head
     inside the casting, through the casting's slot and the part, and a hex nut `<name>_nut` on the far
     side. They are components, so interference, driver access, thread and assembly order are checked.
+    In a design with `design.tnut_style = "drop_in"` a leg on a T-slot extrusion is drawn too: an M5 cap screw
+    `<name>_screw_a` / `<name>_screw` with flat washers under its head (the casting's leg is slotted) into a drop-in T-nut
+    `<..>_tnut` in the extrusion's slot, checked like every other T-nut screw. Defaults (BRACKET_SLOT_LEG): M5 x 10 with two
+    ISO 7089 washers, 13.2 mm from the corner on the first leg and 14.3 mm on the second, so the two heads and their
+    drivers clear each other; `slot_leg={"length": .., "washers": .., "offsets": (.., ..)}` overrides.
     The part needs its own M5 clearance hole `screw_offset` mm from the corner along the leg (the
     casting's slot runs from 7 to 16 mm; with cap screws in both legs keep one of them at 12.3 mm or
     more so the heads clear each other). For such a bracket the simulation solid is the casting as it
@@ -985,7 +994,9 @@ def add_corner_bracket(design: Design, name: str, a: str, b: str, corner, u, v, 
     is_slot = {p: "slot_width" in (design.get(p).meta.get("interfaces") or {}) for p in (a, b)}
     stock = corner_bracket_2020()
     LEG_T, WEB_IN, SLOT = 3.0, 6.0, (7.0, 16.0, 3.0)      # from the casting's CAD model (details.corner_bracket_2020)
-    if not all(is_slot.values()):
+    drawn = bool(getattr(design, "tnut_style", None))
+    sl = {**BRACKET_SLOT_LEG, **(slot_leg or {})}
+    if drawn or not all(is_slot.values()):
         if not 7.0 <= screw_offset <= 16.0:
             raise ValueError(f"add_corner_bracket('{name}'): screw_offset {screw_offset} mm is outside the casting's slot (7 to 16 mm).")
         solid = stock.shape - extrude(Polygon((LEG_T, LEG_T), (20 - LEG_T, LEG_T), (LEG_T, 20 - LEG_T), align=None), WEB_IN, both=True)
@@ -994,14 +1005,21 @@ def add_corner_bracket(design: Design, name: str, a: str, b: str, corner, u, v, 
                    + Pos(s1, 0, 0) * Rot(90, 0, 0) * Cylinder(sr, 2 * LEG_T))
         along_y = (Pos(0, (s0 + s1) / 2, 0) * Box(2 * LEG_T, s1 - s0, 2 * sr) + Pos(0, s0, 0) * Rot(0, 90, 0) * Cylinder(sr, 2 * LEG_T)
                    + Pos(0, s1, 0) * Rot(0, 90, 0) * Cylinder(sr, 2 * LEG_T))
-        if not is_slot[a]:
+        if drawn or not is_slot[a]:
             solid -= along_x
-        if not is_slot[b]:
+        if drawn or not is_slot[b]:
             solid -= along_y
         stock = dataclasses.replace(stock, shape=solid)
     c = place(design, name, stock, Location(Plane(origin=corner, x_dir=u, z_dir=uv.cross(vv))), body=body)
     # (part, along its leg, out of the part's face, screw suffix, nut suffix)
     for part_name, along, out, s_sfx, n_sfx in ((a, uv, vv, "_screw_a", "_nut_a"), (b, vv, uv, "_screw", "_nut")):
+        if is_slot[part_name] and drawn:
+            off = sl["offsets"][0 if s_sfx == "_screw_a" else 1]
+            foot = origin + along * off
+            add_screw(design, name + s_sfx, sl["size"], sl["length"], at=tuple(foot + out * LEG_T), direction=tuple(-out), body=body,
+                      threads_into=part_name, tnut=True, clamps=(name,), washer=bool(sl["washers"]), washers=max(1, int(sl["washers"])))
+            design.join(name, part_name, "m5_tnut")
+            continue
         if is_slot[part_name]:
             design.join(name, part_name, "m5_tnut")
             design.bom_extra("SHCS-M5x8", 1, 0.08)
