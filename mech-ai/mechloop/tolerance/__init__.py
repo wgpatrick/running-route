@@ -20,6 +20,166 @@ class _SkipPrinter(Exception):
     pass
 
 
+RAIL_RESIDUAL_AFTER_ALIGNMENT = 0.02   # mm over the travel left between two rails set against the carrier (ASSUMED)
+
+
+def _rail_set(design: Design, r: VerifierResult, B, j, pairs, n: int, share, thin) -> dict:
+    """An axis guided by THREE OR MORE rails, or by blocks whose mounts float (meta["guide_float"] on the block:
+    {"axis": (x, y, z), "stiffness_n_per_mm": k, "range_mm": r}: the mount is a flexure or a slot that is soft along
+    `axis` and stiff across it).
+
+    As built each rail leans its own way, so over the travel rail i wanders e_i sideways. The moving body is one rigid
+    body in the plane across the axis (two shifts and a turn about the axis); each block holds it with K_GUIDE across its
+    rail, except along a declared float, where the mount's own stiffness is in series. The body takes the position of
+    least strain energy; what is left is a force on every block. Two blocks on one body can always turn to follow rails
+    that drift apart ACROSS the line between them; three blocks that each hold two directions cannot, which is why three
+    plain rails over-constrain a carrier and three blocks that each hold only their tangential direction do not.
+
+    Judged like the two-rail case: the force on a block must stay under what a rigid pair sees at the maker's allowable
+    parallelism error (K_GUIDE x allowable / 2); with a declared rail alignment (Adjustment kind "rail_align") the as-built
+    drift is what the alignment must cover, and the forces are also given for the residual left after it
+    (RAIL_RESIDUAL_AFTER_ALIGNMENT, assumed)."""
+    comps = {c.name: c for c in design.components}
+    ax = np.array(j.axis, dtype=float); ax /= np.linalg.norm(ax)
+    travel = abs(j.range[1] - j.range[0])
+    t1 = np.cross(ax, [1.0, 0.0, 0.0] if abs(ax[0]) < 0.9 else [0.0, 1.0, 0.0]); t1 /= np.linalg.norm(t1)
+    t2 = np.cross(ax, t1)
+    T = np.stack([t1, t2])                                   # 2 x 3: world -> plane across the axis
+    pairs = [(b, p) for b, p in pairs if p is not None]
+    pos = []
+    for b, _ in pairs:
+        lo, hi = _bb(b.shape)
+        pos.append((lo + hi) / 2)
+    c0 = np.mean(pos, axis=0)
+    Js, Ks, Kstiff, es, fl = [], [], [], [], []
+    for (b, rail), p in zip(pairs, pos):
+        rr = T @ np.cross(ax, p - c0)                        # in-plane displacement per unit turn about the axis
+        Js.append(np.column_stack([np.eye(2), rr]))          # 2 x 3
+        d = B.direction(rail.name, ax)
+        e = (d - (d @ ax)[:, None] * ax[None, :]) * travel   # n x 3, across the axis
+        es.append(e @ T.T)                                   # n x 2
+        gf = b.meta.get("guide_float") or None
+        if gf:
+            f = T @ np.array(gf["axis"], dtype=float)
+            f /= max(np.linalg.norm(f), 1e-12)
+            kf = float(gf["stiffness_n_per_mm"])
+            ks = 1.0 / (1.0 / K_GUIDE + 1.0 / kf)
+            P = np.outer(f, f)
+            Ks.append(K_GUIDE * (np.eye(2) - P) + ks * P)
+            Kstiff.append(K_GUIDE * (np.eye(2) - P))
+            fl.append((f, kf, float(gf.get("range_mm", 0.0)), gf.get("by", "")))
+        else:
+            Ks.append(K_GUIDE * np.eye(2))
+            Kstiff.append(K_GUIDE * np.eye(2))
+            fl.append(None)
+    H = sum(J.T @ K @ J for J, K in zip(Js, Ks))
+    Hs = sum(J.T @ K @ J for J, K in zip(Js, Kstiff))
+    span = max(float(np.max(np.linalg.norm(np.array(pos) - c0, axis=1))), 1.0)
+    S = np.diag([1.0, 1.0, 1.0 / span])                      # the turn scaled to a displacement at the blocks
+    ev = np.linalg.eigvalsh(S @ Hs @ S)
+    n_stiff = sum(2 - (1 if f is not None else 0) for f in fl)
+
+    def solve(E):
+        g = sum(np.einsum("ij,nj->ni", J.T @ K, e) for J, K, e in zip(Js, Ks, E))      # n x 3
+        q = np.linalg.solve(H, g.T).T
+        F = [np.einsum("ij,nj->ni", K, np.einsum("ij,nj->ni", J, q) - e) for J, K, e in zip(Js, Ks, E)]
+        return q, F
+
+    q, F = solve(es)
+    side = np.max([np.linalg.norm(Fi, axis=1) for Fi in F], axis=0)
+    drag = MU_BALL * np.sum([np.linalg.norm(Fi, axis=1) for Fi in F], axis=0)
+    drifts = {}
+    for a_ in range(len(pairs)):
+        for b_ in range(a_ + 1, len(pairs)):
+            if pairs[a_][1].name != pairs[b_][1].name:
+                drifts[f"{pairs[a_][1].name} / {pairs[b_][1].name}"] = np.linalg.norm(es[a_] - es[b_], axis=1)
+    worst_pair = max(drifts, key=lambda k_: _rng99(drifts[k_]))
+    drift = np.max(list(drifts.values()), axis=0)
+    blocks = [b for b, _ in pairs]
+    allow = min((comps[b.name].ratings.get("allowable_parallelism_mm", 0.025) for b in blocks))
+    f_allow = K_GUIDE * allow / 2
+    p_ok = float((side <= f_allow).mean())
+    adj = _adj(design, "rail_align", j.name)
+    out = {"rails": [p.name for _, p in pairs], "blocks": [b.name for b in blocks], "model": "rigid body on its blocks, least strain energy",
+           "parallelism_error_over_travel_mm_99": round(_rng99(drift), 3), "worst_pair": worst_pair,
+           "by_pair_mm_99": {k_: round(_rng99(v), 3) for k_, v in drifts.items()},
+           "allowable_mm": allow,
+           "allowable_source": next((comps[b.name].ratings["allowable_parallelism_source"] for b in blocks
+                                     if comps[b.name].ratings.get("allowable_parallelism_mm") == allow
+                                     and comps[b.name].ratings.get("allowable_parallelism_source")),
+                                    "default 0.025 mm (assumed: the guide blocks carry no maker's figure)"),
+           "side_load_allowed_n": round(f_allow, 1),
+           "side_load_allowed_basis": "what each block of a rigid pair carries at the allowable parallelism error: K_GUIDE x allowable / 2",
+           "in_plane_constraints": {"stiff_directions_held": n_stiff, "needed": 3, "redundant": n_stiff - 3,
+                                    "note": ("exactly constrained across the axis: no rail error can load the blocks except through the floats"
+                                             if n_stiff == 3 else f"{n_stiff - 3} more stiff direction(s) than the three a body needs: rail errors load the blocks"
+                                             if n_stiff > 3 else "fewer than three stiff directions: the body is located through a float")},
+           "floats": {b.name: {"axis_in_plane": [round(float(v), 3) for v in (f[0] @ T)], "stiffness_n_per_mm": f[1], "range_mm": f[2], "by": f[3]}
+                      for b, f in zip(blocks, fl) if f is not None},
+           "p_within_allowable": round(p_ok, 3),
+           "p_within_allowable_standard_error": share(p_ok, None if adj else 0.9, f"rails of {j.name} parallel")["standard_error"],
+           "side_load_on_blocks_n_99": round(_rng99(side), 1), "added_drag_n_99": round(_rng99(drag), 2),
+           "by_block_side_load_n_99": {b.name: round(_rng99(np.linalg.norm(Fi, axis=1)), 1) for b, Fi in zip(blocks, F)},
+           "aligned_at_assembly": bool(adj)}
+    if ev[0] < 1e-6 * K_GUIDE:
+        r.add("warning", "guides_locate_through_floats",
+              f"Axis {j.name}: the stiff directions of its guide blocks leave the moving body free in one direction across the axis "
+              f"(it is held there only by the floating mounts).", joint=j.name,
+              hint="Three stiff directions whose lines do not meet in one point locate a body in a plane.")
+    def float_use(Fs):
+        return {b.name: round(_rng99(np.abs(Fi @ f[0]) / f[1]), 3) for b, f, Fi in zip(blocks, fl, Fs) if f is not None}
+
+    used = float_use(F)                      # as built to drawing, before any alignment
+    if used:
+        out["float_used_as_built_mm_99"] = used
+    F_judged = F
+    if not adj and p_ok < 0.9:
+        r.add("error", "rails_not_parallel",
+              f"Axis {j.name}: its {len({p.name for _, p in pairs})} rails drift up to {_rng99(drift):.2f} mm apart over the {travel:.0f} mm "
+              f"travel as built ({worst_pair}); with the blocks' mounts as declared that loads a block with up to {_rng99(side):.0f} N "
+              f"sideways, against {f_allow:.0f} N at the maker's allowable error. Built to drawing only {p_ok:.0%} of machines would run "
+              f"freely.", joint=j.name, p_ok=round(p_ok, 3),
+              hint="Declare how the rails are aligned at assembly (Adjustment kind='rail_align'), or let the mounts float "
+                   "(meta['guide_float'] on the blocks) so that only three stiff directions are left.")
+    if adj:
+        need = _rng99(drift)
+        out.update({"alignment_needed_mm_99": round(need, 3), "alignment_available_mm": adj.range_mm,
+                    **thin(r, adj, need, f"Axis {j.name}: aligning its rails", n, joint=j.name)})
+        if need > adj.range_mm:
+            r.add("error", "adjustment_too_small",
+                  f"Axis {j.name}: aligning the rails needs up to {need:.2f} mm of movement but '{adj.name}' gives {adj.range_mm} mm.",
+                  joint=j.name)
+        # after the alignment: the same builds scaled so that the worst pair is RAIL_RESIDUAL_AFTER_ALIGNMENT apart
+        scale = RAIL_RESIDUAL_AFTER_ALIGNMENT / np.maximum(drift, 1e-12)
+        _, F2 = solve([e * scale[:, None] for e in es])
+        side2 = np.max([np.linalg.norm(Fi, axis=1) for Fi in F2], axis=0)
+        out["after_alignment"] = {"residual_between_rails_mm": RAIL_RESIDUAL_AFTER_ALIGNMENT, "residual_basis": "ASSUMED",
+                                  "side_load_on_blocks_n_99": round(_rng99(side2), 1),
+                                  "added_drag_n_99": round(_rng99(MU_BALL * np.sum([np.linalg.norm(Fi, axis=1) for Fi in F2], axis=0)), 2),
+                                  "within_allowed_side_load": bool(_rng99(side2) <= f_allow)}
+        F_judged = F2
+        if used:
+            out["after_alignment"]["float_used_mm_99"] = float_use(F2)
+        if _rng99(side2) > f_allow:
+            r.add("warning", "rails_over_constrained",
+                  f"Axis {j.name}: even with its rails set to within {RAIL_RESIDUAL_AFTER_ALIGNMENT} mm of each other (assumed), a block "
+                  f"carries up to {_rng99(side2):.0f} N sideways, more than the {f_allow:.0f} N a rigid pair sees at the maker's allowable "
+                  f"parallelism error ({allow} mm): {n_stiff} stiff directions hold a body that needs three.", joint=j.name,
+                  hint="Let the mounts of all but three stiff directions float (meta['guide_float']), or align the rails more closely.")
+    # the floats are judged on what they must take in the machine as it is set up: after the declared alignment if there
+    # is one (the rails are then moved, not the mounts), as built otherwise
+    for b, f, Fi in zip(blocks, fl, F_judged):
+        if f is None or not f[2]:
+            continue
+        need = _rng99(np.abs(Fi @ f[0]) / f[1])
+        if need > f[2]:
+            r.add("error", "guide_float_exceeded",
+                  f"Axis {j.name}: the floating mount of {b.name} must move {need:.2f} mm to follow its rail"
+                  f"{' after the rails are aligned' if adj else ' as built'}, more than the {f[2]:g} mm it is declared to allow.",
+                  joint=j.name, part=b.name)
+    return out
+
+
 def _adj(design: Design, kind: str, joint: str | None = None):
     for a in design.adjustments:
         if a.kind == kind and (joint is None or a.joint in (None, joint)):
@@ -188,6 +348,10 @@ def verify_tolerance(design: Design, n: int = 3000) -> VerifierResult:
                     rails.append(p.name)
             rail_of_joint[jn] = rails
             if len(rails) < 2:
+                continue
+            if len(rails) > 2 or any(b.meta.get("guide_float") for b in blocks):
+                # three or more rails, or a block whose mount is declared to float: the general solution
+                rails_m[jn] = _rail_set(design, r, B, j, [(b, partner(b, j)) for b in blocks], n, share, thin_adjustment)
                 continue
             ax = np.array(j.axis, dtype=float); ax /= np.linalg.norm(ax)
             travel = abs(j.range[1] - j.range[0])

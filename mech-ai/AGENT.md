@@ -378,6 +378,27 @@ taken as a sliding fit); belts stay in plane; two rails guiding one axis stay pa
 screw stays in line with its rails (or it side-loads the nut); and, for a printer, the nozzle
 still meets the bed and the bed is level under it.
 
+**Three or more rails on one axis, and block mounts that float** (`tolerance.paired_rails.<joint>`, "model": rigid body
+on its blocks). Two rails are judged as before (their drift apart over the travel against the maker's allowable). With
+three or more rails, or when a guide block declares that its mount floats, the moving body is solved as one rigid body
+across the axis (two shifts and a turn) held by every block: 15,000 N/mm across its rail (assumed), except along a
+declared float, where the mount's own stiffness is in series:
+
+```python
+car = place(d, "z_carriage_left", mgn12h_carriage(preload="ZF"), ..., body="zbody", guides="z")
+car.meta["guide_float"] = {"axis": (1, 0, 0), "stiffness_n_per_mm": 251.0, "range_mm": 0.35, "by": "the web of its plate"}
+```
+
+Model the flexure, slot or thin plate that gives the float, and take the stiffness from it (an FEA load case on the
+plate checks it). Reported: the drift of every pair of rails, `in_plane_constraints` (stiff directions held against the
+three a body needs: three plain blocks hold six, three blocks that each hold only their tangential direction hold
+three), the force on each block against what a rigid pair carries at the maker's allowable (`side_load_allowed_n`), and
+how far each float moves. Without a `rail_align` adjustment the as-built figures are judged (`rails_not_parallel`,
+`guide_float_exceeded`). With one, the as-built drift is what the alignment must cover and the forces are given again
+for what is left after it (0.02 mm between rails, ASSUMED: `after_alignment`); `rails_over_constrained` (warning) when a
+block still carries more than the allowed side load, `guides_locate_through_floats` (warning) when the stiff directions
+alone do not locate the body (all through one point, or fewer than three).
+
 **Clearance under tolerance** (`tolerance.clearances`). The interference verifier passes a gap of 0.05 mm exactly as
 it passes 5 mm. This check takes every pair of parts that is not a designed contact and is drawn less than 1.5 mm
 apart (anywhere in the joints' mechanical travel for a pair across a joint: closest approach and the travel's ends)
@@ -859,6 +880,12 @@ the rail accuracy class are assumed and said so in the metrics; nut seating is a
 arms and plate not in it), and whether a nut is gravity-seated is taken from the floating-nut declaration; the
 straightness of the extrusion a rail is screwed to is not catalogued and not included; the silicone bed columns are
 meshed with the catalogue's stand-in rubber (real silicone is softer).
+Sprung beds: `die_spring_dj8x20(installed)` (Century Spring DJ-8X20YCS, 7.6 N/mm, for an M4 screw), `thumb_nut_din466("M4")`
+with `add_thumb_nut(...)`, `print_sheet_pei257()` (mechloop/parts/batch8.py; all three read through search snippets
+only, source level "secondary"). A spring is a tube to every checker: no verifier knows a preload. A bed pushed up by
+springs against nuts is held by its studs while the load on a point stays under that spring's preload; put the
+margin in the design as a `Requirement` (designs/printer_v9.py: `spring_preload`) and leave the springs out of the FEA
+parts, or the tubes are meshed as solid steel.
 Several lead screws on one Z are NOT supported by: the digital twin (it models one Z drive: travel per turn and
 summed motor torque, no tilt between screws); the motion verifier's dynamics (one joint, one effort); a generated
 `[z_tilt]` from geometry (you state z_positions and points); `quad_gantry_level`. Boards with more drivers: `manta_m5p()` (five) and `octopus_v11()` (eight). Integrated lead-screw
