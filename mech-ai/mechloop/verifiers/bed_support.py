@@ -43,6 +43,13 @@ joint is driven by one or more lead screws.
    screws through a closed belt; "independent", one motor per screw) and judged against whether the firmware can
    re-level (el.firmware["z_tilt"] with as many Z drivers as screws).
 
+7. HOW FAR THE MOTORS MAY TILT THE BED (`tilt_allowance`, independent motors). One screw driven h mm out of the plane
+   of the others turns the body against its guides: the height at which a nut loses its seating load, and the heights at
+   which a guide block's static moment and load (over TILT_STATIC_SAFETY), the web of a declared flexure mount
+   (meta["guide_float"]["web"]) or a nut's seat (drive["nut_tilt_allowance_rad"]) reach their limits. Reported per
+   screw and as the least (`overload_free_mm`, `across_print_area_mm`); `z_tilt_allowance_exceeded` (warning) when the
+   routine height error (the LSC-015 budget) is already more.
+
 Declaring several screws: Joint(..., drive={"motor": [m1, m2], "kind": "leadscrew", "screw": [s1, s2],
 "nut": [n1, n2], "coupler": [c1, c2], "sync": "independent"}). One screw is written as before.
 """
@@ -74,6 +81,13 @@ SYNC_BELT_MM = 0.02                 # screws tied by one closed belt: pitch and 
 # reported as assumed. A screw part that carries ratings["lead_accuracy_mm_per_300mm"] overrides it.
 LEAD_ACCURACY_ASSUMED_MM_PER_300 = 0.1
 GUIDES_HOLD_TILT_RATIO = 0.5        # a tilt mode counts as held by the guides too when they are at least half as stiff in it as the screws
+# How far the screws may be driven out of plane (tilt_allowance). Static safety on a guide block's rated moment and load:
+# 3, the figure this module already asks of the blocks under the moving mass (guide_overloaded_by_screw_offset) and the
+# upper end of Hiwin's range for normal loads. A flexure mount's web is held to half its material's yield (the figure the
+# designs declare their float range with), with the declared stress concentration on the in-plane bending term. Both are
+# judgements, stated as such.
+TILT_STATIC_SAFETY = 3.0
+TILT_WEB_YIELD_FRACTION = 0.5
 G = 9.81
 
 
@@ -362,6 +376,154 @@ def seating_study(design: Design, lay: dict, model: dict, W: float, com, wc, syn
             "nuts": rows, "print_weight_sag_on_supports_all_seated_mm": round(sag_seated, 4), "levels": lvl_rows,
             "how": "rigid body on guide springs and one-way nut springs (active-set contact); flexure of arms and plate is not in these "
                    "figures; guide forces are those of the support model"}
+
+
+def tilt_allowance(design: Design, lay: dict, model: dict, W: float, com, routine_mm: float | None = None) -> dict:
+    """How far may the lead screws be driven out of plane (several screws, each on its own motor)?
+
+    One screw stands h mm high (or low) of the plane of the others; the body is rigid on its guide blocks, their mounts
+    and its nuts (support_model), every nut holding both ways. Everything is linear in h, so each limit is a height:
+
+    - seated: the height error at which a nut's seating load from the moving mass reaches zero. Up to here the bed
+      stands on all its nuts and follows the screws exactly; beyond it a captive nut works through its backlash and a
+      gravity-seated one lifts.
+    - guide block: the block's moment about its three axes (rail: MR, across: MP, mount-face normal: MY) and its
+      force, each over its static rating, added (a linear interaction, on the safe side), on top of what the moving
+      mass already asks; the height at which the sum reaches 1 / TILT_STATIC_SAFETY.
+    - web of a floating mount (meta["guide_float"]["web"] = {"length_mm", "width_mm", "thickness_mm", "material",
+      "kt_in_plane"}): bending from the float's deflection (3 E t x / L^2), from the turn about the float axis (the web
+      bent in its own plane, 6 M / (t w^2), times kt_in_plane) and about the axis across (6 M / (w t^2)), added, with the
+      torsion about the travel axis (3 T / (w t^2)) by von Mises; the height at which it reaches
+      TILT_WEB_YIELD_FRACTION of the material's yield.
+    - nut seat: the body's tilt against drive["nut_tilt_allowance_rad"] (how far a nut's flange can rock in its seat
+      before the nut is forced out of square with its screw), when the design declares it.
+
+    `overload_free_mm` is the least of the last three over every screw; `across_print_area_mm` the bed-level change that
+    height makes across the print area. `routine_mm` (the LSC-015 height-error budget) is compared with both."""
+    up = lay["up"]
+    a = lay["axis"]
+    comps = {c.name: c for c in design.components}
+    Kg, nuts = split_stiffness(model, lay)
+    O = model["O"]
+    K_all = Kg + sum(k * np.outer(c, c) for _, c, k in nuts)
+    grav = np.concatenate([-up * W, np.cross(np.asarray(com) - O, -up * W)])
+    x0 = np.linalg.lstsq(K_all, grav, rcond=None)[0]
+    f0 = {s_["name"]: float(-k * (c @ x0)) for s_, c, k in nuts}
+    drv = lay["joint"].drive or {}
+    nut_tilt = drv.get("nut_tilt_allowance_rad")
+    guides = [s_ for s_ in model["supports"] if s_["kind"] == "guide"]
+
+    def block_axes(s_):
+        b = comps[s_["name"]]
+        gf = b.meta.get("guide_float") or {}
+        P = np.eye(3) - np.outer(a, a)
+        n = None
+        if gf.get("axis") is not None:
+            n = P @ np.array(gf["axis"], dtype=float)
+        elif b.meta.get("placement") is not None:
+            n = P @ np.array(b.meta["placement"], dtype=float)[:3, 2]
+        if n is None or np.linalg.norm(n) < 1e-9:
+            n = P @ np.array([1.0, 0.0, 0.0])
+            if np.linalg.norm(n) < 1e-9:
+                n = P @ np.array([0.0, 1.0, 0.0])
+        n = n / np.linalg.norm(n)
+        return b, gf, n, np.cross(a, n)
+
+    def block_state(s_, x):
+        """(utilisation of the block's static ratings, web stress MPa or None, detail) for a body displacement x."""
+        b, gf, n, t = block_axes(s_)
+        u, th = x[:3], x[3:]
+        F = s_["k"] @ (u + np.cross(th, s_["r"]))
+        M = s_["kappa"] @ th                                   # N.mm
+        m_a, m_t, m_n = float(M @ a), float(M @ t), float(M @ n)
+        rt = b.ratings
+        m0 = rt.get("static_moment_nm")
+        mr, mp, my = (rt.get(k_) or m0 for k_ in ("static_moment_mr_nm", "static_moment_mp_nm", "static_moment_my_nm"))
+        util = 0.0
+        if m0:
+            util += (abs(m_a) / mr + abs(m_t) / mp + abs(m_n) / my) * 1e-3
+        if rt.get("static_load_n"):
+            util += float(np.linalg.norm(F)) / rt["static_load_n"]
+        det = {"force_n": float(np.linalg.norm(F)), "moment_about_rail_nm": m_a * 1e-3, "moment_across_nm": m_t * 1e-3,
+               "moment_about_mount_normal_nm": m_n * 1e-3}
+        web = gf.get("web")
+        stress = None
+        if web and gf.get("stiffness_n_per_mm"):
+            L, w_, t_ = float(web["length_mm"]), float(web["width_mm"]), float(web["thickness_mm"])
+            E = MATERIALS[web.get("material", "al6061")].E
+            f_float = float(F @ n)
+            x_float = f_float / float(gf["stiffness_n_per_mm"])
+            s_float = 3.0 * E * t_ * abs(x_float) / L ** 2
+            s_in = 6.0 * abs(m_n) / (t_ * w_ ** 2) * float(web.get("kt_in_plane", 1.0))
+            s_out = 6.0 * abs(m_t) / (w_ * t_ ** 2)
+            tau = 3.0 * abs(m_a) / (w_ * t_ ** 2)
+            stress = math.sqrt((s_float + s_in + s_out) ** 2 + 3.0 * tau ** 2)
+            det.update({"float_mm": x_float, "web_stress_mpa": stress,
+                        "web_stress_parts_mpa": {"float": s_float, "in_plane": s_in, "out_of_plane": s_out, "torsion_shear": tau}})
+        return util, stress, det
+
+    rest = {s_["name"]: block_state(s_, x0) for s_ in guides}
+    per_screw = {}
+    for sk, ck, kk in nuts:
+        xk = np.linalg.lstsq(K_all, kk * ck, rcond=None)[0]          # this screw 1 mm high
+        row = {"bed_level_change_across_print_area_mm_per_mm": round(_tilt_mm(xk[3:], lay), 4),
+               "tilt_mrad_per_mm": round(float(np.linalg.norm(xk[3:] - (xk[3:] @ a) * a)) * 1e3, 4)}
+        # nut seating
+        dn = {s_["name"]: float(k * ((1.0 if s_ is sk else 0.0) - c @ xk)) for s_, c, k in nuts}     # N gained per mm high
+        seat = [f0[n_] / abs(d_) for n_, d_ in dn.items() if abs(d_) > 1e-9 and f0[n_] > 0]
+        row["nut_load_change_n_per_mm"] = {n_: round(d_, 2) for n_, d_ in dn.items()}
+        row["seated_up_to_mm"] = round(min(seat), 4) if seat else None
+        lims = {}
+        blocks = {}
+        for s_ in guides:
+            util1, st1, det = block_state(s_, xk)
+            u0, st0, _ = rest[s_["name"]]
+            b_ = {"per_mm": {k_: (round(v_, 4) if isinstance(v_, float) else {kk_: round(vv_, 3) for kk_, vv_ in v_.items()}) for k_, v_ in det.items()},
+                  "static_rating_used_per_mm": round(util1, 5)}
+            if util1 > 1e-12:
+                b_["block_limit_mm"] = round(max(1.0 / TILT_STATIC_SAFETY - u0, 0.0) / util1, 3)
+                lims[f"{s_['name']}: static moment and load / {TILT_STATIC_SAFETY:g}"] = b_["block_limit_mm"]
+            if st1 is not None and st1 > 1e-9:
+                gf = comps[s_["name"]].meta["guide_float"]
+                web = gf["web"]
+                allow = TILT_WEB_YIELD_FRACTION * MATERIALS[web.get("material", "al6061")].yield_mpa
+                b_["web_stress_allowed_mpa"] = round(allow, 1)
+                b_["web_limit_mm"] = round(max(allow - (st0 or 0.0), 0.0) / st1, 3)
+                lims[f"{s_['name']}: web stress {allow:.0f} MPa"] = b_["web_limit_mm"]
+            blocks[s_["name"]] = b_
+        row["guide_blocks"] = blocks
+        if nut_tilt:
+            th = float(np.linalg.norm(xk[3:] - (xk[3:] @ a) * a))
+            if th > 1e-12:
+                row["nut_seat_limit_mm"] = round(float(nut_tilt) / th, 3)
+                lims[f"nut seats: {float(nut_tilt) * 1e3:.2f} mrad of rocking"] = row["nut_seat_limit_mm"]
+        if lims:
+            what = min(lims, key=lims.get)
+            row["overload_free_up_to_mm"] = lims[what]
+            row["first_limit"] = what
+        row["limits_mm"] = lims
+        per_screw[sk["name"]] = row
+    have = [v for v in per_screw.values() if "overload_free_up_to_mm" in v]
+    out = {"per_screw": per_screw, "static_safety": TILT_STATIC_SAFETY, "web_yield_fraction": TILT_WEB_YIELD_FRACTION,
+           "nut_tilt_allowance_rad": nut_tilt,
+           "nut_tilt_basis": drv.get("nut_tilt_basis") if nut_tilt else "not declared (drive['nut_tilt_allowance_rad']): the nut seats were not judged",
+           "how": "one screw high by h, the others where they are; rigid body on guide blocks, mounts and nuts (every nut holding both "
+                  "ways); linear in h. Block limit: moments about the block's three axes and its force over their static ratings, "
+                  "added, on top of the moving mass's share. Web limit: bending and torsion of a declared flexure web. Not in it: the "
+                  "clearance of a ZF block (it would add free tilt), flexure of the carrier, screw bending, the firmware's own limits"}
+    seated = [v["seated_up_to_mm"] for v in per_screw.values() if v.get("seated_up_to_mm") is not None]
+    if seated:
+        out["seated_up_to_mm"] = round(min(seated), 4)
+    if have:
+        worst = min(have, key=lambda v: v["overload_free_up_to_mm"])
+        nm = next(k for k, v in per_screw.items() if v is worst)
+        out.update({"overload_free_mm": worst["overload_free_up_to_mm"], "first_limit": worst["first_limit"], "governing_screw": nm,
+                    "across_print_area_mm": round(worst["overload_free_up_to_mm"] * worst["bed_level_change_across_print_area_mm_per_mm"], 3)})
+    if routine_mm is not None:
+        out["routine_height_error_mm"] = round(float(routine_mm), 4)
+        if have:
+            out["overload_free_over_routine"] = round(out["overload_free_mm"] / max(float(routine_mm), 1e-9), 2)
+    return out
 
 
 def support_model(design: Design, lay: dict) -> dict:
@@ -1077,6 +1239,26 @@ def bed_support(design: Design, r: VerifierResult, with_fea: bool = True) -> dic
             lvl["from_screw_lead_error_mm"] = st["levels"][1]["worst_case"]["bed_level_change_across_print_area_mm"]
             lvl["from_screw_lead_error_note"] = (f"one screw at its lead-accuracy limit over the {travel:g} mm travel "
                                                  f"({st['lead_error_over_travel_mm']:g} mm; {st['lead_accuracy']['basis']})")
+        if lay["sync"] == "independent" and abs(float(a @ up)) > 0.99:
+            # how far the motors may drive the screws out of plane before a block, a mount's web or a nut seat is overloaded
+            try:
+                routine = st["levels"][2]["height_error_mm"] if st is not None else sy["height_error_mm"]
+                ta = tilt_allowance(design, lay, model, W, com, routine_mm=routine)
+                out["tilt_allowance"] = ta
+                if "overload_free_mm" in ta:
+                    msg = (f"Joint {j.name}: one screw may stand {ta['overload_free_mm']:.2f} mm out of the plane of the others "
+                           f"({ta['across_print_area_mm']:.2f} mm across the print area) before the first limit is reached "
+                           f"({ta['first_limit']}, {ta['governing_screw']}); every nut stays seated up to "
+                           f"{ta.get('seated_up_to_mm', float('nan')):.2f} mm. The routine height error (LSC-015 budget) is {routine:.3f} mm.")
+                    if ta["overload_free_mm"] < routine:
+                        r.add("warning", "z_tilt_allowance_exceeded", msg + " The routine error alone overloads it.", joint=j.name,
+                              overload_free_mm=ta["overload_free_mm"], routine_mm=round(routine, 4), first_limit=ta["first_limit"],
+                              hint="Make the guide mounts softer in tilt (a narrower or longer web, one block per rail), or tie the screws.")
+                    else:
+                        r.add("info", "z_tilt_allowance", msg, joint=j.name)
+            except Exception as e:      # never lose the other measures to this one; say so
+                out["tilt_allowance"] = {"evaluated": False, "why": f"{type(e).__name__}: {e}"}
+                r.add("warning", "z_tilt_allowance_not_evaluated", f"Joint {j.name}: the allowable screw tilt was NOT evaluated ({type(e).__name__}: {e}).")
         half = lay["layer"] / 2
         # judged at the LSC-015 budget: two belt-tied screws can differ by up to twice the class lead error over the travel
         expected = st["levels"][2] if st is not None else None

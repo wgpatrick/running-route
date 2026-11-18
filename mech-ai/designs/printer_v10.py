@@ -1,49 +1,44 @@
-"""printer_v9: printer_v8_2 with a new Z stage and bed, from the owner's sketch. docs/PRINTER_V9.md has the numbers, every
-judgement call and the open items.
+"""printer_v10: printer_v9 with the gantry's ends and the toolhead redrawn for X travel, the bed sized to the nozzle's reach,
+and three levelling points instead of four. docs/PRINTER_V10.md has the numbers, every judgement call and the open items.
 
-The owner's sketch and notes: three lead-screw steppers as v8.2, the Z stage guided on THREE vertical linear rails (one
-near each screw), the bed as large as the cube allows, the carrier a closed square of 2020 extrusion under the bed, six
-simple brackets off that square (three to the nuts, three to the rail carriages), a thin (1/8 in) aluminium deck on the
-square, and the bed floating a small distance above the deck on four spring-loaded levelling screws with thumb nuts.
+The frame (every extrusion, the 340 x 373 x 404 mm cube and the 420 mm envelope) is v9's, untouched. What changed:
 
-What changed from v8.2 (everything else, gantry, toolhead, frame cube and electronics, is v8.2's: designs/printer_v8_2.py):
-
-1. BED: 265 x 265 x 6.35 mm MIC-6 plate (v8.2: 220 x 256.5 x 9.525) under a 257 x 257 mm PEI spring-steel sheet with
-   magnetic base (v8.2: 180 x 180): the largest catalogue sheet that fits the cube (clear width 300 between the posts, less
-   the two side rails and their blocks: 264.5; the next sheet size up is 300). Heater: a 190 x 180 mm, 180 W pad between
-   the levelling screws.
-2. PRINT AREA: the gantry is v8.2's, untouched, so the nozzle still reaches 180 mm in X and 214.5 mm in Y (world y -102.75
-   to 111.75). v8.2 printed on 180 of that 214.5 (the other 34.5 mm is travel so the probe, 34.5 mm behind the nozzle,
-   reaches the front of the sheet). With a sheet under the whole reach the declared print area is 180 x 214.5 mm; the
-   bed is centred on that reach (y 4.5), and the front 34.5 mm of it is beyond the probe (the mesh holds its nearest
-   value there). XY travel, not the bed, is what limits the useful area: see the doc for what limits X and Y and the
-   frame / gantry change that would unlock more (proposed there, NOT made here).
-3. Z GUIDES: three MGN12 rails, one ZF block each: on new uprights in the left and right walls (y -32) and one in the
-   back wall (x 65). Each block is tied to the square by one flat 1.6 mm 6061 plate whose 30 mm web is a flexure: stiff
-   along the wall (the block's tangential direction), soft square to it (251 N/mm). Left and right blocks hold Y and yaw,
-   the rear block holds X: three stiff directions for the three in-plane freedoms, so rail error and the carrier's thermal
-   growth go into the webs, not into the balls. The tilt is held by the three screws, as v8.2.
-4. CARRIER: a closed rectangle of 2020 (two full-length side members, front and rear members between them, four cast
-   corner brackets inside), 270.8 x 281.8 mm outside, with a 3.175 mm 6061 deck bolted on top (ten M5 into T-nuts): the
-   deck closes the rectangle in shear and is the levelling datum.
-5. SIX BRACKETS, TWO SHAPES: three identical carriage plates (item 3) and three identical 4.75 mm 6061 nut plates under the
-   square (two M5 from below into T-nuts), each with v8.2's floating, captive T8 nut (keeper, anti-rotation pin). The three
-   motor plates are now one shape too: the rear screw moved onto the back rail's centre line (y 170, v8.2 180).
-6. BED MOUNT: four M4 x 35 countersunk screws from the plate's top face (heads 0.7 mm under the magnetic base), each locked
-   to the plate by a washer and nut underneath (a fixed stud, no tapped aluminium); a Century Spring DJ-8X20YCS die spring
-   (7.6 N/mm, compressed 6 mm: 46 N) between that nut and the deck; under the deck a large washer and a DIN 466 M4 knurled
-   thumb nut. The springs push the bed up against the thumb nuts, so in service the bed is held by the studs, not by the
-   springs, as long as the load on a point stays under its preload. Deck holes: one fitted (4.3), one slot, two oversize
-   (5.5), so the heated plate grows freely. Gap bed to deck: 18.8 mm.
+1. X TRAVEL 229.6 mm (v9 180). The X rail is as long as the 288 mm beam (HIWIN MGNR12R cut to length; v9 a stock 250), so
+   the guide block's centre runs +/-116.3 mm with 5 mm of rail left at each end. To let it:
+   - the X motor and idler stand outboard of the block's travel, over the Y plates (pulley centres -141.8 / +142.8, belt
+     plane 6 mm higher); their mounts keep their bolts on the beam's front face and reach outward above the Y plates;
+   - the Y plates end in front of the block's path over the beam; from x 139.4 outward a tab on each is the hard stop for
+     the tool plates' edge (v9's two rail-stop plates are gone);
+   - the toolhead is centred on the block: the Roto (16.2 mm left and 40.9 mm right of its nozzle) and the part fan's plenum
+     (46.8 right) sit 15.5 mm to the left, so the 63 mm between Roto and plenum clears the top side rails by 2.0 and 2.4 mm at
+     the ends of travel; the HeaterCore's lead sleeve is turned back under the Roto;
+   - the X switch moved to the right Y plate's land (worked by a striker tab on the tool plates; X homes at maximum), the Y
+     switch to a bent bracket in the right top rail's top slot (worked by that land's rear edge), the toolhead loom's
+     anchor to the top of the back rail.
+   Both ends are now set by the beam's length between the Y blocks and, 0.1 to 0.5 mm later, by the Roto and the plenum
+   against the top side rails. Y travel is v9's 214.5 mm: confirmed at its limit (front: Y idlers and the 420 mm envelope,
+   bolt heads 3.5 mm from the top front rail; rear: fan screws 1.44 mm from the top back rail).
+2. BED: 235 x 235 mm PEI sheet (catalogue print_sheet_pei235) on a 241 x 241 x 12.7 mm MIC-6 plate, centred on the nozzle's
+   reach (x -15.5, y 4.5): the 229.6 x 214.5 mm print area is 89 % of the sheet (v9: 58 % of a 257 mm sheet). Heater pad
+   230 x 207 mm, 180 W: the print area's whole width and all but 3.75 mm of its depth at each end.
+3. THREE LEVELLING POINTS: front left (fitted hole), front right (slot), rear centre (oversize hole), each beside a member
+   of the square and near a lead screw. Same stack as v9 (M4 countersunk stud locked by washer and nut under the plate, die
+   spring, thumb nut under the deck; no tapped aluminium), M4 x 40, spring compressed 7.5 mm (57 N). On three points the two
+   rear print corners overhang the rear stud by 115 mm, so the plate is 12.7 mm (v9 6.35 on four).
+4. MOTOR TILT: the bed-support checker now works out how far one Z motor may stand out of the plane of the other two before
+   a guide block's static rating, a carriage plate's web or a nut seat reaches its limit (requirement and metrics); the web's
+   dimensions and the nut seat's play are declared for it.
+The carrier (2020 square, deck outline, six brackets), the three Z rails and motors and the electronics are v9's.
 
 Layout (X = width, Y = depth with the front at -Y, Z = up) is v4's; see designs/printer_v4.py for the history.
 
-Not modelled (flagged): as v8.2 (Roto envelope, T-nuts, PEM nuts, BAT85, Revo clip are BOM lines or notes; payload is extra
-mass on the bed plate; no airflow model; pulley set screws; belt teeth; screw whip by hand in the doc), and: the springs
-are tubes (not coils) and are left out of the FEA (the studs carry the bed while preloaded; the doc works the spring,
-preload, resonance and over-constraint sums by hand); friction at the sliding levelling points.
+Not modelled (flagged): as v9 (Roto envelope, T-nuts, PEM nuts, BAT85, Revo clip are BOM lines or notes; payload is extra
+mass on the bed plate; no airflow model; pulley set screws; belt teeth; screw whip by hand in the doc; the springs are tubes
+and are left out of the FEA; friction at the sliding levelling points), and: the X motor mount's wing is not in the nozzle
+stiffness cases (they hold the Y plates and load the nozzle; the belt path is the twin's).
 """
 import math
+import re
 
 import numpy as np
 from build123d import (Box, Cylinder, GeomType, Location, Plane, Polygon, Pos, RectangleRounded, RegularPolygon, Rot,
@@ -57,7 +52,8 @@ from mechloop.parts import (Stock, add_corner_bracket, add_nut, add_screw, add_w
                             mgn12_rail, mgn12h_carriage, nema17, place, printed_clearance_hole)
 from mechloop.parts.batch6 import fan_cg3010u24
 from mechloop.parts.batch7 import leadscrew_motor_17e19_ab4, leadscrew_screw_17e19_ab4, octopus_v11
-from mechloop.parts.batch8 import add_thumb_nut, die_spring_dj8x20, print_sheet_pei257
+from mechloop.parts.batch8 import add_thumb_nut, die_spring_dj8x20
+from mechloop.parts.batch9 import print_sheet_pei235
 from mechloop.parts.electrical import (THERMISTORS, add_electrical_bom, bed_heater_pad, device_from, embedded_device,
                                        iec_inlet_c14, psu_lrs, raspberry_pi_zero2w, relay_btt_v12, thermal_fuse)
 from mechloop.parts import CSK
@@ -67,7 +63,7 @@ from mechloop.parts.toolhead import extruder_roto, hotend_revo
 from mechloop.shops import assign
 
 # ---- brief ------------------------------------------------------------------------
-PRINT_X, PRINT_Y, PRINT_Z = 180.0, 214.5, 180.0     # v9: Y is the whole of the gantry's nozzle travel (v8.2 printed on 180 of it)
+PRINT_X, PRINT_Y, PRINT_Z = 229.6, 214.5, 180.0     # v10: X is the whole of the redrawn gantry's nozzle travel (v9 180); Y as v9
 PAYLOAD_KG = 1.0
 V_XY, A_XY = 250.0, 4000.0
 V_Z, A_Z = 12.0, 200.0
@@ -113,16 +109,25 @@ FRONT_EXT = 13.0       # v8.2 (owner review): the frame's front is 13 mm further
 FD = FY + FRONT_EXT    # frame depth, outside to outside of the front and back rails
 FRONT_Y = -(FY / 2 - 10) - FRONT_EXT   # centre line of the front rails and posts (v8.1 -170)
 
-# ---- Z stage (v9): bed, deck, 2020 square, three rails ------------------------------
-SHEET = 257.0          # print sheet (catalogue print_sheet_pei257): the largest catalogue size that fits the cube
-BED = 265.0            # MIC-6 plate, square: 4 mm of margin round the sheet
-T_BED = G64            # 6.35 mm MIC-6 (v8.2 9.525): stocked, faces as cast; four supports 208 x 196 apart
+# ---- toolhead offset (v10) -----------------------------------------------------------
+C_NOZ = 15.5           # the nozzle is 15.5 mm to the LEFT of the X guide block's centre: the Roto reaches 16.2 mm left and
+                       # 40.9 mm right of its nozzle, and the part fan's plenum 46.8 mm right, so the toolhead (63.0 mm wide
+                       # between Roto and plenum) is centred on the block and fits the 300 mm between the top side rails
+                       # at both ends of the rail's travel. The nozzle's travel, and so the bed, is centred on x = -15.5
+NOZ_X = -C_NOZ         # world x of the nozzle at the home pose (the X block at the beam's centre)
+# ---- Z stage (v9 / v10): bed, deck, 2020 square, three rails ------------------------
+SHEET = 235.0          # print sheet (catalogue print_sheet_pei235): the catalogue size the nozzle's 229.6 x 214.5 mm reach nearly fills
+BED = 241.0            # MIC-6 plate, square: 3 mm of margin round the sheet (6 mm clear of the left Z rail)
+T_BED = G127           # 12.7 mm MIC-6 (v9 6.35 on four studs): on three studs the two rear print corners overhang the rear stud by
+                       # 115 mm; plate theory gives 64 / 19 / 8 um under 1 kg there for 6.35 / 9.525 / 12.7 mm (limit 20 with the carrier)
+BED_CX = NOZ_X         # centre of sheet and plate in X = centre of the nozzle's reach
 T_MAG = 1.5            # the sheet's magnetic base: NOT published by the seller; 1.5 mm from two other sellers' kits (stand-in)
 T_SHEET = 0.4          # spring steel (catalogue; a third-party figure)
 BED_CY = 4.5           # centre of sheet and plate in Y = centre of the gantry's (unchanged) nozzle reach, world y -102.75 .. 111.75
 BED_Y0, BED_Y1 = BED_CY - BED / 2, BED_CY + BED / 2
+BED_X0, BED_X1 = BED_CX - BED / 2, BED_CX + BED / 2
 W5 = WASHER["normal"]["M5"][2]
-PAD_X, PAD_Y = 190.0, 180.0   # heater pad, between the levelling screws
+PAD_X, PAD_Y = 230.0, 207.0   # heater pad: the print area's full width, and all of its depth between the front studs' and the rear stud's washers
 # guides: one MGN12 rail + one ZF block per wall; a flat plate with a flexure web ties each block to the square
 RAIL_FACE = 13.0       # MGN12H: rail base to the block's mounting face
 T_CP = G16             # carriage plates: 1.6 mm 6061 (the web is the radial flexure)
@@ -143,15 +148,17 @@ SQ_Y0 = 2 * BED_CY - SQ_Y1                # its front outer face (-136.4): the r
 T_DECK = G32           # deck: 3.175 mm 6061 (1/8 in)
 # bed mount: stud (M4 countersunk) - washer - nut - die spring - seat washer - deck - large washer - thumb nut
 W4, W4L, NUT4 = WASHER["normal"]["M4"][2], WASHER["large"]["M4"][2], 3.2
-SPRING_H = 14.0        # DJ-8X20YCS installed: 6 mm of its 20 compressed, 45.6 N (range 12..16 mm: 61..30 N)
+SPRING_H = 12.5        # DJ-8X20YCS installed: 7.5 mm of its 20 compressed, 57 N (range 10.5..14.5 mm: 72..42 N; the maker lists to 10 mm)
 SPRING_K = 7.6
-GAP = W4 + NUT4 + SPRING_H + W4           # plate underside to deck top: 18.8 mm
-STUD_L = 35.0
+GAP = W4 + NUT4 + SPRING_H + W4           # plate underside to deck top: 17.3 mm
+STUD_L = 40.0          # M4 x 40 countersunk: 12 mm in the plate, 17.3 gap, deck, washer, 6.5 mm into the thumb nut
 CSK_SINK = (CSK["M4"][0] - CSK["M4"][1]) / 2      # 0.72 mm: how far an M4 countersunk head sits below the surface
 LEVEL_RANGE = 2.0      # +/- at each thumb nut
-LEV_X, LEV_Y = 104.0, 98.0                # studs at (+/-104, BED_CY +/- 98): thumb nuts clear the square's corner brackets
-# deck hole per stud (thermal growth of the plate): 0 fitted, 1 slot towards 0, 2 and 3 oversize
-BED_MOUNTS = [(-LEV_X, BED_CY - LEV_Y), (LEV_X, BED_CY - LEV_Y), (-LEV_X, BED_CY + LEV_Y), (LEV_X, BED_CY + LEV_Y)]
+LEV_X, LEV_Y = 86.0, 109.5                # three studs: front pair at (+/-86, BED_CY - 109.5) beside the square's front member (thumb nuts
+                                          # clear of its corner brackets), the rear one on the bed's centre line beside the rear member:
+                                          # each 11.4 mm from a member's inner face and within 60 mm of a lead-screw nut
+# deck hole per stud (thermal growth of the plate): 0 fitted, 1 slot towards 0, 2 oversize
+BED_MOUNTS = [(-LEV_X, BED_CY - LEV_Y), (LEV_X, BED_CY - LEV_Y), (BED_CX, BED_CY + LEV_Y)]
 DECK_FIT, DECK_FREE = 4.3, 5.5
 LS_Y = FY / 2 - 10     # rear lead screw on the bottom back rail's centre line (v8.2: 180, its outer edge)
 FS_X = FX / 2 - 10     # front lead screws over the bottom side rails
@@ -187,12 +194,20 @@ ROTO_NX, ROTO_NY, ROTO_NZ = _ROTO["nozzle_tip"][0]
 ROTO_H2 = _ROTO["mount_holes_m3"][1]
 HOT_OFF = R_TPR + ROTO_W / 2 + ROTO_NY
 YB0 = BED_CY - HOT_OFF
-ROTO_O = (-ROTO_NX, YB0 + R_TPR + ROTO_W / 2, Z_BEAM)
+ROTO_O = (-ROTO_NX + NOZ_X, YB0 + R_TPR + ROTO_W / 2, Z_BEAM)
 Z_NOZZLE = ROTO_O[2] + ROTO_NZ
 NOZZLE_GAP = 0.1
-XM_X, XI_X = -118.0, 118.0
 BEAM_L = 288.0
-XD_Z = Z_BEAM + 33.0
+X_RAIL_L = 288.0       # v10: HIWIN MGNR12R cut to the beam's length (v9: a stock 250); 11 holes, 19 mm end distances
+X_BLOCK_L = 45.4       # MGN12H
+ES_OT_X = 1.5          # X over-travel past the working range at each end (the switch's lever spread at the right end)
+X_CAR_MAX = X_RAIL_L / 2 - 5.0 - X_BLOCK_L / 2        # 116.3: the X block's centre with 5 mm of rail left beyond it
+assert abs(PRINT_X / 2 - (X_CAR_MAX - ES_OT_X)) < 1e-9, 'PRINT_X is the rail-limited working travel'
+X_CLAMP_HW = 15.0      # half width of the belt bracket and clamp on the tool plate
+XM_X = -(X_CAR_MAX + X_CLAMP_HW + 2.5 + 8.0)          # -141.8: X pulley (flange radius 8) 2.5 mm beyond the clamp at the end of travel
+XI_X = X_CAR_MAX + X_CLAMP_HW + 2.5 + 9.0             # 142.8: X idler (flange radius 9)
+XD_Z = Z_BEAM + 40.0   # v10: 7 mm higher than v9: the motor and the idler now stand outboard of the beam's ends, over the Y plates,
+                       # and must clear the Y plates and the heads of the Y blocks' screws
 LUG_Z0 = FZ + 10.0 + 4.0  # v8.2: the X idler mount's lug and the X tension anchor's fin start 4 mm above the flush top front rail
 X_PG = 2.75
 XB_Y = YB0 - 10.0 + X_PG + P_BC(BWX)
@@ -231,7 +246,8 @@ Z_SQB = Z_SQ - 10.0
 T_NP = G48                                        # nut plates: 4.75 mm 6061, under the square (the keeper bolts' 4.8 mm holes are not under the thickness)
 Z_TAB = Z_SQB - T_NP                              # underside of the nut plates = top of each nut's flange
 ZC = Z_SQB - L_FLEX - 1.0 - 22.7                  # centre of the guide blocks (they hang below the square on the plates' webs)
-Z_RAIL_C = ZC + (PRINT_Z + Z_UP - Z_DN) / 2       # rails centred on the blocks' travel
+Z_RAIL_C = ZC + (PRINT_Z + Z_UP - Z_DN) / 2 + 4.85   # v10: the blocks ride 4.85 mm lower (thicker plate, shorter springs); the rails stay
+                                                     # where v9 had them (clear of the control board): 5.1 mm of rail below the blocks, 14.8 above
 NP_HOLE = 2 * (5.1 + NUT_FLOAT) + 0.8             # the nut's barrel floats in a round hole
 NP_U, NP_R1 = 32.0, 21.5                          # nut plate: half length along the member, reach beyond the nut
 NP_BOLT_U = 20.0                                  # its two M5 into the member's bottom slot
@@ -247,7 +263,15 @@ MP_PILOT_HOLE = 22.3                             # the motor's 22 mm pilot locat
 PSU_COVER_TOP = 56.04                            # mains cover over the supply's terminals (v8.1: 2.8 mm under its belt plane)
 # Y endstop
 ES_TRIG, ES_SIDE = 8.3, 9.0
-LAND_X, LAND_Y1 = (-134.0, -116.5), 44.0
+TPX = 23.0             # half width of the tool plates (on the X block)
+YP_REAR = 11.0         # v10: over the beam the Y plates end 11 mm behind its centre line, 2 mm in front of the X block's path
+X_STOP = X_CAR_MAX + TPX + 1.5    # 140.8: from here outward each Y plate reaches back; its inner edge is the hard stop for the tool
+                                  # plates' edge, 1.5 mm beyond the mechanical travel (what the stack-up of sheet parts needs to stay open)
+STOP_Y1 = 29.0         # the stop tabs end 1.9 mm in front of the Roto's front face (the Roto is wider than the tool plates)
+TAB_X1 = 163.0         # outer edge of the stop tabs and of the land
+LAND_X0, LAND_Y1 = X_CAR_MAX + (40.9 - C_NOZ) + 2.0, 50.0     # right Y plate's land behind the stop tab: inner edge 2 mm beyond the Roto's reach;
+                                                              # it carries the X switch and its rear edge works the Y switch
+ES_SP_XS = 5.5         # spacers under the X switch (its M3 x 16 then end 1.3 mm above the right Y rail)
 ES_SLOT = 2.0
 ES_OT = 1.5
 YIM_BOLTS = (-174.0, -126.0)
@@ -257,20 +281,20 @@ ES_SP = 4.0
 ES_SP_X = 8.0
 RAIL_SCREW_STEP = 2
 BEAM_BOLT_X = (RAIL_X - 33.0, RAIL_X - 21.0)
-STOP_X = (116.5, 126.0, 131.0, 143.0)
-X_ES_Y = 20.3
+X_ES_Y = 34.4          # X switch: centre of its board, behind YB0 (lever tip at 25.4, on the front tool plate's striker tab; its front
+                       # screw's washer then clears the Y block by 0.7 mm)
 # bed probe: OMRON E2E-X5ME1 34.5 mm behind the nozzle reading the PEI180's steel
 PRB_MODEL = "E2E-X5ME1"
 PRB_H = 2.0
-PRB_X = 0.0
+PRB_X = NOZ_X          # on the nozzle's X: no X offset
 PRB_DY = 34.5
 PRB_Y = HOT_OFF + PRB_DY
 TY_F = TY                                       # v9: the print area is the whole Y travel; the front PRB_DY of it is beyond the probe
 YI_Y = YB0 - 24.0 - (TY_F + ES_OT) - 10.5      # as v8.1 (same place in the frame as v8.2: the home pose moved, the travel did not)
-# Klipper [z_tilt]: firmware X = world x + TX (X homes at -TX), firmware Y = world y - (nozzle's home y) + TY_F
-_FW = lambda x, y: (round(x + TX, 2), round(y - (YB0 + HOT_OFF) + TY_F, 2))
+# Klipper [z_tilt]: firmware X = world x - NOZ_X + TX (0 at the left end of the nozzle's travel; X homes at the right end), firmware Y = world y - (nozzle's home y) + TY_F
+_FW = lambda x, y: (round(x - NOZ_X + TX, 2), round(y - (YB0 + HOT_OFF) + TY_F, 2))
 Z_TILT = {"z_positions": [_FW(0.0, LS_Y), _FW(-FS_X, FS_Y), _FW(FS_X, FS_Y)],       # rear, front-left, front-right screw
-          "points": [(90.0, 185.0), (10.0, 5.0), (170.0, 5.0)],                       # nozzle; probe 34.5 mm behind it
+          "points": [(TX, 185.0), (10.0, 5.0), (2 * TX - 10.0, 5.0)],                 # nozzle; probe 34.5 mm behind it
           "speed": 100, "horizontal_move_z": 5, "retries": 5, "retry_tolerance": 0.0075}
 Z_PRB = Z_NOZZLE + PRB_H
 PRB_CLAMP = (15.0, 20.0)
@@ -278,10 +302,13 @@ PM_T = 4.0                                        # aluminium compression sleeve
 PM_TP = PM_T - 0.6                                # the holder plate: 0.6 mm thinner than its sleeves (the printed minimum clearance
                                                   # 0.5, and open in every simulated build), so the screw clamps metal only
 PM_Z0, PM_Z1 = Z_PRB + PRB_CLAMP[0] - Z_BEAM, Z_PRB + PRB_CLAMP[1] - Z_BEAM
-TPX = 23.0
-TP_Z0, TP_Z1 = -18.0, 38.0
-TP_NOTCH = (3.0, 11.0)
-TAB_R = (13.5, 38.5, -27.0, -14.0)
+TP_Z0, TP_Z1 = -16.0, 38.0   # v10: bottom edge 2 mm higher (v9 -18): the HeaterCore's lead sleeve passes 2.2 mm under it
+TAB_R = (13.5 + NOZ_X, 38.5 + NOZ_X, -27.0, -14.0)   # the duct flange's tab: -2 .. 23 from the block's centre, inside the plate's width
+STRIKER = (TPX + 4.9, 20.75, 27.5)                   # v10: a tab on the FRONT tool plate's right edge (x to 27.9, z from Z_BEAM) that works
+                                                     # the X switch: it reaches 2.5 mm beyond the Roto's right side (25.4)
+LEAD_RELIEF = (16.0, 18.0)                           # v10: the REAR tool plate's upper right corner (x > 16, z > 18) is cut away for the plug
+                                                     # of the Roto's motor lead (at x 22.3, z 21.9, leaving forward and up at 45 degrees)
+LEAD_RELIEF_F = (19.5, 27.5)                         # and the FRONT plate's above the striker tab (x > 19.5, z > 27.5): the plug's last 3 mm
 FC_X0, FC_X1 = TAB_R[0], TAB_R[1]
 FC_FL = 8.5                                       # duct flange: holds two M3 heat-set inserts
 FC_Z0, FC_ZF = TAB_R[2], -12.8
@@ -289,9 +316,9 @@ DUCT_Z0 = -31.0
 DUCT_W = 1.6
 FC_LUG_Y = R_TPR + ROTO_W + 1.5
 PLEN = 7.0
-PFAN = (30.3, FC_LUG_Y + PLEN + 5.0, -16.0)
+PFAN = (30.3 + NOZ_X, FC_LUG_Y + PLEN + 5.0, -16.0)
 PLEN_X0, PLEN_X1 = PFAN[0] - 16.5, PFAN[0] + 16.5
-FC_SCREWS = [(19.0, -20.5), (30.5, -20.5)]
+FC_SCREWS = [(19.0 + NOZ_X, -20.5), (30.5 + NOZ_X, -20.5)]
 DUCT_OUT = (40.0, 52.0, -29.0, -23.0)
 BLK_SCREWS = [(-9.5, 20.5), (9.5, 20.5)]          # belt bracket -> tool plate (x, z from Z_BEAM)
 CLAMP_Y = (-1.8, 12.2)                            # belt clamp screws, from YB0: just in front of and behind the 9 mm belt
@@ -510,10 +537,10 @@ def countersink_z(x, y, z_top, depth_total, d_csk, d_hole):
 
 
 def bed_shape_():
-    """6.35 mm MIC-6 cast plate, laser cut (faces as cast), no tapped holes: four M4 countersunk screws from the top, in
+    """12.7 mm MIC-6 cast plate, laser cut (faces as cast), no tapped holes: three M4 countersunk screws from the top, in
     90-degree countersinks (8.96 mm; SendCutSend's countersinking service or the builder's countersink bit), heads 0.7 mm
     below the surface: the magnetic base lies flat over them."""
-    b = bx(-BED / 2, BED / 2, BED_Y0, BED_Y1, Z_BED, Z_BED + T_BED)
+    b = bx(BED_X0, BED_X1, BED_Y0, BED_Y1, Z_BED, Z_BED + T_BED)
     for x, y in BED_MOUNTS:
         b -= countersink_z(x, y, Z_BED + T_BED, T_BED, CSK["M4"][0], clearance_hole("M4"))
     return b
@@ -583,9 +610,9 @@ def carriage_plate_local(z_blk):
 
 
 def deck_shape():
-    """3.175 mm 6061 deck on the square: flush with its outer faces, ten M5 holes over the members' top slots, and one
-    hole per bed stud: stud 0 a fitted 4.3 mm hole (locates the bed), stud 1 a 4.3 mm slot pointing at stud 0, studs 2 and
-    3 oversize (5.5 mm), so the heated plate grows without bending its studs."""
+    """3.175 mm 6061 deck on the square: flush with its outer faces, twelve M5 holes over the members' top slots (one
+    beside each bed stud), and one hole per bed stud: stud 0 a fitted 4.3 mm hole (locates the bed), stud 1 a 4.3 mm slot
+    pointing at stud 0, stud 2 oversize (5.5 mm), so the heated plate grows without bending its studs."""
     z0, z1 = Z_SQT, Z_DECK1
     s = Pos(0, BED_CY, z0) * extrude(RectangleRounded(2 * SQ_X, SQ_Y1 - SQ_Y0, 4.0), T_DECK)
     for x, y in DECK_BOLTS:
@@ -599,7 +626,8 @@ def deck_shape():
 
 
 DECK_BOLTS = ([(sx * (SQ_X - 10.0), BED_CY + dy) for sx in (-1, 1) for dy in (-100.0, 0.0, 100.0)]
-              + [(sx * 55.0, y) for sx in (-1, 1) for y in (SQ_Y0 + 10.0, SQ_Y1 - 10.0)])
+              + [(x, SQ_Y0 + 10.0) for x in (-LEV_X, 0.0, LEV_X)]                       # one straight outboard of each front stud
+              + [(BED_CX + dx, SQ_Y1 - 10.0) for dx in (-55.0, 0.0, 55.0)])           # one straight outboard of the rear stud
 # the three guides: (name, rail-base point on the wall (x, y), inward normal, frame rails the upright stands between)
 GUIDES = [("left", (-WALL_X, UP_S_Y), (1.0, 0.0, 0.0), "left"), ("right", (WALL_X, UP_S_Y), (-1.0, 0.0, 0.0), "right"),
           ("rear", (UP_R_X, Y_FACE), (0.0, -1.0, 0.0), "back")]
@@ -607,21 +635,29 @@ GUIDES = [("left", (-WALL_X, UP_S_Y), (1.0, 0.0, 0.0), "left"), ("right", (WALL_
 NUTS = [("", 0.0, LS_Y, 0.0, "sq_rear"), ("_fl", -FS_X, FS_Y, 90.0, "sq_left"), ("_fr", FS_X, FS_Y, -90.0, "sq_right")]
 
 
-def tool_plate_outline(y0, y1):
+def tool_plate_outline(y0, y1, striker=True):
     box = lambda x0, x1, z0, z1: bx(x0, x1, y0, y1, Z_BEAM + z0, Z_BEAM + z1)
+    # v10: centred on the X block; the Roto, and with it the duct's tab, sit C_NOZ to the left, so the tab ends at the
+    # plate's right edge. No notch at the left edge (v9's cleared the X switch) and no lightening window (the Roto's
+    # upper screw is there now). FRONT plate: a striker tab on the right edge works the X switch on the right Y plate's
+    # land. REAR plate: its upper right corner is cut away instead, where the Roto's motor lead now leaves towards it (the
+    # connector, 0.7 mm inside the plate's width, needs 12 mm in front of it for its plug).
     tp = box(-TPX, TPX, TP_Z0, TP_Z1) + box(*TAB_R)
     r = 3.0
-    tp -= box(-TPX - 1.0, -TPX + TP_NOTCH[0], TP_Z0 - 1.0, TP_NOTCH[1])
-    tp += fillet_y(-TPX + TP_NOTCH[0], Z_BEAM + TP_NOTCH[1], -1, -1, r, y0, y1)
     tp += fillet_y(TAB_R[0], Z_BEAM + TP_Z0, -1, -1, r, y0, y1)
-    tp += fillet_y(TPX, Z_BEAM + TP_Z0, 1, 1, r, y0, y1)
-    # lightening window above the belt bracket's bolts
-    tp -= Pos(-6.0, (y0 + y1) / 2, Z_BEAM + 29.6) * Rot(90, 0, 0) * extrude(RectangleRounded(22.0, 6.4, 3.0), (y1 - y0) / 2, both=True)
+    if striker:
+        tp += box(TPX - 1.0, STRIKER[0], STRIKER[1], STRIKER[2])
+        tp += fillet_y(TPX, Z_BEAM + STRIKER[1], 1, -1, 1.5, y0, y1)
+        rel = LEAD_RELIEF_F
+    else:
+        rel = LEAD_RELIEF
+    tp -= box(rel[0], STRIKER[0] + 1.0, rel[1], TP_Z1 + 1.0)
+    tp += fillet_y(rel[0], Z_BEAM + rel[1], 1, 1, 2.0, y0, y1)
     return tp
 
 
 ROTO_HOLES = lambda: [(ROTO_O[0], ROTO_O[2]), (ROTO_O[0] + ROTO_H2[0], ROTO_O[2] + ROTO_H2[2])]
-BRK_Z = 20.25                          # belt bracket bolts, from Z_BEAM
+BRK_Z = 27.25                          # belt bracket bolts, from Z_BEAM (v10: 7 mm higher with the belt)
 
 
 def tool_plate_front_shape():
@@ -647,7 +683,7 @@ def tool_plate_rear_shape():
     the belt bracket's nuts (they bear on the front plate) and clear the PEM nuts' heads; the Roto's flat side sits on
     its rear face."""
     y0, y1 = YB0 + R_TPF + T_TPF, YB0 + R_TPR
-    tp = tool_plate_outline(y0, y1)
+    tp = tool_plate_outline(y0, y1, striker=False)
     for x in (-10, 10):
         for z in (-10, 10):
             tp -= Pos(x, (y0 + y1) / 2, Z_BEAM + z) * ycyl(3.25, T_TPR)
@@ -727,11 +763,11 @@ def probe_mount_shape():
     for sx in (-1, 1):
         a += bx(sx * 10.4, sx * PM_X, y1, ye - 6.0, z1, z1 + 9.0)
     a -= bx(-10.2, 10.2, y0, y1, z1, z1 + 6.6)
-    a -= Pos(PRB_X, YB0 + PRB_Y, (z0 + z1) / 2) * Cylinder(13.0 / 2, z1 - z0)
+    a -= Pos(0.0, YB0 + PRB_Y, (z0 + z1) / 2) * Cylinder(13.0 / 2, z1 - z0)
     for x, z in ROTO_HOLES():
-        a -= Pos(x, (y0 + y1) / 2, z) * ycyl(6.6 / 2, PM_TP)
-        a -= Pos(x, y1 + 2.5, z) * ycyl(4.6, 5.0)        # relief round each screw's washer and head (the probe clamp's cheek)
-    return a
+        a -= Pos(x - NOZ_X, (y0 + y1) / 2, z) * ycyl(6.6 / 2, PM_TP)
+        a -= Pos(x - NOZ_X, y1 + 2.5, z) * ycyl(4.6, 5.0)        # relief round each screw's washer and head (the probe clamp's cheek)
+    return Pos(NOZ_X, 0, 0) * a          # drawn about the nozzle's X, which is NOZ_X in the machine (v10)
 
 
 USE_CUTOFFS = True
@@ -769,29 +805,44 @@ def build_electrical(d: Design) -> Electrical:
                            "builder_work": "crimp M5 ring terminals; scratch through the anodising under the serrated washer"}))
     zt = Z_TRAY + 8.0
     XL, ZL = -147.0, FZ - 6.0
-    P1 = (147.4, 146.0, FZ + 2.0)
+    # v10: the toolhead now reaches the right top rail's inner face (2.4 mm) and the back rail (as before), so its loom is
+    # anchored on TOP of the top back rail and drops down that rail's outer face, not in the frame's inside corner
+    P1 = (118.0, 189.0, FZ + 12.0)
     yl = YB0 + R_TPR + ROTO_W + PM_T + 2.0
-    el.loom("toolhead", [Waypoint("xbody", (-10.0, yl, Z_BEAM + 32.0), clamp="probe_mount"),
-                         Waypoint("xbody", (23.0, yl, Z_BEAM + 32.0), clamp="probe_mount"),
-                         Waypoint("world", (147.8, 138.0, FZ + 6.0), clamp="frame_top_right"), Waypoint("world", P1)],
-            flex_length={1: 460.0})
-    el.loom("drop_right", [("world", P1), ("world", (146.5, 153.0, FZ - 10.0)), ("world", (145.5, 156.0, FZ - 26.0)),
-                           ("world", (145.0, 158.0, FZ - 46.0)), ("world", (145.0, 168.0, FZ - 74.0)),
-                           ("world", (145.0, 170.0, 60.0)), ("world", (145.0, 150.0, 34.0))])
+    el.loom("toolhead", [Waypoint("xbody", (NOZ_X - 10.0, yl, Z_BEAM + 32.0), clamp="probe_mount"),
+                         Waypoint("xbody", (NOZ_X + 23.0, yl, Z_BEAM + 32.0), clamp="probe_mount"),
+                         Waypoint("world", (118.0, 175.0, FZ + 12.0), clamp="frame_top_back"), Waypoint("world", P1)],
+            flex_length={1: 480.0})
+    # over the back rail's rear edge on a 30 mm radius (the 10 mm bundle needs 26), down the outside of the back wall (beside the
+    # right Y motor), and in again over the bottom back rail on the same radius
+    arc = lambda yc, zc_, angs, xs: [("world", (x, yc + 30.0 * math.cos(math.radians(a)), zc_ + 30.0 * math.sin(math.radians(a)))) for a, x in zip(angs, xs)]
+    el.loom("drop_right", [("world", P1)] + arc(189.0, FZ - 18.0, (60, 30, 0), (114.0, 110.0, 108.0))
+            + [("world", (108.0, 219.0, 64.0))] + arc(189.0, 64.0, (-30, -60, -90), (108.0, 110.0, 114.0))
+            + [("world", (118.0, 172.0, 33.5)), ("world", (130.0, 158.0, 33.5)), ("world", (145.0, 150.0, 34.0))])
     el.loom("tray_right", [("world", (145.0, 150.0, 34.0)), ("world", (147.0, 60.0, zt)), ("world", (147.0, -40.0, zt))])   # v9: inboard of the right upright
     el.loom("back", [("world", (140.0, 152.0, 30.0)), ("world", (130.0, 160.0, 12.0)), ("world", (66.0, 160.0, 12.0)),
                      ("world", (10.0, 140.0, 32.0))])
     el.loom("gantry", [Waypoint("ybody", (-142.0, YB0 + PL_Y0 + 5.0, Z_PLATE - 1.5), clamp="y_plate_left"),
                        Waypoint("world", (XL - 2.0, FRONT_Y + 13.0, FZ - 12.0), clamp="frame_top_left"), ("world", (XL, -124.0, ZL))],
             flex_length={0: 270.0})
-    el.loom("top_left", [("world", (XL, -118.0, ZL)), ("world", (XL, 136.0, ZL))])
+    # v10: along the left top rail the loom lies IN the rail's inner T-slot (x -152.5): the Roto now passes 2 mm from that face
+    el.loom("top_left", [("world", (XL, -122.0, ZL)), ("world", (-152.5, -110.0, FZ)), ("world", (-152.5, 136.0, FZ))])
+    # v10: the X switch is on the right Y plate; its lead runs in the X beam's top slot to the left end, where the gantry loom leaves
+    zbm = Z_PLATE + T_YP + 2.5
+    el.loom("beam", [Waypoint("ybody", (-142.0, YB0 + PL_Y0 + 5.0, Z_PLATE - 1.5), clamp="y_plate_left"),
+                     Waypoint("ybody", (-96.0, YB0 - 16.0, Z_BEAM + 6.0), clamp="x_beam"),
+                     Waypoint("ybody", (-90.0, YB0, Z_BEAM + 7.5), clamp="x_beam"),
+                     Waypoint("ybody", (114.0, YB0, Z_BEAM + 7.5), clamp="x_beam"),
+                     Waypoint("ybody", (118.0, YB0 + 7.5, zbm), clamp="y_plate_right"),
+                     Waypoint("ybody", (142.0, YB0 + 8.0, zbm), clamp="y_plate_right"),
+                     Waypoint("ybody", (150.0, YB0 + 24.0, zbm), clamp="y_plate_right")])
     el.loom("drop_left", [("world", (XL, -120.0, ZL)),
                           ("world", (-143.0, -140.0, FZ - 24.0)), ("world", (-143.0, -150.0 - FRONT_EXT, FZ - 60.0)),
                           ("world", (-143.0, FRONT_Y, FZ - 90.0)),
                           ("world", (-143.0, FRONT_Y, 70.0)), ("world", (-140.0, FRONT_Y + 4.0, 26.0))])
     el.loom("front", [("world", (-140.0, FRONT_Y + 4.0, 26.0)), ("world", (60.0, FRONT_Y + 4.0, 26.0)), ("world", (72.0, -142.0, zt))])
-    el.loom("bed", [Waypoint("zbody", (-40.0, SQ_Y1 - 21.0, Z_SQ + 5.0), clamp="sq_rear"),
-                    Waypoint("zbody", (-40.0, SQ_Y1 - 21.0, Z_SQB - 2.0), clamp="sq_rear"),
+    el.loom("bed", [Waypoint("zbody", (-62.0, SQ_Y1 - 21.0, Z_SQ + 5.0), clamp="sq_rear"),
+                    Waypoint("zbody", (-62.0, SQ_Y1 - 21.0, Z_SQB - 2.0), clamp="sq_rear"),
                     Waypoint("world", (-40.0, TRAY_Y1 - 1.0, Z_TRAY + 3.0), clamp="electronics_tray")], flex_length={1: 365.0})
     el.loom("mains", [("world", (-115.0, 9.0, zt)), ("world", (-108.0, 44.0, zt)), ("world", (-100.0, 84.0, zt))])
     tool, left = ["tray_right", "drop_right", "toolhead"], ["front", "drop_left"]
@@ -827,8 +878,8 @@ def build_electrical(d: Design) -> Electrical:
             note="the sensor's brown lead; runs in the toolhead loom with the probe's signal pair")
     el.wire("extruder motor", "control_board.M4", "extruder.coils", 24, conductors=4, via=tool)
     el.wire("X motor", "control_board.M0", "x_motor.coils", 24, conductors=4, via=left + ["gantry"])
-    el.wire("X endstop", "control_board.STOP0", "x_endstop.out", 26, conductors=3, via=left + ["gantry"],
-            note="STOP0 (DIAG0) header, its DIAG jumper removed")
+    el.wire("X endstop", "control_board.STOP0", "x_endstop.out", 26, conductors=3, via=left + ["gantry", "beam"],
+            note="STOP0 (DIAG0) header, its DIAG jumper removed; in the X beam's top slot from the left end to the switch on the right Y plate")
     el.wire("Y endstop", "control_board.STOP1", "y_endstop.out", 26, conductors=3, via=["tray_right", "drop_right"],
             note="STOP1 (DIAG1) header, its DIAG jumper removed")
     el.wire("Y motor left", "control_board.M2", "y_motor_l.coils", 24, conductors=4, via=left + ["top_left"],
@@ -925,7 +976,7 @@ def build_z_mount(d, tag, x0, y0, turn, posts, rail, on_tray):
 
 
 def build_frame_z():
-    d = Design("printer_v9", envelope=ENVELOPE, base="frame_bot_left")
+    d = Design("printer_v10", envelope=ENVELOPE, base="frame_bot_left")
     d.manufacturing = {"shop": "sendcutsend", "sheet": {"method": "laser"},
                        "printer": {"build_volume": (220.0, 220.0, 220.0), "nozzle": 0.4},
                        "print_settings": dict(PRINT_ABS)}
@@ -984,6 +1035,10 @@ def build_frame_z():
         # the mount floats along the wall's normal on the plate's web (tolerance verifier: mechloop.tolerance._rail_set)
         E_, G_ = MATERIALS[AL].E, MATERIALS[AL].E / (2 * (1 + MATERIALS[AL].nu))
         car.meta["guide_float"] = {"axis": tuple(nv), "stiffness_n_per_mm": round(K_FLEX, 1), "range_mm": FLEX_RANGE,
+                                   # v10: the web itself, for the allowable screw tilt (bed_support.tilt_allowance): its
+                                   # stress when the carrier is tilted against the block. kt: a flat bar stepping from
+                                   # 50 to 24 mm with 3 mm radii, in bending (Peterson's charts give about 1.7; ASSUMED)
+                                   "web": {"length_mm": L_FLEX, "width_mm": CP_WEB, "thickness_mm": T_CP, "material": AL, "kt_in_plane": 1.7},
                                    "by": f"the {L_FLEX:g} x {CP_WEB:g} x {T_CP:g} mm web of carriage_plate_{nm}",
                                    # the web as a beam between block and square, N.mm/rad (E I / L, G J / L): the bed-support
                                    # model puts these in series with the block's own moment stiffness
@@ -1018,9 +1073,9 @@ def build_frame_z():
             add_corner_bracket(d, f"sq_bracket_{n[0]}{sn[0]}", f"sq_{sn}", f"sq_{n}", (sx * (SQ_X - 20.0), yc - sy * 10.0, Z_SQ),
                                (0, -sy, 0), (-sx, 0, 0), body="zbody")
     d.add("z_deck", deck_shape(), material=AL, body="zbody", process="sheet", meta={"finish": "bare", "description": (
-        "Deck: 3.175 mm (1/8 in) 6061 sheet on top of the 2020 square, ten M5 into T-nuts. It closes the rectangle in shear, "
-        "shields the carrier from the heater, and is what the bed is levelled against: the four bed studs pass through it "
-        "(one fitted hole, one slot, two oversize) and the thumb nuts bear on its underside.")})
+        "Deck: 3.175 mm (1/8 in) 6061 sheet on top of the 2020 square, twelve M5 into T-nuts. It closes the rectangle in shear, "
+        "shields the carrier from the heater, and is what the bed is levelled against: the three bed studs pass through it "
+        "(one fitted hole, one slot, one oversize) and the thumb nuts bear on its underside.")})
     for i, (x, y) in enumerate(DECK_BOLTS):
         member = ("sq_left" if x < 0 else "sq_right") if abs(abs(x) - (SQ_X - 10.0)) < 1e-6 else ("sq_front" if y < BED_CY else "sq_rear")
         add_screw(d, f"z_deck_bolt_{i}", "M5", 10, at=(x, y, Z_DECK1), body="zbody", threads_into=member, tnut=True,
@@ -1069,30 +1124,31 @@ def build_frame_z():
                                                        f"sideways) so the carrier cannot lift off the nut. " + how)
     d.bom_extra("NYLOC-M2.5 (nut pins, in place of the hex nuts drawn)", 3, 0.05)
 
-    # ================= bed (v9): MIC-6 plate, 257 mm sheet, four sprung levelling studs ==========
+    # ================= bed (v10): MIC-6 plate, 235 mm sheet, three sprung levelling studs ==========
     bed_own = BED * BED * T_BED * MATERIALS[CAST].density * 1e-9
     d.add("bed_plate", round_profile(bed_shape_(), 2.0, T_BED), material=CAST, body="zbody", mass_kg=bed_own + PAYLOAD_KG, process="sheet",
-          meta={"finish": "bare", "note": "MIC-6 6.35 mm, laser cut at SendCutSend, faces as cast; four 90-degree countersinks for M4 "
+          meta={"finish": "bare", "note": "MIC-6 12.7 mm, laser cut at SendCutSend, faces as cast; three 90-degree countersinks for M4 "
                                           "(8.96 mm) from the top face"})
-    mag = Stock(Pos(0, 0, T_MAG / 2) * Box(SHEET, SHEET, T_MAG), "BED-MAGNET-PEI257-BASE-STANDIN",
-                "Magnetic base supplied with the 257 x 257 PEI sheet (stand-in: its thickness is not published; 1.5 mm, as two other "
-                "sellers' kits state, and 3.7 g/cm3 assumed; adhesive back; the seller's 120 degC is for the plate)",
+    mag = Stock(Pos(0, 0, T_MAG / 2) * Box(SHEET, SHEET, T_MAG), "BED-MAGNET-PEI235-BASE-STANDIN",
+                "Magnetic base supplied with the 235 x 235 PEI sheet (stand-in: its thickness is not published; 1.5 mm, as two other "
+                "sellers' kits state, and 3.7 g/cm3 assumed; adhesive back; the 120 degC is the 257 mm sheet's seller's figure)",
                 SHEET * SHEET * T_MAG * 3.7e-6, material="rubber_gt2", cost_usd=0.0,
-                ratings={"max_temp_c": 120.0, "max_temp_basis": "seller's 'maximum print bed temperature' for the sheet, unverified for the base"})
-    place(d, "bed_magnet", mag, Location((0, BED_CY, Z_BED + T_BED)), body="zbody")
-    place(d, "bed", print_sheet_pei257(), Location((0, BED_CY, Z_BED + T_BED + T_MAG)), body="zbody")
+                ratings={"max_temp_c": 120.0, "max_temp_basis": "a seller's 'maximum print bed temperature' for a sheet of this kind, unverified for the base"})
+    place(d, "bed_magnet", mag, Location((BED_CX, BED_CY, Z_BED + T_BED)), body="zbody")
+    place(d, "bed", print_sheet_pei235(), Location((BED_CX, BED_CY, Z_BED + T_BED + T_MAG)), body="zbody")
     d.join("bed_magnet", "bed_plate", "bond")
     d.join("bed", "bed_magnet", "magnet")
-    place(d, "bed_heater", bed_heater_pad(PAD_X, PAD_Y, BED_W), Location((0, BED_CY, Z_BED), (0, 0, 180)), body="zbody")
+    place(d, "bed_heater", bed_heater_pad(PAD_X, PAD_Y, BED_W), Location((BED_CX, BED_CY, Z_BED), (0, 0, 180)), body="zbody")
     d.join("bed_heater", "bed_plate", "bond")
-    place(d, "bed_tco", thermal_fuse(133.0, 109.0, 15.0), Location((-45.0, BED_CY + PAD_Y / 2 + 12.0, Z_BED - 2.0)), body="zbody")
+    place(d, "bed_tco", thermal_fuse(133.0, 109.0, 15.0), Location((BED_CX - 55.0, BED_CY + PAD_Y / 2 + 7.0, Z_BED - 2.0)), body="zbody")
     d.join("bed_tco", "bed_plate", "bond")
-    for nm_, txt in (("bed_heater", "Silicone heater pad 190 x 180 mm, adhesive-backed, bonded to bed_plate's underside between the four studs (no fasteners)."),
-                     ("bed_magnet", "Magnetic base sheet of the 257 mm PEI plate, adhesive-backed, bonded to bed_plate's top face over the studs' heads (no fasteners)."),
-                     ("bed", "257 x 257 mm PEI spring-steel print sheet, held on bed_magnet by magnetism alone: lift it off to remove prints."),
+    for nm_, txt in (("bed_heater", f"Silicone heater pad {PAD_X:g} x {PAD_Y:g} mm, adhesive-backed, bonded to bed_plate's underside between the front studs "
+                                    "and the rear stud (no fasteners): it covers the print area's whole width and all but 3.75 mm of its depth at each end."),
+                     ("bed_magnet", "Magnetic base sheet of the 235 mm PEI plate, adhesive-backed, bonded to bed_plate's top face over the studs' heads (no fasteners)."),
+                     ("bed", "235 x 235 mm PEI spring-steel print sheet, held on bed_magnet by magnetism alone: lift it off to remove prints."),
                      ("bed_tco", "Thermal fuse, bonded to bed_plate's underside with high-temperature adhesive (thermal contact), in series with the heater."),
-                     ("bed_plate", "MIC-6 bed plate, 265 x 265 x 6.35 mm: it floats 18.8 mm above the deck on four M4 studs (countersunk screws from "
-                                   "its top face, each locked to it by a nut underneath), pushed up by four die springs against four thumb "
+                     ("bed_plate", f"MIC-6 bed plate, {BED:g} x {BED:g} x {T_BED:g} mm: it floats {GAP:g} mm above the deck on three M4 studs (countersunk screws from "
+                                   "its top face, each locked to it by a nut underneath), pushed up by three die springs against three thumb "
                                    "nuts under the deck; the heater pad is bonded under it, the magnetic base on top.")):
         d.get(nm_).meta["description"] = txt
     # each levelling point, top to bottom: M4 x 35 countersunk screw (fully threaded) from the plate's top face; M4 washer
@@ -1121,16 +1177,17 @@ def build_frame_z():
                "sliding free: held against the deck's underside by the spring's preload, slips as the plate grows")
         add_thumb_nut(d, th, "M4", (x, y, Z_SQT - W4L), (0, 0, -1), body="zbody", screw=p)
         d.join(th, dw, "clamp")
-        hole = ("a fitted 4.3 mm hole (this stud locates the bed)" if i == 0 else "a 4.3 mm slot pointing at stud 0 (holds the bed from turning)"
-                if i == 1 else "a 5.5 mm oversize hole (free)")
+        hole = ("a fitted 4.3 mm hole (this stud, front left, locates the bed)" if i == 0 else
+                "a 4.3 mm slot pointing at stud 0 (front right: holds the bed from turning)" if i == 1 else "a 5.5 mm oversize hole (rear: free)")
         desc = (f"Bed levelling point {i}: an M4 x {STUD_L:g} countersunk screw from the bed's top face (head 0.7 mm below it, under the "
                 f"magnetic base) is locked to the plate by a washer and nut underneath, so it is a fixed stud. A die spring "
                 f"(DJ-8X20YCS, {SPRING_K} N/mm, compressed {20 - SPRING_H:g} mm: {SPRING_K * (20 - SPRING_H):.0f} N) between that nut and the "
                 f"deck pushes the bed up; the stud passes the deck through {hole} and a large washer and knurled thumb nut under "
-                f"the deck hold it down. Turn the thumb nut to level: 0.7 mm per turn, +/-{LEVEL_RANGE:g} mm.")
+                f"the deck hold it down. Turn the thumb nut to level: 0.7 mm per turn, +/-{LEVEL_RANGE:g} mm. Three points: they set the bed's "
+                f"plane and cannot twist the plate.")
         for nm_ in (p, jam, spr, th):
             d.get(nm_).meta["description"] = desc
-    d.join("bed_plate", "z_deck", "four sprung levelling studs")
+    d.join("bed_plate", "z_deck", "three sprung levelling studs")
     # ================= Z drive: three lead-screw motors, each on its own laser-cut plate ======
     mounts = []
     rear_posts = [(-MP_POST_DY, LS_Y), (MP_POST_DY, LS_Y)]                           # top slot of the bottom back rail, under the motor
@@ -1175,8 +1232,8 @@ def build() -> Design:
     d, zs, bed_own, mounts, mount_parts = build_frame_z()
     # ================= Y axis ====================================================
     zp0, zp1 = Z_PLATE, Z_PLATE + T_YP
-    X_ES_X0 = -22.7 - TX - ES_TRIG
-    X_ES_Y0 = YB0 + X_ES_Y + ES_SIDE
+    X_ES_X0 = X_CAR_MAX - ES_OT_X + STRIKER[0] + ES_TRIG      # X switch (v10: at the right end): its lever is worked by the tool plates' striker tab
+    X_ES_Y0 = YB0 + X_ES_Y
     PC = YB0 - 1.55
     YA0, YA1 = PC + BELT_SLOTS[0] - SLOT_W / 2, PC + BELT_SLOTS[-1] + SLOT_W / 2
     for sx, n in ((-1, "left"), (1, "right")):
@@ -1185,10 +1242,17 @@ def build() -> Design:
             add_screw(d, f"y_rail_{n}_screw_{i}", "M3", 8, at=(hx, hy, hz + 3.5), threads_into=f"frame_top_{n}", tnut=True)
         place(d, f"y_carriage_{n}", mgn12h_carriage(), Location((sx * RAIL_X, YB0, Z_RAIL), (0, 0, 90)), body="ybody", guides="y")
         x_out = YB_X + BWY / 2 + 0.5 + 4.8
-        x_in = YP_IN if sx > 0 else -LAND_X[1]
-        plate = (bx(sx * x_in, sx * x_out, YB0 + YP_NOTCH[1], YB0 + PL_Y1, zp0, zp1)
-                 + bx(sx * YP_NOTCH[0], sx * x_out, YB0 + PL_Y0, YB0 + YP_NOTCH[1], zp0, zp1))
+        # v10: over the beam the plate ends YP_REAR behind the beam's centre line, in front of the X block's path, so the block
+        # and the tool plates run on to the end of the 288 mm rail. From X_STOP outward the plate reaches back as before and
+        # a tab reaches further, to STOP_Y1: its inner edge is the hard stop for the tool plates' edge. The right plate's tab
+        # carries on as a land (inner edge beyond the Roto's reach) for the X switch; the land's rear edge works the Y switch.
+        plate = (bx(sx * YP_IN, sx * x_out, YB0 + YP_NOTCH[1], YB0 + YP_REAR, zp0, zp1)
+                 + bx(sx * X_STOP, sx * x_out, YB0 + YP_REAR, YB0 + PL_Y1, zp0, zp1)
+                 + bx(sx * YP_NOTCH[0], sx * x_out, YB0 + PL_Y0, YB0 + YP_NOTCH[1], zp0, zp1)
+                 + bx(sx * X_STOP, sx * TAB_X1, YB0 + PL_Y1, YB0 + STOP_Y1, zp0, zp1))
         plate += fillet_z(sx * YP_NOTCH[0], YB0 + YP_NOTCH[1], -sx, -1, 2.0, zp0, zp1)
+        plate += fillet_z(sx * TAB_X1, YB0 + PL_Y1, sx, 1, 2.0, zp0, zp1)
+        plate += fillet_z(sx * X_STOP, YB0 + YP_REAR, -sx, 1, 1.5, zp0, zp1)
         for dy in BELT_SLOTS:
             plate -= slot_z(sx * YB_X, PC + dy, 0.0, (BWY + 1.0 - SLOT_W) / 2, SLOT_W, zp0, zp1)
         for x in (-10, 10):
@@ -1197,11 +1261,11 @@ def build() -> Design:
         plate += bx(sx * (YP_IN - 9.0), sx * YP_IN, YB0 + YP_NOTCH[1], YB0 + 9.5, zp0, zp1)
         for xb in BEAM_BOLT_X:
             plate -= slot_z(sx * xb, YB0, 0.0, 1.5, clearance_hole("M5"), zp0, zp1)
-        if sx < 0:
-            plate += bx(LAND_X[0], LAND_X[1], YB0 + PL_Y1, YB0 + LAND_Y1, zp0, zp1)
-            plate += fillet_z(LAND_X[0], YB0 + PL_Y1, -1, 1, 2.0, zp0, zp1)
+        if sx > 0:
+            plate += bx(LAND_X0, TAB_X1, YB0 + STOP_Y1, YB0 + LAND_Y1, zp0, zp1)
+            plate += fillet_z(LAND_X0, YB0 + STOP_Y1, -1, 1, 1.5, zp0, zp1)
             for dy in (-7.5, 7.5):
-                plate -= slot_z(X_ES_X0 - 4.2, X_ES_Y0 + dy, 0.0, ES_SLOT, SH3, zp0, zp1)
+                plate -= slot_z(X_ES_X0 + 4.2, X_ES_Y0 + dy, 0.0, ES_SLOT, SH3, zp0, zp1)
         sheet(d, f"y_plate_{n}", plate, AL, body="ybody")
         for i, (x, y) in enumerate([(-10, -10), (-10, 10), (10, -10), (10, 10)]):
             add_screw(d, f"y_plate_{n}_screw_{i}", "M3", 8, at=(sx * RAIL_X + x, YB0 + y, Z_PLATE + T_YP), body="ybody", threads_into=f"y_carriage_{n}")
@@ -1211,19 +1275,14 @@ def build() -> Design:
     # ================= X axis ====================================================
     place(d, "x_beam", extrusion_2020(BEAM_L), Location((0, YB0, Z_BEAM)), body="ybody")
     rear = lambda x: Location(Plane(origin=(x, YB0 + 10.0, Z_BEAM), x_dir=(1, 0, 0), z_dir=(0, 1, 0)))
-    xr = place(d, "x_rail", mgn12_rail(250), rear(0.0), body="ybody")
+    # v10: the rail is as long as the beam (HIWIN MGNR12R cut to 288 mm). v9's two rail-stop plates are gone: the hard stops
+    # are the Y plates' tabs against the tool plates' edges
+    xr = place(d, "x_rail", mgn12_rail(X_RAIL_L), rear(0.0), body="ybody")
+    xr.meta["description"] = (f"X rail: HIWIN MGNR12R cut to {X_RAIL_L:g} mm (order to length, +0 / -1 mm; HIWIN's catalogue allows any length to "
+                              f"2000 mm with 5 to 20 mm end distances; this one has 11 holes and 19 mm ends), flush with the 288 mm beam's ends. "
+                              f"Not a stock length.")
     for i, (hx, hy, hz) in enumerate(xr.meta["interfaces"]["mount_holes_m3"][::RAIL_SCREW_STEP]):
         add_screw(d, f"x_rail_screw_{i}", "M3", 8, at=(hx, hy + 3.5, hz), direction=(0, -1, 0), body="ybody", threads_into="x_beam", tnut=True)
-    f0, b0, n0, b1 = STOP_X
-    for sx, n in ((-1, "left"), (1, "right")):
-        y0, y1 = YB0 + 10.0, YB0 + 10.0 + G32
-        st = bx(sx * b0, sx * b1, y0, y1, Z_BEAM - 10.0, Z_PLATE)
-        st -= bx(sx * (b0 - 1.0), sx * n0, y0, y1, Z_BEAM + 1.0, Z_PLATE + 1.0)
-        st += bx(sx * f0, sx * b0, y0, y1, Z_BEAM - 10.0, Z_BEAM - 6.0)
-        st -= Pos(sx * (n0 + b1) / 2, (y0 + y1) / 2, Z_BEAM) * ycyl(clearance_hole("M5") / 2, G32)
-        sheet(d, f"x_rail_stop_{n}", st, AL, body="ybody", r=0.6)
-        add_screw(d, f"x_rail_stop_{n}_bolt", "M5", 10, at=(sx * (n0 + b1) / 2, y1, Z_BEAM), direction=(0, -1, 0), body="ybody",
-                  threads_into="x_beam", tnut=True, clamps=(f"x_rail_stop_{n}",), washer=True)
     place(d, "x_carriage", mgn12h_carriage(), rear(0.0), body="xbody", guides="x")
     # ---- toolhead: guide block -> front plate + rear plate -> Roto
     yf, yrr = YB0 + R_TPF, YB0 + R_TPR
@@ -1247,7 +1306,10 @@ def build() -> Design:
         d.join(f"probe_mount_sleeve_{i}", "probe_mount", "compression sleeve: the holder is located on it, held between the Roto's face "
                "and the screw's washer with 0.6 mm play, not clamped")
     seat = d.get("extruder").meta["interfaces"]["hotend_seat"][0]
-    place(d, "hotend", hotend_revo(40, 24.0, 0.4), Location(tuple(seat), (0, 0, 190)), body="xbody")
+    # v10: the HeaterCore's lead sleeve points FORWARD, under the tool plates (2.2 mm) and the X block (4.7 mm). v9: to the
+    # left, 14 mm beyond the Roto's side, where it would now meet the top side rail before the Roto does. Not backward:
+    # anything behind the nozzle within the Roto's width is inside the unshielded probe's 40 mm metal-free zone
+    place(d, "hotend", hotend_revo(40, 24.0, 0.4), Location(tuple(seat), (0, 0, -90)), body="xbody")
     d.allow_overlap("hotend", "extruder")
     d.join("hotend", "extruder", "clamp")
     d.get("hotend").meta["description"] = "E3D Revo hotend, held in the Roto's hotend seat by the Roto's own clamp (no separate fasteners)."
@@ -1301,40 +1363,55 @@ def build() -> Design:
             bolt_nut(d, f"x_belt_clamp_screw_{k}", "M3", 10, (xx, YB0 + yy, z_leg + t_b), (0, 0, -1), "xbody", ("x_belt_bracket", "x_belt_clamp"),
                      nut_at=(xx, YB0 + yy, Z_XL - 0.7 - G20)); k += 1
     d.join("x_belt_clamp", "x_belt_bracket", "the belt ends between them")
-    # motor on a flat 3.175 mm 6061 plate, idler on a bent 5052 plate with a forward lug; tension: an M3 jack screw in a
-    # PEM nut of a bent 5052 anchor pushes the lug (both plates slide on their T-nuts while the bolts are slack)
+    # v10: motor and idler stand OUTBOARD of the X block's travel, over the Y plates (pulley centres at -141.8 / +142.8; v9
+    # +/-118), so the belt clamp runs to the end of the rail. Each mount is still a plate on the beam's front face (two M5
+    # in T-nuts, inside the beam's ends) with a wing that reaches outward above the Y plate and the Y block's screw heads.
+    # Motor: flat 4.75 mm 6061 (v9 3.175; the motor now overhangs the beam's end). Idler: bent 5052 with a forward lug;
+    # tension: an M3 jack screw in a PEM nut of a bent 5052 anchor pushes the lug (both plates slide on their T-nuts while
+    # the bolts are slack)
+    MTM = G48
     yb_f, yb_r = YB0 - 10.0 - MT, YB0 - 10.0
+    yb_fm = yb_r - MTM
     fwd = lambda x, y, z: Location(Plane(origin=(x, y, z), x_dir=(1, 0, 0), z_dir=(0, 1, 0)))
-    mm = bx(XM_X - 25.0, XM_X + 25.0, yb_f, yb_r, Z_BEAM - 8.0, XD_Z + 23.0)
-    mm -= Pos(XM_X, (yb_f + yb_r) / 2, XD_Z) * ycyl(11.5, MT)
+    BEAM_END = BEAM_L / 2 - 1.0                       # 143: the mounts' lower part ends 1 mm inside the beam's end
+    WING_Z0 = zp1 + 3.0 + 1.5                         # 426.25: 1.5 mm above the Y blocks' M3 screw heads on the Y plates
+    XM_IN, XM_OUT = -100.0, XM_X - 23.5
+    mm = bx(-BEAM_END, XM_IN, yb_fm, yb_r, Z_BEAM - 8.0, XD_Z + 23.0) + bx(XM_OUT, -BEAM_END, yb_fm, yb_r, WING_Z0, XD_Z + 23.0)
+    mm += fillet_y(-BEAM_END, WING_Z0, -1, -1, 3.0, yb_fm, yb_r)
+    mm -= Pos(XM_X, (yb_fm + yb_r) / 2, XD_Z) * ycyl(11.5, MTM)
     for x in (-15.5, 15.5):
         for z in (-15.5, 15.5):
-            mm -= Pos(XM_X + x, (yb_f + yb_r) / 2, XD_Z + z) * ycyl(SH3 / 2, MT)
-    X_MOUNT_BOLTS = (-15.0, 15.0)
+            mm -= Pos(XM_X + x, (yb_fm + yb_r) / 2, XD_Z + z) * ycyl(SH3 / 2, MTM)
+    X_MOUNT_BOLTS = (-134.0, -108.0)
     for x in X_MOUNT_BOLTS:
-        mm -= Pos(XM_X + x, (yb_f + yb_r) / 2, Z_BEAM) * ycyl(clearance_hole("M5") / 2, MT)
+        mm -= Pos(x, (yb_fm + yb_r) / 2, Z_BEAM) * ycyl(clearance_hole("M5") / 2, MTM)
     sheet(d, "x_motor_mount", mm, AL, body="ybody")
-    place(d, "x_motor", nema17(34), fwd(XM_X, yb_f, XD_Z), body="ybody")
+    place(d, "x_motor", nema17(34), fwd(XM_X, yb_fm, XD_Z), body="ybody")
     place(d, "x_pulley", gt2_pulley(20, belt_width=BWX), fwd(XM_X, yb_r + X_PG, XD_Z), body="ybody")
     k = 0
     for x in (-15.5, 15.5):
         for z in (-15.5, 15.5):
+            # M3 x 8 with its head on the plate (no washer: 3.25 mm of thread in the motor's 4.5 mm holes)
             add_screw(d, f"x_motor_screw_{k}", "M3", 8, at=(XM_X + x, yb_r, XD_Z + z), direction=(0, -1, 0), body="ybody",
-                      threads_into="x_motor", clamps=("x_motor_mount",), washer=True); k += 1
+                      threads_into="x_motor", clamps=("x_motor_mount",)); k += 1
     for i, x in enumerate(X_MOUNT_BOLTS):
-        add_screw(d, f"x_motor_mount_bolt_{i}", "M5", 10, at=(XM_X + x, yb_f, Z_BEAM), direction=(0, 1, 0), body="ybody",
+        add_screw(d, f"x_motor_mount_bolt_{i}", "M5", 12, at=(x, yb_fm, Z_BEAM), direction=(0, 1, 0), body="ybody",
                   threads_into="x_beam", tnut=True, clamps=("x_motor_mount",), washer=True)
     d.join("x_pulley", "x_motor", "set_screw")
     zc_im = (Z_BEAM - 8.0 + XD_Z + 12.0) / 2
     w_im = XD_Z + 12.0 - (Z_BEAM - 8.0)
-    XIM_BOLTS = (XI_X - 8.0, XI_X + 15.0)
+    LUG_X = 100.0                                     # the idler plate's lug (its inboard end)
+    XIM_BOLTS = (112.0, 134.0)
     LUG = 22.0
     JACK_Z, JACK_Y = Z_BEAM + 12.0, yb_r - 15.0
-    im = bent_L(MT, R_B32, LUG, 50.0, w_im,
-                holes_b=[(25.0, XD_Z - zc_im, clearance_hole("M5"))] + [(xb - (XI_X - 25.0), Z_BEAM - zc_im, clearance_hole("M5")) for xb in XIM_BOLTS])
-    im_loc = Location(Plane(origin=(XI_X - 25.0, yb_r, zc_im), x_dir=(1, 0, 0), z_dir=(0, -1, 0)))
+    im = bent_L(MT, R_B32, LUG, BEAM_END - LUG_X, w_im,
+                holes_b=[(xb - LUG_X, Z_BEAM - zc_im, clearance_hole("M5")) for xb in XIM_BOLTS])
+    im_loc = Location(Plane(origin=(LUG_X, yb_r, zc_im), x_dir=(1, 0, 0), z_dir=(0, -1, 0)))
     im = im_loc * im
-    im -= bx(XI_X - 40.0, XI_X - 10.0, yb_f - 40.0, yb_r - MT - R_B32 - 0.5, Z_BEAM - 20.0, LUG_Z0)     # v8.2: lug starts at z 408
+    im += bx(BEAM_END - 1.0, XI_X + 9.7, yb_f, yb_r, WING_Z0, XD_Z + 12.0)                      # the wing over the Y plate
+    im += fillet_y(BEAM_END, WING_Z0, 1, -1, 3.0, yb_f, yb_r)
+    im -= Pos(XI_X, (yb_f + yb_r) / 2, XD_Z) * ycyl(clearance_hole("M5") / 2, MT)
+    im -= bx(LUG_X - 15.0, LUG_X + 15.0, yb_f - 40.0, yb_r - MT - R_B32 - 0.5, Z_BEAM - 20.0, LUG_Z0)     # v8.2: lug starts at z 408
     d.add("x_idler_mount", round_profile(im, 1.0, MT), material=AL_BEND, body="ybody", process="sheet", meta={"finish": "bare"})
     for i, x in enumerate(XIM_BOLTS):
         add_screw(d, f"x_idler_mount_bolt_{i}", "M5", 10, at=(x, yb_f, Z_BEAM), direction=(0, 1, 0), body="ybody",
@@ -1346,7 +1423,7 @@ def build() -> Design:
     add_nut(d, "x_idler_nut", "M5", at=(XI_X, yb_r + X_SP + I_H(BWX), XD_Z), direction=(0, 1, 0), body="ybody", screw="x_idler_bolt")
     d.join("x_idler", "x_idler_bolt", "axle")
     d.join("x_idler_spacer", "x_idler_mount", "clamp")
-    XA_FIN = XI_X - 25.0 - 8.0                          # anchor fin's outboard face
+    XA_FIN = LUG_X - 8.0                                # anchor fin's outboard face
     zc_xa = Z_BEAM + 6.0
     xa = bent_L(MT, R_B32, LUG, 34.0, 30.0, holes_a=[(zc_xa - JACK_Z, yb_r - JACK_Y, 4.27)],
                 holes_b=[(16.0, zc_xa - Z_BEAM, clearance_hole("M5")), (28.0, zc_xa - Z_BEAM, clearance_hole("M5"))])
@@ -1359,19 +1436,24 @@ def build() -> Design:
                   threads_into="x_beam", tnut=True, clamps=("x_tension_anchor",), washer=True)
     add_nut(d, "x_tension_nut", "M3", at=(XA_FIN, JACK_Y, JACK_Z), direction=(1, 0, 0), body="ybody")
     d.join("x_tension_nut", "x_tension_anchor", "PEM self-clinching nut (SendCutSend hardware service)")
-    add_screw(d, "x_tension_screw", "M3", 16, at=(XI_X - 25.0 - 16.0, JACK_Y, JACK_Z), direction=(1, 0, 0), body="ybody",
+    add_screw(d, "x_tension_screw", "M3", 16, at=(LUG_X - 16.0, JACK_Y, JACK_Z), direction=(1, 0, 0), body="ybody",
               threads_into="x_tension_nut")
     d.get("x_tension_screw").meta["torque_nm"] = 0.3
     d.join("x_tension_screw", "x_idler_mount", "jack screw bears on the lug")
     d.bom_extra("PEM-S-M3-1 (x and y tension anchors, Roto screws in the front tool plate; installed by SendCutSend)", 5, 0.4)
-    # X endstop: hangs under the left Y plate's land (slots + large washers)
+    # X endstop (v10): on TOP of the right Y plate's land, behind the tool plates' plane and outboard of the Roto's reach; the
+    # striker tab on the tool plates' right edge works its lever at the right end of the travel (X homes at maximum).
+    # Screws from above through board, spacer and the land's slot; large washer and nut under the land, 1.3 mm above the Y rail
+    W3 = WASHER["normal"]["M3"][2]                      # a normal washer (7 mm) under the 3.6 mm slot: a large one would foul the Y block
     xsw = place(d, "x_endstop", endstop_switch(),
-                Location(Plane(origin=(X_ES_X0, X_ES_Y0, zp0 - ES_SP), x_dir=(0, 1, 0), z_dir=(0, 0, -1))), body="ybody")
+                Location(Plane(origin=(X_ES_X0, X_ES_Y0, zp1 + ES_SP_XS), x_dir=(0, 1, 0), z_dir=(0, 0, 1))), body="ybody")
     for i, (hx, hy, hz) in enumerate(xsw.meta["interfaces"]["mount_holes_m3"]):
-        place(d, f"x_endstop_spacer_{i}", spacer_round("M3", ES_SP), Location((hx, hy, zp0 - ES_SP)), body="ybody")
-        add_screw(d, f"x_endstop_screw_{i}", "M3", 16, at=(hx, hy, zp1), body="ybody",
-                  clamps=("y_plate_left", f"x_endstop_spacer_{i}", "x_endstop"), washer="large")
-        add_nut(d, f"x_endstop_nut_{i}", "M3", at=(hx, hy, zp0 - ES_SP - 1.6), direction=(0, 0, -1), body="ybody", screw=f"x_endstop_screw_{i}")
+        place(d, f"x_endstop_spacer_{i}", spacer_round("M3", ES_SP_XS), Location((hx, hy, zp1)), body="ybody")
+        add_screw(d, f"x_endstop_screw_{i}", "M3", 16, at=(hx, hy, zp1 + ES_SP_XS + 1.6), direction=(0, 0, -1), body="ybody",
+                  clamps=("x_endstop", f"x_endstop_spacer_{i}", "y_plate_right"), washer=True)
+        add_washer(d, f"x_endstop_nwasher_{i}", "M3", (hx, hy, zp0), (0, 0, -1), body="ybody", screw=f"x_endstop_screw_{i}")
+        add_nut(d, f"x_endstop_nut_{i}", "M3", at=(hx, hy, zp0 - W3), direction=(0, 0, -1), body="ybody", screw=f"x_endstop_screw_{i}")
+        d.join(f"x_endstop_nut_{i}", "y_plate_right", "clamped through its washer")
     # ================= Y drives ===================================================
     xf = FX / 2
     YMB = (142.0, 168.0)
@@ -1440,27 +1522,34 @@ def build() -> Design:
         add_nut(d, f"y_idler{tag}_nut", "M5", at=(sg * (xf - W5), YI_Y, Z_YC), direction=(-sg, 0, 0), screw=f"y_idler{tag}_bolt")
         d.join(f"y_idler{tag}_nut", f"y_idler_mount{tag}", "clamped through its washer")
         d.join(f"y_idler{tag}", f"y_idler{tag}_bolt", "axle")
-    # Y endstop at the rear on the right rail's inner face, on a sliding sheet mount
-    xi_f = xf - 20.0
-    y_strike = YB0 + PL_Y1 + TY
+    # Y endstop (v10): v9's stood on a plate on the right top rail's inner face, where the toolhead now passes (the plenum
+    # reaches x 147.6, the old plate's bolt heads 140.8). It now stands behind the right Y rail's end on a bent 5052 bracket
+    # bolted into the rail's TOP slot (two T-nuts behind the Y rail), 2 mm outboard of the toolhead's reach, and is worked
+    # by the rear edge of the right Y plate's land. The bracket slides along the slot for adjustment.
+    y_strike = YB0 + LAND_Y1 + TY
+    YE_X = 156.0                                        # the switch board's mounting face
     ysw = place(d, "y_endstop", endstop_switch(),
-                Location(Plane(origin=(xi_f + ES_SP, y_strike + ES_TRIG, Z_PLATE + 2.0 + ES_SIDE), x_dir=(0, 0, 1), z_dir=(1, 0, 0))))
+                Location(Plane(origin=(YE_X, y_strike + ES_TRIG, Z_PLATE + 2.0 + ES_SIDE), x_dir=(0, 0, 1), z_dir=(1, 0, 0))))
     ys_holes = ysw.meta["interfaces"]["mount_holes_m3"]
-    yh = ys_holes[0][1]
-    MTE = G32
-    ym = bx(xi_f - MTE, xi_f, YEM_BOLTS[0] - 6.5, max(yh + 6.0, YEM_BOLTS[1] + 6.5), FZ - 8.0, FZ + 8.0)
-    ym += bx(xi_f - MTE, xi_f, yh - 5.4, yh + 6.0, FZ + 8.0, max(h[2] for h in ys_holes) + 5.0)
-    for y in YEM_BOLTS:
-        ym -= Pos(xi_f - MTE / 2, y, FZ) * xcyl(clearance_hole("M5") / 2, MTE)
-    for hx, hy, hz in ys_holes:
-        ym -= Pos(xi_f - MTE / 2, hy, hz) * xcyl(SH3 / 2, MTE)
-    sheet(d, "y_endstop_mount", ym, AL)
-    for i, y in enumerate(YEM_BOLTS):
-        add_screw(d, f"y_endstop_mount_bolt_{i}", "M5", 10, at=(xi_f - MTE, y, FZ), direction=(1, 0, 0), threads_into="frame_top_right", tnut=True,
+    TE = B23
+    xl0 = YE_X - ES_SP - TE                             # the bracket's upright: 149.7 .. 152.0
+    ye0, ye1 = y_strike + ES_OT + 1.5, 152.0            # 1.5 mm behind the land at full over-travel .. the foot's end
+    yec, zf = (ye0 + ye1) / 2, FZ + 10.0
+    h_up = max(h[2] for h in ys_holes) + 5.0 - zf
+    YEM = (132.0, 146.0)                                # the foot's two M5, in the top slot behind the Y rail's end (y 121.5)
+    ym = bent_L(TE, R_B23, h_up, RAIL_X + 8.0 - xl0, ye1 - ye0,
+                holes_a=[(hy - yec, hz - zf, SH3) for hx, hy, hz in ys_holes],
+                holes_b=[(RAIL_X - xl0, y - yec, clearance_hole("M5")) for y in YEM])
+    ym = Location(Plane(origin=(xl0, yec, zf), x_dir=(1, 0, 0), z_dir=(0, 0, 1))) * ym
+    # no foot (and no bend) beside the Y rail: the upright alone reaches forward over the rail's inner edge
+    ym -= bx(xl0 - 1.0, RAIL_X + 9.0, ye0 - 1.0, Y_RAIL_C + 150.0 + 2.0, zf - 1.0, zf + TE + R_B23 + 0.5)
+    d.add("y_endstop_mount", round_profile(ym, 1.0, TE), material=AL_BEND, process="sheet", meta={"finish": "bare"})
+    for i, y in enumerate(YEM):
+        add_screw(d, f"y_endstop_mount_bolt_{i}", "M5", 8, at=(RAIL_X, y, zf + TE), direction=(0, 0, -1), threads_into="frame_top_right", tnut=True,
                   clamps=("y_endstop_mount",), washer=True)
     for i, (hx, hy, hz) in enumerate(ys_holes):
-        place(d, f"y_endstop_spacer_{i}", spacer_round("M3", ES_SP), Location(Plane(origin=(xi_f, hy, hz), x_dir=(0, 1, 0), z_dir=(1, 0, 0))))
-        add_screw(d, f"y_endstop_screw_{i}", "M3", 12, at=(xi_f - MTE, hy, hz), direction=(1, 0, 0),
+        place(d, f"y_endstop_spacer_{i}", spacer_round("M3", ES_SP), Location(Plane(origin=(xl0 + TE, hy, hz), x_dir=(0, 1, 0), z_dir=(1, 0, 0))))
+        add_screw(d, f"y_endstop_screw_{i}", "M3", 12, at=(xl0, hy, hz), direction=(1, 0, 0),
                   clamps=("y_endstop_mount", f"y_endstop_spacer_{i}", "y_endstop"), washer=True)
         add_nut(d, f"y_endstop_nut_{i}", "M3", at=(hx + 1.6, hy, hz), direction=(1, 0, 0), screw=f"y_endstop_screw_{i}")
     return finish_build(d, zs, bed_own, mounts, mount_parts)
@@ -1571,14 +1660,14 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
     for tg, x0, y0, turn, posts, rail, on_tray in mounts:
         # motor, its screw and plate go in as one unit onto the two spacers; the post bolts follow
         d.subassemblies[f"z_drive{tg or '_rear'}"] = [n for n in mount_parts[tg] if "_bolt_" not in n and "_spacer_" not in n and n in have]
-    # v9: the bed is a bench unit: plate with its four countersunk studs, their washers and lock nuts, heater and cut-off;
+    # v9 / v10: the bed is a bench unit: plate with its three countersunk studs, their washers and lock nuts, heater and cut-off;
     # the springs go over the studs, the unit goes down through the deck's holes, the thumb nuts go on from below, and the
     # magnetic base and sheet go on last
     bed_unit = ["bed_plate", "bed_heater", "bed_tco"]
     for i in range(len(BED_MOUNTS)):
         bed_unit += [f"bed_stud_{i}{x}" for x in ("", "_washer", "_nut")] + [f"bed_spring_{i}", f"bed_spring_{i}_seat"]
     d.subassemblies["bed_unit"] = [n for n in bed_unit if n in have]
-    d.subassemblies["x_drive"] = ["x_motor_mount", "x_motor", "x_pulley"] + [f"x_motor_screw_{i}{s}" for i in range(4) for s in ("", "_washer")]
+    d.subassemblies["x_drive"] = ["x_motor_mount", "x_motor", "x_pulley"] + [f"x_motor_screw_{i}" for i in range(4)]
     d.subassemblies["x_idler_unit"] = ["x_idler_mount", "x_idler_spacer", "x_idler", "x_idler_bolt", "x_idler_bolt_washer", "x_idler_nut"]
     d.subassemblies["part_cooling"] = ["part_duct", "part_fan"] + [f"part_fan_screw_{i}{s}" for i in range(2)
                                                                    for s in ("", "_washer", "_nwasher", "_nut")]
@@ -1605,7 +1694,7 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
     d.joints.append(Joint("y", "slide", "world", "ybody", (0, 1, 0), range=(-TY_F, TY), overtravel=(ES_OT, ES_OT),
                           max_speed=V_XY, max_accel=A_XY, min_drive_margin=MARGIN,
                           drive={"motor": ["y_motor", "y_motor_l"], "kind": "belt", "pulley": "y_pulley"}))
-    d.joints.append(Joint("x", "slide", "ybody", "xbody", (1, 0, 0), range=(-TX, TX), overtravel=(ES_OT, ES_OT),
+    d.joints.append(Joint("x", "slide", "ybody", "xbody", (1, 0, 0), range=(-TX, TX), overtravel=(ES_OT_X, ES_OT_X),
                           max_speed=V_XY, max_accel=A_XY, min_drive_margin=MARGIN,
                           drive={"motor": "x_motor", "kind": "belt", "pulley": "x_pulley"}))
     # v8.2: three motors, each turning its own screw directly (the screw is its shaft); the firmware levels them with
@@ -1614,23 +1703,27 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
                           max_speed=V_Z, max_accel=A_Z, min_drive_margin=MARGIN,
                           drive={"motor": [f"z_motor{t}" for t in zs["tags"]], "kind": "leadscrew",
                                  "screw": [f"leadscrew{t}" for t in zs["tags"]],
-                                 "nut": [f"z_nut{t}" for t in zs["tags"]], "sync": "independent", "nut_seating": "captive"}))
+                                 "nut": [f"z_nut{t}" for t in zs["tags"]], "sync": "independent", "nut_seating": "captive",
+                                 # v10: how far a nut's 22 mm flange can rock between its plate and its keeper (0.1 mm of play)
+                                 # before the tilted carrier forces the nut out of square with its screw
+                                 "nut_tilt_allowance_rad": KEEP_GAP / 22.0,
+                                 "nut_tilt_basis": f"keeper play {KEEP_GAP:g} mm over the T8 nut's 22 mm flange"}))
     d.program = [{"to": {"z": PRINT_Z}},
                  {"to": {"x": -75, "y": -75}}, {"to": {"x": 75, "y": -75}}, {"to": {"x": 75, "y": 75}},
                  {"to": {"x": -75, "y": 75}}, {"to": {"x": -75, "y": -75}}, {"to": {"x": 0, "y": 0}},
                  {"to": {"z": 0.0}}]
-    nozzle = (0.0, YB0 + HOT_OFF, Z_NOZZLE)
+    nozzle = (NOZ_X, YB0 + HOT_OFF, Z_NOZZLE)
     d.tool_point = ("xbody", nozzle)
-    d.endstops += [{"joint": "x", "switch": "x_endstop", "at": "min"},
+    d.endstops += [{"joint": "x", "switch": "x_endstop", "at": "max"},
                    {"joint": "y", "switch": "y_endstop", "at": "max"},
                    {"joint": "z", "probe": "bed_probe", "at": "max"}]
     build_electrical(d)
     d.adjustments += [
         Adjustment("probe z_offset in the firmware", "z_offset", range_mm=Z_UP),
-        Adjustment("the knurled thumb nut under the deck at each of the four bed studs (0.7 mm per turn)", "bed_level", range_mm=LEVEL_RANGE,
-                   mover="DIN 466 M4 thumb nut", lock="the die spring's preload on the nut's thread (30 to 61 N over the range)"),
-        Adjustment("x switch: its screws run in slots in the Y plate's land", "endstop", range_mm=ES_SLOT, joint="x"),
-        Adjustment("y switch: its mount slides along the rail on two T-nuts", "endstop", range_mm=5.0, joint="y"),
+        Adjustment("the knurled thumb nut under the deck at each of the three bed studs (0.7 mm per turn)", "bed_level", range_mm=LEVEL_RANGE,
+                   mover="DIN 466 M4 thumb nut", lock="the die spring's preload on the nut's thread (42 to 72 N over the range)"),
+        Adjustment("x switch: its screws run in slots in the right Y plate's land", "endstop", range_mm=ES_SLOT, joint="x"),
+        Adjustment("y switch: its bracket slides along the right top rail's top slot on two T-nuts", "endstop", range_mm=5.0, joint="y"),
         Adjustment("y rails on sliding T-nuts", "rail_align", range_mm=1.6, joint="y",
                    note="an M3 in the 6.2 mm slot slides +/-1.6 mm: left rail to a straight edge, right rail tightened while the gantry runs"),
         Adjustment("z rails on sliding T-nuts", "rail_align", range_mm=1.6, joint="z",
@@ -1653,7 +1746,7 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
         d.assemblycases.append(AssemblyCase(nm, moving, fixed=y_plate_fix, loaded=block_face, force=force,
                                             probe=nozzle, max_deflection=0.03, min_fos=5.0))
     w_bed = 3.0 * (PAYLOAD_KG + bed_own) * 9.81
-    # the bed's four mounts as the FEA meshes them: stud, washer and lock nut under the plate, large washer and thumb nut
+    # the bed's three mounts as the FEA meshes them: stud, washer and lock nut under the plate, large washer and thumb nut
     # under the deck. The springs are left out: while they are preloaded the bed is held by the studs against the thumb
     # nuts (docs/PRINTER_V9.md works the preload margin)
     posts = [f"bed_stud_{i}{sfx}" for i in range(len(BED_MOUNTS)) for sfx in ("", "_washer", "_nut")] \
@@ -1666,7 +1759,7 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
         "payload_x3_on_bed", [*bed_stack, *posts, *carrier, *zcars, *nplates],
         fixed=[(c, on_rail[c]) for c in zcars] + [(nb, on_nut) for nb in nplates],
         loaded=("bed", lambda f: abs(f.center().Z - (Z_SURF)) < 0.05 and f.area > 1000),
-        force=(0.0, 0.0, -w_bed), probe=(PRINT_X / 2, BED_CY - PRINT_Y / 2, Z_SURF), max_deflection=0.3, min_fos=3.0))
+        force=(0.0, 0.0, -w_bed), probe=(BED_CX + PRINT_X / 2, BED_CY + PRINT_Y / 2, Z_SURF), max_deflection=0.3, min_fos=3.0))
     # metal parts in the Z load path (no printed part carries load any more)
     def hole_at(x, y, r):
         # a cylindrical face (a whole hole wall or a piece of one) whose sampled points all lie r from the axis (x, y)
@@ -1696,9 +1789,9 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
                                 loaded=lambda f: abs(f.center().Z - (Z_XL + 0.7)) < 1e-6 and f.area > 100,
                                 force=(60.0, 0.0, 0.0), min_fos=3.0, max_deflection=0.1))
     # ================= heat: bed 60 K above the frame =============================
-    # how the four studs hold the growing plate. As designed: stud 0 is located in its fitted hole, the other three slip
+    # how the three studs hold the growing plate. As designed: stud 0 is located in its fitted hole, the other two slip
     # under their thumb-nut washers (declared "sliding free": normal load only). "stuck": the bound where friction never
-    # lets go at any of the four (it does: 0.2 to 0.6 x 41 N against several hundred newtons; the doc has the sums);
+    # lets go at any of the three (it does: 0.2 to 0.6 x 48 N against several hundred newtons; the doc has the sums);
     # reported, not limited. Carrier and deck 15 K warm under the heater (assumed).
     warm = {c: 15.0 for c in carrier}
     stuck = [(f"bed_thumb_{i}_washer", "z_deck") for i in range(1, len(BED_MOUNTS))]
@@ -1707,12 +1800,12 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
             nm, ["bed_plate", "bed_magnet", "bed", *posts, *carrier, *zcars, *nplates],
             fixed=[(c, on_rail[c]) for c in zcars] + [(nb, on_nut) for nb in nplates],
             temps={**warm, "bed_magnet": 60.0, "bed_plate": 60.0, "bed": 60.0, **{c: 30.0 for c in posts}, "*": 0.0},
-            probes={"nozzle": (UP_R_X, Y_FACE - 8.0, ZC), "bed": (0.0, YB0 + HOT_OFF, Z_SURF - T_SHEET)},
+            probes={"nozzle": (UP_R_X, Y_FACE - 8.0, ZC), "bed": (BED_CX, YB0 + HOT_OFF, Z_SURF - T_SHEET)},
             gaps={"nozzle gap": ("nozzle", "bed", "z", lim)}, flatness=("bed_plate", "z", lim), stick=stick))
-    # the bed plate alone, held at its four countersinks, its mass the plate's plus the 1 kg payload spread over it (close to
+    # the bed plate alone, held at its three countersinks, its mass the plate's plus the 1 kg payload spread over it (close to
     # plate + magnetic base + sheet + heater + a 0.3 kg print): its first bending mode. Fixed faces are ideally rigid, so
     # the real figure is lower; the brief sets no limit, 100 Hz keeps it above the gantry's resonances (60 to 80 Hz)
-    d.modalcases.append(ModalCase("bed_plate_on_four_studs", "bed_plate", fixed=lambda f: f.geom_type.name == "CONE", min_frequency_hz=100.0))
+    d.modalcases.append(ModalCase("bed_plate_on_three_studs", "bed_plate", fixed=lambda f: f.geom_type.name == "CONE", min_frequency_hz=100.0))
     add_requirements(d, zs)
     assign(d, sheet="sendcutsend", machined="xometry")
     return d
@@ -1732,7 +1825,7 @@ def add_requirements(d, zs):
     def travel(dd):
         t = {n: jr(dd, n).range[1] - jr(dd, n).range[0] for n in "xyz"}
         return t["x"] >= PRINT_X and t["y"] >= PRINT_Y and t["z"] >= PRINT_Z, str(t)
-    d.requirements.append(Requirement(f"print volume: travel >= {PRINT_X:g} x {PRINT_Y:g} x {PRINT_Z:g} mm (v8.2: 180 x 180 x 180)", travel))
+    d.requirements.append(Requirement(f"print volume: travel >= {PRINT_X:g} x {PRINT_Y:g} x {PRINT_Z:g} mm (v9: 180 x 214.5 x 180)", travel))
 
     def nozzle_over_bed(dd):
         nx, ny, _ = nozzle_tip(dd)
@@ -1833,36 +1926,131 @@ def add_requirements(d, zs):
         same = lambda v: max(v) - min(v) < 1e-3 * max(v)
         dk = dd.get("z_deck").shape.bounding_box()
         ok = (all(c.sku.startswith("EXTRUSION-2020") or "2020" in c.sku for c in mem) and all(c.body == "zbody" for c in mem)
-              and same(cp) and same(npv) and same(mpv) and same(kv) and abs(dk.size.Z - 3.175) < 1e-6)
+              and same(cp) and same(npv) and same(mpv) and same(kv) and abs(dk.size.Z - 3.175) < 1e-6
+              and abs(dk.size.X - 270.8) < 1e-6 and abs(dk.size.Y - 281.8) < 1e-6)       # v10: the carrier is v9's, not resized
         return ok, (f"four 2020 members {2 * SQ_X:.1f} x {SQ_Y1 - SQ_Y0:.1f} mm outside; deck {dk.size.X:.1f} x {dk.size.Y:.1f} x {dk.size.Z:.3f} mm; "
                     f"three carriage plates one shape: {same(cp)}; three nut plates one shape: {same(npv)}; three keepers: {same(kv)}; "
                     f"three motor plates: {same(mpv)}")
     d.requirements.append(Requirement("v9: carrier is a closed 2020 rectangle with a 1/8 in deck; six brackets in two shapes", carrier_square))
 
+    def stud_loads(px, py, w=1.0):
+        """Statics of the plate on its three studs: the load on each stud for w at (px, py)."""
+        A = np.array([[1.0, 1.0, 1.0], [x for x, _ in BED_MOUNTS], [y for _, y in BED_MOUNTS]])
+        return np.linalg.solve(A, np.array([w, w * px, w * py]))
+
+    def bed_mass(dd):
+        on_bed = ["bed_plate", "bed_magnet", "bed", "bed_heater", "bed_tco"] + [f"bed_stud_{i}{s}" for i in range(len(BED_MOUNTS)) for s in ("", "_washer", "_nut")]
+        return sum(dd.get(n).mass() for n in on_bed) - PAYLOAD_KG
+
+    PRINT_CORNERS = [(BED_CX + sx * PRINT_X / 2, BED_CY + sy * PRINT_Y / 2) for sx in (-1, 1) for sy in (-1, 1)]
+
     def spring_preload(dd):
-        on_bed = ["bed_plate", "bed_magnet", "bed", "bed_heater", "bed_tco"] + [f"bed_stud_{i}{s}" for i in range(4) for s in ("", "_washer", "_nut")]
-        m_bed = sum(dd.get(n).mass() for n in on_bed) - PAYLOAD_KG
+        m_bed = bed_mass(dd)
         az = A_Z / 1000.0
-        share = m_bed * (9.81 + az) / 4 + PAYLOAD_KG * (9.81 + az)       # the bed's own weight in quarters, the whole payload on one point
+        own = stud_loads(BED_CX, BED_CY, m_bed * (9.81 + az))            # the bed's own weight on each stud
+        # the 1 kg payload wherever in the print area it loads a stud most: a corner (the loads are linear in its position)
+        pay = np.max([stud_loads(px, py, PAYLOAD_KG * (9.81 + az)) for px, py in PRINT_CORNERS], axis=0)
+        share = float(np.max(own + pay))
         lo, nom, hi = (SPRING_K * (20.0 - SPRING_H + s * LEVEL_RANGE) for s in (-1, 0, 1))
-        f_hz = math.sqrt(4 * SPRING_K * 1000.0 / (m_bed + PAYLOAD_KG)) / (2 * math.pi)
-        a_lift = (4 * lo - (m_bed + PAYLOAD_KG) * 9.81) / (m_bed + PAYLOAD_KG)
-        return lo >= 2.0 * share, (f"bed without payload {m_bed:.2f} kg; worst point carries {share:.1f} N (a quarter of the bed, all of the {PAYLOAD_KG:g} kg "
-                                   f"payload, Z at {A_Z:g} mm/s^2); spring preload {lo:.1f} / {nom:.1f} / {hi:.1f} N over the +/-{LEVEL_RANGE:g} mm levelling "
-                                   f"range: factor {lo / share:.2f} at the weak end. The bed leaves its thumb nuts only above {a_lift:.1f} m/s^2 of upward "
-                                   f"carrier acceleration (Z runs {az:g}); on the springs alone it would bounce at {f_hz:.1f} Hz")
-    d.requirements.append(Requirement("v9: every bed spring's preload is at least twice the load on its point over the levelling range (the bed stays "
-                                      "on its thumb nuts)", spring_preload))
+        n = len(BED_MOUNTS)
+        f_hz = math.sqrt(n * SPRING_K * 1000.0 / (m_bed + PAYLOAD_KG)) / (2 * math.pi)
+        a_lift = (n * lo - (m_bed + PAYLOAD_KG) * 9.81) / (m_bed + PAYLOAD_KG)
+        # a hand pressing on a print corner: what is left between the weakest thumb nut and the deck (empty bed, weak end)
+        hand = 20.0
+        left = min(float(np.min(lo - own - stud_loads(px, py, hand))) for px, py in PRINT_CORNERS)
+        ok = lo >= 2.0 * share and 20.0 - SPRING_H + LEVEL_RANGE <= 10.0 + 1e-9
+        return ok, (f"three studs; bed without payload {m_bed:.2f} kg, {own[0]:.1f} / {own[1]:.1f} / {own[2]:.1f} N on the studs; worst stud carries "
+                    f"{share:.1f} N (its share of the bed and the {PAYLOAD_KG:g} kg payload on the print corner that loads it most, Z at {A_Z:g} mm/s^2); "
+                    f"spring preload {lo:.1f} / {nom:.1f} / {hi:.1f} N over the +/-{LEVEL_RANGE:g} mm levelling range (spring deflection "
+                    f"{20.0 - SPRING_H - LEVEL_RANGE:g} to {20.0 - SPRING_H + LEVEL_RANGE:g} mm of the 10 mm the maker lists): factor {lo / share:.2f} at the "
+                    f"weak end. A {hand:g} N hand on any print corner leaves at least {left:.1f} N between every thumb nut and the deck (weak end, "
+                    f"empty bed): the bed does not leave its nuts. It leaves them only above {a_lift:.1f} m/s^2 of upward carrier acceleration "
+                    f"(Z runs {az:g}); on the springs alone it would bounce at {f_hz:.1f} Hz")
+    d.requirements.append(Requirement("v10: every bed spring's preload is at least twice the load on its stud over the levelling range (the bed stays "
+                                      "on its three thumb nuts)", spring_preload))
 
     def plate_growth(dd):
         a, dt = 23.6e-6, 60.0
         (x0, y0) = BED_MOUNTS[0]
         need = {i: math.hypot(x - x0, y - y0) * a * dt for i, (x, y) in enumerate(BED_MOUNTS) if i}
         free = (DECK_FREE - 4.0) / 2
-        ok = need[1] <= 1.0 - 0.2 and max(need[2], need[3]) <= free - 0.2
-        return ok, (f"plate {dt:g} K warmer than the deck: studs move {need[1]:.2f} (slot, +/-1.0), {need[2]:.2f} and {need[3]:.2f} mm (oversize holes, "
-                    f"{free:.2f} mm radial) from the fitted stud; 0.2 mm kept for hole position")
-    d.requirements.append(Requirement("v9: the heated plate's growth fits the deck's slot and oversize holes (no stud is bent)", plate_growth))
+        ok = need[1] <= 1.0 - 0.2 and need[2] <= free - 0.2 and abs(BED_MOUNTS[1][1] - y0) < 1e-9
+        return ok, (f"plate {dt:g} K warmer than the deck: studs move {need[1]:.2f} (front right, along its slot, +/-1.0) and {need[2]:.2f} mm (rear, "
+                    f"oversize hole, {free:.2f} mm radial) from the fitted front-left stud; 0.2 mm kept for hole position")
+    d.requirements.append(Requirement("v10: the heated plate's growth fits the deck's slot and oversize hole (no stud is bent)", plate_growth))
+
+    def three_points(dd):
+        studs = [c.name for c in dd.components if re.fullmatch(r"bed_stud_\d+", c.name)]
+        thumbs = [c.name for c in dd.components if re.fullmatch(r"bed_thumb_\d+", c.name)]
+        springs = [c.name for c in dd.components if re.fullmatch(r"bed_spring_\d+", c.name)]
+        (x0, y0), (x1, y1), (x2, y2) = BED_MOUNTS
+        area = abs((x1 - x0) * (y2 - y0) - (x2 - x0) * (y1 - y0)) / 2
+        nuts = [(dd.get(f"z_nut{t[0]}").shape.bounding_box().center().X, dd.get(f"z_nut{t[0]}").shape.bounding_box().center().Y) for t in NUTS]
+        near = [min(math.hypot(x - nx, y - ny) for nx, ny in nuts) for x, y in BED_MOUNTS]
+        com_in = min(stud_loads(BED_CX, BED_CY)) > 0.15
+        tapped = [c.name for c in dd.components if c.name.startswith("bed_stud") and "bed_plate" in (c.meta.get("threads_into") or [])]
+        ok = len(studs) == len(thumbs) == len(springs) == 3 and area > 15000.0 and com_in and not tapped
+        return ok, (f"{len(studs)} studs, {len(springs)} springs, {len(thumbs)} thumb nuts; the triangle they span is {area / 100:.0f} cm2 "
+                    f"({2 * LEV_X:g} mm wide at the front, {2 * LEV_Y:g} mm deep); each stud is {near[0]:.0f} / {near[1]:.0f} / {near[2]:.0f} mm from the "
+                    f"nearest lead-screw nut; the bed's centre puts {' / '.join(f'{v:.2f}' for v in stud_loads(BED_CX, BED_CY))} of its weight on them; "
+                    f"no thread in the plate")
+    d.requirements.append(Requirement("v10: the bed stands on three sprung, thumb-nut levelling points (a plane, no twist), none tapped into the plate", three_points))
+
+    def heater_cover(dd):
+        hb = dd.get("bed_heater").shape.bounding_box()
+        x0, x1, y0, y1 = BED_CX - PRINT_X / 2, BED_CX + PRINT_X / 2, BED_CY - PRINT_Y / 2, BED_CY + PRINT_Y / 2
+        cov = max(0.0, min(hb.max.X, x1) - max(hb.min.X, x0)) * max(0.0, min(hb.max.Y, y1) - max(hb.min.Y, y0)) / (PRINT_X * PRINT_Y)
+        return cov >= 0.95, (f"pad {hb.size.X:g} x {hb.size.Y:g} mm under a {PRINT_X:g} x {PRINT_Y:g} mm print area: {cov:.1%} covered; not covered: "
+                             f"{max(0.0, hb.min.Y - y0):.2f} mm at the front and {max(0.0, y1 - hb.max.Y):.2f} mm at the rear (the studs' washers), "
+                             f"{max(0.0, hb.min.X - x0):.2f} / {max(0.0, x1 - hb.max.X):.2f} mm at the sides")
+    d.requirements.append(Requirement("v10: the heater pad covers at least 95 % of the print area", heater_cover))
+
+    def sheet_use(dd):
+        sb = dd.get("bed").shape.bounding_box()
+        xr_, yr_ = jr(dd, "x").range, jr(dd, "y").range
+        nx, ny, _ = nozzle_tip(dd)
+        m = min(nx + xr_[0] - sb.min.X, sb.max.X - (nx + xr_[1]), ny + yr_[0] - sb.min.Y, sb.max.Y - (ny + yr_[1]))
+        used = PRINT_X * PRINT_Y / (sb.size.X * sb.size.Y)
+        return m >= 0 and used >= 0.85, (f"print area {PRINT_X:g} x {PRINT_Y:g} mm on a {sb.size.X:g} x {sb.size.Y:g} mm sheet: {used:.1%} of it "
+                                         f"(v9: 58 % of 257 x 257); the nozzle stays {m:.2f} mm or more inside the sheet's edge")
+    d.requirements.append(Requirement("v10: the print sheet is sized to the nozzle's reach (at least 85 % of it printed on)", sheet_use))
+
+    def x_travel(dd):
+        cb, rb = dd.get("x_carriage").shape.bounding_box(), dd.get("x_rail").shape.bounding_box()
+        lo, hi = jr(dd, "x").mechanical_range
+        on_rail = min(cb.min.X + lo - rb.min.X, rb.max.X - cb.max.X - hi)
+        # the toolhead (everything on the X body below the top of the top side rails) against the rails' inner faces
+        xs = [(c.shape.bounding_box().min.X, c.shape.bounding_box().max.X, c.name) for c in dd.components
+              if c.body == "xbody" and c.shape.bounding_box().min.Z < FZ + 10.0]
+        left = min(xs)
+        right = max(xs, key=lambda v: v[1])
+        cl, cr = left[0] + lo + (FX / 2 - 20.0), (FX / 2 - 20.0) - (right[1] + hi)
+        ok = on_rail >= 5.0 - 1e-6 and min(cl, cr) >= 1.9 and abs(dd.get("frame_top_left").shape.bounding_box().size.Y - FD) < 1e-6
+        return ok, (f"X working travel {jr(dd, 'x').range[1] - jr(dd, 'x').range[0]:g} mm ({hi - lo:g} mm mechanical) on a {rb.size.X:g} mm rail on the "
+                    f"{BEAM_L:g} mm beam: the block stays {on_rail:.1f} mm inside the rail's ends; at the ends of the mechanical travel "
+                    f"{left[2]} is {cl:.2f} mm from the left top rail and {right[2]} {cr:.2f} mm from the right one; frame unchanged "
+                    f"({FX:g} x {FD:g} x {FZ + 10:g} mm outside)")
+    d.requirements.append(Requirement("v10: X travel is what the 288 mm beam between the Y blocks allows, with the toolhead 1.9 mm or more "
+                                      "clear of the top side rails; the frame is v9's", x_travel))
+
+    def motor_tilt(dd, m):
+        ta = m["fea"]["bed_support"].get("tilt_allowance") or {}
+        if "overload_free_mm" not in ta:
+            return False, f"not evaluated: {ta.get('why', 'no tilt allowance in the bed-support metrics')}"
+        routine = ta["routine_height_error_mm"]
+        ok = ta["overload_free_mm"] >= 3.0 * routine and ta.get("seated_up_to_mm", 0.0) >= routine and ta["overload_free_mm"] <= 2 * LEVEL_RANGE
+        ps = ta["per_screw"]
+        return ok, (f"one Z motor may stand {ta['overload_free_mm']:.2f} mm out of the plane of the other two ({ta['across_print_area_mm']:.2f} mm "
+                    f"across the print area) before the first limit: {ta['first_limit']} ({ta['governing_screw']}); per screw "
+                    + ", ".join(f"{k} {v['overload_free_up_to_mm']:.2f}" for k, v in ps.items()) + " mm; limits for the governing screw: "
+                    + "; ".join(f"{k} {v:.2f} mm" for k, v in sorted(ps[ta['governing_screw']]['limits_mm'].items(), key=lambda kv: kv[1])[:4])
+                    + f". Every nut stays on its weight-bearing flank up to {ta['seated_up_to_mm']:.2f} mm. Routine height error (LSC-015 budget) "
+                    f"{routine:.3f} mm: {ta['overload_free_over_routine']:.1f} times inside the limit. Division of labour: thumb nuts (+/-{LEVEL_RANGE:g} mm "
+                    f"each) for the one-time coarse tram, until Z_TILT_ADJUST's first pass asks for less than {ta['seated_up_to_mm']:.2f} mm at any "
+                    f"screw; motors for everything after that, never more than {ta['overload_free_mm']:.2f} mm")
+    d.requirements.append(Requirement("v10: the Z motors may tilt the carrier by at least 3 x the routine height error before a guide block, a flexure "
+                                      "web or a nut seat reaches its limit, and every nut stays seated over the routine error; the thumb nuts' "
+                                      "range covers what the motors may not", motor_tilt))
     d.requirements.append(Requirement("reported: bed and print area", lambda dd, m: (
         True, f"sheet {SHEET:g} x {SHEET:g}, plate {BED:g} x {BED:g} x {T_BED:g}; nozzle over the sheet {PRINT_X:g} x {PRINT_Y:g} mm, probed "
               f"{PRINT_X:g} x {PRINT_Y - m['subsystems']['homing']['z'].get('unprobed_strip_mm', {}).get('y_low', float('nan')):g} mm")))
