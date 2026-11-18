@@ -96,3 +96,9 @@ until a check exists.
 - The assembly plan is written down as part of the design: what is built first, which sub-assemblies are
   built and checked on the bench, and the order they go into the machine. Checks run against that plan.
   Check: not implemented yet (today the order is found by the assemblability search, not stated).
+
+## Purchased-part CAD
+
+- Hardware and purchased parts use the supplier's own CAD file (for fasteners: McMaster's STEP for the part
+  number), not geometry generated to a standard or a stand-in solid. Generated or stand-in geometry is a
+  placeholder until the supplier file is in `vendor_cad/inbox/`, and is reported as such.
