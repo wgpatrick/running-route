@@ -7,16 +7,16 @@ The frame (every extrusion, the 340 x 373 x 404 mm cube and the 420 mm envelope)
    the guide block's centre runs +/-116.3 mm with 5 mm of rail left at each end. To let it:
    - the X motor and idler stand outboard of the block's travel, over the Y plates (pulley centres -141.8 / +142.8, belt
      plane 8 mm higher); their mounts keep their bolts on the beam's front face and reach outward above the Y plates;
-   - the Y plates end in front of the block's path over the beam; from x 139.4 outward a tab on each is the hard stop for
-     the tool plates' edge (v9's two rail-stop plates are gone);
+   - the Y plates end in front of the block's path over the beam; from x 140.8 outward a tab on each is the hard stop for
+     the tool plates' edge, 1.5 mm beyond the travel (v9's two rail-stop plates are gone);
    - the toolhead is centred on the block: the Roto (16.2 mm left and 40.9 mm right of its nozzle) and the part fan's plenum
      (46.8 right) sit 15.5 mm to the left, so the 63 mm between Roto and plenum clears the top side rails by 2.0 and 2.4 mm at
-     the ends of travel; the HeaterCore's lead sleeve is turned back under the Roto;
-   - the X switch moved to the right Y plate's land (worked by a striker tab on the tool plates; X homes at maximum), the Y
+     the ends of travel; the HeaterCore's lead sleeve points forward, under the tool plates (their bottom edge 2 mm higher);
+   - the X switch moved to the right Y plate's land (worked by a striker tab on the front tool plate; X homes at maximum), the Y
      switch to a bent bracket in the right top rail's top slot (worked by that land's rear edge), the toolhead loom's
      anchor to the top of the back rail.
-   Both ends are now set by the beam's length between the Y blocks and, 0.1 to 0.5 mm later, by the Roto and the plenum
-   against the top side rails. Y travel is v9's 214.5 mm: confirmed at its limit (front: Y idlers and the 420 mm envelope,
+   Both ends are now set by the beam's length between the Y blocks (5 mm of rail kept beyond the block) with the Roto and
+   the plenum 2.0 and 2.4 mm from the top side rails. Y travel is v9's 214.5 mm: confirmed at its limit (front: Y idlers and the 420 mm envelope,
    bolt heads 3.5 mm from the top front rail; rear: fan screws 1.44 mm from the top back rail).
 2. BED: 235 x 235 mm PEI sheet (catalogue print_sheet_pei235) on a 241 x 241 x 12.7 mm MIC-6 plate, centred on the nozzle's
    reach (x -15.5, y 4.5): the 229.6 x 214.5 mm print area is 89 % of the sheet (v9: 58 % of a 257 mm sheet). Heater pad
@@ -24,11 +24,13 @@ The frame (every extrusion, the 340 x 373 x 404 mm cube and the 420 mm envelope)
 3. THREE LEVELLING POINTS: front left (fitted hole), front right (slot), rear centre (oversize hole), each beside a member
    of the square and near a lead screw. Same stack as v9 (M4 countersunk stud locked by washer and nut under the plate, die
    spring, thumb nut under the deck; no tapped aluminium), M4 x 40, spring compressed 8 mm (61 N), +/-1.5 mm. On three points the two
-   rear print corners overhang the rear stud by 115 mm, so the plate is 12.7 mm (v9 6.35 on four), and the nut plates 6.35 mm.
+   rear print corners overhang the rear stud by 115 mm, so the plate is 12.7 mm (v9 6.35 on four); the nut plates are 6.35 mm
+   (v9 4.75) for the heavier bed.
 4. MOTOR TILT: the bed-support checker now works out how far one Z motor may stand out of the plane of the other two before
    a guide block's static rating, a carriage plate's web or a nut seat reaches its limit (requirement and metrics); the web's
    dimensions and the nut seat's play are declared for it.
-The carrier (2020 square, deck outline, six brackets), the three Z rails and motors and the electronics are v9's.
+The carrier's 2020 square and deck outline, the carriage plates, keepers and motor plates, the three Z rails and motors and
+the electronics are v9's.
 
 Layout (X = width, Y = depth with the front at -Y, Z = up) is v4's; see designs/printer_v4.py for the history.
 
@@ -285,7 +287,7 @@ RAIL_SCREW_STEP = 2
 BEAM_BOLT_X = (RAIL_X - 33.0, RAIL_X - 21.0)
 X_ES_Y = 34.4          # X switch: centre of its board, behind YB0 (lever tip at 25.4, on the front tool plate's striker tab; its front
                        # screw's washer then clears the Y block by 0.7 mm)
-# bed probe: OMRON E2E-X5ME1 34.5 mm behind the nozzle reading the PEI180's steel
+# bed probe: OMRON E2E-X5ME1 34.5 mm behind the nozzle reading the print sheet's steel
 PRB_MODEL = "E2E-X5ME1"
 PRB_H = 2.0
 PRB_X = NOZ_X          # on the nozzle's X: no X offset
@@ -1443,7 +1445,7 @@ def build() -> Design:
     d.join("x_tension_screw", "x_idler_mount", "jack screw bears on the lug")
     d.bom_extra("PEM-S-M3-1 (x and y tension anchors, Roto screws in the front tool plate; installed by SendCutSend)", 5, 0.4)
     # X endstop (v10): on TOP of the right Y plate's land, behind the tool plates' plane and outboard of the Roto's reach; the
-    # striker tab on the tool plates' right edge works its lever at the right end of the travel (X homes at maximum).
+    # striker tab on the front tool plate's right edge works its lever at the right end of the travel (X homes at maximum).
     # Screws from above through board, spacer and the land's slot; large washer and nut under the land, 1.3 mm above the Y rail
     W3 = WASHER["normal"]["M3"][2]                      # a normal washer (7 mm) under the 3.6 mm slot: a large one would foul the Y block
     xsw = place(d, "x_endstop", endstop_switch(),
@@ -2052,9 +2054,14 @@ def add_requirements(d, zs):
     d.requirements.append(Requirement("v10: the Z motors may tilt the carrier by at least 3 x the routine height error before a guide block, a flexure "
                                       "web or a nut seat reaches its limit, and every nut stays seated over the routine error; the thumb nuts' "
                                       "range covers what the motors may not", motor_tilt))
-    d.requirements.append(Requirement("reported: bed and print area", lambda dd, m: (
-        True, f"sheet {SHEET:g} x {SHEET:g}, plate {BED:g} x {BED:g} x {T_BED:g}; nozzle over the sheet {PRINT_X:g} x {PRINT_Y:g} mm, probed "
-              f"{PRINT_X:g} x {PRINT_Y - m['subsystems']['homing']['z'].get('unprobed_strip_mm', {}).get('y_low', float('nan')):g} mm")))
+    def probed(dd, m):
+        us = m["subsystems"]["homing"]["z"].get("unprobed_strip_mm", {})
+        nan = float("nan")
+        px, py = PRINT_X - us.get("x_low", nan) - us.get("x_high", nan), PRINT_Y - us.get("y_low", nan) - us.get("y_high", nan)
+        return True, (f"sheet {SHEET:g} x {SHEET:g}, plate {BED:g} x {BED:g} x {T_BED:g}; nozzle over the sheet {PRINT_X:g} x {PRINT_Y:g} mm, probed "
+                      f"{px:g} x {py:g} mm ({px * py / (PRINT_X * PRINT_Y):.0%} of it; unprobed strips: front {us.get('y_low', nan):g}, rear "
+                      f"{us.get('y_high', nan):g}, left {us.get('x_low', nan):g}, right {us.get('x_high', nan):g} mm)")
+    d.requirements.append(Requirement("reported: bed and print area", probed))
     d.requirements.append(Requirement(f"target: direct drive, at most {MAX_TOOLHEAD_KG:g} kg moving in X", lambda dd: (
         dd.get("extruder").body == "xbody" and (m := sum(c.mass() for c in dd.components if c.body == "xbody")) <= MAX_TOOLHEAD_KG,
         f"{m:.3f} kg on the X guide block, block included")))

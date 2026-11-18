@@ -1895,19 +1895,19 @@ STAGE_NOTES_BY_DESIGN["printer_v10"] = {
             "the front studs' and the rear stud's washers) and thermal cut-off bonded under the plate.",
             "Springs over the three studs, an M4 washer on each spring. Lower the plate so the studs pass the deck's three holes (stud 0, front left, "
             "has the fitted hole; front right the slot; rear the oversize hole). From below: large M4 washer and thumb nut on each stud. Run every "
-            "thumb nut up until its spring is 12.5 mm long (plate underside 17.3 mm above the deck), then level (adjustment section). THEN the "
+            "thumb nut up until its spring is 12.0 mm long (plate underside 16.8 mm above the deck), then level (adjustment section). THEN the "
             "magnetic base and the print sheet, both centred on the plate.",
             "Division of labour (docs/PRINTER_V10.md, 'Motor tilt'): the thumb nuts are for the one-time coarse tram. Turn them until the first pass "
-            "of Z_TILT_ADJUST reports less than 0.4 mm at every screw (a quarter turn is 0.175 mm); from then on the three motors level the bed at "
-            "every print start. Do not let the motors take out more than about 1.2 mm at one screw: beyond that the nuts are forced out of square "
-            "in their seats, and at about 1.7 mm the side blocks and the carriage plates' webs reach their limits."],
+            "of Z_TILT_ADJUST reports less than 0.4 mm at every screw (a quarter turn is 0.175 mm; each nut has +/-1.5 mm); from then on the three "
+            "motors level the bed at every print start. Do not let the motors take out more than about 1.2 mm at one screw: beyond that the nuts "
+            "are forced out of square in their seats, and at about 1.7 mm the side blocks and the carriage plates' webs reach their limits."],
     "gantry": STAGE_NOTES["gantry"] + [
         "X rail (v10): HIWIN MGNR12R cut to 288 mm, flush with both ends of the 288 mm beam. Slide the X block on BEFORE the second Y plate goes on the "
         "beam: there are no separate rail stops any more, the Y plates' tabs are the stops (they meet the tool plates' edges 1.5 mm beyond the travel). "
         "Until both Y plates are on, tape the block to the rail.",
-        "X motor and idler stand outboard of the beam's ends, over the Y plates. Motor: on its 4.75 mm plate with four M3 x 8 and NO washers (3.25 mm "
-        "of thread in the motor's 4.5 mm holes; do not substitute longer screws). Fit the Y plates and the Y blocks' screws first; the motor plate's "
-        "and the idler plate's wings pass 1.5 mm above those screw heads.",
+        "X motor and idler stand outboard of the beam's ends, over the Y plates. Motor: on its 3.175 mm plate with four M3 x 8 and washers, as v9 "
+        "(do not substitute longer screws). Fit the Y plates and the Y blocks' screws first; the motor plate's and the idler plate's wings pass "
+        "1.5 mm above those screw heads, the motor's body 2.1 mm.",
         "X belt plane: the tolerance model puts the idler and the belt clamp more than 1 mm out of plane in about 6 % of builds. Sight along the belt "
         "after tensioning; if it rides against a flange of the idler, add or remove an M5 shim washer beside the idler's spacer. The motor's pulley "
         "is set on its shaft to the same plane.",
@@ -2404,7 +2404,7 @@ CURATED_V10 = [
     ("A", "Bed springs, thumb nuts and print sheet were read from search snippets only",
      "Century Spring DJ-8X20YCS (7.6 N/mm), Halder DIN 466 M4 thumb nut and the 235 mm PEI sheet with its magnetic base: no maker's page could be "
      "fetched. The spring's coil diameters, solid height and temperature limit, the sheet's steel thickness (0.4 mm on one listing, 1.2 mm overall on "
-     "two) and the magnetic base's thickness (1.5 mm drawn) are not known. The spring now works at 5.5 to 9.5 mm of the 10 mm the maker lists.",
+     "two) and the magnetic base's thickness (1.5 mm drawn) are not known. The spring now works at 6.5 to 9.5 mm of the 10 mm the maker lists.",
      "check each against the maker's page before ordering; measure the sheet and its magnetic base and re-set the probe's z_offset"),
     ("B", "Motors and thumb nuts: who levels what",
      "One Z motor may stand about 1.2 mm out of the plane of the other two before the first limit (the nuts' seats; the side blocks and the carriage "
@@ -2415,11 +2415,15 @@ CURATED_V10 = [
      "lowers it more than on v9.",
      "none needed for prints; do not lean on a rear corner while setting the nozzle gap"),
     ("B", "Thumb nuts are held only by the springs' preload",
-     "42 to 72 N on an M4 thread: the usual arrangement, and it creeps on some machines.",
+     "49 to 72 N on an M4 thread: the usual arrangement, and it creeps on some machines.",
      "mark each nut with paint after levelling; check the marks after the first 20 hours"),
     ("B", "M4 x 40 countersunk screws must be fully threaded",
      "The lock nut sits 12 to 16 mm under the head; a partly threaded ISO 10642 screw has a plain shank there.",
      "buy DIN 7991 / ISO 10642 A2 fully threaded"),
+    ("B", "Stud holes in the 12.7 mm bed plate are drilled, not laser cut",
+     "Three 4.5 mm holes with 8.96 mm countersinks in 12.7 mm MIC-6, 6.5 mm of plate between hole and edge: narrower than the sheet is thick, so "
+     "the laser-cutting check warns. SendCutSend's countersinking service drills them; whether it takes 4.5 mm holes in this gauge was not checked.",
+     "ask SendCutSend when quoting; otherwise have the plate cut plain and drill and countersink the three holes at home from scribed centres"),
     ("B", "Screw cut to length by the builder",
      "The screw is sold 330 mm long (328 above the face, assumed) and must be cut to 258 mm so its top stays under the top rails.",
      "cut, chamfer and run the nut over the end on the bench; or ask StepperOnline for a custom length"),
