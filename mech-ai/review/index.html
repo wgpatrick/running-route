@@ -112,6 +112,12 @@ a.lnk,button.lnk{color:var(--accent);background:none;border:0;padding:0;font:inh
 .vtools button,.vtools label{font:500 12px var(--f-body);background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:4px 9px;cursor:pointer;display:flex;align-items:center;gap:5px}
 .legend{position:absolute;left:10px;bottom:10px;font-size:11.5px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:4px 8px;display:flex;gap:10px;flex-wrap:wrap}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.vhelp{position:absolute;right:10px;bottom:10px;z-index:4;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.vhelp button{font:500 12px var(--f-body);background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:4px 12px;cursor:pointer;order:2}
+.vhelp #vhelpc{display:none;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:8px 12px;box-shadow:0 4px 14px rgba(0,0,0,.16);font-size:12.5px;max-width:min(340px,80vw)}
+.vhelp:hover #vhelpc,.vhelp:focus-within #vhelpc,.vhelp.open #vhelpc{display:block}
+.vhelp table{border-collapse:collapse}.vhelp th{text-align:left;font-weight:600;padding:2px 12px 2px 0;white-space:nowrap;vertical-align:top}.vhelp td{color:var(--muted);padding:2px 0}
+@media (max-width:720px),(hover:none){.vhelp{display:none}}
 .vmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px;padding:20px;text-align:center}
 .hover{position:absolute;right:10px;top:10px;font:12px var(--f-mono);background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:3px 8px;pointer-events:none}
 dialog{border:1px solid var(--line);border-radius:6px;padding:0;background:var(--panel);color:var(--ink);width:min(1100px,94vw);max-height:92vh}
@@ -319,7 +325,8 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
       <label title="Colour the cut faces"><input type="checkbox" id="seccap" checked> Caps</label>
     </div>
     <div class="hover" id="hover" hidden></div>
-    <div class="legend"><span><i style="background:var(--sel)"></i>selected</span><span><i style="background:var(--accent)"></i>related</span><span>drag to orbit · right-drag to pan · scroll to zoom · click a part · shift-click to add</span></div>
+    <div class="legend"><span><i style="background:var(--sel)"></i>selected</span><span><i style="background:var(--accent)"></i>related</span></div>
+    <div class="vhelp" id="vhelp"><button type="button" id="vhelpb" aria-expanded="false" aria-controls="vhelpc">Controls</button><div id="vhelpc" role="tooltip"><table><tr><th>Rotate</th><td>drag with the left button</td></tr><tr><th>Pan</th><td>drag with the right button, or Ctrl / Shift + drag</td></tr><tr><th>Zoom</th><td>scroll wheel</td></tr><tr><th>Open a part</th><td>click it</td></tr><tr><th>Select several</th><td>Shift + click, or turn on Multi-select</td></tr><tr><th>Hide selection</th><td>H &nbsp;(Alt + H shows everything again)</td></tr><tr><th>Measure</th><td>M, then click points &nbsp;(Esc cancels)</td></tr><tr><th>Fit / section</th><td>buttons at the top of the view</td></tr></table></div></div>
     <div class="vmsg" id="vmsg">Loading 3D model (11 MB)…</div>
   </div>
 </main>
@@ -616,7 +623,12 @@ function init3D(buf){
   });
   ray=new THREE.Raycaster(); ptr=new THREE.Vector2();
   const c=$('gl');
-  c.addEventListener('pointerdown',e=>downAt=[e.clientX,e.clientY]);
+  c.addEventListener('pointerdown',e=>{downAt=[e.clientX,e.clientY];if(e.pointerType==='mouse'){dragId=e.pointerId;try{c.setPointerCapture(e.pointerId)}catch(_){}}});
+  // a mouse button released outside the page frame never reports pointerup, which left the orbit control turning with the mouse: end the drag ourselves
+  const endDrag=()=>{if(dragId==null)return;const id=dragId;dragId=null;document.dispatchEvent(new PointerEvent('pointerup',{pointerId:id,pointerType:'mouse',button:0,buttons:0,bubbles:true}))};
+  addEventListener('pointerup',e=>{if(e.pointerId===dragId&&e.isTrusted)dragId=null},true);
+  addEventListener('pointermove',e=>{if(dragId!=null&&e.pointerType==='mouse'&&e.buttons===0)endDrag()},true);
+  addEventListener('blur',endDrag);document.addEventListener('pointerleave',endDrag);document.addEventListener('visibilitychange',endDrag);
   c.addEventListener('pointerup',e=>{if(MEAS.on||e.button!==0||!downAt||Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1])>(e.pointerType==='touch'?10:4))return;const n=pick(e,MULTI||e.shiftKey||e.ctrlKey||e.metaKey);if(!n)return;
     if(MULTI||e.shiftKey||e.ctrlKey||e.metaKey)togglePick(n); else go('part',n)});
   c.addEventListener('pointerup',e=>{if(!MEAS.on||e.button!==0||!downAt||Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1])>(e.pointerType==='touch'?10:4))return;measClick(e)},true);
@@ -832,6 +844,7 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>highlig
 new MutationObserver(()=>highlight(false)).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 
 /* ---------- comment on view: capture, mark up, send to Claude ---------- */
+let dragId=null;
 let MK=null; const MKS={tool:'arrow',col:'#e5322d'}; let assetsNS=null, commentsNS=null, dictNS=null;
 async function initCaps(){
   if(!window.claude||!claude.use)return;
@@ -866,6 +879,7 @@ $('snap').onclick=()=>{
   redrawMK(); renderMarks(); $('mk').showModal(); $('mktext').focus();
 };
 $('mkx').onclick=()=>{$('mk').close()};
+$('vhelpb').onclick=()=>{const o=$('vhelp').classList.toggle('open');$('vhelpb').setAttribute('aria-expanded',o)};
 $('banner').onclick=()=>$('banner').classList.toggle('open');
 $('vexp').onclick=()=>{const v=$('view');v.classList.toggle('big');$('vexp').setAttribute('aria-pressed',v.classList.contains('big'));setTimeout(()=>{resize3D();sizeMain();placePanels();if(selection().main.length)fit(false)},230)};
 MOB.addEventListener('change',()=>{placePanels();resize3D()});

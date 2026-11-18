@@ -1,0 +1,530 @@
+<title>Printer Idea Sketchpad</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: tool rail | drawing sheet (mm grid, true scale) | idea / parts / saved panel. On phones the panel folds under the sheet.
+   Same drawing-office palette as the design review page: cobalt ink on cool paper. The sheet itself stays light in both themes so sketches read the same everywhere. */
+:root{
+  --bg:#f3f5f8; --panel:#ffffff; --ink:#18212e; --muted:#5a6678; --line:#d9dee6; --soft:#eaeef4;
+  --accent:#2453c2; --accent-soft:#e2e9f8; --sel:#e8890c; --err:#c23a2b; --ok:#23845a;
+  --paper:#fbfcfe; --grid:#dfe6f0; --grid2:#c3cfe0; --pencil:#1d2733;
+  --f-head:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#10151d; --panel:#171e28; --ink:#e3e8ef; --muted:#97a3b5; --line:#2a3443; --soft:#1e2733;
+  --accent:#7ea2f2; --accent-soft:#1d2a45; --sel:#f5a23a; --err:#f07a6b; --ok:#5cc691; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10151d; --panel:#171e28; --ink:#e3e8ef; --muted:#97a3b5; --line:#2a3443; --soft:#1e2733;
+  --accent:#7ea2f2; --accent-soft:#1d2a45; --sel:#f5a23a; --err:#f07a6b; --ok:#5cc691; color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:14px/1.45 var(--f-body);overflow:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--panel)}
+*{box-sizing:border-box}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.app{height:100%;display:grid;grid-template-columns:56px minmax(0,1fr) 340px;grid-template-rows:auto minmax(0,1fr);grid-template-areas:"top top top" "tools stage side"}
+header.top{grid-area:top;background:var(--panel);border-bottom:1px solid var(--line);padding-block:8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 16px}
+h1{font:600 19px/1.2 var(--f-head);margin:0;letter-spacing:.01em}
+.sub{color:var(--muted);font-size:12.5px}
+.tools{grid-area:tools;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0;overflow-y:auto}
+.tb{width:42px;height:38px;border:1px solid transparent;border-radius:6px;background:none;display:grid;place-items:center;color:var(--ink);flex:none;position:relative}
+.tb svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tb:hover{background:var(--soft)}
+.tb[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.tsep{width:28px;height:1px;background:var(--line);margin:4px 0;flex:none}
+.sw{width:24px;height:24px;border-radius:50%;border:2px solid var(--panel);box-shadow:0 0 0 1px var(--line);flex:none;padding:0}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 2px var(--accent)}
+.wd{width:42px;height:26px;border:1px solid transparent;border-radius:6px;background:none;display:grid;place-items:center;flex:none}
+.wd i{display:block;width:22px;background:var(--ink);border-radius:3px}
+.wd[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent)}
+.stage{grid-area:stage;position:relative;min-width:0;min-height:0;background:var(--paper);overflow:hidden}
+#cv{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block}
+.float{position:absolute;display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:3px;box-shadow:0 2px 8px rgba(20,30,50,.12)}
+#fl-tr{top:8px;right:8px}
+#selbar{top:8px;left:8px;right:150px;width:max-content;max-width:calc(100% - 166px);flex-wrap:wrap;align-items:center}
+.float button{border:0;background:none;border-radius:5px;padding:5px 9px;font:500 12.5px var(--f-body);min-height:30px}
+.float button:hover{background:var(--soft)}
+.float button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent)}
+.float button:disabled{opacity:.4;cursor:default}
+.float .del{color:var(--err)}
+.float .nm{font:500 12px var(--f-mono);color:var(--muted);padding:0 6px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#hint{position:absolute;left:0;right:0;top:38%;text-align:center;color:#6b7890;pointer-events:none;padding:0 24px;font-size:15px}
+#hint b{display:block;font:600 20px var(--f-head);color:#3a475c;margin-bottom:4px}
+#tin{position:absolute;z-index:3;font:500 16px var(--f-body);padding:4px 8px;border:2px solid var(--accent);border-radius:5px;background:#fff;color:#18212e;min-width:160px;max-width:80%}
+#busy{position:absolute;left:8px;bottom:8px;font:500 12px var(--f-mono);background:var(--panel);border:1px solid var(--line);border-radius:5px;padding:3px 8px;color:var(--muted)}
+aside.side{grid-area:side;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;min-height:0;min-width:0}
+.tabs{display:flex;border-bottom:1px solid var(--line);flex:none}
+.tabs button{flex:1;font:600 12px var(--f-head);letter-spacing:.06em;text-transform:uppercase;padding:11px 6px;border:0;background:none;color:var(--muted);border-bottom:2px solid transparent}
+.tabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+.pane{flex:1;min-height:0;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+label.f{display:flex;flex-direction:column;gap:3px;font:600 11px var(--f-head);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+label.f input,label.f textarea,.srch{font:400 14px var(--f-body);letter-spacing:0;text-transform:none;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px 10px;width:100%}
+textarea{resize:vertical;min-height:120px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:6px;padding:8px 12px;font-weight:500}
+.btn:hover{background:var(--soft)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+:root[data-theme="dark"] .btn.pri{color:#0d1422}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.pri{color:#0d1422}}
+.btn.pri:disabled{opacity:.5}
+.btn[aria-pressed="true"]{background:var(--err);border-color:var(--err);color:#fff}
+.msg{font-size:12.5px;color:var(--muted);min-height:1.2em}
+.note{font-size:12.5px;color:var(--muted);margin:0}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.chips button{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:4px 11px;font-size:12.5px}
+.chips button[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.lib{display:flex;flex-direction:column}
+.lib h3{font:600 11px var(--f-head);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:12px 0 4px;position:sticky;top:-12px;background:var(--panel);padding:4px 0}
+.li{display:flex;flex-direction:column;align-items:flex-start;gap:0;text-align:left;border:0;border-bottom:1px solid var(--soft);background:none;padding:7px 4px;width:100%;min-width:0}
+.li:hover{background:var(--soft)}
+.li b{font-weight:500;font-size:13.5px;overflow-wrap:anywhere}
+.li span{font:400 11.5px var(--f-mono);color:var(--muted);overflow-wrap:anywhere}
+.sk{display:grid;grid-template-columns:84px minmax(0,1fr);gap:10px;border-bottom:1px solid var(--soft);padding:8px 0;align-items:start}
+.sk img,.sk .ph{width:84px;height:64px;object-fit:contain;background:#fbfcfe;border:1px solid var(--line);border-radius:4px}
+.sk b{font-weight:600;display:block;overflow-wrap:anywhere}
+.sk p{margin:2px 0 4px;font-size:12.5px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.sk .meta{font:400 11px var(--f-mono);color:var(--muted)}
+.lnk{border:0;background:none;color:var(--accent);padding:0;text-decoration:underline;font-size:12.5px}
+.mic[aria-pressed="true"]{background:var(--err);border-color:var(--err);color:#fff}
+@media (max-width:760px){
+  .app{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto auto;grid-template-areas:"top" "stage" "tools" "side"}
+  header.top{padding-block:6px} h1{font-size:16px} .sub{display:none}
+  .tools{flex-direction:row;border-right:0;border-top:1px solid var(--line);padding:5px max(8px,env(safe-area-inset-right,0px)) 5px max(8px,env(safe-area-inset-left,0px));overflow-x:auto;overflow-y:hidden;gap:4px}
+  .tb{width:44px;height:44px} .tsep{width:1px;height:28px;margin:0 4px} .sw{width:30px;height:30px} .wd{width:40px;height:44px}
+  aside.side{border-left:0;border-top:1px solid var(--line)}
+  .pane{max-height:0;padding:0 14px;flex:none;transition:max-height .18s}
+  aside.side.open .pane:not([hidden]){max-height:54svh;height:54svh;padding:12px 14px}
+  label.f input,label.f textarea,.srch,#tin{font-size:16px}
+  .float button{min-height:38px;padding:5px 10px}
+  #selbar{right:8px;max-width:calc(100% - 16px);top:54px}
+  textarea{min-height:90px}
+}
+@media (prefers-reduced-motion:reduce){.pane{transition:none}}
+</style>
+
+<div class="app">
+  <header class="top">
+    <h1>Printer Idea Sketchpad</h1>
+    <span class="sub" id="sub">Sketch at true scale on a millimetre grid, drop in real parts, then send the idea to Claude.</span>
+  </header>
+
+  <div class="tools" id="tools" role="toolbar" aria-label="Drawing tools"></div>
+
+  <div class="stage" id="stage">
+    <canvas id="cv" aria-label="Sketch sheet. One grid square is shown in the scale bar at the bottom left."></canvas>
+    <div id="hint"><b>Sketch your idea here</b>Draw with the pen, add real parts from the Parts tab, and describe the idea in the Idea tab.</div>
+    <div class="float" id="selbar" hidden></div>
+    <div class="float" id="fl-tr">
+      <button type="button" id="undo" title="Undo (Ctrl+Z)" aria-label="Undo">↶</button>
+      <button type="button" id="redo" title="Redo (Ctrl+Shift+Z)" aria-label="Redo">↷</button>
+      <button type="button" id="zout" aria-label="Zoom out">−</button>
+      <button type="button" id="zin" aria-label="Zoom in">+</button>
+      <button type="button" id="fit" title="Fit the sketch in view">Fit</button>
+    </div>
+    <input id="tin" hidden autocomplete="off" aria-label="Label text">
+    <div id="busy" hidden></div>
+  </div>
+
+  <aside class="side open" id="side">
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" data-tab="idea" aria-selected="true">Idea</button>
+      <button type="button" role="tab" data-tab="parts" aria-selected="false">Parts</button>
+      <button type="button" role="tab" data-tab="saved" aria-selected="false">Saved</button>
+    </div>
+    <div class="pane" id="pane-idea">
+      <label class="f">Title<input id="ititle" placeholder="e.g. Simpler Z motor mount" maxlength="120"></label>
+      <label class="f">About which parts (optional)<input id="iabout" list="aboutlist" placeholder="e.g. z_motor_plate, Bed and Z stage"></label>
+      <datalist id="aboutlist"></datalist>
+      <label class="f">The idea<textarea id="inotes" placeholder="What should change and why. Dimensions, materials, how it bolts on, what you are unsure about."></textarea></label>
+      <div class="row">
+        <button type="button" class="btn mic" id="mic" hidden aria-pressed="false">Dictate</button>
+        <span class="msg" id="micmsg"></span>
+      </div>
+      <div class="row">
+        <button type="button" class="btn pri" id="send">Send to Claude</button>
+        <button type="button" class="btn" id="photo">Add photo</button>
+        <button type="button" class="btn" id="new" aria-pressed="false">New sketch</button>
+        <input type="file" id="file" accept="image/*" hidden>
+      </div>
+      <div class="msg" id="smsg" role="status"></div>
+      <p class="note">Claude receives the sketch as an image, plus your text, the parts you placed with their positions, and every dimension and label. You can also paste an image, or add a photo of a paper sketch and draw over it.</p>
+    </div>
+    <div class="pane" id="pane-parts" hidden>
+      <div class="chips" id="views" role="group" aria-label="View to place">
+        <button type="button" data-view="top" aria-pressed="false">Top</button>
+        <button type="button" data-view="front" aria-pressed="true">Front</button>
+        <button type="button" data-view="right" aria-pressed="false">Side</button>
+        <button type="button" data-view="iso" aria-pressed="false">3D</button>
+      </div>
+      <input class="srch" id="q" type="search" placeholder="Search parts: motor, rail, M5, bearing…" aria-label="Search parts">
+      <p class="note" id="libmsg">Loading the parts list…</p>
+      <div class="lib" id="lib"></div>
+    </div>
+    <div class="pane" id="pane-saved" hidden>
+      <p class="note" id="savedmsg">Loading saved sketches…</p>
+      <div id="saved"></div>
+    </div>
+  </aside>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const LS={get(k,d){try{const v=localStorage.getItem('sk:'+k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem('sk:'+k,JSON.stringify(v))}catch(e){}}};
+const MOB=matchMedia('(max-width:760px)');
+const INKS=['#1d2733','#2453c2','#d0342c','#1f8a4c'];
+const WIDTHS=[1.5,3,6];           // screen px when drawn
+const VIEWN={top:'Top',front:'Front',right:'Side',iso:'3D'};
+const TOOLS=[['select','Select / move (V)','M5 3l12 6-5 2 4 6-2 1-4-6-4 4z'],['pan','Pan (H, or drag with two fingers)','M12 3v18M3 12h18M12 3l-3 3M12 3l3 3M12 21l-3-3M12 21l3-3M3 12l3-3M3 12l3 3M21 12l-3-3M21 12l-3 3'],
+  ['pen','Pen (P)','M4 20l1-5L16 4l4 4L9 19zM14 6l4 4'],['line','Straight line (L)','M4 20L20 4'],['arrow','Arrow (A)','M4 20L20 4M11 4h9v9'],
+  ['rect','Rectangle (R)','M4 6h16v12H4z'],['ell','Circle / ellipse (O)','M12 5a8 7 0 100 14 8 7 0 000-14z'],['dim','Dimension in mm (D)','M4 8v8M20 8v8M4 12h16M7 9l-3 3 3 3M17 9l3 3-3 3'],
+  ['text','Label (T)','M5 6h14M12 6v13'],['erase','Eraser (E)','M4 16l9-9 7 7-5 5H8zM10 10l7 7']];
+
+/* ---------- state ---------- */
+let items=[], sel=-1, tool='pen', col=INKS[0], wpx=WIDTHS[1], placeView='front';
+let view={x:-120,y:-90,z:2}, hist=[], redoS=[];
+let D=null, PARTS={}, ASM={}, LIB=[], meshBuf=null, meshP=null, penSeen=false, openedFrom=null;
+const cv=$('cv'), ctx=cv.getContext('2d'); let CW=300, CH=300, DPR=1;
+
+/* ---------- toolbar ---------- */
+(function(){
+  let h=TOOLS.map(([id,t,d])=>`<button type="button" class="tb" data-tool="${id}" title="${t}" aria-label="${t}" aria-pressed="${id===tool}"><svg viewBox="0 0 24 24"><path d="${d}"/></svg></button>`).join('');
+  h+='<span class="tsep"></span>'+INKS.map((c,i)=>`<button type="button" class="sw" data-col="${c}" style="background:${c}" aria-label="Ink colour ${i+1}" aria-pressed="${c===col}"></button>`).join('');
+  h+='<span class="tsep"></span>'+WIDTHS.map(w=>`<button type="button" class="wd" data-w="${w}" aria-label="Line width ${w}" aria-pressed="${w===wpx}"><i style="height:${Math.max(2,w)}px"></i></button>`).join('');
+  $('tools').innerHTML=h;
+})();
+function setTool(t){tool=t;document.querySelectorAll('[data-tool]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tool===t));cv.style.cursor=t==='pan'?'grab':t==='select'?'default':'crosshair';if(t!=='select'){sel=-1;selBar()}draw()}
+$('tools').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.tool)setTool(b.dataset.tool);
+  else if(b.dataset.col){col=b.dataset.col;document.querySelectorAll('[data-col]').forEach(x=>x.setAttribute('aria-pressed',x===b));if(sel>=0&&'c' in items[sel]){commit();mut(sel,{c:col});draw()}}
+  else if(b.dataset.w){wpx=+b.dataset.w;document.querySelectorAll('[data-w]').forEach(x=>x.setAttribute('aria-pressed',x===b))}});
+
+/* ---------- history ---------- */
+function commit(){hist.push(items.slice());if(hist.length>120)hist.shift();redoS=[];btns()}
+function mut(i,patch){items[i]=Object.assign({},items[i],patch)}
+function undo(){if(!hist.length)return;redoS.push(items);items=hist.pop();sel=-1;after()}
+function redo(){if(!redoS.length)return;hist.push(items);items=redoS.pop();sel=-1;after()}
+function btns(){$('undo').disabled=!hist.length;$('redo').disabled=!redoS.length}
+function after(){btns();selBar();draw();saveDraft();$('hint').hidden=items.length>0}
+$('undo').onclick=undo;$('redo').onclick=redo;
+
+/* ---------- geometry helpers ---------- */
+const toW=(sx,sy)=>[view.x+sx/view.z,view.y+sy/view.z];
+const r1=v=>Math.round(v*10)/10, r2=v=>Math.round(v*100)/100;
+function bounds(it){
+  if(it.t==='s'){let a=1e9,b=1e9,c=-1e9,d=-1e9;for(let i=0;i<it.p.length;i+=2){a=Math.min(a,it.p[i]);c=Math.max(c,it.p[i]);b=Math.min(b,it.p[i+1]);d=Math.max(d,it.p[i+1])}return[a,b,c,d]}
+  if(it.a)return[Math.min(it.a[0],it.b[0]),Math.min(it.a[1],it.b[1]),Math.max(it.a[0],it.b[0]),Math.max(it.a[1],it.b[1])];
+  if(it.t==='t'){const w=textW(it);return[it.p[0],it.p[1]-it.s,it.p[0]+w,it.p[1]+it.s*.3]}
+  const r=Math.hypot(it.w,it.h)/2,q=(it.rot||0)%180===0?[it.w/2,it.h/2]:(it.rot||0)%90===0?[it.h/2,it.w/2]:[r,r];return[it.p[0]-q[0],it.p[1]-q[1],it.p[0]+q[0],it.p[1]+q[1]]}
+function textW(it){ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.font=`500 100px "IBM Plex Sans",system-ui,sans-serif`;const w=ctx.measureText(it.txt).width*it.s/100;ctx.restore();return w}
+function segD(px,py,ax,ay,bx,by){const dx=bx-ax,dy=by-ay,l=dx*dx+dy*dy;let t=l?((px-ax)*dx+(py-ay)*dy)/l:0;t=Math.max(0,Math.min(1,t));return Math.hypot(px-ax-t*dx,py-ay-t*dy)}
+function hit(it,x,y,tol){
+  if(it.t==='s'){if(it.p.length===2)return Math.hypot(x-it.p[0],y-it.p[1])<tol+it.w;for(let i=0;i<it.p.length-2;i+=2)if(segD(x,y,it.p[i],it.p[i+1],it.p[i+2],it.p[i+3])<tol+it.w/2)return true;return false}
+  if(it.t==='l'||it.t==='a'||it.t==='d')return segD(x,y,it.a[0],it.a[1],it.b[0],it.b[1])<tol+1.5/view.z;
+  const b=bounds(it);
+  if(it.t==='r')return x>b[0]-tol&&x<b[2]+tol&&y>b[1]-tol&&y<b[3]+tol&&!(x>b[0]+tol&&x<b[2]-tol&&y>b[1]+tol&&y<b[3]-tol);
+  if(it.t==='e'){const cx=(b[0]+b[2])/2,cy=(b[1]+b[3])/2,rx=(b[2]-b[0])/2||.01,ry=(b[3]-b[1])/2||.01;const k=Math.hypot((x-cx)/rx,(y-cy)/ry);return Math.abs(k-1)<tol/Math.min(rx,ry)+.08}
+  if(it.t==='t')return x>b[0]-tol&&x<b[2]+tol&&y>b[1]-tol&&y<b[3]+tol;
+  const a=-(it.rot||0)*Math.PI/180,dx=x-it.p[0],dy=y-it.p[1],lx=dx*Math.cos(a)-dy*Math.sin(a),ly=dx*Math.sin(a)+dy*Math.cos(a);return Math.abs(lx)<it.w/2+tol&&Math.abs(ly)<it.h/2+tol}
+function pickAt(x,y,drawnOnly){const tol=(MOB.matches?14:7)/view.z;for(let i=items.length-1;i>=0;i--){const it=items[i];if(drawnOnly&&(it.t==='p'||it.t==='i'))continue;if(hit(it,x,y,tol))return i}return -1}
+function allBounds(list){let b=null;(list||items).forEach(it=>{const q=bounds(it);b=b?[Math.min(b[0],q[0]),Math.min(b[1],q[1]),Math.max(b[2],q[2]),Math.max(b[3],q[3])]:q.slice()});return b}
+function simplify(p,tol){if(p.length<=4)return p;const n=p.length/2,keep=new Uint8Array(n);keep[0]=keep[n-1]=1;const st=[[0,n-1]];while(st.length){const[a,b]=st.pop();let m=0,mi=-1;for(let i=a+1;i<b;i++){const d=segD(p[2*i],p[2*i+1],p[2*a],p[2*a+1],p[2*b],p[2*b+1]);if(d>m){m=d;mi=i}}if(m>tol){keep[mi]=1;st.push([a,mi],[mi,b])}}const o=[];for(let i=0;i<n;i++)if(keep[i])o.push(r2(p[2*i]),r2(p[2*i+1]));return o}
+
+/* ---------- drawing ---------- */
+const NICE=[1,2,5,10,20,50,100,200,500,1000];
+const GRID=[[1,10],[2,10],[5,50],[10,50],[20,100],[50,500],[100,500],[500,1000]];
+function paint(c,v,W,H,o){
+  c.fillStyle='#fbfcfe';c.fillRect(0,0,W,H);
+  const g=GRID.find(g=>g[0]*v.z>=8)||GRID[GRID.length-1];
+  [[g[0],'#e3e9f2'],[g[1],'#c6d1e2']].forEach(([s,colr])=>{c.beginPath();c.strokeStyle=colr;c.lineWidth=1;
+    for(let x=Math.ceil(v.x/s)*s;(x-v.x)*v.z<W;x+=s){const sx=Math.round((x-v.x)*v.z)+.5;c.moveTo(sx,0);c.lineTo(sx,H)}
+    for(let y=Math.ceil(v.y/s)*s;(y-v.y)*v.z<H;y+=s){const sy=Math.round((y-v.y)*v.z)+.5;c.moveTo(0,sy);c.lineTo(W,sy)}c.stroke()});
+  c.save();c.scale(v.z,v.z);c.translate(-v.x,-v.y);
+  const ui=o.ui||1;(o.items||items).forEach(it=>drawItem(c,it,v.z,ui));
+  if(o.live)drawItem(c,o.live,v.z,ui);
+  if(o.sel>=0&&items[o.sel]){const b=bounds(items[o.sel]),m=5/v.z;c.strokeStyle='#e8890c';c.lineWidth=1.5/v.z;c.setLineDash([5/v.z,4/v.z]);c.strokeRect(b[0]-m,b[1]-m,b[2]-b[0]+2*m,b[3]-b[1]+2*m);c.setLineDash([])}
+  c.restore();
+  // scale bar
+  const U=o.ui||1;c.save();c.translate(0,H*(1-U));c.scale(U,U);const n=NICE.find(n=>n*v.z/U>=70)||1000,bx=14,by=H-16;const vz=v.z;v={z:vz/U};c.fillStyle='rgba(251,252,254,.9)';c.fillRect(bx-6,by-22,n*v.z+12,32);
+  c.strokeStyle='#18212e';c.lineWidth=1.5;c.beginPath();c.moveTo(bx,by-5);c.lineTo(bx,by);c.lineTo(bx+n*v.z,by);c.lineTo(bx+n*v.z,by-5);c.stroke();
+  c.fillStyle='#18212e';c.font='500 12px "IBM Plex Mono",ui-monospace,monospace';c.textAlign='left';c.textBaseline='alphabetic';c.fillText(n+' mm',bx+4,by-6);
+  c.restore();if(o.title){c.font=`600 ${15*U}px "IBM Plex Sans",system-ui,sans-serif`;c.fillText(o.title,14*U,24*U)}
+}
+function drawItem(c,it,z,ui){
+  const px=(ui||1)/z; c.lineCap='round';c.lineJoin='round';
+  if(it.t==='p'||it.t==='i'){
+    const im=it.t==='p'?stampImg(it):photoImg(it);
+    c.save();c.translate(it.p[0],it.p[1]);c.rotate((it.rot||0)*Math.PI/180);if(it.flip)c.scale(-1,1);
+    if(im)c.drawImage(im,-it.w/2,-it.h/2,it.w,it.h);
+    else{c.strokeStyle='#8b98ad';c.lineWidth=px;c.setLineDash([4*px,3*px]);c.strokeRect(-it.w/2,-it.h/2,it.w,it.h);c.setLineDash([])}
+    c.restore();
+    if(it.t==='p'){const b=bounds(it);c.fillStyle='#4f6075';c.font=`500 ${11*px}px "IBM Plex Mono",ui-monospace,monospace`;c.textAlign='center';c.textBaseline='top';c.fillText(`${it.label.length>30?it.label.slice(0,29)+'…':it.label} · ${VIEWN[it.view]}`,it.p[0],b[3]+3*px)}
+    return}
+  c.strokeStyle=c.fillStyle=it.c||'#1d2733';c.lineWidth=Math.max(it.w||0,px);
+  if(it.t==='s'){c.beginPath();c.moveTo(it.p[0],it.p[1]);if(it.p.length===2)c.lineTo(it.p[0]+.01,it.p[1]);for(let i=2;i<it.p.length;i+=2)c.lineTo(it.p[i],it.p[i+1]);c.stroke()}
+  else if(it.t==='l'||it.t==='a'){const hs=Math.max(it.w*4,9*px),L=Math.hypot(it.b[0]-it.a[0],it.b[1]-it.a[1])||1,k=it.t==='a'?Math.max(0,1-hs*.8/L):1;c.beginPath();c.moveTo(it.a[0],it.a[1]);c.lineTo(it.a[0]+(it.b[0]-it.a[0])*k,it.a[1]+(it.b[1]-it.a[1])*k);c.stroke();if(it.t==='a')head(c,it.a,it.b,hs)}
+  else if(it.t==='r'){c.strokeRect(Math.min(it.a[0],it.b[0]),Math.min(it.a[1],it.b[1]),Math.abs(it.b[0]-it.a[0]),Math.abs(it.b[1]-it.a[1]))}
+  else if(it.t==='e'){c.beginPath();c.ellipse((it.a[0]+it.b[0])/2,(it.a[1]+it.b[1])/2,Math.abs(it.b[0]-it.a[0])/2,Math.abs(it.b[1]-it.a[1])/2,0,0,7);c.stroke()}
+  else if(it.t==='t'){c.font=`500 ${it.s}px "IBM Plex Sans",system-ui,sans-serif`;c.textAlign='left';c.textBaseline='alphabetic';c.fillText(it.txt,it.p[0],it.p[1])}
+  else if(it.t==='d'){
+    c.lineWidth=1.2*px;const dx=it.b[0]-it.a[0],dy=it.b[1]-it.a[1],L=Math.hypot(dx,dy)||1,nx=-dy/L,ny=dx/L,k=6*px;
+    c.beginPath();c.moveTo(it.a[0],it.a[1]);c.lineTo(it.b[0],it.b[1]);c.moveTo(it.a[0]-nx*k,it.a[1]-ny*k);c.lineTo(it.a[0]+nx*k,it.a[1]+ny*k);c.moveTo(it.b[0]-nx*k,it.b[1]-ny*k);c.lineTo(it.b[0]+nx*k,it.b[1]+ny*k);c.stroke();
+    if(L>22*px){head(c,it.a,it.b,8*px);head(c,it.b,it.a,8*px)}
+    const tx=dimText(it),fs=13*px;c.font=`500 ${fs}px "IBM Plex Mono",ui-monospace,monospace`;const tw=c.measureText(tx).width;
+    let ang=Math.atan2(dy,dx);if(ang>Math.PI/2||ang<-Math.PI/2)ang+=Math.PI;
+    c.save();c.translate((it.a[0]+it.b[0])/2,(it.a[1]+it.b[1])/2);c.rotate(ang);c.fillStyle='rgba(251,252,254,.92)';c.fillRect(-tw/2-3*px,-fs*1.55,tw+6*px,fs*1.25);c.fillStyle=it.c;c.textAlign='center';c.textBaseline='alphabetic';c.fillText(tx,0,-fs*.55);c.restore()}
+}
+function head(c,a,b,s){const g=Math.atan2(b[1]-a[1],b[0]-a[0]);c.beginPath();c.moveTo(b[0],b[1]);c.lineTo(b[0]-s*Math.cos(g-.42),b[1]-s*Math.sin(g-.42));c.lineTo(b[0]-s*Math.cos(g+.42),b[1]-s*Math.sin(g+.42));c.closePath();c.fill()}
+const dimLen=it=>Math.hypot(it.b[0]-it.a[0],it.b[1]-it.a[1]);
+const dimText=it=>it.txt||(r1(dimLen(it))+' mm');
+let raf=0,live=null;
+function draw(){if(raf)return;raf=requestAnimationFrame(()=>{raf=0;ctx.setTransform(DPR,0,0,DPR,0,0);paint(ctx,view,CW,CH,{sel,live})})}
+function resize(){const r=$('stage').getBoundingClientRect();if(!r.width||!r.height)return;DPR=Math.min(devicePixelRatio||1,2);CW=r.width;CH=r.height;cv.width=Math.round(CW*DPR);cv.height=Math.round(CH*DPR);draw()}
+new ResizeObserver(resize).observe($('stage'));
+function zoomAt(sx,sy,f){const w=toW(sx,sy),z=Math.max(.15,Math.min(40,view.z*f));view.z=z;view.x=w[0]-sx/z;view.y=w[1]-sy/z;placeTin();draw()}
+function fit(){const b=allBounds();if(!b){view={x:-CW/4,y:-CH/4,z:2};draw();return}const m=30,z=Math.max(.15,Math.min(12,Math.min((CW-2*m)/Math.max(b[2]-b[0],10),(CH-2*m)/Math.max(b[3]-b[1],10))));view={z,x:(b[0]+b[2])/2-CW/2/z,y:(b[1]+b[3])/2-CH/2/z};draw()}
+$('fit').onclick=fit;$('zin').onclick=()=>zoomAt(CW/2,CH/2,1.3);$('zout').onclick=()=>zoomAt(CW/2,CH/2,1/1.3);
+cv.addEventListener('wheel',e=>{e.preventDefault();const r=cv.getBoundingClientRect();if(e.ctrlKey||e.deltaMode||Math.abs(e.deltaY)>=50||!e.deltaX&&Math.abs(e.deltaY)%1===0&&Math.abs(e.deltaY)>30)zoomAt(e.clientX-r.left,e.clientY-r.top,Math.exp(-e.deltaY*(e.ctrlKey?.01:.0015)));else{view.x+=e.deltaX/view.z;view.y+=e.deltaY/view.z;draw()}},{passive:false});
+
+/* ---------- pointer input ---------- */
+const PT=new Map(); let act=null, pinch=null, spaceDown=false;
+function sxy(e){const r=cv.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]}
+function snap45(a,b){const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy),g=Math.round(Math.atan2(dy,dx)/(Math.PI/4))*(Math.PI/4);return[a[0]+L*Math.cos(g),a[1]+L*Math.sin(g)]}
+cv.addEventListener('pointerdown',e=>{
+  if(!$('tin').hidden)commitText();
+  if(e.pointerType==='pen')penSeen=true;
+  const [sx,sy]=sxy(e);PT.set(e.pointerId,[sx,sy]);try{cv.setPointerCapture(e.pointerId)}catch(_){}
+  if(PT.size===2){if(act&&act.undoOnPinch){items=hist.pop()||items;btns()}act=null;live=null;const p=[...PT.values()];pinch={d:Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1]),m:[(p[0][0]+p[1][0])/2,(p[0][1]+p[1][1])/2]};draw();return}
+  if(PT.size>2)return;
+  const w=toW(sx,sy);
+  const panning=tool==='pan'||spaceDown||e.button===1||(e.pointerType==='touch'&&penSeen&&tool!=='select');
+  if(panning){act={k:'pan',sx,sy,vx:view.x,vy:view.y};cv.style.cursor='grabbing';return}
+  if(tool==='select'){const i=pickAt(w[0],w[1]);sel=i;selBar();if(i<0)act={k:'pan',sx,sy,vx:view.x,vy:view.y};else act={k:'move',w,moved:false};draw();return}
+  if(tool==='erase'){act={k:'erase',did:false};eraseAt(w);return}
+  if(tool==='text'){e.preventDefault();openText(w,null);return}
+  if(tool==='pen'){act={k:'pen',p:[w[0],w[1]],last:[sx,sy]};live={t:'s',p:act.p,c:col,w:wpx/view.z};draw();return}
+  const t={line:'l',arrow:'a',rect:'r',ell:'e',dim:'d'}[tool];act={k:'shape',a:w};live={t,a:w,b:w,c:col,w:wpx/view.z};draw()});
+cv.addEventListener('pointermove',e=>{
+  if(!PT.has(e.pointerId))return;const [sx,sy]=sxy(e);PT.set(e.pointerId,[sx,sy]);
+  if(pinch&&PT.size>=2){const p=[...PT.values()],d=Math.hypot(p[0][0]-p[1][0],p[0][1]-p[1][1]),m=[(p[0][0]+p[1][0])/2,(p[0][1]+p[1][1])/2];
+    view.x-=(m[0]-pinch.m[0])/view.z;view.y-=(m[1]-pinch.m[1])/view.z;if(pinch.d>0)zoomAt(m[0],m[1],d/pinch.d);pinch={d,m};draw();return}
+  if(!act)return;const w=toW(sx,sy);
+  if(act.k==='pan'){view.x=act.vx-(sx-act.sx)/view.z;view.y=act.vy-(sy-act.sy)/view.z;draw()}
+  else if(act.k==='move'&&sel>=0){const dx=w[0]-act.w[0],dy=w[1]-act.w[1];if(!act.moved){if(Math.hypot(dx,dy)*view.z<4)return;commit();act.moved=true;act.undoOnPinch=true}shift(sel,dx,dy);act.w=w;draw()}
+  else if(act.k==='erase')eraseAt(w);
+  else if(act.k==='pen'){const ev=e.getCoalescedEvents?e.getCoalescedEvents():[e];for(const c of ev){const [cx,cy]=sxy(c);if(Math.hypot(cx-act.last[0],cy-act.last[1])<1.2)continue;act.last=[cx,cy];const q=toW(cx,cy);act.p.push(q[0],q[1])}draw()}
+  else if(act.k==='shape'){live.b=e.shiftKey&&live.t!=='r'&&live.t!=='e'?snap45(act.a,w):w;draw()}});
+function up(e){
+  PT.delete(e.pointerId);if(PT.size<2)pinch=null;if(!act)return;const a=act;act=null;cv.style.cursor=tool==='pan'?'grab':tool==='select'?'default':'crosshair';
+  if(a.k==='pen'){commit();items.push({t:'s',p:simplify(a.p,.5/view.z),c:col,w:r2(wpx/view.z)});live=null;after()}
+  else if(a.k==='shape'){const L=Math.hypot(live.b[0]-live.a[0],live.b[1]-live.a[1])*view.z;if(L>4){commit();items.push({t:live.t,a:live.a.map(r2),b:live.b.map(r2),c:col,w:r2(wpx/view.z)})}live=null;after()}
+  else if(a.k==='move'&&a.moved)after();
+  else if(a.k==='erase'&&a.did)after();}
+cv.addEventListener('pointerup',up);cv.addEventListener('pointercancel',up);
+function shift(i,dx,dy){const it=items[i];if(it.t==='s'){const p=it.p.slice();for(let k=0;k<p.length;k+=2){p[k]+=dx;p[k+1]+=dy}mut(i,{p})}else if(it.a)mut(i,{a:[it.a[0]+dx,it.a[1]+dy],b:[it.b[0]+dx,it.b[1]+dy]});else mut(i,{p:[it.p[0]+dx,it.p[1]+dy]})}
+function eraseAt(w){const i=pickAt(w[0],w[1],true);if(i<0)return;if(!act.did){commit();act.did=true}items=items.filter((_,k)=>k!==i);draw()}
+
+/* ---------- text labels ---------- */
+let tinAt=null,tinEdit=-1;
+function openText(w,i){tinAt=w;tinEdit=i==null?-1:i;const t=$('tin');t.value=i==null?'':(items[i].t==='d'?dimText(items[i]):items[i].txt);t.hidden=false;placeTin();t.focus();t.select()}
+function placeTin(){if($('tin').hidden||!tinAt)return;const t=$('tin');t.style.left=Math.max(4,Math.min(CW-170,(tinAt[0]-view.x)*view.z))+'px';t.style.top=Math.max(4,Math.min(CH-44,(tinAt[1]-view.y)*view.z-34))+'px'}
+function commitText(){const t=$('tin');if(t.hidden)return;const v=t.value.trim();t.hidden=true;
+  if(tinEdit>=0&&items[tinEdit]){const it=items[tinEdit];commit();if(it.t==='d')mut(tinEdit,{txt:v&&v!==r1(dimLen(it))+' mm'?v:''});else if(v)mut(tinEdit,{txt:v});else{items=items.filter((_,k)=>k!==tinEdit);sel=-1}}
+  else if(v){commit();items.push({t:'t',p:tinAt.map(r2),txt:v,c:col,s:r2(16/view.z)})}
+  tinEdit=-1;after()}
+$('tin').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();commitText()}else if(e.key==='Escape'){$('tin').hidden=true;tinEdit=-1}e.stopPropagation()});
+$('tin').addEventListener('blur',()=>setTimeout(commitText,60));
+
+/* ---------- selection bar ---------- */
+function selBar(){const b=$('selbar'),it=items[sel];if(!it){b.hidden=true;return}
+  const nm={s:'pen stroke',l:'line',a:'arrow',r:'rectangle',e:'ellipse',d:'dimension '+(it.t==='d'?dimText(it):''),t:'label',p:it.label,i:'photo'}[it.t];
+  let h=`<span class="nm">${esc(nm)}</span>`;
+  if(it.t==='p')h+=Object.keys(VIEWN).map(v=>`<button type="button" data-sv="${v}" aria-pressed="${it.view===v}">${VIEWN[v]}</button>`).join('');
+  if(it.t==='p'||it.t==='i')h+=`<button type="button" data-sa="rl" aria-label="Rotate left 15 degrees">⟲ 15°</button><button type="button" data-sa="rr" aria-label="Rotate right 90 degrees">⟳ 90°</button><button type="button" data-sa="flip">Mirror</button>`;
+  if(it.t==='i')h+=`<button type="button" data-sa="sm" aria-label="Smaller">−</button><button type="button" data-sa="lg" aria-label="Larger">+</button>`;
+  if(it.t==='t'||it.t==='d')h+=`<button type="button" data-sa="edit">Edit text</button>`;
+  if(it.t==='p'||it.t==='i')h+=`<button type="button" data-sa="back">To back</button>`;
+  h+=`<button type="button" data-sa="dup">Copy</button><button type="button" class="del" data-sa="del">Delete</button>`;
+  b.innerHTML=h;b.hidden=false}
+$('selbar').addEventListener('click',async e=>{const b=e.target.closest('button'),it=items[sel];if(!b||!it)return;const a=b.dataset.sa;
+  if(b.dataset.sv){const v=b.dataset.sv;commit();mut(sel,{view:v});const i=sel,st=await getStamp(it.ref,v);if(st&&items[i]&&items[i].view===v)mut(i,{w:st.w,h:st.h});after();return}
+  if(a==='edit'){openText(it.t==='d'?[(it.a[0]+it.b[0])/2,(it.a[1]+it.b[1])/2]:it.p,sel);return}
+  commit();
+  if(a==='del'){items=items.filter((_,k)=>k!==sel);sel=-1}
+  else if(a==='rl')mut(sel,{rot:((it.rot||0)+345)%360});
+  else if(a==='rr')mut(sel,{rot:((it.rot||0)+90)%360});
+  else if(a==='flip')mut(sel,{flip:!it.flip});
+  else if(a==='sm'||a==='lg'){const k=a==='lg'?1.15:1/1.15;mut(sel,{w:it.w*k,h:it.h*k})}
+  else if(a==='back'){const x=items[sel];items=[x].concat(items.filter((_,k)=>k!==sel));sel=0}
+  else if(a==='dup'){const c=JSON.parse(JSON.stringify(it));items.push(c);sel=items.length-1;shift(sel,12/view.z,12/view.z)}
+  after()});
+
+/* ---------- keyboard ---------- */
+addEventListener('keydown',e=>{const tg=e.target;if(tg&&(tg.tagName==='INPUT'||tg.tagName==='TEXTAREA'))return;
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo();return}
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();redo();return}
+  if(e.ctrlKey||e.metaKey||e.altKey)return;
+  if(e.key===' '){spaceDown=true;e.preventDefault();return}
+  if((e.key==='Delete'||e.key==='Backspace')&&sel>=0){commit();items=items.filter((_,k)=>k!==sel);sel=-1;after();return}
+  if(e.key==='Escape'){sel=-1;live=null;act=null;selBar();draw();return}
+  const m={v:'select',h:'pan',p:'pen',l:'line',a:'arrow',r:'rect',o:'ell',d:'dim',t:'text',e:'erase'}[e.key.toLowerCase()];if(m){setTool(m);e.preventDefault()}});
+addEventListener('keyup',e=>{if(e.key===' ')spaceDown=false});
+
+/* ---------- parts library ---------- */
+function loadData(){return fetch('data.json').then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json()}).then(d=>{D=d;
+  d.parts.forEach(p=>PARTS[p.name]=p);d.assemblies.forEach(a=>ASM[a.id]=a);
+  $('sub').textContent=`Design ${d.design}. Sketch at true scale on a millimetre grid, drop in real parts, then send the idea to Claude.`;
+  const size=p=>{const b=p.bbox;return [b[3]-b[0],b[4]-b[1],b[5]-b[2]].map(v=>Math.round(v)).join(' × ')+' mm'};
+  const seen={},shelf=[],made=[],fast=[];
+  d.parts.forEach(p=>{if(p.kind==='fabricated'){made.push({ref:{k:'part',id:p.name},label:p.name,sub:[p.desc,size(p)].filter(Boolean).join(' · '),g:'Made parts in this design'});return}
+    const key=p.sku||p.name;if(seen[key]){seen[key].n++;return}
+    const e={ref:{k:'part',id:p.name},label:p.sku||p.name,sub:'',desc:p.desc||'',size:size(p),n:1,g:p.kind==='fastener'?'Fasteners':'Off-the-shelf parts'};seen[key]=e;(p.kind==='fastener'?fast:shelf).push(e)});
+  shelf.concat(fast).forEach(e=>{e.sub=[e.desc,e.size,e.n>1?`${e.n} used`:''].filter(Boolean).join(' · ')});
+  const by=(a,b)=>a.label.localeCompare(b.label);
+  const asm=[{ref:{k:'all',id:'all'},label:'Whole printer',sub:'every part except fasteners',g:'Assemblies, as context'}].concat(d.assemblies.map(a=>({ref:{k:'asm',id:a.id},label:a.name,sub:`${a.parts.length} parts, in their real positions`,g:'Assemblies, as context'})));
+  LIB=shelf.sort(by).concat(made.sort(by),asm,fast.sort(by));
+  $('aboutlist').innerHTML=d.assemblies.map(a=>`<option value="${esc(a.name)}">`).join('')+d.parts.filter(p=>p.kind!=='fastener').map(p=>`<option value="${esc(p.name)}">`).join('');
+  renderLib();draw()}).catch(e=>{$('libmsg').textContent='The parts list could not be loaded ('+e.message+'). Drawing and sending still work.'})}
+function renderLib(){if(!D)return;const q=$('q').value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  const L=LIB.filter(e=>{const s=(e.label+' '+e.sub).toLowerCase();return q.every(w=>s.includes(w))});let g='',h='';
+  L.slice(0,400).forEach(e=>{if(e.g!==g){g=e.g;h+=`<h3>${esc(g)}</h3>`}h+=`<button type="button" class="li" data-li="${LIB.indexOf(e)}"><b>${esc(e.label)}</b><span>${esc(e.sub)}</span></button>`});
+  $('lib').innerHTML=h;$('libmsg').textContent=L.length?`Pick a view above, then tap a part to drop it on the sheet at true size. ${L.length} match${L.length===1?'':'es'}.`:'No parts match that search.'}
+$('q').addEventListener('input',renderLib);
+$('views').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;placeView=b.dataset.view;document.querySelectorAll('#views button').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+$('lib').addEventListener('click',async e=>{const b=e.target.closest('[data-li]');if(!b)return;const en=LIB[+b.dataset.li],v=placeView;
+  busy('Drawing '+en.label+'…');const st=await getStamp(en.ref,v);busy('');
+  if(!st){$('libmsg').textContent='That part could not be drawn: its 3D model did not load.';return}
+  commit();const c=toW(CW/2,CH/2),n=items.filter(i=>i.t==='p').length%5;items.push({t:'p',ref:en.ref,label:en.label,view:v,rot:0,flip:false,p:[r1(c[0]+n*6/view.z),r1(c[1]+n*6/view.z)],w:st.w,h:st.h});
+  sel=items.length-1;setTool('select');sel=items.length-1;
+  if(st.w*view.z>CW*.95||st.h*view.z>CH*.95||st.w*view.z<24)fit();
+  if(MOB.matches)openSide(false);after()});
+function busy(t){$('busy').hidden=!t;$('busy').textContent=t}
+function refNames(ref){if(!D)return[];if(ref.k==='part')return PARTS[ref.id]?[ref.id]:[];if(ref.k==='asm')return ASM[ref.id]?ASM[ref.id].parts.filter(n=>PARTS[n]):[];return D.parts.filter(p=>p.kind!=='fastener').map(p=>p.name)}
+function loadMeshes(){return meshP||(meshP=fetch('meshes.txt').then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.text()}).then(t=>{const bin=atob(t),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);meshBuf=u.buffer}).catch(e=>{meshP=null;throw e}))}
+const STAMPS=new Map(); let R3=null;
+const skey=(ref,v)=>ref.k+':'+ref.id+':'+v;
+function stampImg(it){const s=STAMPS.get(skey(it.ref,it.view));if(s&&s.img)return s.img;if(!s&&D)getStamp(it.ref,it.view).then(()=>draw());return null}
+function getStamp(ref,v){const k=skey(ref,v);let s=STAMPS.get(k);if(s)return s.p;s={img:null};STAMPS.set(k,s);
+  s.p=(async()=>{try{if(!window.THREE)throw new Error('3D library missing');await loadMeshes();const r=renderStamp(refNames(ref),v);if(!r)throw new Error('no model');
+      const im=new Image();await new Promise((ok,no)=>{im.onload=ok;im.onerror=no;im.src=r.url});s.img=im;s.w=r.w;s.h=r.h;return s}catch(e){STAMPS.delete(k);return null}})();return s.p}
+function renderStamp(names,v){
+  if(!names.length)return null;
+  if(!R3){R3={r:new THREE.WebGLRenderer({antialias:true,alpha:true,preserveDrawingBuffer:true}),fill:new THREE.MeshLambertMaterial({color:0xe4eaf4,polygonOffset:true,polygonOffsetFactor:1,polygonOffsetUnits:1}),edge:new THREE.LineBasicMaterial({color:0x2f3d55})};R3.r.setPixelRatio(1);R3.r.setClearColor(0,0)}
+  const sc=new THREE.Scene(),box=new THREE.Box3(),tmp=[];sc.add(new THREE.HemisphereLight(0xffffff,0x9aa6b8,1.0));
+  names.forEach(n=>{const p=PARTS[n],g=new THREE.BufferGeometry();
+    g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(meshBuf.slice(p.v[0],p.v[0]+p.v[1]*12)),3));g.setIndex(new THREE.BufferAttribute(new Uint32Array(meshBuf.slice(p.t[0],p.t[0]+p.t[1]*12)),1));
+    g.computeVertexNormals();g.computeBoundingBox();box.union(g.boundingBox);const eg=new THREE.EdgesGeometry(g,26);tmp.push(g,eg);sc.add(new THREE.Mesh(g,R3.fill));sc.add(new THREE.LineSegments(eg,R3.edge))});
+  const c=box.getCenter(new THREE.Vector3()),R=box.getSize(new THREE.Vector3()).length()+10;
+  const dir={top:[0,0,1],front:[0,-1,0],right:[1,0,0],iso:[1,-1.25,.85]}[v]||[0,-1,0];
+  const cam=new THREE.OrthographicCamera(-1,1,1,-1,.1,R*4);cam.up.set(v==='top'?0:0,v==='top'?1:0,v==='top'?0:1);
+  cam.position.copy(c).add(new THREE.Vector3(...dir).normalize().multiplyScalar(R*1.5));cam.lookAt(c);cam.updateMatrixWorld();
+  const dl=new THREE.DirectionalLight(0xffffff,.35);dl.position.copy(cam.position).add(new THREE.Vector3(R*.4,-R*.2,R*.6));sc.add(dl);
+  const inv=cam.matrixWorldInverse.copy(cam.matrixWorld).invert();let x0=1e9,x1=-1e9,y0=1e9,y1=-1e9;
+  for(let i=0;i<8;i++){const q=new THREE.Vector3(i&1?box.max.x:box.min.x,i&2?box.max.y:box.min.y,i&4?box.max.z:box.min.z).applyMatrix4(inv);x0=Math.min(x0,q.x);x1=Math.max(x1,q.x);y0=Math.min(y0,q.y);y1=Math.max(y1,q.y)}
+  const pad=.4;x0-=pad;x1+=pad;y0-=pad;y1+=pad;cam.left=x0;cam.right=x1;cam.bottom=y0;cam.top=y1;cam.updateProjectionMatrix();
+  const w=x1-x0,h=y1-y0,k=Math.max(1.5,Math.min(14,1500/Math.max(w,h)));
+  R3.r.setSize(Math.max(8,Math.ceil(w*k)),Math.max(8,Math.ceil(h*k)),false);R3.r.render(sc,cam);const url=R3.r.domElement.toDataURL('image/png');tmp.forEach(g=>g.dispose());
+  return{url,w:r1(w),h:r1(h)}}
+
+/* ---------- photos ---------- */
+const PH=new Map();
+function photoImg(it){let im=PH.get(it.src);if(!im){im=new Image();im.onload=()=>draw();im.src=it.src;PH.set(it.src,im)}return im.complete&&im.naturalWidth?im:null}
+function addPhoto(file){if(!file||!/^image\//.test(file.type))return;const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{
+  const k=Math.min(1,1600/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);
+  const src=c.toDataURL('image/jpeg',.85),w=Math.min(CW*.7/view.z,CH*.7/view.z*c.width/c.height),ctr=toW(CW/2,CH/2);
+  commit();items.unshift({t:'i',src,p:ctr.map(r1),w:r1(w),h:r1(w*c.height/c.width),rot:0,flip:false});sel=0;setTool('select');sel=0;after()};im.src=fr.result};fr.readAsDataURL(file)}
+$('photo').onclick=()=>$('file').click();
+$('file').addEventListener('change',e=>{addPhoto(e.target.files[0]);e.target.value=''});
+addEventListener('paste',e=>{const f=[...(e.clipboardData&&e.clipboardData.files||[])].find(f=>/^image\//.test(f.type));if(f){e.preventDefault();addPhoto(f)}});
+$('stage').addEventListener('dragover',e=>e.preventDefault());
+$('stage').addEventListener('drop',e=>{e.preventDefault();addPhoto(e.dataTransfer.files[0])});
+
+/* ---------- side panel ---------- */
+let curTab='idea';
+function openSide(on){$('side').classList.toggle('open',on);setTimeout(resize,220)}
+document.querySelector('.tabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const t=b.dataset.tab;
+  if(MOB.matches&&t===curTab&&$('side').classList.contains('open')){openSide(false);return}
+  curTab=t;document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));['idea','parts','saved'].forEach(n=>$('pane-'+n).hidden=n!==t);openSide(true)});
+
+/* ---------- draft ---------- */
+let dT=0;
+function saveDraft(){clearTimeout(dT);dT=setTimeout(()=>{const s=JSON.stringify({items,title:$('ititle').value,about:$('iabout').value,notes:$('inotes').value,view});if(s.length<3e6)try{localStorage.setItem('sk:draft',s)}catch(e){}},700)}
+['ititle','iabout','inotes'].forEach(id=>$(id).addEventListener('input',saveDraft));
+function loadScene(s){items=Array.isArray(s.items)?s.items:[];$('ititle').value=s.title||'';$('iabout').value=s.about||'';$('inotes').value=s.notes||'';hist=[];redoS=[];sel=-1;if(s.view&&s.view.z)view=s.view;after()}
+$('new').onclick=()=>{const b=$('new');if(b.getAttribute('aria-pressed')!=='true'){if(!items.length&&!$('inotes').value&&!$('ititle').value)return;b.setAttribute('aria-pressed','true');b.textContent='Clear everything?';setTimeout(()=>{b.setAttribute('aria-pressed','false');b.textContent='New sketch'},3500);return}
+  b.setAttribute('aria-pressed','false');b.textContent='New sketch';openedFrom=null;loadScene({});$('smsg').textContent='';view={x:-CW/2/2,y:-CH/2/2,z:2};draw()};
+
+/* ---------- capabilities: save, send, dictate ---------- */
+let db=null,user=null,me=null,assetsNS=null,commentsNS=null,dictNS=null,sendState='off';
+async function initCaps(){
+  if(!window.claude||!claude.use){$('savedmsg').textContent='Saved sketches appear when this page is open on claude.ai.';$('send').textContent='Save sketch';return}
+  const timer=setTimeout(()=>{if(!db)$('savedmsg').textContent='Saved sketches could not be loaded. Sign in to claude.ai and reload.'},10000);
+  try{db=await claude.use('db');user=await claude.use('user')}catch(e){}
+  try{assetsNS=await claude.use('assets')}catch(e){}
+  try{commentsNS=await claude.use('comments')}catch(e){}
+  try{dictNS=await claude.use('dictation')}catch(e){}
+  if(user){try{me=await user.id()}catch(e){}}
+  if(commentsNS){try{sendState=await commentsNS.canSendToClaude()}catch(e){}}
+  $('send').textContent=sendState==='available'?'Send to Claude':'Save sketch';
+  if(dictNS){$('mic').hidden=false;
+    dictNS.onFinal(({text})=>{const t=$('inotes');t.value=(t.value&&!/\s$/.test(t.value)?t.value+' ':t.value)+text;saveDraft()});
+    dictNS.onState(({state})=>{const on=state==='listening'||state==='starting';$('mic').setAttribute('aria-pressed',on);$('mic').textContent=on?'Stop dictating':'Dictate';$('micmsg').textContent=state==='listening'?'Listening…':''})}
+  if(!db){clearTimeout(timer);$('savedmsg').textContent='Saving needs you to be signed in to claude.ai.';$('send').disabled=true;return}
+  db.collection('sketches').onSnapshot(snap=>{clearTimeout(timer);const L=[];snap.forEach(d=>L.push(Object.assign({id:d.id},d.data())));renderSaved(L)},()=>{clearTimeout(timer);$('savedmsg').textContent='Saved sketches could not be loaded.'})}
+$('mic').onclick=()=>{if(!dictNS)return;if($('mic').getAttribute('aria-pressed')==='true'){dictNS.stop().catch(()=>{});return}
+  dictNS.start().catch(e=>{$('micmsg').textContent=e&&e.code==='not_granted'?'Dictation is off for this page.':'Dictation could not start here. Your keyboard\'s microphone key also works.'})};
+let SAVED=[];
+function renderSaved(L){SAVED=L.sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+  $('savedmsg').textContent=L.length?'':'Nothing saved yet. Sketches you send appear here, and you can reopen one to change it.';
+  $('saved').innerHTML=SAVED.map((s,i)=>`<div class="sk">${/^[0-9a-f]{32}$/.test(s.image||'')?`<img src="/_blob/${s.image}" alt="Sketch: ${esc(s.title||'untitled')}" loading="lazy">`:'<div class="ph"></div>'}<div><b>${esc(s.title||'Untitled sketch')}</b><p>${esc(s.text||'')}</p><span class="meta">${esc(String(s.at||'').slice(0,16).replace('T',' '))} · ${esc(s.status||'open')}</span><br><button type="button" class="lnk" data-open="${i}">Open and edit</button></div></div>`).join('')}
+$('saved').addEventListener('click',async e=>{const b=e.target.closest('[data-open]');if(!b)return;const s=SAVED[+b.dataset.open];
+  if(!/^[0-9a-f]{32}$/.test(s.scene||'')){$('savedmsg').textContent='That sketch has no editable copy stored, only its image.';return}
+  try{const r=await fetch('/_blob/'+s.scene);if(!r.ok)throw 0;const sc=await r.json();loadScene({items:sc.items,title:s.title,about:s.about,notes:s.text});openedFrom=s.id;fit();document.querySelector('[data-tab=idea]').click();$('smsg').textContent='Opened. Sending it again saves a new version.'}catch(_){$('savedmsg').textContent='That sketch could not be opened.'}});
+
+function exportPNG(title){const b=allBounds();const m=14;let x0,y0,w,h;if(b){x0=b[0]-m;y0=b[1]-m-6;w=b[2]-b[0]+2*m;h=b[3]-b[1]+2*m+12}else{x0=view.x;y0=view.y;w=CW/view.z;h=CH/view.z}
+  const z=Math.max(.3,Math.min(8,1800/Math.max(w,h))),W=Math.max(360,Math.ceil(w*z)),H=Math.max(260,Math.ceil(h*z)+30);
+  const c=document.createElement('canvas');c.width=W;c.height=H;paint(c.getContext('2d'),{x:x0,y:y0-30/z,z},W,H,{sel:-1,title,ui:Math.max(1,Math.max(W,H)/1000)});return c}
+function summary(){const P=[],Dm=[],T=[];let strokes=0,shapes=0,photos=0;
+  items.forEach(it=>{if(it.t==='p')P.push({part:it.label,ref:it.ref,view:VIEWN[it.view],rot:it.rot||0,mirrored:!!it.flip,at:it.p.map(r1),size:[it.w,it.h]});
+    else if(it.t==='d')Dm.push({from:it.a.map(r1),to:it.b.map(r1),drawn_mm:r1(dimLen(it)),text:dimText(it)});
+    else if(it.t==='t')T.push({at:it.p.map(r1),text:it.txt});else if(it.t==='s')strokes++;else if(it.t==='i')photos++;else shapes++});
+  return{parts:P,dims:Dm,labels:T,strokes,shapes,photos}}
+$('send').onclick=async()=>{
+  if(!db)return;commitText();
+  const title=$('ititle').value.trim(),text=$('inotes').value.trim(),about=$('iabout').value.trim();
+  if(!items.length&&!text){$('smsg').textContent='Draw something or describe the idea first.';return}
+  $('send').disabled=true;$('smsg').textContent='Sending…';if(dictNS&&$('mic').getAttribute('aria-pressed')==='true')dictNS.stop().catch(()=>{});
+  const ref=db.collection('sketches').doc(),id=ref.id,S=summary(),design=D?D.design:'';
+  let msg=`[Sketch idea ${id}${design?' · '+design:''}]\n${title||'Untitled sketch'}\n${text||'(no text)'}`;
+  if(about)msg+=`\n\nAbout: ${about}`;
+  if(S.parts.length)msg+=`\nParts placed (${S.parts.length}): `+S.parts.slice(0,25).map(p=>`${p.part} (${p.view}${p.rot?', rotated '+p.rot+'°':''})`).join('; ');
+  if(S.dims.length)msg+=`\nDimensions: `+S.dims.slice(0,30).map(d=>d.text).join('; ');
+  if(S.labels.length)msg+=`\nLabels: `+S.labels.slice(0,30).map(l=>'"'+l.text+'"').join('; ');
+  msg+=`\nDrawn: ${S.strokes} pen strokes, ${S.shapes} shapes${S.photos?', '+S.photos+' photo':''}. The image and the editable scene are in sketches/${id}.`;
+  if(new TextEncoder().encode(msg).length>4000)msg=msg.slice(0,3900)+'…';
+  let sendP=Promise.resolve(null);
+  if(sendState==='available')sendP=commentsNS.anchorFor(cv).then(anchor=>commentsNS.sendToClaude({anchor,text:msg}));
+  const png=exportPNG(title);
+  const saveP=(async()=>{let image=null,scene=null,err=null;
+    if(assetsNS){try{const blob=await new Promise(r=>png.toBlob(r,'image/png'));image=(await assetsNS.upload(blob,{type:'image/png'})).id}catch(e){err=e.code||e.message}
+      try{scene=(await assetsNS.upload(new Blob([JSON.stringify({v:1,items})],{type:'application/json'}),{type:'application/json'})).id}catch(e){}}
+    else err='image storage needs edit access';
+    await ref.set(Object.assign({kind:'sketch',title,text,about,image,scene,revises:openedFrom,author:me||null,at:new Date().toISOString(),status:'open',design,units:'mm; x right, y down on the sheet'},S));return err})();
+  const [sendR,saveR]=await Promise.allSettled([sendP,saveP]);const note=[];
+  if(saveR.status==='rejected')note.push('Not saved: '+(saveR.reason&&(saveR.reason.code==='not_granted'?'you need edit or contributor access':saveR.reason.message||saveR.reason.code)));
+  else{note.push('Saved.');if(saveR.value)note.push('The image was not stored ('+saveR.value+').')}
+  if(sendR.status==='fulfilled'&&sendR.value){note.push('Sent to Claude. The reply appears in the comment thread on this page.');try{await ref.update({claude_thread:sendR.value.threadId})}catch(e){}}
+  else if(sendState!=='available')note.push(sendState==='no_session'?'No Claude session is listening right now, so it was only saved. Tell Claude in chat to read your sketches.':'Send to Claude is not available here, so it was only saved. Tell Claude in chat to read your sketches.');
+  else{const c=sendR.reason&&sendR.reason.code;note.push(c==='consent_required'?'Not sent to Claude: allow this page to comment for you, then send again.':'Not sent to Claude ('+(c||'error')+'). It is saved, so Claude can still read it.')}
+  $('smsg').textContent=note.join(' ');$('send').disabled=false;if(saveR.status==='fulfilled')openedFrom=id};
+
+/* ---------- boot ---------- */
+(function(){const d=LS.get('draft',null);if(d&&(d.items&&d.items.length||d.notes||d.title)){loadScene(d)}else after();
+  if(MOB.matches)$('side').classList.remove('open');
+  resize();setTool(tool);loadData();initCaps()})();
+</script>
