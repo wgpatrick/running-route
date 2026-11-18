@@ -1879,6 +1879,49 @@ STAGE_NOTES_BY_DESIGN = {"printer_v8_1": {
             "the print sheet."],
     "gantry": STAGE_NOTES["gantry"],
 }}
+_V9_NOTES = STAGE_NOTES_BY_DESIGN["printer_v9"]
+STAGE_NOTES_BY_DESIGN["printer_v10"] = {
+    "frame": _V9_NOTES["frame"],
+    "zguides": _V9_NOTES["zguides"],
+    "zdrive": _V9_NOTES["zdrive"],
+    "carrier": ["Build the carrier upside down on a flat table (the deck's top face down): lay the deck, set the four 2020 members on it, a cast bracket "
+                "in each inside corner on T-nuts in both legs, then the twelve deck bolts from the deck side (one sits straight outboard of each bed "
+                "stud's hole), thread locker. Check the diagonals. Bolt the three carriage plates to the members' outer faces (two M5 each) and the "
+                "three nut plates under the members (two M5 each). The order differs from the simulation's, which builds part by part in the machine."]
+               + _V9_NOTES["carrier"][1:],
+    "bed": ["No tapping in the bed plate. Countersink the three holes from the top face if SendCutSend did not (90 degrees to 8.96 mm for M4). Then, "
+            "plate upside down on the bench: each M4 x 40 FULLY THREADED countersunk screw through from the top face, washer and nut under the "
+            "plate with medium thread locker, tightened against the countersink (the screw is now a fixed stud); heater pad (230 x 207 mm, between "
+            "the front studs' and the rear stud's washers) and thermal cut-off bonded under the plate.",
+            "Springs over the three studs, an M4 washer on each spring. Lower the plate so the studs pass the deck's three holes (stud 0, front left, "
+            "has the fitted hole; front right the slot; rear the oversize hole). From below: large M4 washer and thumb nut on each stud. Run every "
+            "thumb nut up until its spring is 12.5 mm long (plate underside 17.3 mm above the deck), then level (adjustment section). THEN the "
+            "magnetic base and the print sheet, both centred on the plate.",
+            "Division of labour (docs/PRINTER_V10.md, 'Motor tilt'): the thumb nuts are for the one-time coarse tram. Turn them until the first pass "
+            "of Z_TILT_ADJUST reports less than 0.4 mm at every screw (a quarter turn is 0.175 mm); from then on the three motors level the bed at "
+            "every print start. Do not let the motors take out more than about 1.2 mm at one screw: beyond that the nuts are forced out of square "
+            "in their seats, and at about 1.7 mm the side blocks and the carriage plates' webs reach their limits."],
+    "gantry": STAGE_NOTES["gantry"] + [
+        "X rail (v10): HIWIN MGNR12R cut to 288 mm, flush with both ends of the 288 mm beam. Slide the X block on BEFORE the second Y plate goes on the "
+        "beam: there are no separate rail stops any more, the Y plates' tabs are the stops (they meet the tool plates' edges 1.5 mm beyond the travel). "
+        "Until both Y plates are on, tape the block to the rail.",
+        "X motor and idler stand outboard of the beam's ends, over the Y plates. Motor: on its 4.75 mm plate with four M3 x 8 and NO washers (3.25 mm "
+        "of thread in the motor's 4.5 mm holes; do not substitute longer screws). Fit the Y plates and the Y blocks' screws first; the motor plate's "
+        "and the idler plate's wings pass 1.5 mm above those screw heads.",
+        "X belt plane: the tolerance model puts the idler and the belt clamp more than 1 mm out of plane in about 6 % of builds. Sight along the belt "
+        "after tensioning; if it rides against a flange of the idler, add or remove an M5 shim washer beside the idler's spacer. The motor's pulley "
+        "is set on its shaft to the same plane.",
+        "X switch: on top of the right Y plate's land, on two 5.5 mm spacers, M3 x 16 from above, normal washer and nut under the land (they pass "
+        "1.3 mm above the right Y rail: use these lengths). The front tool plate's striker tab works its lever; X homes at the RIGHT end.",
+        "Y switch: on the bent bracket bolted into the right top rail's top slot behind the Y rail's end; the rear edge of the right Y plate's land "
+        "works its lever. Slide the bracket along the slot to set it (adjustment section).",
+        "HeaterCore: clip it on with its lead sleeve pointing FORWARD, under the tool plates (2.2 mm) and the X block; the leads then turn back "
+        "under the beam and run up the Roto's left side to the toolhead loom: tie them to the probe holder so the loop under the beam stays above "
+        "the nozzle. Not backward (the probe's metal-free zone) and not sideways (the sleeve would meet the top side rail).",
+        "Toolhead loom: clamp it on TOP of the top back rail at x 118 and lead it over the rail's rear edge on a radius of 30 mm or more, down the "
+        "outside of the back wall beside the right Y motor, and in again over the bottom back rail. Nothing may hang inside the frame's rear right "
+        "corner: the toolhead comes within 2.4 mm of the right top rail and 1.4 mm of the back rail."],
+}
 
 
 # =================================================================================================== 4. WIRING
@@ -2344,7 +2387,69 @@ CURATED_V9 = [
 ]
 
 
-CURATED_BY_DESIGN = {"printer_v8_1": CURATED_V8_1, "printer_v8_2": CURATED_V8_2, "printer_v9": CURATED_V9}
+CURATED_V10 = [
+    ("A", "The X rail is a cut-to-length part",
+     "HIWIN MGNR12R cut to 288 mm (11 holes, 19 mm end distances): not a stock length. HIWIN's catalogue allows any length to 2000 mm; resellers that cut "
+     "to order were found only in search snippets, and one warns that a cut piece can come 2 to 3 mm short. Every millimetre the rail is short is a "
+     "millimetre less than 5 mm between the X block and the rail's end at one end of the travel, not a millimetre of travel.",
+     "order 288 +0 / -1 mm with the block; if a stock 300 mm rail is cut at home, cut it with an abrasive disc and deburr, and check the block passes the cut end"),
+    ("A", "The bed mesh does not reach the whole print area",
+     "The probe is 34.5 mm behind the nozzle and is kept 12 mm inside the sheet's edge: the front 34.5 mm, 9.3 mm at each side and 1.75 mm at the rear of the "
+     "229.6 x 214.5 mm print area are never measured; the mesh holds its nearest value there. A probe with no offset is not possible with this sensor "
+     "(docs/PRINTER_V10.md, 'Proposal A').",
+     "print a full-area first layer; three levelling points cannot twist the plate, so what the mesh misses is the plate's own bow only"),
+    ("A", "Lead-screw motors: no thrust rating, datasheet not in hand",
+     "Each StepperOnline 17E19S1684AB4-330RA carries 15 to 21 N of the bed along its screw on its own bearings; the maker states no axial rating.",
+     "get the datasheet and an axial rating from StepperOnline before ordering three; check the screw's run-out on arrival"),
+    ("A", "Bed springs, thumb nuts and print sheet were read from search snippets only",
+     "Century Spring DJ-8X20YCS (7.6 N/mm), Halder DIN 466 M4 thumb nut and the 235 mm PEI sheet with its magnetic base: no maker's page could be "
+     "fetched. The spring's coil diameters, solid height and temperature limit, the sheet's steel thickness (0.4 mm on one listing, 1.2 mm overall on "
+     "two) and the magnetic base's thickness (1.5 mm drawn) are not known. The spring now works at 5.5 to 9.5 mm of the 10 mm the maker lists.",
+     "check each against the maker's page before ordering; measure the sheet and its magnetic base and re-set the probe's z_offset"),
+    ("B", "Motors and thumb nuts: who levels what",
+     "One Z motor may stand about 1.2 mm out of the plane of the other two before the first limit (the nuts' seats; the side blocks and the carriage "
+     "plates' webs follow at about 1.7 mm), and every nut stays on its weight-bearing flank up to about 0.4 mm. Klipper's [z_tilt] has no limit of its own.",
+     "tram once with the thumb nuts until Z_TILT_ADJUST's first pass reports under 0.4 mm at every screw; if it ever reports more than 1 mm, stop and re-tram by hand"),
+    ("B", "Three levelling points: the rear print corners overhang",
+     "The two rear print corners are 115 mm from the rear stud. That is why the plate is 12.7 mm (v9: 6.35 mm on four studs); 1 kg on a rear corner still "
+     "lowers it more than on v9.",
+     "none needed for prints; do not lean on a rear corner while setting the nozzle gap"),
+    ("B", "Thumb nuts are held only by the springs' preload",
+     "42 to 72 N on an M4 thread: the usual arrangement, and it creeps on some machines.",
+     "mark each nut with paint after levelling; check the marks after the first 20 hours"),
+    ("B", "M4 x 40 countersunk screws must be fully threaded",
+     "The lock nut sits 12 to 16 mm under the head; a partly threaded ISO 10642 screw has a plain shank there.",
+     "buy DIN 7991 / ISO 10642 A2 fully threaded"),
+    ("B", "Screw cut to length by the builder",
+     "The screw is sold 330 mm long (328 above the face, assumed) and must be cut to 258 mm so its top stays under the top rails.",
+     "cut, chamfer and run the nut over the end on the bench; or ask StepperOnline for a custom length"),
+    ("B", "Remaining thread backlash at the Z nuts",
+     "The keepers hold the brass nuts both ways at the carrier, but each nut's own thread backlash (0.1 mm assumed) is free when a screw stands low.",
+     "measure the backlash on the built machine (dial indicator, reverse Z); fit the anti-backlash nuts if it is over 0.05 mm"),
+    ("B", "Carriage plates' webs: fatigue was not analysed",
+     "The 1.6 mm 6061 webs bend with every heat cycle, every rail error and every motor levelling move; the tilt allowance holds them to half of yield "
+     "with an assumed stress concentration of 1.7, which is a static figure.",
+     "inspect the webs' radii after the first 100 hours"),
+    ("B", "X belt can run out of plane",
+     "The idler and the belt clamp end up more than 1 mm out of plane in about 6 % of simulated builds (the pulleys are 285 mm apart now).",
+     "sight along the belt after tensioning; shim the idler with M5 shim washers beside its spacer"),
+    ("B", "Heater pad stops 3.75 mm short of the print area at the front and at the rear",
+     "230 x 207 mm of pad under a 229.6 x 214.5 mm print area (96.5 %): the studs' washers are in the way. No thermal map was simulated; the plate is "
+     "12.7 mm thick and takes longer to heat than v9's.",
+     "measure the surface with a thermocouple at the print area's corners at 60 degC; let the bed soak before printing to the edges"),
+    ("B", "HeaterCore leads and toolhead loom are routed differently",
+     "The lead sleeve points forward under the tool plates (2.2 mm clear), and the toolhead loom drops down the outside of the back wall, because the "
+     "toolhead now reaches the right top rail. Neither route has been tried.",
+     "check both by moving the toolhead by hand to all four corners before first power"),
+    ("B", "Part cooling is not modelled", "The duct has no airflow model.", "bridging and overhang test prints"),
+    ("B", "Printed clearance holes and nut pockets rest on an assumed FDM allowance",
+     "Clearance holes in the printed parts are ISO 273 medium + 0.2 mm (M3 3.6); the owner's printer's real undersize is not known.",
+     "print the calibration coupon first"),
+    ("B", "Frame stiffness is not in the twin", "The twin's resonances use belts, guide blocks and the gantry's FEA only.", "resonance measurement E13"),
+]
+
+
+CURATED_BY_DESIGN = {"printer_v8_1": CURATED_V8_1, "printer_v8_2": CURATED_V8_2, "printer_v9": CURATED_V9, "printer_v10": CURATED_V10}
 
 
 def write_open_items(cx: Ctx, bom: dict, fab: dict, asm: dict, wash: list, lead: list) -> dict:

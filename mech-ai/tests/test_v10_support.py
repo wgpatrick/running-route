@@ -243,9 +243,9 @@ def test_v10_bed_is_three_sprung_points_under_a_sheet_the_reach_nearly_fills(v9_
     for i in range(3):
         st = d10.get(f"bed_stud_{i}")
         assert "bed_plate" not in (st.meta.get("threads_into") or []) and f"bed_thumb_{i}" in st.meta["threads_into"]
-    # spring: 7.5 mm compressed, 57 N, inside the maker's 10 mm at the strong end of the +/-2 mm levelling range
+    # spring: 8 mm compressed, 60.8 N, inside the maker's 10 mm at the strong end of the +/-1.5 mm levelling range
     spr = d10.get("bed_spring_0")
-    assert spr.ratings["preload_n"] == pytest.approx(57.0) and 20.0 - m10.SPRING_H + m10.LEVEL_RANGE <= 10.0
+    assert spr.ratings["preload_n"] == pytest.approx(60.8) and 20.0 - m10.SPRING_H + m10.LEVEL_RANGE <= 10.0
 
 
 def test_v10_motor_tilt_allowance_on_the_support_model(v9_v10):

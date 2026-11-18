@@ -6,7 +6,7 @@ The frame (every extrusion, the 340 x 373 x 404 mm cube and the 420 mm envelope)
 1. X TRAVEL 229.6 mm (v9 180). The X rail is as long as the 288 mm beam (HIWIN MGNR12R cut to length; v9 a stock 250), so
    the guide block's centre runs +/-116.3 mm with 5 mm of rail left at each end. To let it:
    - the X motor and idler stand outboard of the block's travel, over the Y plates (pulley centres -141.8 / +142.8, belt
-     plane 6 mm higher); their mounts keep their bolts on the beam's front face and reach outward above the Y plates;
+     plane 8 mm higher); their mounts keep their bolts on the beam's front face and reach outward above the Y plates;
    - the Y plates end in front of the block's path over the beam; from x 139.4 outward a tab on each is the hard stop for
      the tool plates' edge (v9's two rail-stop plates are gone);
    - the toolhead is centred on the block: the Roto (16.2 mm left and 40.9 mm right of its nozzle) and the part fan's plenum
@@ -23,8 +23,8 @@ The frame (every extrusion, the 340 x 373 x 404 mm cube and the 420 mm envelope)
    230 x 207 mm, 180 W: the print area's whole width and all but 3.75 mm of its depth at each end.
 3. THREE LEVELLING POINTS: front left (fitted hole), front right (slot), rear centre (oversize hole), each beside a member
    of the square and near a lead screw. Same stack as v9 (M4 countersunk stud locked by washer and nut under the plate, die
-   spring, thumb nut under the deck; no tapped aluminium), M4 x 40, spring compressed 7.5 mm (57 N). On three points the two
-   rear print corners overhang the rear stud by 115 mm, so the plate is 12.7 mm (v9 6.35 on four).
+   spring, thumb nut under the deck; no tapped aluminium), M4 x 40, spring compressed 8 mm (61 N), +/-1.5 mm. On three points the two
+   rear print corners overhang the rear stud by 115 mm, so the plate is 12.7 mm (v9 6.35 on four), and the nut plates 6.35 mm.
 4. MOTOR TILT: the bed-support checker now works out how far one Z motor may stand out of the plane of the other two before
    a guide block's static rating, a carriage plate's web or a nut seat reaches its limit (requirement and metrics); the web's
    dimensions and the nut seat's play are declared for it.
@@ -148,12 +148,13 @@ SQ_Y0 = 2 * BED_CY - SQ_Y1                # its front outer face (-136.4): the r
 T_DECK = G32           # deck: 3.175 mm 6061 (1/8 in)
 # bed mount: stud (M4 countersunk) - washer - nut - die spring - seat washer - deck - large washer - thumb nut
 W4, W4L, NUT4 = WASHER["normal"]["M4"][2], WASHER["large"]["M4"][2], 3.2
-SPRING_H = 12.5        # DJ-8X20YCS installed: 7.5 mm of its 20 compressed, 57 N (range 10.5..14.5 mm: 72..42 N; the maker lists to 10 mm)
+SPRING_H = 12.0        # DJ-8X20YCS installed: 8 mm of its 20 compressed, 60.8 N (range 10.5..13.5 mm: 72..49 N; the maker lists to 10 mm
+                       # of deflection). v9: 14 mm, 45.6 N: three studs carry more each, the rear one half the bed
 SPRING_K = 7.6
-GAP = W4 + NUT4 + SPRING_H + W4           # plate underside to deck top: 17.3 mm
-STUD_L = 40.0          # M4 x 40 countersunk: 12 mm in the plate, 17.3 gap, deck, washer, 6.5 mm into the thumb nut
+GAP = W4 + NUT4 + SPRING_H + W4           # plate underside to deck top: 16.8 mm
+STUD_L = 40.0          # M4 x 40 countersunk: 12 mm in the plate, 16.8 gap, deck, washer, 7 mm into the thumb nut
 CSK_SINK = (CSK["M4"][0] - CSK["M4"][1]) / 2      # 0.72 mm: how far an M4 countersunk head sits below the surface
-LEVEL_RANGE = 2.0      # +/- at each thumb nut
+LEVEL_RANGE = 1.5      # +/- at each thumb nut (v9 2.0: the spring's 10 mm and the preload margin leave 1.5; the stack-up needs 0.7)
 LEV_X, LEV_Y = 86.0, 109.5                # three studs: front pair at (+/-86, BED_CY - 109.5) beside the square's front member (thumb nuts
                                           # clear of its corner brackets), the rear one on the bed's centre line beside the rear member:
                                           # each 11.4 mm from a member's inner face and within 60 mm of a lead-screw nut
@@ -206,7 +207,7 @@ assert abs(PRINT_X / 2 - (X_CAR_MAX - ES_OT_X)) < 1e-9, 'PRINT_X is the rail-lim
 X_CLAMP_HW = 15.0      # half width of the belt bracket and clamp on the tool plate
 XM_X = -(X_CAR_MAX + X_CLAMP_HW + 2.5 + 8.0)          # -141.8: X pulley (flange radius 8) 2.5 mm beyond the clamp at the end of travel
 XI_X = X_CAR_MAX + X_CLAMP_HW + 2.5 + 9.0             # 142.8: X idler (flange radius 9)
-XD_Z = Z_BEAM + 40.0   # v10: 7 mm higher than v9: the motor and the idler now stand outboard of the beam's ends, over the Y plates,
+XD_Z = Z_BEAM + 41.0   # v10: 8 mm higher than v9: the motor and the idler now stand outboard of the beam's ends, over the Y plates,
                        # and must clear the Y plates and the heads of the Y blocks' screws
 LUG_Z0 = FZ + 10.0 + 4.0  # v8.2: the X idler mount's lug and the X tension anchor's fin start 4 mm above the flush top front rail
 X_PG = 2.75
@@ -243,7 +244,8 @@ Z_DECK1 = Z_BED - GAP                             # top of the deck
 Z_SQT = Z_DECK1 - T_DECK                          # top of the 2020 square
 Z_SQ = Z_SQT - 10.0
 Z_SQB = Z_SQ - 10.0
-T_NP = G48                                        # nut plates: 4.75 mm 6061, under the square (the keeper bolts' 4.8 mm holes are not under the thickness)
+T_NP = G64                                        # nut plates: 6.35 mm 6061 (v9 4.75), under the square: the bed is 0.74 kg heavier, and a
+                                                  # 4.75 mm plate gives 0.067 mm under the nut_thrust case's three times its weight (limit 0.05)
 Z_TAB = Z_SQB - T_NP                              # underside of the nut plates = top of each nut's flange
 ZC = Z_SQB - L_FLEX - 1.0 - 22.7                  # centre of the guide blocks (they hang below the square on the plates' webs)
 Z_RAIL_C = ZC + (PRINT_Z + Z_UP - Z_DN) / 2 + 4.85   # v10: the blocks ride 4.85 mm lower (thicker plate, shorter springs); the rails stay
@@ -657,7 +659,7 @@ def tool_plate_outline(y0, y1, striker=True):
 
 
 ROTO_HOLES = lambda: [(ROTO_O[0], ROTO_O[2]), (ROTO_O[0] + ROTO_H2[0], ROTO_O[2] + ROTO_H2[2])]
-BRK_Z = 27.25                          # belt bracket bolts, from Z_BEAM (v10: 7 mm higher with the belt)
+BRK_Z = 28.25                          # belt bracket bolts, from Z_BEAM (v10: 8 mm higher with the belt)
 
 
 def tool_plate_front_shape():
@@ -1366,10 +1368,10 @@ def build() -> Design:
     # v10: motor and idler stand OUTBOARD of the X block's travel, over the Y plates (pulley centres at -141.8 / +142.8; v9
     # +/-118), so the belt clamp runs to the end of the rail. Each mount is still a plate on the beam's front face (two M5
     # in T-nuts, inside the beam's ends) with a wing that reaches outward above the Y plate and the Y block's screw heads.
-    # Motor: flat 4.75 mm 6061 (v9 3.175; the motor now overhangs the beam's end). Idler: bent 5052 with a forward lug;
+    # Motor: flat 3.175 mm 6061 as v9 (the motor's body passes 2.1 mm above the Y block's screw heads). Idler: bent 5052 with a forward lug;
     # tension: an M3 jack screw in a PEM nut of a bent 5052 anchor pushes the lug (both plates slide on their T-nuts while
     # the bolts are slack)
-    MTM = G48
+    MTM = MT
     yb_f, yb_r = YB0 - 10.0 - MT, YB0 - 10.0
     yb_fm = yb_r - MTM
     fwd = lambda x, y, z: Location(Plane(origin=(x, y, z), x_dir=(1, 0, 0), z_dir=(0, 1, 0)))
@@ -1391,17 +1393,16 @@ def build() -> Design:
     k = 0
     for x in (-15.5, 15.5):
         for z in (-15.5, 15.5):
-            # M3 x 8 with its head on the plate (no washer: 3.25 mm of thread in the motor's 4.5 mm holes)
             add_screw(d, f"x_motor_screw_{k}", "M3", 8, at=(XM_X + x, yb_r, XD_Z + z), direction=(0, -1, 0), body="ybody",
-                      threads_into="x_motor", clamps=("x_motor_mount",)); k += 1
+                      threads_into="x_motor", clamps=("x_motor_mount",), washer=True); k += 1
     for i, x in enumerate(X_MOUNT_BOLTS):
-        add_screw(d, f"x_motor_mount_bolt_{i}", "M5", 12, at=(x, yb_fm, Z_BEAM), direction=(0, 1, 0), body="ybody",
+        add_screw(d, f"x_motor_mount_bolt_{i}", "M5", 10, at=(x, yb_fm, Z_BEAM), direction=(0, 1, 0), body="ybody",
                   threads_into="x_beam", tnut=True, clamps=("x_motor_mount",), washer=True)
     d.join("x_pulley", "x_motor", "set_screw")
     zc_im = (Z_BEAM - 8.0 + XD_Z + 12.0) / 2
     w_im = XD_Z + 12.0 - (Z_BEAM - 8.0)
     LUG_X = 100.0                                     # the idler plate's lug (its inboard end)
-    XIM_BOLTS = (112.0, 134.0)
+    XIM_BOLTS = (116.0, 136.0)                        # the inboard one 6.9 mm clear of the lug's bend
     LUG = 22.0
     JACK_Z, JACK_Y = Z_BEAM + 12.0, yb_r - 15.0
     im = bent_L(MT, R_B32, LUG, BEAM_END - LUG_X, w_im,
@@ -1527,7 +1528,7 @@ def build() -> Design:
     # bolted into the rail's TOP slot (two T-nuts behind the Y rail), 2 mm outboard of the toolhead's reach, and is worked
     # by the rear edge of the right Y plate's land. The bracket slides along the slot for adjustment.
     y_strike = YB0 + LAND_Y1 + TY
-    YE_X = 156.0                                        # the switch board's mounting face
+    YE_X = 155.8                                        # the switch board's mounting face
     ysw = place(d, "y_endstop", endstop_switch(),
                 Location(Plane(origin=(YE_X, y_strike + ES_TRIG, Z_PLATE + 2.0 + ES_SIDE), x_dir=(0, 0, 1), z_dir=(1, 0, 0))))
     ys_holes = ysw.meta["interfaces"]["mount_holes_m3"]
@@ -1667,7 +1668,7 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
     for i in range(len(BED_MOUNTS)):
         bed_unit += [f"bed_stud_{i}{x}" for x in ("", "_washer", "_nut")] + [f"bed_spring_{i}", f"bed_spring_{i}_seat"]
     d.subassemblies["bed_unit"] = [n for n in bed_unit if n in have]
-    d.subassemblies["x_drive"] = ["x_motor_mount", "x_motor", "x_pulley"] + [f"x_motor_screw_{i}" for i in range(4)]
+    d.subassemblies["x_drive"] = ["x_motor_mount", "x_motor", "x_pulley"] + [f"x_motor_screw_{i}{s}" for i in range(4) for s in ("", "_washer")]
     d.subassemblies["x_idler_unit"] = ["x_idler_mount", "x_idler_spacer", "x_idler", "x_idler_bolt", "x_idler_bolt_washer", "x_idler_nut"]
     d.subassemblies["part_cooling"] = ["part_duct", "part_fan"] + [f"part_fan_screw_{i}{s}" for i in range(2)
                                                                    for s in ("", "_washer", "_nwasher", "_nut")]
@@ -1721,7 +1722,7 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
     d.adjustments += [
         Adjustment("probe z_offset in the firmware", "z_offset", range_mm=Z_UP),
         Adjustment("the knurled thumb nut under the deck at each of the three bed studs (0.7 mm per turn)", "bed_level", range_mm=LEVEL_RANGE,
-                   mover="DIN 466 M4 thumb nut", lock="the die spring's preload on the nut's thread (42 to 72 N over the range)"),
+                   mover="DIN 466 M4 thumb nut", lock="the die spring's preload on the nut's thread (49 to 72 N over the range)"),
         Adjustment("x switch: its screws run in slots in the right Y plate's land", "endstop", range_mm=ES_SLOT, joint="x"),
         Adjustment("y switch: its bracket slides along the right top rail's top slot on two T-nuts", "endstop", range_mm=5.0, joint="y"),
         Adjustment("y rails on sliding T-nuts", "rail_align", range_mm=1.6, joint="y",
@@ -1759,7 +1760,7 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
         "payload_x3_on_bed", [*bed_stack, *posts, *carrier, *zcars, *nplates],
         fixed=[(c, on_rail[c]) for c in zcars] + [(nb, on_nut) for nb in nplates],
         loaded=("bed", lambda f: abs(f.center().Z - (Z_SURF)) < 0.05 and f.area > 1000),
-        force=(0.0, 0.0, -w_bed), probe=(BED_CX + PRINT_X / 2, BED_CY + PRINT_Y / 2, Z_SURF), max_deflection=0.3, min_fos=3.0))
+        force=(0.0, 0.0, -w_bed), probe=(BED_CX + PRINT_X / 2, BED_CY - PRINT_Y / 2, Z_SURF), max_deflection=0.3, min_fos=3.0))
     # metal parts in the Z load path (no printed part carries load any more)
     def hole_at(x, y, r):
         # a cylindrical face (a whole hole wall or a piece of one) whose sampled points all lie r from the axis (x, y)
@@ -1791,7 +1792,7 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
     # ================= heat: bed 60 K above the frame =============================
     # how the three studs hold the growing plate. As designed: stud 0 is located in its fitted hole, the other two slip
     # under their thumb-nut washers (declared "sliding free": normal load only). "stuck": the bound where friction never
-    # lets go at any of the three (it does: 0.2 to 0.6 x 48 N against several hundred newtons; the doc has the sums);
+    # lets go at any of the three (it does: 0.2 to 0.6 x 47 to 55 N against several hundred newtons; the doc has the sums);
     # reported, not limited. Carrier and deck 15 K warm under the heater (assumed).
     warm = {c: 15.0 for c in carrier}
     stuck = [(f"bed_thumb_{i}_washer", "z_deck") for i in range(1, len(BED_MOUNTS))]
