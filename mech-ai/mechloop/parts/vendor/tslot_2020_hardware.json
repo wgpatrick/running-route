@@ -1,0 +1,57 @@
+{
+ "retrieved": "2026-11-18",
+ "family": "T-slot hardware for 20 x 20 slot-6 extrusion: slot section, drop-in T-nuts M3 / M5",
+ "vendor": "none read: no supplier drawing could be fetched (every supplier host was refused by the session's network proxy)",
+ "source_level": "stand-in",
+ "source_url": "https://www.electrokit.com/en/product/t-nut-drop-in-for-2020-m5-single/",
+ "title": "Web-search result snippets and two community CAD files already in the repository; NOT a supplier drawing",
+ "state": "stand-in",
+ "wanted": "supplier CAD (STEP) of the drop-in T-nut that will be bought, saved as vendor_cad/inbox/TNUT-2020-M5.step and TNUT-2020-M3.step; the supplier's dimensioned drawing of the extrusion's slot (Misumi HFS5-2020 or the profile that will be bought)",
+ "slot": {
+  "used": {
+   "profile": "Misumi HFS5-2020 (the profile on the BOM), as drawn in a COMMUNITY copy of its section",
+   "opening_mm": 6.0,
+   "lip_thickness_mm": 2.0,
+   "cavity_width_mm": 12.0,
+   "depth_mm": 6.0,
+   "floor_width_mm": 5.88,
+   "centre_groove_depth_mm": 6.3,
+   "wall_angle_deg": 45.0,
+   "source": "vendor_docs/hfs5-2020-profile.dxf (thing_libutils repository, community copy of the Misumi section; measured from its line entities 2026-11-18): opening x = +/-3.0, lip underside at 8.0 from the centre (2.0 thick), cavity to x = +/-6.0, 45 degree walls from (6.0, 7.061) to (2.939, 4.0), flat floor at 4.0 from the centre (6.0 deep), V groove to 3.7 on the centre line",
+   "status": "ASSUMED: a community file, not Misumi's drawing; no tolerance"
+  },
+  "alternative": {
+   "profile": "20 x 20 B-type slot 6 (Bosch-compatible), as drawn in the community STEP that is the extrusion's display model",
+   "opening_mm": 6.0,
+   "lip_thickness_mm": 1.5,
+   "cavity_width_mm": 12.0,
+   "depth_mm": 5.3,
+   "centre_groove_depth_mm": 5.7,
+   "source": "vendor_cad/profile_2020_slot6.step (FreeCAD-library Profile-20x20-B-Type_Slot6_A.step), measured by point-in-solid probing 2026-11-18: lip underside 1.495 mm below the face, floor 5.30 mm below the face from 1 to 3 mm off the centre line, 5.70 mm on the centre line",
+   "status": "ASSUMED: a community file"
+  },
+  "secondary": [
+   {"claim": "20x20 B-type slot 6: groove width 6 mm, groove depth 5.5 mm", "source": "web-search snippet of motedis.es 'Profile 20x20 B type slot 6'", "status": "secondary, unverified (page not fetched)"},
+   {"claim": "2020 profile datasheet: slot width 6.2 mm", "source": "web-search snippet of a 2020 profile datasheet hosted on fab.academany.org", "status": "secondary, unverified (page not fetched)"}
+  ],
+  "simulation_solid": "extrusion_2020's simulation solid has plain rectangular slots 6.2 mm wide and 5.0 mm deep, with no T cavity and no lips: shallower than both drawings (6.0 / 5.3 mm) and without the 2.0 / 1.5 mm lip"
+ },
+ "tnut": {
+  "type": "drop-in (post-assembly insertion: hammer-head / roll-in with a spring ball or leaf that holds it in the slot)",
+  "sizes": ["M3", "M5"],
+  "span_across_slot_mm": {"value": 10.3, "status": "ASSUMED from a search snippet: electrokit.com 'T-nut drop-in for 2020 M5', listed as 6 x 10.3 x 4.4 mm (the listing is marked discontinued); a second snippet gives 10 x 6 x 4 mm for a hammer nut sold for M3 / M4 / M5"},
+  "width_along_slot_mm": {"value": 6.0, "status": "ASSUMED, same snippet"},
+  "overall_height_mm": {"value": 4.4, "status": "ASSUMED, same snippet"},
+  "neck_height_mm": {"value": 1.0, "status": "ASSUMED, no source: the part of the overall height taken to stand in the slot opening between the lips; the rest, 3.4 mm, is the body under the lips"},
+  "thread_length_mm": {"value": 3.4, "status": "ASSUMED, no source: thread is counted only in the body under the lips (the neck's thread, if the bought nut has one, is not counted)"},
+  "m3_body": "ASSUMED the same body as the M5 nut",
+  "not_modelled": ["the chamfered or rounded underside that clears the slot's 45 degree walls", "the spring ball / leaf", "the threaded hole (the thread is the overlap with the screw)"]
+ },
+ "engagement_rule": {
+  "full": "0.8 d of thread in the nut (the height of an ISO 4032 style 1 hex nut is 0.8 to 0.94 d): no finding",
+  "reduced": "0.5 d to 0.8 d (ISO 4035 thin nut height, about 0.5 to 0.6 d): warning, grouped",
+  "short": "under 0.5 d: error",
+  "status": "DERIVED by us from standard nut heights (ISO 4035 height recalled, not fetched); T-nut makers publish no engagement figure that was read"
+ },
+ "bottoming_margin_mm": {"value": 0.5, "status": "DERIVED: ISO 4762 length tolerance js15 (+/-0.29 mm to 10 mm, +/-0.35 to 18 mm; recalled) plus about 0.1 mm each for washer and sheet thickness"}
+}
