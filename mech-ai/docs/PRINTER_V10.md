@@ -361,7 +361,56 @@ the spring preload (factor 1.79, limit 2). The design was changed for both (6.35
 
 ## Numbers against v9
 
-«NUMBERS»
+`score --assembly` on both (v9: out/printer_v9/scores.jsonl, 2026-11-18 10:16; v10: out/printer_v10/scores.jsonl,
+2026-11-18 23:03). FEA and tolerance figures are from each design's full verify.
+
+| | v9 | v10 | |
+|---|---|---|---|
+| Errors / warnings | 0 / 51 | 0 / 58 | |
+| X travel, working / mechanical | 180 / 183 mm | **229.6 / 232.6 mm** | +27.6 % |
+| Y travel | 214.5 mm | 214.5 mm | |
+| Print area | 180 x 214.5 mm, 386 cm2 | **229.6 x 214.5 mm, 492 cm2** | +28 % |
+| ... of which probed | 180 x 180 mm (84 %) | 211 x 178.25 mm (76 %) | the sheet is no longer wider than the reach |
+| Print sheet / share of it printed on | 257 x 257 / 58 % | **235 x 235 / 89 %** | |
+| Bed plate | MIC-6 265 x 265 x 6.35, 1.25 kg | MIC-6 241 x 241 x 12.7, 2.07 kg | |
+| Levelling points | four | **three** | |
+| Bed to deck gap | 18.8 mm | 16.8 mm | |
+| Total mass | 13.65 kg | 14.47 kg | +0.82 kg: the plate (+0.82), nut plates (+0.05), rail (+0.02), less a stud set, two stop plates and a smaller sheet |
+| Moving mass X / Y / Z | 0.359 / 1.236 / 4.715 kg | 0.360 / 1.261 / **5.510 kg** | Z with the 1 kg payload in both |
+| Drive margin X / Y / Z | 8.4 / 16.1 / 7.9 | 8.4 / 15.9 / 7.2 | requirement 3 |
+| BOM cost (estimate) | $1,008 | $1,007 | the cut-to-length HIWIN rail is priced by the catalogue's generic rail formula ($17.5): expect more |
+| Parts / fasteners | 584 / 195 | 578 / 195 | |
+| Made (laser-cut or printed) parts | 39 | 37 | two rail stops gone; the Y switch's mount is still one part |
+| Assembly time (estimate) | 138.1 min | 136.0 min | 236 placements held (269), 21 from below (20), 17 tool changes (18) |
+| Bed sag, 1 kg at the worst print corner (screw-only bound) | 0.0081 mm | 0.0119 mm | limit 0.02 |
+| 20 N hand load, worst corner | 0.0166 mm | 0.0242 mm | |
+| Nut seating at the LSC-015 budget (0.142 mm) | all seated, least margin 9.4 N | all seated, least margin 10.4 N | |
+| Load a nut loses per mm of height error | 32 to 52 N/mm | 32 to 52 N/mm | the guides are v9's |
+| Allowable height of one screw out of plane | not worked out (the same checker on v9: 1.24 mm, seated to 0.35 mm) | **1.24 mm**, seated to 0.40 mm | new figure |
+| Bed level change over the travel from lead error | 0.077 mm | 0.090 mm | wider print area; re-levelled at each print start |
+| Bed out of level as built (99.7 %) | 1.45 mm | 1.49 mm | what the thumb nuts take out |
+| Probe z_offset range needed (99.7 %) of 1.65 mm | 1.08 mm | 1.27 mm | 77 % of the range |
+| Nut misalignment over the travel (99.7 %) | 2.3 to 2.5 mm | 2.4 to 2.6 mm of 2.6 mm float | two warnings instead of one |
+| Hot bed (+60 K): surface rise at centre / plate out of flat | 0.083 / 0.035 mm | 0.0985 / 0.016 mm | limit 0.1 |
+| Bed heat-up to 60 / 80 degC | 295 / 538 s | 469 / 847 s | same 180 W |
+| Resonance X / Y | 77.4 / 69.0 Hz | 74.8 / 68.6 Hz | X: the belt is 49 mm longer between pulleys. Ranges 69 to 83 and 64 to 76 Hz: inside v9's |
+| Acceleration an owner would run | 8,400 (5,800 to 13,500) mm/s^2 | 8,400 (5,700 to 13,400) mm/s^2 | not a change |
+| Step-loss ceiling | 24,000 mm/s^2 | 24,000 mm/s^2 | |
+| Cross-track RMS / worst | 0.0101 / 0.101 mm | 0.0107 / 0.103 mm | inside each other's ranges |
+| Frame stiffness at the nozzle, screwed X / Y | 1,450 / 1,920 N/mm | 1,570 / 2,011 N/mm | the Y plates are shorter over the beam; the nozzle is 15.5 mm off the block's centre |
+| X belt within 1 mm of plane | 97.9 % of builds | 94.2 % | warning under 95 % |
+| Benchmark time | 2,571 s | 2,571 s | melt-rate bound |
+| Envelope (bounding box at home) | 389 x 419 x 463 mm | 389 x 419 x 471 mm | the X motor stands 8 mm higher; limit 420 x 420 x 480 |
+| Full verify time | 67 min | 66 min | |
+
+The scorecard barely sees this revision, as with v9: its figures are the gantry's, and the twin has one Z drive and no
+bed dynamics. The gantry did change here, and the twin's answer is that it made no difference it can resolve (3 % in X
+resonance against a believability of 15 %). What the twin does not have: the nozzle's 15.5 mm offset along the rail from
+the block's centre (its toolhead-turning term uses the nozzle's distance from the rail only), the X motor plate's wing, and
+the frame.
+
+A firmware-in-the-loop print (real Klipper, the Octopus's STM32F446 dictionary, `examples/motor_bracket.py:bracket`) was
+run on v10 for the viewer: clean, 3,891 s, nozzle within 0.055 mm of the G-code path, no machine collision.
 
 ## Vendor data: what is and is not verified
 
@@ -381,7 +430,26 @@ nut, the magnetic base stand-in, the lead-screw motors' thrust rating.
 
 ## Not tested, not checked, not run
 
-«NOTRUN»
+- No full-machine modal analysis; the carrier's bounce frequency is a hand estimate.
+- The allowable motor tilt is a rigid-body calculation on the support model (blocks, webs, nuts as springs). No FEA of a
+  tilted carrier was made; the web's edgewise stiffness is beam theory (the FEA beam test of the web is of its easy
+  direction only).
+- A 9.525 mm plate, and the rear-corner stiffness with the 6.35 mm nut plates: scaled or taken from the first run, not
+  re-run.
+- Friction at the levelling points; spring fatigue and relaxation at 80 degC; creep of the thumb nuts.
+- A temperature map of the plate; the one-lump heater model gives the times above.
+- Airflow of the part duct (its shape is v9's, moved 15.5 mm with the Roto).
+- The X switch's lever against a 3.175 mm tab; the HeaterCore's lead dress; the loom outside the back wall. Geometry
+  only: the cable check found no clash and enough length.
+- The assembly order in BUILD.md is the simulation's; the practical order is in the build package's stage notes.
+- As v9: bolt preload and contact, buckling, belt tooth load, the lead-screw motors' thrust rating.
+
+What was run for this revision, all on 2026-11-18 and all on the final code: the full `verify` twice (66 min each; the first
+failed on two items and the design was changed, the second is the report above); `score --assembly` (62 min); `tune`
+(Klipper's shaper, pressure-advance and bed-mesh code on the twin); one firmware-in-the-loop print; the viewer export with
+the assembly simulation; the build package with its drawings; the review data; and the whole test suite: «PYTEST».
+Not run: `score --firmware klipper` (the real firmware planning every benchmark print); any test of the generated drawings
+beyond the generator's own checks; nothing physical.
 
 ## Open items and questions for the owner
 
