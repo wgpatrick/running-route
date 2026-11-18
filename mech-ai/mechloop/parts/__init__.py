@@ -132,7 +132,7 @@ def place(design: Design, name: str, stock: Stock, loc: Location = Location(), b
                    meta={"catalog": stock.catalog, "description": stock.description, "cost_usd": stock.cost_usd,
                          "vendor_backed": stock.verified, "source": dict(stock.source),
                          # what the displayed / exported geometry is, and where this instance sits (local -> world)
-                         "model": {x: stock.model[x] for x in ("kind", "source", "file", "note", "key", "replaced")
+                         "model": {x: stock.model[x] for x in ("kind", "source", "file", "note", "key", "replaced", "state")
                                    if x in stock.model} or {"kind": "proxy", "source": "hand-made simulation solid"},
                          "placement": [[trsf.Value(i, j) for j in range(1, 5)] for i in range(1, 4)],
                          "interfaces": {k: [tuple(round(x, 4) for x in tuple((loc * Pos(*p)).position))
@@ -279,10 +279,11 @@ def extrusion_2020(length: float) -> Stock:
         bar -= Rot(rot, 0, 0) * Pos(0, 0, 7.5) * Box(length, 6.2, 5.0)
     bar -= Rot(0, 90, 0) * Cylinder(2.1, length)
     detail, model = details.extrusion_2020(length)
+    from .tslot import slot_2020
     return Stock(bar, f"EXT2020-{int(length)}", f"2020 T-slot extrusion, {length:.0f} mm", 0.45 * length / 1000,
                  material="al6061", detail=detail, model=model,
                  ratings={"Ixx_mm4": 6900.0, "E_mpa": 68900.0, "approximate": True},
-                 interfaces={"slot_width": 6.2, "end_tap": "M5"}, cost_usd=2 + 0.012 * length,
+                 interfaces={"slot_width": 6.2, "end_tap": "M5", "slot": slot_2020()}, cost_usd=2 + 0.012 * length,
                  source=_source("misumi_hfs5_2020", "proxy", "HFS5-2020",
                                 note="typical, unverified: Misumi's catalogue was unreachable. A community DXF of the profile "
                                      "integrates to Ixx 7419 mm^4, 182 mm^2, slot 6.0 (recorded in the file, not applied)."))
@@ -832,11 +833,16 @@ def add_washer(design: Design, name: str, size: str, at, direction=(0, 0, 1), bo
 def add_screw(design: Design, name: str, size: str, length: float, at, direction=(0, 0, -1),
               body: str = "world", threads_into: str | list[str] | None = None, clamps=(),
               tnut: bool = False, washer: bool | str = False, insert: bool | str = False,
-              locking: str | None = None, insert_reason: str | None = None, head: str = "socket") -> Component:
+              locking: str | None = None, insert_reason: str | None = None, head: str = "socket",
+              washers: int = 1) -> Component:
     """Place a cap screw with the underside of its head at `at`, pointing along `direction`.
     Registers it as a Fastener (tool access is checked), allows the thread to overlap the
     part(s) it screws into and records that it holds them. tnut=True means it threads into
-    a T-nut in that part's slot (added to the BOM).
+    a T-nut in that part's slot. In a design with `design.tnut_style = "drop_in"` the T-nut is a real part,
+    `<name>_tnut` (catalogue `tnut_2020`, SKU TNUT-2020-<size>), placed in the slot under the lips on the screw's axis,
+    joined to the screw and the extrusion; without it (older designs) the T-nut is only a BOM line.
+    washers=2 with washer=True stacks two washers under the head (`<name>_washer`, `<name>_washer_2`): `at` is still the
+    face the first one bears on.
     washer=True (or "large"): a catalogue flat washer `<name>_washer` goes under the head. `at` is then the face the
     WASHER bears on; the head sits one washer thickness higher, so the same screw reaches that much less far into its
     thread (the engagement check sees it: choose the length with the washer in).
@@ -858,7 +864,7 @@ def add_screw(design: Design, name: str, size: str, length: float, at, direction
 
         series = "large" if washer == "large" else "normal"
         washer_at = tuple(at)
-        at = tuple(Vector(*at) - dvec * WASHER[series][size][2])
+        at = tuple(Vector(*at) - dvec * WASHER[series][size][2] * max(1, int(washers)))
     loc = Location(Plane(origin=at, z_dir=-dvec))
     c = place(design, name, st, loc, body=body, thread_d=SCREW[size][0],
               threads_into=[threads_into] if isinstance(threads_into, str) else list(threads_into or []),
@@ -891,11 +897,54 @@ def add_screw(design: Design, name: str, size: str, length: float, at, direction
             design.allow_overlap(name, t, max_volume=math.pi * (SCREW[size][0] / 2) ** 2 * length)
             design.join(name, t, "tnut" if tnut else "thread")
     if tnut:
-        design.bom_extra(f"TNUT-2020-{size}", 1, 0.15)
+        if getattr(design, "tnut_style", None):
+            _place_tnut(design, c, name, size, length, at, dvec, body,
+                        [threads_into] if isinstance(threads_into, str) else list(threads_into or []))
+        else:
+            design.bom_extra(f"TNUT-2020-{size}", 1, 0.15)
     if washer_at is not None:
-        add_washer(design, f"{name}_washer", size, washer_at, tuple(-dvec), body=body, screw=name,
-                   series="large" if washer == "large" else "normal")
+        from .hardware import WASHER
+
+        series = "large" if washer == "large" else "normal"
+        for k in range(max(1, int(washers))):
+            add_washer(design, f"{name}_washer" + (f"_{k + 1}" if k else ""), size,
+                       tuple(Vector(*washer_at) - dvec * WASHER[series][size][2] * k), tuple(-dvec), body=body, screw=name,
+                       series=series)
     return c
+
+
+def _place_tnut(design: Design, screw: Component, name: str, size: str, length: float, at, dvec, body: str, targets: list) -> None:
+    """The drawn T-nut of a tnut=True screw: `<name>_tnut` in the slot of the extrusion the screw enters, its bearing
+    face against the underside of the slot's lips, centred on the screw's axis. The simulation solid of the extrusion
+    has a plain slot with no T cavity, so the nut's wings overlap that solid by design (allowed, and limited to the
+    nut's own volume); what the screw may overlap is cut down from "the whole screw" to nothing here (the interference
+    verifier works out what the real slot allows)."""
+    from .tslot import slot_frame, tnut_2020
+
+    st = tnut_2020(size)
+    ext = next((design.get(t) for t in targets if "slot" in (design.get(t).meta.get("interfaces") or {})), None)
+    if ext is None:
+        raise ValueError(f"add_screw('{name}', tnut=True): none of {targets} is a slotted extrusion (threads_into must name it).")
+    fr = slot_frame(ext, tuple(at), tuple(dvec))
+    if fr is None:
+        raise ValueError(f"add_screw('{name}', tnut=True): the screw does not point square into a slot face of '{ext.name}'.")
+    slot = ext.meta["interfaces"]["slot"]
+    import numpy as np
+
+    n = fr["normal"]
+    tip = np.array(tuple(at), dtype=float) + np.array(tuple(dvec), dtype=float) * length
+    depth_tip = fr["depth"] + length                      # `at` is the underside of the head: depth there is -(grip)
+    on_face = tip + n * depth_tip                         # the screw's axis where it crosses the extrusion's face
+    origin = on_face - n * slot["lip"]
+    tn = place(design, f"{name}_tnut", st, Location(Plane(origin=tuple(origin), x_dir=tuple(fr["along"]), z_dir=tuple(n))),
+               body=body, tnut_of=name, slot_of=ext.name)
+    screw.meta["tnut_part"] = tn.name
+    design.join(name, tn.name, "thread")
+    design.join(tn.name, ext.name, "drop-in T-nut in the slot")
+    design.allow_overlap(name, tn.name)
+    design.allow_overlap(tn.name, ext.name, max_volume=float(st.shape.volume) + 1.0)
+    for t in targets:                                     # the screw itself: no blanket excuse any more
+        design.allow_overlap(name, t, max_volume=0.0)
 
 
 @part

@@ -352,6 +352,10 @@ class Design:
     practice: dict = field(default_factory=dict)
     # Declared exceptions to practice rules, each {"rule", "parts", "reason"}: see `waive`.
     waivers: list = field(default_factory=list)
+    # T-nut type for every add_screw(..., tnut=True) and corner-bracket leg on a slot. None (older designs): T-nuts and
+    # bracket screws are BOM lines only. "drop_in": each is a drawn catalogue part (parts.tslot.tnut_2020, post-assembly
+    # insertion), bracket screws are real screws, and the T-slot screw checks of the interference verifier run.
+    tnut_style: Optional[str] = None
 
     # -- helpers ---------------------------------------------------------
     def waive(self, rule: str, parts=None, reason: str = "") -> None:
