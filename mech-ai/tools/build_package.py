@@ -1416,7 +1416,8 @@ NAME_STAGE = [(("bed_probe",), "toolhead"), (("frame_", "post_", "bracket_"), "f
               (("y_rail", "y_carriage"), "yguides"), (("inlet", "earth", "tray_", "electronics_tray", "psu", "control_board", "host"), "bay"),
               (("z_pedestal", "z_bearing", "z_pulley", "leadscrew", "z_idler", "z_sleeve", "z_drive_mount", "z_motor", "z_rear_", "z_fl_", "z_fr_",
                 "z_drive_plate", "z_mount"), "zdrive"),
-              (("z_nut", "nut_pin", "nut_keeper", "nut_block", "nut_plate", "back_plate", "front_plate", "bed_arm", "rear_beam", "front_beam"), "carrier"),
+              (("z_nut", "nut_pin", "nut_keeper", "nut_block", "nut_plate", "back_plate", "front_plate", "bed_arm", "rear_beam", "front_beam",
+                "carriage_plate", "sq_", "z_deck"), "carrier"),
               (("mains_cover",), "bay"), (("bed",), "bed"),
               (("y_motor", "y_idler", "y_tension", "y_endstop", "y_pulley", "y_drive"), "ydrive")]
 
@@ -1844,6 +1845,39 @@ STAGE_NOTES_BY_DESIGN = {"printer_v8_1": {
             "with medium thread locker; heater pad and thermal cut-off under the plate; plate onto the tabs; tie (two M5 x 30 countersunk screws through "
             "plate, spacers and tie into washers and nyloc nuts); tram (adjustment section); THEN the PEI180's magnetic base and the sheet."],
     "gantry": STAGE_NOTES["gantry"],
+}, "printer_v9": {
+    "frame": ["Build the bottom rectangle flat on a surface plate or a known-flat table, then the four posts, then the top; all four top rails are flush. "
+              "The side rails are 373 mm, the front and back rails 300 mm. Check: diagonals of the bottom and top rectangles equal within "
+              "0.5 mm; the frame does not rock."],
+    "zguides": ["Three uprights (v9): one in the left wall and one in the right wall at y -32, one in the back wall at x 65, each between a bottom and a "
+                "top rail on two cast brackets per end. Slide each ZF block onto its rail before the rail goes on its upright. Rail alignment: see "
+                "'rail_align (z)' below: the rear rail is set square to the frame; the left and right rails are tightened last, with the carrier "
+                "bolted to all three blocks and run up and down, so each rail takes the position the carrier gives it.",
+                "Use clearance-class (ZF) blocks on Z: the three screws hold the carrier's tilt, the blocks only locate it."],
+    "zdrive": ["Cut each lead-screw motor's screw to 258 mm above the motor face (hacksaw, file a 0.5 mm chamfer, run the nut over the cut end) "
+               "before fitting. Each motor is a bench unit: motor under its plate (the three plates are one shape), pilot in the plate's 22.3 mm "
+               "hole, four M3 x 10 from above with medium thread locker (they reach 3.65 mm into the motor's 4.5 mm threads: do not substitute "
+               "longer screws). Stand the two spacers on the rail (rear) or the tray over the rail (front), the unit on them, the M5 x 70 post "
+               "bolts with washers into the T-nuts, thread locker. The screw must turn freely by hand, and its top end is free: no bearing."],
+    "carrier": ["Build the carrier upside down on a flat table (the deck's top face down): lay the deck, set the four 2020 members on it, a cast bracket "
+                "in each inside corner on T-nuts in both legs, then the ten deck bolts from the deck side, thread locker. Check the diagonals. "
+                "Bolt the three carriage plates to the members' outer faces (two M5 each) and the three nut plates under the members (two M5 "
+                "each). The order differs from the simulation's, which builds part by part in the machine.",
+                "Each T8 nut: flange under its plate, barrel up through the float hole, pin (M2.5 through the 5 mm sleeve, nylon-insert nut), "
+                "then the keeper under the flange on its two M3 bolts and 3.6 mm spacers (0.1 mm play: the nut must slide sideways by hand).",
+                "Turn the three motors by hand until the nuts sit at the same height, lower the carrier onto the screws, and screw each carriage "
+                "plate to its block (four M3 x 5 with washers and thread locker: they reach 2.9 mm into the block's 3.5 mm threads, do not "
+                "substitute longer screws). Do not force a plate onto its block: slacken the rail instead. Check: the carrier runs the full "
+                "travel without binding; then Z_TILT_ADJUST."],
+    "bed": ["No tapping in the bed plate. Countersink the four holes from the top face if SendCutSend did not (90 degrees to 8.96 mm for M4). Then, "
+            "plate upside down on the bench: each M4 x 35 FULLY THREADED countersunk screw through from the top face, washer and nut under the "
+            "plate with medium thread locker, tightened against the countersink (the screw is now a fixed stud); heater pad and thermal cut-off "
+            "bonded under the plate between the studs.",
+            "Springs over the four studs, an M4 washer on each spring. Lower the plate so the studs pass the deck's four holes (stud 0, front left, "
+            "has the fitted hole; front right the slot). From below: large M4 washer and thumb nut on each stud. Run every thumb nut up until "
+            "its spring is 14 mm long (plate underside 18.8 mm above the deck), then level (adjustment section). THEN the magnetic base and "
+            "the print sheet."],
+    "gantry": STAGE_NOTES["gantry"],
 }}
 
 
@@ -2261,7 +2295,56 @@ CURATED_V8_2 = [
 ]
 
 
-CURATED_BY_DESIGN = {"printer_v8_1": CURATED_V8_1, "printer_v8_2": CURATED_V8_2}
+CURATED_V9 = [
+    ("A", "XY travel, not the bed, limits the print area",
+     "The 257 mm sheet is larger than the gantry's reach (180 mm in X, 214.5 mm in Y). X is held by the rail stops, the belt clamp against the X pulley "
+     "and idler, and the left Y plate's land (2 to 3.5 mm each); Y by the frame's front and back top rails (3.5 and 1.4 mm). docs/PRINTER_V9.md "
+     "proposes the gantry and frame changes; none is made.",
+     "decide on the proposals in docs/PRINTER_V9.md before cutting metal for the gantry"),
+    ("A", "Front 34.5 mm of the print area is beyond the probe",
+     "The probe sits 34.5 mm behind the nozzle, so the front strip of the 180 x 214.5 mm print area is never measured; the mesh holds its nearest value there.",
+     "print a full-area first layer; a probe with no Y offset (proposal A in the doc) removes it"),
+    ("A", "Lead-screw motors: no thrust rating, datasheet not in hand",
+     "Each StepperOnline 17E19S1684AB4-330RA carries about 16 N of the bed along its screw on its own bearings; the maker states no axial rating.",
+     "get the datasheet and an axial rating from StepperOnline before ordering three; check the screw's run-out on arrival"),
+    ("A", "Bed springs, thumb nuts and print sheet were read from search snippets only",
+     "Century Spring DJ-8X20YCS (7.6 N/mm), Halder DIN 466 M4 thumb nut and the 257 mm PEI sheet with its magnetic base: no maker's page could be "
+     "fetched. The spring's coil diameters, solid height and temperature limit, the sheet's steel thickness and the magnetic base's thickness "
+     "(1.5 mm drawn) are not known.",
+     "check each against the maker's page before ordering; measure the magnetic base and re-set the probe's z_offset"),
+    ("B", "Four levelling points can twist the plate",
+     "Three points define a plane; the fourth lets the 6.35 mm plate be twisted (about 56 N/mm at a corner, well under the springs' preload). The bed "
+     "follows whatever the four thumb nuts say.",
+     "level with SCREWS_TILT_CALCULATE or a full bed mesh, not by feel; see the three-point alternative in docs/PRINTER_V9.md"),
+    ("B", "Thumb nuts are held only by the springs' preload",
+     "30 to 61 N on an M4 thread: the usual arrangement, and it creeps on some machines.",
+     "mark each nut with paint after levelling; check the marks after the first 20 hours"),
+    ("B", "M4 x 35 countersunk screws must be fully threaded",
+     "The lock nut sits 6 to 10 mm under the head; a partly threaded ISO 10642 screw has a plain shank there.",
+     "buy DIN 7991 / ISO 10642 A2 fully threaded, or cut M4 x 40 fully threaded screws to length"),
+    ("B", "Screw cut to length by the builder",
+     "The screw is sold 330 mm long (328 above the face, assumed) and must be cut to 258 mm so its top stays under the top rails.",
+     "cut, chamfer and run the nut over the end on the bench; or ask StepperOnline for a custom length"),
+    ("B", "Remaining thread backlash at the Z nuts",
+     "The keepers hold the brass nuts both ways at the carrier, but each nut's own thread backlash (0.1 mm assumed) is free when a screw stands low.",
+     "measure the backlash on the built machine (dial indicator, reverse Z); fit the anti-backlash nuts if it is over 0.05 mm"),
+    ("B", "Carriage plates' webs: fatigue was not analysed",
+     "The 1.6 mm 6061 webs bend a few hundredths of a millimetre every heat cycle and with every rail error; stress at the declared 0.35 mm limit is about "
+     "half of yield, in service a few MPa.",
+     "inspect the webs' radii after the first 100 hours"),
+    ("B", "Heater pad is smaller than the print area",
+     "190 x 180 mm of pad under a 180 x 214.5 mm print area, on a 265 mm plate: the plate's rim and the front and back 17 mm of the print area are "
+     "heated by conduction only. No thermal map was simulated.",
+     "measure the surface with a thermocouple at the print area's corners at 60 degC; let the bed soak before printing to the edges"),
+    ("B", "Part cooling is not modelled", "The duct has no airflow model.", "bridging and overhang test prints"),
+    ("B", "Printed clearance holes and nut pockets rest on an assumed FDM allowance",
+     "Clearance holes in the printed parts are ISO 273 medium + 0.2 mm (M3 3.6); the owner's printer's real undersize is not known.",
+     "print the calibration coupon first"),
+    ("B", "Frame stiffness is not in the twin", "The twin's resonances use belts, guide blocks and the gantry's FEA only.", "resonance measurement E13"),
+]
+
+
+CURATED_BY_DESIGN = {"printer_v8_1": CURATED_V8_1, "printer_v8_2": CURATED_V8_2, "printer_v9": CURATED_V9}
 
 
 def write_open_items(cx: Ctx, bom: dict, fab: dict, asm: dict, wash: list, lead: list) -> dict:
