@@ -451,3 +451,19 @@ print-sheet seller tried). Every figure below is from web-search result snippets
 The SKU of the thumb nut starts `THUMBNUT-`, not `NUT-`: the thread-engagement check then asks one diameter of thread in
 stainless (a tapped part) instead of the whole 9.5 mm height (a hex nut the screw must pass through).
 
+
+## Ninth batch (2026-11-18): print sheet for printer_v10
+
+One part, for a bed sized to the nozzle's reach. No seller's page was fetched (the session's network proxy refuses most
+supplier sites, and that was not worked around): every figure is from web-search result snippets of resellers' listings,
+source level `secondary`, so the part does not count as vendor-backed. Part function in `mechloop/parts/batch9.py`; tests in
+`tests/test_v10_support.py`.
+
+| Part function | What it is | Vendor record | From the snippets | Not obtained (marked on the part) |
+|---|---|---|---|---|
+| `print_sheet_pei235()` | 235 x 235 mm double-sided PEI spring-steel sheet with magnetic base (Creality's Ender-3 plate size; Digitec, Bastelgarage, SainSmart listings) | `creality_pei235.json` | 235 x 235 mm, double-sided PEI on spring steel, sold with a magnetic base | steel thickness (one listing says 0.4 mm, two say 235 x 235 x 1.2 mm: 0.4 mm is drawn), magnetic base thickness (1.5 mm carried over from the 257 mm record; the design draws a stand-in), maximum temperature (carried over), mass (computed from the steel), flatness, price |
+
+Also from search snippets for printer_v10, not a catalogue change: HIWIN MGNR12R rail is sold cut to length by several
+resellers (one lists `MGNR12R-LENGTH-HM`, "length can be customised"); one seller of cut HIWIN rail warns that a cut piece
+can come 2 to 3 mm short. HIWIN's own catalogue (already in the repository, Table 3.81) allows any length up to 2000 mm
+with end distances of 5 to 20 mm. printer_v10's 288 mm X rail rests on those two statements; no price or stock was read.
