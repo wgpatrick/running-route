@@ -319,7 +319,22 @@ envelope) and in again over the bottom back rail. 480 mm of free loom (v9 460).
 than the sheet; web under one thickness). They are drilled and countersunk, not laser cut. Whether SendCutSend's
 countersinking service takes them in this gauge was not checked.
 
-### 11. Guideline conflicts
+### 11. Sub-assemblies (a guideline added while this revision was being made)
+
+`docs/DESIGN_GUIDELINES.md` gained a section during this work: design the machine as sub-assemblies, validate each on its
+own, assemble the validated sub-assemblies in place, and write the assembly plan down as part of the design. It says no
+check exists yet. Where v10 stands:
+
+| | |
+|---|---|
+| Declared in the design and checked as bench units by the assemblability verifier (built on the bench with driver access among their own parts, then installed as one unit) | ten, as v9: `electronics`, `z_drive_rear` / `_fl` / `_fr`, `bed_unit` (plate, three studs with their washers and lock nuts, heater, cut-off, springs and seats), `x_drive`, `x_idler_unit`, `y_drive`, `y_drive_l`, `part_cooling`. All ten were used; 578 of 578 parts placed, 195 of 195 fasteners drivable |
+| Built as units in practice but NOT declared, so not checked as units | the carrier (square, deck, six brackets, nuts and keepers: the build package's stage notes build it upside down on the deck), the gantry beam (beam, X rail and block, both Y plates), the toolhead (tool plates, Roto, hot side, probe holder, duct) |
+| Assembly plan | stated in words in the build package's stage notes (`tools/build_package.py`, generator text) and in `docs/build/printer_v10/ASSEMBLY.md`; the order in BUILD.md is found by the search. It is not data in the design file, and no check runs against it |
+
+Declaring the three missing units changes the assemblability result and needs a full re-verify; it was not done in this
+revision because the guideline arrived after the design had been verified. It is the first thing to do in the next one.
+
+### 12. Guideline conflicts
 
 | Guideline | v10 |
 |---|---|
@@ -425,6 +440,10 @@ that was not worked around. Nothing was downloaded. What is new is from web-sear
 | Heater pad 230 x 207 mm, 180 W | the catalogue's generic pad at a custom size | | a made-to-order size; no supplier checked |
 | M4 x 40 countersunk screws, fully threaded | ISO 10642 from the catalogue's generator | | that the length is stocked fully threaded |
 
+The build package's README carries a freshness warning: six fastener lines (washers, M5 x 10, M3 x 16, M3 nuts) whose mass in
+the report's BOM differs from the modelled components'. v9's package carries the same six. The catalogue was not changed
+between the verify and the package; the cause was not investigated.
+
 Unchanged from v9 and still unverified: the die spring (now used at 6.5 to 9.5 mm of its listed 10 mm), the DIN 466 thumb
 nut, the magnetic base stand-in, the lead-screw motors' thrust rating.
 
@@ -447,7 +466,7 @@ nut, the magnetic base stand-in, the lead-screw motors' thrust rating.
 What was run for this revision, all on 2026-11-18 and all on the final code: the full `verify` twice (66 min each; the first
 failed on two items and the design was changed, the second is the report above); `score --assembly` (62 min); `tune`
 (Klipper's shaper, pressure-advance and bed-mesh code on the twin); one firmware-in-the-loop print; the viewer export with
-the assembly simulation; the build package with its drawings; the review data; and the whole test suite: «PYTEST».
+the assembly simulation; the build package with its drawings; the review data; and the whole test suite: 500 passed in 17 min (`pytest -q`, 14 of them new in `tests/test_v10_support.py`; the 14 were run again after the last export).
 Not run: `score --firmware klipper` (the real firmware planning every benchmark print); any test of the generated drawings
 beyond the generator's own checks; nothing physical.
 
