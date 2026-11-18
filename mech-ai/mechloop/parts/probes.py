@@ -163,11 +163,24 @@ def e2e_nut(model: str = "E2E-X5ME1", washer: bool = False) -> Stock:
     t = b["nut_thickness"] + (b["washer"] if washer else 0.0)
     nut_r = b["nut_across_flats"] / 2
     shape = Pos(0, 0, t / 2) * (Cylinder(nut_r, t) - Cylinder(dia / 2, t))
+    from build123d import RegularPolygon, extrude
+
+    # display model: a hexagon of OMRON's across-flats size and thickness with the thread's bore (the toothed washer,
+    # where there is one, as a ring of the same size under it); the simulation solid stays the round collar
+    w = b["washer"] if washer else 0.0
+    detail = Pos(0, 0, w) * extrude(RegularPolygon(nut_r, 6, major_radius=False), b["nut_thickness"]) - Pos(0, 0, t / 2) * Cylinder(dia / 2, t)
+    if washer:
+        detail = detail + Pos(0, 0, w / 2) * (Cylinder(nut_r, w) - Cylinder(dia / 2, w))
     return Stock(shape, f"NUT-OMRON-E2E-M{dia:g}" + ("-W" if washer else ""),
                  f"clamping nut of an OMRON E2E {v['thread']} sensor" + (" with its toothed washer" if washer else "") + " (supplied with the sensor)",
                  _nut_mass(dia, nut_r, t), material="brass",
                  interfaces={"across_flats": b["nut_across_flats"], "thickness": t, "thread_dia": dia},
-                 cost_usd=0.0,
+                 cost_usd=0.0, detail=detail,
+                 model={"kind": "generated to standard", "source": "hexagon generated from OMRON's drawing dimensions (across flats, "
+                        "thickness; p.27-28 of the E2E data sheet); chamfers and thread not drawn; placeholder for OMRON's CAD",
+                        "protrusions": {k: (1.31, "the hexagon's corners (the simulation solid is a round collar of the across-flats size)")
+                                        for k in ("xmin", "xmax")},
+                        "tolerance": {"volume_ratio": (0.7, 1.6), "mass_ratio": (0.5, 2.0)}},
                  source=_source("omron_e2e", "partial", f"{model} 2M (nut)", unverified=("mass_kg",),
                                 note="across flats and thickness are OMRON's (p.27-28); drawn round; mass from the drawn solid in brass"))
 

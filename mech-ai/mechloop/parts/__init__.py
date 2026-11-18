@@ -699,7 +699,9 @@ def fhcs(size: str = "M5", length: float = 16.0) -> Stock:
 
     shape = Pos(0, 0, -hk / 2) * Cone(d / 2, dk / 2, hk) + Pos(0, 0, -(hk + length) / 2) * Cylinder(d / 2, length - hk)
     mass = (math.pi * (d / 2) ** 2 * length + math.pi / 12 * hk * (dk ** 2 + dk * d + d * d) / 1.0 * 0.25) * 7.85e-6
+    detail, model = details.fhcs(size, length)
     return Stock(shape, f"FHCS-{size}x{length:g}", f"Countersunk socket screw {size} x {length:g} (ISO 10642)", mass,
+                 detail=detail, model=model,
                  ratings={"proof_load_n": SCREW[size][6] * 0.8, "head": "countersunk"},
                  interfaces={"thread_d": d, "head_d": dk, "head_h": 0.0, "hex_key": key, "head": "countersunk", "csk_dia": dk_t,
                              "head_below_surface": round((dk_t - dk) / 2.0, 2)},
@@ -729,17 +731,34 @@ def hex_nut(size: str = "M3", standard: str = "iso4032") -> Stock:
     M5 nut records McMaster's height beside its own (interfaces["height_din934_mcmaster"]) but is not changed by it."""
     from build123d import RegularPolygon, extrude
 
-    if standard not in ("iso4032", "din934", "iso10511"):
-        raise ValueError("hex_nut standard must be 'iso4032', 'din934' or 'iso10511'")
+    if standard not in ("iso4032", "din934", "iso10511", "pem"):
+        raise ValueError("hex_nut standard must be 'iso4032', 'din934', 'iso10511' or 'pem'")
+    if standard == "pem":
+        # A self-clinching nut pressed into sheet by the sheet supplier (PEM S-M3-1 class). STAND-IN: no PennEngineering
+        # drawing was read, so it is drawn as the ISO 4032 hex nut solid it replaced (the plates' hex holes were drawn
+        # for that solid); only the SKU, the BOM line and the state differ. Wanted: the supplier's STEP.
+        af, h = NUT[size]
+        body = extrude(RegularPolygon(af / 2, 6, major_radius=False), h)
+        return Stock(body, f"NUT-PEM-S-{size}-1", f"Self-clinching nut {size} in sheet (PEM S-{size}-1 class; installed by the sheet supplier)",
+                     af * af * 0.866 * h * 7.85e-6 * 0.7, ratings={"approximate": True, "installed_by": "sheet supplier"},
+                     interfaces={"across_flats": af, "height": h, "thread_d": SCREW[size][0]}, cost_usd=0.4,
+                     detail=body, model={"kind": "proxy", "state": "stand-in", "inbox": [f"S-{size}-1"],
+                                         "source": "STAND-IN: drawn as an ISO 4032 hex nut solid (5.5 across flats, 2.4 high for M3); the "
+                                                   "clinch nut's own body diameter, height and shank are not modelled (no drawing read)",
+                                         "tolerance": {"volume_ratio": (0.3, 3.0), "mass_ratio": (0.2, 5.0)}},
+                     source=_source("iso_fasteners", "proxy", f"PEM S-{size}-1 (self-clinching nut)",
+                                    unverified=("body diameter", "height", "shank", "minimum sheet thickness", "mass_kg", "cost"),
+                                    note="stand-in: PennEngineering's drawing was not fetched"))
     if standard == "iso10511":
         if size not in NUT_ISO10511:
             raise ValueError(f"hex_nut: ISO 10511 nylon-insert nuts here are {sorted(NUT_ISO10511)}, not {size}")
         af, h = NUT[size][0], NUT_ISO10511[size]
         body = extrude(RegularPolygon(af / 2, 6, major_radius=False), h)
+        detail, model = details.nyloc_nut(size, af, NUT[size][1], h)
         return Stock(body, f"NUT-{size}-NYLOC", f"Nylon-insert lock nut {size} (ISO 10511, {h:g} mm high)",
                      af * af * 0.866 * h * 7.85e-6 * 0.7, ratings={"locking": "nyloc", "max_temp_c": 120.0},
                      interfaces={"across_flats": af, "height": h, "thread_d": SCREW[size][0]}, cost_usd=0.05,
-                     model={"source": "simulation solid only: ISO 10511 height (recalled), ISO 4032 across flats"},
+                     detail=detail, model=model,
                      source=_source("iso_fasteners", "standard", f"ISO 10511 {size}", unverified=("height", "max_temp_c"),
                                     note="height m max from the ISO 10511 / DIN 985 table, recalled; nylon element about "
                                          "120 degC (NASA RP-1228)"))
@@ -770,7 +789,8 @@ def hex_nut(size: str = "M3", standard: str = "iso4032") -> Stock:
 def add_nut(design: Design, name: str, size: str, at, direction=(0, 0, 1), body: str = "world",
             screw: str | None = None, standard: str = "iso4032", locking: str | None = None) -> Component:
     """Place a hex nut with its bearing face at `at`, body extending along `direction`.
-    Pass `screw=` to record that this nut is what that screw threads into. standard="din934" places the McMaster
+    Pass `screw=` to record that this nut is what that screw threads into. standard="pem": a self-clinching nut in
+    sheet (stand-in solid, SKU NUT-PEM-S-<size>-1). standard="din934" places the McMaster
     DIN 934 nut where it differs from ISO 4032 (M5: 4.0 mm high instead of 4.7).
     locking="nyloc" (or "all_metal", "adhesive", "serrated", "jam"): the nut's locking provision (practice rule FST-070),
     recorded in meta["locking"]; the BOM line stays the nut's own (say the type in your BOM notes), unless
@@ -1056,7 +1076,8 @@ def add_corner_bracket(design: Design, name: str, a: str, b: str, corner, u, v, 
 
 
 # ----------------------------------------------------- more catalog parts (registered on import)
-from .hardware import bed_column_silicone, spacer_lengths, spacer_round  # noqa: E402,F401
+from .hardware import bed_column_silicone, spacer_lengths, spacer_round, washer_toothed  # noqa: E402,F401
+from .tslot import slot_2020, tnut_2020  # noqa: E402,F401
 from .toolhead import extruder_roto, hotend_revo, hotend_v6  # noqa: E402,F401
 from .probes import add_probe_nuts, e2e_nut, probe_omron_e2e  # noqa: E402,F401
 from .batch6 import (fan_cg3010u24, leadscrew_motor_17e19, leadscrew_nut_17e19, manta_m5p, mgn15_rail,  # noqa: E402,F401

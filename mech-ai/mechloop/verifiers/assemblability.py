@@ -183,6 +183,12 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
                 dirs = dict(DIRS)
                 if name in fast_axis:  # a screw only comes out along its axis, with a driver on it
                     dirs = {"axis": fast_axis[name]}
+                else:
+                    from ..assembly.planner import _only_directions
+
+                    only = _only_directions(comps[name])
+                    if only is not None:      # a drop-in T-nut leaves through the slot's opening only
+                        dirs = {k: v for k, v in dirs.items() if k in only}
                 for dname, d in dirs.items():
                     key = (name, dname)
                     if key in blocked_by and blocked_by[key] & remaining:

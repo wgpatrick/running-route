@@ -121,5 +121,34 @@ def washer_flat(size: str = "M3", series: str = "normal") -> Stock:
                  f"Flat washer {size}, {d2:g} x {d1:g} x {h:g} mm ({std})", math.pi * (d2 ** 2 - d1 ** 2) / 4 * h * 7.85e-6,
                  material="steel", cost_usd=0.02, ratings={"approximate": True, "screw": size},
                  interfaces={"od": d2, "bore": d1, "thickness": h},
+                 # the ring at the standard's nominal sizes IS the standard's shape (no chamfer is specified for the display):
+                 # a placeholder until the supplier's STEP is in vendor_cad/inbox/ under the SKU
+                 detail=body, model={"kind": "generated to standard", "source": f"{std} nominal outside diameter, bore and thickness "
+                                     f"(plain ring, generated); placeholder for the supplier's CAD",
+                                     "tolerance": {"volume_ratio": (0.8, 1.25)}},
                  source=_source("iso_fasteners", "standard", f"{std} {size}", unverified=("mass_kg",),
                          note="dimensions: vendor_cad/staging/practice_refs/06_RC_ISO_washers.pdf (distributor's table of the standard)"))
+
+
+# DIN 6797 form J (internal teeth) lock washers, for an earth bond: (bore d1, outside d2, material thickness s), mm.
+# RECALLED from the standard's table (not fetched); bd_warehouse draws the same sizes for its display model.
+WASHER_TOOTHED = {"M3": (3.2, 6.0, 0.4), "M4": (4.3, 8.0, 0.5), "M5": (5.3, 10.0, 0.6), "M6": (6.4, 11.0, 0.7)}
+
+
+@part
+def washer_toothed(size: str = "M5") -> Stock:
+    """Internal-tooth lock washer (DIN 6797 J), for a protective-earth stud: its teeth bite through anodising and paint.
+    Local frame: axis Z, the face on the part at Z=0, washer above. The simulation solid is a plain ring of the
+    material thickness (the teeth's set is not drawn); SKU WASHER-<size>-SERRATED. Dimensions recalled, not fetched."""
+    if size not in WASHER_TOOTHED:
+        raise ValueError(f"washer_toothed: size one of {tuple(WASHER_TOOTHED)}")
+    d1, d2, h = WASHER_TOOTHED[size]
+    body = Pos(0, 0, h / 2) * (Cylinder(d2 / 2, h) - Cylinder(d1 / 2, h))
+    return Stock(body, f"WASHER-{size}-SERRATED", f"Internal-tooth lock washer {size}, {d2:g} x {d1:g} x {h:g} mm (DIN 6797 J)",
+                 math.pi * (d2 ** 2 - d1 ** 2) / 4 * h * 7.85e-6 * 0.8, material="steel", cost_usd=0.05,
+                 ratings={"approximate": True, "screw": size, "locking": "serrated"},
+                 interfaces={"od": d2, "bore": d1, "thickness": h},
+                 detail=body, model={"kind": "generated to standard", "source": "DIN 6797 J sizes (recalled), drawn as a plain ring; "
+                                     "placeholder for the supplier's CAD", "tolerance": {"volume_ratio": (0.8, 1.25)}},
+                 source=_source("iso_fasteners", "partial", f"DIN 6797 J {size}", unverified=("od", "bore", "thickness", "mass_kg"),
+                                note="DIN 6797 sizes recalled from the standard's table, not fetched"))

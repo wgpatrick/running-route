@@ -97,6 +97,16 @@ class _World:
         return vol <= max(lim, self.exact(a, b, (0, 0, 0))) + VOL_TOL
 
 
+def _only_directions(c) -> set | None:
+    """Removal directions a part is limited to (names of DIRS), or None for any. A drawn T-nut (meta["tnut_of"]) of the
+    drop-in type comes out of its slot through the opening only: along its own +Z, the slot's outward normal. So it must
+    be put in before whatever covers that opening, and it can be put in with the frame already closed."""
+    if not c.meta.get("tnut_of") or (c.meta.get("interfaces") or {}).get("insertion") != "drop-in" or not c.meta.get("placement"):
+        return None
+    n = np.array(c.meta["placement"], dtype=float)[:, 2]
+    return {dn for dn, d in DIRS.items() if float(np.dot(n, d)) > 0.99}
+
+
 def _steps(clear: float) -> np.ndarray:
     fine = [0.5, 1, 2, 3, 5, 8, 12]
     coarse = np.arange(16.0, clear + 8.0, 8.0)
@@ -229,12 +239,15 @@ def plan(design: Design, base: str | None = None, members: list[str] | None = No
             if not blk:
                 return [("axis", float("inf"))], None
             return None, {"axis": sorted(blk)}
+        only = _only_directions(W.comps[u]) if len(units[u]) == 1 else None
         for dn, d in DIRS.items():
+            if only is not None and dn not in only:
+                continue                      # a drop-in T-nut leaves its slot through the opening, never along it
             blk, reached = sweep(u, d)
             if not blk:
                 return [(dn, float("inf"))], None
             why[dn] = (sorted(blk), reached)
-        if two_step:
+        if two_step and only is None:
             # back off along one direction as far as it goes, then leave along another
             for dn, (blk, reached) in sorted(why.items(), key=lambda kv: (-kv[1][1], kv[0])):
                 if reached < 2.0:

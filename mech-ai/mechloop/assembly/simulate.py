@@ -228,7 +228,8 @@ def analyse(design: Design, p: Plan | None = None, _depth: int = 0, reorient: bo
             c = comps[st.unit]
             key = c.meta.get("interfaces", {}).get("hex_key")
             row["tool"] = f"{key:g} mm hex key" if key else "driver"
-            t += T_SCREW + (T_TNUT if c.meta.get("tnut") else 0.0) + (T_SCREW_BELOW if how == "from below" else 0.0)
+            # a T-nut that is its own part is costed at its own step (below), not again with its screw
+            t += T_SCREW + (T_TNUT if c.meta.get("tnut") and not c.meta.get("tnut_part") else 0.0) + (T_SCREW_BELOW if how == "from below" else 0.0)
             if last_tool is not None and row["tool"] != last_tool:
                 tool_changes += 1
                 t += T_TOOL_CHANGE
@@ -238,6 +239,9 @@ def analyse(design: Design, p: Plan | None = None, _depth: int = 0, reorient: bo
             loose -= set(st.onto)   # everything this screw touches is now held
         else:
             stable, reason = sup["stable"], sup.get("reason")
+            is_tnut = st.kind == "part" and bool(comps[st.unit].meta.get("tnut_of"))
+            if is_tnut:      # a drop-in T-nut is held in its slot by its spring ball or leaf, whichever way the slot faces
+                stable, reason = True, None
             if stable and st.onto and all(o in loose for o in st.onto):
                 stable, reason = False, "it rests only on parts that are themselves still loose"
             row["rests_stably"] = stable
@@ -246,7 +250,7 @@ def analyse(design: Design, p: Plan | None = None, _depth: int = 0, reorient: bo
                 counts["needs_holding"] += 1
                 loose |= set(st.parts)
             sup = {"stable": stable}
-            t += T_SUBASM if st.kind == "subassembly" else T_PLACE
+            t += T_SUBASM if st.kind == "subassembly" else (T_TNUT if is_tnut else T_PLACE)
             t += min(10.0, 3.0 * sum(comps[q].mass() for q in st.parts))
             t += (T_HOLD if not sup["stable"] else 0.0) + (T_BELOW if how == "from below" else T_SIDE if how == "from the side" else 0.0)
             if len(st.path) > 1:
