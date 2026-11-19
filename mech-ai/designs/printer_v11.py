@@ -228,7 +228,7 @@ KEEP_HOLES = None             # set below: the keeper's two bolts (one each side
 NUT_FLOAT = 2.8
 NUT_FT = 6.0                  # the POM nut's flange thickness (STAND-IN, estimated from photographs)
 KEEP_GAP, T_KEEP, KEEP_BX = 0.1, 3.175, 19.0   # nut keeper: axial play, thickness (6061), bolts along the member from the nut
-KEEP_HOLES = [(-KEEP_BX, 0.0), (KEEP_BX, 13.0)]  # v11: the +x one beside the open slot (local x along the member, y outward)
+KEEP_HOLES = [(-KEEP_BX, 0.0), (KEEP_BX, 15.5)]  # v11: the +x one beside the open slot (local x along the member, y outward)
 Z_DN = 3.0
 Z_UP = 1.65
 Z_RAIL_L = 250.0
@@ -313,8 +313,8 @@ ZC = Z_SQB - L_FLEX - 1.0 - 22.7                  # centre of the guide blocks (
 Z_RAIL_C = Z_RAIL_C_FIXED                            # v11: rails where v9 / v10 had them; the blocks ride 6.35 mm higher (11.5 mm of rail below, 8.5 above)
 NP_HOLE = 2 * (4.0 + NUT_FLOAT) + 0.8             # v11: the screw passes the plate with the nut's float (the POM nut's barrel hangs BELOW)
 KP_HOLE = 2 * (12.7 / 2 + NUT_FLOAT) + 0.8        # v11: the keeper's hole: the POM barrel (12.7, stand-in) with its float
-NP_U, NP_R1 = 26.0, 21.5                          # nut plate: half length along the member (v11: 26, clear of the posts' drivers), reach beyond the nut
-NP_BOLT_U = 20.0                                  # its two M5 into the member's bottom slot
+NP_U, NP_R1 = 27.75, 23.5                         # nut plate: half length along the member (v11: 27.75, clear of the posts' drivers), reach beyond the nut
+NP_BOLT_U = 20.0                                  # its two M5 into the member's bottom slot (5.0 mm from the plate's ends)
 PIN_SP_D = 5.0                                    # anti-rotation pin: an M2.5 screw through a 5 mm aluminium sleeve
 # ---- Z drive: three integrated lead-screw motors, one per screw, no belt (v8.2) ---------------------------------------
 Z_BASE_R, Z_BASE_F = 20.0, 20.0 + T_TRAY          # v11: post bases: the bottom back rail's top (rear), the tray on the side rails (front)
@@ -672,7 +672,7 @@ def nut_plate_local(z0, z1, nut_out=NUT_OUT):
 def nut_keeper_local(z0, z1):
     """The keeper under a nut's flange (v8.2), drawn about the nut's axis: local x along the member."""
     from build123d import Circle, SlotOverall
-    s = Pos(0, 2.0, z0) * extrude(RectangleRounded(50.0, 32.0, 3.0), z1 - z0)     # v11: local y -14 .. 18 (clear of the plate's M5 drivers)
+    s = Pos(0, 3.0, z0) * extrude(RectangleRounded(50.0, 34.0, 3.0), z1 - z0)     # v11: local y -14 .. 20 (clear of the plate's M5 drivers)
     # the barrel's hole and the slot the pin's nut moves in, as one opening; its four corners rounded (v8.2's were sharp)
     cut = (Circle(KP_HOLE / 2) + Pos(NUT_PIN[0], NUT_PIN[1]) * Rot(0, 0, 135) * SlotOverall(2 * NUT_FLOAT + 7.0, 7.0)
            + Pos(13.0, 0) * RectangleRounded(26.0, KP_HOLE, 0.5)       # v11: open along the member: the keeper slides in under the flange,
@@ -1341,7 +1341,7 @@ def build_frame_z():
     mounts.append(("", 0.0, LS_Y, 0.0, rear_posts, "frame_bot_back", False))
     for sx, tg in ((-1, "_fl"), (1, "_fr")):
         # posts stay on the bottom side rail's centre line (x +/-160), the motor 15.5 mm inboard of it
-        mounts.append((tg, sx * FS_X, FS_Y, 0.0 if sx < 0 else 270.0, [(sx * RAIL_X, FS_Y - MP_POST_DY), (sx * RAIL_X, FS_Y + MP_POST_DY)],
+        mounts.append((tg, sx * FS_X, FS_Y, 0.0 if sx < 0 else 270.0, [(sx * RAIL_X, FS_Y - MP_POST_DY), (sx * RAIL_X, FS_Y + MP_POST_DY - 1.0)],
                        f"frame_bot_{'left' if sx < 0 else 'right'}", True))
     mount_parts = {}
     for tg, x0, y0, turn, posts, rail, on_tray in mounts:
