@@ -42,6 +42,8 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
             _with_subassemblies(design, base, r)
         return r
     with timed(r):
+        from ..assembly.planner import TNUT_CLEAR_MM, _only_directions
+
         meshes = {n: to_trimesh(c.shape) for n, c in comps.items()}
         bounds = {n: m.bounds for n, m in meshes.items()}
         fast_axis = {f.name: tuple(float(x) for x in f.axis) for f in design.fasteners if f.name in comps}
@@ -122,8 +124,9 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
         def held_by(name: str) -> set[str]:
             return {fn for fn, hs in holds.items() if name in hs and fn in remaining}
 
-        def try_remove(name: str, dname: str, d) -> set[str]:
-            """Return the set of parts blocking removal of `name` along d (empty = free)."""
+        def try_remove(name: str, dname: str, d, limit: float | None = None) -> set[str]:
+            """Return the set of parts blocking removal of `name` along d (empty = free). `limit`: sweep only this far
+            (a drop-in T-nut only has to come clear of its slot)."""
             d = np.array(d, dtype=float)
             d /= np.linalg.norm(d)
             others = remaining - {name}
@@ -135,6 +138,8 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
             # distance to carry the part's bbox fully past the others' bbox along d
             clear = max(float(np.max(np.where(d > 1e-9, (hi - b[0]) / np.where(d > 1e-9, d, 1), 0))),
                         float(np.max(np.where(d < -1e-9, (lo - b[1]) / np.where(d < -1e-9, d, 1), 0))), 1.0) + 2.0
+            if limit is not None:
+                clear = min(clear, limit)
             cm.remove_object(name)
             blockers: set[str] = set()
             try:
@@ -184,8 +189,6 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
                 if name in fast_axis:  # a screw only comes out along its axis, with a driver on it
                     dirs = {"axis": fast_axis[name]}
                 else:
-                    from ..assembly.planner import _only_directions
-
                     only = _only_directions(comps[name])
                     if only is not None:      # a drop-in T-nut leaves through the slot's opening only
                         dirs = {k: v for k, v in dirs.items() if k in only}
@@ -193,7 +196,7 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
                     key = (name, dname)
                     if key in blocked_by and blocked_by[key] & remaining:
                         continue
-                    blockers = try_remove(name, dname, d)
+                    blockers = try_remove(name, dname, d, limit=TNUT_CLEAR_MM if comps[name].meta.get("tnut_of") and len(dirs) == 1 else None)
                     if not blockers and name in tools and dname == "axis":
                         blockers = {o for o in tool_blockers(name) if o in remaining}
                         tool_block[name] = blockers

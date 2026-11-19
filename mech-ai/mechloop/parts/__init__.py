@@ -132,7 +132,7 @@ def place(design: Design, name: str, stock: Stock, loc: Location = Location(), b
                    meta={"catalog": stock.catalog, "description": stock.description, "cost_usd": stock.cost_usd,
                          "vendor_backed": stock.verified, "source": dict(stock.source),
                          # what the displayed / exported geometry is, and where this instance sits (local -> world)
-                         "model": {x: stock.model[x] for x in ("kind", "source", "file", "note", "key", "replaced", "state")
+                         "model": {x: stock.model[x] for x in ("kind", "source", "file", "note", "key", "replaced", "state", "remade_from")
                                    if x in stock.model} or {"kind": "proxy", "source": "hand-made simulation solid"},
                          "placement": [[trsf.Value(i, j) for j in range(1, 5)] for i in range(1, 4)],
                          "interfaces": {k: [tuple(round(x, 4) for x in tuple((loc * Pos(*p)).position))
@@ -661,7 +661,10 @@ def mcmaster_part(sku: str) -> dict:
         return {"mcmaster_pn": pn, "mcmaster_pn_status": "unconfirmed: the STEP file delivered under this name was a different part "
                                                          "(" + m["wrong_file"][f"{sku}.step"].split(";")[0] + ")"}
     seen = sku in m.get("screws", {}) or sku in m.get("nuts", {})
-    return {"mcmaster_pn": pn, "mcmaster_pn_status": "confirmed by the delivered STEP file" if seen else
+    # "confirmed" here means only that a STEP file delivered under this number has the ISO dimensions; the number itself
+    # was never checked on McMaster's page (not reachable), and two of them (91290A400, 91290A500) do not fit the series
+    return {"mcmaster_pn": pn, "mcmaster_pn_status": "confirmed by the delivered STEP file (geometry only: the part number was not "
+                                                     "checked on McMaster's page)" if seen else
             "unconfirmed: listed in the collector's sources, no file inspected"}
 
 
@@ -983,7 +986,14 @@ def corner_bracket_2020() -> Stock:
     return Stock(tri, "BRKT-2020", "2020 corner bracket", 0.012, material="al6061", cost_usd=0.6, detail=detail, model=model)
 
 
-BRACKET_SLOT_LEG = {"size": "M5", "length": 10, "washers": 2, "offsets": (13.2, 14.3)}
+# A corner-bracket leg on a T-slot, drawn (design.tnut_style set). The casting's CAD model has a 6 mm wide slot from 7.0 to
+# 16.1 mm from the corner in each leg (so an M5 can sit 10.0 to 13.1 mm out) between side webs 12 mm apart. Two cap-screw
+# heads in the two legs clear each other only with no washer under them (one at 12.25 mm or more), and their drivers
+# only with both at 11.2 mm or more; with one or two washers under each head there is no pair of positions inside the
+# slots. So: M5 x 8, no washer, 11.5 and 12.5 mm out. The bare head on the 6 mm slot is a small seat (ratings:
+# screw_head_seat_too_small); a flanged button-head screw (ISO 7380-2) is what this casting wants and is not in the catalogue.
+BRACKET_SLOT_LEG = {"size": "M5", "length": 8, "washers": 0, "offsets": (11.5, 12.5)}
+BRACKET_CAD_SLOT = (10.0, 13.1, 3.0)        # centres of the slot's end radii and that radius, measured on the CAD model
 
 
 def add_corner_bracket(design: Design, name: str, a: str, b: str, corner, u, v, body: str = "world",
@@ -1000,9 +1010,10 @@ def add_corner_bracket(design: Design, name: str, a: str, b: str, corner, u, v, 
     side. They are components, so interference, driver access, thread and assembly order are checked.
     In a design with `design.tnut_style = "drop_in"` a leg on a T-slot extrusion is drawn too: an M5 cap screw
     `<name>_screw_a` / `<name>_screw` with flat washers under its head (the casting's leg is slotted) into a drop-in T-nut
-    `<..>_tnut` in the extrusion's slot, checked like every other T-nut screw. Defaults (BRACKET_SLOT_LEG): M5 x 10 with two
-    ISO 7089 washers, 13.2 mm from the corner on the first leg and 14.3 mm on the second, so the two heads and their
-    drivers clear each other; `slot_leg={"length": .., "washers": .., "offsets": (.., ..)}` overrides.
+    `<..>_tnut` in the extrusion's slot, checked like every other T-nut screw. Defaults (BRACKET_SLOT_LEG): M5 x 8 with no
+    washer, 11.5 mm from the corner on the first leg and 12.5 mm on the second, so the two heads and their drivers clear
+    each other inside the casting's slots (10.0 to 13.1 mm); `slot_leg={"length": .., "washers": .., "offsets": (.., ..)}`
+    overrides. In such a design the casting's slots are drawn as its CAD model has them.
     The part needs its own M5 clearance hole `screw_offset` mm from the corner along the leg (the
     casting's slot runs from 7 to 16 mm; with cap screws in both legs keep one of them at 12.3 mm or
     more so the heads clear each other). For such a bracket the simulation solid is the casting as it
@@ -1024,7 +1035,12 @@ def add_corner_bracket(design: Design, name: str, a: str, b: str, corner, u, v, 
         if not 7.0 <= screw_offset <= 16.0:
             raise ValueError(f"add_corner_bracket('{name}'): screw_offset {screw_offset} mm is outside the casting's slot (7 to 16 mm).")
         solid = stock.shape - extrude(Polygon((LEG_T, LEG_T), (20 - LEG_T, LEG_T), (LEG_T, 20 - LEG_T), align=None), WEB_IN, both=True)
-        s0, s1, sr = SLOT
+        s0, s1, sr = BRACKET_CAD_SLOT if drawn else SLOT
+        if drawn:
+            for off in ([screw_offset] if not all(is_slot.values()) else []) + [sl["offsets"][i] for i, p_ in enumerate((a, b)) if is_slot[p_]]:
+                if not s0 - 1e-6 <= off <= s1 + 1e-6:
+                    raise ValueError(f"add_corner_bracket('{name}'): a screw {off} mm from the corner is outside the casting's slot "
+                                     f"(an M5 sits {s0:g} to {s1:g} mm out).")
         along_x = (Pos((s0 + s1) / 2, 0, 0) * Box(s1 - s0, 2 * LEG_T, 2 * sr) + Pos(s0, 0, 0) * Rot(90, 0, 0) * Cylinder(sr, 2 * LEG_T)
                    + Pos(s1, 0, 0) * Rot(90, 0, 0) * Cylinder(sr, 2 * LEG_T))
         along_y = (Pos(0, (s0 + s1) / 2, 0) * Box(2 * LEG_T, s1 - s0, 2 * sr) + Pos(0, s0, 0) * Rot(0, 90, 0) * Cylinder(sr, 2 * LEG_T)
@@ -1041,7 +1057,9 @@ def add_corner_bracket(design: Design, name: str, a: str, b: str, corner, u, v, 
             off = sl["offsets"][0 if s_sfx == "_screw_a" else 1]
             foot = origin + along * off
             add_screw(design, name + s_sfx, sl["size"], sl["length"], at=tuple(foot + out * LEG_T), direction=tuple(-out), body=body,
-                      threads_into=part_name, tnut=True, clamps=(name,), washer=bool(sl["washers"]), washers=max(1, int(sl["washers"])))
+                      threads_into=part_name, tnut=True, clamps=(name,), washer=bool(sl["washers"]), washers=max(1, int(sl["washers"])),
+                      locking=sl.get("locking"))
+            design.get(name + s_sfx).meta["bracket_leg_of"] = name
             design.join(name, part_name, "m5_tnut")
             continue
         if is_slot[part_name]:

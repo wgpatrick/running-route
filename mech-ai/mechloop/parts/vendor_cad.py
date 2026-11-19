@@ -48,6 +48,23 @@ _MEM: dict = {}        # key -> Shape (per process)
 STOCKS: dict = {}      # model key -> the last Stock built with it (what the checks compare)
 
 
+STATES = ("supplier CAD", "faithful re-make", "stand-in")
+
+
+def model_state(model: dict | None) -> str:
+    """The owner's three states of a purchased part's geometry (docs/DESIGN_GUIDELINES.md, Purchased-part CAD):
+    "supplier CAD" (kind "vendor CAD": the maker's or supplier's own file), "faithful re-make" (re-made from a named
+    supplier drawing with every dimension in the model and nothing un-dimensioned: the model record carries
+    "remade_from", the drawing), or "stand-in" (everything else: community CAD, geometry generated to a standard, a
+    simulation solid, assumed dimensions). A stand-in is a placeholder until the supplier's file is in vendor_cad/inbox/."""
+    m = model or {}
+    if m.get("kind") == "vendor CAD":
+        return "supplier CAD"
+    if m.get("remade_from") and m.get("state") != "stand-in":
+        return "faithful re-make"
+    return "stand-in"
+
+
 def root() -> Path:
     return Path(os.environ.get("MECHLOOP_VENDOR_CAD", ROOT))
 

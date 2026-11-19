@@ -1094,7 +1094,7 @@ def build_frame_z():
         for sx, sn in ((-1, "left"), (1, "right")):
             # one cast bracket in each inside corner, both legs on T-nuts
             add_corner_bracket(d, f"sq_bracket_{n[0]}{sn[0]}", f"sq_{sn}", f"sq_{n}", (sx * (SQ_X - 20.0), yc - sy * 10.0, Z_SQ),
-                               (0, -sy, 0), (-sx, 0, 0), body="zbody")
+                               (0, -sy, 0), (-sx, 0, 0), body="zbody", slot_leg={"locking": "adhesive"})      # v10.1: on the moving carrier
     d.add("z_deck", deck_shape(), material=AL, body="zbody", process="sheet", meta={"finish": "bare", "description": (
         "Deck: 3.175 mm (1/8 in) 6061 sheet on top of the 2020 square, twelve M5 into T-nuts. It closes the rectangle in shear, "
         "shields the carrier from the heater, and is what the bed is levelled against: the three bed studs pass through it "

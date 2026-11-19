@@ -319,6 +319,21 @@ def _provenance(sku, c, e):
     return "class value", f"catalogue level '{lvl or 'proxy'}': {note}"
 
 
+def _cad_state(c) -> str:
+    """The state of a purchased part's geometry (docs/DESIGN_GUIDELINES.md, Purchased-part CAD): supplier CAD, faithful
+    re-make, or stand-in with what the stand-in is. A BOM line without a part has none."""
+    if c is None:
+        return "no geometry"
+    from mechloop.parts import vendor_cad
+
+    model = c.meta.get("model") or {}
+    st = vendor_cad.model_state(model)
+    if st != "stand-in":
+        return st
+    what = {"generated to standard": "generated to standard", "community CAD": "community CAD"}.get(model.get("kind"), "assumed dimensions / simulation solid")
+    return f"stand-in ({what})"
+
+
 def build_bom(cx: Ctx) -> dict:
     d = cx.d
     lines = OrderedDict()
@@ -362,7 +377,7 @@ def build_bom(cx: Ctx) -> dict:
         out.append({"category": cat, "sku": sku, "key": k, "qty": L["qty"], "qty_model": L["qty_model"], "qty_extra": L["qty_extra"],
                     "description": desc, "maker": maker, "maker_pn": pn, "mcmaster": mc or "", "mcmaster_status": mcs or "",
                     "spec": _spec_of(c) if c is not None else "", "unit": unit, "ext": None if unit is None else unit * L["qty"],
-                    "provenance": prov, "why": why, "used": L["used"]})
+                    "provenance": prov, "why": why, "used": L["used"], "cad": _cad_state(c)})
     order = [n for n, _ in CATEGORIES] + ["Other"]
     out.sort(key=lambda r: (order.index(r["category"]), r["sku"], r["key"]))
     return {"lines": out}
@@ -499,11 +514,23 @@ def write_bom(cx: Ctx) -> dict:
         if not rows:
             continue
         T += [f"## {cat}", "",
-              table(["Qty", "SKU (design)", "Description", "Maker", "Maker part no.", "McMaster no.", "Key spec / what to search for", "Unit $", "Ext $", "Provenance", "Basis"],
+              table(["Qty", "SKU (design)", "Description", "Maker", "Maker part no.", "McMaster no.", "Key spec / what to search for", "Unit $", "Ext $", "Provenance", "Basis", "CAD in the model"],
                     [[L["qty"], f"`{L['key']}`", L["description"], L["maker"], L["maker_pn"],
                       (L["mcmaster"] + (" (" + L["mcmaster_status"] + ")" if L["mcmaster_status"] and "confirmed by" not in L["mcmaster_status"] else "")) or "not recorded",
-                      L["spec"] or "-", money(L["unit"]), money(L["ext"]), f"**{L['provenance']}**" if L["provenance"].startswith("STAND") else L["provenance"], L["why"]]
+                      L["spec"] or "-", money(L["unit"]), money(L["ext"]), f"**{L['provenance']}**" if L["provenance"].startswith("STAND") else L["provenance"], L["why"],
+                      L.get("cad", "")]
                      for L in rows]), ""]
+    cad_parts, cad_lines = Counter(), Counter()
+    for L in lines:
+        if L.get("cad") and L["cad"] != "no geometry":
+            cad_parts[L["cad"]] += L["qty_model"]
+            cad_lines[L["cad"]] += 1
+    T += ["## Geometry of the purchased parts", "",
+          "The owner's practice (docs/DESIGN_GUIDELINES.md, Purchased-part CAD): the supplier's own CAD file, or a faithful re-make from a named "
+          "supplier drawing; anything else is a stand-in, a placeholder until the supplier's file is saved in `vendor_cad/inbox/` under the SKU. "
+          "McMaster numbers in this document were never checked on McMaster's pages (not reachable): `vendor_cad/mcmaster_wanted.csv` lists every "
+          "fastener type with its number marked unverified.", "",
+          table(["State of the geometry", "BOM lines", "Parts in the model"], [[k, cad_lines[k], cad_parts[k]] for k in sorted(cad_parts)]), ""]
     T += ["## Cut lengths", "", "### Extrusions (2020, saw-cut; the tolerance model assumes length within "
           f"+/-{TOL_K * 0.15:.2f} mm + {TOL_K * 0.1:.1f} % and square ends)", "",
           table(["Length mm", "Qty", "Parts", "End work"],
@@ -1676,12 +1703,18 @@ def write_assembly(cx: Ctx, bom: dict, rerun: bool, images: bool) -> dict:
          "- Washers: the model has none. See OPEN_ITEMS.md (washer audit) and decide before you start; a washer under a head changes how far the screw reaches (thread engagement was checked without them).",
          "- Directions: front is -Y (the side the bed plate overhangs), right is +X, up is +Z.", ""]
     cx.need("tightening torque per fastener class", "the assembly guide can only say 'snug'")
-    cx.need("T-nut type (drop-in or slide-in) and when each is inserted", "slide-in T-nuts must be loaded before a slot is closed off; the assembly simulation does not contain T-nuts")
+    drawn_tnuts = [c for c in d.components if c.meta.get("tnut_of")]
+    if not drawn_tnuts:
+        cx.need("T-nut type (drop-in or slide-in) and when each is inserted", "slide-in T-nuts must be loaded before a slot is closed off; the assembly simulation does not contain T-nuts")
     if imgs.get("overall"):
         T += [f"![overall]({imgs['overall']})", ""]
     T += ["## Not in the simulation (do these; they are not in the step lists or the time)", "",
-          f"- {dig(d.bom_extras, 'TNUT-2020-M5', 'qty', default=0)} M5 and {dig(d.bom_extras, 'TNUT-2020-M3', 'qty', default=0)} M3 T-nuts: one under every screw marked 'into T-nut' and under every corner-bracket leg on a slot.",
-          f"- {dig(d.bom_extras, 'SHCS-M5x8', 'qty', default=0)} M5 x 8 corner-bracket screws on T-slots ({sum(1 for c in d.components if (c.sku or '').startswith('BRKT'))} brackets): counted in the BOM, not drawn, so not in any step.",
+          *([f"- T-nuts ARE in the simulation in this design: {sum(1 for c in drawn_tnuts if c.sku.endswith('M5'))} M5 and {sum(1 for c in drawn_tnuts if c.sku.endswith('M3'))} M3 "
+             f"drop-in T-nuts, each its own step (put in through the slot's opening before the part that covers it), and "
+             f"{sum(1 for c in d.components if c.meta.get('bracket_leg_of'))} corner-bracket screws. All are the drop-in type: none has to be loaded from an extrusion's end."]
+            if drawn_tnuts else
+            [f"- {dig(d.bom_extras, 'TNUT-2020-M5', 'qty', default=0)} M5 and {dig(d.bom_extras, 'TNUT-2020-M3', 'qty', default=0)} M3 T-nuts: one under every screw marked 'into T-nut' and under every corner-bracket leg on a slot.",
+             f"- {dig(d.bom_extras, 'SHCS-M5x8', 'qty', default=0)} M5 x 8 corner-bracket screws on T-slots ({sum(1 for c in d.components if (c.sku or '').startswith('BRKT'))} brackets): counted in the BOM, not drawn, so not in any step."]),
           "- Tapping M5 in the extrusion ends listed in BOM.md (cut lengths, end work).",
           "- Pulley set screws (all pulleys), the nyloc nut under each lead-screw nut's pin (leave 0.2 mm slack so the nut can float), the star washer under the earth stud.",
           "- Bonding the heater pad, the thermal cut-off and the magnetic sheet to the plate. Fit the four bed posts and their jam nuts BEFORE the magnetic sheet: it covers their heads.",
@@ -2387,6 +2420,14 @@ CURATED_V9 = [
 ]
 
 
+STAGE_NOTES_BY_DESIGN["printer_v10_1"] = {
+    **STAGE_NOTES_BY_DESIGN["printer_v10"],
+    "frame": ["v10.1: every T-nut is a drop-in nut and is its own step: put it into the slot through the opening, slide it to its place, then offer up "
+              "the part and start the screw. Corner brackets: one M5 x 8 cap screw per leg, no washer (none fits: see OPEN_ITEMS.md), 4 mm key; start "
+              "both screws of a bracket before tightening either."] + list(STAGE_NOTES_BY_DESIGN["printer_v10"]["frame"]),
+}
+
+
 CURATED_V10 = [
     ("A", "The X rail is a cut-to-length part",
      "HIWIN MGNR12R cut to 288 mm (11 holes, 19 mm end distances): not a stock length. HIWIN's catalogue allows any length to 2000 mm; resellers that cut "
@@ -2453,7 +2494,38 @@ CURATED_V10 = [
 ]
 
 
-CURATED_BY_DESIGN = {"printer_v8_1": CURATED_V8_1, "printer_v8_2": CURATED_V8_2, "printer_v9": CURATED_V9, "printer_v10": CURATED_V10}
+CURATED_V10_1 = [
+    ("A", "T-nut and slot dimensions are assumed: the screw-length verdicts rest on them",
+     "No supplier drawing of the 2020 slot or of a drop-in T-nut could be fetched. The checks use: slot 6.0 mm deep with a 2.0 mm lip (a community copy "
+     "of Misumi's HFS5-2020 section); T-nut 4.4 mm high of which 3.4 mm, with its thread, is behind the lip (one search snippet and two guesses); "
+     "0.5 mm kept between a screw's tip and the slot floor; at least 0.5 d of thread. The other slot section on file (B-type: 5.3 mm deep, 1.5 mm lip) "
+     "would make 108 of the 156 T-slot screws end closer than 0.5 mm to its floor, two of them on it (docs/PRINTER_V10_1.md).",
+     "before buying screws: measure the slot depth and lip of the extrusion you bought and the height and thread length of the T-nut you bought, put the "
+     "figures in mechloop/parts/vendor/tslot_2020_hardware.json and re-run verify; save the T-nut's STEP as vendor_cad/inbox/TNUT-2020-M5.step / -M3.step"),
+    ("A", "M5 screws in T-nuts have a thin nut's thread, not a full nut's",
+     "With a 2.0 mm lip and a 6.0 mm slot no M5 screw can have more than 3.5 mm (0.7 d) of thread in a T-nut without coming within 0.5 mm of the floor; "
+     "the 123 M5 T-slot screws have 2.6 to 3.5 mm. The class-8.8 torque (6.5 N.m) assumes a full nut.",
+     "tighten M5 screws in T-nuts to a reduced torque (about 4 N.m, ASSUMED, in proportion to the thread) until the bought T-nut's maker states one"),
+    ("A", "Corner-bracket screws have no washer on the casting's slot",
+     "Each of the 64 bracket legs takes a bare M5 x 8 cap-screw head on the casting's 6 mm slot: 27 % of the seat the head has on a round hole (ratings "
+     "warning). Washers do not fit: with one under each head the two heads in a bracket collide inside the slots, and the screw is then too short or "
+     "bottoms. The guideline 'washers on slots' is therefore NOT met at the brackets.",
+     "use flanged button-head screws ISO 7380-2 M5 x 8 (flange about 11.5 mm; not in the catalogue, not checked) or brackets with round holes; decide before buying"),
+    ("B", "Two washers under 28 M5 x 10 and M5 x 12 screws",
+     "On the 3.2 mm plates (deck, X motor, idler and tension-anchor plates, Y tension anchors, tray, inlet panel) and the 4.75 mm Y plates one washer "
+     "leaves no standard screw length that neither bottoms nor falls under 0.5 d: a second ISO 7089 washer under the head sets the depth.",
+     "fit both washers; or use one 2 mm thick washer (DIN 7349, not in the catalogue) if you have them"),
+    ("B", "Earth stud: the ring terminal's tongue is taken as 0.8 mm",
+     "M5 x 6, toothed washer on the rail, ring terminal, head: the tip ends 4.6 mm below the rail's face with a 0.8 mm tongue. The terminal is an "
+     "electrical BOM line and is not drawn.",
+     "measure the terminal; with a tongue over 0.9 mm the screw has under 0.5 d of thread: use M5 x 8 with a plain washer under the head then, and check the depth"),
+    ("B", "Nut pins: hex nut with thread locker instead of an M2.5 nyloc",
+     "v10 listed M2.5 nylocs on the BOM while drawing plain hex nuts. v10.1 keeps the drawn hex nut and thread-locks it (it clamps the pin's sleeve).",
+     "medium thread locker on the three M2.5 nuts"),
+] + CURATED_V10
+
+CURATED_BY_DESIGN = {"printer_v8_1": CURATED_V8_1, "printer_v8_2": CURATED_V8_2, "printer_v9": CURATED_V9, "printer_v10": CURATED_V10,
+                     "printer_v10_1": CURATED_V10_1}
 
 
 def write_open_items(cx: Ctx, bom: dict, fab: dict, asm: dict, wash: list, lead: list) -> dict:
@@ -2507,7 +2579,8 @@ def write_open_items(cx: Ctx, bom: dict, fab: dict, asm: dict, wash: list, lead:
     add("A", "The simulated assembly order cannot be followed by a person; the guide's stage order is unchecked",
         f"`mechloop assemble` finds an order valid for access in which {len(asm.get('unsupported', []))} units are placed before anything supports them (frame posts and corner brackets come last, the machine is turned over "
         f"{dig(asm, 'plan', 'metrics', 'times_assembly_is_turned')} times). ASSEMBLY.md re-groups the units frame-first; that order was not run through the access checker. Also absent from the simulation and its "
-        f"{dig(asm, 'plan', 'metrics', 'estimated_time_min')} min: {dig(d.bom_extras, 'SHCS-M5x8', 'qty', default=0)} bracket screws, {dig(d.bom_extras, 'TNUT-2020-M5', 'qty', default=0) + dig(d.bom_extras, 'TNUT-2020-M3', 'qty', default=0)} T-nuts, belts, wiring, bonding.",
+        f"{dig(asm, 'plan', 'metrics', 'estimated_time_min')} min: " + ("belts, wiring, bonding (T-nuts and bracket screws are in it)." if getattr(d, "tnut_style", None) else
+        f"{dig(d.bom_extras, 'SHCS-M5x8', 'qty', default=0)} bracket screws, {dig(d.bom_extras, 'TNUT-2020-M5', 'qty', default=0) + dig(d.bom_extras, 'TNUT-2020-M3', 'qty', default=0)} T-nuts, belts, wiring, bonding."),
         "dry-fit each stage; where a screw cannot be reached in stage order, note it and fit that part earlier", "data/assembly_plan.json")
     # ---- thin margins from the report
     bb, env = dig(m, "geometry", "bbox_mm"), d.envelope

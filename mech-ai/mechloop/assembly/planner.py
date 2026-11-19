@@ -97,6 +97,9 @@ class _World:
         return vol <= max(lim, self.exact(a, b, (0, 0, 0))) + VOL_TOL
 
 
+TNUT_CLEAR_MM = 12.0      # how far a drop-in T-nut is swept out of its slot's opening (slot 6 mm deep, nut 4.4 mm high)
+
+
 def _only_directions(c) -> set | None:
     """Removal directions a part is limited to (names of DIRS), or None for any. A drawn T-nut (meta["tnut_of"]) of the
     drop-in type comes out of its slot through the opening only: along its own +Z, the slot's outward normal. So it must
@@ -243,7 +246,9 @@ def plan(design: Design, base: str | None = None, members: list[str] | None = No
         for dn, d in DIRS.items():
             if only is not None and dn not in only:
                 continue                      # a drop-in T-nut leaves its slot through the opening, never along it
-            blk, reached = sweep(u, d)
+            # a drop-in T-nut only has to come clear of its slot: once it is TNUT_CLEAR_MM out of the opening it is a loose
+            # 10 mm part in the hand, not something that must travel in a straight line out of the machine
+            blk, reached = sweep(u, d, limit=TNUT_CLEAR_MM if only is not None else None)
             if not blk:
                 return [(dn, float("inf"))], None
             why[dn] = (sorted(blk), reached)

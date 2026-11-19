@@ -77,6 +77,12 @@ until a check exists.
   `practice` FST-072 (from each part's `meta["service_temp_c"]`).
 - **Washers** wherever a head or nut bears on a slot, an oversized hole, thin aluminium or plastic; not as a
   blanket rule on steel-on-steel joints. Check: washer / head-bearing check.
+- **Every fastener is drawn.** Screws, nuts, washers, T-nuts and bracket screws are parts in the model, not BOM lines,
+  so their length, fit and access are checked. T-nuts are the drop-in type (none is loaded from an extrusion end).
+  Check: `practice` DG-06 (`hardware_bom_only`, `hardware_count_mismatch`, `joint_without_fasteners`; errors) and
+  `interference` `tslot_screws` (`screw_bottoms_in_slot`, `tnut_thread_engagement`; errors), in designs with
+  `design.tnut_style = "drop_in"`. The slot and T-nut dimensions those checks use are stand-ins until a supplier
+  drawing is read (`mechloop/parts/tslot.py`).
 - Thread locking (nyloc or adhesive) on fasteners of moving or vibrating assemblies. Check: `practice`
   FST-070 (declare it with `add_screw(..., locking=...)` / `add_nut(..., locking=...)`).
 - Thread engagement where a thread in aluminium is unavoidable: 6061 error below 1.5 d, warning 1.5 to 2 d

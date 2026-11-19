@@ -130,6 +130,8 @@ def sections(md: str, level: str) -> dict[str, str]:
 
 
 def stem(name: str) -> str:
+    if name.endswith("_tnut"):          # a drawn T-nut is named after its screw: it belongs to that screw's joint
+        name = name[:-5]
     return re.sub(r"_(screw|bolt|nut|washer|spacer|fbolt)(_[a-z0-9]+)?$", "", name)
 
 
@@ -139,7 +141,9 @@ def into_text(j, tapped, into_tnut, hw, parts_by_name) -> str:
         return "a thread tapped in " + ", ".join(sorted({h["part"] for h in tapped}))
     if "NUT" in skus.upper() and "TNUT" not in skus.upper():
         return "a nut"
-    if "TNUT" in skus.upper() or into_tnut:
+    if "TNUT" in skus.upper():
+        return "a drop-in T-nut in the 2020 extrusion's slot (a drawn part; its dimensions are a stand-in)"
+    if into_tnut:
         return "a T-nut in the 2020 extrusion slot, or the extrusion's end thread"
     vend = [m for m in j["members"] if parts_by_name.get(m, {}).get("kind") in ("purchased", "electrical")]
     if vend:

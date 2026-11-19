@@ -177,7 +177,10 @@ def fastener_stack(design, pr: Probe) -> list[dict]:
         tdir = -a
         lo = np.minimum(under, under + tdir * (L + 1)) - hd
         hi = np.maximum(under, under + tdir * (L + 1)) + hd
-        cand = [n for n in pr.near(lo, hi, exclude=(f.name,)) if not (comps[n].sku or "").startswith("SHCS-")]
+        # a drawn T-nut (meta["tnut_of"]) is the nut of its own screw, in the slot: not a part of the stack or of the joint
+        # (interference.tslot_screws judges it); the row names it under "tnut_part"
+        cand = [n for n in pr.near(lo, hi, exclude=(f.name,)) if not (comps[n].sku or "").startswith("SHCS-")
+                and not comps[n].meta.get("tnut_of")]
         r_ring = 0.5 * hd - 0.3                        # just inside the head's rim: sees what the head and shank pass
         r_core = 0.5 * d - 0.08                        # just inside the major diameter: a tapped part has material there
         stations = np.arange(STEP / 2, L + 1.0, STEP)
@@ -226,7 +229,7 @@ def fastener_stack(design, pr: Probe) -> list[dict]:
         joint = sorted(n for n in held if not is_nut(comps[n]) and not is_spacer(comps[n]) and not is_washer(comps[n]))
         rows.append({"screw": f.name, "sku": c.sku, "size": size, "d": float(d), "length_mm": float(L), "body": c.body,
                      "axis_towards_head": [round(float(x), 3) for x in a], "under_head": [round(float(x), 3) for x in under],
-                     "tnut": bool(c.meta.get("tnut")), "threads_into": threads_into, "stack": stack, "threaded": threaded,
+                     "tnut": bool(c.meta.get("tnut")), "tnut_part": c.meta.get("tnut_part"), "threads_into": threads_into, "stack": stack, "threaded": threaded,
                      "thread_starts_mm_under_head": round(thr0, 2), "head": head, "joint": joint, "held": held,
                      "declared_clamps": declared, "tip_on": tip_on,
                      "locking": c.meta.get("locking"), "torque_nm": c.meta.get("torque_nm"),

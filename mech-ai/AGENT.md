@@ -178,7 +178,21 @@ def build():
 - Orienting catalog parts: `Location((x, y, z), (rx, ry, rz))` (degrees) or
   `Location(Plane(origin=..., x_dir=..., z_dir=...))`. Each catalog function's docstring gives its
   local frame; `part.meta["interfaces"]` holds its hole positions in world coordinates after `place`.
-- `add_corner_bracket(design, name, a, b, corner, u, v)`: a leg on a 2020 extrusion takes a T-nut (BOM only). A leg on
+- **T-nuts and bracket screws as parts.** Set `design.tnut_style = "drop_in"` right after creating the design. Then every
+  `add_screw(..., tnut=True)` draws its own drop-in T-nut `<screw>_tnut` (catalogue `tnut_2020`, SKU `TNUT-2020-M3` / `-M5`) in
+  the slot of the extrusion it threads into (place the extrusion first), and every corner-bracket leg on a slot gets a real
+  M5 x 8 cap screw and T-nut. The interference verifier then judges each T-slot screw (`interference.tslot_screws`): its tip
+  must end at least 0.5 mm above the slot floor (`screw_bottoms_in_slot`) and have at least 0.5 d of thread in the nut
+  behind the slot's lip (`tnut_thread_engagement`; one grouped warning from 0.5 d to 0.8 d). With the figures on file (slot
+  6.0 mm deep, lip 2.0 mm, both ASSUMED: `mechloop/parts/tslot.py`) the tip must end 4.5 to 5.5 mm (M5) or 3.5 to 5.5 mm (M3)
+  below the extrusion's face: M5 x 8 through 2.5 to 3.5 mm, M5 x 10 through 4.5 to 5.5 mm, M5 x 12 through 6.5 to 7.5 mm, washers
+  included. Where one washer leaves no standard length, `add_screw(..., washer=True, washers=2)` stacks a second. The screw's
+  overlap with the extrusion's solid is no longer excused. A drop-in T-nut goes into its slot through the opening only, so
+  the assembly check puts it in before whatever covers the slot. The practice verifier's DG-06 fails a design whose BOM lists
+  hardware that is not drawn (`hardware_bom_only`), so do not use `design.bom_extra` for screws, nuts, washers or T-nuts.
+  Without `tnut_style` (older designs) T-nuts stay BOM lines and one info says the T-slot screws were not checked.
+- `add_corner_bracket(design, name, a, b, corner, u, v)`: a leg on a 2020 extrusion takes a T-nut (BOM only, unless
+  `design.tnut_style` is set: see above). A leg on
   anything else (a plate, a printed part) is through-bolted with a real M5 screw `<name>_screw` and nut `<name>_nut`,
   which are checked like any other fastener: draw the M5 clearance hole 11.5 mm from the corner (`screw_offset=`).
 - Other helpers: `design.bom_extra(sku, qty, cost)`, `design.tool_point`,
