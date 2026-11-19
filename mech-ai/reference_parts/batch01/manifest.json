@@ -1,0 +1,134 @@
+[
+  {
+    "id": "RP01",
+    "name": "cnc_bracket_sharp",
+    "process": "CNC milling",
+    "material": "Aluminium 6061-T6",
+    "finish": "as machined",
+    "qty": [
+      1,
+      10
+    ],
+    "notes": "Thread: the 3.3 mm blind hole in the +X end face is M4x0.7, 10 mm deep (state in the quote's thread callout if the site allows).",
+    "expect": [
+      "sharp internal pocket corners (R0) cannot be milled with a round tool",
+      "3 mm slot 16 mm deep: depth 5.3 x width, needs a long small cutter",
+      "blind tapped hole: check thread depth/drill depth rules"
+    ],
+    "files": [
+      "RP01_cnc_bracket_sharp.step"
+    ],
+    "bbox_mm": [
+      80.0,
+      50.0,
+      20.0
+    ],
+    "volume_mm3": 59107.0
+  },
+  {
+    "id": "RP02",
+    "name": "cnc_plate_clean",
+    "process": "CNC milling",
+    "material": "Aluminium 6061-T6",
+    "finish": "as machined",
+    "qty": [
+      1,
+      10
+    ],
+    "notes": "Control part: built to pass.",
+    "expect": [
+      "no issues expected (R4 pocket corners, 4 mm deep pocket, plain through holes)"
+    ],
+    "files": [
+      "RP02_cnc_plate_clean.step"
+    ],
+    "bbox_mm": [
+      100.0,
+      60.0,
+      10.0
+    ],
+    "volume_mm3": 51884.6
+  },
+  {
+    "id": "RP03",
+    "name": "sheet_channel",
+    "process": "Sheet metal: laser cut + bend",
+    "material": "Aluminium 5052-H32, 0.090 in (2.29 mm)",
+    "finish": "none",
+    "qty": [
+      1,
+      10
+    ],
+    "notes": "Inside bend radius about 1 x thickness.",
+    "expect": [
+      "6 mm flange (outside; 1.4 mm straight after the bend) is shorter than typical minimum flange for 0.090 in",
+      "5.5 mm hole in the tall flange 1.5 mm from the bend tangent: too close, will distort"
+    ],
+    "thickness_mm": 2.286,
+    "inside_bend_radius_mm": 2.286,
+    "files": [
+      "RP03_sheet_channel.step"
+    ],
+    "bbox_mm": [
+      60.0,
+      40.0,
+      25.0
+    ],
+    "volume_mm3": 7470.9
+  },
+  {
+    "id": "RP04",
+    "name": "laser_plate",
+    "process": "2D laser cutting",
+    "material": "Aluminium 6061-T6, 0.125 in (3.18 mm)",
+    "finish": "none",
+    "qty": [
+      1,
+      10
+    ],
+    "notes": "Upload the DXF where a site wants 2D; STEP otherwise. Units: mm.",
+    "expect": [
+      "1.2 mm hole: below the usual minimum hole (about 50-100 % of thickness)",
+      "4 mm hole with 0.8 mm to the edge: too close",
+      "1.0 mm slot: narrower than the usual minimum feature width",
+      "sharp inside corner of the L cutout (laser leaves a kerf radius; usually acceptable)"
+    ],
+    "thickness_mm": 3.175,
+    "files": [
+      "RP04_laser_plate.step",
+      "RP04_laser_plate.dxf"
+    ],
+    "bbox_mm": [
+      120.0,
+      80.0,
+      3.17
+    ],
+    "volume_mm3": 29399.7
+  },
+  {
+    "id": "RP05",
+    "name": "fdm_clip",
+    "process": "3D printing: FDM",
+    "material": "PETG (or PLA)",
+    "finish": "standard",
+    "qty": [
+      1,
+      10
+    ],
+    "notes": "Print flat on the 60 x 20 base.",
+    "expect": [
+      "0.6 mm wall: below a typical 0.8-1.2 mm minimum FDM wall",
+      "20 mm flat unsupported overhang: needs support",
+      "1.5 mm pin: fragile / below minimum feature for some services"
+    ],
+    "files": [
+      "RP05_fdm_clip.step"
+    ],
+    "bbox_mm": [
+      60.0,
+      20.0,
+      15.0
+    ],
+    "volume_mm3": 5918.1
+  }
+]
