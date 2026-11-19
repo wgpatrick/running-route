@@ -1,0 +1,32 @@
+SLOT-6 FRAME + FASTENER VENDOR CAD - SOURCES AND STATUS
+Collected 2026-11-18 via 3dfindit (official Misumi/KIPP CAD portal, signed in as user), Misumi US public catalog pages, and Accu public tech-spec API.
+Updated 21:50 PST after final inspection pass. Folder: https://drive.google.com/drive/folders/19Ex99q-xg0cKwm2N8pQ_c8WhI_XcIJSA
+Contents: 2 STEP + 8 PDF + this file = 11 files. Plus subfolder deviations/ with 2 washer datasheet PDFs (see below).
+
+DELIVERED FILES (folder root)
+file                    supplier  part number     product URL                                                            unit price   notes
+EXT2020-PROFILE.step    Misumi    HFS5-2020-500   https://us.misumi-ec.com/vona2/detail/110302683830/?HissuCode=HFS5-2020-500  $8.25    STEP AP214, 500mm, one solid, millimetre units, via 3dfindit official Misumi catalog
+EXT2020-PROFILE.pdf    Misumi    HFS5-2020-500   same                                                                          -        official datasheet; cross-section drawing shows slot opening 6mm, overall 20x20, inner width 12, centre bore dia 4.2, corner radii R1. NOT dimensioned: lip thickness, slot depth
+THUMBNUT-DIN466-M4.step KIPP     K0143.04        CAD via https://www.3dfindit.com/en/digitaltwin/k0143                          n/a      DIN 466 M4 knurled thumb nut, steel, STEP AP214, one solid, millimetre units. KIPP price not shown on 3dfindit (kipp.com lists prices with account)
+THUMBNUT-DIN466-M4.pdf  KIPP     K0143.04        same                                                                          -        official datasheet
+TNUT-2020-M3.pdf       Misumi    HNTP5-3         https://us.misumi-ec.com/vona2/detail/110302247640/?HissuCode=HNTP5-3           $0.90    catalog page 2019_US_2716, dimensioned; per-part copy for M3
+TNUT-2020-M5.pdf       Misumi    HNTP5-5         same (HissuCode=HNTP5-5)                                                       $0.90    same catalog page, per-part copy for M5
+BRKT-2020.pdf          Misumi    HBLFSN5         https://us.misumi-ec.com/vona2/detail/110300437260/?HissuCode=HBLFSN5           $1.05    catalog page 2019_US_2692, dimensioned
+BRKT-2020-ALT.pdf      Misumi    HBLTS5          https://us.misumi-ec.com/vona2/detail/110300438050/?HissuCode=HBLTS5            $1.53    catalog page 2019_US_2696, dimensioned
+
+DEVIATIONS SUBFOLDER (alternatives, not the requested exact item - names retained for slot-in use but read this caveat)
+file                    supplier  part number     product URL                                                                          unit price   notes
+deviations/WASHER-M3-LARGE.pdf  Accu  HPLW-M3-A2  https://accu-components.com/us/metric-flat-washers/406212-HPLW-M3-A2                 n/a        ISO 7093-1 M3x9mm large-series washer tech spec. MATERIAL DEVIATION: Stainless Steel A2, not steel
+deviations/WASHER-M4-LARGE.pdf  Accu  HPLW-M4-A2  https://accu-components.com/us/metric-flat-washers/406216-HPLW-M4-A2                 n/a        ISO 7093-1 M4x12mm, same. MATERIAL DEVIATION: Stainless Steel A2, not steel
+
+NOT OBTAINED - 7 STEPs outstanding
+Root cause for most: 3dfindit CAD generation failing ("Error during generation") on every request since ~21:26 PST 2026-11-18; the first 7 generations (21:18-21:26) succeeded. STEP AP214 + PDF datasheet settings verified correct; partcommunity.com redirects to the same backend, so no alternate route. Account-gated alternatives below.
+- TNUT-2020-M3.step    Misumi HNTP5-3 (variant selected OK on 3dfindit; generation error)
+- TNUT-2020-M5.step    Misumi HNTA5-5 (task-approved fallback: 3dfindit's Misumi catalog has no HNTP5-5 variant; never substituted HNTT5/HNTTSN5)
+- BRKT-2020.step       Misumi HBLFSN5 (generation error)
+- BRKT-2020-ALT.step   Misumi HBLTS5 (generation error)
+- SHCS-M4x6.step       Misumi SCB4-6 (3dfindit catalog lists stainless; would have been labeled material deviation. McMaster 90128A208 STEP is 8.6MB, over the 5MB limit). SHCS-M4x6.pdf also not obtained.
+- WASHER-M3-LARGE.step no route: Misumi CAD needs a Misumi account (signup rejected from this environment); McMaster STEP downloads bot-blocked; Fabory 38215.030.001 on 3dfindit hit the generation error; Accu CAD downloads require an Accu account (not authorized to create)
+- WASHER-M4-LARGE.step same as M3; Fabory ISO 7093-1 size-4 variant selected but generation failed, material unverified
+
+REJECTED PAYLOADS (not delivered): McMaster washer STEP downloads returned anti-bot HTML (329-byte HTML deleted). NFSF5-2020 (wrong, non-anodized variant) generations ignored.
