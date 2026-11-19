@@ -1,0 +1,1840 @@
+{
+ "schema": "mechloop.supplier_rules/1",
+ "version": "2026-11-19.1",
+ "supplier": "protolabs",
+ "name": "Protolabs",
+ "home": "https://www.protolabs.com/",
+ "retrieved": "2026-11-19",
+ "processes": [
+  "laser_cut",
+  "bend",
+  "hardware",
+  "countersink",
+  "cnc_milling"
+ ],
+ "how_read": "Plain HTTPS page fetch, no account, no quote; figures copied as published. Prose quotes are verbatim; 'table_row' quotes name the table, row and cells.",
+ "not_read": [
+  "https://www.protolabs.com/services/cnc-machining/design-guidelines/ returned 404 (the milling design guidelines page was read instead).",
+  "No minimum internal corner radius against depth, wall thickness against height or hole depth-to-diameter figure on the CNC milling guidelines page ('Resulting radii will be the minimum allowable tool radius').",
+  "PEM edge distances: Protolabs defers to PennEngineering's catalogue (not a Protolabs page; not read)."
+ ],
+ "notes": {},
+ "rules": [
+  {
+   "id": "protolabs.cut.tolerance",
+   "supplier": "protolabs",
+   "process": "laser_cut",
+   "rule": "tolerance_cut",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 0.127,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "requirement",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/laser-cutting/",
+   "quote": "+/- 0.005 in. for all features (except for hardware holes)",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.cut.thickness_range",
+   "supplier": "protolabs",
+   "process": "laser_cut",
+   "rule": "thickness_range",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    0.609,
+    6.35
+   ],
+   "comparison": "within",
+   "severity": "error",
+   "phrasing": "requirement",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/",
+   "quote": "Sheet metal thickness ranges from 0.024 in. (0.609mm) to 0.250 in. (6.35mm).",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.cut.hole_min",
+   "supplier": "protolabs",
+   "process": "laser_cut",
+   "rule": "hole_min",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 1.0
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "should",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/",
+   "quote": "Holes and slots should be a minimum of material thickness in diameter.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.cut.slot_min",
+   "supplier": "protolabs",
+   "process": "laser_cut",
+   "rule": "slot_min",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 1.0
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "should",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/",
+   "quote": "Holes and slots should be a minimum of material thickness in diameter.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.cut.hole_edge_thin",
+   "supplier": "protolabs",
+   "process": "laser_cut",
+   "rule": "hole_edge_web",
+   "material": "*",
+   "thickness_mm": null,
+   "thickness_as_published": "0.036 in. (0.914mm) or thinner",
+   "thickness_range_mm": [
+    0.0,
+    0.914
+   ],
+   "value_mm": 1.574,
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "should",
+   "measured": "material between the hole's edge and the outer edge (the page does not say whether from the hole's edge or centre; edge taken)",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/",
+   "quote": "If a material is 0.036 in. (0.914mm) or thinner, the hole should be 0.062 in. (1.574mm) from the material edge;",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.cut.hole_edge_thick",
+   "supplier": "protolabs",
+   "process": "laser_cut",
+   "rule": "hole_edge_web",
+   "material": "*",
+   "thickness_mm": null,
+   "thickness_as_published": "thicker than 0.036 in. (0.914mm)",
+   "thickness_range_mm": [
+    0.915,
+    6.35
+   ],
+   "value_mm": 3.175,
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "should",
+   "measured": "material between the hole's edge and the outer edge (edge taken; the page does not say)",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/",
+   "quote": "if the material is thicker than 0.036 in. (0.914mm), the hole should be at least 0.125 in. (3.175mm) from the material edge to avoid distortion.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.cut.notch_min",
+   "supplier": "protolabs",
+   "process": "laser_cut",
+   "rule": "slot_min",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 1.0,
+    "floor_mm": 1.016
+   },
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "must",
+   "measured": "narrowest notch or slot in the outline",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/",
+   "quote": "Notches must be at least the material’s thickness or 0.04 in. (1.016mm), whichever is greater, and can be no longer than 5 times its width.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.cut.tab_min",
+   "supplier": "protolabs",
+   "process": "laser_cut",
+   "rule": "tab_min",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 2.0,
+    "floor_mm": 3.2
+   },
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "must",
+   "measured": "narrowest tab or neck of material",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/",
+   "quote": "Tabs must be at least 2 times the material’s thickness or 0.126 in. (3.200mm), whichever is greater, and can be no longer than 5 times its width.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.cut.part_min_flat",
+   "supplier": "protolabs",
+   "process": "laser_cut",
+   "rule": "part_min_size",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    6.35,
+    6.35
+   ],
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "requirement",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/",
+   "quote": "Component Sizes for Sheet Metal Parts: Flat Part 0.250 in. x 0.250 in. 6.35mm x 6.35mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.part_min_formed",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "bend_part_min_size",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    12.7,
+    12.7
+   ],
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "requirement",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/",
+   "quote": "Component Sizes for Sheet Metal Parts: Formed Part 0.500 in. x 0.500 in. 12.7mm x 12.7mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.cut.part_max",
+   "supplier": "protolabs",
+   "process": "laser_cut",
+   "rule": "part_max_size",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    990.6,
+    1193.8
+   ],
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "requirement",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/",
+   "quote": "Size 39 in. x 47 in. 990.6mm x 1,193.8mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.length_max",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "bend_length_max",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 1193.8,
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "requirement",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/",
+   "quote": "Bend Length 47 in. 1,193.8mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.flange_min_4t",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 4.0
+   },
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "must",
+   "measured": "formed flange length from the apex (outside mould line); the page does not say where from",
+   "conflicts": [
+    "protolabs.bend.flange_min.al.*"
+   ],
+   "note": "Contradicts the DFM toolkit table (2.5 to 3.0 x thickness + bend radius for aluminium).",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/",
+   "quote": "Minimum flange length on sheet metal parts must be at least 4 times the material thickness.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.radii_standard",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "bend_radius_options",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    0.762,
+    1.524,
+    2.286,
+    3.048
+   ],
+   "comparison": "in",
+   "severity": "info",
+   "phrasing": "standard (3-day) options",
+   "tolerance_mm": 0.15,
+   "note": "The toolkit lists tooling from 0.01 in. to 1 in. (next rule); these four are the standard ones.",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/",
+   "quote": "We offer a wide range of common bend radii, but our standard options are .030 (.762mm), .060 (1.524mm), .090 (2.286mm), .120 (3.048mm).",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.radii_tooling",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "bend_radius_range",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    0.254,
+    25.4
+   ],
+   "comparison": "within",
+   "severity": "warning",
+   "phrasing": "tooling range; over 1 in. is bump formed",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "Protolabs provides a range of internal bend radius tooling options between 0.01 in. and 1 in.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.tolerance_angle",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "tolerance_bend_angle",
+   "material": "*",
+   "thickness_mm": null,
+   "value": 1.0,
+   "unit": "deg",
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "requirement",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/",
+   "quote": "We hold a +/- 1 degree tolerance on all bend angles.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.6061_manual",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "bend_material_review",
+   "material": "al6061",
+   "thickness_mm": null,
+   "value": true,
+   "unit": "bool",
+   "comparison": "info",
+   "severity": "warning",
+   "phrasing": "manual review",
+   "evaluate_on": "bent",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/forming/",
+   "quote": "*Formed parts made out of Aluminum 6061-T6 require manual review and are not configurable during the quoting process.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.feature_near_bend_general",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 4.0
+   },
+   "comparison": ">=",
+   "severity": "info",
+   "phrasing": "typically at risk",
+   "measured": "hole edge to where the bend starts",
+   "reference": "bend_tangent",
+   "note": "General statement; the toolkit table (per material and thickness) is the evaluated rule.",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/",
+   "quote": "Any feature that is within proximity of a bend (typically within 4x material thickness of the bend) is at risk for deformation.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.flange_min.al5052..024-.050in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "al5052",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".024 -.050 in.",
+   "thickness_range_mm": [
+    0.609,
+    1.27
+   ],
+   "formula": {
+    "t": 3.0,
+    "r": 1.0
+   },
+   "value_as_published": "3.0x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "tooling requirement",
+   "measured": "formed flange length from the apex (outside mould line)",
+   "reference": null,
+   "conflicts": [
+    "protolabs.bend.flange_min_4t"
+   ],
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Minimum flange length: Aluminum / Copper, .024 -.050 in.: 3.0x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.flange_min.al6061..024-.050in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "al6061",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".024 -.050 in.",
+   "thickness_range_mm": [
+    0.609,
+    1.27
+   ],
+   "formula": {
+    "t": 3.0,
+    "r": 1.0
+   },
+   "value_as_published": "3.0x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "tooling requirement",
+   "measured": "formed flange length from the apex (outside mould line)",
+   "reference": null,
+   "conflicts": [
+    "protolabs.bend.flange_min_4t"
+   ],
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Minimum flange length: Aluminum / Copper, .024 -.050 in.: 3.0x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.flange_min.al_mic6..024-.050in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "al_mic6",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".024 -.050 in.",
+   "thickness_range_mm": [
+    0.609,
+    1.27
+   ],
+   "formula": {
+    "t": 3.0,
+    "r": 1.0
+   },
+   "value_as_published": "3.0x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "tooling requirement",
+   "measured": "formed flange length from the apex (outside mould line)",
+   "reference": null,
+   "conflicts": [
+    "protolabs.bend.flange_min_4t"
+   ],
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Minimum flange length: Aluminum / Copper, .024 -.050 in.: 3.0x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.flange_min.steel..024-.050in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "steel",
+   "material_as_published": "CRS / Galv. / Galvnl.",
+   "thickness_mm": null,
+   "thickness_as_published": ".024 -.050 in.",
+   "thickness_range_mm": [
+    0.609,
+    1.27
+   ],
+   "formula": {
+    "t": 3.5,
+    "r": 1.0
+   },
+   "value_as_published": "3.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "tooling requirement",
+   "measured": "formed flange length from the apex (outside mould line)",
+   "reference": null,
+   "conflicts": [
+    "protolabs.bend.flange_min_4t"
+   ],
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Minimum flange length: CRS / Galv. / Galvnl., .024 -.050 in.: 3.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.flange_min.stainless304..024-.050in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "stainless304",
+   "material_as_published": "Stainless Steel",
+   "thickness_mm": null,
+   "thickness_as_published": ".024 -.050 in.",
+   "thickness_range_mm": [
+    0.609,
+    1.27
+   ],
+   "formula": {
+    "t": 3.5,
+    "r": 1.0
+   },
+   "value_as_published": "3.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "tooling requirement",
+   "measured": "formed flange length from the apex (outside mould line)",
+   "reference": null,
+   "conflicts": [
+    "protolabs.bend.flange_min_4t"
+   ],
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Minimum flange length: Stainless Steel, .024 -.050 in.: 3.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.flange_min.al5052..060-.090in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "al5052",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".060 -.090 in.",
+   "thickness_range_mm": [
+    1.524,
+    2.286
+   ],
+   "formula": {
+    "t": 2.5,
+    "r": 1.0
+   },
+   "value_as_published": "2.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "tooling requirement",
+   "measured": "formed flange length from the apex (outside mould line)",
+   "reference": null,
+   "conflicts": [
+    "protolabs.bend.flange_min_4t"
+   ],
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Minimum flange length: Aluminum / Copper, .060 -.090 in.: 2.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.flange_min.al6061..060-.090in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "al6061",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".060 -.090 in.",
+   "thickness_range_mm": [
+    1.524,
+    2.286
+   ],
+   "formula": {
+    "t": 2.5,
+    "r": 1.0
+   },
+   "value_as_published": "2.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "tooling requirement",
+   "measured": "formed flange length from the apex (outside mould line)",
+   "reference": null,
+   "conflicts": [
+    "protolabs.bend.flange_min_4t"
+   ],
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Minimum flange length: Aluminum / Copper, .060 -.090 in.: 2.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.flange_min.al_mic6..060-.090in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "al_mic6",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".060 -.090 in.",
+   "thickness_range_mm": [
+    1.524,
+    2.286
+   ],
+   "formula": {
+    "t": 2.5,
+    "r": 1.0
+   },
+   "value_as_published": "2.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "tooling requirement",
+   "measured": "formed flange length from the apex (outside mould line)",
+   "reference": null,
+   "conflicts": [
+    "protolabs.bend.flange_min_4t"
+   ],
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Minimum flange length: Aluminum / Copper, .060 -.090 in.: 2.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.flange_min.steel..060-.090in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "steel",
+   "material_as_published": "CRS / Galv. / Galvnl.",
+   "thickness_mm": null,
+   "thickness_as_published": ".060 -.090 in.",
+   "thickness_range_mm": [
+    1.524,
+    2.286
+   ],
+   "formula": {
+    "t": 2.75,
+    "r": 1.0
+   },
+   "value_as_published": "2.75x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "tooling requirement",
+   "measured": "formed flange length from the apex (outside mould line)",
+   "reference": null,
+   "conflicts": [
+    "protolabs.bend.flange_min_4t"
+   ],
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Minimum flange length: CRS / Galv. / Galvnl., .060 -.090 in.: 2.75x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.flange_min.stainless304..060-.090in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "stainless304",
+   "material_as_published": "Stainless Steel",
+   "thickness_mm": null,
+   "thickness_as_published": ".060 -.090 in.",
+   "thickness_range_mm": [
+    1.524,
+    2.286
+   ],
+   "formula": {
+    "t": 2.75,
+    "r": 1.0
+   },
+   "value_as_published": "2.75x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "tooling requirement",
+   "measured": "formed flange length from the apex (outside mould line)",
+   "reference": null,
+   "conflicts": [
+    "protolabs.bend.flange_min_4t"
+   ],
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Minimum flange length: Stainless Steel, .060 -.090 in.: 2.75x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.flange_min.al5052..100-.134in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "al5052",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".100 -.134 in.",
+   "thickness_range_mm": [
+    2.54,
+    3.404
+   ],
+   "formula": {
+    "t": 2.5,
+    "r": 1.0
+   },
+   "value_as_published": "2.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "tooling requirement",
+   "measured": "formed flange length from the apex (outside mould line)",
+   "reference": null,
+   "conflicts": [
+    "protolabs.bend.flange_min_4t"
+   ],
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Minimum flange length: Aluminum / Copper, .100 -.134 in.: 2.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.flange_min.al6061..100-.134in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "al6061",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".100 -.134 in.",
+   "thickness_range_mm": [
+    2.54,
+    3.404
+   ],
+   "formula": {
+    "t": 2.5,
+    "r": 1.0
+   },
+   "value_as_published": "2.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "tooling requirement",
+   "measured": "formed flange length from the apex (outside mould line)",
+   "reference": null,
+   "conflicts": [
+    "protolabs.bend.flange_min_4t"
+   ],
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Minimum flange length: Aluminum / Copper, .100 -.134 in.: 2.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.flange_min.al_mic6..100-.134in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "al_mic6",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".100 -.134 in.",
+   "thickness_range_mm": [
+    2.54,
+    3.404
+   ],
+   "formula": {
+    "t": 2.5,
+    "r": 1.0
+   },
+   "value_as_published": "2.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "tooling requirement",
+   "measured": "formed flange length from the apex (outside mould line)",
+   "reference": null,
+   "conflicts": [
+    "protolabs.bend.flange_min_4t"
+   ],
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Minimum flange length: Aluminum / Copper, .100 -.134 in.: 2.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.flange_min.steel..100-.134in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "steel",
+   "material_as_published": "CRS / Galv. / Galvnl.",
+   "thickness_mm": null,
+   "thickness_as_published": ".100 -.134 in.",
+   "thickness_range_mm": [
+    2.54,
+    3.404
+   ],
+   "formula": {
+    "t": 2.5,
+    "r": 1.0
+   },
+   "value_as_published": "2.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "tooling requirement",
+   "measured": "formed flange length from the apex (outside mould line)",
+   "reference": null,
+   "conflicts": [
+    "protolabs.bend.flange_min_4t"
+   ],
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Minimum flange length: CRS / Galv. / Galvnl., .100 -.134 in.: 2.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.flange_min.stainless304..100-.134in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "stainless304",
+   "material_as_published": "Stainless Steel",
+   "thickness_mm": null,
+   "thickness_as_published": ".100 -.134 in.",
+   "thickness_range_mm": [
+    2.54,
+    3.404
+   ],
+   "formula": {
+    "t": 2.5,
+    "r": 1.0
+   },
+   "value_as_published": "2.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "tooling requirement",
+   "measured": "formed flange length from the apex (outside mould line)",
+   "reference": null,
+   "conflicts": [
+    "protolabs.bend.flange_min_4t"
+   ],
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Minimum flange length: Stainless Steel, .100 -.134 in.: 2.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.flange_min.al5052..160plus",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "al5052",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".160+",
+   "thickness_range_mm": [
+    4.064,
+    6.35
+   ],
+   "formula": {
+    "t": 3.0,
+    "r": 1.0
+   },
+   "value_as_published": "3.0x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "tooling requirement",
+   "measured": "formed flange length from the apex (outside mould line)",
+   "reference": null,
+   "conflicts": [
+    "protolabs.bend.flange_min_4t"
+   ],
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Minimum flange length: Aluminum / Copper, .160+: 3.0x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.flange_min.al6061..160plus",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "al6061",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".160+",
+   "thickness_range_mm": [
+    4.064,
+    6.35
+   ],
+   "formula": {
+    "t": 3.0,
+    "r": 1.0
+   },
+   "value_as_published": "3.0x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "tooling requirement",
+   "measured": "formed flange length from the apex (outside mould line)",
+   "reference": null,
+   "conflicts": [
+    "protolabs.bend.flange_min_4t"
+   ],
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Minimum flange length: Aluminum / Copper, .160+: 3.0x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.flange_min.al_mic6..160plus",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "al_mic6",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".160+",
+   "thickness_range_mm": [
+    4.064,
+    6.35
+   ],
+   "formula": {
+    "t": 3.0,
+    "r": 1.0
+   },
+   "value_as_published": "3.0x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "tooling requirement",
+   "measured": "formed flange length from the apex (outside mould line)",
+   "reference": null,
+   "conflicts": [
+    "protolabs.bend.flange_min_4t"
+   ],
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Minimum flange length: Aluminum / Copper, .160+: 3.0x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.flange_min.steel..160plus",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "steel",
+   "material_as_published": "CRS / Galv. / Galvnl.",
+   "thickness_mm": null,
+   "thickness_as_published": ".160+",
+   "thickness_range_mm": [
+    4.064,
+    6.35
+   ],
+   "formula": {
+    "t": 3.5,
+    "r": 1.0
+   },
+   "value_as_published": "3.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "tooling requirement",
+   "measured": "formed flange length from the apex (outside mould line)",
+   "reference": null,
+   "conflicts": [
+    "protolabs.bend.flange_min_4t"
+   ],
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Minimum flange length: CRS / Galv. / Galvnl., .160+: 3.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.flange_min.stainless304..160plus",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "stainless304",
+   "material_as_published": "Stainless Steel",
+   "thickness_mm": null,
+   "thickness_as_published": ".160+",
+   "thickness_range_mm": [
+    4.064,
+    6.35
+   ],
+   "formula": {
+    "t": 4.0,
+    "r": 1.0
+   },
+   "value_as_published": "4.0x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "tooling requirement",
+   "measured": "formed flange length from the apex (outside mould line)",
+   "reference": null,
+   "conflicts": [
+    "protolabs.bend.flange_min_4t"
+   ],
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Minimum flange length: Stainless Steel, .160+: 4.0x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.feature_to_bend.al5052..024-.050in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "al5052",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".024 -.050 in.",
+   "thickness_range_mm": [
+    0.609,
+    1.27
+   ],
+   "formula": {
+    "t": 3.0,
+    "r": 1.0
+   },
+   "value_as_published": "3.0x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "distance guideline",
+   "measured": "hole edge to where the bend's radius starts (the page does not define the reference; '+ bend radius' suggests the inside face of the bend)",
+   "reference": "bend_tangent",
+   "conflicts": null,
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Placing features near bends: Aluminum / Copper, .024 -.050 in.: 3.0x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.feature_to_bend.al6061..024-.050in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "al6061",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".024 -.050 in.",
+   "thickness_range_mm": [
+    0.609,
+    1.27
+   ],
+   "formula": {
+    "t": 3.0,
+    "r": 1.0
+   },
+   "value_as_published": "3.0x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "distance guideline",
+   "measured": "hole edge to where the bend's radius starts (the page does not define the reference; '+ bend radius' suggests the inside face of the bend)",
+   "reference": "bend_tangent",
+   "conflicts": null,
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Placing features near bends: Aluminum / Copper, .024 -.050 in.: 3.0x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.feature_to_bend.al_mic6..024-.050in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "al_mic6",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".024 -.050 in.",
+   "thickness_range_mm": [
+    0.609,
+    1.27
+   ],
+   "formula": {
+    "t": 3.0,
+    "r": 1.0
+   },
+   "value_as_published": "3.0x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "distance guideline",
+   "measured": "hole edge to where the bend's radius starts (the page does not define the reference; '+ bend radius' suggests the inside face of the bend)",
+   "reference": "bend_tangent",
+   "conflicts": null,
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Placing features near bends: Aluminum / Copper, .024 -.050 in.: 3.0x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.feature_to_bend.steel..024-.050in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "steel",
+   "material_as_published": "CRS / Galv. / Galvnl.",
+   "thickness_mm": null,
+   "thickness_as_published": ".024 -.050 in.",
+   "thickness_range_mm": [
+    0.609,
+    1.27
+   ],
+   "formula": {
+    "t": 3.5,
+    "r": 1.0
+   },
+   "value_as_published": "3.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "distance guideline",
+   "measured": "hole edge to where the bend's radius starts (the page does not define the reference; '+ bend radius' suggests the inside face of the bend)",
+   "reference": "bend_tangent",
+   "conflicts": null,
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Placing features near bends: CRS / Galv. / Galvnl., .024 -.050 in.: 3.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.feature_to_bend.stainless304..024-.050in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "stainless304",
+   "material_as_published": "Stainless Steel",
+   "thickness_mm": null,
+   "thickness_as_published": ".024 -.050 in.",
+   "thickness_range_mm": [
+    0.609,
+    1.27
+   ],
+   "formula": {
+    "t": 3.5,
+    "r": 1.0
+   },
+   "value_as_published": "3.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "distance guideline",
+   "measured": "hole edge to where the bend's radius starts (the page does not define the reference; '+ bend radius' suggests the inside face of the bend)",
+   "reference": "bend_tangent",
+   "conflicts": null,
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Placing features near bends: Stainless Steel, .024 -.050 in.: 3.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.feature_to_bend.al5052..060-.090in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "al5052",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".060 -.090 in.",
+   "thickness_range_mm": [
+    1.524,
+    2.286
+   ],
+   "formula": {
+    "t": 2.5,
+    "r": 1.0
+   },
+   "value_as_published": "2.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "distance guideline",
+   "measured": "hole edge to where the bend's radius starts (the page does not define the reference; '+ bend radius' suggests the inside face of the bend)",
+   "reference": "bend_tangent",
+   "conflicts": null,
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Placing features near bends: Aluminum / Copper, .060 -.090 in.: 2.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.feature_to_bend.al6061..060-.090in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "al6061",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".060 -.090 in.",
+   "thickness_range_mm": [
+    1.524,
+    2.286
+   ],
+   "formula": {
+    "t": 2.5,
+    "r": 1.0
+   },
+   "value_as_published": "2.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "distance guideline",
+   "measured": "hole edge to where the bend's radius starts (the page does not define the reference; '+ bend radius' suggests the inside face of the bend)",
+   "reference": "bend_tangent",
+   "conflicts": null,
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Placing features near bends: Aluminum / Copper, .060 -.090 in.: 2.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.feature_to_bend.al_mic6..060-.090in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "al_mic6",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".060 -.090 in.",
+   "thickness_range_mm": [
+    1.524,
+    2.286
+   ],
+   "formula": {
+    "t": 2.5,
+    "r": 1.0
+   },
+   "value_as_published": "2.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "distance guideline",
+   "measured": "hole edge to where the bend's radius starts (the page does not define the reference; '+ bend radius' suggests the inside face of the bend)",
+   "reference": "bend_tangent",
+   "conflicts": null,
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Placing features near bends: Aluminum / Copper, .060 -.090 in.: 2.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.feature_to_bend.steel..060-.090in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "steel",
+   "material_as_published": "CRS / Galv. / Galvnl.",
+   "thickness_mm": null,
+   "thickness_as_published": ".060 -.090 in.",
+   "thickness_range_mm": [
+    1.524,
+    2.286
+   ],
+   "formula": {
+    "t": 2.75,
+    "r": 1.0
+   },
+   "value_as_published": "2.75x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "distance guideline",
+   "measured": "hole edge to where the bend's radius starts (the page does not define the reference; '+ bend radius' suggests the inside face of the bend)",
+   "reference": "bend_tangent",
+   "conflicts": null,
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Placing features near bends: CRS / Galv. / Galvnl., .060 -.090 in.: 2.75x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.feature_to_bend.stainless304..060-.090in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "stainless304",
+   "material_as_published": "Stainless Steel",
+   "thickness_mm": null,
+   "thickness_as_published": ".060 -.090 in.",
+   "thickness_range_mm": [
+    1.524,
+    2.286
+   ],
+   "formula": {
+    "t": 2.75,
+    "r": 1.0
+   },
+   "value_as_published": "2.75x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "distance guideline",
+   "measured": "hole edge to where the bend's radius starts (the page does not define the reference; '+ bend radius' suggests the inside face of the bend)",
+   "reference": "bend_tangent",
+   "conflicts": null,
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Placing features near bends: Stainless Steel, .060 -.090 in.: 2.75x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.feature_to_bend.al5052..100-.134in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "al5052",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".100 -.134 in.",
+   "thickness_range_mm": [
+    2.54,
+    3.404
+   ],
+   "formula": {
+    "t": 2.5,
+    "r": 1.0
+   },
+   "value_as_published": "2.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "distance guideline",
+   "measured": "hole edge to where the bend's radius starts (the page does not define the reference; '+ bend radius' suggests the inside face of the bend)",
+   "reference": "bend_tangent",
+   "conflicts": null,
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Placing features near bends: Aluminum / Copper, .100 -.134 in.: 2.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.feature_to_bend.al6061..100-.134in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "al6061",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".100 -.134 in.",
+   "thickness_range_mm": [
+    2.54,
+    3.404
+   ],
+   "formula": {
+    "t": 2.5,
+    "r": 1.0
+   },
+   "value_as_published": "2.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "distance guideline",
+   "measured": "hole edge to where the bend's radius starts (the page does not define the reference; '+ bend radius' suggests the inside face of the bend)",
+   "reference": "bend_tangent",
+   "conflicts": null,
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Placing features near bends: Aluminum / Copper, .100 -.134 in.: 2.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.feature_to_bend.al_mic6..100-.134in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "al_mic6",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".100 -.134 in.",
+   "thickness_range_mm": [
+    2.54,
+    3.404
+   ],
+   "formula": {
+    "t": 2.5,
+    "r": 1.0
+   },
+   "value_as_published": "2.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "distance guideline",
+   "measured": "hole edge to where the bend's radius starts (the page does not define the reference; '+ bend radius' suggests the inside face of the bend)",
+   "reference": "bend_tangent",
+   "conflicts": null,
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Placing features near bends: Aluminum / Copper, .100 -.134 in.: 2.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.feature_to_bend.steel..100-.134in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "steel",
+   "material_as_published": "CRS / Galv. / Galvnl.",
+   "thickness_mm": null,
+   "thickness_as_published": ".100 -.134 in.",
+   "thickness_range_mm": [
+    2.54,
+    3.404
+   ],
+   "formula": {
+    "t": 2.5,
+    "r": 1.0
+   },
+   "value_as_published": "2.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "distance guideline",
+   "measured": "hole edge to where the bend's radius starts (the page does not define the reference; '+ bend radius' suggests the inside face of the bend)",
+   "reference": "bend_tangent",
+   "conflicts": null,
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Placing features near bends: CRS / Galv. / Galvnl., .100 -.134 in.: 2.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.feature_to_bend.stainless304..100-.134in.",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "stainless304",
+   "material_as_published": "Stainless Steel",
+   "thickness_mm": null,
+   "thickness_as_published": ".100 -.134 in.",
+   "thickness_range_mm": [
+    2.54,
+    3.404
+   ],
+   "formula": {
+    "t": 2.5,
+    "r": 1.0
+   },
+   "value_as_published": "2.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "distance guideline",
+   "measured": "hole edge to where the bend's radius starts (the page does not define the reference; '+ bend radius' suggests the inside face of the bend)",
+   "reference": "bend_tangent",
+   "conflicts": null,
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Placing features near bends: Stainless Steel, .100 -.134 in.: 2.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.feature_to_bend.al5052..160plus",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "al5052",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".160+",
+   "thickness_range_mm": [
+    4.064,
+    6.35
+   ],
+   "formula": {
+    "t": 3.0,
+    "r": 1.0
+   },
+   "value_as_published": "3.0x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "distance guideline",
+   "measured": "hole edge to where the bend's radius starts (the page does not define the reference; '+ bend radius' suggests the inside face of the bend)",
+   "reference": "bend_tangent",
+   "conflicts": null,
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Placing features near bends: Aluminum / Copper, .160+: 3.0x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.feature_to_bend.al6061..160plus",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "al6061",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".160+",
+   "thickness_range_mm": [
+    4.064,
+    6.35
+   ],
+   "formula": {
+    "t": 3.0,
+    "r": 1.0
+   },
+   "value_as_published": "3.0x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "distance guideline",
+   "measured": "hole edge to where the bend's radius starts (the page does not define the reference; '+ bend radius' suggests the inside face of the bend)",
+   "reference": "bend_tangent",
+   "conflicts": null,
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Placing features near bends: Aluminum / Copper, .160+: 3.0x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.feature_to_bend.al_mic6..160plus",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "al_mic6",
+   "material_as_published": "Aluminum / Copper",
+   "thickness_mm": null,
+   "thickness_as_published": ".160+",
+   "thickness_range_mm": [
+    4.064,
+    6.35
+   ],
+   "formula": {
+    "t": 3.0,
+    "r": 1.0
+   },
+   "value_as_published": "3.0x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "distance guideline",
+   "measured": "hole edge to where the bend's radius starts (the page does not define the reference; '+ bend radius' suggests the inside face of the bend)",
+   "reference": "bend_tangent",
+   "conflicts": null,
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Placing features near bends: Aluminum / Copper, .160+: 3.0x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.feature_to_bend.steel..160plus",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "steel",
+   "material_as_published": "CRS / Galv. / Galvnl.",
+   "thickness_mm": null,
+   "thickness_as_published": ".160+",
+   "thickness_range_mm": [
+    4.064,
+    6.35
+   ],
+   "formula": {
+    "t": 3.5,
+    "r": 1.0
+   },
+   "value_as_published": "3.5x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "distance guideline",
+   "measured": "hole edge to where the bend's radius starts (the page does not define the reference; '+ bend radius' suggests the inside face of the bend)",
+   "reference": "bend_tangent",
+   "conflicts": null,
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Placing features near bends: CRS / Galv. / Galvnl., .160+: 3.5x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.bend.feature_to_bend.stainless304..160plus",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "stainless304",
+   "material_as_published": "Stainless Steel",
+   "thickness_mm": null,
+   "thickness_as_published": ".160+",
+   "thickness_range_mm": [
+    4.064,
+    6.35
+   ],
+   "formula": {
+    "t": 4.0,
+    "r": 1.0
+   },
+   "value_as_published": "4.0x material thickness + bend radius",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "distance guideline",
+   "measured": "hole edge to where the bend's radius starts (the page does not define the reference; '+ bend radius' suggests the inside face of the bend)",
+   "reference": "bend_tangent",
+   "conflicts": null,
+   "note": "Thicknesses between the published ranges have no rule (not interpolated).",
+   "source_url": "https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/",
+   "quote": "DFM toolkit, Placing features near bends: Stainless Steel, .160+: 4.0x material thickness + bend radius",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.pem.edge_mfr",
+   "supplier": "protolabs",
+   "process": "hardware",
+   "rule": "pem_center_to_edge",
+   "material": "*",
+   "thickness_mm": null,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "requirement",
+   "evaluate": false,
+   "note": "Protolabs defers to PennEngineering's 'min. distance hole C/L to edge'; no figure on its own pages.",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/",
+   "quote": "If hardware inserts are required, the spacing should be according to manufacturer’s specifications.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.pem.hole_tol",
+   "supplier": "protolabs",
+   "process": "hardware",
+   "rule": "pem_hole_tolerance",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    0.0,
+    0.076
+   ],
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "requirement",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/laser-cutting/",
+   "quote": "+0.003/-0.000 in. on hardware insert holes to ensure correct seating of inserts",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.csk.major_range",
+   "supplier": "protolabs",
+   "process": "countersink",
+   "rule": "countersink_major_range",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    2.286,
+    12.7
+   ],
+   "comparison": "within",
+   "severity": "warning",
+   "phrasing": "requirement",
+   "evaluate": false,
+   "note": "Countersink major diameter is not extracted (gap).",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/",
+   "quote": "We recommend the major diameters of countersinks measure between 0.090 in. (2.286mm) and 0.500 in. (12.7mm) using one of the following standard angles: 82°, 90°, 100°, and 120°.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.tol.hole_to_formed_thin",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "tolerance_bend",
+   "material": "*",
+   "thickness_mm": null,
+   "thickness_range_mm": [
+    0.0,
+    3.3
+   ],
+   "value_mm": 0.25,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "requirement",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/",
+   "quote": "Tolerances on Multiple Surfaces: Edge or Hole to Formed Feature, Material < .13 in.: 0.010 in. (0.25mm)",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.tol.hole_to_formed_thick",
+   "supplier": "protolabs",
+   "process": "bend",
+   "rule": "tolerance_bend",
+   "material": "*",
+   "thickness_mm": null,
+   "thickness_range_mm": [
+    3.3,
+    6.35
+   ],
+   "value_mm": 0.508,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "requirement",
+   "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/",
+   "quote": "Tolerances on Multiple Surfaces: Edge or Hole to Formed Feature, Material > .13 in.: 0.020 in. (0.508mm)",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.cnc.feature_min",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_min_wall",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 0.51,
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "recommended",
+   "measured": "thinnest wall",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/cnc-milling/design-guidelines/",
+   "quote": "Part features are recommended to be thicker than 0.020 in. (0.51mm) throughout the part, and a nominal part thickness above 0.040 in. (1.02mm) is required.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.cnc.nominal_thickness",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_min_nominal_thickness",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 1.02,
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "required",
+   "measured": "smallest overall dimension of the part",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/cnc-milling/design-guidelines/",
+   "quote": "Part features are recommended to be thicker than 0.020 in. (0.51mm) throughout the part, and a nominal part thickness above 0.040 in. (1.02mm) is required.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.cnc.mill_depth_max",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_mill_depth_max",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 50.8,
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "requirement",
+   "evaluate": false,
+   "note": "Feature depth from each side is not extracted (gap).",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/cnc-milling/design-guidelines/",
+   "quote": "Maximum depth for factory machined parts that can be milled is 2 in. (50.8mm) from either side of the part.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.cnc.part_max_al_3axis",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_part_max_size",
+   "material": "al*",
+   "thickness_mm": null,
+   "value_mm": [
+    95.3,
+    356.0,
+    559.0
+   ],
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "requirement",
+   "measured": "part extents (sorted)",
+   "note": "** two-sided machining only.",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/cnc-milling/design-guidelines/",
+   "quote": "3-axis** Aluminum 22 in. x 14 in. x 3.75 in. 559mm x 356mm x 95.3mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.cnc.part_max_ss304_5axis",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_part_max_size",
+   "material": "stainless304",
+   "thickness_mm": null,
+   "value_mm": [
+    82.55,
+    95.25,
+    107.95
+   ],
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "requirement",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/cnc-milling/design-guidelines/",
+   "quote": "5-axis Stainless Steel 304 4.25 in. x 3.25 in. x 3.75 in. 107.95mm x 82.55mm x 95.25mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.cnc.threads",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_range",
+   "material": "*",
+   "thickness_mm": null,
+   "value": [
+    2.0,
+    12.0
+   ],
+   "unit": "metric thread diameter",
+   "comparison": "within",
+   "severity": "error",
+   "phrasing": "requirement",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/cnc-milling/design-guidelines/",
+   "quote": "In the Protolabs automated factory, we currently support UNC and UNF threads from #2 up to 0.5 in., and metric threads from M2 to M12.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.cnc.tolerance",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "tolerance_cnc",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 0.13,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "requirement",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/cnc-milling/design-guidelines/",
+   "quote": "Typically, Protolabs can hold a machining tolerance of +/- 0.005 in. (0.13mm) at its fully automated facility",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  }
+ ]
+}

@@ -1,0 +1,151 @@
+{
+ "schema": "mechloop.supplier_rules/1",
+ "version": "2026-11-19.1",
+ "supplier": "hubs",
+ "name": "Hubs (Protolabs Network)",
+ "home": "https://www.hubs.com/",
+ "retrieved": "2026-11-19",
+ "processes": [
+  "laser_cut",
+  "bend"
+ ],
+ "how_read": "Plain HTTPS page fetch, no account, no quote; figures copied as published. Prose quotes are verbatim; 'table_row' quotes name the table, row and cells.",
+ "not_read": [
+  "https://www.hubs.com/knowledge-base/sheet-metal-design-guide/, .../sheet-metal-design-guidelines/ and .../cnc-machining-design-guide/ returned 404; the sheet metal fabrication guide (/guides/sheet-metal-fabrication/) was read. Hubs is now Protolabs Network: its figures are generic best practice, not an ordering limit."
+ ],
+ "notes": {},
+ "rules": [
+  {
+   "id": "hubs.cut.hole_min",
+   "supplier": "hubs",
+   "process": "laser_cut",
+   "rule": "hole_min",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 1.0
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "design best practice",
+   "source_url": "https://www.hubs.com/guides/sheet-metal-fabrication/",
+   "quote": "Specify hole diameters larger than the sheet thickness",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "hubs.cut.hole_hole",
+   "supplier": "hubs",
+   "process": "laser_cut",
+   "rule": "hole_hole_web",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 2.0
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "design best practice",
+   "source_url": "https://www.hubs.com/guides/sheet-metal-fabrication/",
+   "quote": "Space holes at least 2 times the sheet thickness apart",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "hubs.cut.hole_edge",
+   "supplier": "hubs",
+   "process": "laser_cut",
+   "rule": "hole_edge_web",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 1.0
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "design best practice",
+   "source_url": "https://www.hubs.com/guides/sheet-metal-fabrication/",
+   "quote": "Holes should be at least the sheet’s thickness from the edge",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "hubs.bend.hole_to_bend",
+   "supplier": "hubs",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 2.0
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "design best practice",
+   "measured": "hole edge to where the bend's radius starts",
+   "reference": "bend_tangent",
+   "source_url": "https://www.hubs.com/guides/sheet-metal-fabrication/",
+   "quote": "Ensure holes are at least 2 times the sheet thickness from the start of the bend radius",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "hubs.bend.radius_min",
+   "supplier": "hubs",
+   "process": "bend",
+   "rule": "bend_radius_min",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 1.0
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "design best practice",
+   "source_url": "https://www.hubs.com/guides/sheet-metal-fabrication/",
+   "quote": "parts should be designed with the interior bend radius to be the same size or greater than the material thickness.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "hubs.bend.flange_min",
+   "supplier": "hubs",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 2.0,
+    "r": 1.0
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "design best practice",
+   "measured": "formed flange height from the outside of the bend",
+   "source_url": "https://www.hubs.com/guides/sheet-metal-fabrication/",
+   "quote": "Ensure the bend height is at least double the material thickness plus the bend radius",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "hubs.bend.relief_width",
+   "supplier": "hubs",
+   "process": "bend",
+   "rule": "relief_width_min",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 1.0
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "design best practice",
+   "evaluate": false,
+   "note": "Relief geometry is not extracted (gap).",
+   "source_url": "https://www.hubs.com/guides/sheet-metal-fabrication/",
+   "quote": "To add a relief cut to your design, add an incision either side of the bend that is at least the same width or greater than the material thickness.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  }
+ ]
+}

@@ -1,0 +1,443 @@
+{
+ "schema": "mechloop.supplier_rules/1",
+ "version": "2026-11-19.1",
+ "supplier": "xometry",
+ "name": "Xometry",
+ "home": "https://www.xometry.com/",
+ "retrieved": "2026-11-19",
+ "processes": [
+  "laser_cut",
+  "bend",
+  "countersink",
+  "cnc_milling"
+ ],
+ "how_read": "Plain HTTPS page fetch, no account, no quote; figures copied as published. Prose quotes are verbatim; 'table_row' quotes name the table, row and cells.",
+ "not_read": [
+  "https://www.xometry.com/resources/sheet-metal/sheet-metal-design-guide/ and /capabilities/sheet-metal-manufacturing/ returned 404.",
+  "Resource articles (internal corner radii, thin walls, cost reduction) returned HTTP 429 (rate limited) on 2026-11-19; their figures (3:1 corner L:D, 1/32 in. wall, 3 x D thread depth) are in mechloop/shops/xometry.json as read on 2026-11-15 and are not repeated here.",
+  "The CNC design guide is a PDF behind a contact form (not read)."
+ ],
+ "notes": {},
+ "rules": [
+  {
+   "id": "xometry.bend.radius_min",
+   "supplier": "xometry",
+   "process": "bend",
+   "rule": "bend_radius_min",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 1.0
+   },
+   "value_as_published": "1X MT",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "design guideline table",
+   "measured": "inside bend radius",
+   "source_url": "https://www.xometry.com/capabilities/sheet-metal-fabrication/",
+   "quote": "Sheet metal fabrication, design guidelines table (MT = Material Thickness): Minimum Bend | 1X MT",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "xometry.cut.hole_edge",
+   "supplier": "xometry",
+   "process": "laser_cut",
+   "rule": "hole_edge_web",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 2.0
+   },
+   "value_as_published": "2X MT",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "design guideline table",
+   "measured": "material between a hole's edge and the outer edge (reference not stated; edge taken)",
+   "source_url": "https://www.xometry.com/capabilities/sheet-metal-fabrication/",
+   "quote": "Sheet metal fabrication, design guidelines table (MT = Material Thickness): Minimum Hole to Edge Distance | 2X MT",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "xometry.cut.hole_hole",
+   "supplier": "xometry",
+   "process": "laser_cut",
+   "rule": "hole_hole_web",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 6.0
+   },
+   "value_as_published": "6X MT",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "design guideline table",
+   "measured": "material between two holes (reference not stated; edge to edge taken)",
+   "source_url": "https://www.xometry.com/capabilities/sheet-metal-fabrication/",
+   "quote": "Sheet metal fabrication, design guidelines table (MT = Material Thickness): Minimum Hole to Hole Distance | 6X MT",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "xometry.bend.hole_to_bend",
+   "supplier": "xometry",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 6.0
+   },
+   "value_as_published": "6X MT",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "design guideline table",
+   "measured": "hole edge to the bend edge (where the bend's radius starts)",
+   "reference": "bend_tangent",
+   "source_url": "https://www.xometry.com/capabilities/sheet-metal-fabrication/",
+   "quote": "Sheet metal fabrication, design guidelines table (MT = Material Thickness): Minimum Bend Edge to Hole Distance | 6X MT",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "xometry.csk.feature_to_csk",
+   "supplier": "xometry",
+   "process": "countersink",
+   "rule": "countersink_to_feature",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 8.0
+   },
+   "value_as_published": "8X MT",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "design guideline table",
+   "evaluate": false,
+   "note": "Countersink positions are not extracted per hole (gap).",
+   "source_url": "https://www.xometry.com/capabilities/sheet-metal-fabrication/",
+   "quote": "Sheet metal fabrication, design guidelines table (MT = Material Thickness): Minimum Feature to Countersink Distance | 8X MT",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "xometry.csk.depth_min",
+   "supplier": "xometry",
+   "process": "countersink",
+   "rule": "countersink_depth_min",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 0.6
+   },
+   "value_as_published": "0.6X MT",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "design guideline table",
+   "evaluate": false,
+   "note": "Countersink depth is not measured (gap).",
+   "source_url": "https://www.xometry.com/capabilities/sheet-metal-fabrication/",
+   "quote": "Sheet metal fabrication, design guidelines table (MT = Material Thickness): Minimum Countersink Depth | 0.6X MT",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "xometry.bend.relief",
+   "supplier": "xometry",
+   "process": "bend",
+   "rule": "relief_width_min",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 1.0
+   },
+   "value_as_published": "1X MT",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "design guideline table",
+   "evaluate": false,
+   "note": "Relief geometry is not extracted (gap).",
+   "source_url": "https://www.xometry.com/capabilities/sheet-metal-fabrication/",
+   "quote": "Sheet metal fabrication, design guidelines table (MT = Material Thickness): Relief Cuts | 1X MT",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "xometry.cut.corner_fillet",
+   "supplier": "xometry",
+   "process": "laser_cut",
+   "rule": "corner_fillet_min",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 0.5
+   },
+   "value_as_published": "0.5X MT",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "design guideline table",
+   "evaluate": false,
+   "note": "Outside-corner radii are judged by dfm_edges; not evaluated here.",
+   "source_url": "https://www.xometry.com/capabilities/sheet-metal-fabrication/",
+   "quote": "Sheet metal fabrication, design guidelines table (MT = Material Thickness): Corner Fillets | 0.5X MT",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "xometry.cut.feature_min_laser",
+   "supplier": "xometry",
+   "process": "laser_cut",
+   "rule": "hole_min",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 2.0,
+    "floor_mm": 1.575
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "general tolerance table",
+   "conflicts": [
+    "xometry.cut.hole_min_sheetcut"
+   ],
+   "source_url": "https://www.xometry.com/capabilities/sheet-cutting/laser-cutting/",
+   "quote": "Laser Cut Metal General Tolerances: Minimum Feature Size | 2X material thickness with a minimum of 0.062\"",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "xometry.cut.hole_min_sheetcut",
+   "supplier": "xometry",
+   "process": "laser_cut",
+   "rule": "hole_min",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 1.0,
+    "floor_mm": 1.27
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "should",
+   "conflicts": [
+    "xometry.cut.feature_min_laser"
+   ],
+   "note": "Contradicts the laser-cutting page (2 x thickness, at least 0.062 in.).",
+   "source_url": "https://www.xometry.com/capabilities/sheet-cutting/",
+   "quote": "Holes and cutouts should be larger than the material thickness or 0.050”, whichever is greater.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "xometry.cut.part_min_laser",
+   "supplier": "xometry",
+   "process": "laser_cut",
+   "rule": "part_min_size",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    25.4,
+    25.4
+   ],
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "recommended",
+   "source_url": "https://www.xometry.com/capabilities/sheet-cutting/laser-cutting/",
+   "quote": "Minimum Recommend Part Size | 1.000\"",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "xometry.cut.kerf_laser",
+   "supplier": "xometry",
+   "process": "laser_cut",
+   "rule": "kerf",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 0.508,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "requirement",
+   "conflicts": [
+    "xometry.cut.kerf_sheetcut"
+   ],
+   "source_url": "https://www.xometry.com/capabilities/sheet-cutting/laser-cutting/",
+   "quote": "Kerf (slit size) | Approximately 0.020\"",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "xometry.cut.kerf_sheetcut",
+   "supplier": "xometry",
+   "process": "laser_cut",
+   "rule": "kerf",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 0.203,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "requirement",
+   "conflicts": [
+    "xometry.cut.kerf_laser"
+   ],
+   "source_url": "https://www.xometry.com/capabilities/sheet-cutting/",
+   "quote": "Kerf is the gap thickness created by the laser and is usually around 0.008” with a +/- 0.004” tolerance depending on the process and material thickness.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "xometry.cut.tolerance",
+   "supplier": "xometry",
+   "process": "laser_cut",
+   "rule": "tolerance_cut",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 0.254,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "requirement",
+   "source_url": "https://www.xometry.com/manufacturing-standards/",
+   "quote": "Edge to edge tolerances is +/- .010” nominal on the top face of the plate/sheet.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "xometry.cut.thickness_range_fab",
+   "supplier": "xometry",
+   "process": "bend",
+   "rule": "thickness_range",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    0.61,
+    6.35
+   ],
+   "comparison": "within",
+   "severity": "info",
+   "phrasing": "typical",
+   "source_url": "https://www.xometry.com/capabilities/sheet-metal-fabrication/",
+   "quote": "Sheet Thickness | 0.024” - 0.250” typical. We accommodate thicker or thinner gauges upon request.",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "xometry.bend.tolerance_A",
+   "supplier": "xometry",
+   "process": "bend",
+   "rule": "tolerance_bend",
+   "material": "*",
+   "thickness_mm": null,
+   "value_as_published": "± .015″ Edge to bend",
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "requirement",
+   "source_url": "https://www.xometry.com/manufacturing-standards/",
+   "quote": "A - ± .015″ Edge to bend",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "xometry.bend.tolerance_D",
+   "supplier": "xometry",
+   "process": "bend",
+   "rule": "tolerance_bend",
+   "material": "*",
+   "thickness_mm": null,
+   "value_as_published": "± .015″ Bend to hole or internal cut feature",
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "requirement",
+   "source_url": "https://www.xometry.com/manufacturing-standards/",
+   "quote": "D - ± .015″ Bend to hole or internal cut feature",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "xometry.bend.tolerance_F",
+   "supplier": "xometry",
+   "process": "bend",
+   "rule": "tolerance_bend",
+   "material": "*",
+   "thickness_mm": null,
+   "value_as_published": "± 1 Degree Bend angle",
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "requirement",
+   "source_url": "https://www.xometry.com/manufacturing-standards/",
+   "quote": "F - ± 1 Degree Bend angle",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "xometry.cnc.min_feature",
+   "supplier": "xometry",
+   "process": "cnc_milling",
+   "rule": "cnc_min_feature",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 0.5,
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "requirement",
+   "measured": "smallest hole diameter and thinnest wall",
+   "source_url": "https://www.xometry.com/capabilities/cnc-machining-service/",
+   "quote": "Minimum Feature Size | 0.020” (0.50 mm). This may vary depending on part geometry and chosen material.",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "xometry.cnc.part_max_milled",
+   "supplier": "xometry",
+   "process": "cnc_milling",
+   "rule": "cnc_part_max_size",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    610.0,
+    1219.0,
+    2032.0
+   ],
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "requirement",
+   "source_url": "https://www.xometry.com/capabilities/cnc-machining-service/",
+   "quote": "Maximum Part Size | Milled parts up to 80” x 48” x 24” (2,032 x 1,219 x 610 mm).",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "xometry.cnc.tolerance",
+   "supplier": "xometry",
+   "process": "cnc_milling",
+   "rule": "tolerance_cnc",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 0.127,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "requirement",
+   "source_url": "https://www.xometry.com/capabilities/cnc-machining-service/",
+   "quote": "General Tolerances | Tolerances on metals will be held to +/- 0.005\" (+/- 0.127 mm) in accordance with ISO 2768 unless otherwise specified.",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "xometry.cnc.thread_callout",
+   "supplier": "xometry",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_callout",
+   "material": "*",
+   "thickness_mm": null,
+   "value": true,
+   "unit": "bool",
+   "comparison": "info",
+   "severity": "warning",
+   "phrasing": "threads must be called out",
+   "source_url": "https://www.xometry.com/capabilities/cnc-machining-service/",
+   "quote": "Tapped holes not explicitly called out as Features on the quoted CAD model may be machined to the diameters specified in that model.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  }
+ ]
+}

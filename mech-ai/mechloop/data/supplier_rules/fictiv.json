@@ -1,0 +1,390 @@
+{
+ "schema": "mechloop.supplier_rules/1",
+ "version": "2026-11-19.1",
+ "supplier": "fictiv",
+ "name": "Fictiv",
+ "home": "https://www.fictiv.com/",
+ "retrieved": "2026-11-19",
+ "processes": [
+  "laser_cut",
+  "bend",
+  "hardware",
+  "cnc_milling"
+ ],
+ "how_read": "Plain HTTPS page fetch, no account, no quote; figures copied as published. Prose quotes are verbatim; 'table_row' quotes name the table, row and cells.",
+ "not_read": [
+  "https://www.fictiv.com/articles/sheet-metal-design-guide redirects to the articles index; https://www.fictiv.com/tolerances-and-specifications returned 404. The specification pages /specifications/sheet-metal and /specifications/cnc-machining were read.",
+  "The 'Min Bend Radius' table lists 'Aluminum 5052' and 'Aluminum' separately without naming the second alloy."
+ ],
+ "notes": {},
+ "rules": [
+  {
+   "id": "fictiv.bend.k_factor_al",
+   "supplier": "fictiv",
+   "process": "bend",
+   "rule": "k_factor",
+   "material": "al*",
+   "thickness_mm": null,
+   "value": [
+    0.33,
+    0.4
+   ],
+   "unit": "ratio",
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "specification guideline",
+   "source_url": "https://www.fictiv.com/specifications/sheet-metal",
+   "quote": "K-FACTOR: Soft (AL) 0.33–0.40, Medium (Steel) 0.40–0.45, Hard (SS) 0.45–0.50",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.bend.relief_width",
+   "supplier": "fictiv",
+   "process": "bend",
+   "rule": "relief_width_min",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 1.0,
+    "floor_mm": 0.762
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "specification guideline",
+   "evaluate": false,
+   "note": "Relief geometry is not extracted (gap).",
+   "source_url": "https://www.fictiv.com/specifications/sheet-metal",
+   "quote": "RELIEF WIDTH: Material thickness or 0.030″, whichever greater",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.bend.relief_depth",
+   "supplier": "fictiv",
+   "process": "bend",
+   "rule": "relief_depth_min",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 1.5
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "specification guideline",
+   "evaluate": false,
+   "note": "Relief geometry is not extracted (gap).",
+   "source_url": "https://www.fictiv.com/specifications/sheet-metal",
+   "quote": "RELIEF DEPTH: 1.5× material thickness minimum",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.bend.flange_min_standard",
+   "supplier": "fictiv",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 4.0
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "standard",
+   "measured": "formed flange length (reference not stated; from the apex taken)",
+   "source_url": "https://www.fictiv.com/specifications/sheet-metal",
+   "quote": "MIN FLANGE: Standard 4× thickness, Absolute min 3×, Hems 5×",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.bend.flange_min_absolute",
+   "supplier": "fictiv",
+   "process": "bend",
+   "rule": "flange_min",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 3.0
+   },
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "absolute minimum",
+   "measured": "formed flange length (reference not stated; from the apex taken)",
+   "source_url": "https://www.fictiv.com/specifications/sheet-metal",
+   "quote": "MIN FLANGE: Standard 4× thickness, Absolute min 3×, Hems 5×",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.cut.hole_min",
+   "supplier": "fictiv",
+   "process": "laser_cut",
+   "rule": "hole_min",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 1.0,
+    "floor_mm": 0.787
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "specification guideline",
+   "source_url": "https://www.fictiv.com/specifications/sheet-metal",
+   "quote": "Min hole Ø: 1.0× thickness (min 0.031″)",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.cut.hole_edge",
+   "supplier": "fictiv",
+   "process": "laser_cut",
+   "rule": "hole_edge_web",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 2.0,
+    "floor_mm": 1.575
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "specification guideline",
+   "measured": "material between hole edge and outer edge (reference not stated)",
+   "source_url": "https://www.fictiv.com/specifications/sheet-metal",
+   "quote": "Hole to edge: ≥2× thickness (min 0.062″)",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.bend.hole_to_bend",
+   "supplier": "fictiv",
+   "process": "bend",
+   "rule": "feature_to_bend",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 2.5,
+    "r": 1.0
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "specification guideline",
+   "reference": "bend_tangent",
+   "source_url": "https://www.fictiv.com/specifications/sheet-metal",
+   "quote": "Hole to bend: ≥2.5× thickness + bend radius",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.cut.slot_min",
+   "supplier": "fictiv",
+   "process": "laser_cut",
+   "rule": "slot_min",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "t": 1.0
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "specification guideline",
+   "source_url": "https://www.fictiv.com/specifications/sheet-metal",
+   "quote": "Slots: Min width 1.0× thickness, radius ≥0.5× width",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.pem.edge",
+   "supplier": "fictiv",
+   "process": "hardware",
+   "rule": "pem_center_to_edge",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "d": 2.5
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "specification guideline",
+   "measured": "hardware hole centre to the outer edge against the hardware hole diameter (reference not stated; centre taken)",
+   "source_url": "https://www.fictiv.com/specifications/sheet-metal",
+   "quote": "PEM: Add 0.005–0.010″ clearance, min edge 2.5× hole Ø",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.bend.radius_min.al5052",
+   "supplier": "fictiv",
+   "process": "bend",
+   "rule": "bend_radius_min",
+   "material": "al5052",
+   "material_as_published": "Aluminum 5052",
+   "thickness_mm": null,
+   "formula": {
+    "t": 0.5
+   },
+   "value_as_published": "0.5t – 1.0t",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "range; lower end used",
+   "note": "A range is published as the minimum bend radius; its lower end is used as the limit.",
+   "source_url": "https://www.fictiv.com/specifications/sheet-metal",
+   "quote": "Bending Guidelines, Material | Min Bend Radius: Aluminum 5052 | 0.5t – 1.0t",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.bend.radius_min.steel",
+   "supplier": "fictiv",
+   "process": "bend",
+   "rule": "bend_radius_min",
+   "material": "steel",
+   "material_as_published": "Cold Rolled Steel",
+   "thickness_mm": null,
+   "formula": {
+    "t": 0.5
+   },
+   "value_as_published": "0.5t – 1.0t",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "range; lower end used",
+   "note": "A range is published as the minimum bend radius; its lower end is used as the limit.",
+   "source_url": "https://www.fictiv.com/specifications/sheet-metal",
+   "quote": "Bending Guidelines, Material | Min Bend Radius: Cold Rolled Steel | 0.5t – 1.0t",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.bend.radius_min.stainless304",
+   "supplier": "fictiv",
+   "process": "bend",
+   "rule": "bend_radius_min",
+   "material": "stainless304",
+   "material_as_published": "Stainless 304",
+   "thickness_mm": null,
+   "formula": {
+    "t": 1.0
+   },
+   "value_as_published": "1.0t – 2.0t",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "range; lower end used",
+   "note": "A range is published as the minimum bend radius; its lower end is used as the limit.",
+   "source_url": "https://www.fictiv.com/specifications/sheet-metal",
+   "quote": "Bending Guidelines, Material | Min Bend Radius: Stainless 304 | 1.0t – 2.0t",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.bend.radius_min.al_unspecified",
+   "supplier": "fictiv",
+   "process": "bend",
+   "rule": "bend_radius_min",
+   "material": "al6061",
+   "material_as_published": "Aluminum (alloy not named)",
+   "thickness_mm": null,
+   "formula": {
+    "t": 1.0
+   },
+   "value_as_published": "1.0t – 2.0t",
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "range; lower end used",
+   "note": "The row says only 'Aluminum' beside a separate 'Aluminum 5052' row; applied to 6061 as the non-5052 aluminium. Flagged as an interpretation.",
+   "source_url": "https://www.fictiv.com/specifications/sheet-metal",
+   "quote": "Bending Guidelines, Material | Min Bend Radius: Aluminum | 1.0t – 2.0t",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.cut.tolerance",
+   "supplier": "fictiv",
+   "process": "laser_cut",
+   "rule": "tolerance_cut",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 0.127,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "requirement",
+   "source_url": "https://www.fictiv.com/specifications/sheet-metal",
+   "quote": "+/- 0.005\" Tightest Tolerance",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.bend.tolerance_angle",
+   "supplier": "fictiv",
+   "process": "bend",
+   "rule": "tolerance_bend_angle",
+   "material": "*",
+   "thickness_mm": null,
+   "value": [
+    0.5,
+    1.0
+   ],
+   "unit": "deg",
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "requirement",
+   "source_url": "https://www.fictiv.com/specifications/sheet-metal",
+   "quote": "0.5°–1° Bend Tol",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.cut.thickness_range",
+   "supplier": "fictiv",
+   "process": "laser_cut",
+   "rule": "thickness_range",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    0.381,
+    9.525
+   ],
+   "comparison": "within",
+   "severity": "warning",
+   "phrasing": "published range",
+   "source_url": "https://www.fictiv.com/specifications/sheet-metal",
+   "quote": "0.015\"-0.375\" Thickness Range",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.cnc.pocket_depth",
+   "supplier": "fictiv",
+   "process": "cnc_milling",
+   "rule": "cnc_pocket_depth_ratio",
+   "material": "*",
+   "thickness_mm": null,
+   "value": 4.0,
+   "unit": "x tool diameter",
+   "comparison": "<=",
+   "severity": "warning",
+   "phrasing": "requirement",
+   "evaluate": false,
+   "note": "Pocket depth against tool diameter is not extracted (gap).",
+   "source_url": "https://www.fictiv.com/specifications/cnc-machining",
+   "quote": "Avoid deep pockets and cavities (max depth = 4x tool diameter)",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.cnc.threads",
+   "supplier": "fictiv",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_standard",
+   "material": "*",
+   "thickness_mm": null,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "requirement",
+   "source_url": "https://www.fictiv.com/specifications/cnc-machining",
+   "quote": "Use standard thread sizes (UNC/UNF, metric coarse/fine) – special pitches require custom taps ($30-150) and hand-tapping time",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  }
+ ]
+}
