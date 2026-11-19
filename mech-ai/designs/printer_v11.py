@@ -923,9 +923,9 @@ def build_electrical(d: Design) -> Electrical:
     # v10: the toolhead now reaches the right top rail's inner face (2.4 mm) and the back rail (as before), so its loom is
     # anchored on TOP of the top back rail and drops down that rail's outer face, not in the frame's inside corner
     P1 = (118.0, 189.0, FZ + 12.0)
-    yl = YB0 + R_TPR + ROTO_W + PM_T + 2.0
-    el.loom("toolhead", [Waypoint("xbody", (NOZ_X - 10.0, yl, Z_BEAM + 32.0), clamp="probe_mount"),
-                         Waypoint("xbody", (NOZ_X + 23.0, yl, Z_BEAM + 32.0), clamp="probe_mount"),
+    yl = YB0 + R_TPR + ROTO_W + B23 + 2.0      # v11: clamped to the probe bracket's upper leg, above the blower
+    el.loom("toolhead", [Waypoint("xbody", (NOZ_X - 8.0, yl, Z_BEAM + 32.0), clamp="probe_mount"),
+                         Waypoint("xbody", (NOZ_X + 18.0, yl, Z_BEAM + 32.0), clamp="probe_mount"),
                          Waypoint("world", (118.0, 175.0, FZ + 12.0), clamp="frame_top_back"), Waypoint("world", P1)],
             flex_length={1: 480.0})
     # over the back rail's rear edge on a 30 mm radius (the 10 mm bundle needs 26), down the outside of the back wall (beside the
@@ -947,8 +947,9 @@ def build_electrical(d: Design) -> Electrical:
     el.loom("beam", [Waypoint("ybody", (-142.0, YB0 + PL_Y0 + 5.0, Z_PLATE - 1.5), clamp="y_plate_left"),
                      Waypoint("ybody", (-96.0, YB0 - 16.0, Z_BEAM + 6.0), clamp="x_beam"),
                      Waypoint("ybody", (-90.0, YB0, Z_BEAM + 7.5), clamp="x_beam"),
-                     Waypoint("ybody", (114.0, YB0, Z_BEAM + 7.5), clamp="x_beam"),
-                     Waypoint("ybody", (118.0, YB0 + 7.5, zbm), clamp="y_plate_right"),
+                     Waypoint("ybody", (100.0, YB0, Z_BEAM + 7.5), clamp="x_beam"),
+                     ("ybody", (104.0, YB0, zbm)),                       # v11: up past the right Y plate's inner edge (x 108)
+                     Waypoint("ybody", (112.0, YB0 + 7.5, zbm), clamp="y_plate_right"),
                      Waypoint("ybody", (142.0, YB0 + 8.0, zbm), clamp="y_plate_right"),
                      Waypoint("ybody", (150.0, YB0 + 24.0, zbm), clamp="y_plate_right")])
     el.loom("drop_left", [("world", (XL, -120.0, ZL)),
@@ -1428,18 +1429,21 @@ def build() -> Design:
         add_screw(d, f"tool_screw_{i}", "M3", 6, at=(x, ymid, Z_BEAM + z), direction=(0, -1, 0), body="xbody",
                   threads_into="x_carriage", clamps=("tool_plate",))
     place(d, "extruder", extruder_roto(), Location(ROTO_O), body="xbody", process="purchased")
-    yb_pm = yrr + ROTO_W
+    yb_pm = yrr + ROTO_W                       # the Roto's rear face
+    # v11: the probe bracket (5052 L) lies on the Roto's rear face under its two screws: each screw clamps the bracket, the
+    # Roto, the rear plate and the front plate (metal throughout: v10's sleeves through a printed holder are gone) into a PEM
+    # S-M3-1 clinched in the front plate
+    d.add("probe_mount", round_profile(probe_bracket_shape(yb_pm), 0.8, B23), material=AL_BEND, body="xbody", process="sheet",
+          meta={"finish": "bare", "description": (
+              "Probe bracket: a one-bend L of 2.286 mm 5052 (SendCutSend .090, inside radius 0.81). Its upper leg lies on the "
+              "Roto's rear face, clamped by the Roto's two M3 screws; its lower leg reaches back to the OMRON E2E-X5ME1, whose "
+              "M12 barrel passes a 12.5 mm hole and is clamped by the sensor's own two nuts, the leg 15 mm behind the sensing "
+              "face (OMRON's surrounding-metal figure for an unshielded M12; the 40 mm zone round the head is checked).")})
     for i, (hx, hy, hz) in enumerate(d.get("extruder").meta["interfaces"]["mount_holes_m3"]):
-        place(d, f"probe_mount_sleeve_{i}", spacer_round("M3", PM_T, "aluminium"), Location(Plane(origin=(hx, yb_pm, hz), z_dir=(0, 1, 0))), body="xbody")
-        # the nut is a PEM S-M3-1 clinched in the front plate (SendCutSend hardware service), its head in a hex hole of
-        # the rear plate: the screw clamps sleeve, Roto, rear plate and front plate
-        # a washer under the head bears on the sleeve's end, 0.6 mm clear of the printed holder (PM_TP)
-        add_screw(d, f"extruder_screw_{i}", "M3", 50, at=(hx, yb_pm + PM_T, hz), direction=(0, -1, 0), body="xbody",
-                  clamps=(f"probe_mount_sleeve_{i}", "extruder", "tool_plate_rear", "tool_plate"), washer=True)
+        add_screw(d, f"extruder_screw_{i}", "M3", 50, at=(hx, yb_pm + B23, hz), direction=(0, -1, 0), body="xbody",
+                  clamps=("probe_mount", "extruder", "tool_plate_rear", "tool_plate"), washer=True)
         add_nut(d, f"extruder_nut_{i}", "M3", at=(hx, ymid, hz), direction=(0, 1, 0), body="xbody", screw=f"extruder_screw_{i}", standard="pem")
         d.join(f"extruder_nut_{i}", "tool_plate", "PEM self-clinching nut (SendCutSend hardware service)")
-        d.join(f"probe_mount_sleeve_{i}", "probe_mount", "compression sleeve: the holder is located on it, held between the Roto's face "
-               "and the screw's washer with 0.6 mm play, not clamped")
     seat = d.get("extruder").meta["interfaces"]["hotend_seat"][0]
     # v10: the HeaterCore's lead sleeve points FORWARD, under the tool plates (2.2 mm) and the X block (4.7 mm). v9: to the
     # left, 14 mm beyond the Roto's side, where it would now meet the top side rail before the Roto does. Not backward:
@@ -1447,30 +1451,38 @@ def build() -> Design:
     place(d, "hotend", hotend_revo(40, 24.0, 0.4), Location(tuple(seat), (0, 0, -90)), body="xbody")
     d.allow_overlap("hotend", "extruder")
     d.join("hotend", "extruder", "clamp")
-    d.get("hotend").meta["description"] = "E3D Revo hotend, held in the Roto's hotend seat by the Roto's own clamp (no separate fasteners)."
-    d.add("probe_mount", probe_mount_shape(), material=HOT, body="xbody", process="printed",
-          meta={"print_up": "+Z", "print": {**PRINT_ABS, "orientation": "+Z"}, "service_temp_c": 45.0})
+    d.get("hotend").meta["description"] = ("E3D Revo hotend, held in the Roto's hotend seat by the Roto's own clamp (no separate fasteners). "
+                                           "v11: fitted with E3D's silicone sock for the Revo HeaterCore (BOM), so the part-cooling jet "
+                                           "that passes under the heater does not cool it.")
+    d.bom_extra("E3D-REVO-SILICONE-SOCK (E3D Revo HeaterCore silicone sock; v11 part cooling)", 1, 3.0)
     place(d, "bed_probe", probe_omron_e2e(PRB_MODEL, clamp=PRB_CLAMP, nuts="separate"), Location((PRB_X, YB0 + PRB_Y, Z_PRB)), body="xbody")
     add_probe_nuts(d, "bed_probe")
     d.join("bed_probe", "probe_mount", "clamped by its two nuts")
-    d.add("part_duct", part_duct_shape(), material=HOT, body="xbody", process="printed",
+    # part cooling (v11): the GDB4010 blower behind the Roto, 0.1 mm behind the probe bracket's leg, outlet down into the duct
+    y_noz = YB0 + HOT_OFF
+    bl_y0 = yb_pm + B23 + 0.1
+    d.add("part_duct", part_duct_shape(y_noz, bl_y0), material=HOT, body="xbody", process="printed",
           meta={"print_up": "-Y", "print": {**PRINT_ABS, "orientation": "-Y"}, "service_temp_c": 45.0})
     for i, (x, z) in enumerate(FC_SCREWS):
         # through both tool plates and the duct's flange into a nyloc nut and washer captured in the flange
         add_screw(d, f"part_duct_screw_{i}", "M3", 16, at=(x, yf, Z_BEAM + z), direction=(0, 1, 0), body="xbody",
                   clamps=("tool_plate", "tool_plate_rear", "part_duct"), washer=True).meta["torque_nm"] = PRINTED_JOINT_TORQUE
         captive_nut(d, f"part_duct_screw_{i}", (x, YB0 + R_TPR + POCKET_WALL, Z_BEAM + z), (0, 1, 0), "part_duct", "xbody")
-    place(d, "part_fan", fan_cg3010u24(), Location(Plane(origin=(PFAN[0], YB0 + PFAN[1], Z_BEAM + PFAN[2]), x_dir=(1, 0, 0), z_dir=(0, 1, 0))),
+    bc = (BL_X0 + BL_X1) / 2
+    place(d, "part_fan", blower_gdb4010(), Location(Plane(origin=(bc, bl_y0 + 5.0, BL_Z0 + 20.0), x_dir=(1, 0, 0), z_dir=(0, -1, 0))),
           body="xbody")
-    for i, sxo in enumerate((-12.0, 12.0)):
-        # through the fan's frame (washer on the plastic frame) and the duct's boss into a captured nyloc nut and washer
-        fs = add_screw(d, f"part_fan_screw_{i}", "M3", 18, at=(PFAN[0] + sxo, YB0 + PFAN[1] + 5.0, Z_BEAM + PFAN[2] + 12.0),
-                       direction=(0, -1, 0), body="xbody", clamps=("part_fan", "part_duct"), washer=True)
-        # snug only: plastic fan frame on a printed boss, the nyloc holds it; at the 0.5 N.m assumed for plastic joints the
-        # captured washer (on a 9 mm boss) would crush the ABS
-        fs.meta["torque_nm"] = 0.2
-        captive_nut(d, f"part_fan_screw_{i}", (PFAN[0] + sxo, YB0 + FC_LUG_Y + PLEN - POCKET_WALL, Z_BEAM + PFAN[2] + 12.0), (0, -1, 0),
-                    "part_duct", "xbody")
+    W2 = WASHER["normal"]["M2"][2]
+    for i, z in enumerate((BL_Z0 + 2.5, BL_Z0 + 37.5)):
+        # the blower's two right-hand lugs (the left ones are next to the probe's metal-free zone and the Roto's screw): M2 x 20
+        # through the lug (washer on the plastic) and the duct's cradle, washer and nut on the cradle's back
+        fs = add_screw(d, f"part_fan_screw_{i}", "M2", 20, at=(bc + 17.5, bl_y0, z), direction=(0, 1, 0), body="xbody",
+                       clamps=("part_fan", "part_duct"), washer=True, locking="adhesive")
+        fs.meta["torque_nm"] = 0.15
+        yb_ = bl_y0 + 10.0 + CRADLE_T
+        add_washer(d, f"part_fan_screw_{i}_nwasher", "M2", (bc + 17.5, yb_, z), (0, 1, 0), body="xbody", screw=f"part_fan_screw_{i}")
+        add_nut(d, f"part_fan_screw_{i}_nut", "M2", at=(bc + 17.5, yb_ + W2, z), direction=(0, 1, 0), body="xbody", screw=f"part_fan_screw_{i}")
+        d.join(f"part_fan_screw_{i}_nut", "part_duct", "clamped through its washer on the cradle's back")
+    d.join("part_fan", "part_duct", "the blower's outlet seats on the chamber's opening; two M2 through-bolts")
     # ================= X drive ===================================================
     # belt bracket: 5052 2.286 mm bent L on the front tool plate (two M3 into captive nuts in the rear plate); the two belt
     # ends are squeezed between its horizontal leg and a 2.54 mm clamp plate by four M3 with nuts
@@ -1728,8 +1740,8 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
                                       ("electronics_tray", nm), (bxx, byy, z1))
     sheet(d, "electronics_tray", tray, AL, r=3.0)
     for i, (x, y) in enumerate(tray_bolts):
-        add_screw(d, f"tray_bolt_{i}", "M5", 10, at=(x, y, Z_TRAY), threads_into=f"frame_bot_{'left' if x < 0 else 'right'}",
-                  tnut=True, washer=True, washers=2)
+        add_screw(d, f"tray_bolt_{i}", "M5", 8, at=(x, y, Z_TRAY), threads_into=f"frame_bot_{'left' if x < 0 else 'right'}",
+                  tnut=True, washer=True)      # v11 (owner): M5 x 8, one washer
     for i, (hx, hy, hz) in enumerate(psu.meta["interfaces"]["mount_holes_m4"]):
         add_screw(d, f"psu_screw_{i}", "M4", 6, at=(hx, hy, 20.0), direction=(0, 0, 1), threads_into="psu")
         grp.append(f"psu_screw_{i}")
@@ -1756,8 +1768,8 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
         panel -= Pos(XP - T_IP / 2, y, z) * Rot(0, 90, 0) * Cylinder(clearance_hole("M3") / 2, T_IP)
     sheet(d, "inlet_panel", panel, AL, r=2.0)
     for i, y in enumerate(PANEL_BOLTS):
-        add_screw(d, f"inlet_panel_bolt_{i}", "M5", 10, at=(XP - T_IP, y, 10.0), direction=(1, 0, 0), threads_into="frame_bot_left", tnut=True,
-                  clamps=("inlet_panel",), washer=True, washers=2)
+        add_screw(d, f"inlet_panel_bolt_{i}", "M5", 8, at=(XP - T_IP, y, 10.0), direction=(1, 0, 0), threads_into="frame_bot_left", tnut=True,
+                  clamps=("inlet_panel",), washer=True)      # v11 (owner): M5 x 8, one washer
     for i, (hx, hy, hz) in enumerate(inlet.meta["interfaces"]["mount_holes_m3"]):
         add_screw(d, f"inlet_screw_{i}", "M3", 10, at=(XP - T_IP - 2.5, hy, hz), direction=(1, 0, 0), clamps=("inlet", "inlet_panel"))
         add_washer(d, f"inlet_washer_{i}", "M3", (XP, hy, hz), (1, 0, 0), screw=f"inlet_screw_{i}")
@@ -1836,10 +1848,14 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
                           drive={"motor": [f"z_motor{t}" for t in zs["tags"]], "kind": "leadscrew",
                                  "screw": [f"leadscrew{t}" for t in zs["tags"]],
                                  "nut": [f"z_nut{t}" for t in zs["tags"]], "sync": "independent", "nut_seating": "captive",
-                                 # v10: how far a nut's 22 mm flange can rock between its plate and its keeper (0.1 mm of play)
-                                 # before the tilted carrier forces the nut out of square with its screw
-                                 "nut_tilt_allowance_rad": KEEP_GAP / 22.0,
-                                 "nut_tilt_basis": f"keeper play {KEEP_GAP:g} mm over the T8 nut's 22 mm flange"}))
+                                 # v11: the POM anti-backlash nut has no backlash of its own (spring-preloaded: ASSUMED); what
+                                 # it can move before bearing the other way is the keeper's 0.1 mm play
+                                 "nut_reverse_gap_mm": KEEP_GAP,
+                                 "nut_reverse_gap_basis": f"POM anti-backlash nut (no backlash: assumed) held with the keeper's {KEEP_GAP:g} mm play",
+                                 # how far a nut's flange can rock between its plate and its keeper before the tilted carrier
+                                 # forces the nut out of square with its screw (v11: the square flange, 23 mm, a stand-in figure)
+                                 "nut_tilt_allowance_rad": KEEP_GAP / 23.0,
+                                 "nut_tilt_basis": f"keeper play {KEEP_GAP:g} mm over the POM nut's 23 mm flange (stand-in dimension)"}))
     d.program = [{"to": {"z": PRINT_Z}},
                  {"to": {"x": -75, "y": -75}}, {"to": {"x": 75, "y": -75}}, {"to": {"x": 75, "y": 75}},
                  {"to": {"x": -75, "y": 75}}, {"to": {"x": -75, "y": -75}}, {"to": {"x": 0, "y": 0}},
@@ -1855,15 +1871,17 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
         Adjustment("the knurled thumb nut under the deck at each of the three bed studs (0.7 mm per turn)", "bed_level", range_mm=LEVEL_RANGE,
                    mover="DIN 466 M4 thumb nut", lock="the die spring's preload on the nut's thread (49 to 72 N over the range)"),
         Adjustment("x switch: its screws run in slots in the right Y plate's land", "endstop", range_mm=ES_SLOT, joint="x"),
-        Adjustment("y switch: its bracket slides along the right top rail's top slot on two T-nuts", "endstop", range_mm=5.0, joint="y"),
+        Adjustment("y switch: its flat plate slides along the right top rail's top slot on its T-nuts", "endstop", range_mm=5.0, joint="y"),
         Adjustment("y rails on sliding T-nuts", "rail_align", range_mm=1.6, joint="y",
                    note="an M3 in the 6.2 mm slot slides +/-1.6 mm: left rail to a straight edge, right rail tightened while the gantry runs"),
         Adjustment("z rails on sliding T-nuts", "rail_align", range_mm=1.6, joint="z",
                    note="rear rail to a square; left and right rails tightened while the carrier is run up and down; what is left "
                         "goes into the carriage plates' webs"),
         Adjustment("floating lead screw nut", "float", range_mm=NUT_FLOAT - 0.2, joint="z"),
-        Adjustment("x belt: idler plate slides on its T-nuts, pushed by an M3 jack screw in a PEM nut", "belt_tension", range_mm=BELT_ADJ, joint="x"),
-        Adjustment("y belts: motor mounts slide on their T-nuts, pushed by M3 jack screws in PEM nuts", "belt_tension", range_mm=BELT_ADJ, joint="y"),
+        Adjustment("x belt: the X motor plate slides in its two slots on the beam's T-nuts, pulled outward by hand, then the two M5 are tightened",
+                   "belt_tension", range_mm=BELT_ADJ, joint="x"),
+        Adjustment("y belts: each motor plate slides on its T-nuts, pushed by an M5 tension screw positioned by two jam nuts on a cast corner bracket",
+                   "belt_tension", range_mm=BELT_ADJ, joint="y", mover="M5 x 30 between two jam nuts", lock="the two jam nuts"),
     ]
     d.printer = {"bed": "bed", "x": "x", "y": "y", "z": "z",
                  "stiffness": {"x": "nozzle_stiffness_x", "y": "nozzle_stiffness_y"},
@@ -1957,7 +1975,7 @@ def add_requirements(d, zs):
     def travel(dd):
         t = {n: jr(dd, n).range[1] - jr(dd, n).range[0] for n in "xyz"}
         return t["x"] >= PRINT_X and t["y"] >= PRINT_Y and t["z"] >= PRINT_Z, str(t)
-    d.requirements.append(Requirement(f"print volume: travel >= {PRINT_X:g} x {PRINT_Y:g} x {PRINT_Z:g} mm (v9: 180 x 214.5 x 180)", travel))
+    d.requirements.append(Requirement(f"print volume: travel >= {PRINT_X:g} x {PRINT_Y:g} x {PRINT_Z:g} mm (v10.1: 229.6 x 214.5 x 180 on a cut rail)", travel))
 
     def nozzle_over_bed(dd):
         nx, ny, _ = nozzle_tip(dd)
@@ -2007,9 +2025,23 @@ def add_requirements(d, zs):
                 for t in zs["tags"]}
         return ok_rail and min(left.values()) >= 5.0, f"with Z {Z_UP:g} mm past the nozzle plane: {detail}; lead screws {min(left.values()):.1f} mm above their nuts"
     d.requirements.append(Requirement(f"Z rails, blocks, screws and nuts allow {Z_UP:g} mm of travel beyond the nominal nozzle plane", z_beyond))
-    d.requirements.append(Requirement("Z rails and lead screws end below the top back extrusion (no rubbing)", lambda dd: (
-        max(t := [dd.get(n).shape.bounding_box().max.Z for n in ["z_rail_left", "z_rail_right", "z_rail_rear"] + [f"leadscrew{t_}" for t_ in zs["tags"]]]) < FZ - 10,
-        f"rail tops {t[0]:.1f}, screw tops {' / '.join(f'{v:.1f}' for v in t[3:])} vs extrusion underside {FZ - 10:.1f}")))
+    def screws_clear(dd):
+        # v11: the 330 mm screws stand taller than the top rails' undersides; none may stand under a frame extrusion
+        frame = [c for c in dd.components if c.name.startswith(("frame_top_", "post_", "upright_"))]
+        out, ok = [], True
+        for t_ in zs["tags"]:
+            sb = dd.get(f"leadscrew{t_}").shape.bounding_box()
+            over = [c.name for c in frame if c.shape.bounding_box().min.Z < sb.max.Z and c.shape.bounding_box().max.Z > sb.min.Z
+                    and c.shape.bounding_box().min.X < sb.max.X and c.shape.bounding_box().max.X > sb.min.X
+                    and c.shape.bounding_box().min.Y < sb.max.Y and c.shape.bounding_box().max.Y > sb.min.Y]
+            ok = ok and not over and not dd.get(f"leadscrew{t_}").ratings.get("cut_to_length")
+            gap = min(abs(sb.max.X - (FX / 2 - 20.0)), abs(sb.min.X + (FX / 2 - 20.0))) if t_ else sb.min.Y - (FY / 2)
+            out.append(f"leadscrew{t_ or '_rear'}: top {sb.max.Z:.1f}, {'not cut' if not dd.get(f'leadscrew{t_}').ratings.get('cut_to_length') else 'CUT'}, "
+                       f"{'under ' + ', '.join(over) if over else 'under no frame extrusion'}, {gap:.1f} mm from the wall it stands beside")
+        rails = max(dd.get(n).shape.bounding_box().max.Z for n in ["z_rail_left", "z_rail_right", "z_rail_rear"])
+        return ok and rails < FZ - 10, f"Z rail tops {rails:.1f} (extrusion underside {FZ - 10:g}); " + "; ".join(out)
+    d.requirements.append(Requirement("v11: the Z lead screws are used at 330 mm as sold and stand under no frame extrusion; the Z rails end below the top rails",
+                                      screws_clear))
     d.requirements.append(Requirement("all three joints driven by catalog NEMA 17 motors", lambda dd: (
         all(dd.get(mn).sku.startswith("NEMA17") and dd.get(mn).meta["catalog"] for n in "xyz" for mn in motors_of(dd, n)),
         str({n: [dd.get(mn).sku for mn in motors_of(dd, n)] for n in "xyz"}))))
@@ -2058,12 +2090,12 @@ def add_requirements(d, zs):
         same = lambda v: max(v) - min(v) < 1e-3 * max(v)
         dk = dd.get("z_deck").shape.bounding_box()
         ok = (all(c.sku.startswith("EXTRUSION-2020") or "2020" in c.sku for c in mem) and all(c.body == "zbody" for c in mem)
-              and same(cp) and same(npv) and same(mpv) and same(kv) and abs(dk.size.Z - 3.175) < 1e-6
+              and same(cp) and same(npv[1:]) and same(mpv[1:]) and same(kv) and abs(dk.size.Z - 3.175) < 1e-6
               and abs(dk.size.X - 270.8) < 1e-6 and abs(dk.size.Y - 281.8) < 1e-6)       # v10: the carrier is v9's, not resized
         return ok, (f"four 2020 members {2 * SQ_X:.1f} x {SQ_Y1 - SQ_Y0:.1f} mm outside; deck {dk.size.X:.1f} x {dk.size.Y:.1f} x {dk.size.Z:.3f} mm; "
-                    f"three carriage plates one shape: {same(cp)}; three nut plates one shape: {same(npv)}; three keepers: {same(kv)}; "
-                    f"three motor plates: {same(mpv)}")
-    d.requirements.append(Requirement("v9: carrier is a closed 2020 rectangle with a 1/8 in deck; six brackets in two shapes", carrier_square))
+                    f"three carriage plates one shape: {same(cp)}; nut plates: the two front ones one shape ({same(npv[1:])}), the rear one "
+                    f"reaches out through the back wall; three keepers: {same(kv)}; motor plates: the two front ones one shape ({same(mpv[1:])})")
+    d.requirements.append(Requirement("v9: carrier is a closed 2020 rectangle with a 1/8 in deck (v11: rear nut plate and motor plate differ from the fronts)", carrier_square))
 
     def stud_loads(px, py, w=1.0):
         """Statics of the plate on its three studs: the load on each stud for w at (px, py)."""
@@ -2143,9 +2175,9 @@ def add_requirements(d, zs):
         nx, ny, _ = nozzle_tip(dd)
         m = min(nx + xr_[0] - sb.min.X, sb.max.X - (nx + xr_[1]), ny + yr_[0] - sb.min.Y, sb.max.Y - (ny + yr_[1]))
         used = PRINT_X * PRINT_Y / (sb.size.X * sb.size.Y)
-        return m >= 0 and used >= 0.85, (f"print area {PRINT_X:g} x {PRINT_Y:g} mm on a {sb.size.X:g} x {sb.size.Y:g} mm sheet: {used:.1%} of it "
-                                         f"(v9: 58 % of 257 x 257); the nozzle stays {m:.2f} mm or more inside the sheet's edge")
-    d.requirements.append(Requirement("v10: the print sheet is sized to the nozzle's reach (at least 85 % of it printed on)", sheet_use))
+        return m >= 0 and used >= 0.84, (f"print area {PRINT_X:g} x {PRINT_Y:g} mm on a {sb.size.X:g} x {sb.size.Y:g} mm sheet ({dd.get('bed').sku}): {used:.1%} of it "
+                                         f"(v10.1: 89.2 % of 235 x 235); the nozzle stays {m:.2f} mm or more inside the sheet's edge")
+    d.requirements.append(Requirement("v11: the print sheet is a stock size the nozzle's reach nearly fills (at least 84 % of it printed on; v10: 85)", sheet_use))
 
     def x_travel(dd):
         cb, rb = dd.get("x_carriage").shape.bounding_box(), dd.get("x_rail").shape.bounding_box()
@@ -2158,12 +2190,13 @@ def add_requirements(d, zs):
         right = max(xs, key=lambda v: v[1])
         cl, cr = left[0] + lo + (FX / 2 - 20.0), (FX / 2 - 20.0) - (right[1] + hi)
         ok = on_rail >= 5.0 - 1e-6 and min(cl, cr) >= 1.9 and abs(dd.get("frame_top_left").shape.bounding_box().size.Y - FD) < 1e-6
-        return ok, (f"X working travel {jr(dd, 'x').range[1] - jr(dd, 'x').range[0]:g} mm ({hi - lo:g} mm mechanical) on a {rb.size.X:g} mm rail on the "
+        ok = ok and abs(rb.size.X - X_RAIL_L) < 1e-6 and X_RAIL_L in (250.0,)
+        return ok, (f"X working travel {jr(dd, 'x').range[1] - jr(dd, 'x').range[0]:g} mm ({hi - lo:g} mm mechanical) on a {rb.size.X:g} mm stock rail on the "
                     f"{BEAM_L:g} mm beam: the block stays {on_rail:.1f} mm inside the rail's ends; at the ends of the mechanical travel "
                     f"{left[2]} is {cl:.2f} mm from the left top rail and {right[2]} {cr:.2f} mm from the right one; frame unchanged "
                     f"({FX:g} x {FD:g} x {FZ + 10:g} mm outside)")
-    d.requirements.append(Requirement("v10: X travel is what the 288 mm beam between the Y blocks allows, with the toolhead 1.9 mm or more "
-                                      "clear of the top side rails; the frame is v9's", x_travel))
+    d.requirements.append(Requirement("v11: X travel is what a stock 250 mm MGNR12R allows (5 mm of rail beyond the block), with the toolhead 1.9 mm "
+                                      "or more clear of the top side rails; the frame is v9's", x_travel))
 
     def motor_tilt(dd, m):
         ta = m["fea"]["bed_support"].get("tilt_allowance") or {}
@@ -2204,19 +2237,48 @@ def add_requirements(d, zs):
     d.requirements.append(Requirement("target: no purchased part is a stand-in where the catalogue has a real one", lambda dd: (
         sorted(px := [c.name for c in dd.components if c.cots and not c.meta.get("catalog")]) == STANDINS,
         f"hand-made purchased parts: {px} (the print sheet's magnetic base: its thickness is not published)")))
-    d.requirements.append(Requirement("no printed part in a load path (owner's guideline): printed parts are only the probe holder, duct and covers", lambda dd: (
+    d.requirements.append(Requirement("no printed part in a load path (owner's guideline): printed parts are only the duct and covers (v11: the probe holder is aluminium)", lambda dd: (
         sorted(pp := [c.name for c in dd.components if c.material in ("abs", "petg", "pla") and not c.cots]) ==
-        sorted(["probe_mount", "part_duct", "mains_cover_relay", "mains_cover_psu", "mains_cover_inlet"]), f"printed: {pp}")))
-    d.requirements.append(Requirement("bed sag under 1 kg at the worst print corner <= 0.02 mm (screw-only bound)", lambda dd, m: (
-        (pw := m["fea"]["bed_support"]["print_weight"])["judged_mm"] <= 0.02 + 1e-9, f"{pw['judged_mm']:.4f} mm at {pw.get('worst_point')}")))
+        sorted(["part_duct", "mains_cover_relay", "mains_cover_psu", "mains_cover_inlet"]), f"printed: {pp}")))
+    # ---- v11: the bed's three achievable limits (owner), replacing v10's 0.02 mm sag limit
+    def flat_installed(dd, m):
+        lc = m["fea"].get("bed_self_weight_sag") or {}
+        sag = lc.get("max_deflection_mm")
+        if sag is None:
+            return False, f"the bed_self_weight_sag load case did not report: {lc}"
+        tot, tot_maker = MIC6_FLAT_BOUGHT + sag, MIC6_FLAT_MAKER + sag
+        return tot <= FLAT_AS_INSTALLED + 1e-9, (
+            f"(a) out of flat as installed: plate as bought {MIC6_FLAT_BOUGHT:g} mm (owner's figure; inspect the cut plate to it) + sag under the "
+            f"bed's own weight on its three studs {sag:.4f} mm (FEA, plate alone) = {tot:.3f} mm, limit {FLAT_AS_INSTALLED:g} (what mesh "
+            f"levelling corrects). On the maker's brochure figure for 6.35 to 15.9 mm cast plate ({MIC6_FLAT_MAKER:g} mm, whole plate) it "
+            f"would be {tot_maker:.3f} mm")
+    d.requirements.append(Requirement(f"v11 (a): bed out of flat as installed (plate flatness as bought + sag under its own weight) <= {FLAT_AS_INSTALLED:g} mm", flat_installed))
+
+    def after_probing(dd, m):
+        th = m["fea"].get("bed_heated_60K") or {}
+        g = (th.get("gaps") or {}).get("nozzle gap") or {}
+        fl = th.get("flatness") or {}
+        rise = g.get("change_mm", g.get("value_mm"))
+        flat = fl.get("out_of_flat_mm", fl.get("value_mm"))
+        if rise is None or flat is None:
+            return False, f"thermal case figures not found: gaps {g}, flatness {fl}"
+        worst = max(abs(rise), abs(flat))
+        return worst <= FLAT_AFTER_PROBING + 1e-9, (
+            f"(b) change after probing during the first layers: bounded by the whole heat growth from cold to 80 degC (bed 60 K above the "
+            f"frame, carrier 15 K), as if the bed were probed before it had grown at all: nozzle-gap change {rise:.4f} mm, plate out of flat "
+            f"{flat:.4f} mm; limit {FLAT_AFTER_PROBING:g}. A light first-layer print (well under the 1 kg of (c)) adds less than (c)'s figure")
+    d.requirements.append(Requirement(f"v11 (b): change after probing during the first layers (heat growth at 80 degC) <= {FLAT_AFTER_PROBING:g} mm", after_probing))
+    d.requirements.append(Requirement(f"v11 (c): sag under a full 1 kg print at the worst corner <= {SAG_1KG_CORNER:g} mm (screw-only bound; sanity)", lambda dd, m: (
+        (pw := m["fea"]["bed_support"]["print_weight"])["judged_mm"] <= SAG_1KG_CORNER + 1e-9,
+        f"{pw['judged_mm']:.4f} mm at {pw.get('worst_point')} (v10.1, 12.7 mm plate: 0.0119)")))
     def nuts_held(dd, m):
         bs = m["fea"]["bed_support"]
         lv = bs["nut_seating_and_lead_error"]["levels"][2]
         kind = bs["nut_seating_and_lead_error"]["nut_seating"]["kind"]
         wc = lv["worst_case"]
-        ok = (not lv["a_nut_unseats"]) or (kind == "captive" and wc["print_weight_sag_on_supports_mm"] <= 0.02 + 1e-9)
+        ok = (not lv["a_nut_unseats"]) or (kind == "captive" and wc["print_weight_sag_on_supports_mm"] <= SAG_1KG_CORNER + 1e-9)
         return ok, (f"nuts {kind}; height error {lv['height_error_mm']} mm; least nut load margin {min(lv['nut_load_margin_n'].values()):.1f} N; "
                     f"worst case: {wc['nuts_not_seated'] or 'all seated'} off their weight-bearing flank, bed level change "
                     f"{wc['bed_level_change_across_print_area_mm']} mm, 1 kg sag on the supports {wc['print_weight_sag_on_supports_mm']} mm")
     d.requirements.append(Requirement("every lead-screw nut stays held with two screws at opposite lead limits (LSC-015): seated, or "
-                                      "captive with the bed's 1 kg sag on its supports <= 0.02 mm", nuts_held))
+                                      "captive with the bed's 1 kg sag on its supports <= 0.2 mm (v11's limit (c))", nuts_held))
