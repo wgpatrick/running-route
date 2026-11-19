@@ -2567,12 +2567,17 @@ CURATED_V11 = [
      "Slot 6.0 deep, 2.0 lip (Misumi HFS5, confirmed by Misumi's STEP), T-nut HNTAJ5. 24 screws now have between 0.5 d and 0.8 d of thread (the owner "
      "chose M5 x 8 with one washer); on a shallower slot of another make 94 screws would end closer than 0.5 mm to the floor.",
      "buy Misumi HFS5-2020 and HNTAJ5 nuts, or measure what is bought and re-run verify"),
-    ("B", "Part-cooling flow is an estimate; the blower's bearing is not known",
-     "GDSTIME GDB4010 24 V: delivered flow estimated from the maker's P-Q curve (read by eye) and handbook duct losses, not measured. The data sheet "
-     "lists ball, sleeve and hydraulic bearings for the family without saying which this part has.",
-     "ask the seller for a ball-bearing part; check cooling with bridging and overhang test prints"),
+    ("B", "Part-cooling flow is an estimate",
+     "Delta BFB0524HH 24 V (5015, two ball bearings): delivered flow estimated from the maker's P-Q curve (read by eye from its specification) "
+     "and handbook duct losses, not measured. No airflow model.",
+     "check cooling with bridging and overhang test prints"),
+    ("A", "Bed probe OMRON E2B-M12KS04-WP-C1: drawn from the data sheet, STEP not in hand",
+     "The shielded M12 sensor (4 mm, NPN NO) is modelled from OMRON's E2B data sheet (p.15 dimensions, p.20 surrounding metal); OMRON's site "
+     "refused the automated CAD download. Its temperature at the bracket is an estimate against its 70 degC rating; its switching distance on "
+     "the thin spring-steel sheet is OMRON's iron figure, unverified.",
+     "save OMRON's STEP as vendor_cad/inbox/E2B-M12KS04-WP-C1.step and re-run verify; check PROBE_ACCURACY and the trigger height hot (bed at 80 degC)"),
     ("B", "Probe bracket stiffness not analysed",
-     "The OMRON hangs on a 2.286 mm 5052 L. Its stiffness and any vibration were not computed.",
+     "The OMRON E2B hangs on a 2.286 mm 5052 L. Its stiffness and any vibration were not computed.",
      "check probe repeatability (PROBE_ACCURACY in Klipper) after assembly"),
     ("B", "X belt tensioned by hand",
      "No tensioner (owner's choice): the X motor plate slides in two slots on the beam and is pulled outward by hand before its two M5 are tightened.",
@@ -2588,7 +2593,7 @@ CURATED_V11 = [
      "Every dimension of Misumi's HNTAJ5 drawing is in the model; chamfers, leaf spring and countersink ring are left out.",
      "save Misumi's STEP as vendor_cad/inbox/TNUT-2020-M5.step and -M3.step when in hand"),
     ("B", "Hardware still without supplier CAD",
-     "M4 x 6 cap screws (McMaster 90128A208, zinc-plated; STEP over 5 MB), M5 x 65 post bolts, M5 x 16, M2 screws and nuts, flanged button heads, "
+     "M4 x 6 cap screws (McMaster 90128A208, zinc-plated; STEP over 5 MB), M5 x 65 post bolts, M5 x 16, flanged button heads, "
      "the PEM nuts and the toothed washer are generated stand-ins.",
      "add the supplier files to vendor_cad/inbox/ under their SKUs (vendor_cad/mcmaster_wanted.csv)"),
     ("B", "Earth stud: the ring terminal's tongue is taken as 0.8 mm",

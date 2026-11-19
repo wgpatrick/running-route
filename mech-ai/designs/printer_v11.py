@@ -12,9 +12,10 @@ A. Stock parts only. X rail: a stock HIWIN MGNR12R 250 mm (v10: cut to 288) -> X
 B. Bed: 220 x 220 PEI sheet (third-party stock size; the print area is 84.9 % of it) on a 232 x 232 x 6.35 mm MIC-6 plate
    (v10: 12.7), three studs moved to the plate's front and rear edges; three achievable flatness limits replace the 0.02 mm
    sag limit (as installed <= 0.3, change after probing <= 0.1, 1 kg at a corner <= 0.2).
-C. Toolhead: one GDSTIME GDB4010 24 V radial blower behind the Roto (outlet down) with a short printed duct whose outlet
+C. Toolhead: one Delta BFB0524HH 24 V 5015 radial blower behind the Roto (outlet down; owner's later change from the GDSTIME GDB4010) with a short printed duct whose outlet
    aims the jet just under the nozzle tip (>= 2.5 mm above the tip, >= 4.5 mm from the heater block), E3D silicone sock.
-   Probe holder: a one-bend 5052 L, the OMRON clamped in an M12 hole by its two nuts, 15 mm behind its face.
+   Probe holder: a one-bend 5052 L, the OMRON E2B-M12KS04-WP-C1 (shielded M12; owner's later change from the E2E-X5ME1)
+   clamped in an M12 hole by its two nuts, 15 mm behind its face.
 D. Belt brackets: X belt bracket kept bent (the only bent part); Y tension anchors are stock cast corner brackets on the
    rails' outer faces with an M5 tension screw between jam nuts pushing a second bracket under each Y motor plate's front
    M5; Y motor plates flat (304 1.88); X tension anchor deleted (slotted X motor plate, hand tension); X idler plate flat;
@@ -22,7 +23,8 @@ D. Belt brackets: X belt bracket kept bent (the only bent part); Y tension ancho
    plates 304 1.52) so the Y motor shaft load passes.
 E. Fasteners: flanged button heads (ISO 7380-2) on every corner-bracket leg; M5 x 8 with one washer for the v10.1 M5 x 10 +
    two washers; beam bolts M5 x 12 with two washers; M2.5 nuts thread-locked; Accu A2 large washers.
-F. Supplier CAD folded in: Misumi HFS5-2020 section, KIPP thumb nut, Century spring, Schurter inlet, OMRON probe.
+F. Supplier CAD folded in: Misumi HFS5-2020 section, KIPP thumb nut, Century spring, Schurter inlet, Delta blower (the E2B probe
+   is drawn from OMRON's data sheet until its STEP is in hand).
 
 Below: printer_v10_1's own description, unchanged.
 
@@ -351,7 +353,7 @@ RAIL_SCREW_STEP = 2
 BEAM_BOLT_X = (116.0, 130.0)     # v11: inside the 276 mm beam's ends (v10: 127, 139)
 X_ES_Y = 34.4          # X switch: centre of its board, behind YB0 (lever tip at 25.4, on the front tool plate's striker tab; its front
                        # screw's washer then clears the Y block by 0.7 mm)
-# bed probe: OMRON E2E-X5ME1 34.5 mm behind the nozzle reading the print sheet's steel
+# bed probe: OMRON E2B-M12KS04-WP-C1 (v10.1: E2E-X5ME1) 34.5 mm behind the nozzle reading the print sheet's steel
 PRB_MODEL = "E2B-M12KS04-WP-C1"       # v11 (owner, 2026-11-19): OMRON E2B shielded M12, 4 mm, NPN NO, Digi-Key (was E2E-X5ME1)
 PRB_H = 2.0
 PRB_X = NOZ_X          # on the nozzle's X: no X offset
@@ -365,7 +367,7 @@ Z_TILT = {"z_positions": [_FW(0.0, LS_Y), _FW(-FS_X, FS_Y), _FW(FS_X, FS_Y)],   
           "points": [(TX, 185.0), (10.0, 5.0), (2 * TX - 10.0, 5.0)],                 # nozzle; probe 34.5 mm behind it
           "speed": 100, "horizontal_move_z": 5, "retries": 5, "retry_tolerance": 0.0075}
 Z_PRB = Z_NOZZLE + PRB_H
-PRB_CLAMP = (15.0, 15.0 + B32)    # v11: the 5052 L's horizontal leg, 15 mm behind the sensing face (OMRON's l for M12 unshielded)
+PRB_CLAMP = (15.0, 15.0 + B32)    # v11: the 5052 L's horizontal leg, 15 mm behind the sensing face (kept from the unshielded E2E; the E2B needs 2.4)
 PM_T = 4.0                                        # aluminium compression sleeves (4 mm long) through the printed probe holder
 PM_TP = PM_T - 0.6                                # the holder plate: 0.6 mm thinner than its sleeves (the printed minimum clearance
                                                   # 0.5, and open in every simulated build), so the screw clamps metal only
@@ -810,7 +812,7 @@ def nut_pocket(at, axis, up, extra_back=0.0):
             slab(POCKET_W - 0.01, POCKET_W + POCKET_NUT + extra_back, POCKET_AF, POCKET_AF / math.sqrt(3) + 0.2))
 
 
-# ---- v11 part cooling: one GDB4010 radial blower behind the Roto, outlet down, a short printed duct -----------------------
+# ---- v11 part cooling: one BFB0524HH radial blower behind the Roto, outlet down, a short printed duct -----------------------
 # v11 (owner, 2026-11-19): Delta BFB0524HH 5015 blower (was GDSTIME GDB4010 4010)
 BL_WX, BL_W, BL_T = 52.59, 51.42, 15.34   # the maker's STEP's bounding box: width, height, thickness
 BL_X0 = NOZ_X + 23.0                    # x from 23 to 75.6 right of the nozzle: right of the probe bracket and the Roto's screw heads
@@ -844,10 +846,10 @@ def _tube(o, ax, w, h, L):
 
 
 def part_duct_shape(y_noz, bl_y0):
-    """v11 printed ABS duct for the GDB4010 blower. A flange on the tool plates' tab (v10's: two M3 through-bolts into nyloc
+    """v11 printed ABS duct for the Delta BFB0524HH blower. A flange on the tool plates' tab (v10's: two M3 through-bolts into nyloc
     nuts captured in printed pockets) and an arm under the Roto's right side carry a chamber under the blower (the blower's
-    outlet blows down into it; a cradle behind the blower takes its two M2 through-bolts). From the chamber's front-left
-    corner a short tube, 10 x 3 mm inside, points from 24 mm out on the rear-right diagonal down at about 14 degrees to a
+    outlet blows down into it; a cradle behind the blower takes its two M3 through-bolts). From the chamber's front-left
+    corner a short tube, 14 x 3 mm inside, points from 24 mm out on the rear-right diagonal down at about 14 degrees to a
     point 0.5 mm under the nozzle tip: the jet passes under the heater block (E3D silicone sock fitted) instead of hitting
     it. The duct stays 3 mm or more above the tip and 4.5 mm or more from the heater block. Walls 1.6 mm, tube 1.2 mm."""
     w = DUCT_W
@@ -888,8 +890,8 @@ def part_duct_shape(y_noz, bl_y0):
 def probe_bracket_shape(y_face):
     """v11: the probe holder, a one-bend L of 2.286 mm 5052 (SendCutSend .090; inside radius 0.81). Its upper leg lies on the
     Roto's rear face under the Roto's two screws; at the bottom it bends back into a horizontal leg with the 12.5 mm hole the
-    OMRON's M12 barrel passes, clamped by the sensor's two nuts 15 mm behind its face (OMRON's surrounding-metal figure for
-    an unshielded M12). Up to z 396 the leg is 22 mm wide (clear of the blower beside it); above, it widens to 29.5 for the
+    OMRON's M12 barrel passes, clamped by the sensor's two nuts 15 mm behind its face (kept from the unshielded E2E-X5ME1; the
+    shielded E2B needs only 2.4). Up to z 396 the leg is 22 mm wide (clear of the blower beside it); above, it widens to 29.5 for the
     Roto's right-hand screw. y_face: the Roto's rear face."""
     z_b = Z_PRB + PRB_CLAMP[0]
     roto = ROTO_HOLES()
@@ -1456,13 +1458,13 @@ def build() -> Design:
     yb_pm = yrr + ROTO_W                       # the Roto's rear face
     # v11: the probe bracket (5052 L) lies on the Roto's rear face under its two screws: each screw clamps the bracket, the
     # Roto, the rear plate and the front plate (metal throughout: v10's sleeves through a printed holder are gone) into a PEM
-    # S-M3-1 clinched in the front plate
+    # S-M3-0 clinched in the front plate
     d.add("probe_mount", round_profile(probe_bracket_shape(yb_pm), 0.8, B23), material=AL_BEND, body="xbody", process="sheet",
           meta={"finish": "bare", "description": (
               "Probe bracket: a one-bend L of 2.286 mm 5052 (SendCutSend .090, inside radius 0.81). Its upper leg lies on the "
-              "Roto's rear face, clamped by the Roto's two M3 screws; its lower leg reaches back to the OMRON E2E-X5ME1, whose "
+              "Roto's rear face, clamped by the Roto's two M3 screws; its lower leg reaches back to the OMRON E2B-M12KS04-WP-C1 (shielded), whose "
               "M12 barrel passes a 12.5 mm hole and is clamped by the sensor's own two nuts, the leg 15 mm behind the sensing "
-              "face (OMRON's surrounding-metal figure for an unshielded M12; the 40 mm zone round the head is checked).")})
+              "face (kept from the unshielded E2E-X5ME1; OMRON's E2B figures, p.20, are checked: 2.4 mm proud, 18 mm round the head).")})
     for i, (hx, hy, hz) in enumerate(d.get("extruder").meta["interfaces"]["mount_holes_m3"]):
         # two large washers (Accu HPLW-M3-A2, 0.9 mm) under the head: the M3 x 50 then ends inside the front plate (with one
         # normal washer it stood 0.35 mm proud of the plate, into the guide block)
@@ -1484,7 +1486,7 @@ def build() -> Design:
     place(d, "bed_probe", probe_omron_e2e(PRB_MODEL, clamp=PRB_CLAMP, nuts="separate"), Location((PRB_X, YB0 + PRB_Y, Z_PRB)), body="xbody")
     add_probe_nuts(d, "bed_probe")
     d.join("bed_probe", "probe_mount", "clamped by its two nuts")
-    # part cooling (v11): the GDB4010 blower behind the Roto, 0.1 mm behind the probe bracket's leg, outlet down into the duct
+    # part cooling (v11): the BFB0524HH blower behind the Roto, 0.1 mm behind the probe bracket's leg, outlet down into the duct
     y_noz = YB0 + HOT_OFF
     bl_y0 = yb_pm + B23 + 2 * WASHER["large"]["M3"][2] + 3.0 + 1.5     # 1.5 mm behind the Roto screws' heads and washers
     d.add("part_duct", part_duct_shape(y_noz, bl_y0), material=HOT, body="xbody", process="printed",
@@ -1854,7 +1856,7 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
     d.subassemblies["x_drive"] = ["x_motor_mount", "x_motor", "x_pulley"] + [f"x_motor_screw_{i}{s}" for i in range(4) for s in ("", "_washer")]
     d.subassemblies["x_idler_unit"] = ["x_idler_mount", "x_idler_spacer", "x_idler", "x_idler_bolt", "x_idler_bolt_washer", "x_idler_nut"]
     # v11: no part-cooling bench unit: the blower stands behind the Roto's right-hand screw (its driver passes through where the
-    # blower sits), so the order is duct, Roto and its screws, then the blower and its two M2 bolts
+    # blower sits), so the order is duct, Roto and its screws, then the blower and its two M3 bolts
     for tag in ("", "_l"):
         d.subassemblies[f"y_drive{tag}"] = ([f"y_motor_mount{tag}", f"y_motor{tag}", f"y_pulley{tag}"]
                                             + [f"y_motor{tag}_screw_{i}{s}" for i in range(4) for s in ("", "_washer")])
