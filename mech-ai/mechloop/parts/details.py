@@ -142,6 +142,7 @@ def extrusion_2020(length: float):
                    f"Misumi HFS5-2020 (supplier STEP of HFS5-2020-500 from 3dfindit / CADENAS): its section swept to {length:g} mm "
                    "(Misumi sells the profile cut to length)",
                    tolerance={"volume_ratio": (0.6, 1.7)},
+                   fallback="vendor_cad/profile_2020_slot6.step",      # the community section, used when the supplier file is absent
                    notes=["Misumi section: area 182.13 mm^2 (catalogue 183), slot opening 6.0, lip 2.0, 12 mm cavity for 0.939 mm "
                           "then 45 degree walls to a 5.878 floor (simulation solid: 6.2 mm wide, 5 mm deep plain slots)"])
 

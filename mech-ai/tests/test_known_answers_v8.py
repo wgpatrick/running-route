@@ -707,7 +707,8 @@ def test_washer_dimensions_are_the_tabulated_iso_7089_and_7093_sizes_m2_5_to_m8(
     from mechloop.parts.hardware import WASHER, washer_flat
 
     assert WASHER["normal"]["M8"] == (8.4, 16.0, 1.6) and WASHER["large"]["M8"] == (8.4, 24.0, 2.0)
-    assert set(WASHER["normal"]) == {"M2.5", "M3", "M4", "M5", "M6", "M8"} and "M2.5" not in WASHER["large"]
+    # M2 added 2026-11-19 (printer_v11's blower screws)
+    assert set(WASHER["normal"]) == {"M2", "M2.5", "M3", "M4", "M5", "M6", "M8"} and "M2.5" not in WASHER["large"]
     st = washer_flat("M8", "large")
     assert st.sku == "WASHER-M8-LARGE" and "06_RC_ISO_washers" in st.source.get("note", "")
 

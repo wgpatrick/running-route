@@ -37,7 +37,8 @@ def test_thumb_nut_is_the_recorded_din466_row():
     v = vendor_data("halder_din466")["values"]["M4"]
     st = P.thumb_nut_din466("M4")
     assert _size(st) == pytest.approx((v["knurl_dia_d2_mm"], v["knurl_dia_d2_mm"], v["height_h_mm"]))
-    assert st.mass_kg == pytest.approx(0.0067) and st.interfaces["thread_d"] == 4.0 and not st.verified
+    # 2026-11-19: the nut bought is KIPP K0143.04 (steel, 6.2 g; same dimensions as Halder's row)
+    assert st.mass_kg == pytest.approx(0.0062) and st.interfaces["thread_d"] == 4.0 and not st.verified
     # the collar's end is the bearing face at Z = 0; the knurled head is at the far end
     assert st.shape.bounding_box().min.Z == pytest.approx(0.0)
     assert not st.sku.startswith("NUT-")       # a tapped part, 1 d of engagement: not judged as a hex nut the screw must pass

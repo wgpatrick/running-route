@@ -393,7 +393,7 @@ def test_washers_nylocs_countersunk_screws_and_probe_nuts_have_generated_models(
     from mechloop.parts.probes import e2e_nut
 
     # parts with no supplier file in vendor_cad/inbox/: generated to their standard, placeholders
-    for st in (washer_flat("M6"), washer_flat("M3", "large"), washer_toothed("M5"), P.hex_nut("M4", "iso10511"),
+    for st in (washer_flat("M6"), washer_flat("M5", "large"), washer_toothed("M5"), P.hex_nut("M4", "iso10511"),
                e2e_nut(), e2e_nut(washer=True), P.shcs("M5", 16)):
         assert st.detail is not None and st.model["kind"] == "generated to standard", st.sku
         assert vendor_cad.model_state(st.model) == "stand-in"          # a placeholder until the supplier's file arrives
@@ -447,7 +447,8 @@ def test_supplier_cad_is_the_detail_model_and_supplier_figures_are_in_the_catalo
         assert st.ratings["mcmaster_pn"] == pn and vendor_cad.check_stock(st)[0] == [], st.sku
     assert P.shcs("M4", 6).ratings["mcmaster_pn"] == "90128A208" and "zinc" in P.shcs("M4", 6).ratings["mcmaster_pn_status"]
     assert vendor_cad.model_state(P.shcs("M4", 6).model) == "stand-in"                  # no STEP under 5 MB: generated geometry stays
-    assert vendor_cad.model_state(washer_flat("M3", "large").model) == "stand-in"       # not sold by McMaster
+    # not sold by McMaster; since 2026-11-19 (printer_v11) re-made from Accu's drawing (HPLW-M3-A2): a faithful re-make
+    assert vendor_cad.model_state(washer_flat("M3", "large").model) == "faithful re-make"
     assert P.shcs("M3", 40).interfaces["thread_length"] == 18.0 and P.shcs("M5", 70).interfaces["thread_length"] == 70.0
     assert "thread_length" not in P.shcs("M3", 8).interfaces
     # the stack row of a partly threaded screw starts its thread 22 mm under the head; a fully threaded M5 x 30 at 0

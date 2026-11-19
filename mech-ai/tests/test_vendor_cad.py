@@ -45,6 +45,8 @@ def test_every_file_has_a_sources_entry_and_nothing_else_is_in_the_folder():
             src = Path(st.model["derived_from"]).name
             used.add(src)
             assert src in rows and (vc.root() / src).exists() and "unchanged" in rows[src]["origin"]
+        if "fallback" in st.model:               # a file kept for when the supplier file in the inbox is absent (still listed)
+            used.add(Path(st.model["fallback"]).name)
         if "file" in st.model:
             name = Path(st.model["file"]).name
             if Path(st.model["file"]).parent.name == "inbox":      # a supplier file promoted to the inbox (checked below)
