@@ -749,22 +749,24 @@ def hex_nut(size: str = "M3", standard: str = "iso4032") -> Stock:
     M5 nut records McMaster's height beside its own (interfaces["height_din934_mcmaster"]) but is not changed by it."""
     from build123d import RegularPolygon, extrude
 
-    if standard not in ("iso4032", "din934", "iso10511", "pem"):
-        raise ValueError("hex_nut standard must be 'iso4032', 'din934', 'iso10511' or 'pem'")
-    if standard == "pem":
+    if standard not in ("iso4032", "din934", "iso10511", "pem", "pem0"):
+        raise ValueError("hex_nut standard must be 'iso4032', 'din934', 'iso10511', 'pem' or 'pem0'")
+    if standard in ("pem", "pem0"):
+        # "pem0" (v11): PEM S-<size>-0, the shank length SendCutSend stocks (its catalogue has no S-M3-1)
+        dash = "0" if standard == "pem0" else "1"
         # A self-clinching nut pressed into sheet by the sheet supplier (PEM S-M3-1 class). STAND-IN: no PennEngineering
         # drawing was read, so it is drawn as the ISO 4032 hex nut solid it replaced (the plates' hex holes were drawn
         # for that solid); only the SKU, the BOM line and the state differ. Wanted: the supplier's STEP.
         af, h = NUT[size]
         body = extrude(RegularPolygon(af / 2, 6, major_radius=False), h)
-        return Stock(body, f"NUT-PEM-S-{size}-1", f"Self-clinching nut {size} in sheet (PEM S-{size}-1 class; installed by the sheet supplier)",
+        return Stock(body, f"NUT-PEM-S-{size}-{dash}", f"Self-clinching nut {size} in sheet (PEM S-{size}-{dash} class; installed by the sheet supplier)",
                      af * af * 0.866 * h * 7.85e-6 * 0.7, ratings={"approximate": True, "installed_by": "sheet supplier"},
                      interfaces={"across_flats": af, "height": h, "thread_d": SCREW[size][0]}, cost_usd=0.4,
-                     detail=body, model={"kind": "proxy", "state": "stand-in", "inbox": [f"S-{size}-1"],
+                     detail=body, model={"kind": "proxy", "state": "stand-in", "inbox": [f"S-{size}-{dash}"],
                                          "source": "STAND-IN: drawn as an ISO 4032 hex nut solid (5.5 across flats, 2.4 high for M3); the "
                                                    "clinch nut's own body diameter, height and shank are not modelled (no drawing read)",
                                          "tolerance": {"volume_ratio": (0.3, 3.0), "mass_ratio": (0.2, 5.0)}},
-                     source=_source("iso_fasteners", "proxy", f"PEM S-{size}-1 (self-clinching nut)",
+                     source=_source("iso_fasteners", "proxy", f"PEM S-{size}-{dash} (self-clinching nut)",
                                     unverified=("body diameter", "height", "shank", "minimum sheet thickness", "mass_kg", "cost"),
                                     note="stand-in: PennEngineering's drawing was not fetched"))
     if standard == "iso10511":

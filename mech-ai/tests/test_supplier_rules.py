@@ -12,7 +12,7 @@ from mechloop.model import Design
 from mechloop.shops import supplier_rules as SR
 from mechloop.verifiers.manufacture import verify_manufacture
 
-HOSTS = {"sendcutsend": {"sendcutsend.com"}, "oshcut": {"www.oshcut.com"}, "protolabs": {"www.protolabs.com"},
+HOSTS = {"sendcutsend": {"sendcutsend.com", "app.sendcutsend.com"}, "oshcut": {"www.oshcut.com"}, "protolabs": {"www.protolabs.com"},
          "xometry": {"www.xometry.com"}, "fictiv": {"www.fictiv.com"}, "hubs": {"www.hubs.com"}}
 
 
@@ -92,11 +92,13 @@ def run(shape, material="al5052", shop=None):
 
 
 def test_small_hole_is_an_error_at_sendcutsend_and_a_warning_at_protolabs():
-    shape = plate(3.175, holes=((-40, 0, 1.0), (20, 0, 6.0)))
+    shape = plate(3.175, holes=((-40, 0, 0.6), (20, 0, 6.0)))
     found, summary, row = run(shape)                                     # default shop for sheet: SendCutSend
-    f = found["sendcutsend.cut.hole_min_t_ratio"]                         # "At least 50% of material thickness"
-    assert f.severity == "error" and f.data["value"] == pytest.approx(1.0) and f.data["limit"] == pytest.approx(1.588, abs=0.01)
-    assert f.data["supplier"] == "sendcutsend" and f.data["source"] == "https://sendcutsend.com/guidelines/sheet-cutting/" and f.data["quote"]
+    # engineering specs JSON, ALU-125: cutting_specs.min_hole_size = "0.032" (0.81 mm); it supersedes the 50 %-of-t guideline
+    f = found["sendcutsend.specs.min_hole.al5052.3.175mm"]
+    assert f.severity == "error" and f.data["value"] == pytest.approx(0.6) and f.data["limit"] == pytest.approx(0.813, abs=0.01)
+    assert f.data["supplier"] == "sendcutsend" and f.data["source"] == "https://app.sendcutsend.com/sendcutsend-specs.json" and f.data["quote"]
+    assert "sendcutsend.cut.hole_min_t_ratio" not in found                # superseded at this stock (reported as info only)
     assert row["assigned"] == "sendcutsend" and "fails" in row["verdict"]
     found, _, row = run(shape, shop="protolabs")                         # "Holes and slots should be a minimum of material thickness"
     f = found["protolabs.cut.hole_min"]

@@ -755,7 +755,7 @@ def tool_plate_outline(y0, y1, striker=True):
 
 
 ROTO_HOLES = lambda: [(ROTO_O[0], ROTO_O[2]), (ROTO_O[0] + ROTO_H2[0], ROTO_O[2] + ROTO_H2[2])]
-BRK_Z = 28.25                          # belt bracket bolts, from Z_BEAM (v10: 8 mm higher with the belt)
+BRK_Z = 28.0                           # belt bracket bolts, from Z_BEAM (v11: 0.25 lower, 6.1 mm from the bend: SendCutSend's die width)
 
 
 def tool_plate_front_shape():
@@ -768,7 +768,7 @@ def tool_plate_front_shape():
         for z in (-10, 10):
             tp -= Pos(x, (y0 + y1) / 2, Z_BEAM + z) * ycyl(clearance_hole("M3") / 2, T_TPF)
     for x, z in ROTO_HOLES():
-        tp -= Pos(x, (y0 + y1) / 2, z) * ycyl(4.22 / 2, T_TPF)          # PEM S-M3-1 mounting hole
+        tp -= Pos(x, (y0 + y1) / 2, z) * ycyl(4.27 / 2, T_TPF)          # v11: PEM S-M3-0 mounting hole (SendCutSend: 0.168 in +0.003)
     for x, z in BLK_SCREWS:
         tp -= Pos(x, (y0 + y1) / 2, Z_BEAM + BRK_Z) * ycyl(clearance_hole("M3") / 2, T_TPF)
     for x, z in FC_SCREWS:
@@ -947,11 +947,11 @@ def build_electrical(d: Design) -> Electrical:
     yl = YB0 + R_TPR + ROTO_W + B23 + 2.0      # v11: clamped to the probe bracket's upper leg, at the blower's top
     by_c = YB0 + R_TPR + ROTO_W + B23 + 2 * WASHER["large"]["M3"][2] + 3.0 + 1.5 + BL_T + CRADLE_T     # back of the blower's cradle
     el.loom("toolhead", [Waypoint("xbody", (NOZ_X - 8.0, yl, Z_BEAM + 33.0), clamp="probe_mount"),
-                         ("xbody", (NOZ_X - 10.0, yl + 8.0, Z_BEAM + 52.0)),       # v11: up past the blower's left side,
-                         ("xbody", (NOZ_X + 4.0, yl + 20.0, Z_BEAM + 70.0)),       # over its top
-                         Waypoint("xbody", (NOZ_X + 30.0, by_c + 1.5, BL_Z0 + BL_W - 4.0), clamp="part_duct"),   # on the cradle's back
+                         ("xbody", (NOZ_X - 12.0, yl + 14.0, Z_BEAM + 58.0)),      # v11: up past the blower's left side,
+                         ("xbody", (NOZ_X + 12.0, by_c + 5.0, Z_BEAM + 70.0)),     # over its top and behind its cradle
+                         Waypoint("xbody", (NOZ_X + 40.0, by_c + 1.5, BL_Z0 + BL_W - 1.0), clamp="part_duct"),   # on the cradle's back
                          Waypoint("world", (118.0, 175.0, FZ + 12.0), clamp="frame_top_back"), Waypoint("world", P1)],
-            flex_length={2: 480.0})
+            flex_length={3: 480.0})
     # over the back rail's rear edge on a 30 mm radius (the 10 mm bundle needs 26), down the outside of the back wall (beside the
     # right Y motor), and in again over the bottom back rail on the same radius
     arc = lambda yc, zc_, angs, xs: [("world", (x, yc + 30.0 * math.cos(math.radians(a)), zc_ + 30.0 * math.sin(math.radians(a)))) for a, x in zip(angs, xs)]
@@ -1468,7 +1468,7 @@ def build() -> Design:
         # normal washer it stood 0.35 mm proud of the plate, into the guide block)
         add_screw(d, f"extruder_screw_{i}", "M3", 50, at=(hx, yb_pm + B23, hz), direction=(0, -1, 0), body="xbody",
                   clamps=("probe_mount", "extruder", "tool_plate_rear", "tool_plate"), washer="large", washers=2)
-        add_nut(d, f"extruder_nut_{i}", "M3", at=(hx, ymid, hz), direction=(0, 1, 0), body="xbody", screw=f"extruder_screw_{i}", standard="pem")
+        add_nut(d, f"extruder_nut_{i}", "M3", at=(hx, ymid, hz), direction=(0, 1, 0), body="xbody", screw=f"extruder_screw_{i}", standard="pem0")      # v11: PEM S-M3-0 (SendCutSend stocks no S-M3-1)
         d.join(f"extruder_nut_{i}", "tool_plate", "PEM self-clinching nut (SendCutSend hardware service)")
     seat = d.get("extruder").meta["interfaces"]["hotend_seat"][0]
     # v10: the HeaterCore's lead sleeve points FORWARD, under the tool plates (2.2 mm) and the X block (4.7 mm). v9: to the
@@ -1517,7 +1517,7 @@ def build() -> Design:
     t_b = B23
     z_leg = Z_XL + 0.7                                  # underside of the bracket's horizontal leg = top of the belt
     l_b = R_TPF + 8.0
-    brk = bent_L(t_b, R_B23, 12.6, l_b, 30.0,
+    brk = bent_L(t_b, R_B23, 13.0, l_b, 30.0,
                  holes_a=[(-x, (z_leg + t_b) - (Z_BEAM + BRK_Z), clearance_hole("M3")) for x, _ in BLK_SCREWS],
                  holes_b=[(R_TPF - yy, -xx, clearance_hole("M3")) for xx in (-10.0, 10.0) for yy in CLAMP_Y])
     brk_loc = Location(Plane(origin=(0, yf, z_leg + t_b), x_dir=(0, -1, 0), z_dir=(0, 0, -1)))

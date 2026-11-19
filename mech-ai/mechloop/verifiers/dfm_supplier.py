@@ -394,7 +394,7 @@ KIND_TEXT = {
     "thickness_range": "sheet thickness range", "bend_offered": "bending offered at this thickness", "bend_radius": "inside bend radius (the only one offered)",
     "bend_radius_min": "inside bend radius (minimum)", "bend_radius_range": "inside bend radius (tooling range)", "flange_min": "formed flange length",
     "flange_support_min": "share of the bend meeting the minimum flange", "feature_to_bend": "hole or cut-out to bend",
-    "bend_length_max": "bend length", "bend_angle_max": "bend angle", "bend_part_min_size": "flat blank size for bending (minimum)",
+    "bend_length_max": "bend length", "bend_angle_max": "bend angle", "bend_angle_min": "bend angle (minimum)", "bend_part_min_size": "flat blank size for bending (minimum)",
     "bend_part_max_size": "flat blank size for bending (maximum)", "bend_material_review": "bent 6061-T6",
     "pem_sheet_min": "sheet thickness for the hardware (minimum)", "pem_sheet_max": "sheet thickness for the hardware (maximum)",
     "pem_sheet_range_al": "aluminium sheet thickness for the hardware", "pem_center_to_edge": "hardware centre to edge",
@@ -446,7 +446,7 @@ def check_part(r, design, c, row: dict, sm, frame, cyls, holes) -> None:
             continue
         unit = "" if rule["rule"] in ("cut_away_max", "flange_support_min", "bend_offered", "tap_offered", "tap_metric_range", "countersink_offered",
                                       "cnc_thread_range", "cnc_thread_callout", "bend_material_review") else " mm"
-        if rule["rule"] == "bend_angle_max":
+        if rule["rule"] in ("bend_angle_max", "bend_angle_min"):
             unit = " deg"
         cnt = f" ({res['count']} of {res['of']})" if res.get("of", 1) > 1 else ""
         msg = (f"{c.name}: {sname} rule {rule['id']}: {KIND_TEXT.get(rule['rule'], rule['rule'])} {_fmt(res.get('measured'))}{unit}{cnt}, "

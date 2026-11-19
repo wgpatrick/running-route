@@ -30,7 +30,7 @@ MEASURED = {
     "hole_min", "slot_min", "notch_min", "web_min", "hole_edge_web", "slot_edge_web", "hole_hole_web", "tab_min", "cut_away_max",
     "part_min_size", "part_max_size", "thickness_min", "thickness_max", "thickness_range",
     "bend_offered", "bend_radius", "bend_radius_min", "bend_radius_range", "flange_min", "flange_support_min", "feature_to_bend",
-    "bend_length_max", "bend_angle_max", "bend_part_min_size", "bend_part_max_size", "bend_material_review",
+    "bend_length_max", "bend_angle_max", "bend_angle_min", "bend_part_min_size", "bend_part_max_size", "bend_material_review",
     "pem_sheet_min", "pem_sheet_max", "pem_sheet_range_al", "pem_center_to_edge", "pem_center_to_bend", "pem_center_to_center",
     "tap_offered", "tap_metric_range", "tap_hole_to_edge", "countersink_offered",
     "cnc_min_feature", "cnc_min_wall", "cnc_min_nominal_thickness", "cnc_part_max_size", "cnc_thread_range", "cnc_thread_callout",
@@ -188,7 +188,7 @@ def evaluate(feat: dict, supplier: str) -> list[dict]:
 
     Returns [{rule, status, measured, limit, at, count, detail}] where status is "pass", "fail", "not_evaluated" (the rule
     needs a feature mechloop does not extract, or the rule is kept for reference) or "info"."""
-    mat, t, form = feat["material"], feat.get("thickness_mm"), feat.get("form")
+    mat, t, form = feat["material"], feat.get("thickness_mm"), feat.get("form")  # noqa: F841
     procs = PROCESS_GROUPS["machined"] if feat.get("process") == "machined" else PROCESS_GROUPS["sheet"]
     if feat.get("process") == "sheet" and form != "bent":
         procs = tuple(p for p in procs if p != "bend")
@@ -196,8 +196,13 @@ def evaluate(feat: dict, supplier: str) -> list[dict]:
     if feat.get("process") == "sheet" and form == "bent":
         rules += [r for r in applicable(supplier, mat, t, processes=("laser_cut",)) if r["rule"] in ("part_min_size", "part_max_size")
                   and r not in rules]
+    specific = {r["rule"] for r in rules if r.get("thickness_mm") is not None and r.get("evaluate") is not False and not r.get("duplicate_of")}
     out = []
     for rule in rules:
+        if rule.get("yield_to_specific") and rule["rule"] in specific:
+            out.append({"rule": rule, "status": "info", "limit": limit(rule, t or 0.0),
+                        "detail": "superseded by the supplier's per-thickness figure for this stock"})
+            continue
         res = _one(rule, feat, supplier)
         if res is not None:
             res["rule"] = rule
@@ -211,6 +216,8 @@ def _one(rule: dict, feat: dict, supplier: str) -> dict | None:
     if kind in INFO_KINDS or comp == "info" or rule.get("duplicate_of"):
         return {"status": "info", "limit": limit(rule, t)}
     if not _relevant(kind, feat):
+        return None
+    if kind.startswith("pem_") and rule.get("hardware") and not any(_pem_rule_applies(rule, p, supplier, feat) for p in feat.get("pems") or []):
         return None
     if rule.get("evaluate") is False or kind not in MEASURED:
         return {"status": "not_evaluated", "detail": rule.get("note") or "rule kind not measured by mechloop"}
@@ -295,6 +302,8 @@ def _one(rule: dict, feat: dict, supplier: str) -> dict | None:
         return worst(bends, lambda b: b["radius"], lambda b: lim_t, "inside bend radius")
     if kind == "bend_length_max":
         return worst(bends, lambda b: b["length"], lambda b: lim_t, "bend length")
+    if kind == "bend_angle_min":
+        return worst(bends, lambda b: b["angle"], lambda b: lim_t, "bend angle")
     if kind == "bend_angle_max":
         return worst(bends, lambda b: b["angle"], lambda b: lim_t, "bend angle")
     if kind == "flange_min":

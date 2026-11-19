@@ -13,7 +13,7 @@
  ],
  "how_read": "Plain HTTPS page fetch, no account, no quote; figures copied as published. Prose quotes are verbatim; 'table_row' quotes name the table, row and cells.",
  "not_read": [
-  "Per-thickness bend radius, k-factor and minimum flange length: OSH Cut says they are 'in our material catalog' (app.oshcut.com/catalog); that host is not on this session's allowed list, so they were not read.",
+  "Per-thickness bend radius, k-factor, minimum flange and tooling: in the app catalogue on app.oshcut.com. Its robots.txt names anthropic-ai, ClaudeBot and Claude-Web with 'Disallow: /' (and Content-Signal ai-train=no), so the catalogue was NOT fetched; only robots.txt was read (2026-11-19).",
   "No published minimum hole size, web, hole-to-edge or hole-to-bend figures on www.oshcut.com (its DFM checks run in the quoting app).",
   "https://www.oshcut.com/design-guide returned 404; the design-guide index is /design-guide/learn-more.",
   "The min/max size page prints a 'Min Size' figure (e.g. 0.1) with no unit; kept as published, not evaluated."
