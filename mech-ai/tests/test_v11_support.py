@@ -136,5 +136,5 @@ def test_delta_blower_is_supplier_cad_and_omron_e2b_is_a_standin_picked_up_by_it
     el = p.ratings["electrical"]["ratings"]
     assert p.cost_usd == pytest.approx(35.22) and el["output"] == "npn_no" and el["max_ambient_c"] == 70.0
     assert el["switching_distance_steel_mm"] == 4.0 and el["internal_pullup"] is False
-    assert p.interfaces["mounting"]["shielded"] and p.interfaces["mounting"]["head_proud_of_metal_l"] == 0.0
+    assert p.interfaces["mounting"]["shielded"] and p.interfaces["mounting"]["head_proud_of_metal_l"] == 2.4   # OMRON E2B p.20, double distance
     assert "E2B-M12KS04-WP-C1" in p.model.get("inbox", [])

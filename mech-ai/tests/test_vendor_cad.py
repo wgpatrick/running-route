@@ -37,7 +37,7 @@ def test_detail_model_loads_and_matches_its_proxy(make):
 
 
 def test_every_file_has_a_sources_entry_and_nothing_else_is_in_the_folder():
-    rows = vc.sources_table()
+    rows = {k: v for k, v in vc.sources_table().items() if not k.startswith("(pending)")}    # files announced, not yet delivered
     used = set()
     for make in WITH_CAD:
         st = make()
