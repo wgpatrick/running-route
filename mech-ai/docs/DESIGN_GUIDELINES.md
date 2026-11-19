@@ -102,6 +102,14 @@ until a check exists.
 - The assembly plan is written down as part of the design: what is built first, which sub-assemblies are
   built and checked on the bench, and the order they go into the machine. Checks run against that plan.
   Check: not implemented yet (today the order is found by the assemblability search, not stated).
+- Every assembly step respects gravity. The plan states which way up each sub-assembly and the machine sit
+  on the bench at every step. At each step every placed part rests on something that supports it (no part
+  in thin air), and the work in progress cannot tip over or slide: its centre of mass stays inside what it
+  stands on, with margin. A part or fastener that must be held until fastened is a stated, deliberate step
+  (one hand, one part), not the norm; nuts and washers go on with their screw, not before it. Turning the
+  assembly over is a stated step, done only when it is stable in both positions.
+  Check: partly implemented (the build simulation reports parts that would fall or tip and counts holds
+  and turns); to become pass/fail against the written plan.
 
 ## Purchased-part CAD
 
