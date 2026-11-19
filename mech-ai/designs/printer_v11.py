@@ -326,7 +326,7 @@ Z_MPT = Z_MF + T_MP
 Z_SCREW_ABOVE = 328.0                            # v11: the screw as sold (330 nominal; 328 above the face as the sister model's STEP has it),
                                                  # NOT cut: tops at 401.2 (rear, outside the back wall) and 400.2 (front, inboard of the top rails)
 MP_POST_DY = 30.0                                # v11: front posts +/- along the rail from the screw, clear of the keepers' drivers' paths
-MP_POST_DX_R = 40.0                              # v11: rear posts +/- along the back rail, outside the rear nut plate's width
+MP_POST_DX_R = 28.0                              # rear posts +/- along the back rail (the rear upright's brackets are at 35 to 55)
 MP_PILOT_HOLE = 22.3                             # the motor's 22 mm pilot locates in it
 PSU_COVER_TOP = 56.04                            # mains cover over the supply's terminals (v8.1: 2.8 mm under its belt plane)
 # Y endstop
@@ -1833,8 +1833,8 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
     d.subassemblies["bed_unit"] = [n for n in bed_unit if n in have]
     d.subassemblies["x_drive"] = ["x_motor_mount", "x_motor", "x_pulley"] + [f"x_motor_screw_{i}{s}" for i in range(4) for s in ("", "_washer")]
     d.subassemblies["x_idler_unit"] = ["x_idler_mount", "x_idler_spacer", "x_idler", "x_idler_bolt", "x_idler_bolt_washer", "x_idler_nut"]
-    d.subassemblies["part_cooling"] = ["part_duct", "part_fan"] + [f"part_fan_screw_{i}{s}" for i in range(2)
-                                                                   for s in ("", "_washer", "_nwasher", "_nut")]
+    # v11: no part-cooling bench unit: the blower stands behind the Roto's right-hand screw (its driver passes through where the
+    # blower sits), so the order is duct, Roto and its screws, then the blower and its two M2 bolts
     for tag in ("", "_l"):
         d.subassemblies[f"y_drive{tag}"] = ([f"y_motor_mount{tag}", f"y_motor{tag}", f"y_pulley{tag}"]
                                             + [f"y_motor{tag}_screw_{i}{s}" for i in range(4) for s in ("", "_washer")])
