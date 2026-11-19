@@ -13,7 +13,13 @@ The frame, envelope, travel, bed, cooling fan and duct, belt tension brackets an
 changed shape (a test checks every made part's volume and bounding box against v10's). What changed is screws, washers,
 nuts, and what the checkers look at.
 
-VERIFY_SUMMARY
+**Verify (full, all 13 verifiers, on the final code, 2026-11-19, 91 min): passed, 0 errors, 61 warnings** (v10: 0 errors,
+58 warnings). All 33 requirements met (v10: 33 of 33). The three new warnings: one for the four beam bolts' thread
+(`tnut_thread_engagement_marginal`), one grouped warning for the 80 screws that would fail on a shallower slot of another
+make (`tslot_profile_sensitive`), and two for the Y motors' shaft load (`motor_shaft_radial_load`, 1.01 of the allowance;
+v10 0.99): the bought washers are 0.1 mm thicker and moved the Y belt plane 0.2 mm out from the motor face (11.1 to 11.3 mm),
+which crossed the line. One warning went: the three nut pins' M2.5 nuts are now declared thread-locked, so
+`no_locking_feature` lists 3 groups instead of 4. Report: `out/printer_v10_1/report.json`, scorecard `out/printer_v10_1/scores.jsonl`.
 
 ## The short answers
 
@@ -226,7 +232,31 @@ geometry (regenerate with `tools/mcmaster_wanted.py`).
 
 ## v10 against v10.1
 
-V10_TABLE
+From the two full verify reports and the two scorecards (`score --assembly`), each on its design's final code.
+
+| | v10 | v10.1 |
+|---|---|---|
+| Verify errors / warnings | 0 / 58 | 0 / 61 |
+| Requirements met | 33 of 33 | 33 of 33 |
+| Parts in the model (made) | 578 (37) | 825 (37) |
+| Hardware parts drawn (screws, nuts, washers, T-nuts) | 407, plus 212 pieces on the BOM only | 654, none BOM-only |
+| T-slot screws checked for length | none (no check) | 156: 0 errors, 4 marginal-thread warnings |
+| Mass | 14.47 kg | 14.93 kg (+0.46: hardware 0.55 to 1.01 kg; T-nuts 0.225, screws +0.22, washers +0.013) |
+| Moving mass X / Y / Z | 0.360 / 1.261 / 5.51 kg | 0.360 / 1.289 / 5.59 kg |
+| BOM cost (estimate) | $1,006.93 | $1,061.69 (+$54.76) |
+| Assembly time (estimate) | 136 min | 161 min (+25: 156 T-nut steps at 6 s, 64 more screws) |
+| Fasteners with a driver-access check / types / tool changes | 195 / 20 / 17 | 259 / 22 / 22 |
+| Assembly turned over / parts fitted from below / parts needing holding | 20 / 21 / 236 | 24 / 27 / 251 |
+| Bounding box | 389.3 x 419.0 x 471.0 mm | 389.7 x 419.0 x 471.0 mm (Y pulleys 0.2 mm out each side) |
+| Y motor shaft load against its allowance | 0.99 | 1.01 (warning; the belt plane 0.2 mm further out) |
+| Resonance X / Y (scorecard) | 74.8 / 68.6 Hz | 74.8 / 67.8 Hz |
+| Acceleration an owner would run | 8,400 mm/s2 | 8,200 mm/s2 |
+| Step-loss ceiling | 24,000 mm/s2 | 24,000 mm/s2 |
+| Cross-track error RMS / worst | 0.0107 / 0.1031 mm | 0.0109 / 0.1029 mm |
+| Benchmark print time | 2,571 s | 2,571 s |
+
+The small changes in Y resonance and acceleration come from the 28 g more on the gantry beam (fasteners now McMaster's
+solids, T-nuts and second washers on the beam's plates). Nothing else in the motion figures moved.
 
 ## Checker changes
 
