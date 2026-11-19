@@ -1127,4 +1127,4 @@ from .batch6 import (fan_cg3010u24, leadscrew_motor_17e19, leadscrew_nut_17e19, 
 from .batch7 import leadscrew_motor_17e19_ab4, leadscrew_screw_17e19_ab4, octopus_v11  # noqa: E402,F401
 from .batch8 import add_thumb_nut, die_spring_dj8x20, print_sheet_pei257, thumb_nut_din466  # noqa: E402,F401
 from .batch9 import print_sheet_pei235  # noqa: E402,F401
-from .batch10 import bhcs_flanged, blower_gdb4010, leadscrew_nut_pom_ab4, print_sheet_pei220  # noqa: E402,F401
+from .batch10 import bhcs_flanged, blower_bfb0524hh, blower_gdb4010, leadscrew_nut_pom_ab4, print_sheet_pei220  # noqa: E402,F401

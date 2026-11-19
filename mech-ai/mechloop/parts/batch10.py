@@ -171,3 +171,47 @@ def bhcs_flanged(size: str = "M5", length: float = 8.0) -> Stock:
                  cost_usd=0.12,
                  source=_source("iso7380_2", "secondary", f"ISO 7380-2 {size}", unverified=("every head dimension (listings, not the standard)",
                                                                                          "proof_load_n"), note=v["basis"]))
+
+
+@part
+def blower_bfb0524hh() -> Stock:
+    """Delta BFB0524HH centrifugal blower, 50 x 50 x 15 mm (51.3 square drawn, the usual 5015 frame), 24 V, about 0.11 A, 4.6 CFM
+    free air, 216 Pa shut-off, 45 dB(A), ball bearing, two wires; bought from Digi-Key ($17.00). Figures are the owner's (from the
+    distributor's listing); Delta's drawing and P-Q chart were NOT read: the envelope, the two M4 holes at the corners opposite the
+    outlet and the 19.5 x 13 mm outlet at one end of the -Y edge are those of the usual 5015 frame (STAND-IN), and the P-Q curve's
+    shape between its two published end points is assumed. Local frame: the 51.3 x 51.3 face in XY centred, 15 thick along Z,
+    air leaving along -Y. Delta's STEP saved as vendor_cad/inbox/BFB0524HH.step replaces the display model."""
+    v = vendor_data("delta_bfb0524hh")["values"]
+    sx, sy, sz = v["size_mm"]
+    body = Box(sx, sy, sz)
+    holes = [(x, y, -sz / 2) for x, y in v["mount_holes"]["positions_mm"]]
+    for x, y, _ in holes:
+        body -= Pos(x, y, 0) * Cylinder(v["mount_holes"]["dia_mm"] / 2, sz)
+    ol, ow, off = v["outlet_mm"]["length"], v["outlet_mm"]["width"], v["outlet_mm"]["offset_mm"]
+    pq = v["pq_curve_cfm_pa"]["points"]
+    el = {"kind": "fan", "ports": {"in": dict(kind="fan", connector="JST-XH", max_a=3.0)},
+          "ratings": {"current_a": v["rated_current_a"], "volts": v["rated_voltage_v"]},
+          "sources": {"current_a": "owner's specification (Digi-Key listing): 24 V, about 0.11 A", "volts": "owner's specification: 24 V DC"},
+          "params": {}, "product": dict(product="24 V centrifugal blower 50 x 50 x 15 mm, ball bearing, 2-wire (Delta BFB0524HH)", vendor="Delta Electronics",
+                                        part_number="BFB0524HH (Digi-Key)", form="component", off_the_shelf=True, custom_pcb=False,
+                                        builder_work="crimp a 2-way JST-XH")}
+    return Stock(body, "FAN-BLOWER-5015-BFB0524HH", "Centrifugal blower 50 x 50 x 15 mm, 24 V, ball bearing (Delta BFB0524HH, Digi-Key)",
+                 v["mass_g"] / 1000.0, material="abs", cost_usd=v["price_usd"],
+                 detail=body, model={"kind": "proxy", "state": "stand-in", "inbox": ["BFB0524HH"],
+                                     "source": "envelope of the usual 5015 frame at the owner's 50 x 50 x 15 (Delta's drawing not read)"},
+                 interfaces={"mount_holes_m4": holes, "mount_hole_dia": v["mount_holes"]["dia_mm"],
+                             "outlet_centre": [(off, -sy / 2, 0.0)], "outlet_size": (ol, ow), "outlet_direction": (0.0, -1.0, 0.0), "thickness": sz},
+                 ratings={"electrical": el, "rated_voltage_v": v["rated_voltage_v"], "rated_current_a": v["rated_current_a"],
+                          "air_flow_cfm": v["air_flow_cfm"], "static_pressure_pa": v["max_static_pressure_pa"], "noise_dba": v["noise_dba"],
+                          "pq_curve_cfm_pa": [tuple(x) for x in pq], "bearing": v["bearing"], "distributor": v["distributor"],
+                          "vendor_part": "BFB0524HH", "rated_current_source": "owner's specification (Digi-Key listing)",
+                          "rated_voltage_source": "owner's specification"},
+                 source=_source("delta_bfb0524hh", "secondary", "BFB0524HH",
+                                unverified=("frame dimensions, holes and outlet (usual 5015 frame)", "P-Q curve shape", "mass"),
+                                note="24 V, 0.11 A, 4.6 CFM, 216 Pa, 45 dB(A), ball bearing: the owner's figures from the distributor"))
+
+
+def blower_flow_estimate_pa(outlet_area_mm2: float, k_total: float, pq_cfm_pa, rho: float = 1.2) -> dict:
+    """As blower_flow_estimate, for a P-Q curve given in (CFM, Pa)."""
+    pq = [(q, p / INH2O_PA) for q, p in pq_cfm_pa]
+    return blower_flow_estimate(outlet_area_mm2, k_total, pq=pq, rho=rho)

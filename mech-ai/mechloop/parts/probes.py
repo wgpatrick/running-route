@@ -14,7 +14,7 @@ from build123d import Cylinder, Location, Plane, Pos
 
 from . import Stock, _source, part, place, vendor_data
 
-E2E_MODELS = ("E2E-X8MD1", "E2E-X5ME1", "E2E-X10ME1", "E2E-X5E1")
+E2E_MODELS = ("E2E-X8MD1", "E2E-X5ME1", "E2E-X10ME1", "E2E-X5E1", "E2B-M12KS04-WP-C1")
 NUT_GAP = 0.0          # nuts sit directly on the clamped plate (the toothed washer is under the rear nut)
 
 
@@ -75,7 +75,7 @@ def probe_omron_e2e(model: str = "E2E-X5ME1", clamp: tuple | None = None, nuts: 
             for a, c in [(z_lo - nut_t, z_lo), (z_hi, z_hi + wash + nut_t)]:
                 shape += Pos(0, 0, (a + c) / 2) * (Cylinder(nut_r, c - a) - Cylinder(dia / 2, c - a))
     two_wire = v["wires"] == 2
-    sheet = "OMRON E2E data sheet CSM_E2E_DS_E_12_4"
+    sheet = v.get("sheet", "OMRON E2E data sheet CSM_E2E_DS_E_12_4")     # v11: the E2B-M12KS04-WP-C1 record names its own basis
     al_src = (f"{sheet}, chart 'Influence of Sensing Object Size and Material' ({'p.17' if two_wire else 'p.18'}): REFERENCE value read "
               f"by eye (+/-0.15 mm) for a 1 mm aluminium plate; {v['aluminium_note']}. A 6 mm bed plate 200 mm square is outside the chart")
     rt = {"switching_distance_steel_mm": v["sensing_distance_mm"], "switching_distance_aluminium_mm": v["aluminium_mm"],
@@ -131,10 +131,11 @@ def probe_omron_e2e(model: str = "E2E-X5ME1", clamp: tuple | None = None, nuts: 
                  mass, material="brass", ratings={"electrical": tpl},
                  interfaces={"sensing_face": [(0.0, 0.0, 0.0)], "cable_exit": [(0.0, 0.0, z_body1 + b["cable_protector"])],
                              "axis_point": [(0.0, 0.0, 10.0)], "mounting": mounting, "length": z_body1 + b["cable_protector"]},
-                 cost_usd=25.0,
+                 cost_usd=float(v.get("price_usd", 25.0)),
                  # v11: OMRON's own STEP (vendor_cad/inbox/PROBE-OMRON-E2E-X5ME1.step) is 3 mm longer at the cable end than
                  # this solid's reading of the drawing; the face, the thread and the diameters agree
-                 model={"protrusions": {"zmax": (3.2, "OMRON's STEP: the cable protector ends 3 mm further than the catalogue's reading of the drawing")}},
+                 model={"protrusions": {"zmax": (3.2, "OMRON's STEP: the cable protector ends 3 mm further than the catalogue's reading of the drawing")},
+                        "inbox": [model]},     # v11: a file named after the bare model (E2B-M12KS04-WP-C1.step) is picked up too
                  source=_source("omron_e2e", "partial", f"{model} 2M",
                                 unverified=("mass_kg", "switching_distance_aluminium_mm", "repeatability_mm", "overall length"),
                                 note="ratings, thread, nuts and surrounding-metal clearances are OMRON's. Aluminium distance: chart "

@@ -27,7 +27,7 @@ PROCESS_GROUPS = {"sheet": ("laser_cut", "bend", "hardware", "tap", "countersink
 
 # rule kinds the evaluator measures, and the part features they need ("form": flat / bent / any; "needs": feature key)
 MEASURED = {
-    "hole_min", "slot_min", "web_min", "hole_edge_web", "slot_edge_web", "hole_hole_web", "tab_min", "cut_away_max",
+    "hole_min", "slot_min", "notch_min", "web_min", "hole_edge_web", "slot_edge_web", "hole_hole_web", "tab_min", "cut_away_max",
     "part_min_size", "part_max_size", "thickness_min", "thickness_max", "thickness_range",
     "bend_offered", "bend_radius", "bend_radius_min", "bend_radius_range", "flange_min", "flange_support_min", "feature_to_bend",
     "bend_length_max", "bend_angle_max", "bend_part_min_size", "bend_part_max_size", "bend_material_review",
@@ -208,8 +208,10 @@ def evaluate(feat: dict, supplier: str) -> list[dict]:
 def _one(rule: dict, feat: dict, supplier: str) -> dict | None:
     kind, comp = rule["rule"], rule["comparison"]
     t = feat.get("thickness_mm") or 0.0
-    if kind in INFO_KINDS or comp == "info":
+    if kind in INFO_KINDS or comp == "info" or rule.get("duplicate_of"):
         return {"status": "info", "limit": limit(rule, t)}
+    if not _relevant(kind, feat):
+        return None
     if rule.get("evaluate") is False or kind not in MEASURED:
         return {"status": "not_evaluated", "detail": rule.get("note") or "rule kind not measured by mechloop"}
     holes = feat.get("holes") or []
@@ -243,18 +245,21 @@ def _one(rule: dict, feat: dict, supplier: str) -> dict | None:
     # ---------------------------------------------------------------- cutting
     if kind == "hole_min":
         return worst(holes, lambda h: h["d"], lambda h: lim_t, "hole or cut-out size")
-    if kind == "slot_min":
-        items = [h for h in holes if not h.get("round")] + [{"d": w, "at": at} for w, at in feat.get("notches", [])]
-        if feat.get("notch_probe_mm") is not None and not feat.get("notches") and not [h for h in holes if not h.get("round")]:
-            return {"status": "pass", "measured": None, "limit": lim_t, "detail": f"no slot or notch narrower than {feat['notch_probe_mm']:g} mm"} \
-                if lim_t <= feat["notch_probe_mm"] else {"status": "not_evaluated", "detail": "limit above the notch probe width"}
-        return worst(items, lambda h: h["d"], lambda h: lim_t, "slot or notch width")
+    if kind in ("slot_min", "notch_min"):
+        slots = [h for h in holes if h.get("slot")] if kind == "slot_min" else []
+        items = slots + [{"d": w, "at": at} for w, at in feat.get("notches") or []]
+        if items:
+            return worst(items, lambda h: h["d"], lambda h: lim_t, "slot or notch width")
+        if feat.get("notch_probe_mm") is None:
+            return None
+        return ({"status": "pass", "measured": None, "limit": lim_t, "detail": f"no slot, and no notch narrower than {feat['notch_probe_mm']:g} mm"}
+                if lim_t <= feat["notch_probe_mm"] + 1e-6 else {"status": "not_evaluated", "detail": "limit above the notch probe width"})
     if kind == "web_min":
         return worst(holes, lambda h: _min(h.get("edge_web"), h.get("web")), lambda h: lim_t, "material between cut features or to the edge")
     if kind == "hole_edge_web":
         return worst([h for h in holes if h.get("round")], lambda h: h.get("edge_web"), lambda h: limit(rule, t, d=h["d"]), "hole edge to outer edge")
     if kind == "slot_edge_web":
-        return worst([h for h in holes if not h.get("round")], lambda h: _min(h.get("edge_web"), h.get("web")),
+        return worst([h for h in holes if h.get("slot")], lambda h: _min(h.get("edge_web"), h.get("web")),
                      lambda h: limit(rule, t, d=h["d"]), "slot to edge or next cut feature")
     if kind == "hole_hole_web":
         return worst([h for h in holes if h.get("round") and h.get("hole_web") is not None], lambda h: h.get("hole_web"), lambda h: lim_t,
@@ -303,7 +308,7 @@ def _one(rule: dict, feat: dict, supplier: str) -> dict | None:
                 continue
             for f in b.get("flanges", ()):
                 prof = f.get("profile") or []
-                if prof:
+                if prof and f["length"] >= fl_lim[0] - 1e-6:       # a flange short everywhere is the flange_min finding already
                     frac = sum(1 for x in prof if x >= fl_lim[0] - 1e-6) / len(prof)
                     rows.append({"frac": frac, "at": f.get("at")})
         if not rows:
@@ -385,6 +390,23 @@ def _one(rule: dict, feat: dict, supplier: str) -> dict | None:
     return {"status": "not_evaluated", "detail": "rule kind not measured"}
 
 
+BEND_ONLY = {"relief_width_min", "relief_depth_min", "corner_relief_distance", "u_channel_base_ratio", "gauging_edge_min", "flange_min_flat",
+             "tap_to_bend"}
+
+
+def _relevant(kind: str, feat: dict) -> bool:
+    """Whether the part has the feature a rule kind is about (a countersink rule says nothing about a part without one)."""
+    if kind.startswith("countersink"):
+        return bool(feat.get("countersinks"))
+    if kind.startswith("tap_"):
+        return bool(feat.get("tapped"))
+    if kind.startswith("pem_"):
+        return bool(feat.get("pems"))
+    if kind in BEND_ONLY:
+        return bool(feat.get("bends"))
+    return True
+
+
 def _within_all(taps, lim_) -> dict:
     bad = [x for x in taps if not (lim_[0] - 1e-6 <= x["d"] <= lim_[1] + 1e-6)]
     m = bad[0] if bad else taps[0]
@@ -418,6 +440,8 @@ def pem_sku_for(p: dict, supplier: str, t: float, material: str) -> tuple[str | 
 
     def fits(s):
         for r in skus[s]["rules"]:
+            if r.get("evaluate") is False:
+                continue
             if r["rule"] == "pem_sheet_min" and t < r["value_mm"] - 1e-6:
                 return False
             if r["rule"] == "pem_sheet_max" and t > r["value_mm"] + 1e-6:

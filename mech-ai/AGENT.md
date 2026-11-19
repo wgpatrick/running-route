@@ -548,6 +548,16 @@ their sources are in `mechloop/verifiers/dfm_rules.py` and `docs/DFM.md`. Every 
   lead-in); and `no_lead_in` (warning) for a shaft in a bore where neither the shaft's end nor the bore's mouth is
   chamfered (a bought part counts as chamfered only if its solid shows it: put the lead-in on your part). Counts per
   part are in `manufacture.edges`.
+- **suppliers' published rules** (sheet and machined; `mechloop/verifiers/dfm_supplier.py`, data
+  `mechloop/data/supplier_rules/*.json`, table and disagreements in docs/SUPPLIER_RULES.md): each part is judged against
+  the rules its supplier publishes (SendCutSend, OSH Cut, Protolabs, Xometry, Fictiv, Hubs) for its material and
+  thickness: hole and slot size, webs and edge distances, part size, bend radius, formed flange length and the share of
+  the bend that meets it, holes to bends (SendCutSend: half the die width), PEM hardware distances, tapping and
+  countersinking at that thickness, CNC feature, wall, size and thread limits. The part's shop (`meta["dfm"]["shop"]`,
+  else the design's, else SendCutSend for sheet and Xometry for machined) decides the severity: a failed requirement is
+  `supplier_rule` error, a failed recommendation a warning; each names the rule id, measured value, limit, URL and the
+  supplier's words. `supplier_rules_summary` (info, per part) says which suppliers' rules the part passes and what no
+  supplier publishes at that thickness ("no published rule").
 - **machined**: plate (stock thickness), block or turned; sharp inside corners no cutter can reach (error) or only from the
   side (warning); corner radius against depth; deep or narrow slots; thin walls and floors; hole depth and non-standard
   drill sizes; the threads your screws need (depth, blind run-out); surface no straight cutter reaches from six sides

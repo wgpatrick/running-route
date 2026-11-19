@@ -1,0 +1,18 @@
+{
+ "retrieved": "2026-11-19",
+ "family": "Delta Electronics BFB0524HH 50 x 50 x 15 mm centrifugal blower, 24 V",
+ "vendor": "Delta Electronics (bought from Digi-Key)",
+ "source_level": "owner's specification (Digi-Key listing figures), not read from Delta's data sheet in this session",
+ "source_url": "https://www.digikey.com/",
+ "values": {
+  "size_mm": [51.3, 51.3, 15.0],
+  "size_note": "the owner's 50 x 50 x 15; the usual 5015 frame is 51.3 square. STAND-IN envelope",
+  "mount_holes": {"count": 2, "dia_mm": 4.3, "positions_mm": [[-21.5, 21.5], [21.5, 21.5]], "note": "ASSUMED: two M4 holes at the corners opposite the outlet, as the usual 5015 frame; Delta's drawing not read"},
+  "outlet_mm": {"length": 19.5, "width": 13.0, "offset_mm": -14.4, "note": "ASSUMED: a 19.5 x 13 mm outlet at one end of an edge (the scroll's exit), as the usual 5015 frame"},
+  "rated_voltage_v": 24.0, "rated_current_a": 0.11, "air_flow_cfm": 4.6, "max_static_pressure_pa": 216.0, "noise_dba": 45.0,
+  "bearing": "ball", "wires": 2, "price_usd": 17.00, "distributor": "Digi-Key", "mass_g": 30,
+  "mass_note": "ASSUMED (typical 5015 blower)",
+  "pq_curve_cfm_pa": {"points": [[0.0, 216.0], [1.0, 200.0], [2.0, 172.0], [3.0, 128.0], [4.0, 62.0], [4.6, 0.0]],
+                      "basis": "ASSUMED shape between the two published end points (216 Pa shut-off, 4.6 CFM free air): Delta's P-Q chart was not read"}
+ }
+}

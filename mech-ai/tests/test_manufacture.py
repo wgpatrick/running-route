@@ -6,7 +6,7 @@ from mechloop.verifiers.manufacture import verify_manufacture
 
 
 def codes(r):
-    return [f.code for f in r.findings]
+    return [f.code for f in r.findings if not f.code.startswith("supplier_")]   # suppliers' published rules: tests/test_supplier_rules.py
 
 
 def test_plate_with_a_sharp_pocket_corner_and_odd_thickness():
@@ -15,7 +15,8 @@ def test_plate_with_a_sharp_pocket_corner_and_odd_thickness():
     r = verify_manufacture(d)
     # the sharp-edge, corner and lead-in rules have their own tests (tests/test_known_answers_v8.py); the boxes used here are
     # drawn dead sharp on purpose and would draw them every time
-    r.findings[:] = [f for f in r.findings if f.code not in ("sharp_profile_corners", "edges_not_broken", "no_lead_in", "printed_edges")]
+    r.findings[:] = [f for f in r.findings if f.code not in ("sharp_profile_corners", "edges_not_broken", "no_lead_in", "printed_edges")
+                     and not f.code.startswith("supplier_")]  # suppliers' published rules: tests/test_supplier_rules.py
     assert {"sharp_inside_corner", "non_stock_thickness"} <= set(codes(r))
     assert r.metrics["parts"]["plate"]["sharp_inside_corners"] == 4
     # the same window with a round end mill's radius in the corners, in stock thickness, is fine
@@ -35,7 +36,8 @@ def test_block_needing_many_setups_and_a_simple_one():
     r = verify_manufacture(d)
     # the sharp-edge, corner and lead-in rules have their own tests (tests/test_known_answers_v8.py); the boxes used here are
     # drawn dead sharp on purpose and would draw them every time
-    r.findings[:] = [f for f in r.findings if f.code not in ("sharp_profile_corners", "edges_not_broken", "no_lead_in", "printed_edges")]
+    r.findings[:] = [f for f in r.findings if f.code not in ("sharp_profile_corners", "edges_not_broken", "no_lead_in", "printed_edges")
+                     and not f.code.startswith("supplier_")]  # suppliers' published rules: tests/test_supplier_rules.py
     assert "many_setups" in codes(r) and r.metrics["parts"]["block"]["setups_estimate"] >= 5
     d2 = Design("b2")
     d2.add("block", Box(60, 60, 60) - Pos(0, 0, 25) * Box(20, 20, 10), material="al6061")
@@ -49,7 +51,8 @@ def test_printed_part_orientation_support_and_size():
     r = verify_manufacture(d)
     # the sharp-edge, corner and lead-in rules have their own tests (tests/test_known_answers_v8.py); the boxes used here are
     # drawn dead sharp on purpose and would draw them every time
-    r.findings[:] = [f for f in r.findings if f.code not in ("sharp_profile_corners", "edges_not_broken", "no_lead_in", "printed_edges")]
+    r.findings[:] = [f for f in r.findings if f.code not in ("sharp_profile_corners", "edges_not_broken", "no_lead_in", "printed_edges")
+                     and not f.code.startswith("supplier_")]  # suppliers' published rules: tests/test_supplier_rules.py
     row = r.metrics["parts"]["tee"]
     assert row["up"] in ("-Z", "+Y", "-Y")           # arm down on the bed, or on its side: no overhang
     assert row["support_area_mm2"] < 50 and "needs_support" not in codes(r)
@@ -83,7 +86,8 @@ def check(shape, material="al6061", man=None, screws=(), loads=(), **kw):
     r = verify_manufacture(d)
     # the sharp-edge, corner and lead-in rules have their own tests (tests/test_known_answers_v8.py); the boxes used here are
     # drawn dead sharp on purpose and would draw them every time
-    r.findings[:] = [f for f in r.findings if f.code not in ("sharp_profile_corners", "edges_not_broken", "no_lead_in", "printed_edges")]
+    r.findings[:] = [f for f in r.findings if f.code not in ("sharp_profile_corners", "edges_not_broken", "no_lead_in", "printed_edges")
+                     and not f.code.startswith("supplier_")]  # suppliers' published rules: tests/test_supplier_rules.py
     return r, {f.code: f for f in r.findings}, r.metrics["parts"]["p"]
 
 

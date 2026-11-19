@@ -86,6 +86,15 @@ def check_part(r: VerifierResult, design: Design, c) -> dict:
     from ..shops import check_shop_part
 
     check_shop_part(r, design, c, row, lim)      # what the part's named shop publishes (mechloop/shops/*.json); nothing for "generic"
+    if proc in ("sheet", "machined"):           # every supplier's published design rules (mechloop/data/supplier_rules, dfm_supplier.py)
+        try:
+            from . import dfm_supplier
+
+            dfm_supplier.check_part(r, design, c, row, sm, frame, cyls, holes)
+        except Exception as e:      # the supplier-rule pass must not hide the process findings; unmeasured is said, not passed
+            row["supplier_rules"] = {"checked": False, "why": f"{type(e).__name__}: {e}"}
+            r.add("warning", "supplier_rules_not_checked", f"{c.name}: the suppliers' published rules were not evaluated "
+                  f"({type(e).__name__}: {e}).", part=c.name, trace=traceback.format_exc()[-500:])
     try:      # sharp edges and corners (dfm_edges.py): B-rep only, cheap
         from . import dfm_edges
 

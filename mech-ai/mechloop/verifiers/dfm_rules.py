@@ -298,8 +298,13 @@ class Limits:
         man = getattr(design, "manufacturing", None) or {}
         self.shop_name = (component.meta.get("dfm", {}).get("shop") if component is not None else None) or man.get("shop") or "generic"
         if self.shop_name not in SHOPS:
-            raise ValueError(f"unknown shop {self.shop_name!r}; known: {sorted(SHOPS)}")
-        self.shop = SHOPS[self.shop_name]
+            from ..shops import supplier_rules as _sr
+
+            # a supplier with published design rules (mechloop/data/supplier_rules) but no stock profile: generic stock and limits,
+            # its own rules applied by dfm_supplier.py
+            if self.shop_name not in _sr.load():
+                raise ValueError(f"unknown shop {self.shop_name!r}; known: {sorted(set(SHOPS) | set(_sr.load()))}")
+        self.shop = SHOPS.get(self.shop_name) or SHOPS["generic"]
         self.shop_limits: dict = dict(self.shop.get("limits") or {})      # the shop's own figure for a rule id (mechloop/shops)
         self.over: dict = dict(man.get("limits") or {})
         if component is not None:

@@ -25,7 +25,8 @@ def check(shape, material="al6061", man=None, screws=(), meta=None, process="she
     r = verify_manufacture(d)
     # the sharp-edge, corner and lead-in rules have their own tests (tests/test_known_answers_v8.py); the boxes used here are
     # drawn dead sharp on purpose and would draw them every time
-    r.findings[:] = [f for f in r.findings if f.code not in ("sharp_profile_corners", "edges_not_broken", "no_lead_in", "printed_edges")]
+    r.findings[:] = [f for f in r.findings if f.code not in ("sharp_profile_corners", "edges_not_broken", "no_lead_in", "printed_edges")
+                     and not f.code.startswith("supplier_")]  # suppliers' published rules: tests/test_supplier_rules.py
     return {f.code: f for f in r.findings}, r.metrics["parts"]["p"]
 
 

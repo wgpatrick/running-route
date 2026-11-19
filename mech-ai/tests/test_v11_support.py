@@ -125,3 +125,16 @@ def test_v11_builds_with_stock_parts(v11):
     size = (max(b.max.X for b in bb) - min(b.min.X for b in bb), max(b.max.Y for b in bb) - min(b.min.Y for b in bb),
             max(b.max.Z for b in bb) - min(b.min.Z for b in bb))
     assert all(s <= e for s, e in zip(size, v11.ENVELOPE))
+
+
+def test_delta_blower_and_omron_e2b_are_labelled_standins_picked_up_by_the_inbox_names():
+    b = parts.blower_bfb0524hh()
+    assert b.ratings["rated_current_a"] == 0.11 and b.ratings["static_pressure_pa"] == 216.0 and b.cost_usd == 17.0
+    assert b.ratings["electrical"]["ratings"]["current_a"] == 0.11 and "BFB0524HH" in b.model.get("inbox", [])
+    assert vc.model_state(b.model) == "stand-in"
+    p = parts.probe_omron_e2e("E2B-M12KS04-WP-C1", clamp=(15, 17.286), nuts="separate")
+    el = p.ratings["electrical"]["ratings"]
+    assert p.cost_usd == pytest.approx(35.22) and el["output"] == "npn_no" and el["max_ambient_c"] == 70.0
+    assert el["switching_distance_steel_mm"] == 4.0
+    assert p.interfaces["mounting"]["shielded"] and p.interfaces["mounting"]["head_proud_of_metal_l"] == 0.0
+    assert "E2B-M12KS04-WP-C1" in p.model.get("inbox", [])

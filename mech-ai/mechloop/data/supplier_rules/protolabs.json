@@ -139,7 +139,7 @@
    "id": "protolabs.cut.notch_min",
    "supplier": "protolabs",
    "process": "laser_cut",
-   "rule": "slot_min",
+   "rule": "notch_min",
    "material": "*",
    "thickness_mm": null,
    "formula": {
@@ -149,7 +149,7 @@
    "comparison": ">=",
    "severity": "error",
    "phrasing": "must",
-   "measured": "narrowest notch or slot in the outline",
+   "measured": "narrowest notch in the outline",
    "source_url": "https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/",
    "quote": "Notches must be at least the material’s thickness or 0.04 in. (1.016mm), whichever is greater, and can be no longer than 5 times its width.",
    "quote_kind": "text",

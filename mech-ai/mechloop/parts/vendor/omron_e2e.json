@@ -387,6 +387,68 @@
    "repeatability",
    "mass without cable (estimated in the catalogue part)",
    "sensing distance on a plate larger than 45-60 mm or thicker than 1 mm"
-  ]
+  ],
+  "E2B-M12KS04-WP-C1": {
+   "sheet": "owner's specification 2026-11-19 (Digi-Key / Mouser listing, not read here) and OMRON's E2B family conventions; E2B data sheet NOT read",
+   "distributor": "Digi-Key (also Mouser)",
+   "price_usd": 35.22,
+   "wires": 3,
+   "output": "npn_no",
+   "thread": "M12 x 1",
+   "thread_dia_mm": 12.0,
+   "shielded": true,
+   "sensing_distance_mm": 4.0,
+   "aluminium_mm": 1.2,
+   "aluminium_range_mm": [
+    1.0,
+    1.4
+   ],
+   "aluminium_note": "ASSUMED: about 0.3 of the iron distance for a shielded sensor (typical); the E2B chart was not read. The bed's target is the print sheet's spring steel",
+   "tolerance_frac": 0.1,
+   "temperature_drift_frac": 0.1,
+   "differential_travel_frac": 0.1,
+   "supply_v": [
+    10.0,
+    30.0
+   ],
+   "current_consumption_ma_max": 10.0,
+   "load_current_ma_max": 200.0,
+   "residual_voltage_v_max": 2.0,
+   "internal_pullup_ma": [
+    1.5,
+    3.0
+   ],
+   "internal_pullup_note": "ASSUMED like OMRON's E2E three-wire NPN output (a current-source pull-up to +V); the BAT85 diode in the signal lead is kept, which is right whether or not the sensor pulls up",
+   "ambient_c": [
+    -25.0,
+    70.0
+   ],
+   "switching_frequency_hz": 1000,
+   "temperature_drift_note": "ASSUMED +/-10 % over -25 to 70 degC (the E2B sheet was not read)",
+   "packed_weight_g": 60,
+   "conductors": 3,
+   "body_mm": {
+    "head_dia": 12.0,
+    "head_length": 0.0,
+    "threaded_length": 29.0,
+    "body_length": 34.0,
+    "cable_protector": 9.0,
+    "nut_across_flats": 17.0,
+    "nut_over_corners": 19.6,
+    "nut_thickness": 4.0,
+    "washer": 1.0,
+    "status": "STAND-IN: M12 x 1 short shielded body; lengths assumed (29 mm thread, 34 mm body); nuts as the E2E M12's. OMRON's drawing not read; replace from E2B-M12KS04-WP-C1.step when it arrives"
+   },
+   "surrounding_metal_mm": {
+    "l": 0.0,
+    "d": 12.0,
+    "D": 0.0,
+    "m": 12.0,
+    "n": 24.0,
+    "status": "GENERIC shielded M12 rule, not OMRON's E2B table: flush mounting allowed (l = 0), facing metal at least 3 x Sn = 12 mm from the face, sensors at least 2 x d apart"
+   },
+   "tightening_torque_nm_max": 15,
+   "tightening_torque_note": "ASSUMED for an M12 brass body; not read"
+  }
  }
 }
