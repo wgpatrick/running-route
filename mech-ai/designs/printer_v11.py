@@ -128,7 +128,7 @@ BOARD_XY = (94.5, 5.0)  # BTT Octopus V1.1, turned so its motor connectors face 
 HOST_XY = (80.0, -105.0)
 FUSE_A = 8.0
 T_TRAY = 3.175         # v8.1: SendCutSend 6061 .125"
-TRAY_Y0, TRAY_Y1 = -138.0, 85.0
+TRAY_Y0, TRAY_Y1 = -142.0, 85.0      # v11: front edge 4 mm further forward, under the front Z posts' spacers
 Z_TRAY = 20.0 + T_TRAY
 
 # ---- materials and stock (SendCutSend gauges, mm) ----------------------------------
@@ -313,7 +313,7 @@ ZC = Z_SQB - L_FLEX - 1.0 - 22.7                  # centre of the guide blocks (
 Z_RAIL_C = Z_RAIL_C_FIXED                            # v11: rails where v9 / v10 had them; the blocks ride 6.35 mm higher (11.5 mm of rail below, 8.5 above)
 NP_HOLE = 2 * (4.0 + NUT_FLOAT) + 0.8             # v11: the screw passes the plate with the nut's float (the POM nut's barrel hangs BELOW)
 KP_HOLE = 2 * (12.7 / 2 + NUT_FLOAT) + 0.8        # v11: the keeper's hole: the POM barrel (12.7, stand-in) with its float
-NP_U, NP_R1 = 32.0, 21.5                          # nut plate: half length along the member, reach beyond the nut
+NP_U, NP_R1 = 26.0, 21.5                          # nut plate: half length along the member (v11: 26, clear of the posts' drivers), reach beyond the nut
 NP_BOLT_U = 20.0                                  # its two M5 into the member's bottom slot
 PIN_SP_D = 5.0                                    # anti-rotation pin: an M2.5 screw through a 5 mm aluminium sleeve
 # ---- Z drive: three integrated lead-screw motors, one per screw, no belt (v8.2) ---------------------------------------
@@ -325,7 +325,7 @@ T_MP = G64                                       # motor plate 6.35 mm 6061
 Z_MPT = Z_MF + T_MP
 Z_SCREW_ABOVE = 328.0                            # v11: the screw as sold (330 nominal; 328 above the face as the sister model's STEP has it),
                                                  # NOT cut: tops at 401.2 (rear, outside the back wall) and 400.2 (front, inboard of the top rails)
-MP_POST_DY = 30.0                                # v11: front posts +/- along the rail from the screw, clear of the keepers' drivers' paths
+MP_POST_DY = 33.0                                # v11: front posts +/- along the rail from the screw, clear of the nut plate and keeper
 MP_POST_DX_R = 28.0                              # rear posts +/- along the back rail (the rear upright's brackets are at 35 to 55)
 MP_PILOT_HOLE = 22.3                             # the motor's 22 mm pilot locates in it
 PSU_COVER_TOP = 56.04                            # mains cover over the supply's terminals (v8.1: 2.8 mm under its belt plane)
@@ -672,10 +672,11 @@ def nut_plate_local(z0, z1, nut_out=NUT_OUT):
 def nut_keeper_local(z0, z1):
     """The keeper under a nut's flange (v8.2), drawn about the nut's axis: local x along the member."""
     from build123d import Circle, SlotOverall
-    s = Pos(0, 0, z0) * extrude(RectangleRounded(50.0, 36.0, 3.0), z1 - z0)
+    s = Pos(0, 2.0, z0) * extrude(RectangleRounded(50.0, 32.0, 3.0), z1 - z0)     # v11: local y -14 .. 18 (clear of the plate's M5 drivers)
     # the barrel's hole and the slot the pin's nut moves in, as one opening; its four corners rounded (v8.2's were sharp)
     cut = (Circle(KP_HOLE / 2) + Pos(NUT_PIN[0], NUT_PIN[1]) * Rot(0, 0, 135) * SlotOverall(2 * NUT_FLOAT + 7.0, 7.0)
-           + Pos(13.0, 0) * RectangleRounded(26.0, KP_HOLE, 0.5))      # v11: open along the member: the keeper slides in under the flange
+           + Pos(13.0, 0) * RectangleRounded(26.0, KP_HOLE, 0.5)       # v11: open along the member: the keeper slides in under the flange,
+           + Pos((NUT_PIN[0] - 3.5 + 26.0) / 2, NUT_PIN[1]) * RectangleRounded(26.0 - NUT_PIN[0] + 3.5, 7.0, 0.5))   # and past the pin's nut
     try:
         cut = fillet(cut.vertices(), 0.8)
     except Exception:
@@ -871,6 +872,8 @@ def part_duct_shape(y_noz, bl_y0):
         c -= nut_pocket((x, yf + POCKET_WALL, Z_BEAM + z), (0, 1, 0), (0, 0, -1))     # opens at the flange's underside
     for z in (BL_Z0 + 2.5, BL_Z0 + 37.5):              # the blower's two right-hand lugs: M2 clearance through the cradle
         c -= Pos(bc + 17.5, by1 + CRADLE_T / 2, z) * ycyl(printed_clearance_hole("M2") / 2, CRADLE_T)
+    for x, z in ROTO_HOLES():                          # access for the 2.5 mm key to the Roto's screws, through the cradle
+        c -= Pos(x, by1 + CRADLE_T / 2, z) * ycyl(3.5, CRADLE_T + 0.2)
     return c
 
 
@@ -1823,7 +1826,11 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
         # motor, its screw and plate go in as one unit onto the two spacers; the post bolts follow
         # v11: the POM nut comes on the screw (threaded on at the bench from the screw's free end) and goes in with the drive; the
         # nut plate and keeper, open-slotted, slide onto it sideways afterwards
-        d.subassemblies[f"z_drive{tg or '_rear'}"] = [n for n in mount_parts[tg] if "_bolt_" not in n and "_spacer_" not in n and n in have] + [f"z_nut{tg}"]
+        unit = [n for n in mount_parts[tg] if "_bolt_" not in n and "_spacer_" not in n and n in have] + [f"z_nut{tg}"]
+        if tg:      # the front ones: the whole nut stack goes in with the drive (from above, before the top side rail), then the
+                    # nut plate's two M5 are driven up into the square's member
+            unit += [n for n in have if n.startswith((f"nut_plate{tg}", f"nut_keeper{tg}", f"nut_pin{tg}")) and not n.startswith(f"nut_plate{tg}_bolt")]
+        d.subassemblies[f"z_drive{tg or '_rear'}"] = unit
     # v9 / v10: the bed is a bench unit: plate with its three countersunk studs, their washers and lock nuts, heater and cut-off;
     # the springs go over the studs, the unit goes down through the deck's holes, the thumb nuts go on from below, and the
     # magnetic base and sheet go on last
