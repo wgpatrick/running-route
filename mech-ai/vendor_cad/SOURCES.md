@@ -85,7 +85,7 @@ it before distributing them, and treat them as internal-use only until then.
 
 ## Supplier CAD folded in for printer_v11 (2026-11-19)
 
-| File | What | Source | Date | Licence | Kind |
+| file | part | origin | commit / retrieved | licence | made by |
 |---|---|---|---|---|---|
 | `inbox/HFS5-2020-500.step` | Misumi HFS5-2020 extrusion, 500 mm (its section is swept to each length for `extrusion_2020(L)`'s display model) | Misumi via 3dfindit / CADENAS, part number HFS5-2020-500, unchanged copy of `staging/supplier_2026-11-19/EXT2020-PROFILE.step` | collected 2026-11-19, copied 2026-11-19 | no licence grant read: the supplier's published download, internal design use | vendor (Misumi) |
 | `inbox/THUMBNUT-DIN466-M4.step` | KIPP K0143.04 knurled thumb nut M4, DIN 466 (`thumb_nut_din466("M4")`) | KIPP via 3dfindit / CADENAS, unchanged copy of `staging/supplier_2026-11-19/THUMBNUT-DIN466-M4.step` | collected 2026-11-19, copied 2026-11-19 | no licence grant read, internal design use | vendor (KIPP) |
