@@ -35,7 +35,7 @@ def blower_gdb4010() -> Stock:
         body -= Pos(x, y, 0) * Cylinder(v["mount_holes"]["dia_mm"] / 2, sz)
     ol, ow = v["outlet_mm"]["length"], v["outlet_mm"]["width"]
     pq = v["pq_curve_9500rpm_cfm_inh2o"]["points"]
-    return Stock(body, "BLOWER-4010-24V-GDB4010", "Radial blower 40 x 40 x 10 mm, 24 V (GDSTIME GDB4010 A-type)", v["mass_g"] / 1000.0,
+    return Stock(body, "FAN-BLOWER-4010-GDB4010", "Radial blower 40 x 40 x 10 mm, 24 V (GDSTIME GDB4010 A-type)", v["mass_g"] / 1000.0,
                  material="abs", cost_usd=6.0,
                  detail=body, model={"kind": "proxy", "source": "envelope from the maker's dimension drawing (40 x 40 x 10, holes on 35, "
                                      "outlet 28 x 7.44); the maker offers no CAD", "state": "stand-in"},

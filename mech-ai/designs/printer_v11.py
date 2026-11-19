@@ -805,7 +805,7 @@ def nut_pocket(at, axis, up, extra_back=0.0):
 # ---- v11 part cooling: one GDB4010 radial blower behind the Roto, outlet down, a short printed duct -----------------------
 BL_X0 = NOZ_X + 13.0                    # the blower's 40 mm face: x from 13 to 53 right of the nozzle (v10's 30 mm fan and plenum
 BL_X1 = BL_X0 + 40.0                    # reached 46.8); at the right end of the travel it is 4 mm from the right front lead screw
-BL_Z0 = Z_NOZZLE + 20.55                # 394.0: its outlet edge, 1.2 mm under the Roto's underside
+BL_Z0 = Z_NOZZLE + 31.55                # 405.0: its outlet edge; its lower lugs' nuts pass 1 mm above the top back rail at the rear end
 CRADLE_T = 4.0
 DUCT_FLOOR = Z_NOZZLE + 3.05            # 376.5: the duct's lowest face, 3.05 mm above the nozzle tip (owner: >= 2.5)
 OUT_D, OUT_W, OUT_H, OUT_L = 24.0, 10.0, 3.0, 6.0     # outlet: 24 mm from the nozzle's axis on the rear-right diagonal, 10 x 3 mm bore
@@ -845,13 +845,16 @@ def part_duct_shape(y_noz, bl_y0):
     by1 = bl_y0 + 10.0                                  # blower's rear face
     c = bx(FC_X0, FC_X1, yf, yf + FC_FL, z0, zf)        # flange
     c += bx(NOZ_X + 21.5, FC_X1, yf + FC_FL, y_c0, z0, zf)                        # arm under the Roto
-    c += bx(NOZ_X + 21.5, NOZ_X + 48.5, y_c0, by1 + CRADLE_T, DUCT_FLOOR, BL_Z0)   # chamber A, under the blower
+    y_rf = YB0 + R_TPR + ROTO_W                         # the Roto's rear face: under the Roto the chamber stays below its underside
+    c += bx(NOZ_X + 21.5, NOZ_X + 48.5, y_c0, y_rf, DUCT_FLOOR, Z_NOZZLE + 20.55)   # chamber A, under the Roto
+    c += bx(NOZ_X + 21.5, NOZ_X + 48.5, y_rf, by1 + CRADLE_T, DUCT_FLOOR, BL_Z0)    # and its riser behind the Roto, up to the blower
     c += bx(NOZ_X + 13.0, NOZ_X + 28.0, y_c0, y_noz + 23.0, DUCT_FLOOR, DUCT_FLOOR + 9.5)   # chamber B, its front-left extension
     c += bx(BL_X0, BL_X1, by1, by1 + CRADLE_T, BL_Z0, BL_Z0 + 40.0)             # cradle behind the blower
     o, ax = _outlet_frame(y_noz)
     c += _tube(o, ax, OUT_W + 2.4, OUT_H + 2.4, OUT_L)
     # the air passage
-    c -= bx(NOZ_X + 21.5 + w, NOZ_X + 48.5 - w, y_c0 + w, by1, DUCT_FLOOR + w, BL_Z0 - w)
+    c -= bx(NOZ_X + 21.5 + w, NOZ_X + 48.5 - w, y_c0 + w, y_rf + 0.01, DUCT_FLOOR + w, Z_NOZZLE + 20.55 - w)
+    c -= bx(NOZ_X + 21.5 + w, NOZ_X + 48.5 - w, y_rf, by1, DUCT_FLOOR + w, BL_Z0 - w)
     bc = (BL_X0 + BL_X1) / 2
     c -= bx(max(bc - 14.0, NOZ_X + 21.5 + w), min(bc + 14.0, NOZ_X + 48.5 - w), bl_y0 + 5.0 - 3.72, bl_y0 + 5.0 + 3.72, BL_Z0 - w - 0.1, BL_Z0 + 0.1)
     c -= bx(NOZ_X + 13.0 + w, NOZ_X + 28.0, y_c0 + w, y_noz + 23.0 - w, DUCT_FLOOR + w, DUCT_FLOOR + 9.5 - w)
@@ -872,7 +875,7 @@ def probe_bracket_shape(y_face):
     Roto's right-hand screw. y_face: the Roto's rear face."""
     z_b = Z_PRB + PRB_CLAMP[0]
     roto = ROTO_HOLES()
-    h_a = max(z for _, z in roto) + 5.0 - z_b
+    h_a = Z_BEAM + 48.0 - z_b                             # up to z 455: the toolhead loom is clamped to its top, above the blower
     xl0, xl1 = NOZ_X - 9.5, NOZ_X + 12.5
     w = xl1 - xl0
     x_c = (xl0 + xl1) / 2
@@ -923,9 +926,9 @@ def build_electrical(d: Design) -> Electrical:
     # v10: the toolhead now reaches the right top rail's inner face (2.4 mm) and the back rail (as before), so its loom is
     # anchored on TOP of the top back rail and drops down that rail's outer face, not in the frame's inside corner
     P1 = (118.0, 189.0, FZ + 12.0)
-    yl = YB0 + R_TPR + ROTO_W + B23 + 2.0      # v11: clamped to the probe bracket's upper leg, above the blower
-    el.loom("toolhead", [Waypoint("xbody", (NOZ_X - 8.0, yl, Z_BEAM + 32.0), clamp="probe_mount"),
-                         Waypoint("xbody", (NOZ_X + 18.0, yl, Z_BEAM + 32.0), clamp="probe_mount"),
+    yl = YB0 + R_TPR + ROTO_W + B23 + 2.0      # v11: clamped to the probe bracket's upper leg, at the blower's top
+    el.loom("toolhead", [Waypoint("xbody", (NOZ_X - 8.0, yl, Z_BEAM + 45.0), clamp="probe_mount"),
+                         Waypoint("xbody", (NOZ_X + 18.0, yl, Z_BEAM + 45.0), clamp="probe_mount"),
                          Waypoint("world", (118.0, 175.0, FZ + 12.0), clamp="frame_top_back"), Waypoint("world", P1)],
             flex_length={1: 480.0})
     # over the back rail's rear edge on a 30 mm radius (the 10 mm bundle needs 26), down the outside of the back wall (beside the
@@ -947,8 +950,8 @@ def build_electrical(d: Design) -> Electrical:
     el.loom("beam", [Waypoint("ybody", (-142.0, YB0 + PL_Y0 + 5.0, Z_PLATE - 1.5), clamp="y_plate_left"),
                      Waypoint("ybody", (-96.0, YB0 - 16.0, Z_BEAM + 6.0), clamp="x_beam"),
                      Waypoint("ybody", (-90.0, YB0, Z_BEAM + 7.5), clamp="x_beam"),
-                     Waypoint("ybody", (100.0, YB0, Z_BEAM + 7.5), clamp="x_beam"),
-                     ("ybody", (104.0, YB0, zbm)),                       # v11: up past the right Y plate's inner edge (x 108)
+                     Waypoint("ybody", (92.0, YB0, Z_BEAM + 7.5), clamp="x_beam"),
+                     ("ybody", (101.0, YB0 + 3.0, zbm)),                 # v11: up past the right Y plate's inner edge (x 108)
                      Waypoint("ybody", (112.0, YB0 + 7.5, zbm), clamp="y_plate_right"),
                      Waypoint("ybody", (142.0, YB0 + 8.0, zbm), clamp="y_plate_right"),
                      Waypoint("ybody", (150.0, YB0 + 24.0, zbm), clamp="y_plate_right")])
@@ -1328,7 +1331,7 @@ def build_frame_z():
     mounts.append(("", 0.0, LS_Y, 0.0, rear_posts, "frame_bot_back", False))
     for sx, tg in ((-1, "_fl"), (1, "_fr")):
         # posts stay on the bottom side rail's centre line (x +/-160), the motor 15.5 mm inboard of it
-        mounts.append((tg, sx * FS_X, FS_Y, 0.0 if sx < 0 else 180.0, [(sx * RAIL_X, FS_Y - MP_POST_DY), (sx * RAIL_X, FS_Y + MP_POST_DY)],
+        mounts.append((tg, sx * FS_X, FS_Y, 0.0 if sx < 0 else 270.0, [(sx * RAIL_X, FS_Y - MP_POST_DY), (sx * RAIL_X, FS_Y + MP_POST_DY)],
                        f"frame_bot_{'left' if sx < 0 else 'right'}", True))
     mount_parts = {}
     for tg, x0, y0, turn, posts, rail, on_tray in mounts:
@@ -1440,8 +1443,10 @@ def build() -> Design:
               "M12 barrel passes a 12.5 mm hole and is clamped by the sensor's own two nuts, the leg 15 mm behind the sensing "
               "face (OMRON's surrounding-metal figure for an unshielded M12; the 40 mm zone round the head is checked).")})
     for i, (hx, hy, hz) in enumerate(d.get("extruder").meta["interfaces"]["mount_holes_m3"]):
+        # two large washers (Accu HPLW-M3-A2, 0.9 mm) under the head: the M3 x 50 then ends inside the front plate (with one
+        # normal washer it stood 0.35 mm proud of the plate, into the guide block)
         add_screw(d, f"extruder_screw_{i}", "M3", 50, at=(hx, yb_pm + B23, hz), direction=(0, -1, 0), body="xbody",
-                  clamps=("probe_mount", "extruder", "tool_plate_rear", "tool_plate"), washer=True)
+                  clamps=("probe_mount", "extruder", "tool_plate_rear", "tool_plate"), washer="large", washers=2)
         add_nut(d, f"extruder_nut_{i}", "M3", at=(hx, ymid, hz), direction=(0, 1, 0), body="xbody", screw=f"extruder_screw_{i}", standard="pem")
         d.join(f"extruder_nut_{i}", "tool_plate", "PEM self-clinching nut (SendCutSend hardware service)")
     seat = d.get("extruder").meta["interfaces"]["hotend_seat"][0]
@@ -1460,7 +1465,7 @@ def build() -> Design:
     d.join("bed_probe", "probe_mount", "clamped by its two nuts")
     # part cooling (v11): the GDB4010 blower behind the Roto, 0.1 mm behind the probe bracket's leg, outlet down into the duct
     y_noz = YB0 + HOT_OFF
-    bl_y0 = yb_pm + B23 + 0.1
+    bl_y0 = yb_pm + B23 + 2 * WASHER["large"]["M3"][2] + 3.0 + 0.3     # behind the Roto screws' heads and washers
     d.add("part_duct", part_duct_shape(y_noz, bl_y0), material=HOT, body="xbody", process="printed",
           meta={"print_up": "-Y", "print": {**PRINT_ABS, "orientation": "-Y"}, "service_temp_c": 45.0})
     for i, (x, z) in enumerate(FC_SCREWS):
@@ -1597,6 +1602,9 @@ def build() -> Design:
                 m -= Pos(xm, YM_Y + y, Z_YC + z) * xcyl(SH3 / 2, MT_Y)
         for y in YMB:
             m -= Pos(xm, y, FZ) * xcyl(clearance_hole("M5") / 2, MT_Y)
+        # a 6.4 mm slot under the push bracket's leg for the casting's locating nub (it drops through into the rail's slot
+        # opening and keeps the bracket from turning on its one screw)
+        m -= Pos(xm, YP_C + 10.0, FZ) * Box(MT_Y, 20.0, 6.4)
         sheet(d, f"y_motor_mount{tag}", m, SS)
         place(d, f"y_motor{tag}", nema17(48), Location(Plane(origin=(sg * xf, YM_Y, Z_YC), x_dir=(0, 0, -1), z_dir=(sg, 0, 0))))
         place(d, f"y_pulley{tag}", gt2_pulley(20, belt_width=BWY),
@@ -1776,10 +1784,11 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
         add_nut(d, f"inlet_nut_{i}", "M3", at=(XP + WASHER["normal"]["M3"][2], hy, hz), direction=(1, 0, 0), screw=f"inlet_screw_{i}")
         d.join(f"inlet_nut_{i}", "inlet_panel", "clamped through its washer")
     # the inlet is 30.5 wide (y) and 65 tall (z) behind the panel; the hood: top, two sides, an inner end wall open below
-    hood = bx(XP, XP + 32.0, IN_Y - 19.0, IN_Y + 19.0, IN_Z + 34.0, IN_Z + 36.0)
+    # v11: 2 mm deeper (end wall at XP + 32 .. 34): SCHURTER's own STEP is 33.5 mm deep with its terminals (data sheet 30)
+    hood = bx(XP, XP + 34.0, IN_Y - 19.0, IN_Y + 19.0, IN_Z + 34.0, IN_Z + 36.0)
     for sy_ in (-1, 1):
-        hood += bx(XP, XP + 32.0, IN_Y + sy_ * 18.0 - 1.0, IN_Y + sy_ * 18.0 + 1.0, IN_Z - 34.0, IN_Z + 36.0)
-    hood += bx(XP + 30.0, XP + 32.0, IN_Y - 19.0, IN_Y + 19.0, IN_Z + 16.0, IN_Z + 36.0)     # inner end: above the terminals' plugs
+        hood += bx(XP, XP + 34.0, IN_Y + sy_ * 18.0 - 1.0, IN_Y + sy_ * 18.0 + 1.0, IN_Z - 34.0, IN_Z + 36.0)
+    hood += bx(XP + 32.0, XP + 34.0, IN_Y - 19.0, IN_Y + 19.0, IN_Z + 16.0, IN_Z + 36.0)     # inner end: above the terminals' plugs
     for y, z in HOOD_SCREWS:
         yw = IN_Y + (18.0 if y > IN_Y else -18.0)
         hood += bx(XP, XP + 9.0, min(yw, y - 4.0), max(yw, y + 4.0), z - 4.0, z + 4.0)
