@@ -1920,8 +1920,8 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
             return all(abs(math.hypot(p.X - x, p.Y - y) - r) < 0.05 for p in pts)
         return sel
     # one nut plate (the three are one shape) under three times the whole bed's weight, held at its two M5 holes
-    tg, ncx, ncy, nang, _ = NUTS[2]
-    fb = [rxy(u, -NUT_OUT - 10.0, ncx, ncy, nang) for u in (-NP_BOLT_U, NP_BOLT_U)]
+    tg, ncx, ncy, nang, _ = NUTS[0]        # v11: the rear one, which reaches 57 mm out through the back wall
+    fb = [rxy(u, -NUT_OUT_R - 10.0, ncx, ncy, nang) for u in (-NP_BOLT_U, NP_BOLT_U)]
     d.loadcases.append(LoadCase("nut_thrust", f"nut_plate{tg}",
                                 fixed=lambda f: any(hole_at(x, y, clearance_hole("M5") / 2)(f) for x, y in fb),
                                 loaded=hole_at(ncx, ncy, NP_HOLE / 2), force=(0.0, 0.0, w_bed), min_fos=3.0, max_deflection=0.05))
@@ -1955,6 +1955,12 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
     # the bed plate alone, held at its three countersinks, its mass the plate's plus the 1 kg payload spread over it (close to
     # plate + magnetic base + sheet + heater + a 0.3 kg print): its first bending mode. Fixed faces are ideally rigid, so
     # the real figure is lower; the brief sets no limit, 100 Hz keeps it above the gantry's resonances (60 to 80 Hz)
+    # v11 limit (a): the plate alone on its three countersinks under the bed's own weight (plate, magnetic base, sheet, heater,
+    # cut-off), spread over its top face: its sag from the plane of the three studs
+    w_own = (bed_own + d.get("bed_magnet").mass() + d.get("bed").mass() + d.get("bed_heater").mass() + d.get("bed_tco").mass()) * 9.81
+    d.loadcases.append(LoadCase("bed_self_weight_sag", "bed_plate", fixed=lambda f: f.geom_type.name == "CONE",
+                                loaded=lambda f: abs(f.center().Z - (Z_BED + T_BED)) < 1e-3 and f.area > 1000,
+                                force=(0.0, 0.0, -w_own), min_fos=3.0, max_deflection=FLAT_AS_INSTALLED - MIC6_FLAT_BOUGHT))
     d.modalcases.append(ModalCase("bed_plate_on_three_studs", "bed_plate", fixed=lambda f: f.geom_type.name == "CONE", min_frequency_hz=100.0))
     add_requirements(d, zs)
     assign(d, sheet="sendcutsend", machined="xometry")
@@ -2233,6 +2239,68 @@ def add_requirements(d, zs):
     d.requirements.append(Requirement("the bed probe switches before the nozzle touches for every unit, and over-travel ends short of its face", lambda dd, m: (
         (pz := m["subsystems"]["homing"]["z"])["z_offset_range_mm"][0] > 0.3 and Z_UP < PRB_H,
         f"nozzle {pz['z_offset_range_mm'][0]:.2f} .. {pz['z_offset_range_mm'][1]:.2f} mm above the bed when the probe switches")))
+    # ---- v11 requirements --------------------------------------------------------------------------------------------
+    def cooling(dd):
+        noz = np.array(dd.tool_point[1])
+        hb = dd.get("hotend").meta["interfaces"]["heater_block_box"]
+        blk = bx(hb[0][0], hb[1][0], hb[0][1], hb[1][1], hb[0][2], hb[1][2])
+        duct = dd.get("part_duct").shape
+        gap_block = float(duct.distance_to(blk))
+        above_tip = duct.bounding_box().min.Z - noz[2]
+        o, ax = _outlet_frame(noz[1])
+        t_ = (noz[2] - 0.5 - o[2]) / ax[2]
+        hit = o + ax * t_
+        miss = float(np.hypot(hit[0] - noz[0], hit[1] - noz[1]))
+        # the jet's axis where it passes the heater's round core (r 8.35): below the block's underside?
+        r_c = (hb[1][0] - hb[0][0]) / 2
+        t_c = (OUT_D - r_c) / math.hypot(ax[0], ax[1]) / 1.0
+        z_at_core = o[2] + ax[2] * t_c
+        est = blower_flow_estimate(OUT_W * OUT_H, round(sum(DUCT_K.values()), 2))
+        ok = gap_block >= 4.5 and above_tip >= 2.5 and miss < 0.5 and z_at_core < hb[0][2]
+        return ok, (f"duct {gap_block:.2f} mm from the heater block (owner: 4 to 5), its lowest face {above_tip:.2f} mm above the nozzle tip (owner: >= 2.5); "
+                    f"jet axis from {OUT_D:g} mm out, {math.degrees(math.asin(-ax[2])):.1f} degrees down, reaches the nozzle's axis 0.5 mm under the tip "
+                    f"(off by {miss:.2f} mm) and passes the heater core's edge {hb[0][2] - z_at_core:.2f} mm under the block (silicone sock fitted). "
+                    f"ESTIMATE of delivered flow: {est['flow_cfm']:.2f} CFM ({est['flow_l_per_min']:.1f} l/min) at {est['outlet_velocity_m_s']:.1f} m/s "
+                    f"through the {OUT_W:g} x {OUT_H:g} mm outlet, {est['pressure_pa']:.0f} Pa, from the maker's P-Q curve (read by eye; free air "
+                    f"{est['free_air_cfm']:g} CFM, shut-off {est['shutoff_pa']:.0f} Pa) and a duct loss of K = {est['k_total']:g} (handbook figures)")
+    d.requirements.append(Requirement("v11: part cooling: the radial blower's jet lands just under the nozzle tip; the duct is >= 2.5 mm above the tip and "
+                                      ">= 4.5 mm from the heater block (flow reported as an estimate)", cooling))
+
+    def bent(dd):
+        b = sorted(c.name for c in dd.components if not c.cots and c.material == "al5052")
+        return b == ["x_belt_bracket", "probe_mount"] or b == ["probe_mount", "x_belt_bracket"], (
+            f"bent sheet parts: {b} (v10 / v10.1: eight: X belt bracket, X idler mount, X tension anchor, two Y motor mounts, two Y "
+            f"tension anchors, Y switch bracket; the owner keeps the X belt bracket bent; the probe holder is the one-bend L the owner asked for)")
+    d.requirements.append(Requirement("v11: bent parts only where the owner asked: the X belt bracket (kept) and the probe L", bent))
+
+    def stock_sizes(dd):
+        cut = [c.name for c in dd.components if c.ratings.get("cut_to_length")]
+        xr = dd.get("x_rail").shape.bounding_box().size.X
+        ext = sorted({c.sku for c in dd.components if (c.sku or "").startswith("EXT2020")})
+        return not cut and abs(xr - 250.0) < 1e-6, (
+            f"purchased parts cut to length: {cut or 'none'}; X rail {xr:g} mm (a stock MGNR12R length); the three lead screws as sold; "
+            f"the one purchased part bought cut is the 2020 extrusion, cut by Misumi (HFS5-2020-<L>): {len(ext)} lengths")
+    d.requirements.append(Requirement("v11: purchased parts at stock sizes (no rail or screw cut); only the extrusion is bought cut, by its supplier", stock_sizes))
+
+    def probe_zone(dd, m):
+        def find(o):
+            if isinstance(o, dict):
+                if "metal_in_zone" in o and "metal_free_zone" in o:
+                    return o
+                for v in o.values():
+                    r_ = find(v)
+                    if r_ is not None:
+                        return r_
+            return None
+        z_ = find(m.get("subsystems") or {})
+        if z_ is None:
+            return False, "the subsystems verifier did not report the probe's metal-free zone"
+        hits = z_["metal_in_zone"]
+        return not hits, (f"OMRON E2E-X5ME1, unshielded M12: face {z_['metal_free_zone']['from_face_mm']:g} mm proud of metal, "
+                          f"{z_['metal_free_zone']['dia_mm']:g} mm round the head clear (data sheet p.25, mechloop/parts/vendor/omron_e2e.json); "
+                          f"metal in that zone: {[h['part'] for h in hits] or 'none'} (the subsystems verifier's probe_metal_in_clear_zone is the "
+                          f"same check, an error)")
+    d.requirements.append(Requirement("v11: the unshielded probe's surrounding-metal clearances hold with the aluminium bracket", probe_zone))
     STANDINS = ["bed_magnet"]
     d.requirements.append(Requirement("target: no purchased part is a stand-in where the catalogue has a real one", lambda dd: (
         sorted(px := [c.name for c in dd.components if c.cots and not c.meta.get("catalog")]) == STANDINS,
@@ -2256,12 +2324,10 @@ def add_requirements(d, zs):
 
     def after_probing(dd, m):
         th = m["fea"].get("bed_heated_60K") or {}
-        g = (th.get("gaps") or {}).get("nozzle gap") or {}
-        fl = th.get("flatness") or {}
-        rise = g.get("change_mm", g.get("value_mm"))
-        flat = fl.get("out_of_flat_mm", fl.get("value_mm"))
+        rise = (th.get("gap_change_mm") or {}).get("nozzle gap")
+        flat = (th.get("bow_mm") or {}).get("bed_plate")
         if rise is None or flat is None:
-            return False, f"thermal case figures not found: gaps {g}, flatness {fl}"
+            return False, f"thermal case figures not found: {sorted(th)}"
         worst = max(abs(rise), abs(flat))
         return worst <= FLAT_AFTER_PROBING + 1e-9, (
             f"(b) change after probing during the first layers: bounded by the whole heat growth from cold to 80 degC (bed 60 K above the "
