@@ -53,7 +53,9 @@ URL = {
     "fictiv_spec_sm": "https://www.fictiv.com/specifications/sheet-metal",
     "fictiv_spec_cnc": "https://www.fictiv.com/specifications/cnc-machining",
     "hubs_sm_basic": "https://www.hubs.com/guides/sheet-metal-fabrication/",
+    "scs_specs": "https://app.sendcutsend.com/sendcutsend-specs.json",
 }
+SPECS = json.loads((SCR / "dfm_sources" / "app" / "scs_sendcutsend-specs.json").read_text(encoding="utf-8"))
 
 _TEXT = {}
 
@@ -110,7 +112,11 @@ def add(supplier, rid, *, process, rule, page, quote, quote_kind="text", materia
         value_as_published=None, formula=None, comparison=">=", severity="error", phrasing="requirement", measured=None,
         note=None, evaluate=True, cells=None, table=None, **extra):
     global CHECKED_QUOTES
-    if quote_kind == "text":
+    if quote_kind == "json_field":
+        sku, section, field, val = cells
+        m = next(x for x in SPECS["materials"] if x["sku"] == sku)
+        assert str(m[section][field]) == val, (rid, sku, section, field, val)
+    elif quote_kind == "text":
         assert norm(quote) in text(page), (supplier, rid, page, quote[:80])
     else:
         rows = [[norm(c) for c in r] for t in tables(table or page) for r in t]
@@ -175,7 +181,7 @@ SCS = "sendcutsend"
 add(SCS, "cut.hole_min_t_ratio", process="laser_cut", rule="hole_min", page="scs_cut_guide",
     quote="Minimum hole and cutout size The pierce or tool entry needs a certain amount of room. Holes smaller than the minimum will distort, char, or fail to cut. | Method | Minimum hole/cutout | Laser Cutting | At least 50% of material thickness",
     formula={"t": 0.5}, value_as_published="At least 50% of material thickness", severity="error", measured="smallest hole or cut-out (width of the largest inscribed circle for a non-round cut-out)",
-    conflicts=["sendcutsend.cut.hole_min_al5052_page", "sendcutsend.cut.hole_min_al6061_page"],
+    conflicts=["sendcutsend.cut.hole_min_al5052_page", "sendcutsend.cut.hole_min_al6061_page"], yield_to_specific=True,
     note="The guideline page adds: 'the exact minimum changes with the material and thickness. The current values for every stock we carry live on each material's page' (those per-thickness values are loaded from app.sendcutsend.com and were not read).")
 add(SCS, "cut.hole_min_al5052_page", process="laser_cut", rule="hole_min", page="scs_5052", material="al5052", material_as_published="5052 H32 Aluminum",
     quote="Minimum hole size: Equal to material thickness (e.g., .125″ hole in .125″ sheet).", formula={"t": 1.0},
@@ -198,6 +204,7 @@ add(SCS, "cut.hole_edge_al6061_page", process="laser_cut", rule="hole_edge_web",
 add(SCS, "cut.web_min_t_ratio", process="laser_cut", rule="web_min", page="scs_tol",
     quote="We recommend that hole diameters and bridging widths be no less than 50% of the material thickness. For example, on a 0.125” thick part, this would mean having 0.0625” between all of your cut features, or cut features and the edge of your part.",
     formula={"t": 0.5}, severity="warning", phrasing="recommendation", measured="least material between two cut features, or between a cut feature and the outer edge",
+    yield_to_specific=True,
     note="The sheet-cutting guideline adds 'Minimum bridge width varies by material, check the material specs for your stock' (per-thickness values not readable without app.sendcutsend.com).")
 add(SCS, "cut.web_preferred_t_ratio", process="laser_cut", rule="web_min", page="scs_tol",
     quote="For strength and cut quality reasons, we would prefer that wall thickness or bridging be closer to 1X – 1.5X the material thickness.",
@@ -433,7 +440,7 @@ add(SCS, "tap.center_to_edge", process="tap", rule="tap_center_to_edge", page="s
     note="The per-material minimum tap hole-to-edge distance is on the material pages (not readable); only one example was published (next rule).")
 add(SCS, "tap.edge_example_al5052_0.125", process="tap", rule="tap_hole_to_edge", page="scs_holedist", material="al5052", thickness_mm=3.175,
     thickness_as_published="0.125”", quote="We’d need to calculate 0.209”/2 + 0.063” to find the minimum distance from the center of the tapped holes to the nearest cut feature.",
-    value_mm=1.6, value_as_published="0.063”", comparison=">=", severity="error", measured="material between a tapped hole (tap-drill size) and the nearest cut feature",
+    value_mm=1.6, value_as_published="0.063”", comparison=">=", severity="error", yield_to_specific=True, measured="material between a tapped hole (tap-drill size) and the nearest cut feature",
     note="One worked example (1/4-20 in 0.125 in 5052); the figure 0.063 in is the 'Tapping Min Hole to Edge' for that stock.")
 
 # ---- countersinking
@@ -455,6 +462,66 @@ for mat, cells in walk(tables("scs_minmax")[2]):
 add(SCS, "csk.depth_max", process="countersink", rule="countersink_depth_max", page="scs_csk",
     quote="| Max countersink depth | Should not exceed 60% of material thickness", formula={"t": 0.6}, comparison="<=", severity="error", evaluate=False,
     note="Countersink depth is not measured by mechloop (gap).")
+
+
+# ---- engineering specs JSON (robots.txt allows /sendcutsend-specs.json): per-thickness cutting, tapping, countersinking, bending
+SPECMAT = {"5052 H32 Aluminum": "al5052", "6061 T6 Aluminum": "al6061", "MIC6 Cast Aluminum Plate": "al_mic6",
+           "A36/1008 Mild Steel": "steel", "Stainless Steel (304 series)": "stainless304"}
+GEN = SPECS["_meta"]["generated_at"]
+for m in SPECS["materials"]:
+    key = SPECMAT.get(m["name"])
+    th = (m.get("general_specs") or {}).get("thickness")
+    if not key or not th:
+        continue
+    tmm = round(float(th) * IN, 3)
+
+    def spec(rid, section, field, rule, comparison, severity, conv="in", **kw):
+        v = (m.get(section) or {}).get(field)
+        if v in (None, "", "N/A"):
+            return None
+        if conv == "in":
+            val = dict(value_mm=round(float(v) * IN, 3))
+        elif conv == "pair":
+            a, b = [float(x) for x in v.split("x")]
+            val = dict(value_mm=sorted([round(a * IN, 3), round(b * IN, 3)]))
+        elif conv == "num":
+            val = dict(value=float(v), unit=kw.pop("unit", ""))
+        else:
+            val = {}
+        return add(SCS, f"specs.{rid}.{key}.{tkey(tmm)}", process=kw.pop("process"), rule=rule, page="scs_specs", quote_kind="json_field",
+                   cells=[m["sku"], section, field, v], quote=f'sendcutsend-specs.json (generated {GEN}), {m["sku"]} {m["name"]} {th}: {section}.{field} = "{v}"',
+                   material=key, material_as_published=m["name"], thickness_mm=tmm, thickness_as_published=f'{th}"', value_as_published=v,
+                   comparison=comparison, severity=severity, sku=m["sku"], **val, **kw)
+
+    c = "cutting_specs"
+    spec("min_hole", c, "min_hole_size", "hole_min", ">=", "error", process="laser_cut", measured="smallest hole or cut-out",
+         note="Per-stock figure from SendCutSend's engineering specs; it supersedes the 50 %-of-thickness guideline for this stock (the file says these sources are updated more often than the documentation).")
+    spec("min_bridge", c, "min_bridge_size", "web_min", ">=", "error", process="laser_cut", measured="least material between cut features or to the edge")
+    spec("min_hole_to_edge", c, "min_hole_to_edge", "hole_edge_web", ">=", "error", process="laser_cut", measured="material between a hole's edge and the outer edge")
+    spec("cut_tolerance", c, "cut_tolerance", "tolerance_cut", "info", "info", process="laser_cut")
+    spec("min_part", c, "min_part_size", "part_min_size", ">=", "error", conv="pair", process="laser_cut", evaluate=False,
+         duplicate_of=f"sendcutsend.cut.part_min.{key}.{tkey(tmm)}", note="Cross-check of the min/max chart.")
+    spec("max_part", c, "max_instant_pricing_part_size", "part_max_size", "<=", "error", conv="pair", process="laser_cut", evaluate=False,
+         duplicate_of=f"sendcutsend.cut.part_max.{key}.{tkey(tmm)}", note="Cross-check of the min/max chart.")
+    spec("tap_min_hole_to_edge", "tapping_specs", "min_hole_to_edge", "tap_hole_to_edge", ">=", "error", process="tap",
+         measured="material between a tapped hole (tap-drill size) and the nearest cut feature")
+    spec("csk_center_to_edge", "countersinking_specs", "min_hole_center_to_material_edge", "countersink_center_to_edge", ">=", "error",
+         process="countersink", evaluate=False, note="Countersink positions are not extracted per hole (gap).")
+    b = "bending_specs"
+    spec("bend_radius", b, "effective_bend_radius", "bend_radius", "==", "warning", process="bend", tolerance_mm=0.15, evaluate=False,
+         duplicate_of=f"sendcutsend.bend.radius.{key}.{tkey(tmm)}", note="Cross-check of the bending calculator figure.")
+    spec("flange_after", b, "min_flange_length_after_bend", "flange_min", ">=", "error", process="bend", evaluate=False,
+         duplicate_of=f"sendcutsend.bend.flange_min_formed.{key}.{tkey(tmm)}", note="Cross-check of the bending calculator figure.")
+    dr = spec("die_half", b, "die_width", "feature_to_bend", ">=", "warning", process="bend", evaluate=False, reference="bend_centerline",
+         duplicate_of=f"sendcutsend.bend.die_width.{key}.{tkey(tmm)}", note="Half the published die width; cross-check of the bending calculator.")
+    if dr:
+        dr["value_mm"] = round(dr["value_mm"] / 2, 3)
+    spec("max_bend_length", b, "max_bend_length", "bend_length_max", "<=", "error", process="bend", evaluate=False,
+         duplicate_of=f"sendcutsend.bend.length_max.{key}.{tkey(tmm)}", note="Cross-check of the processing min/max figure.")
+    spec("center_bend_acute", b, "min_length_center_bend_line_acute", "flange_min_acute", ">=", "error", process="bend", evaluate=False,
+         note="Minimum length from the bend centre line for acute bends; acute bends are not separated by mechloop (gap).")
+    spec("min_bend_angle", b, "min_bend_angle", "bend_angle_min", ">=", "error", conv="num", unit="deg", process="bend",
+         measured="bend angle (deflection from flat)")
 
 # ---- countersink / tap absence for materials not in those tables (mild steel and 304: no countersinking rows)
 # (absence is recorded by the evaluator as 'no published rule'; nothing invented here)
@@ -736,13 +803,17 @@ for r in list(RULES.values()):
     if not dup or dup not in RULES:
         continue
     prim = RULES[dup]
-    if abs((prim.get("value_mm") or 0) - (r.get("value_mm") or 0)) > 0.01:
+    pv, rv = prim.get("value_mm"), r.get("value_mm")
+    differ = (sorted(pv) != sorted(rv) and any(abs(a - b) > 0.2 for a, b in zip(sorted(pv), sorted(rv)))) if isinstance(pv, list) and isinstance(rv, list) \
+        else abs((pv or 0) - (rv or 0)) > 0.01
+    if differ:
         msg = f"{prim['source_url']} gives {prim.get('value_as_published')}, {r['source_url']} gives {r.get('value_as_published')}"
         for a, b in ((prim, r), (r, prim)):
             a.setdefault("conflicts", [])
             if b["id"] not in a["conflicts"]:
                 a["conflicts"].append(b["id"])
-            a["conflict_note"] = msg
+            if msg not in a.setdefault("conflict_notes", []):
+                a["conflict_notes"].append(msg)
         print("CONFLICT", prim["id"], msg)
 
 # =============================================================================== write

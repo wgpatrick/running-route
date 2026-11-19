@@ -55,8 +55,9 @@ A published "+/-" is taken as two standard deviations, the convention already us
 Per-thickness design rules (SendCutSend's bending calculator, hardware catalog, tapping and countersinking tables) and
 the published rules of OSH Cut, Protolabs, Fictiv and Hubs, read 2026-11-19, are in docs/SUPPLIER_RULES.md
 (`mechloop/data/supplier_rules/*.json`, evaluated per part by `verifiers/dfm_supplier.py`). Several "not read" items in
-section 2.5 below are now read there (bend die widths, K-factors, relief depths); the per-thickness minimum hole and
-bridge sheets remain unread.
+section 2.5 below are now read there: bend die widths, K-factors, relief depths, and the per-stock minimum hole, minimum
+bridge, hole-to-edge, tapped-hole-to-edge and countersink-centre-to-edge figures (from SendCutSend's engineering specs
+JSON, https://app.sendcutsend.com/sendcutsend-specs.json).
 
 ## 2. SendCutSend: published rules
 

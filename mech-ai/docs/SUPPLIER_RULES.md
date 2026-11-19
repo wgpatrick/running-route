@@ -54,7 +54,7 @@ Code: data `mechloop/data/supplier_rules/*.json`; loading and evaluation `mechlo
 
 | Supplier | Pages (all 2026-11-19) |
 |---|---|
-| SendCutSend | [bending calculator](https://sendcutsend.com/bending-calculator/) (per-thickness K, radius, die width, min formed flange, relief), [processing min/max](https://sendcutsend.com/materials/processing-min-max/) (bending, tapping, countersinking per thickness), [min/max part sizes](https://sendcutsend.com/materials/min-max/), [bending guidelines](https://sendcutsend.com/services/cnc-bending/), [bend deformation](https://sendcutsend.com/guidelines/bend-deformation/), [bend reliefs](https://sendcutsend.com/blog/guide-to-designing-bend-reliefs/), [sheet cutting guidelines](https://sendcutsend.com/guidelines/sheet-cutting/), [tolerances and cut-feature relationships](https://sendcutsend.com/blog/basic-tolerances-and-cut-feature-relationships/), [hole distance specifications](https://sendcutsend.com/blog/how-to-apply-hole-distance-specifications/), [hardware catalog](https://sendcutsend.com/guidelines/hardware/catalog/), [tapping](https://sendcutsend.com/services/tapping/), [countersinking](https://sendcutsend.com/services/countersinking/), material pages [5052](https://sendcutsend.com/materials/5052-aluminum/) and [6061](https://sendcutsend.com/materials/6061-aluminum/) |
+| SendCutSend | [engineering specs JSON](https://app.sendcutsend.com/sendcutsend-specs.json) (per stock: min hole, min bridge, min hole to edge, tapped hole to edge, countersink centre to edge, bending parameters; file generated 2026-11-05; robots.txt allows this file), [bending calculator](https://sendcutsend.com/bending-calculator/) (per-thickness K, radius, die width, min formed flange, relief), [processing min/max](https://sendcutsend.com/materials/processing-min-max/) (bending, tapping, countersinking per thickness), [min/max part sizes](https://sendcutsend.com/materials/min-max/), [bending guidelines](https://sendcutsend.com/services/cnc-bending/), [bend deformation](https://sendcutsend.com/guidelines/bend-deformation/), [bend reliefs](https://sendcutsend.com/blog/guide-to-designing-bend-reliefs/), [sheet cutting guidelines](https://sendcutsend.com/guidelines/sheet-cutting/), [tolerances and cut-feature relationships](https://sendcutsend.com/blog/basic-tolerances-and-cut-feature-relationships/), [hole distance specifications](https://sendcutsend.com/blog/how-to-apply-hole-distance-specifications/), [hardware catalog](https://sendcutsend.com/guidelines/hardware/catalog/), [tapping](https://sendcutsend.com/services/tapping/), [countersinking](https://sendcutsend.com/services/countersinking/), material pages [5052](https://sendcutsend.com/materials/5052-aluminum/) and [6061](https://sendcutsend.com/materials/6061-aluminum/) |
 | OSH Cut | [capabilities](https://www.oshcut.com/capabilities), [min/max material sizes](https://www.oshcut.com/minimum-maximum-material-sizes), [bending](https://www.oshcut.com/services/bending), [laser cutting](https://www.oshcut.com/services/laser-metal-cutting), [countersinking](https://www.oshcut.com/services/countersinking), [tapping](https://www.oshcut.com/services/metal-tapping), [bending design rules](https://www.oshcut.com/design-guide/metal-bending-design-rules) |
 | Protolabs | [sheet metal design guidelines](https://www.protolabs.com/services/sheet-metal-fabrication/design-guidelines/), [sheet metal DFM toolkit](https://www.protolabs.com/resources/design-for-sheet-metal-fabrication-toolkit/), [laser cutting](https://www.protolabs.com/services/sheet-metal-fabrication/laser-cutting/), [forming](https://www.protolabs.com/services/sheet-metal-fabrication/forming/), [CNC milling design guidelines](https://www.protolabs.com/services/cnc-machining/cnc-milling/design-guidelines/) |
 | Xometry | [sheet metal fabrication](https://www.xometry.com/capabilities/sheet-metal-fabrication/) (design guideline table), [laser cutting](https://www.xometry.com/capabilities/sheet-cutting/laser-cutting/), [sheet cutting](https://www.xometry.com/capabilities/sheet-cutting/), [manufacturing standards](https://www.xometry.com/manufacturing-standards/), [CNC machining](https://www.xometry.com/capabilities/cnc-machining-service/) |
@@ -63,13 +63,15 @@ Code: data `mechloop/data/supplier_rules/*.json`; loading and evaluation `mechlo
 
 **Not read / not published** (also in each file's `not_read`):
 
-- SendCutSend's per-thickness "View specs" sheets (minimum hole, minimum bridge, tapping and countersink edge
-  distances per stock) are loaded by the material pages from `app.sendcutsend.com`, which this session may not fetch
-  (the request was refused); only one worked figure (0.063 in. tapping min hole-to-edge, 0.125 in. 5052) appears in a
-  blog post and is included. The hardware catalog's studs and standoffs were not transcribed (nuts only). Its catalog
+- SendCutSend's per-stock figures were read from its engineering specs JSON. `app.sendcutsend.com/robots.txt`
+  disallows everything except `/llms.txt`, `/llms-full.txt`, `/sendcutsend-catalog.json` and `/sendcutsend-specs.json`,
+  so only those files were fetched; the `/materials?sku=` API that the material pages' "View specs" buttons use was
+  not. The terms of service contain no clause on automated access. Not transcribed: the specs file's CNC billet entry
+  and non-metal materials. The hardware catalog's studs and standoffs were not transcribed (nuts only). Its catalog
   lists no `S-M3-1` (the M3 carbon-steel nut is `S-M3-0`).
-- OSH Cut keeps per-thickness bend radius, k-factor and minimum flange in its quoting app's catalogue
-  (`app.oshcut.com/catalog`, not on the allowed host list; not fetched) and publishes no hole, web or edge figures on
+- OSH Cut keeps per-thickness bend radius, k-factor, minimum flange and tooling in its app catalogue
+  (`app.oshcut.com`). That site's robots.txt lists `anthropic-ai`, `ClaudeBot` and `Claude-Web` under `Disallow: /`
+  (and `Content-Signal: ai-train=no`), so the catalogue was **not** fetched; only robots.txt was read. OSH Cut publishes no hole, web or edge figures on
   www.oshcut.com. `/design-guide` returned 404. Its size table prints a "Min Size" (e.g. 0.1) with no unit: kept as
   published, not evaluated.
 - Protolabs `/services/cnc-machining/design-guidelines/` returned 404 (the milling guidelines were read); no corner
@@ -87,7 +89,10 @@ Code: data `mechloop/data/supplier_rules/*.json`; loading and evaluation `mechlo
 
 | Topic | One page says | Another says |
 |---|---|---|
-| SendCutSend minimum hole | sheet-cutting guideline and pre-flight checklist: "At least 50% of material thickness" (error) | 5052 page: "Minimum hole size: Equal to material thickness"; 6061 page: "Design holes no smaller than material thickness" (kept as warnings) |
+| SendCutSend minimum hole | engineering specs JSON, per stock (5052 0.125 in.: 0.032 in. = 0.81 mm, about 25 % of t; evaluated, error) and the sheet-cutting guideline "At least 50% of material thickness" (used only where no per-stock figure exists) | 5052 page: "Minimum hole size: Equal to material thickness"; 6061 page: "Design holes no smaller than material thickness" (kept as warnings) |
+| SendCutSend bridge and hole to edge | specs JSON per stock (5052 0.125 in.: bridge 0.048 in., hole to edge 0.038 in.; errors) | tolerances blog: 50 % of t (superseded where a per-stock figure exists) and holes 1 x diameter from an edge (recommendation) |
+| SendCutSend tapped hole to edge, 5052 0.125 in. | specs JSON: 0.038 in. | hole-distance blog example: 0.063 in. (superseded) |
+| SendCutSend specs JSON against the charts | mild steel 0.048 in. radius 0.048 in. (calculator .045 in.); max bend length at 0.250 in.: steel 42 in., 304 36 in. | processing min/max: steel 20 in., 304 18 in.; several minimum part sizes differ from the min/max chart (5052 .187/.313 in., 6061 .625/.750 in., MIC-6 .375/.500 in.) |
 | SendCutSend hole to edge | tolerances blog: bridging "no less than 50% of the material thickness"; holes "at least 1X their diameter from an edge" | 5052 page: "at least 2x thickness between a hole and an edge"; 6061 page: "1.5–2× material thickness away from edges" |
 | SendCutSend flange support | bend deformation: "Approximately 50% of a bend's length must meet the minimum" (error) | bending guidelines: "at least ~50–60% of the bend's length on both sides" (warning at 60 %); 0.187 in. and thicker "may require ... the full bend length" (warning) |
 | SendCutSend 5052 .080 in. bend radius | bending calculator: .038 in. | processing min/max: .045 in. (the older shop profile uses .045 in.) |
@@ -109,8 +114,7 @@ Where a page does not say what a distance is measured from, the data's `measured
 Bend relief width and depth and corner relief distance (relief geometry is not extracted), SendCutSend's flat
 (before-bend) flange length (the page does not say where it is measured from; the formed length is judged), U- and
 C-channel base ratio, OSH Cut's gauging edge, countersink depth, major diameter and distance to other features
-(only the count of countersinks is extracted), SendCutSend's general tapped-hole edge formula (needs the per-material
-figure that was not readable), Protolabs' 2 in. milling depth and Fictiv's pocket depth against tool diameter (feature
+(only the count of countersinks is extracted), SendCutSend's countersink centre to edge, minimum length for acute bends (acute bends are not told apart), Protolabs' 2 in. milling depth and Fictiv's pocket depth against tool diameter (feature
 depths are not extracted), Xometry's corner radius against depth (in the older profile). The flat blank of a part
 with more than one bend is not unfolded, so blank-size rules are not judged for it; a one-bend blank uses the
 supplier's K-factor where published (K = 0.5, marked as an estimate, otherwise).
@@ -119,7 +123,8 @@ supplier's K-factor where published (K = 0.5, marked as an estimate, otherwise).
 
 32 sheet parts (no machined parts). Assigned supplier SendCutSend for all (the design's `assign(sheet="sendcutsend")`).
 
-- **SendCutSend: no errors.** 49 warnings, all against its recommendations: holes smaller than the thickness and
+- **SendCutSend: no errors**, also against the per-stock specs JSON (tightest: `x_belt_bracket` 1.53 mm of web
+  against 0.86 mm minimum bridge and 0.69 mm minimum hole to edge; `tool_plate_rear` 2.75 mm against 1.65 mm). 49 warnings, all against its recommendations: holes smaller than the thickness and
   holes nearer the edge than 1.5 to 2 x t on 6061 and 5052 parts (the material pages' figures; the 50 % guideline
   minimum is met everywhere), holes nearer the edge than their own diameter (18 parts, mostly large motor and
   bearing bores), two slots in `y_plate_left`/`right` nearer than 1.5 x width to the next feature, and two holes in
@@ -150,12 +155,12 @@ the gaps above are where a rule exists but was not measured.
 | Hubs (Protolabs Network) | 7 | bend 4, laser_cut 3 | all (*) | none (ratios and ranges only) |
 | OSH Cut | 63 | bend 2, countersink 1, laser_cut 59, tap 1 | al*, al5052, al6061, stainless304, steel | 24 (0.508 to 19.05 mm) |
 | Protolabs | 70 | bend 50, cnc_milling 7, countersink 1, hardware 2, laser_cut 10 | al*, al5052, al6061, al_mic6, stainless304, steel | none (ratios and ranges only) |
-| SendCutSend | 619 | bend 317, countersink 26, hardware 117, laser_cut 109, tap 50 | al*, al5052, al6061, al_mic6, stainless304, steel | 21 (0.762 to 19.05 mm) |
+| SendCutSend | 1111 | bend 460, countersink 43, hardware 117, laser_cut 397, tap 94 | al*, al5052, al6061, al_mic6, stainless304, steel | 22 (0.762 to 19.05 mm) |
 | Xometry | 22 | bend 7, cnc_milling 4, countersink 2, laser_cut 9 | all (*) | none (ratios and ranges only) |
 
 ### Rules that apply at every thickness (or a published thickness range)
 
-t = sheet thickness, r = inside bend radius, d = hole or slot size. Per-thickness Protolabs rows are shown for 5052; 6061, MIC-6 (aluminium column), mild steel and 304 have their own rows in the data. OSH Cut part-size rows and SendCutSend per-thickness rows are in the tables below or in the data.
+t = sheet thickness, r = inside bend radius, d = hole or slot size. Per-thickness Protolabs rows are shown for 5052; 6061, MIC-6 (aluminium column), mild steel and 304 have their own rows in the data. A general SendCutSend rule marked `yield_to_specific` is reported only as information where the specs JSON gives a figure for that stock.
 
 | rule kind | supplier | material | thickness | limit | severity | rule id |
 |---|---|---|---|---|---|---|
@@ -285,7 +290,7 @@ t = sheet thickness, r = inside bend radius, d = hole or slot size. Per-thicknes
 
 ### SendCutSend bending, per material and thickness
 
-Bending calculator (K, radius, die width, minimum formed flange at 90 degrees, relief depth, corner relief distance) and processing min/max (max bend length, minimum flat blank). Features must be at least half the die width from the bend line (centre of the bend, flat pattern). SendCutSend lists no bending of 6061 or MIC-6.
+Bending calculator (K, radius, die width, minimum formed flange at 90 degrees, relief depth, corner relief distance) and processing min/max (max bend length, minimum flat blank). Features must be at least half the die width from the bend line (centre of the bend, flat pattern). SendCutSend lists no bending of 6061 or MIC-6. The specs JSON repeats these and is kept as a cross-check (`duplicate_of`).
 
 | material | thickness | K | inside radius mm | die width / 2 mm | min formed flange mm | relief depth mm | corner relief mm | max bend length mm | min flat blank mm |
 |---|---|---|---|---|---|---|---|---|---|
@@ -398,3 +403,58 @@ From the processing min/max page. "no row": the material is absent from the coun
 | steel | .313″ | M4 to M10 | no row |
 | steel | .375″ | M6 to M10 | no row |
 | steel | .500″ | M6 to M10 | no row |
+
+### SendCutSend cutting specs per stock (engineering specs JSON)
+
+Evaluated: min hole (hole_min), min bridge (web_min), min hole to edge (hole_edge_web), tapped hole to edge (tap_hole_to_edge), all errors. Countersink centre to edge is recorded, not evaluated.
+
+| material | thickness | min hole mm | min bridge mm | min hole to edge mm | tapped hole to edge mm | countersink centre to edge mm |
+|---|---|---|---|---|---|---|
+| al5052 | 0.040" | 0.381 | 0.508 | 0.508 | 0.508 | - |
+| al5052 | 0.063" | 0.356 | 0.61 | 0.508 | 0.508 | - |
+| al5052 | 0.080" | 0.356 | 0.762 | 0.61 | 0.61 | - |
+| al5052 | 0.090" | 0.457 | 0.864 | 0.686 | 0.686 | - |
+| al5052 | 0.100" | 0.584 | 0.965 | 0.762 | 0.762 | - |
+| al5052 | 0.125" | 0.813 | 1.219 | 0.965 | 0.965 | 6.248 |
+| al5052 | 0.187" | 1.067 | 1.803 | 1.422 | 1.422 | 7.01 |
+| al5052 | 0.250" | 1.448 | 2.413 | 1.905 | 1.905 | 8.585 |
+| al5052 | 0.313" | 1.905 | 3.175 | 2.388 | 2.388 | 8.585 |
+| al5052 | 0.375" | 2.159 | 3.632 | 2.87 | 2.87 | 8.585 |
+| al5052 | 0.500" | 3.175 | 4.826 | 3.81 | 3.81 | 8.585 |
+| al6061 | 0.040" | 0.356 | 0.356 | 0.508 | 0.508 | - |
+| al6061 | 0.063" | 0.356 | 0.559 | 0.508 | 0.508 | - |
+| al6061 | 0.080" | 0.457 | 0.711 | 0.61 | 0.61 | - |
+| al6061 | 0.100" | 0.584 | 0.889 | 0.762 | 0.61 | - |
+| al6061 | 0.125" | 0.813 | 1.118 | 0.965 | 0.965 | 6.248 |
+| al6061 | 0.187" | 1.067 | 1.651 | 1.422 | 1.422 | 7.01 |
+| al6061 | 0.250" | 1.448 | 2.413 | 1.905 | 1.905 | 8.585 |
+| al6061 | 0.313" | 1.905 | 3.175 | 2.388 | 2.388 | 8.585 |
+| al6061 | 0.375" | 2.159 | 3.632 | 2.87 | 2.87 | 8.585 |
+| al6061 | 0.500" | 3.175 | 4.826 | 3.81 | 3.81 | 8.585 |
+| al6061 | 0.625" | 6.35 | 7.62 | 4.775 | 4.775 | 8.611 |
+| al6061 | 0.750" | 7.62 | 9.525 | 5.715 | 5.715 | 8.611 |
+| al_mic6 | 0.250" | 1.524 | 2.413 | 1.372 | 1.905 | 8.585 |
+| al_mic6 | 0.375" | 3.048 | 3.632 | 2.743 | 2.87 | 8.585 |
+| al_mic6 | 0.500" | 3.81 | 4.826 | 3.429 | 3.81 | 8.585 |
+| stainless304 | 0.030" | 0.381 | 0.381 | 0.381 | - | - |
+| stainless304 | 0.048" | 0.483 | 0.483 | 0.508 | - | - |
+| stainless304 | 0.060" | 0.356 | 0.61 | 0.508 | 0.508 | - |
+| stainless304 | 0.074" | 0.432 | 0.762 | 0.559 | 0.559 | - |
+| stainless304 | 0.100" | 0.584 | 1.016 | 0.762 | 0.762 | - |
+| stainless304 | 0.125" | 0.813 | 1.27 | 0.965 | 0.965 | - |
+| stainless304 | 0.187" | 1.067 | 1.397 | 1.397 | 1.397 | - |
+| stainless304 | 0.250" | 1.448 | 1.524 | 1.524 | 1.524 | - |
+| stainless304 | 0.375" | 2.159 | 3.81 | 2.87 | 2.87 | - |
+| stainless304 | 0.500" | 3.175 | 5.08 | 3.81 | 3.81 | - |
+| steel | 0.030" | 0.381 | 0.381 | 0.508 | - | - |
+| steel | 0.048" | 0.457 | 0.61 | 0.508 | - | - |
+| steel | 0.059" | 0.356 | 0.762 | 0.508 | 0.508 | - |
+| steel | 0.074" | 0.432 | 0.813 | 0.559 | 0.559 | - |
+| steel | 0.104" | 0.584 | 0.889 | 0.787 | 0.787 | - |
+| steel | 0.119" | 0.711 | 0.889 | 0.914 | 0.914 | - |
+| steel | 0.135" | 0.813 | 1.397 | 1.041 | 1.041 | - |
+| steel | 0.188" | 1.067 | 1.854 | 1.422 | 1.422 | - |
+| steel | 0.250" | 1.448 | 3.175 | 1.905 | 1.905 | - |
+| steel | 0.313" | 1.905 | 2.997 | 2.388 | 2.388 | - |
+| steel | 0.375" | 2.159 | 4.064 | 2.87 | 2.87 | - |
+| steel | 0.500" | 3.175 | 4.318 | 3.81 | 3.81 | - |
