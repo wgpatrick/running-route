@@ -82,3 +82,18 @@ under terms that are not compatible with the GPL. The MEAN WELL, BIGTREETECH and
 the makers' published downloads and are kept here for internal design use. The three E3D files come from E3D's
 "Roto Reference" model on Printables; the licence shown on that page was NOT read (the host is blocked here): check
 it before distributing them, and treat them as internal-use only until then.
+
+## Supplier CAD folded in for printer_v11 (2026-11-19)
+
+| File | What | Source | Date | Licence | Kind |
+|---|---|---|---|---|---|
+| `inbox/HFS5-2020-500.step` | Misumi HFS5-2020 extrusion, 500 mm (its section is swept to each length for `extrusion_2020(L)`'s display model) | Misumi via 3dfindit / CADENAS, part number HFS5-2020-500, unchanged copy of `staging/supplier_2026-11-19/EXT2020-PROFILE.step` | collected 2026-11-19, copied 2026-11-19 | no licence grant read: the supplier's published download, internal design use | vendor (Misumi) |
+| `inbox/THUMBNUT-DIN466-M4.step` | KIPP K0143.04 knurled thumb nut M4, DIN 466 (`thumb_nut_din466("M4")`) | KIPP via 3dfindit / CADENAS, unchanged copy of `staging/supplier_2026-11-19/THUMBNUT-DIN466-M4.step` | collected 2026-11-19, copied 2026-11-19 | no licence grant read, internal design use | vendor (KIPP) |
+| `inbox/SPRING-DIE-DJ-8X20YCS.step` (+ `.step.json`) | Century Spring DJ-8X20YCS die spring (`die_spring_dj8x20()`), drawn at its 20 mm free length; the sidecar turns it onto Z and shows it compressed to the installed height (display only) | Century Spring, unchanged copy of `staging/supplier_2026-11-18/SPRING-DIE-DJ-8X20YCS.step` | collected 2026-11-18, copied 2026-11-19 | no licence grant read, internal design use | vendor (Century Spring) |
+| `inbox/INLET-C14-SW-FUSE-T8A.step` (+ `.step.json`) | SCHURTER DD11 IEC C14 inlet with switch and fuse (`iec_inlet_c14(8)`); the sidecar places it (flange rear face on Z=0) | SCHURTER, unchanged copy of `staging/supplier_2026-11-18/INLET-C14-SW-FUSE.step` | collected 2026-11-18, copied 2026-11-19 | no licence grant read, internal design use | vendor (SCHURTER) |
+| `inbox/PROBE-OMRON-E2E-X5ME1.step` (+ `.step.json`) | OMRON E2E-X5ME1 (`probe_omron_e2e("E2E-X5ME1")`): the barrel solid only; the file's two nut solids are left out (the design draws the sensor's nuts as their own parts) | OMRON, unchanged copy of `staging/supplier_2026-11-18/PROBE-OMRON-E2E-X5ME1.step` | collected 2026-11-18, copied 2026-11-19 | no licence grant read, internal design use | vendor (OMRON) |
+
+Not used, deliberately: the ServoCity GT2 pulley STEP in the 2026-11-18 batch is for 6 mm belt; the 9 mm (X) and 12 mm (Y)
+pulleys keep their stand-ins. Re-made from supplier drawings (no STEP): Accu HPLW-M3-A2 and HPLW-M4-A2 large washers
+(`staging/supplier_2026-11-19/_DEVIATIONS/`), outside diameter, bore and thickness, the only features a flat washer has.
+No CAD offered: GDSTIME GDB4010 blower (an envelope from the maker's dimension drawing is the model, a stand-in).

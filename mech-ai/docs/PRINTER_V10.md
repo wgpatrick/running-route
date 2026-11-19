@@ -345,7 +345,7 @@ revision because the guideline arrived after the design had been verified. It is
 | No load-bearing printed parts | none (the five printed parts are v9's holder, duct and covers) |
 | No tapping aluminium | none: T-nuts, through-bolts with nuts, PEM nuts where v9 had them, the blocks' and motors' own threads |
 | Washers on slots and soft parts | X switch: washers under head (on the board) and under the land's slot; bed studs as v9 |
-| Named materials | 6061-T6, 5052-H32 (three bent parts: X idler plate, X tension anchor, new Y switch bracket), MIC-6, 304 |
+| Named materials | 6061-T6, 5052-H32, MIC-6, 304. Bent parts: eight (corrected 2026-11-19; this row first said three): in 5052-H32 the X belt bracket (2.286), X idler plate, X tension anchor, two Y tension anchors (3.175) and the new Y switch bracket (2.286); in 304 the two Y motor mounts (1.88, bent fin) |
 | SendCutSend gauges | 1.6, 2.286, 3.175, 4.75, 6.35 and 12.7 mm, all stocked for their alloys in the shop profile |
 | Bends only in 5052 | yes |
 | Conflict | **holes under the sheet's thickness** in the nut plates (5.5 and 4.8 mm in 6.35) and the bed plate (above); **countersinks**, three (v9 four); **a normal washer on a slot** where a large one does not fit (X switch) |

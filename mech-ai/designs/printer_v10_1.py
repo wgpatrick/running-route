@@ -1485,7 +1485,7 @@ def build() -> Design:
     side = lambda x, y, z, sg: Location(Plane(origin=(x, y, z), x_dir=(0, 1, 0), z_dir=(sg, 0, 0)))
     for sg, tag, n in ((1, "", "right"), (-1, "_l", "left")):
         rail = f"frame_top_{n}"
-        # motor mount: 5052 3.175 mm, bent fin at its front edge (pushed by the jack screw)
+        # motor mount: 304 stainless 1.88 mm (MT_Y; this comment said 5052 3.175 until 2026-11-19), bent fin at its front edge (pushed by the jack screw)
         mmb = bent_L(MT_Y, R_SS19, LUG, 55.0, 20.0)
         mml = Location(Plane(origin=(sg * xf, 125.0, FZ), x_dir=(0, 1, 0), z_dir=(sg, 0, 0)))
         xa_, xb_ = sorted((sg * xf, sg * (xf + MT_Y)))
