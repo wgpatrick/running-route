@@ -97,3 +97,12 @@ Not used, deliberately: the ServoCity GT2 pulley STEP in the 2026-11-18 batch is
 pulleys keep their stand-ins. Re-made from supplier drawings (no STEP): Accu HPLW-M3-A2 and HPLW-M4-A2 large washers
 (`staging/supplier_2026-11-19/_DEVIATIONS/`), outside diameter, bore and thickness, the only features a flat washer has.
 No CAD offered: GDSTIME GDB4010 blower (an envelope from the maker's dimension drawing is the model, a stand-in).
+
+## Distributor-linked supplier CAD (2026-11-19)
+
+Links from Digi-Key's product media (API v4), downloaded from the maker's own site.
+
+| file | part | origin | commit / retrieved | licence | made by |
+|---|---|---|---|---|---|
+| `inbox/BFB0524HH.step` | Delta BFB0524HH 50x50x15 24 V centrifugal blower (part-cooling, from v11) | https://www.delta-fan.com/Download/3D/BFB0524HH.stp (Digi-Key 603-1116-ND media "CAD Models"), unchanged; 2 solids, bbox 52.59 x 15.34 x 51.42 mm; spec sheet `vendor_docs/delta_BFB0524HH_spec.pdf` | retrieved 2026-11-19 | no licence grant: the maker's published download, internal design use | vendor (Delta Electronics) |
+| (pending) `inbox/E2B-M12KS04-WP-C1.step` | Omron E2B-M12KS04-WP-C1 2M inductive probe (from v11) | https://download.ia.omron.com/download/zip/ST/OEE/E2B_M12KS04_WP_C1/ (Digi-Key Z4126-ND media) refused automated download (HTTP 403 from the site's CDN); to be fetched in a browser. Datasheet `vendor_docs/omron_E2B_datasheet_en.pdf` | 2026-11-19 | | vendor (Omron) |
