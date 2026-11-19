@@ -1,0 +1,3 @@
+{"rot": [180, 0, 0], "pos": [0, 13.05, -0.35],
+ "source": "SCHURTER's supplier STEP of the DD11 inlet (supplier batch 2026-11-18, INLET-C14-SW-FUSE.step)",
+ "note": "supplier file turned 180 degrees about X: flange rear face on Z=0, front on +Z, body along -Z; measured by sections: flange 65 x 30.5 x 2.5, front 3.2 proud, body 33 deep with its terminals (data sheet body 30)"}

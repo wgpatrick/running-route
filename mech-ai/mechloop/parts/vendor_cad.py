@@ -311,17 +311,30 @@ def inbox_override(names: list[str], reference):
         side = json.loads(sp.read_text())
 
     def build():
-        raw = solids_of(load_step(p))
+        full = load_step(p)
+        if side.get("keep") == "largest":       # the file carries extra solids the part leaves out (a sensor's loose nuts)
+            big = max(full.solids(), key=lambda so: so.volume)
+            raw = solids_of(full, keep=lambda so, bb: so.is_same(big))
+        else:
+            raw = solids_of(full)
         if "rot" in side or "pos" in side:
-            return frame(raw, tuple(side.get("rot", (0, 0, 0))), tuple(side.get("pos", (0, 0, 0))))
-        return auto_align(raw, reference)
+            out = frame(raw, tuple(side.get("rot", (0, 0, 0))), tuple(side.get("pos", (0, 0, 0))))
+        else:
+            out = auto_align(raw, reference)
+        if side.get("fit_z_to_reference"):      # a spring drawn at free length, shown at its installed height (display only)
+            from build123d import Pos, scale
+
+            rb_, ob = reference.bounding_box(), out.bounding_box()
+            k = (rb_.max.Z - rb_.min.Z) / max(ob.max.Z - ob.min.Z, 1e-9)
+            out = bake(Pos(0, 0, rb_.min.Z) * scale(Pos(0, 0, -ob.min.Z) * out, (1.0, 1.0, k)))
+        return out
 
     rb = bbox6(reference).round(3).tolist()
     shape = cached(f"inbox:{p.name}:{json.dumps(side, sort_keys=True)}:{rb}", [p], build)
     rel = f"vendor_cad/{p.relative_to(root())}"
     return shape, {"kind": side.get("kind", "vendor CAD"), "file": rel,
                    "source": side.get("source", f"hand download: {rel}"),
-                   "note": "hand-downloaded file" + ("" if ("rot" in side or "pos" in side) else ", aligned automatically")}
+                   "note": side.get("note", "hand-downloaded file" + ("" if ("rot" in side or "pos" in side) else ", aligned automatically"))}
 
 
 # ------------------------------------------------------------------ measuring a model

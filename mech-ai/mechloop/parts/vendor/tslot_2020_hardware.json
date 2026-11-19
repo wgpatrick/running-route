@@ -18,7 +18,12 @@
    "centre_groove_depth_mm": 6.3,
    "centre_groove": "120 degree V, 0.3 mm deep ('Slot Bottom Details', HFS and CAF series)",
    "source": "MISUMI USA 2019 catalogue (us.misumi-ec.com/pdf/fa/2019/) p.2686, 'Slot Details (Common to All Series)': 6 (opening), 2 (lip), 4 (lip underside to slot floor), 12 (T slot width); 'Slot Bottom Details': 120 degrees, 0.3. The HFS5-2020 section on the same page: 20 square, 4-R1, centre hole 4.2. The community DXF in vendor_docs/ agrees with every one of these",
-   "status": "READ from the maker's catalogue drawing (fetched 2026-11-19, copy in vendor_docs/). No tolerances are given on the drawing"
+   "status": "READ from the maker's catalogue drawing (fetched 2026-11-19, copy in vendor_docs/). No tolerances are given on the drawing",
+   "cavity_full_width_below_lip_mm": 0.939,
+   "cavity_wall_taper_deg": 45.0,
+   "floor_width_mm": 5.878,
+   "section_area_mm2": 182.13,
+   "cavity_shape_source": "Misumi HFS5-2020-500 STEP (3dfindit / CADENAS, supplier batch 2026-11-19, vendor_cad/inbox/HFS5-2020.step), section at mid-length measured: the 12 mm cavity holds for 0.939 mm under the lips, then its walls run in at 45 degrees to a 5.878 mm floor (width at depth d below the lips: 12 - 2 (d - 0.939)); area 182.13 mm2 (catalogue 183). Every other figure agrees with the catalogue drawing"
   },
   "alternative": {
    "profile": "20 x 20 B-type slot 6 (Bosch-compatible), as drawn in the community STEP that is the extrusion's display model",

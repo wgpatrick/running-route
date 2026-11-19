@@ -240,6 +240,10 @@ def iec_inlet_c14(fuse_a: float = 6.3) -> Stock:
                                              "and each hole. That web is the maker's own; it meets a one-thickness spacing rule only "
                                              "in sheet of 2.5 mm or thinner",
                              **_ports_to_interfaces(ports)}, cost_usd=4.0,
+                 # v11: SCHURTER's STEP (vendor_cad/inbox/INLET-C14-SW-FUSE-T8A.step) is the moulding with its pockets and its
+                 # terminals, 3.3 mm deeper than the data sheet's 30 mm body
+                 model={"tolerance": {"volume_ratio": (0.3, 2.6)},
+                        "protrusions": {"zmin": (3.5, "the terminals at the rear (supplier STEP), beyond the data sheet's 30 mm body")}},
                  source=_source("schurter_dd11", "partial", "DD11, screw version A (order number not pinned)",
                                 unverified=("order number", "terminal positions", "mass_kg"),
                                 note="ratings, cut-out, screw pitch, flange, depth and terminal size are SCHURTER's DD11 data sheet. The "

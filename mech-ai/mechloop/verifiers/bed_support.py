@@ -184,6 +184,11 @@ def nut_seating(design: Design, lay: dict) -> dict:
     said = (j.drive or {}).get("nut_seating")
     floats = any(ad.kind == "float" and ad.joint in (None, j.name) for ad in design.adjustments)
     kind = said if said in ("gravity", "captive") else ("gravity" if floats else "captive")
+    gap = (j.drive or {}).get("nut_reverse_gap_mm")
+    if kind == "captive" and gap is not None:      # declared: e.g. an anti-backlash nut held with a stated play
+        return {"kind": kind, "basis": "declared (drive['nut_seating'])" if said else "no floating nut declared: taken as fixed both ways",
+                "reverse_gap_mm": float(gap),
+                "reverse_gap_note": (j.drive or {}).get("nut_reverse_gap_basis", "declared (drive['nut_reverse_gap_mm'])")}
     return {"kind": kind, "basis": ("declared (drive['nut_seating'])" if said in ("gravity", "captive") else
                                     "a floating nut is declared (Adjustment 'float'): taken as seated by the load only" if floats else
                                     "no floating nut declared: taken as fixed both ways"),

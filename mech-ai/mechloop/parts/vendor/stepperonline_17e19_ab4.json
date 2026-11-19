@@ -15,34 +15,137 @@
  "properties_file": "vendor_cad/staging/17E19S1684AB4-330RA_properties.txt",
  "used_by_catalog": true,
  "values": {
-  "motor_type": {"value": "External (Trapezoidal) linear stepper", "source": "product page"},
-  "step_angle_deg": {"value": 1.8, "source": "product page"},
-  "holding_torque_nm": {"value": 0.44, "source": "product page: 0.44Nm(62.31oz.in); spec table 44 Ncm"},
-  "rated_current_a": {"value": 1.68, "source": "product page"},
-  "phase_resistance_ohm": {"value": 1.65, "source": "product page"},
-  "phase_inductance_mh": {"value": 2.8, "tol": "+/-20 % at 1 kHz", "source": "product page"},
-  "frame_mm": {"value": 42.0, "source": "product page: Frame Size 42 x 42mm (the 42.3 maximum is the 17E19S1684MB4-300RS drawing's, same body)"},
-  "body_length_mm": {"value": 48.0, "source": "product page"},
-  "screw": {"thread": "Tr8x2", "diameter_mm": 8.0, "lead_mm": 2.0, "length_mm": 330.0, "travel_per_full_step_mm": 0.01,
-            "source": "product page: 'integrated with 330mm Tr8x2 threaded rod'; Lead/Revolution 2mm, Lead/Step 0.01mm, Lead Screw Length 330mm"},
-  "nut": {"value": "anti-backlash screw nut supplied on the screw", "dimensions": null,
-          "status": "dimensions, material and preload not on the product page; the datasheet PDF was not fetched"},
-  "leads": {"value": 4, "colours": "A+ red, A- grey, B+ yellow, B- green", "source": "product page"},
-  "cable_length_mm": {"value": 500, "source": "product page"},
-  "ip_rating": {"value": "IP40", "source": "product page spec table"},
-  "torque_curve": {"value": null, "status": "product page: 'Has Torque/Thrust Curve? No'"},
-  "mass_kg": {"value": 0.35, "status": "NOT on the AB4 page; 350 g is the predecessor AB2-330RA's page figure (same motor and screw). Unverified for the AB4"},
-  "rotor_inertia_gcm2": {"value": null, "status": "not on the product page"},
-  "axial_load_rating_n": {"value": null, "status": "NOT STATED on the product page: no thrust rating, no thrust curve"},
-  "efficiency": {"value": null, "status": "not stated"},
-  "lead_accuracy": {"value": null, "status": "not stated"},
-  "price_usd": {"value": 46.30, "breaks": {"5": 44.39, "10": 42.63, "50": 41.01, "100": 39.50}, "source": "product page 2026-11-16 (China warehouse; 'Backorder' at fetch time)"}
+  "motor_type": {
+   "value": "External (Trapezoidal) linear stepper",
+   "source": "product page"
+  },
+  "step_angle_deg": {
+   "value": 1.8,
+   "source": "product page"
+  },
+  "holding_torque_nm": {
+   "value": 0.44,
+   "source": "product page: 0.44Nm(62.31oz.in); spec table 44 Ncm"
+  },
+  "rated_current_a": {
+   "value": 1.68,
+   "source": "product page"
+  },
+  "phase_resistance_ohm": {
+   "value": 1.65,
+   "source": "product page"
+  },
+  "phase_inductance_mh": {
+   "value": 2.8,
+   "tol": "+/-20 % at 1 kHz",
+   "source": "product page"
+  },
+  "frame_mm": {
+   "value": 42.0,
+   "source": "product page: Frame Size 42 x 42mm (the 42.3 maximum is the 17E19S1684MB4-300RS drawing's, same body)"
+  },
+  "body_length_mm": {
+   "value": 48.0,
+   "source": "product page"
+  },
+  "screw": {
+   "thread": "Tr8x2",
+   "diameter_mm": 8.0,
+   "lead_mm": 2.0,
+   "length_mm": 330.0,
+   "travel_per_full_step_mm": 0.01,
+   "source": "product page: 'integrated with 330mm Tr8x2 threaded rod'; Lead/Revolution 2mm, Lead/Step 0.01mm, Lead Screw Length 330mm"
+  },
+  "nut": {
+   "value": "anti-backlash screw nut supplied on the screw",
+   "dimensions": null,
+   "status": "dimensions, material and preload not on the product page; the datasheet PDF was not fetched",
+   "standin_2026_11_19": {
+    "what": "POM (acetal) anti-backlash nut with a square flange, as in every product photograph of the 17E19S1684AB2/AB4-330RA (page re-read 2026-11-19: no nut dimensions on the page, the datasheet PDF host still refused)",
+    "flange_mm": [
+     23.0,
+     23.0,
+     6.0
+    ],
+    "barrel_dia_mm": 12.7,
+    "barrel_length_below_flange_mm": 26.0,
+    "holes": {
+     "count": 4,
+     "dia_mm": 3.4,
+     "square_mm": 16.0
+    },
+    "material": "POM (acetal), black; a coil spring and a second threaded half-nut inside the barrel (photographs)",
+    "basis": "ESTIMATED from the maker's product photographs (17E19S1684AB2-330RA-1000x1000h.jpg and 17LS19-1684E-330Y 1..8 on omc-stepperonline.com), scaled to the 42 mm motor frame in the same photograph, about +/-1.5 mm. A labelled STAND-IN, not a drawing",
+    "backlash_mm": {
+     "value": 0.0,
+     "status": "anti-backlash (spring-preloaded split nut): taken as none; ASSUMED"
+    }
+   }
+  },
+  "leads": {
+   "value": 4,
+   "colours": "A+ red, A- grey, B+ yellow, B- green",
+   "source": "product page"
+  },
+  "cable_length_mm": {
+   "value": 500,
+   "source": "product page"
+  },
+  "ip_rating": {
+   "value": "IP40",
+   "source": "product page spec table"
+  },
+  "torque_curve": {
+   "value": null,
+   "status": "product page: 'Has Torque/Thrust Curve? No'"
+  },
+  "mass_kg": {
+   "value": 0.35,
+   "status": "NOT on the AB4 page; 350 g is the predecessor AB2-330RA's page figure (same motor and screw). Unverified for the AB4"
+  },
+  "rotor_inertia_gcm2": {
+   "value": null,
+   "status": "not on the product page"
+  },
+  "axial_load_rating_n": {
+   "value": null,
+   "status": "NOT STATED on the product page: no thrust rating, no thrust curve"
+  },
+  "efficiency": {
+   "value": null,
+   "status": "not stated"
+  },
+  "lead_accuracy": {
+   "value": null,
+   "status": "not stated"
+  },
+  "price_usd": {
+   "value": 46.3,
+   "breaks": {
+    "5": 44.39,
+    "10": 42.63,
+    "50": 41.01,
+    "100": 39.5
+   },
+   "source": "product page 2026-11-16 (China warehouse; 'Backorder' at fetch time)"
+  }
  },
  "assumed_from_17e19s1684mb4": {
   "note": "the same 48 mm-stack, 1.68 A, 0.44 N.m motor body as the catalogued 17E19S1684MB4-300RS (mechloop/parts/vendor/stepperonline_17e19.json). NOT stated for the AB4; used where the AB4 page is silent, and listed as unverified on the part",
-  "rotor_inertia_gcm2": 68.0, "frame_mm_max": 42.3, "hole_square_mm": 31.0, "thread_depth_min_mm": 4.5, "pilot": {"dia_mm": 22.0, "height_mm": 2.0},
+  "rotor_inertia_gcm2": 68.0,
+  "frame_mm_max": 42.3,
+  "hole_square_mm": 31.0,
+  "thread_depth_min_mm": 4.5,
+  "pilot": {
+   "dia_mm": 22.0,
+   "height_mm": 2.0
+  },
   "screw_above_mounting_face_for_nominal": "298 of a 300 mm nominal screw (measured in that model's STEP): 328 above the face taken for the 330 mm screw",
-  "connector": {"stands_out": 21.4, "width": 16.0, "height_from_rear": 11.0}
+  "connector": {
+   "stands_out": 21.4,
+   "width": 16.0,
+   "height_from_rear": 11.0
+  }
  },
  "self_locking": {
   "derived": true,

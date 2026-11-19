@@ -32,6 +32,8 @@ def slot_2020() -> dict:
     u, a = v["used"], v["alternative"]
     out = {"opening": u["opening_mm"], "lip": u["lip_thickness_mm"], "depth": u["depth_mm"], "cavity_width": u["cavity_width_mm"],
            "profile": u["profile"], "source": u["source"], "status": u["status"],
+           # v11: the cavity's real shape (Misumi's STEP): full width only just under the lips, then 45 degree walls
+           "cavity_full_depth": u.get("cavity_full_width_below_lip_mm"), "floor_width": u.get("floor_width_mm"),
            "sim_depth": SIM_SLOT_DEPTH, "sim_width": SIM_SLOT_WIDTH,
            # other slot + T-nut geometries on file, each judged and reported beside the one used (data, not constants):
            # the B-type community section, and McMaster's measured 5 mm-slot rail with its own T-nuts

@@ -1,0 +1,13 @@
+{
+ "retrieved": "2026-11-19",
+ "family": "ISO 7380-2 hexagon socket button head screws with collar (flanged button head)",
+ "vendor": "standard (ISO 7380-2); figures from distributors' listings",
+ "source_level": "secondary: web-search result snippets of distributors' listings (Wuerth, Accu, Kramp); the standard was not read",
+ "source_url": "https://accu-components.com/us/flanged-button-screws/8614-SSBF-M5-10-A2",
+ "values": {
+  "M5": {"collar_dia_dc": 11.8, "head_height_k": 2.75, "button_dia_dk": 9.5, "collar_height": 1.0, "hex_s": 3.0,
+         "basis": "dc 11.8 and k 2.75: two retailer listings (snippets); dk 9.5: Engineers Edge ISO 7380 table (snippet); hex 3: listings (HS3). Collar tolerance +0/-0.7 on one listing"},
+  "M4": {"collar_dia_dc": 9.4, "head_height_k": 2.2, "button_dia_dk": 7.6, "collar_height": 0.8, "hex_s": 2.5,
+         "basis": "recalled; McMaster table snippet shows 9.40 / 2.20 for a size (taken as M4). UNVERIFIED"}
+ }
+}

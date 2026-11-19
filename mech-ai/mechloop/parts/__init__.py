@@ -284,9 +284,12 @@ def extrusion_2020(length: float) -> Stock:
                  material="al6061", detail=detail, model=model,
                  ratings={"Ixx_mm4": 6900.0, "E_mpa": 68900.0, "approximate": True},
                  interfaces={"slot_width": 6.2, "end_tap": "M5", "slot": slot_2020()}, cost_usd=2 + 0.012 * length,
-                 source=_source("misumi_hfs5_2020", "proxy", "HFS5-2020",
-                                note="typical, unverified: Misumi's catalogue was unreachable. A community DXF of the profile "
-                                     "integrates to Ixx 7419 mm^4, 182 mm^2, slot 6.0 (recorded in the file, not applied)."))
+                 source=_source("misumi_hfs5_2020", "partial", "Misumi HFS5-2020",
+                                unverified=("mass (0.45 kg/m in the simulation; Misumi 0.5 kg/m)", "Ixx (6900 in the simulation; Misumi 7420)"),
+                                note="Misumi HFS5-2020, slot 6, sold cut to length by Misumi (the only purchased part bought cut). Section "
+                                     "from Misumi's catalogue (p.2686: 183 mm^2, 0.5 kg/m, Ix 7420 mm^4) and Misumi's STEP (182.13 mm^2; "
+                                     "the display model). The simulation solid's mass and Ixx are the older typical figures, kept "
+                                     "so older designs' results do not move."))
 
 
 @part
@@ -644,6 +647,7 @@ def psu_24v(watts: int = 150) -> Stock:
 # Head, socket and nut dimensions agree with the ISO 4762 / ISO 4032 tables recorded in vendor/iso_fasteners.json
 # (tests/test_vendor.py checks this). Clearance holes, tap drills and proof loads are typical values, unverified.
 SCREW = {  # size: (thread d, head d, head h, hex key, close clearance hole, tap drill, proof load N class 12.9)
+    "M2": (2.0, 3.8, 2.0, 1.5, 2.2, 1.6, 2030),   # v11 (blower screws): ISO 4762 M2, recalled
     "M2.5": (2.5, 4.5, 2.5, 2.0, 2.7, 2.05, 3290), "M3": (3.0, 5.5, 3.0, 2.5, 3.4, 2.5, 4880),
     "M4": (4.0, 7.0, 4.0, 3.0, 4.5, 3.3, 8520), "M5": (5.0, 8.5, 5.0, 4.0, 5.5, 4.2, 13800),
     "M6": (6.0, 10.0, 6.0, 5.0, 6.6, 5.0, 19500), "M8": (8.0, 13.0, 8.0, 6.0, 9.0, 6.8, 35500)}
@@ -725,7 +729,7 @@ def fhcs(size: str = "M5", length: float = 16.0) -> Stock:
                                 note="countersunk head dimensions recalled from ISO 10642, not fetched"))
 
 
-NUT = {"M2.5": (5.0, 2.0), "M3": (5.5, 2.4), "M4": (7.0, 3.2), "M5": (8.0, 4.7), "M6": (10.0, 5.2), "M8": (13.0, 6.8)}
+NUT = {"M2": (4.0, 1.6), "M2.5": (5.0, 2.0), "M3": (5.5, 2.4), "M4": (7.0, 3.2), "M5": (8.0, 4.7), "M6": (10.0, 5.2), "M8": (13.0, 6.8)}
 
 
 NUT_DIN934 = {"M5": 4.0}      # where DIN 934 (what McMaster's 90591A series is) differs in height from ISO 4032
@@ -832,7 +836,7 @@ def clearance_hole(size: str) -> float:
 # docs/DESIGN_GUIDELINES.md, Fasteners and threads): vertical holes (axis along the print direction) print undersize, so
 # they are drawn medium + 0.2; holes whose axis lies in the build plane are drawn medium + 0.3 with a teardrop or flat
 # top. Starting values: calibrate on the printer with a coupon (M3 holes 3.4 to 3.8 in 0.1 steps). Practice rule DG-05.
-ISO273_MEDIUM = {"M2.5": 2.9, "M3": 3.4, "M4": 4.5, "M5": 5.5, "M6": 6.6, "M8": 9.0}
+ISO273_MEDIUM = {"M2": 2.4, "M2.5": 2.9, "M3": 3.4, "M4": 4.5, "M5": 5.5, "M6": 6.6, "M8": 9.0}
 FDM_HOLE_ALLOWANCE = {"vertical": 0.2, "in_plane": 0.3}
 
 
@@ -890,7 +894,12 @@ def add_screw(design: Design, name: str, size: str, length: float, at, direction
     FST-070), recorded in meta["locking"]; "adhesive" adds a THREADLOCKER line to the BOM."""
     # head="countersunk": an ISO 10642 screw; `at` is then the surface its head lies flush in (the countersink's mouth),
     # not the underside of a head. The washer / seat check does not judge countersunk heads (bearing.py).
-    st = fhcs(size, length) if head == "countersunk" else shcs(size, length)
+    if head == "flanged_button":        # v11: ISO 7380-2, the collar bears (covers a slot without a washer)
+        from .batch10 import bhcs_flanged
+
+        st = bhcs_flanged(size, length)
+    else:
+        st = fhcs(size, length) if head == "countersunk" else shcs(size, length)
     dvec = Vector(*direction).normalized()
     washer_at = None
     if washer:
@@ -1069,7 +1078,7 @@ def add_corner_bracket(design: Design, name: str, a: str, b: str, corner, u, v, 
             foot = origin + along * off
             add_screw(design, name + s_sfx, sl["size"], sl["length"], at=tuple(foot + out * LEG_T), direction=tuple(-out), body=body,
                       threads_into=part_name, tnut=True, clamps=(name,), washer=bool(sl["washers"]), washers=max(1, int(sl["washers"])),
-                      locking=sl.get("locking"))
+                      locking=sl.get("locking"), head=sl.get("head", "socket"))
             design.get(name + s_sfx).meta["bracket_leg_of"] = name
             design.join(name, part_name, "m5_tnut")
             continue
@@ -1118,3 +1127,4 @@ from .batch6 import (fan_cg3010u24, leadscrew_motor_17e19, leadscrew_nut_17e19, 
 from .batch7 import leadscrew_motor_17e19_ab4, leadscrew_screw_17e19_ab4, octopus_v11  # noqa: E402,F401
 from .batch8 import add_thumb_nut, die_spring_dj8x20, print_sheet_pei257, thumb_nut_din466  # noqa: E402,F401
 from .batch9 import print_sheet_pei235  # noqa: E402,F401
+from .batch10 import bhcs_flanged, blower_gdb4010, leadscrew_nut_pom_ab4, print_sheet_pei220  # noqa: E402,F401

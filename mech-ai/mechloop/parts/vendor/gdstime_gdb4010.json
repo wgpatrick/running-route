@@ -1,0 +1,25 @@
+{
+ "retrieved": "2026-11-19",
+ "family": "GDSTIME GDB4010 A-type 40 x 40 x 10 mm radial blower, 24 V",
+ "vendor": "Shenzhen Gdstime Technology Co., Ltd.",
+ "source_level": "vendor data sheet (two spec images converted to a 2-page PDF by the owner's supplier collector), read by eye",
+ "source_url": "https://www.gdstime.com/list_45/138.html",
+ "document_file": "vendor_cad/staging/supplier_2026-11-18/BLOWER-4010-24V.pdf",
+ "values": {
+  "size_mm": [40.0, 40.0, 10.0],
+  "size_tol_mm": 0.5,
+  "mount_holes": {"pitch_mm": 35.0, "dia_mm": 2.2, "note": "4 holes on a 35 +/-0.5 mm square, dia 2.2 +/-0.1 (drawing, page 2)"},
+  "outlet_mm": {"length": 28.0, "width": 7.44, "note": "side view: grille 28 +/-0.5 long; 7.44 and 3.32 across the 10 mm thickness. Taken as a 28 x 7.44 opening centred on one 40 mm edge; the offset across the thickness is NOT clear from the drawing"},
+  "rated_voltage_v": 24.0,
+  "rated_current_a": 0.08,
+  "speed_rpm": 9500,
+  "max_static_pressure_inh2o": 0.52,
+  "noise_dba": 35,
+  "mass_g": 12,
+  "frame_material": "PBT, UL94V-0",
+  "bearing": {"value": null, "status": "the sheet lists 'Ball, Sleeve, Hydraulic, other' for the family; which one this 24 V part has is NOT stated (a reseller says sleeve). UNVERIFIED"},
+  "operating_temp_c": [-20, 70],
+  "pq_curve_9500rpm_cfm_inh2o": {"points": [[0.0, 0.52], [0.5, 0.45], [1.0, 0.37], [1.5, 0.28], [2.0, 0.195], [2.5, 0.12], [2.8, 0.07], [3.05, 0.0]],
+                                 "basis": "read by eye from the maker's P-Q chart (page 2, 9500 rpm curve), about +/-0.02 inH2O and +/-0.05 CFM"}
+ }
+}

@@ -100,7 +100,7 @@ def _not_free_standing(design: Design, body: str, groups: list, r, what: str) ->
     units = {k: set(v) for k, v in (getattr(design, "free_standing", None) or {}).items()}
     if not units:
         return groups[1:]
-    hardware = {f.name for f in design.fasteners} | {c.name for c in design.components if (c.sku or "").startswith(("SHCS", "NUT"))}
+    hardware = {f.name for f in design.fasteners} | {c.name for c in design.components if (c.sku or "").startswith(("SHCS", "BHCS", "NUT"))}
     known = {c.name for c in design.components}
     if r is not None:
         for k, v in units.items():
@@ -370,6 +370,11 @@ def _tslot_screws(design: Design, r: VerifierResult) -> dict:
             problems.append(f"neck {ti.get('neck_width')} mm wide: does not stand in the {slot['opening']:g} mm opening")
         if float(ti.get("span", 0.0)) > slot["cavity_width"] + 1e-6:
             problems.append(f"{ti.get('span')} mm across: wider than the {slot['cavity_width']:g} mm cavity")
+        if slot.get("cavity_full_depth") is not None and float(ti.get("span", 0.0)) > 0:
+            # the cavity narrows at 45 degrees below its full-width band (Misumi's STEP): the body's lower edge must fit there
+            w_low = slot["cavity_width"] - 2.0 * max(0.0, body_h - float(slot["cavity_full_depth"]))
+            if float(ti.get("span", 0.0)) > w_low + 1e-6:
+                problems.append(f"body {ti.get('span')} mm wide at {body_h:g} mm under the lips: the cavity's tapered walls leave {w_low:.2f} mm there")
         if slot["lip"] + body_h > slot["depth"] + 1e-6:
             problems.append(f"body {body_h:g} mm under a {slot['lip']:g} mm lip: deeper than the {slot['depth']:g} mm slot")
         if float(ti.get("neck", 0.0)) > slot["lip"] + 1e-6:
@@ -506,7 +511,7 @@ def _coupler_insertion(design: Design, r: VerifierResult) -> dict:
             probe = (Pos(0, 0, L / 2) * Cylinder(bore / 2 - 0.05, L)).moved(loc)
             best = None
             for other in design.components:
-                if other is c or other.body != c.body or (other.sku or "").startswith(("SHCS", "NUT")):
+                if other is c or other.body != c.body or (other.sku or "").startswith(("SHCS", "BHCS", "NUT")):
                     continue
                 if not bboxes_overlap(other.shape, probe, 0.0):
                     continue

@@ -1,0 +1,18 @@
+{
+ "retrieved": "2026-11-19",
+ "family": "220 x 220 mm PEI spring-steel print sheet with magnetic base (third-party sellers)",
+ "vendor": "various resellers (no maker identified)",
+ "source_level": "secondary: web-search result snippets of resellers' listings, nothing fetched",
+ "source_url": "https://www.fruugo.ca/double-sided-flexible-pei-spring-steel-plate-with-magnetic-base-for-3d-printer-220-x-220-mm/p-413599123-874087483",
+ "other_listings": ["https://www.3dea.co.nz/shop/product/double-sided-pei-powder-coated-spring-steel-magnet-build-surface/",
+                    "https://www.newegg.com/p/298-00D4-002W5", "https://www.desertcart.nl/products/145939121"],
+ "values": {
+  "size_mm": [220.0, 220.0],
+  "steel_thickness_mm": {"value": 0.4, "basis": "3DEA and a Newegg listing: 0.4 mm spring steel (Newegg also offers 0.5)"},
+  "pei_layer_mm": {"value": 0.15, "basis": "3DEA listing (textured PEI powder coat or film: listings differ)"},
+  "max_temp_c": {"value": 130, "basis": "3DEA listing: 130 degC continuous for the sheet; the magnetic base's own rating is NOT given on any listing read"},
+  "magnetic_base_thickness_mm": {"value": null, "status": "not published on any listing read"},
+  "price_usd": {"value": 45.95, "basis": "Fruugo listing (kit: sheet + magnetic base)"}
+ },
+ "note": "Creality sells 235 x 235 (Ender-3); no Creality 220 x 220 sheet was found. The 220 mm size is a common third-party size (Anet A8 / Ender-2-class beds)."
+}

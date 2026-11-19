@@ -136,6 +136,28 @@ def mgn12h(v: dict):
 def extrusion_2020(length: float):
     """Section of a community 20x20 slot-6 profile swept to length. File: along Y, section in XZ.
     Part: file Y -> X, file X -> Y, file Z -> Z (the section has four-fold symmetry)."""
+    m = vc.find_file("HFS5-2020-500", inbox_only=True)
+    if m is not None:      # v11: Misumi's own STEP (HFS5-2020-500, 3dfindit / CADENAS): its section swept to the length
+        rec = _rec("vendor CAD", "inbox/HFS5-2020-500.step",
+                   f"Misumi HFS5-2020 (supplier STEP of HFS5-2020-500 from 3dfindit / CADENAS): its section swept to {length:g} mm "
+                   "(Misumi sells the profile cut to length)",
+                   tolerance={"volume_ratio": (0.6, 1.7)},
+                   notes=["Misumi section: area 182.13 mm^2 (catalogue 183), slot opening 6.0, lip 2.0, 12 mm cavity for 0.939 mm "
+                          "then 45 degree walls to a 5.878 floor (simulation solid: 6.2 mm wide, 5 mm deep plain slots)"])
+
+        def build_m():
+            from build123d import Box, Pos, Rot, extrude
+
+            s_ = vc.solids_of(vc.load_step(m))
+            bb = s_.bounding_box()
+            zc_ = (bb.min.Z + bb.max.Z) / 2
+            thin = s_ & (Pos((bb.min.X + bb.max.X) / 2, (bb.min.Y + bb.max.Y) / 2, zc_) * Box(40, 40, 0.02))
+            face = max((q for q in thin.faces() if abs(abs(tuple(q.normal_at())[2]) - 1) < 1e-6), key=lambda q: q.center().Z)
+            c = face.center()
+            f0 = Pos(-(bb.min.X + bb.max.X) / 2, -(bb.min.Y + bb.max.Y) / 2, -c.Z) * face
+            return vc.bake(Rot(0, 90, 0) * (Pos(0, 0, -length / 2) * extrude(f0, length)))
+
+        return vc.cached(f"extrusion_2020_misumi:{length}", [m], build_m), rec
     f = _file("profile_2020_slot6")
     rec = _rec("community CAD", "profile_2020_slot6.step",
                f"{FCL}: Profile-20x20-B-Type_Slot6_A.step: its section swept to {length:g} mm",
@@ -376,7 +398,7 @@ def skr_mini_e3_v3():
 
 
 # ------------------------------------------------------------------ fasteners
-_ISO = {"M2.5": "M2.5-0.45", "M3": "M3-0.5", "M4": "M4-0.7", "M5": "M5-0.8", "M6": "M6-1", "M8": "M8-1.25"}
+_ISO = {"M2": "M2-0.4", "M2.5": "M2.5-0.45", "M3": "M3-0.5", "M4": "M4-0.7", "M5": "M5-0.8", "M6": "M6-1", "M8": "M8-1.25"}
 
 
 def shcs(size: str, length: float):

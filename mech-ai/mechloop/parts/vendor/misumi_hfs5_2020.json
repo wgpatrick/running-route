@@ -1,5 +1,5 @@
 {
- "retrieved": "2026-11-14",
+ "retrieved": "2026-11-19",
  "family": "20 x 20 T-slot aluminium extrusion, slot 6 (Misumi HFS5-2020 profile)",
  "vendor": "MISUMI (profile); values below are NOT from a Misumi document",
  "source_level": "derived",
@@ -18,11 +18,23 @@
   "density_assumed": "2700 kg/m3 (6000-series aluminium; assumption, not read)"
  },
  "not_obtained": [
-  "Misumi catalogue section properties (Ix, Iy, area, kg/m)",
   "length tolerance",
-  "alloy/temper",
   "slot inner dimensions tolerance"
  ],
- "why": "us.misumi-ec.com is refused by the network proxy",
- "used_by_catalog": false
+ "why": "2026-11-14: us.misumi-ec.com was refused; since 2026-11-19 the catalogue pages and the 3dfindit STEP are in hand",
+ "used_by_catalog": false,
+ "supplier_step": {
+  "file": "vendor_cad/inbox/HFS5-2020.step",
+  "from": "vendor_cad/staging/supplier_2026-11-19/EXT2020-PROFILE.step (Misumi HFS5-2020-500 via 3dfindit / CADENAS)",
+  "section_area_mm2": 182.13,
+  "cavity": "12 wide for 0.939 mm under the lips, then 45 degree walls to a 5.878 floor",
+  "note": "measured 2026-11-19; the catalogue gives 183 mm2"
+ },
+ "misumi_catalogue": {
+  "area_mm2": 183.0,
+  "kg_per_m": 0.5,
+  "Ix_mm4": 7420.0,
+  "source": "MISUMI USA 2019 catalogue p.2686 (vendor_docs/misumi_2019_US_2686_HFS5_extrusions_slot_details.pdf)",
+  "cutting": "sold cut to length by Misumi (HFS5-2020-<L>, any length to order); the one purchased part that is cut, by the supplier (owner, printer_v11)"
+ }
 }

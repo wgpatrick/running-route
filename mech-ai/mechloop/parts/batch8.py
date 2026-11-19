@@ -31,10 +31,12 @@ def die_spring_dj8x20(installed: float | None = None) -> Stock:
     h = float(installed) if installed is not None else L0
     if not L0 - max_defl - 1e-9 <= h <= L0 + 1e-9:
         raise ValueError(f"die_spring_dj8x20: installed height must be between {L0 - max_defl:g} and {L0:g} mm")
-    od, bore = 7.6, 4.4
+    od, bore = 7.36, 4.4      # v11: OD 7.36 measured on Century Spring's STEP (vendor_cad/inbox/SPRING-DIE-DJ-8X20YCS.step); was 7.6
     body = Pos(0, 0, h / 2) * (Cylinder(od / 2, h) - Cylinder(bore / 2, h))
     return Stock(body, "SPRING-DIE-DJ-8X20YCS", "Die spring DJ-8X20YCS (8 hole x 4 rod x 20 mm, yellow, 7.6 N/mm; Century Spring)", 0.0026,
                  material="steel", cost_usd=1.5,
+                 # v11: Century Spring's STEP is the coil (wire, open ends); this solid is a plain tube for the checks
+                 model={"tolerance": {"volume_ratio": (0.3, 3.2)}},
                  ratings={"approximate": True, "rate_n_per_mm": k, "free_length_mm": L0, "installed_height_mm": h,
                           "preload_n": round(k * (L0 - h), 2), "max_deflection_mm": max_defl,
                           "load_points": [(p["deflection_mm"], p["load_n"]) for p in v["load_points"]],
@@ -59,9 +61,14 @@ def thumb_nut_din466(size: str = "M4") -> Stock:
     v = tab[size]
     d2, d3, h, kk = v["knurl_dia_d2_mm"], v["collar_dia_d3_mm"], v["height_h_mm"], v["knurl_height_k_mm"]
     body = Pos(0, 0, (h - kk) / 2) * Cylinder(d3 / 2, h - kk) + Pos(0, 0, h - kk / 2) * Cylinder(d2 / 2, kk)
-    return Stock(body, f"THUMBNUT-DIN466-{size}", f"Knurled thumb nut {size}, DIN 466 high type, {d2:g} x {h:g} mm, stainless (Halder {v['article']})",
-                 v["mass_g"] / 1000.0, material="stainless304", cost_usd=1.2,
-                 ratings={"approximate": True, "thread": v["thread"], "material_as_listed": v["material"]},
+    # v11 (2026-11-19): the part bought is KIPP K0143.04 (steel, 6.2 g), whose supplier STEP is in vendor_cad/inbox/ under the
+    # SKU: every dimension agrees with Halder's; the thread runs the full 9.5 mm (the STEP). Halder's stainless figures kept
+    # in the vendor file for reference.
+    return Stock(body, f"THUMBNUT-DIN466-{size}", f"Knurled thumb nut {size}, DIN 466 high type, {d2:g} x {h:g} mm, steel (KIPP K0143.04)",
+                 0.0062, material="steel", cost_usd=1.2,
+                 ratings={"approximate": True, "thread": v["thread"], "material_as_listed": "steel (KIPP K0143.04 sheet; grade and finish not stated)",
+                          "thread_length_mm": h, "thread_length_basis": "KIPP's STEP: the bore runs through the full 9.5 mm",
+                          "supplier_part": "KIPP K0143.04", "halder_equivalent": f"Halder {v['article']} (stainless 1.4305, 6.7 g)"},
                  interfaces={"knurl_dia": d2, "collar_dia": d3, "height": h, "knurl_height": kk, "thread_d": SCREW[size][0]},
                  source=_source("halder_din466", "secondary", f"DIN 466 {size} ({v['article']})",
                                 unverified=("thread length (taken as through)", "cost", "every dimension (snippet of the maker's data sheet)"),

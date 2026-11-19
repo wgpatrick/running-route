@@ -57,11 +57,11 @@ PLASTICS = ("pla", "petg", "abs", "nylon_pa12")
 PLASTIC_LIMIT_MPA = ((40.0, 5.0), (60.0, 2.5))
 # Bossard (VDI 2230 2015), coarse thread, mu_K = mu_G = 0.14 (the lowest practical value Bossard tells the user to
 # assume for an undeclared finish; FST-040): conversion factor X = M_A / F_M, mm (N.m per kN), and class 8.8 maxima.
-TORQUE_TO_PRELOAD_MM = {"M2.5": 0.50, "M3": 0.58, "M4": 0.76, "M5": 0.93, "M6": 1.14, "M8": 1.51}
-PRELOAD_88_N = {"M2.5": 1625.0, "M3": 2436.0, "M4": 4300.0, "M5": 7000.0, "M6": 9900.0, "M8": 18100.0}
+TORQUE_TO_PRELOAD_MM = {"M2": 0.40, "M2.5": 0.50, "M3": 0.58, "M4": 0.76, "M5": 0.93, "M6": 1.14, "M8": 1.51}
+PRELOAD_88_N = {"M2": 1030.0, "M2.5": 1625.0, "M3": 2436.0, "M4": 4300.0, "M5": 7000.0, "M6": 9900.0, "M8": 18100.0}
 # N.m. "steel": Bossard's maximum tightening torque, class 8.8, mu 0.14 (practice_refs/01). "soft": ASSUMED.
-TORQUE_NM = {"steel": {"M2.5": 0.81, "M3": 1.41, "M4": 3.3, "M5": 6.5, "M6": 11.3, "M8": 27.3},
-             "soft": {"M2.5": 0.3, "M3": 0.5, "M4": 1.1, "M5": 2.0, "M6": 3.5, "M8": 8.0}}
+TORQUE_NM = {"steel": {"M2": 0.37, "M2.5": 0.81, "M3": 1.41, "M4": 3.3, "M5": 6.5, "M6": 11.3, "M8": 27.3},
+             "soft": {"M2": 0.15, "M2.5": 0.3, "M3": 0.5, "M4": 1.1, "M5": 2.0, "M6": 3.5, "M8": 8.0}}
 # VDI 2230 (2015) limiting surface pressure p_G, MPa, via Bossard (practice_refs/04): (value, basis)
 SURFACE_PRESSURE_MPA = {
     "steel": (490.0, "VDI 2230 (2015) p_G of S235, 490 MPa (Bossard table)"),

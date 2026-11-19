@@ -1132,7 +1132,7 @@ def _dg03(x: _Ctx):
 
 
 # ---------------------------------------------------------------------------------------------------------- the verifier
-HARDWARE_SKU = ("SHCS", "FHCS", "NUT-", "NUT_", "WASHER", "TNUT", "NYLOC", "PEM", "INSERT", "STUD", "SETSCREW", "RIVET")
+HARDWARE_SKU = ("SHCS", "FHCS", "BHCS", "NUT-", "NUT_", "WASHER", "TNUT", "NYLOC", "PEM", "INSERT", "STUD", "SETSCREW", "RIVET")
 FASTENED_KIND = __import__("re").compile(r"(^|[^a-z0-9])m\d+(\.\d+)?[ _x-]|tnut|t-nut|through[_ ]bolt|bolted|screwed|riveted")
 
 

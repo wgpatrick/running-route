@@ -104,9 +104,11 @@ def bed_column_silicone(height: float = 18.0, installed: float | None = None) ->
 # 2026-11-18: the normal washers M2.5 to M5 are what is bought, McMaster 91166A190 / A210 / A230 / A240, measured in the
 # supplier's STEP files: 0.1 mm thicker than the mid of the ISO band (M2.5 0.6, M3 0.6, M4 0.9, M5 1.1; before: 0.5, 0.5,
 # 0.8, 1.0). M6, M8 and the large series are still the standard's mid values (McMaster sells no 9 or 12 mm OD metric washer).
-WASHER = {"normal": {"M2.5": (2.7, 6.0, 0.6), "M3": (3.2, 7.0, 0.6), "M4": (4.3, 9.0, 0.9), "M5": (5.3, 10.0, 1.1),
+WASHER = {"normal": {"M2": (2.2, 5.0, 0.3), "M2.5": (2.7, 6.0, 0.6), "M3": (3.2, 7.0, 0.6), "M4": (4.3, 9.0, 0.9), "M5": (5.3, 10.0, 1.1),
                      "M6": (6.4, 12.0, 1.6), "M8": (8.4, 16.0, 1.6)},
-          "large": {"M3": (3.2, 9.0, 0.8), "M4": (4.3, 12.0, 1.0), "M5": (5.3, 15.0, 1.2), "M6": (6.4, 18.0, 1.6),
+          # 2026-11-19 (printer_v11, owner): large M3 / M4 are Accu HPLW-M3-A2 / HPLW-M4-A2 (A2 stainless), re-made from Accu's
+          # drawings (OD, bore and thickness, the only features a flat washer has): M3 9 x 3.2 x 0.9, M4 12 x 4.3 x 1.1
+          "large": {"M3": (3.2, 9.0, 0.9), "M4": (4.3, 12.0, 1.1), "M5": (5.3, 15.0, 1.2), "M6": (6.4, 18.0, 1.6),
                     "M8": (8.4, 24.0, 2.0)}}
 
 
@@ -123,6 +125,17 @@ def washer_flat(size: str = "M3", series: str = "normal") -> Stock:
     from . import mcmaster_part
 
     sku_ = f"WASHER-{size}" + ("-LARGE" if series == "large" else "")
+    accu = vendor_data("accu_iso7093")["values"].get(size) if series == "large" else None
+    if accu:      # a faithful re-make from Accu's drawing (every dimension on it is in the model; nothing else is drawn)
+        return Stock(body, sku_, f"Large flat washer {size}, {d2:g} x {d1:g} x {h:g} mm (ISO 7093-1, A2 stainless, Accu {accu['part']})",
+                     accu["mass_g_per_100"] / 100000.0, material="stainless304", cost_usd=0.05,
+                     ratings={"screw": size, "supplier_part": f"Accu {accu['part']}", "material_as_listed": accu["material"]},
+                     interfaces={"od": d2, "bore": d1, "thickness": h},
+                     detail=body, model={"kind": "re-made from drawing", "remade_from": f"Accu {accu['part']} drawing ({accu['drawing']}): "
+                                         f"OD {accu['od']:g}, bore {accu['id']:g}, thickness {accu['t']:g} with their tolerances",
+                                         "source": "faithful re-make of the supplier's drawing (plain ring)",
+                                         "tolerance": {"volume_ratio": (0.8, 1.25)}},
+                     source=_source("accu_iso7093", "vendor", f"Accu {accu['part']}", unverified=(), note="ISO 7093-1, A2 stainless"))
     return Stock(body, sku_,
                  f"Flat washer {size}, {d2:g} x {d1:g} x {h:g} mm ({std})", math.pi * (d2 ** 2 - d1 ** 2) / 4 * h * 7.85e-6,
                  material="steel", cost_usd=0.02, ratings={"approximate": True, "screw": size, **mcmaster_part(sku_)},

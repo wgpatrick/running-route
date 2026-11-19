@@ -1,0 +1,16 @@
+{
+ "retrieved": "2026-11-19",
+ "family": "ISO 7093-1 large flat washers, A2 stainless (Accu HPLW series)",
+ "vendor": "Accu Ltd (accu-components.com)",
+ "source_level": "vendor drawing (PDF) collected by the owner's supplier batch 2026-11-19",
+ "source_url": "https://accu-components.com/us/",
+ "values": {
+  "M3": {"part": "HPLW-M3-A2", "od": 9.0, "od_tol": [-0.36, 0.0], "id": 3.2, "id_tol": [0.0, 0.18], "t": 0.9, "t_tol": [-0.2, 0.0],
+         "material": "A2 stainless 200HV", "mass_g_per_100": 35,
+         "drawing": "vendor_cad/staging/supplier_2026-11-19/_DEVIATIONS/WASHER-M3-LARGE.pdf"},
+  "M4": {"part": "HPLW-M4-A2", "od": 12.0, "od_tol": [-0.43, 0.0], "id": 4.3, "id_tol": [0.0, 0.18], "t": 1.1, "t_tol": [-0.2, 0.0],
+         "material": "A2 stainless 200HV", "mass_g_per_100": 77,
+         "drawing": "vendor_cad/staging/supplier_2026-11-19/_DEVIATIONS/WASHER-M4-LARGE.pdf"}
+ },
+ "completeness": "a flat washer is fully defined by outside diameter, bore and thickness: all three are on each drawing with tolerances; no other feature is drawn. Faithful re-make (owner's rule)"
+}

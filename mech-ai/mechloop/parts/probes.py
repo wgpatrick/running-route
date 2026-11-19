@@ -132,6 +132,9 @@ def probe_omron_e2e(model: str = "E2E-X5ME1", clamp: tuple | None = None, nuts: 
                  interfaces={"sensing_face": [(0.0, 0.0, 0.0)], "cable_exit": [(0.0, 0.0, z_body1 + b["cable_protector"])],
                              "axis_point": [(0.0, 0.0, 10.0)], "mounting": mounting, "length": z_body1 + b["cable_protector"]},
                  cost_usd=25.0,
+                 # v11: OMRON's own STEP (vendor_cad/inbox/PROBE-OMRON-E2E-X5ME1.step) is 3 mm longer at the cable end than
+                 # this solid's reading of the drawing; the face, the thread and the diameters agree
+                 model={"protrusions": {"zmax": (3.2, "OMRON's STEP: the cable protector ends 3 mm further than the catalogue's reading of the drawing")}},
                  source=_source("omron_e2e", "partial", f"{model} 2M",
                                 unverified=("mass_kg", "switching_distance_aluminium_mm", "repeatability_mm", "overall length"),
                                 note="ratings, thread, nuts and surrounding-metal clearances are OMRON's. Aluminium distance: chart "
