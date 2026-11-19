@@ -1,0 +1,352 @@
+{
+ "schema": "mechloop.supplier_rules/1",
+ "version": "2026-11-19.cnc3dp.1",
+ "supplier": "rapiddirect",
+ "name": "RapidDirect",
+ "home": "https://www.rapiddirect.com/",
+ "retrieved": "2026-11-19",
+ "processes": [
+  "cnc_milling",
+  "fdm",
+  "sls"
+ ],
+ "how_read": "Plain HTTPS page fetch, robots.txt checked first, no account, no upload, no quote; figures copied as published. Prose quotes are verbatim; 'table_row' quotes name the table, row and cells (verified cell by cell); repository quotes are verbatim.",
+ "not_read": [],
+ "rules": [
+  {
+   "id": "rapiddirect.cnc.corner_radius_depth",
+   "supplier": "rapiddirect",
+   "process": "cnc_milling",
+   "rule": "cnc_corner_radius_depth",
+   "material": "*",
+   "thickness_mm": null,
+   "formula": {
+    "d": 0.3333333333333333
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "recommendation",
+   "source_url": "https://www.rapiddirect.com/blog/cnc-machining-design-guide/",
+   "quote": "Internal Corner Radius | Recommended: ⅓ times cavity depth (or larger)",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Internal Corner Radius",
+    "⅓ times cavity depth (or larger)"
+   ]
+  },
+  {
+   "id": "rapiddirect.cnc.cavity_depth_width",
+   "supplier": "rapiddirect",
+   "process": "cnc_milling",
+   "rule": "cnc_pocket_depth_width",
+   "material": "*",
+   "thickness_mm": null,
+   "value": 4.0,
+   "unit": "mm",
+   "comparison": "<=",
+   "severity": "warning",
+   "phrasing": "recommendation",
+   "source_url": "https://www.rapiddirect.com/blog/cnc-machining-design-guide/",
+   "quote": "Cavity Depth | Recommended: 4 times cavity width | Feasible: 10 times the tool diameter or 25 cm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Cavity Depth",
+    "4 times cavity width",
+    "10 times the tool diameter or 25 cm"
+   ]
+  },
+  {
+   "id": "rapiddirect.cnc.cavity_depth_tool",
+   "supplier": "rapiddirect",
+   "process": "cnc_milling",
+   "rule": "cnc_pocket_depth_tool",
+   "material": "*",
+   "thickness_mm": null,
+   "value": 10.0,
+   "unit": "x cutter diameter",
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "feasible limit",
+   "source_url": "https://www.rapiddirect.com/blog/cnc-machining-design-guide/",
+   "quote": "Cavity Depth | Recommended: 4 times cavity width | Feasible: 10 times the tool diameter or 25 cm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Cavity Depth",
+    "4 times cavity width",
+    "10 times the tool diameter or 25 cm"
+   ]
+  },
+  {
+   "id": "rapiddirect.cnc.wall_rec_metal",
+   "supplier": "rapiddirect",
+   "process": "cnc_milling",
+   "rule": "cnc_wall_min",
+   "material": "metal",
+   "thickness_mm": null,
+   "value_mm": 0.8,
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "recommendation",
+   "source_url": "https://www.rapiddirect.com/blog/cnc-machining-design-guide/",
+   "quote": "Wall Thickness | Recommended: 1.5 mm (plastics), 0.8 mm (metals) | Feasible: 1.0 mm (plastics), 0.5 mm (metals)",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Wall Thickness",
+    "1.5 mm (plastics), 0.8 mm (metals)",
+    "1.0 mm (plastics), 0.5 mm (metals)"
+   ]
+  },
+  {
+   "id": "rapiddirect.cnc.wall_feasible_metal",
+   "supplier": "rapiddirect",
+   "process": "cnc_milling",
+   "rule": "cnc_wall_min",
+   "material": "metal",
+   "thickness_mm": null,
+   "value_mm": 0.5,
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "feasible limit",
+   "conflicts": [
+    "rapiddirect.cnc.wall_prose_metal"
+   ],
+   "source_url": "https://www.rapiddirect.com/blog/cnc-machining-design-guide/",
+   "quote": "Wall Thickness | Recommended: 1.5 mm (plastics), 0.8 mm (metals) | Feasible: 1.0 mm (plastics), 0.5 mm (metals)",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Wall Thickness",
+    "1.5 mm (plastics), 0.8 mm (metals)",
+    "1.0 mm (plastics), 0.5 mm (metals)"
+   ]
+  },
+  {
+   "id": "rapiddirect.cnc.wall_prose_metal",
+   "supplier": "rapiddirect",
+   "process": "cnc_milling",
+   "rule": "cnc_wall_min",
+   "material": "metal",
+   "thickness_mm": null,
+   "value_mm": 0.25,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "recommendation",
+   "conflicts": [
+    "rapiddirect.cnc.wall_feasible_metal"
+   ],
+   "note": "Contradicts the same page's table (0.5 mm feasible, 0.8 mm recommended for metals); kept as information.",
+   "source_url": "https://www.rapiddirect.com/blog/cnc-machining-design-guide/",
+   "quote": "To avoid these difficulties, you can design walls with a minimum thickness of 0.25mm for metal components and 0.50mm for plastic parts as they can withstand the rigors of the manufacturing process.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "rapiddirect.cnc.hole_depth_rec",
+   "supplier": "rapiddirect",
+   "process": "cnc_milling",
+   "rule": "cnc_hole_depth_ratio",
+   "material": "*",
+   "thickness_mm": null,
+   "value": 4.0,
+   "unit": "mm",
+   "comparison": "<=",
+   "severity": "warning",
+   "phrasing": "recommendation",
+   "source_url": "https://www.rapiddirect.com/blog/cnc-machining-design-guide/",
+   "quote": "Hole Depth | Recommended: 4 times the nominal diameter | Feasible: 40 times the nominal diameter",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Hole Depth",
+    "4 times the nominal diameter",
+    "40 times the nominal diameter"
+   ]
+  },
+  {
+   "id": "rapiddirect.cnc.hole_depth_feasible",
+   "supplier": "rapiddirect",
+   "process": "cnc_milling",
+   "rule": "cnc_hole_depth_ratio",
+   "material": "*",
+   "thickness_mm": null,
+   "value": 40.0,
+   "unit": "mm",
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "recommendation",
+   "source_url": "https://www.rapiddirect.com/blog/cnc-machining-design-guide/",
+   "quote": "Hole Depth | Recommended: 4 times the nominal diameter | Feasible: 40 times the nominal diameter",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Hole Depth",
+    "4 times the nominal diameter",
+    "40 times the nominal diameter"
+   ]
+  },
+  {
+   "id": "rapiddirect.cnc.hole_min",
+   "supplier": "rapiddirect",
+   "process": "cnc_milling",
+   "rule": "cnc_hole_min",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 1.0,
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "recommendation",
+   "source_url": "https://www.rapiddirect.com/blog/cnc-machining-design-guide/",
+   "quote": "Drill Size | Recommended: Standard drill bit (0,12”) | Feasible: Any diameter larger than 1 mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Drill Size",
+    "Standard drill bit (0,12”)",
+    "Any diameter larger than 1 mm"
+   ]
+  },
+  {
+   "id": "rapiddirect.cnc.thread_length",
+   "supplier": "rapiddirect",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_depth_ratio_max",
+   "material": "*",
+   "thickness_mm": null,
+   "value": 3.0,
+   "unit": "mm",
+   "comparison": "<=",
+   "severity": "warning",
+   "phrasing": "recommendation",
+   "source_url": "https://www.rapiddirect.com/blog/cnc-machining-design-guide/",
+   "quote": "A tap that exceeds 3 times its diameter is deep and can pose a significant challenge.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "rapiddirect.cnc.depth_al_tool",
+   "supplier": "rapiddirect",
+   "process": "cnc_milling",
+   "rule": "cnc_pocket_depth_tool",
+   "material": "al*",
+   "thickness_mm": null,
+   "value": 10.0,
+   "unit": "x cutter diameter",
+   "comparison": "<=",
+   "severity": "warning",
+   "phrasing": "recommendation",
+   "duplicate_of": "rapiddirect.cnc.cavity_depth_tool",
+   "source_url": "https://www.rapiddirect.com/blog/cnc-machining-design-guide/",
+   "quote": "For instance, with plastics, the ratio should not be greater than 15 times the diameter of the end mill, aluminum should be no more than 10 times, and steel’s limit is 5 times.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "rapiddirect.cnc.part_max",
+   "supplier": "rapiddirect",
+   "process": "cnc_milling",
+   "rule": "cnc_part_max_size",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    600.0,
+    1500.0,
+    4000.0
+   ],
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "capability",
+   "source_url": "https://www.rapiddirect.com/blog/cnc-machining-design-guide/",
+   "quote": "CNC Milling | Maximum Dimension 4000×1500×600 mm | Minimum Dimension 4×4 mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "CNC Milling",
+    "4000×1500×600 mm 157.5×59.1×23.6 in.",
+    "4×4 mm 0.1×0.1 in."
+   ]
+  },
+  {
+   "id": "rapiddirect.cnc.undercut_size",
+   "supplier": "rapiddirect",
+   "process": "cnc_milling",
+   "rule": "cnc_undercut_width",
+   "material": "*",
+   "thickness_mm": null,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "statement",
+   "source_url": "https://www.rapiddirect.com/blog/cnc-machining-design-guide/",
+   "quote": "Undercut dimension | Recommended: 3 mm to 40 mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Undercut dimension",
+    "3 mm to 40 mm"
+   ]
+  },
+  {
+   "id": "rapiddirect.fdm.clearance_sliding",
+   "supplier": "rapiddirect",
+   "process": "fdm",
+   "rule": "p3d_clearance_moving",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 0.5,
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "recommendation",
+   "evaluate": false,
+   "note": "Clearance between separately printed or assembled parts is a property of the assembly, not of one part (see the interference verifier); not judged here.",
+   "source_url": "https://www.rapiddirect.com/blog/3d-printing-design/",
+   "quote": "Fused Deposition Modeling (FDM) | Press-fit 0.25 mm to 0.35 mm | Sliding 0.50 mm to 0.60 mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Fused Deposition Modeling (FDM)",
+    "0.25 mm to 0.35 mm",
+    "0.50 mm to 0.60 mm"
+   ]
+  },
+  {
+   "id": "rapiddirect.fdm.overhang",
+   "supplier": "rapiddirect",
+   "process": "fdm",
+   "rule": "p3d_overhang_max_deg",
+   "material": "*",
+   "thickness_mm": null,
+   "value": 45.0,
+   "unit": "deg from vertical",
+   "comparison": "<=",
+   "severity": "warning",
+   "phrasing": "design around self-supporting angles",
+   "source_url": "https://www.rapiddirect.com/blog/3d-printing-design/",
+   "quote": "Ensure that steep features maintain an angle of less than 45 ° relative to the vertical print plane.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "rapiddirect.pbf.escape",
+   "supplier": "rapiddirect",
+   "process": "sls",
+   "rule": "p3d_enclosed_void",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 3.0,
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "recommendation",
+   "applies_processes": [
+    "sls",
+    "mjf"
+   ],
+   "source_url": "https://www.rapiddirect.com/blog/3d-printing-design/",
+   "quote": "For industrial powder-bed platforms (SLS/MJF), designing a hollow, shelled structure strictly mandates the inclusion of a minimum of two escape holes (drainage vents) that are at least 3.0mm in diameter.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  }
+ ]
+}

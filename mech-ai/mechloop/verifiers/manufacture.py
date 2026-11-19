@@ -95,6 +95,17 @@ def check_part(r: VerifierResult, design: Design, c) -> dict:
             row["supplier_rules"] = {"checked": False, "why": f"{type(e).__name__}: {e}"}
             r.add("warning", "supplier_rules_not_checked", f"{c.name}: the suppliers' published rules were not evaluated "
                   f"({type(e).__name__}: {e}).", part=c.name, trace=traceback.format_exc()[-500:])
+    if proc in ("machined", "printed") and (design.manufacturing or {}).get("supplier_process_rules", True):
+        try:      # suppliers' published CNC-milling and 3D-printing rules (data/supplier_rules_cnc_3dp, dfm_process_rules.py)
+            from . import dfm_process_rules
+
+            dfm_process_rules.check_part(r, design, c, row, sm, frame, cyls, holes)
+        except ValueError:
+            raise
+        except Exception as e:
+            row["supplier_process_rules"] = {"checked": False, "why": f"{type(e).__name__}: {e}"}
+            r.add("warning", "supplier_process_rules_not_checked", f"{c.name}: the suppliers' published CNC / printing rules were not "
+                  f"evaluated ({type(e).__name__}: {e}).", part=c.name, trace=traceback.format_exc()[-500:])
     try:      # sharp edges and corners (dfm_edges.py): B-rep only, cheap
         from . import dfm_edges
 

@@ -1,0 +1,74 @@
+{
+ "retrieved": "2026-11-19",
+ "pages": {
+  "xo_cnc": "https://www.xometry.com/capabilities/cnc-machining-service/",
+  "xo_std": "https://www.xometry.com/manufacturing-standards/",
+  "xo_corner": "https://www.xometry.com/resources/machining/cnc-machining-optimizing-internal-corner-radii/",
+  "xo_thin": "https://www.xometry.com/resources/machining/cnc-machining-thin-walls/",
+  "xo_costred": "https://www.xometry.com/resources/machining/cnc-machining-cost-reduction/",
+  "xo_3dp": "https://www.xometry.com/capabilities/3d-printing-service/",
+  "xo_fdm": "https://www.xometry.com/capabilities/3d-printing-service/fused-deposition-modeling/",
+  "xo_pla_petg": "https://www.xometry.com/capabilities/3d-printing-service/pla-petg/",
+  "xo_sls": "https://www.xometry.com/capabilities/3d-printing-service/selective-laser-sintering/",
+  "xo_mjf": "https://www.xometry.com/capabilities/3d-printing-service/hp-multi-jet-fusion/",
+  "xo_sla": "https://www.xometry.com/capabilities/3d-printing-service/stereolithography-3d-printing/",
+  "pl_cnc_mill_dg": "https://www.protolabs.com/services/cnc-machining/cnc-milling/design-guidelines/",
+  "pl_cnc_threads_std": "https://www.protolabs.com/services/cnc-machining/threaded-holes-guidelines/standard-holes/",
+  "pl_cnc_tol": "https://www.protolabs.com/services/cnc-machining/precision-machining-tolerances/",
+  "pl_fdm": "https://www.protolabs.com/services/3d-printing/fused-deposition-modeling/",
+  "pl_sls": "https://www.protolabs.com/services/3d-printing/selective-laser-sintering/",
+  "pl_mjf": "https://www.protolabs.com/services/3d-printing/multi-jet-fusion/",
+  "pl_sla": "https://www.protolabs.com/services/3d-printing/stereolithography/",
+  "pl_thin": "https://www.protolabs.com/resources/design-tips/how-to-solve-for-size-constraints-small-gaps-and-thin-walls-in-3d-printed-parts/",
+  "pl_3dp_tol": "https://www.protolabs.com/resources/design-tips/3d-printing-tolerances/",
+  "hubs_cnc_design": "https://www.hubs.com/knowledge-base/how-design-parts-cnc-machining/",
+  "hubs_sharp": "https://www.hubs.com/knowledge-base/sharp-corners-in-cnc-machining/",
+  "hubs_cnc_tol": "https://www.hubs.com/knowledge-base/cnc-machining-iso-based-tolerances-and-finishes/",
+  "hubs_drills": "https://www.hubs.com/knowledge-base/standard-drill-bit-sizes-cnc-machining-conversion-tables/",
+  "hubs_cnc_service": "https://www.hubs.com/cnc-machining/",
+  "hubs_fdm_design": "https://www.hubs.com/knowledge-base/how-design-parts-fdm-3d-printing/",
+  "hubs_geom": "https://www.hubs.com/knowledge-base/3d-printing-geometry-restrictions/",
+  "hubs_thin": "https://www.hubs.com/knowledge-base/dfm-tips-for-3d-printed-parts-with-thin-walls/",
+  "hubs_fdm_service": "https://www.hubs.com/3d-printing/fdm/",
+  "hubs_sls_service": "https://www.hubs.com/3d-printing/sls/",
+  "hubs_sls_design": "https://www.hubs.com/knowledge-base/how-design-parts-sls-3d-printing/",
+  "hubs_mjf_design": "https://www.hubs.com/knowledge-base/how-to-design-parts-for-mjf/",
+  "hubs_sla_design": "https://www.hubs.com/knowledge-base/how-design-parts-sla-3d-printing/",
+  "fictiv_spec_cnc_earlier": "https://www.fictiv.com/specifications/cnc-machining",
+  "jlccnc_dg": "https://jlccnc.com/help/article/cnc-machining-design-guideline",
+  "jlccnc_limits": "https://jlccnc.com/blog/cnc-machining-design-limitations",
+  "jlc3dp_dg": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+  "jlc3dp_cap_3dp": "https://jlc3dp.com/capabilities/3d-printing-service",
+  "scs_cnc_guide": "https://sendcutsend.com/guidelines/cnc-machining/",
+  "scs_specs": "https://app.sendcutsend.com/sendcutsend-specs.json",
+  "rd_cnc_dg": "https://www.rapiddirect.com/blog/cnc-machining-design-guide/",
+  "rd_3dp_dg": "https://www.rapiddirect.com/blog/3d-printing-design/",
+  "shapeways_vp": "https://www.shapeways.com/materials/pa12",
+  "pcbway_3dp": "https://www.pcbway.com/rapid-prototyping/3D-Printing/"
+ },
+ "repository_files": {
+  "guidelines": "docs/DESIGN_GUIDELINES.md",
+  "printsettings": "mechloop/printsettings.py",
+  "dfm_rules": "mechloop/verifiers/dfm_rules.py",
+  "dfm_print": "mechloop/verifiers/dfm_print.py",
+  "agent": "AGENT.md"
+ },
+ "skipped": [
+  {
+   "host": "www.cnckitchen.com",
+   "why": "robots.txt names ClaudeBot, anthropic-ai and Claude-Web with 'Disallow: /' (Content-Signal ai-train=no): not fetched."
+  },
+  {
+   "host": "craftcloud3d.com",
+   "why": "robots.txt allows '/', but the home page and sitemap returned HTTP 403 (Cloudflare challenge) on 2026-11-19: no rules read, not worked around."
+  },
+  {
+   "host": "www.fictiv.com",
+   "why": "HTTP 403 (Cloudflare challenge) on re-fetch; earlier same-day copy of the CNC specification page used."
+  },
+  {
+   "host": "www.pcbway.com",
+   "why": "Read; the 3D-printing page publishes tolerances only (one info rule)."
+  }
+ ]
+}

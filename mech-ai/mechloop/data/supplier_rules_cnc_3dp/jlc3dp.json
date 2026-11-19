@@ -1,0 +1,575 @@
+{
+ "schema": "mechloop.supplier_rules/1",
+ "version": "2026-11-19.cnc3dp.1",
+ "supplier": "jlc3dp",
+ "name": "JLC3DP",
+ "home": "https://jlc3dp.com/",
+ "retrieved": "2026-11-19",
+ "processes": [
+  "fdm",
+  "mjf",
+  "sla",
+  "sls"
+ ],
+ "how_read": "Plain HTTPS page fetch, robots.txt checked first, no account, no upload, no quote; figures copied as published. Prose quotes are verbatim; 'table_row' quotes name the table, row and cells (verified cell by cell); repository quotes are verbatim.",
+ "not_read": [],
+ "rules": [
+  {
+   "id": "jlc3dp.fdm.wall_size_50",
+   "supplier": "jlc3dp",
+   "process": "fdm",
+   "rule": "p3d_wall_min_size_band",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 1.6,
+   "applies": {
+    "size_band_mm": 50.0
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "recommended minimum for the model size",
+   "note": "Bands are the table's model sizes (5x5 ... 200x200 mm); a part is put in the smallest band whose square holds its two largest sides (interpretation); FDM has no value below 50x50 mm.",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "Wall thickness by model size | Materials/Range: Plastic (FDM) | 50x50mm: 1.6mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Plastic (FDM)",
+    "1.6mm",
+    "2.0mm",
+    "2.5mm"
+   ]
+  },
+  {
+   "id": "jlc3dp.fdm.wall_size_100",
+   "supplier": "jlc3dp",
+   "process": "fdm",
+   "rule": "p3d_wall_min_size_band",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 2.0,
+   "applies": {
+    "size_band_mm": 100.0
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "recommended minimum for the model size",
+   "note": "Bands are the table's model sizes (5x5 ... 200x200 mm); a part is put in the smallest band whose square holds its two largest sides (interpretation); FDM has no value below 50x50 mm.",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "Wall thickness by model size | Materials/Range: Plastic (FDM) | 100x100mm: 2.0mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Plastic (FDM)",
+    "1.6mm",
+    "2.0mm",
+    "2.5mm"
+   ]
+  },
+  {
+   "id": "jlc3dp.fdm.wall_size_200",
+   "supplier": "jlc3dp",
+   "process": "fdm",
+   "rule": "p3d_wall_min_size_band",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 2.5,
+   "applies": {
+    "size_band_mm": 200.0
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "recommended minimum for the model size",
+   "note": "Bands are the table's model sizes (5x5 ... 200x200 mm); a part is put in the smallest band whose square holds its two largest sides (interpretation); FDM has no value below 50x50 mm.",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "Wall thickness by model size | Materials/Range: Plastic (FDM) | 200x200mm: 2.5mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Plastic (FDM)",
+    "1.6mm",
+    "2.0mm",
+    "2.5mm"
+   ]
+  },
+  {
+   "id": "jlc3dp.fdm.structural_wall",
+   "supplier": "jlc3dp",
+   "process": "fdm",
+   "rule": "p3d_wall_min",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 1.5,
+   "applies": {
+    "feature": "structural"
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "recommended for protrusions, snaps and fasteners",
+   "evaluate": false,
+   "note": "Which walls are snaps or fasteners is not known from the geometry.",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "The recommended minimum wall thickness for structures such as protrusion, positioning, snaps and fasteners is more than 1.5mm.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "jlc3dp.fdm.emboss",
+   "supplier": "jlc3dp",
+   "process": "fdm",
+   "rule": "p3d_emboss",
+   "material": "*",
+   "thickness_mm": null,
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "recommendation",
+   "evaluate": false,
+   "note": "Engraved and embossed text is not extracted from the model (gap).",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "FDM (Plastic) : 1.0 mm deep & 1.0 mm wide",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "jlc3dp.fdm.thread_min",
+   "supplier": "jlc3dp",
+   "process": "fdm",
+   "rule": "p3d_thread_min",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 6.0,
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "recommendation",
+   "measured": "smallest thread called out in the print",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "The minimum recommended thread for printing is M6.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "jlc3dp.fdm.clearance_assembly",
+   "supplier": "jlc3dp",
+   "process": "fdm",
+   "rule": "p3d_clearance_assembly",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 0.5,
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "recommendation",
+   "evaluate": false,
+   "note": "Clearance between separately printed or assembled parts is a property of the assembly, not of one part (see the interference verifier); not judged here.",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "Clearance between parts that will be assembled together | Plastic (FDM) | 0.5mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Minimum Clearance",
+    "0.2mm",
+    "0.2mm-0.4mm",
+    "0.2mm-0.4mm",
+    "0.5mm",
+    "0.5mm",
+    "0.5mm"
+   ]
+  },
+  {
+   "id": "jlc3dp.fdm.clearance_moving",
+   "supplier": "jlc3dp",
+   "process": "fdm",
+   "rule": "p3d_clearance_moving",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 0.5,
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "recommendation",
+   "evaluate": false,
+   "note": "Clearance between separately printed or assembled parts is a property of the assembly, not of one part (see the interference verifier); not judged here.",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "Clearance between moving parts | Plastic (FDM) | 0.5mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Minimum Clearance",
+    "0.5mm",
+    "0.6mm",
+    "0.6mm",
+    "1.0mm",
+    "1.0mm",
+    "0.5mm"
+   ]
+  },
+  {
+   "id": "jlc3dp.fdm.hole_min",
+   "supplier": "jlc3dp",
+   "process": "fdm",
+   "rule": "p3d_hole_min",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 1.5,
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "smallest aperture listed for FDM",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "Aperture (Φ) and hole depth (h) | Plastic (FDM): Φ=1.0mm '/', Φ=1.5mm h=1.5—4.5mm, Φ=2.0mm h=2.0—6.0mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Plastic (FDM)",
+    "/",
+    "h=1.5—4.5mm",
+    "h=2.0—6.0mm"
+   ]
+  },
+  {
+   "id": "jlc3dp.fdm.hole_depth_1.5",
+   "supplier": "jlc3dp",
+   "process": "fdm",
+   "rule": "p3d_hole_depth_max",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 4.5,
+   "applies": {
+    "d_range": [
+     1.5,
+     2.0
+    ]
+   },
+   "comparison": "<=",
+   "severity": "warning",
+   "phrasing": "micro-hole depth guide",
+   "measured": "depth of a hole of this listed aperture",
+   "note": "Interpretation: the row is applied to holes from its aperture up to the next 0.5 mm step (the table lists 1.0, 1.5 and 2.0 mm).",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "Aperture (Φ) and hole depth (h) | Plastic (FDM): Φ=1.5mm h up to 4.5mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Plastic (FDM)",
+    "/",
+    "h=1.5—4.5mm",
+    "h=2.0—6.0mm"
+   ]
+  },
+  {
+   "id": "jlc3dp.fdm.hole_depth_2",
+   "supplier": "jlc3dp",
+   "process": "fdm",
+   "rule": "p3d_hole_depth_max",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 6.0,
+   "applies": {
+    "d_range": [
+     2.0,
+     2.5
+    ]
+   },
+   "comparison": "<=",
+   "severity": "warning",
+   "phrasing": "micro-hole depth guide",
+   "measured": "depth of a hole of this listed aperture",
+   "note": "Interpretation: the row is applied to holes from its aperture up to the next 0.5 mm step (the table lists 1.0, 1.5 and 2.0 mm).",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "Aperture (Φ) and hole depth (h) | Plastic (FDM): Φ=2mm h up to 6mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Plastic (FDM)",
+    "/",
+    "h=1.5—4.5mm",
+    "h=2.0—6.0mm"
+   ]
+  },
+  {
+   "id": "jlc3dp.fdm.pin_min",
+   "supplier": "jlc3dp",
+   "process": "fdm",
+   "rule": "p3d_pin_min",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 2.0,
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "smallest column listed for FDM",
+   "measured": "smallest pin diameter",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "Column diameter (D) and column height (H) | Plastic (FDM): D=1.0mm '/', D=2.0mm H=2—4mm, D=3.0mm H=3—6mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Plastic (FDM)",
+    "/",
+    "H=2—4mm",
+    "H=3—6mm"
+   ]
+  },
+  {
+   "id": "jlc3dp.fdm.pin_height_2",
+   "supplier": "jlc3dp",
+   "process": "fdm",
+   "rule": "p3d_pin_height_max",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 4.0,
+   "applies": {
+    "d_range": [
+     2.0,
+     3.0
+    ]
+   },
+   "comparison": "<=",
+   "severity": "warning",
+   "phrasing": "positioning-column guide",
+   "note": "Interpretation: the row is applied to pins from its diameter up to the next listed diameter (1.0 mm steps).",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "Column diameter (D) and column height (H) | Plastic (FDM): D=2mm H up to 4mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Plastic (FDM)",
+    "/",
+    "H=2—4mm",
+    "H=3—6mm"
+   ]
+  },
+  {
+   "id": "jlc3dp.fdm.pin_height_3",
+   "supplier": "jlc3dp",
+   "process": "fdm",
+   "rule": "p3d_pin_height_max",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 6.0,
+   "applies": {
+    "d_range": [
+     3.0,
+     4.0
+    ]
+   },
+   "comparison": "<=",
+   "severity": "warning",
+   "phrasing": "positioning-column guide",
+   "note": "Interpretation: the row is applied to pins from its diameter up to the next listed diameter (1.0 mm steps).",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "Column diameter (D) and column height (H) | Plastic (FDM): D=3mm H up to 6mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Plastic (FDM)",
+    "/",
+    "H=2—4mm",
+    "H=3—6mm"
+   ]
+  },
+  {
+   "id": "jlc3dp.fdm.min_size",
+   "supplier": "jlc3dp",
+   "process": "fdm",
+   "rule": "p3d_part_min_size",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    10.0,
+    30.0,
+    30.0
+   ],
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "minimum build size",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "3D Technologies | FDM (Plastic) | PLA-P (formerly PLA) | Max. 250 × 250 × 300 | Min. 30 × 30 × 10",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "FDM (Plastic)",
+    "PLA-P (formerly PLA)",
+    "250 × 250 × 300",
+    "30 × 30 × 10"
+   ]
+  },
+  {
+   "id": "jlc3dp.fdm.max_size_pla",
+   "supplier": "jlc3dp",
+   "process": "fdm",
+   "rule": "p3d_part_max_size",
+   "material": "pla",
+   "thickness_mm": null,
+   "value_mm": [
+    250.0,
+    250.0,
+    300.0
+   ],
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "capability",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "3D Technologies | FDM (Plastic) | PLA-P (formerly PLA) | Max. 250 × 250 × 300 | Min. 30 × 30 × 10",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "FDM (Plastic)",
+    "PLA-P (formerly PLA)",
+    "250 × 250 × 300",
+    "30 × 30 × 10"
+   ]
+  },
+  {
+   "id": "jlc3dp.p3d.hole_depth_ratio",
+   "supplier": "jlc3dp",
+   "process": "fdm",
+   "rule": "p3d_hole_depth_ratio",
+   "material": "*",
+   "thickness_mm": null,
+   "value": 3.0,
+   "unit": "x diameter",
+   "comparison": "<=",
+   "severity": "warning",
+   "phrasing": "recommended value (all processes)",
+   "applies_processes": [
+    "fdm",
+    "sls",
+    "mjf",
+    "sla"
+   ],
+   "source_url": "https://jlc3dp.com/capabilities/3d-printing-service",
+   "quote": "Design Factor | Recommended Value: Depth-to–Diameter Ratio of Hole | 3:1 | Prevent hole clogging and facilitate cleaning",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Depth-to–Diameter Ratio of Hole",
+    "3:1"
+   ]
+  },
+  {
+   "id": "jlc3dp.fdm.tolerance",
+   "supplier": "jlc3dp",
+   "process": "fdm",
+   "rule": "tolerance",
+   "material": "*",
+   "thickness_mm": null,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "statement",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "Plastic (FDM) : ±0.3mm (Within 100mm), ±0.4% (Above 100mm)",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "jlc3dp.fdm.hole_tolerance",
+   "supplier": "jlc3dp",
+   "process": "fdm",
+   "rule": "tolerance_hole",
+   "material": "*",
+   "thickness_mm": null,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "statement",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "Plastic (FDM) : ±0.4mm",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "jlc3dp.sls.escape",
+   "supplier": "jlc3dp",
+   "process": "sls",
+   "rule": "p3d_enclosed_void",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 2.5,
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "recommendation",
+   "measured": "enclosed voids with no opening",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "(1) The minimum escape hole diameter is 2.5mm.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "jlc3dp.sls.wall_size_50",
+   "supplier": "jlc3dp",
+   "process": "sls",
+   "rule": "p3d_wall_min_size_band",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 1.5,
+   "applies": {
+    "size_band_mm": 50.0
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "recommendation",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "Wall thickness by model size | Nylon (SLS) | 50x50mm: 1.5mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Nylon (SLS)",
+    "1.0mm",
+    "1.2mm",
+    "1.5mm",
+    "2.0mm",
+    "2.0mm"
+   ]
+  },
+  {
+   "id": "jlc3dp.mjf.wall_size_50",
+   "supplier": "jlc3dp",
+   "process": "mjf",
+   "rule": "p3d_wall_min_size_band",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 1.5,
+   "applies": {
+    "size_band_mm": 50.0
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "recommendation",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "Wall thickness by model size | Nylon (MJF) | 50x50mm: 1.5mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Nylon (MJF)",
+    "1.0mm",
+    "1.2mm",
+    "1.5mm",
+    "2.0mm",
+    "2.0mm"
+   ]
+  },
+  {
+   "id": "jlc3dp.sla.wall_size_50",
+   "supplier": "jlc3dp",
+   "process": "sla",
+   "rule": "p3d_wall_min_size_band",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 1.0,
+   "applies": {
+    "size_band_mm": 50.0
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "recommendation",
+   "source_url": "https://jlc3dp.com/help/article/3d-printing-design-guideline",
+   "quote": "Wall thickness by model size | Resin (SLA) | 50x50mm: 1.0mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Resin (SLA)",
+    "0.5mm",
+    "0.8mm",
+    "1.0mm",
+    "1.5mm",
+    "2.0mm"
+   ]
+  }
+ ]
+}

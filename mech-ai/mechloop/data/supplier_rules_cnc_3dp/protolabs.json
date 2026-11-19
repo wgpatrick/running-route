@@ -1,0 +1,1093 @@
+{
+ "schema": "mechloop.supplier_rules/1",
+ "version": "2026-11-19.cnc3dp.1",
+ "supplier": "protolabs",
+ "name": "Protolabs",
+ "home": "https://www.protolabs.com/",
+ "retrieved": "2026-11-19",
+ "processes": [
+  "cnc_milling",
+  "fdm",
+  "mjf",
+  "sla",
+  "sls"
+ ],
+ "how_read": "Plain HTTPS page fetch, robots.txt checked first, no account, no upload, no quote; figures copied as published. Prose quotes are verbatim; 'table_row' quotes name the table, row and cells (verified cell by cell); repository quotes are verbatim.",
+ "not_read": [],
+ "rules": [
+  {
+   "id": "protolabs.cnc.sharp_inside_corners",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_corner_sharp",
+   "material": "*",
+   "thickness_mm": null,
+   "value": 0,
+   "unit": "sharp vertical inside corners",
+   "comparison": "<=",
+   "severity": "warning",
+   "phrasing": "statement: the corner is made with a radius",
+   "measured": "vertical inside corners modelled with no radius",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/cnc-milling/design-guidelines/",
+   "quote": "Sharp inside corners on a part will be radiused (rounded) as a natural result of the CNC machining process. Resulting radii will be the minimum allowable tool radius.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.cnc.mill_depth_each_side",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_mill_depth_max",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 50.8,
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "requirement",
+   "measured": "deepest milled floor or pocket below the face it is cut from",
+   "note": "Evaluated here; the same rule in mechloop/data/supplier_rules/protolabs.json (protolabs.cnc.mill_depth_max) is kept there as not evaluated.",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/cnc-milling/design-guidelines/",
+   "quote": "Maximum depth for factory machined parts that can be milled is 2 in. (50.8mm) from either side of the part.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.cnc.models_no_internal_threads",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_threads_modelled",
+   "material": "*",
+   "thickness_mm": null,
+   "value": 0,
+   "unit": "modelled helical threads",
+   "comparison": "<=",
+   "severity": "warning",
+   "phrasing": "recommendation",
+   "evaluate": false,
+   "note": "Helical thread geometry is not recognised in the B-rep (gap); threads are taken from the design's callouts.",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/cnc-milling/design-guidelines/",
+   "quote": "Avoid modeling internal threads on your part design.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.cnc.thread_m2_modelled_d",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_modeled_d",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    1.57,
+    1.68
+   ],
+   "applies": {
+    "thread_d": 2.0
+   },
+   "comparison": "within",
+   "severity": "error",
+   "phrasing": "automated-factory requirement",
+   "measured": "diameter of the modelled hole the thread is called out on",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/threaded-holes-guidelines/standard-holes/",
+   "quote": "Metric threads | M2 x 0.4 | Minimum modeled diameter (mm) 1.57 | Maximum modeled diameter (mm) 1.68 | Maximum thread depth (mm)* 5.08",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "M2 x 0.4",
+    "1.57",
+    "1.68",
+    "5.08"
+   ]
+  },
+  {
+   "id": "protolabs.cnc.thread_m2_depth_max",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_depth_max",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 5.08,
+   "applies": {
+    "thread_d": 2.0
+   },
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "automated-factory requirement",
+   "note": "*Obstruction by other features of your part, lead-in treatments, or fixturing requirements may reduce the maximum depth of threads.",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/threaded-holes-guidelines/standard-holes/",
+   "quote": "Metric threads | M2 x 0.4 | Minimum modeled diameter (mm) 1.57 | Maximum modeled diameter (mm) 1.68 | Maximum thread depth (mm)* 5.08",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "M2 x 0.4",
+    "1.57",
+    "1.68",
+    "5.08"
+   ]
+  },
+  {
+   "id": "protolabs.cnc.thread_m2.5_modelled_d",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_modeled_d",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    2.01,
+    2.14
+   ],
+   "applies": {
+    "thread_d": 2.5
+   },
+   "comparison": "within",
+   "severity": "error",
+   "phrasing": "automated-factory requirement",
+   "measured": "diameter of the modelled hole the thread is called out on",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/threaded-holes-guidelines/standard-holes/",
+   "quote": "Metric threads | M2.5 x 0.45 | Minimum modeled diameter (mm) 2.01 | Maximum modeled diameter (mm) 2.14 | Maximum thread depth (mm)* 5.08",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "M2.5 x 0.45",
+    "2.01",
+    "2.14",
+    "5.08"
+   ]
+  },
+  {
+   "id": "protolabs.cnc.thread_m2.5_depth_max",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_depth_max",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 5.08,
+   "applies": {
+    "thread_d": 2.5
+   },
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "automated-factory requirement",
+   "note": "*Obstruction by other features of your part, lead-in treatments, or fixturing requirements may reduce the maximum depth of threads.",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/threaded-holes-guidelines/standard-holes/",
+   "quote": "Metric threads | M2.5 x 0.45 | Minimum modeled diameter (mm) 2.01 | Maximum modeled diameter (mm) 2.14 | Maximum thread depth (mm)* 5.08",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "M2.5 x 0.45",
+    "2.01",
+    "2.14",
+    "5.08"
+   ]
+  },
+  {
+   "id": "protolabs.cnc.thread_m3_modelled_d",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_modeled_d",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    2.46,
+    2.6
+   ],
+   "applies": {
+    "thread_d": 3.0
+   },
+   "comparison": "within",
+   "severity": "error",
+   "phrasing": "automated-factory requirement",
+   "measured": "diameter of the modelled hole the thread is called out on",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/threaded-holes-guidelines/standard-holes/",
+   "quote": "Metric threads | M3 x 0.5 | Minimum modeled diameter (mm) 2.46 | Maximum modeled diameter (mm) 2.60 | Maximum thread depth (mm)* 7.62",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "M3 x 0.5",
+    "2.46",
+    "2.60",
+    "7.62"
+   ]
+  },
+  {
+   "id": "protolabs.cnc.thread_m3_depth_max",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_depth_max",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 7.62,
+   "applies": {
+    "thread_d": 3.0
+   },
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "automated-factory requirement",
+   "note": "*Obstruction by other features of your part, lead-in treatments, or fixturing requirements may reduce the maximum depth of threads.",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/threaded-holes-guidelines/standard-holes/",
+   "quote": "Metric threads | M3 x 0.5 | Minimum modeled diameter (mm) 2.46 | Maximum modeled diameter (mm) 2.60 | Maximum thread depth (mm)* 7.62",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "M3 x 0.5",
+    "2.46",
+    "2.60",
+    "7.62"
+   ]
+  },
+  {
+   "id": "protolabs.cnc.thread_m3.5_modelled_d",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_modeled_d",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    2.85,
+    3.01
+   ],
+   "applies": {
+    "thread_d": 3.5
+   },
+   "comparison": "within",
+   "severity": "error",
+   "phrasing": "automated-factory requirement",
+   "measured": "diameter of the modelled hole the thread is called out on",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/threaded-holes-guidelines/standard-holes/",
+   "quote": "Metric threads | M3.5 x 0.6 | Minimum modeled diameter (mm) 2.85 | Maximum modeled diameter (mm) 3.01 | Maximum thread depth (mm)* 10.16",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "M3.5 x 0.6",
+    "2.85",
+    "3.01",
+    "10.16"
+   ]
+  },
+  {
+   "id": "protolabs.cnc.thread_m3.5_depth_max",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_depth_max",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 10.16,
+   "applies": {
+    "thread_d": 3.5
+   },
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "automated-factory requirement",
+   "note": "*Obstruction by other features of your part, lead-in treatments, or fixturing requirements may reduce the maximum depth of threads.",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/threaded-holes-guidelines/standard-holes/",
+   "quote": "Metric threads | M3.5 x 0.6 | Minimum modeled diameter (mm) 2.85 | Maximum modeled diameter (mm) 3.01 | Maximum thread depth (mm)* 10.16",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "M3.5 x 0.6",
+    "2.85",
+    "3.01",
+    "10.16"
+   ]
+  },
+  {
+   "id": "protolabs.cnc.thread_m4_modelled_d",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_modeled_d",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    3.24,
+    3.42
+   ],
+   "applies": {
+    "thread_d": 4.0
+   },
+   "comparison": "within",
+   "severity": "error",
+   "phrasing": "automated-factory requirement",
+   "measured": "diameter of the modelled hole the thread is called out on",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/threaded-holes-guidelines/standard-holes/",
+   "quote": "Metric threads | M4 x 0.7 | Minimum modeled diameter (mm) 3.24 | Maximum modeled diameter (mm) 3.42 | Maximum thread depth (mm)* 10.16",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "M4 x 0.7",
+    "3.24",
+    "3.42",
+    "10.16"
+   ]
+  },
+  {
+   "id": "protolabs.cnc.thread_m4_depth_max",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_depth_max",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 10.16,
+   "applies": {
+    "thread_d": 4.0
+   },
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "automated-factory requirement",
+   "note": "*Obstruction by other features of your part, lead-in treatments, or fixturing requirements may reduce the maximum depth of threads.",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/threaded-holes-guidelines/standard-holes/",
+   "quote": "Metric threads | M4 x 0.7 | Minimum modeled diameter (mm) 3.24 | Maximum modeled diameter (mm) 3.42 | Maximum thread depth (mm)* 10.16",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "M4 x 0.7",
+    "3.24",
+    "3.42",
+    "10.16"
+   ]
+  },
+  {
+   "id": "protolabs.cnc.thread_m5_modelled_d",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_modeled_d",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    4.14,
+    4.33
+   ],
+   "applies": {
+    "thread_d": 5.0
+   },
+   "comparison": "within",
+   "severity": "error",
+   "phrasing": "automated-factory requirement",
+   "measured": "diameter of the modelled hole the thread is called out on",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/threaded-holes-guidelines/standard-holes/",
+   "quote": "Metric threads | M5 x 0.8 | Minimum modeled diameter (mm) 4.14 | Maximum modeled diameter (mm) 4.33 | Maximum thread depth (mm)* 15.24",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "M5 x 0.8",
+    "4.14",
+    "4.33",
+    "15.24"
+   ]
+  },
+  {
+   "id": "protolabs.cnc.thread_m5_depth_max",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_depth_max",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 15.24,
+   "applies": {
+    "thread_d": 5.0
+   },
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "automated-factory requirement",
+   "note": "*Obstruction by other features of your part, lead-in treatments, or fixturing requirements may reduce the maximum depth of threads.",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/threaded-holes-guidelines/standard-holes/",
+   "quote": "Metric threads | M5 x 0.8 | Minimum modeled diameter (mm) 4.14 | Maximum modeled diameter (mm) 4.33 | Maximum thread depth (mm)* 15.24",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "M5 x 0.8",
+    "4.14",
+    "4.33",
+    "15.24"
+   ]
+  },
+  {
+   "id": "protolabs.cnc.thread_m6_modelled_d",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_modeled_d",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    4.92,
+    5.15
+   ],
+   "applies": {
+    "thread_d": 6.0
+   },
+   "comparison": "within",
+   "severity": "error",
+   "phrasing": "automated-factory requirement",
+   "measured": "diameter of the modelled hole the thread is called out on",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/threaded-holes-guidelines/standard-holes/",
+   "quote": "Metric threads | M6 x 1.0 | Minimum modeled diameter (mm) 4.92 | Maximum modeled diameter (mm) 5.15 | Maximum thread depth (mm)* 16.51",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "M6 x 1.0",
+    "4.92",
+    "5.15",
+    "16.51"
+   ]
+  },
+  {
+   "id": "protolabs.cnc.thread_m6_depth_max",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_depth_max",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 16.51,
+   "applies": {
+    "thread_d": 6.0
+   },
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "automated-factory requirement",
+   "note": "*Obstruction by other features of your part, lead-in treatments, or fixturing requirements may reduce the maximum depth of threads.",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/threaded-holes-guidelines/standard-holes/",
+   "quote": "Metric threads | M6 x 1.0 | Minimum modeled diameter (mm) 4.92 | Maximum modeled diameter (mm) 5.15 | Maximum thread depth (mm)* 16.51",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "M6 x 1.0",
+    "4.92",
+    "5.15",
+    "16.51"
+   ]
+  },
+  {
+   "id": "protolabs.cnc.thread_m8_modelled_d",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_modeled_d",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    6.65,
+    6.91
+   ],
+   "applies": {
+    "thread_d": 8.0
+   },
+   "comparison": "within",
+   "severity": "error",
+   "phrasing": "automated-factory requirement",
+   "measured": "diameter of the modelled hole the thread is called out on",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/threaded-holes-guidelines/standard-holes/",
+   "quote": "Metric threads | M8 x 1.25 | Minimum modeled diameter (mm) 6.65 | Maximum modeled diameter (mm) 6.91 | Maximum thread depth (mm)* 16.51",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "M8 x 1.25",
+    "6.65",
+    "6.91",
+    "16.51"
+   ]
+  },
+  {
+   "id": "protolabs.cnc.thread_m8_depth_max",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_depth_max",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 16.51,
+   "applies": {
+    "thread_d": 8.0
+   },
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "automated-factory requirement",
+   "note": "*Obstruction by other features of your part, lead-in treatments, or fixturing requirements may reduce the maximum depth of threads.",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/threaded-holes-guidelines/standard-holes/",
+   "quote": "Metric threads | M8 x 1.25 | Minimum modeled diameter (mm) 6.65 | Maximum modeled diameter (mm) 6.91 | Maximum thread depth (mm)* 16.51",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "M8 x 1.25",
+    "6.65",
+    "6.91",
+    "16.51"
+   ]
+  },
+  {
+   "id": "protolabs.cnc.thread_m10_modelled_d",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_modeled_d",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    8.38,
+    8.68
+   ],
+   "applies": {
+    "thread_d": 10.0
+   },
+   "comparison": "within",
+   "severity": "error",
+   "phrasing": "automated-factory requirement",
+   "measured": "diameter of the modelled hole the thread is called out on",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/threaded-holes-guidelines/standard-holes/",
+   "quote": "Metric threads | M10 x 1.5 | Minimum modeled diameter (mm) 8.38 | Maximum modeled diameter (mm) 8.68 | Maximum thread depth (mm)* 25.40",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "M10 x 1.5",
+    "8.38",
+    "8.68",
+    "25.40"
+   ]
+  },
+  {
+   "id": "protolabs.cnc.thread_m10_depth_max",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_depth_max",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 25.4,
+   "applies": {
+    "thread_d": 10.0
+   },
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "automated-factory requirement",
+   "note": "*Obstruction by other features of your part, lead-in treatments, or fixturing requirements may reduce the maximum depth of threads.",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/threaded-holes-guidelines/standard-holes/",
+   "quote": "Metric threads | M10 x 1.5 | Minimum modeled diameter (mm) 8.38 | Maximum modeled diameter (mm) 8.68 | Maximum thread depth (mm)* 25.40",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "M10 x 1.5",
+    "8.38",
+    "8.68",
+    "25.40"
+   ]
+  },
+  {
+   "id": "protolabs.cnc.thread_m12_modelled_d",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_modeled_d",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    10.0,
+    10.44
+   ],
+   "applies": {
+    "thread_d": 12.0
+   },
+   "comparison": "within",
+   "severity": "error",
+   "phrasing": "automated-factory requirement",
+   "measured": "diameter of the modelled hole the thread is called out on",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/threaded-holes-guidelines/standard-holes/",
+   "quote": "Metric threads | M12 x 1.75 | Minimum modeled diameter (mm) 10.00 | Maximum modeled diameter (mm) 10.44 | Maximum thread depth (mm)* 25.40",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "M12 x 1.75",
+    "10.00",
+    "10.44",
+    "25.40"
+   ]
+  },
+  {
+   "id": "protolabs.cnc.thread_m12_depth_max",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "cnc_thread_depth_max",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 25.4,
+   "applies": {
+    "thread_d": 12.0
+   },
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "automated-factory requirement",
+   "note": "*Obstruction by other features of your part, lead-in treatments, or fixturing requirements may reduce the maximum depth of threads.",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/threaded-holes-guidelines/standard-holes/",
+   "quote": "Metric threads | M12 x 1.75 | Minimum modeled diameter (mm) 10.00 | Maximum modeled diameter (mm) 10.44 | Maximum thread depth (mm)* 25.40",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "M12 x 1.75",
+    "10.00",
+    "10.44",
+    "25.40"
+   ]
+  },
+  {
+   "id": "protolabs.cnc.tol_6mm",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "tolerance",
+   "material": "al*",
+   "thickness_mm": null,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "ISO 2768 fine",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/precision-machining-tolerances/",
+   "quote": "Permissible deviations ranges in nominal lengths | Over 0.236 in. (6mm) up to 1.18 in. (30mm) | Aluminum F (fine) ±0.004 in. (±0.10 mm)",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Over 0.236 in. (6mm) up to 1.18 in. (30mm)",
+    "±0.004 in. (±0.10 mm)"
+   ]
+  },
+  {
+   "id": "protolabs.cnc.tol_30mm",
+   "supplier": "protolabs",
+   "process": "cnc_milling",
+   "rule": "tolerance",
+   "material": "al*",
+   "thickness_mm": null,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "ISO 2768 fine",
+   "source_url": "https://www.protolabs.com/services/cnc-machining/precision-machining-tolerances/",
+   "quote": "Permissible deviations ranges in nominal lengths | Over 1.18 in. (30mm) up to 4.72 in. (120mm) | Aluminum F (fine) ±0.006 in.(±0.15 mm)",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Over 1.18 in. (30mm) up to 4.72 in. (120mm)",
+    "±0.006 in.(±0.15 mm)"
+   ]
+  },
+  {
+   "id": "protolabs.fdm.walls",
+   "supplier": "protolabs",
+   "process": "fdm",
+   "rule": "p3d_wall_min",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 0.8,
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "published minimum",
+   "source_url": "https://www.protolabs.com/services/3d-printing/fused-deposition-modeling/",
+   "quote": "Unsupported/Supported Walls | Minimum 0.0315 in. | Minimum 0.8mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Unsupported/Supported Walls",
+    "Minimum 0.8mm"
+   ]
+  },
+  {
+   "id": "protolabs.fdm.walls_unsupported",
+   "supplier": "protolabs",
+   "process": "fdm",
+   "rule": "p3d_wall_min_unsupported",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 0.8,
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "published minimum",
+   "duplicate_of": "protolabs.fdm.walls",
+   "source_url": "https://www.protolabs.com/services/3d-printing/fused-deposition-modeling/",
+   "quote": "Unsupported/Supported Walls | Minimum 0.0315 in. | Minimum 0.8mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Unsupported/Supported Walls",
+    "Minimum 0.8mm"
+   ]
+  },
+  {
+   "id": "protolabs.fdm.feature_min",
+   "supplier": "protolabs",
+   "process": "fdm",
+   "rule": "p3d_feature_min",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 2.0,
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "published minimum",
+   "measured": "smallest pin or boss diameter",
+   "source_url": "https://www.protolabs.com/services/3d-printing/fused-deposition-modeling/",
+   "quote": "Minimum Feature Size | 0.0787 in. | 2.0mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Minimum Feature Size",
+    "2.0mm"
+   ]
+  },
+  {
+   "id": "protolabs.fdm.hole_min",
+   "supplier": "protolabs",
+   "process": "fdm",
+   "rule": "p3d_hole_min",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 2.0,
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "published minimum",
+   "source_url": "https://www.protolabs.com/services/3d-printing/fused-deposition-modeling/",
+   "quote": "Minimum Hole Diameter | 0.0787 in. | 2.0mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Minimum Hole Diameter",
+    "2.0mm"
+   ]
+  },
+  {
+   "id": "protolabs.fdm.max_size",
+   "supplier": "protolabs",
+   "process": "fdm",
+   "rule": "p3d_part_max_size",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    500.0,
+    500.0,
+    500.0
+   ],
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "capability",
+   "source_url": "https://www.protolabs.com/services/3d-printing/fused-deposition-modeling/",
+   "quote": "Max Part Size | Prototyping FDM | Up to 500mm x 500mm x 500mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Max Part Size",
+    "Prototyping FDM",
+    "Up to 500mm x 500mm x 500mm"
+   ]
+  },
+  {
+   "id": "protolabs.fdm.accuracy",
+   "supplier": "protolabs",
+   "process": "fdm",
+   "rule": "tolerance",
+   "material": "*",
+   "thickness_mm": null,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "statement",
+   "source_url": "https://www.protolabs.com/services/3d-printing/fused-deposition-modeling/",
+   "quote": "Dimensional Accuracy | Prototyping FDM | ± 0.5% with a lower limit of ±0.020 in. | 0.5mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Dimensional Accuracy",
+    "Prototyping FDM",
+    "± 0.5% with a lower limit of ±0.020 in."
+   ]
+  },
+  {
+   "id": "protolabs.fdm.layers",
+   "supplier": "protolabs",
+   "process": "fdm",
+   "rule": "layer_height",
+   "material": "*",
+   "thickness_mm": null,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "statement",
+   "source_url": "https://www.protolabs.com/services/3d-printing/fused-deposition-modeling/",
+   "quote": "Layer Height Options | from 100-300 μm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Layer Height Options",
+    "from 100-300 μm"
+   ]
+  },
+  {
+   "id": "protolabs.p3d.small_gap",
+   "supplier": "protolabs",
+   "process": "fdm",
+   "rule": "p3d_clearance_assembly",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 0.75,
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "recommended gap",
+   "evaluate": false,
+   "note": "Clearance between separately printed or assembled parts is a property of the assembly, not of one part (see the interference verifier); not judged here. Stated for 3D printing in general.",
+   "source_url": "https://www.protolabs.com/resources/design-tips/how-to-solve-for-size-constraints-small-gaps-and-thin-walls-in-3d-printed-parts/",
+   "quote": "This indicates that the distance between each of the spur gear’s teeth is less than the recommended 0.03 in. (0.75mm), and that, depending on the 3D printing process, raw material, part geometry and orientation, the customer can expect partial or even complete fusing between some or all of the teeth.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.sls.wall_min",
+   "supplier": "protolabs",
+   "process": "sls",
+   "rule": "p3d_wall_min",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 0.762,
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "published minimum",
+   "source_url": "https://www.protolabs.com/services/3d-printing/selective-laser-sintering/",
+   "quote": "Minimum Wall Thickness | 0.030 in. | 0.762mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Minimum Wall Thickness",
+    "0.762mm"
+   ]
+  },
+  {
+   "id": "protolabs.sls.feature_nylon",
+   "supplier": "protolabs",
+   "process": "sls",
+   "rule": "p3d_feature_min",
+   "material": "nylon*",
+   "thickness_mm": null,
+   "value_mm": 0.762,
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "published minimum",
+   "source_url": "https://www.protolabs.com/services/3d-printing/selective-laser-sintering/",
+   "quote": "Minimum feature size | Nylons | 0.03 in. | 0.762mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Nylons",
+    "0.762mm"
+   ]
+  },
+  {
+   "id": "protolabs.sls.max_size",
+   "supplier": "protolabs",
+   "process": "sls",
+   "rule": "p3d_part_max_size",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    254.0,
+    261.62,
+    309.88
+   ],
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "capability",
+   "source_url": "https://www.protolabs.com/services/3d-printing/selective-laser-sintering/",
+   "quote": "Nylon, TPU, and other PA12 Materials | 12.2 in. x 10.3 in. x 10 in. | 309.88mm x 261.62mm x 254mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Nylon, TPU, and other PA12 Materials",
+    "309.88mm x 261.62mm x 254mm"
+   ]
+  },
+  {
+   "id": "protolabs.sls.warp",
+   "supplier": "protolabs",
+   "process": "sls",
+   "rule": "p3d_warp_thickness",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 3.175,
+   "applies": {
+    "part_max_mm_gt": 177.8
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "recommendation",
+   "measured": "thinnest wall of a part longer than 7 in.",
+   "source_url": "https://www.protolabs.com/services/3d-printing/selective-laser-sintering/",
+   "quote": "Larger part sizes (>7 in.) and parts with thin features are the most susceptible to warp. We recommend maintaining a uniform thickness of 0.125 in. (3.175mm) to ensure stability.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.mjf.wall_min",
+   "supplier": "protolabs",
+   "process": "mjf",
+   "rule": "p3d_wall_min",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 0.5,
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "published minimum",
+   "source_url": "https://www.protolabs.com/services/3d-printing/multi-jet-fusion/",
+   "quote": "Wall Thickness | 0.020 in. | 0.5mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Wall Thickness",
+    "0.5mm"
+   ]
+  },
+  {
+   "id": "protolabs.mjf.feature_min",
+   "supplier": "protolabs",
+   "process": "mjf",
+   "rule": "p3d_feature_min",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 0.5,
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "published minimum",
+   "source_url": "https://www.protolabs.com/services/3d-printing/multi-jet-fusion/",
+   "quote": "Minimum Feature Size | 0.020 in. | 0.5mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Minimum Feature Size",
+    "0.5mm"
+   ]
+  },
+  {
+   "id": "protolabs.mjf.max_size",
+   "supplier": "protolabs",
+   "process": "mjf",
+   "rule": "p3d_part_max_size",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    284.0,
+    380.0,
+    380.0
+   ],
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "capability",
+   "source_url": "https://www.protolabs.com/services/3d-printing/multi-jet-fusion/",
+   "quote": "Maximum Part Size | 11.1 in. x 14.9 in. x 14.9 in | 284mm x 380mm x 380mm",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Maximum Part Size",
+    "284mm x 380mm x 380mm"
+   ]
+  },
+  {
+   "id": "protolabs.mjf.warp",
+   "supplier": "protolabs",
+   "process": "mjf",
+   "rule": "p3d_warp_thickness",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 3.175,
+   "applies": {
+    "part_max_mm_gt": 177.8
+   },
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "recommendation",
+   "measured": "thinnest wall of a part longer than 7 in.",
+   "source_url": "https://www.protolabs.com/services/3d-printing/multi-jet-fusion/",
+   "quote": "Warpage: Larger part sizes (>7 in.) and parts with thin features are the most susceptible to warp. We recommend maintaining a uniform thickness of 0.125 in. (3.175mm) to ensure stability.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.sla.wall_normal",
+   "supplier": "protolabs",
+   "process": "sla",
+   "rule": "p3d_wall_min",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 0.254,
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "published minimum (normal resolution)",
+   "source_url": "https://www.protolabs.com/services/3d-printing/stereolithography/",
+   "quote": "Minimum wall thickness | Normal Resolution: 0.010 in. (0.254mm)",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Minimum wall thickness",
+    "0.010 in. (0.254mm)"
+   ]
+  },
+  {
+   "id": "protolabs.sla.hole_normal",
+   "supplier": "protolabs",
+   "process": "sla",
+   "rule": "p3d_hole_min",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 0.635,
+   "comparison": ">=",
+   "severity": "error",
+   "phrasing": "published minimum (normal resolution)",
+   "source_url": "https://www.protolabs.com/services/3d-printing/stereolithography/",
+   "quote": "Minimum hole size | Normal Resolution: 0.025 in. (0.635mm)",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Minimum hole size",
+    "0.025 in. (0.635mm)"
+   ]
+  },
+  {
+   "id": "protolabs.sla.max_normal",
+   "supplier": "protolabs",
+   "process": "sla",
+   "rule": "p3d_part_max_size",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": [
+    533.0,
+    635.0,
+    736.0
+   ],
+   "comparison": "<=",
+   "severity": "error",
+   "phrasing": "capability",
+   "source_url": "https://www.protolabs.com/services/3d-printing/stereolithography/",
+   "quote": "Maximum part size | Normal Resolution: 29 × 25 × 21 in.* (736 × 635 × 533mm*)",
+   "quote_kind": "table_row",
+   "retrieved": "2026-11-19",
+   "cells": [
+    "Maximum part size",
+    "29 × 25 × 21 in.* (736 × 635 × 533mm*)"
+   ]
+  },
+  {
+   "id": "protolabs.sls.tolerance",
+   "supplier": "protolabs",
+   "process": "sls",
+   "rule": "tolerance",
+   "material": "*",
+   "thickness_mm": null,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "statement",
+   "conflicts_note": "The 3D-printing tolerances design tip gives SLS as ±0.010 in. (±0.3048mm) plus ±0.0015 in. per additional inch.",
+   "source_url": "https://www.protolabs.com/services/3d-printing/selective-laser-sintering/",
+   "quote": "For well-designed parts, tolerances of ±0.010 in. (0.25mm) plus 0.1% of nominal length can typically be achieved.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "protolabs.sls.tolerance_tip",
+   "supplier": "protolabs",
+   "process": "sls",
+   "rule": "tolerance",
+   "material": "*",
+   "thickness_mm": null,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "statement",
+   "conflicts": [
+    "protolabs.sls.tolerance"
+   ],
+   "note": "0.010 in. is 0.254 mm, not 0.3048 mm: the page's own conversion is inconsistent.",
+   "source_url": "https://www.protolabs.com/resources/design-tips/3d-printing-tolerances/",
+   "quote": "SLS: Tolerances of ±0.010 in. (±0.3048mm) plus ±0.0015 in. (0.0381mm) for each additional inch can typically be achieved (excludes TPU)",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  }
+ ]
+}

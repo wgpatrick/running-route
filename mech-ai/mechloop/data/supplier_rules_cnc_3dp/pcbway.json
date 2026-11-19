@@ -1,0 +1,30 @@
+{
+ "schema": "mechloop.supplier_rules/1",
+ "version": "2026-11-19.cnc3dp.1",
+ "supplier": "pcbway",
+ "name": "PCBWay",
+ "home": "https://www.pcbway.com/",
+ "retrieved": "2026-11-19",
+ "processes": [
+  "fdm"
+ ],
+ "how_read": "Plain HTTPS page fetch, robots.txt checked first, no account, no upload, no quote; figures copied as published. Prose quotes are verbatim; 'table_row' quotes name the table, row and cells (verified cell by cell); repository quotes are verbatim.",
+ "not_read": [],
+ "rules": [
+  {
+   "id": "pcbway.fdm.accuracy",
+   "supplier": "pcbway",
+   "process": "fdm",
+   "rule": "tolerance",
+   "material": "*",
+   "thickness_mm": null,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "statement",
+   "source_url": "https://www.pcbway.com/rapid-prototyping/3D-Printing/",
+   "quote": "FDM: L<100mm,±0.2mm. L>100mm,±0.2%*L(mm)",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  }
+ ]
+}

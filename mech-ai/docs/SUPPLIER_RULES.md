@@ -458,3 +458,82 @@ Evaluated: min hole (hole_min), min bridge (web_min), min hole to edge (hole_edg
 | steel | 0.313" | 1.905 | 2.997 | 2.388 | 2.388 | - |
 | steel | 0.375" | 2.159 | 4.064 | 2.87 | 2.87 | - |
 | steel | 0.500" | 3.175 | 4.318 | 3.81 | 3.81 | - |
+
+## CNC milling and 3D printing
+
+The same approach, extended to machined and printed parts: suppliers' published figures as data in
+`mechloop/data/supplier_rules_cnc_3dp/<supplier>.json` (same schema, `mechloop.supplier_rules/1`; processes
+`cnc_milling`, `fdm`, `sls`, `mjf`, `sla`), built by `tools/build_process_rules.py`, which checks every quote against
+the saved page (prose verbatim; table rows cell by cell; SendCutSend's specs JSON field by field) before writing.
+Pages were read on 2026-11-19 by plain fetch after checking robots.txt (no account, upload or quote).
+`_sources.json` in that directory lists the pages and the sites skipped.
+
+| Supplier | CNC milling | FDM | SLS / MJF / SLA | Pages |
+|---|---|---|---|---|
+| Xometry | 10 | 10 | 4 / 3 / 2 | CNC service, manufacturing standards, internal corner radii, thin walls, cost reduction, 3D-printing, FDM, PLA/PETG, SLS, MJF, SLA service pages |
+| Protolabs | 25 | 8 | 6 / 4 / 3 | CNC milling design guidelines, threaded holes (standard holes table), machining tolerances, FDM, SLS, MJF, SLA pages, thin-wall / small-gap and 3D-printing tolerance design tips |
+| Hubs (Protolabs Network) | 28 | 10 | 7 / 3 / 6 | how to design for CNC machining, sharp corners, ISO tolerances, standard drill table, CNC service; FDM, SLS, SLA, MJF design articles, geometry restrictions, thin walls, FDM and SLS service pages |
+| Fictiv | 5 | - | - | CNC specification page (re-fetch returned 403; the copy read earlier the same day is used) |
+| JLCCNC | 13 | - | - | CNC machining design guideline |
+| JLC3DP | - | 19 | 2 / 1 / 1 | 3D printing design guideline, 3D printing capabilities |
+| SendCutSend (CNC billet) | 17 | - | - | CNC machining guidelines, engineering specs JSON (ALU6061A-CNC) |
+| RapidDirect | 13 | 2 | 1 / - / - | CNC machining design guide, 3D printing design |
+| Shapeways | - | - | 9 / - / - | PA12 (SLS) material page |
+| PCBWay | - | 1 | - | 3D printing service (tolerances only) |
+| own_printer | - | 14 | - | repository files: docs/DESIGN_GUIDELINES.md, mechloop/printsettings.py, verifiers/dfm_rules.py, dfm_print.py |
+
+Not read: www.cnckitchen.com (robots.txt names ClaudeBot, anthropic-ai and Claude-Web with `Disallow: /`);
+craftcloud3d.com (robots.txt allows `/`, but every page returned 403, a Cloudflare challenge; not worked around);
+Fictiv re-fetches (403, same); Xometry's design-guide PDFs (download form). Nothing is interpolated: a rule applies only
+where its own conditions hold (thread size row, hole or pin diameter row, part-size band).
+
+**Disagreements kept side by side** (`conflicts` in the data where two rules contradict):
+inside corner radius against depth: Hubs and RapidDirect 1/3 of the depth (recommended), SendCutSend 1/5 of the wall
+height but at least 1.587 mm (required), JLCCNC R = H/10 + 0.5 mm (the least it can machine), Xometry corner L:D at most
+3:1 (r >= depth / 6); pocket depth: Hubs 4 x width, Hubs' sharp-corners page 2-3 x the cutter, Fictiv 4 x the cutter,
+JLCCNC 5 x the cutter, RapidDirect 10 x (feasible), Hubs 30:1 with special tooling; metal walls: Xometry 0.794 mm, Hubs
+and JLCCNC 0.8 recommended / 0.5 minimum, RapidDirect 0.5 in its table but 0.25 mm in its prose; tapped holes: SendCutSend
+wants the thread's major diameter modelled, Protolabs (M4: 3.24-3.42 mm) and JLCCNC (M3: 2.5 mm) the tap drill; blind
+tap run-out: Hubs 1.5 x d (under M6), JLCCNC 0.5 x d; FDM walls: Protolabs and Hubs 0.8 mm, Xometry 0.047 in. (1.19 mm,
+industrial) and "failing at walls thinner than 0.5 mm" on desktop PLA, JLC3DP 1.6 / 2.0 / 2.5 mm by part size; FDM
+smallest feature: Protolabs and Hubs 2.0 mm, Xometry 0.040 in.; MJF walls: Protolabs 0.5 mm, Hubs 0.5 mm in one table and
+2.5-12.7 mm in its MJF article; SLS holes: Hubs 1.0 mm (service page) and 1.5 mm (design article); Protolabs SLS
+tolerance ±0.25 mm on the service page and ±0.3048 mm in a design tip (0.010 in. both).
+
+**The owner's printer** (`own_printer`, the default for printed parts): one line of the nozzle (error, the project's own
+check), two lines of the declared line width (warning; DERIVED from printsettings' default profile, marked as such),
+45-degree overhang, 30 mm bridge, flat cantilevers (a flat overhang held on one side only needs support at any length),
+2 mm pins and holes, 10 mm horizontal holes, no threads in the print (DESIGN_GUIDELINES DG-04), the build volume
+(design.manufacturing["printer"]["build_volume"] or 220 x 220 x 250 mm). Each quote is checked against its repository
+file by the builder and by tests/test_process_rules.py, so an edit there that changes a rule's words fails the test.
+
+**Features** (`verifiers/dfm_features.py`, general on any solid, design metadata where present). Machined: tool access
+from the six principal directions (each B-rep face sampled on its own triangulation, a straight cutter reaches a sample
+when the face does not face away and a ray towards the direction escapes), inaccessible faces (undercuts), the fewest
+directions that reach everything (set-ups, exhaustive over the 63 sets; faces on the bounding box are stock); vertical
+inside corners (fillets: radius, depth, cutter direction; sharp inside edges no square-on cutter forms: radius 0); pockets
+(flat floor facing a principal direction below the top, walls that face it, depth, depth below the face it is cut from,
+width = largest circle in the floor, length, the corner radii round it and the largest cutter that fits; counterbore
+floors are not pockets); slots (narrowest facing walls a cutter reaches, with depth); holes; threads from screws that
+thread into the part and from `meta["threads"] = [{"size": "M4x0.7", "depth": 10, "at": (x, y, z), "axis": (dx, dy, dz)}]`,
+each matched to its modelled hole (modelled diameter, plain depth below a blind thread); the thinnest walls with their
+free height. Printed (in the print orientation from the process check or `meta["print_up"]`): walls across the layers,
+each thin wall supported (rooted in thicker material on two or more sides) or not; overhang area by angle from vertical
+(horizontal-hole crowns up to 10 mm and flat ceilings bridged up to 30 mm taken out); flat overhangs from the B-rep with
+the edges where material continues downwards (supports), giving the longest cantilever or the bridge span; pins with
+height; holes (horizontal or not); enclosed voids; threads; size. Limits: text and engraving, helical thread geometry,
+teardrop holes, floor fillets and clearances between parts are not measured (rules about them are listed as not
+evaluated).
+
+**Check** (`verifiers/dfm_process_rules.py`, called from manufacture.py for every machined and printed part; off with
+`design.manufacturing["supplier_process_rules"] = False`): assigned rule set = `meta["dfm"]["process_shop"]` /
+`["shop"]`, else the design's, when that supplier publishes rules for the process; else Xometry (CNC) and own_printer
+(FDM); a part's print process is `meta["print"]["process"]` (fdm default). Findings `supplier_process_rule` (error for a
+requirement, warning for a recommendation) with rule id, supplier, measured value, limit, source URL or repository file
+and the words; one info `supplier_process_rules_summary` per part with every supplier's verdict and failed rule ids, for
+printed parts also what SLS, MJF and SLA services would say, and a feature digest (`metrics.parts[<part>].supplier_process_rules`).
+`design.manufacturing["prusaslicer_crosscheck"] = True` slices each printed part with PrusaSlicer (support auto) in its
+print orientation and says whether the slicer's support agrees with the overhang rules (`supplier_process_prusaslicer_crosscheck`).
+Lathe parts are not judged by the milling rules. Code: data and builder as above, evaluation `shops/process_rules.py`
+(geometry-free), features `verifiers/dfm_features.py`; tests `tests/test_process_rules.py` (synthetic solids for each
+extractor, feature-dict evaluation, reference parts RP01, RP02 and RP05).

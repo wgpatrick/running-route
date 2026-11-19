@@ -1,0 +1,102 @@
+{
+ "schema": "mechloop.supplier_rules/1",
+ "version": "2026-11-19.cnc3dp.1",
+ "supplier": "fictiv",
+ "name": "Fictiv",
+ "home": "https://www.fictiv.com/",
+ "retrieved": "2026-11-19",
+ "processes": [
+  "cnc_milling"
+ ],
+ "how_read": "Plain HTTPS page fetch, robots.txt checked first, no account, no upload, no quote; figures copied as published. Prose quotes are verbatim; 'table_row' quotes name the table, row and cells (verified cell by cell); repository quotes are verbatim.",
+ "not_read": [
+  "Re-fetching https://www.fictiv.com/specifications/cnc-machining, /specifications, /specifications/3d-printing, /capabilities/* and the CNC design-guide article on 2026-11-19 returned HTTP 403 (a Cloudflare challenge; robots.txt allows Claude-User). Not retried or worked around. The CNC specification page as fetched earlier the same day (plain fetch, for the sheet-metal rules) is the source; no Fictiv 3D-printing figures were read."
+ ],
+ "rules": [
+  {
+   "id": "fictiv.cnc.pocket_depth_tool",
+   "supplier": "fictiv",
+   "process": "cnc_milling",
+   "rule": "cnc_pocket_depth_tool",
+   "material": "*",
+   "thickness_mm": null,
+   "value": 4.0,
+   "unit": "x cutter diameter",
+   "comparison": "<=",
+   "severity": "warning",
+   "phrasing": "avoid (cost)",
+   "note": "Evaluated here: the cutter is taken as the largest that fits the pocket (its width, and twice its corner radius). The same rule in mechloop/data/supplier_rules/fictiv.json is kept as not evaluated.",
+   "source_url": "https://www.fictiv.com/specifications/cnc-machining",
+   "quote": "Avoid deep pockets and cavities (max depth = 4x tool diameter)",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.cnc.text",
+   "supplier": "fictiv",
+   "process": "cnc_milling",
+   "rule": "cnc_text",
+   "material": "*",
+   "thickness_mm": null,
+   "comparison": ">=",
+   "severity": "warning",
+   "phrasing": "recommendation",
+   "evaluate": false,
+   "note": "Engraved and embossed text is not extracted from the model (gap).",
+   "source_url": "https://www.fictiv.com/specifications/cnc-machining",
+   "quote": "Avoid small text and logos (min 0.020″ depth, 0.030″ width)",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.cnc.setups",
+   "supplier": "fictiv",
+   "process": "cnc_milling",
+   "rule": "cnc_setups_max",
+   "material": "*",
+   "thickness_mm": null,
+   "value": 3,
+   "unit": "set-ups",
+   "comparison": "<=",
+   "severity": "warning",
+   "phrasing": "cost advice",
+   "source_url": "https://www.fictiv.com/specifications/cnc-machining",
+   "quote": "Consolidate features to one side when possible – reduces setups from 4-6 down to 2-3, saving 30-90 min per part",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.cnc.undercuts",
+   "supplier": "fictiv",
+   "process": "cnc_milling",
+   "rule": "cnc_undercut",
+   "material": "*",
+   "thickness_mm": null,
+   "value": 0,
+   "unit": "faces no straight cutter reaches",
+   "comparison": "<=",
+   "severity": "warning",
+   "phrasing": "avoid (cost)",
+   "source_url": "https://www.fictiv.com/specifications/cnc-machining",
+   "quote": "Avoid undercuts requiring T-slot cutters or lollipop mills – these add 15-45 min programming + specialized tooling costs",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  },
+  {
+   "id": "fictiv.cnc.tolerance",
+   "supplier": "fictiv",
+   "process": "cnc_milling",
+   "rule": "tolerance",
+   "material": "*",
+   "thickness_mm": null,
+   "value_mm": 0.127,
+   "comparison": "info",
+   "severity": "info",
+   "phrasing": "statement",
+   "source_url": "https://www.fictiv.com/specifications/cnc-machining",
+   "quote": "Standard tolerances (±0.005\" / ±0.127mm) are achievable with normal machining.",
+   "quote_kind": "text",
+   "retrieved": "2026-11-19"
+  }
+ ]
+}
