@@ -312,7 +312,28 @@ solids, T-nuts and second washers on the beam's plates). Nothing else in the mot
 - v10's open items stand (docs/PRINTER_V10.md). One decision the owner has taken since is not acted on here: purchased
   parts at stock sizes with no cutting (v10's cut X rail and cut lead screws remain, for the next revision).
 
-RUN_SECTION
+## What was run
+
+All on 2026-11-19, on the final code (design and checkers as of commit 4512eec; later commits touch only documents,
+generators, tests and outputs). The full `verify` once (91 min; v10 66 min: the assembly check and the interference check
+now handle 247 more parts): passed, the report above. Then, on that code and report: `tune` (4 min), `score --assembly`
+(71 min), the viewer export with the assembly simulation (`tools/export_viewer.py`; `viewer/meshes.txt` 14.1 MB, v10 12.1 MB:
+the McMaster fasteners are shown by their light ISO outline, see above), the build package with its drawings
+(`tools/build_package.py`, `docs/build/printer_v10_1/`; its freshness check had flagged eight hardware SKUs' masses as
+"catalogue changed since the report", which was the ratings verifier rounding its running total to 0.1 g after every
+piece, now allowed for: v10's package carries the same false warning), the review data (`tools/build_review.py printer_v10_1`,
+`review/data.json`, `review/drawings/`), `tools/mcmaster_wanted.py` (unchanged output), and the whole test suite:
+`pytest -q`, 533 passed and 1 failed in 17 min. The failure was a test's list of allowed retrieval dates for vendor data
+files, which did not include the date the Misumi pages were fetched (2026-11-19); the date was added and that file's tests
+pass (62).
+
+The viewer and review data now show the three belts (`belt_x`, `belt_y`, `belt_y_l`) as purchased parts: a ribbon of the
+belt's width and 1.4 mm thickness on its routed pitch line at the home pose, from the same route the belt verifier uses.
+They are display parts only (not components of the design, so not in the part count or the verified mass); the X belt
+moves with the gantry beam on the page and does not follow the carriage.
+
+Not run: `score --firmware klipper`; a firmware-in-the-loop print (v10's print path is kept in the viewer: the toolhead's
+made parts did not change); any test of the generated drawings beyond the generator's own checks; nothing physical.
 
 ## Questions for the owner
 
@@ -325,3 +346,18 @@ RUN_SECTION
 5. The four beam bolts: leave at 0.59 d, or M5 x 12 with a second washer?
 6. Is thread locker on the nut pins' M2.5 nuts acceptable in place of nylocs?
 7. The two large washer sizes McMaster does not sell (M3 9 mm OD, M4 12 mm OD): another supplier, or another size?
+8. The Y motors' shaft load is now 1.01 of the allowance (v10 0.99) because the bought washers put the Y belt plane 0.2 mm
+   further out. Accept it (the limit's meaning is inferred from a one-line note on the motor drawing), set the belt
+   tension a little under Gates' minimum, or move the pulley 0.2 mm towards the motor (the belt brackets were not to
+   change in v10.1)?
+
+## Files
+
+- `designs/printer_v10_1.py`; `out/printer_v10_1/report.json`, `scores.jsonl`, `tune/tuning.json` (not in git)
+- slot and T-nut data: `mechloop/parts/vendor/tslot_2020_hardware.json`, `mechloop/parts/tslot.py`; Misumi's pages in
+  `vendor_docs/`
+- checkers: `mechloop/verifiers/interference.py` (T-slot screws), `mechloop/verifiers/practice.py` (completeness),
+  `mechloop/assembly/planner.py`; `tests/test_v10_1_support.py`
+- supplier CAD: `vendor_cad/inbox/`, `vendor_cad/SOURCES.md`, `vendor_cad/mcmaster_wanted.csv` (`tools/mcmaster_wanted.py`)
+- `docs/build/printer_v10_1/`, `viewer/`, `review/data.json`, `review/drawings/` (generated); v10's viewer and review data
+  kept in `viewer_v10/` and `review_v10/`

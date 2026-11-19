@@ -1,0 +1,36 @@
+sku,kind,size,length,in_model,bom_only,total,order,hex_key,mcmaster,mcmaster_status
+TNUT-2020-M3,T-nut 2020,M3,,33,0,33,37,,,
+TNUT-2020-M5,T-nut 2020,M5,,123,0,123,136,,,
+SHCS-M2.5x12,cap screw ISO 4762,M2.5,12,2,0,2,3,2,91290A008,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+SHCS-M2.5x16,cap screw ISO 4762,M2.5,16,3,0,3,4,2,91290A200,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+SHCS-M3x5,cap screw ISO 4762,M3,5,12,0,12,14,2.5,91290A110,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+SHCS-M3x6,cap screw ISO 4762,M3,6,12,0,12,14,2.5,91290A111,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+SHCS-M3x8,cap screw ISO 4762,M3,8,45,0,45,50,2.5,91290A400,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+SHCS-M3x10,cap screw ISO 4762,M3,10,20,0,20,22,2.5,91290A115,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+SHCS-M3x12,cap screw ISO 4762,M3,12,2,0,2,3,2.5,91290A500,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+SHCS-M3x16,cap screw ISO 4762,M3,16,14,0,14,16,2.5,91290A120,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+SHCS-M3x18,cap screw ISO 4762,M3,18,2,0,2,3,2.5,91290A121,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+SHCS-M3x20,cap screw ISO 4762,M3,20,8,0,8,9,2.5,91290A123,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+SHCS-M3x40,cap screw ISO 4762,M3,40,2,0,2,3,2.5,91290A136,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+SHCS-M3x45,cap screw ISO 4762,M3,45,2,0,2,3,2.5,91290A079,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+SHCS-M3x50,cap screw ISO 4762,M3,50,2,0,2,3,2.5,91290A137,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+SHCS-M4x6,cap screw ISO 4762,M4,6,4,0,4,5,3,90128A208,"confirmed on McMaster's product page (supplier CAD batch 2026-11-18): 90128A208 is zinc-plated (McMaster has no black-oxide M4 x 6); drawing PDF only, its STEP is over the 5 MB cap: the generated ISO 4762 geometry stays as a stand-in"
+SHCS-M5x6,cap screw ISO 4762,M5,6,1,0,1,2,4,91290A221,confirmed by the delivered STEP file (geometry only: the part number was not checked on McMaster's page)
+SHCS-M5x8,cap screw ISO 4762,M5,8,80,0,80,88,4,91290A222,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+SHCS-M5x10,cap screw ISO 4762,M5,10,30,0,30,33,4,91290A224,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+SHCS-M5x12,cap screw ISO 4762,M5,12,6,0,6,7,4,91290A228,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+SHCS-M5x30,cap screw ISO 4762,M5,30,2,0,2,3,4,91290A194,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+SHCS-M5x35,cap screw ISO 4762,M5,35,1,0,1,2,4,91290A195,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+SHCS-M5x70,cap screw ISO 4762,M5,70,6,0,6,7,4,91290A201,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+NUT-M5-DIN934,hex nut DIN 934,M5,,3,0,3,4,,90591A260,"confirmed on McMaster's product page (supplier CAD batch 2026-11-18): 90591A260 is DIN 934, 4.0 mm high (ISO 4032 is 4.7): place it with hex_nut('M5', 'din934') / add_nut(..., standard='din934'), SKU NUT-M5-DIN934"
+NUT-M2.5,hex nut ISO 4032,M2.5,,5,0,5,6,,90591A270,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+NUT-M3,hex nut ISO 4032,M3,,19,0,19,21,,90591A250,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+NUT-M3-NYLOC,hex nut ISO 4032,M3,,16,0,16,18,,90576A102,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+NUT-M4,hex nut ISO 4032,M4,,3,0,3,4,,90591A255,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+WASHER-M2.5,star washer,M2.5,,2,0,2,3,,91166A190,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+WASHER-M3,star washer,M3,,71,0,71,79,,91166A210,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+WASHER-M3-LARGE,star washer,M3,,12,0,12,14,,,
+WASHER-M4,star washer,M4,,6,0,6,7,,91166A230,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+WASHER-M4-LARGE,star washer,M4,,3,0,3,4,,,
+WASHER-M5,star washer,M5,,91,0,91,101,,91166A240,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+WASHER-M5-SERRATED,star washer,M5,,1,0,1,2,,,

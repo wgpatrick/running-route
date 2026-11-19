@@ -196,7 +196,8 @@ def check_fresh(cx: Ctx) -> None:
             drift.append(f"{sku} unit cost: report {r_['unit_cost_usd']}, catalogue now {c.meta['cost_usd']}")
         if r_.get("mcmaster_pn_status") != c.ratings.get("mcmaster_pn_status"):
             drift.append(f"{sku} McMaster status: report '{str(r_.get('mcmaster_pn_status'))[:50]}', catalogue now '{str(c.ratings.get('mcmaster_pn_status'))[:50]}'")
-        if abs((r_.get("mass_kg") or 0) - sum(x.mass() for x in d.components if (x.sku or x.name) == sku)) > 5e-4:
+        # the ratings verifier rounds its running total to 0.1 g after every piece, so it may be off by up to qty x 0.05 g
+        if abs((r_.get("mass_kg") or 0) - sum(x.mass() for x in d.components if (x.sku or x.name) == sku)) > 5e-4 + 5e-5 * (r_.get("qty") or 0):
             drift.append(f"{sku} mass differs from the report")
     if drift:
         cx.warnings.append("the parts catalogue has changed since the report was written (the package uses the catalogue as it is NOW; re-run verify to make the report agree): " + "; ".join(drift[:12]))

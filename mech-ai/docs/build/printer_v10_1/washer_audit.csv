@@ -1,0 +1,94 @@
+fastener,sku,kind,bears_on,process,material,thickness_mm,coverage,why,cast_bracket
+bracket_0_screw_a,SHCS-M5x8,screw head,bracket_0,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+bracket_0_screw,SHCS-M5x8,screw head,bracket_0,purchased,al6061,2.8,0.67,on a slot or oversize hole (only 67% of the bearing ring has material under it),True
+bracket_1_screw_a,SHCS-M5x8,screw head,bracket_1,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+bracket_1_screw,SHCS-M5x8,screw head,bracket_1,purchased,al6061,2.8,0.67,on a slot or oversize hole (only 67% of the bearing ring has material under it),True
+bracket_2_screw_a,SHCS-M5x8,screw head,bracket_2,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+bracket_2_screw,SHCS-M5x8,screw head,bracket_2,purchased,al6061,2.8,0.65,on a slot or oversize hole (only 65% of the bearing ring has material under it),True
+bracket_3_screw_a,SHCS-M5x8,screw head,bracket_3,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+bracket_3_screw,SHCS-M5x8,screw head,bracket_3,purchased,al6061,2.8,0.67,on a slot or oversize hole (only 67% of the bearing ring has material under it),True
+bracket_4_screw_a,SHCS-M5x8,screw head,bracket_4,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+bracket_4_screw,SHCS-M5x8,screw head,bracket_4,purchased,al6061,2.8,0.67,on a slot or oversize hole (only 67% of the bearing ring has material under it),True
+bracket_5_screw_a,SHCS-M5x8,screw head,bracket_5,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+bracket_5_screw,SHCS-M5x8,screw head,bracket_5,purchased,al6061,2.8,0.67,on a slot or oversize hole (only 67% of the bearing ring has material under it),True
+bracket_6_screw_a,SHCS-M5x8,screw head,bracket_6,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+bracket_6_screw,SHCS-M5x8,screw head,bracket_6,purchased,al6061,2.8,0.65,on a slot or oversize hole (only 65% of the bearing ring has material under it),True
+bracket_7_screw_a,SHCS-M5x8,screw head,bracket_7,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+bracket_7_screw,SHCS-M5x8,screw head,bracket_7,purchased,al6061,2.8,0.67,on a slot or oversize hole (only 67% of the bearing ring has material under it),True
+bracket_8_screw_a,SHCS-M5x8,screw head,bracket_8,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+bracket_8_screw,SHCS-M5x8,screw head,bracket_8,purchased,al6061,2.8,0.67,on a slot or oversize hole (only 67% of the bearing ring has material under it),True
+bracket_9_screw_a,SHCS-M5x8,screw head,bracket_9,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+bracket_9_screw,SHCS-M5x8,screw head,bracket_9,purchased,al6061,2.8,0.67,on a slot or oversize hole (only 67% of the bearing ring has material under it),True
+bracket_10_screw_a,SHCS-M5x8,screw head,bracket_10,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+bracket_10_screw,SHCS-M5x8,screw head,bracket_10,purchased,al6061,2.8,0.65,on a slot or oversize hole (only 65% of the bearing ring has material under it),True
+bracket_11_screw_a,SHCS-M5x8,screw head,bracket_11,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+bracket_11_screw,SHCS-M5x8,screw head,bracket_11,purchased,al6061,2.8,0.65,on a slot or oversize hole (only 65% of the bearing ring has material under it),True
+bracket_12_screw_a,SHCS-M5x8,screw head,bracket_12,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+bracket_12_screw,SHCS-M5x8,screw head,bracket_12,purchased,al6061,2.8,0.67,on a slot or oversize hole (only 67% of the bearing ring has material under it),True
+bracket_13_screw_a,SHCS-M5x8,screw head,bracket_13,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+bracket_13_screw,SHCS-M5x8,screw head,bracket_13,purchased,al6061,2.8,0.67,on a slot or oversize hole (only 67% of the bearing ring has material under it),True
+bracket_14_screw_a,SHCS-M5x8,screw head,bracket_14,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+bracket_14_screw,SHCS-M5x8,screw head,bracket_14,purchased,al6061,2.8,0.65,on a slot or oversize hole (only 65% of the bearing ring has material under it),True
+bracket_15_screw_a,SHCS-M5x8,screw head,bracket_15,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+bracket_15_screw,SHCS-M5x8,screw head,bracket_15,purchased,al6061,2.8,0.65,on a slot or oversize hole (only 65% of the bearing ring has material under it),True
+brkt_up_bot_a_left_screw_a,SHCS-M5x8,screw head,brkt_up_bot_a_left,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+brkt_up_bot_a_left_screw,SHCS-M5x8,screw head,brkt_up_bot_a_left,purchased,al6061,2.8,0.65,on a slot or oversize hole (only 65% of the bearing ring has material under it),True
+brkt_up_bot_b_left_screw_a,SHCS-M5x8,screw head,brkt_up_bot_b_left,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+brkt_up_bot_b_left_screw,SHCS-M5x8,screw head,brkt_up_bot_b_left,purchased,al6061,2.8,0.65,on a slot or oversize hole (only 65% of the bearing ring has material under it),True
+brkt_up_top_a_left_screw_a,SHCS-M5x8,screw head,brkt_up_top_a_left,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+brkt_up_top_a_left_screw,SHCS-M5x8,screw head,brkt_up_top_a_left,purchased,al6061,2.8,0.67,on a slot or oversize hole (only 67% of the bearing ring has material under it),True
+brkt_up_top_b_left_screw_a,SHCS-M5x8,screw head,brkt_up_top_b_left,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+brkt_up_top_b_left_screw,SHCS-M5x8,screw head,brkt_up_top_b_left,purchased,al6061,2.8,0.67,on a slot or oversize hole (only 67% of the bearing ring has material under it),True
+brkt_up_bot_a_right_screw_a,SHCS-M5x8,screw head,brkt_up_bot_a_right,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+brkt_up_bot_a_right_screw,SHCS-M5x8,screw head,brkt_up_bot_a_right,purchased,al6061,2.8,0.65,on a slot or oversize hole (only 65% of the bearing ring has material under it),True
+brkt_up_bot_b_right_screw_a,SHCS-M5x8,screw head,brkt_up_bot_b_right,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+brkt_up_bot_b_right_screw,SHCS-M5x8,screw head,brkt_up_bot_b_right,purchased,al6061,2.8,0.65,on a slot or oversize hole (only 65% of the bearing ring has material under it),True
+brkt_up_top_a_right_screw_a,SHCS-M5x8,screw head,brkt_up_top_a_right,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+brkt_up_top_a_right_screw,SHCS-M5x8,screw head,brkt_up_top_a_right,purchased,al6061,2.8,0.67,on a slot or oversize hole (only 67% of the bearing ring has material under it),True
+brkt_up_top_b_right_screw_a,SHCS-M5x8,screw head,brkt_up_top_b_right,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+brkt_up_top_b_right_screw,SHCS-M5x8,screw head,brkt_up_top_b_right,purchased,al6061,2.8,0.67,on a slot or oversize hole (only 67% of the bearing ring has material under it),True
+brkt_up_bot_a_rear_screw_a,SHCS-M5x8,screw head,brkt_up_bot_a_rear,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+brkt_up_bot_a_rear_screw,SHCS-M5x8,screw head,brkt_up_bot_a_rear,purchased,al6061,2.8,0.65,on a slot or oversize hole (only 65% of the bearing ring has material under it),True
+brkt_up_bot_b_rear_screw_a,SHCS-M5x8,screw head,brkt_up_bot_b_rear,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+brkt_up_bot_b_rear_screw,SHCS-M5x8,screw head,brkt_up_bot_b_rear,purchased,al6061,2.8,0.65,on a slot or oversize hole (only 65% of the bearing ring has material under it),True
+brkt_up_top_a_rear_screw_a,SHCS-M5x8,screw head,brkt_up_top_a_rear,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+brkt_up_top_a_rear_screw,SHCS-M5x8,screw head,brkt_up_top_a_rear,purchased,al6061,2.8,0.67,on a slot or oversize hole (only 67% of the bearing ring has material under it),True
+brkt_up_top_b_rear_screw_a,SHCS-M5x8,screw head,brkt_up_top_b_rear,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+brkt_up_top_b_rear_screw,SHCS-M5x8,screw head,brkt_up_top_b_rear,purchased,al6061,2.8,0.67,on a slot or oversize hole (only 67% of the bearing ring has material under it),True
+sq_bracket_fl_screw_a,SHCS-M5x8,screw head,sq_bracket_fl,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+sq_bracket_fl_screw,SHCS-M5x8,screw head,sq_bracket_fl,purchased,al6061,2.8,0.67,on a slot or oversize hole (only 67% of the bearing ring has material under it),True
+sq_bracket_fr_screw_a,SHCS-M5x8,screw head,sq_bracket_fr,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+sq_bracket_fr_screw,SHCS-M5x8,screw head,sq_bracket_fr,purchased,al6061,2.8,0.65,on a slot or oversize hole (only 65% of the bearing ring has material under it),True
+sq_bracket_rl_screw_a,SHCS-M5x8,screw head,sq_bracket_rl,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+sq_bracket_rl_screw,SHCS-M5x8,screw head,sq_bracket_rl,purchased,al6061,2.8,0.67,on a slot or oversize hole (only 67% of the bearing ring has material under it),True
+sq_bracket_rr_screw_a,SHCS-M5x8,screw head,sq_bracket_rr,purchased,al6061,2.8,0.42,on a slot or oversize hole (only 42% of the bearing ring has material under it),True
+sq_bracket_rr_screw,SHCS-M5x8,screw head,sq_bracket_rr,purchased,al6061,2.8,0.65,on a slot or oversize hole (only 65% of the bearing ring has material under it),True
+y_plate_left_screw_0,SHCS-M3x8,screw head,y_plate_left,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+y_plate_left_screw_1,SHCS-M3x8,screw head,y_plate_left,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+y_plate_left_screw_2,SHCS-M3x8,screw head,y_plate_left,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+y_plate_left_screw_3,SHCS-M3x8,screw head,y_plate_left,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+y_plate_right_screw_0,SHCS-M3x8,screw head,y_plate_right,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+y_plate_right_screw_1,SHCS-M3x8,screw head,y_plate_right,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+y_plate_right_screw_2,SHCS-M3x8,screw head,y_plate_right,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+y_plate_right_screw_3,SHCS-M3x8,screw head,y_plate_right,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+tool_screw_0,SHCS-M3x6,screw head,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+tool_screw_1,SHCS-M3x6,screw head,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+tool_screw_2,SHCS-M3x6,screw head,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+tool_screw_3,SHCS-M3x6,screw head,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+psu_screw_0,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+psu_screw_1,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+psu_screw_2,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+psu_screw_3,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+control_board_screw_0,SHCS-M3x16,screw head,control_board,purchased,abs,1.5,1.0,on a circuit board,False
+control_board_screw_1,SHCS-M3x16,screw head,control_board,purchased,abs,1.5,1.0,on a circuit board,False
+control_board_screw_2,SHCS-M3x16,screw head,control_board,purchased,abs,1.5,1.0,on a circuit board,False
+control_board_screw_3,SHCS-M3x16,screw head,control_board,purchased,abs,1.5,1.0,on a circuit board,False
+host_screw_0,SHCS-M2.5x12,screw head,host,purchased,abs,1.2,1.0,on a circuit board,False
+host_screw_3,SHCS-M2.5x12,screw head,host,purchased,abs,1.2,1.0,on a circuit board,False
+psu_relay_screw_0,SHCS-M3x16,screw head,psu_relay,purchased,abs,1.5,1.0,on a circuit board,False
+psu_relay_screw_1,SHCS-M3x16,screw head,psu_relay,purchased,abs,1.5,1.0,on a circuit board,False
+psu_relay_screw_2,SHCS-M3x16,screw head,psu_relay,purchased,abs,1.5,1.0,on a circuit board,False
+x_belt_bracket_nut_0,NUT-M3,nut,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+x_belt_bracket_nut_1,NUT-M3,nut,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+y_endstop_nut_0,NUT-M3,nut,y_endstop,purchased,abs,1.5,0.98,on a circuit board,False
+y_endstop_nut_1,NUT-M3,nut,y_endstop,purchased,abs,1.5,0.98,on a circuit board,False

@@ -1,0 +1,168 @@
+{
+ "design": "printer_v10_1",
+ "design_md5": "743760e5b9f33592d177b095466ca1b8",
+ "report_md5": "b3480109e84b399894364d6d45965923",
+ "report_time": "2026-11-19 04:43:46",
+ "stale": [],
+ "warnings": [],
+ "recon": {
+  "components": 825,
+  "purchased_components": 788,
+  "custom_components": 37,
+  "bom_lines": 107,
+  "report_skus": 107,
+  "qty_modelled": 788,
+  "qty_bom_only": 247,
+  "cost": 1061.69,
+  "report_cost": 1061.69,
+  "sku_quantities_equal_report": true,
+  "modelled_equals_components": true
+ },
+ "custom_by_process": {
+  "sheet": 32,
+  "printed": 5
+ },
+ "standins": [
+  "GT2-20T-B5 [12 mm belt]",
+  "GT2-BELT-12MM-OPEN-1M",
+  "GT2-IDLER-20T-B5 [12 mm belt]",
+  "BED-MAGNET-PEI235-BASE-STANDIN"
+ ],
+ "open_items": {
+  "A": 14,
+  "B": 80,
+  "C": 21
+ },
+ "washer_audit_rows": 93,
+ "commissioning_steps": 37,
+ "dxf_cut_length_check": {
+  "carriage_plate_left": {
+   "written_mm": 412.1,
+   "report_mm": 412.0
+  },
+  "carriage_plate_right": {
+   "written_mm": 412.1,
+   "report_mm": 412.0
+  },
+  "carriage_plate_rear": {
+   "written_mm": 412.1,
+   "report_mm": 412.0
+  },
+  "z_deck": {
+   "written_mm": 1354.0,
+   "report_mm": 1354.0
+  },
+  "nut_plate": {
+   "written_mm": 381.5,
+   "report_mm": 381.0
+  },
+  "nut_keeper": {
+   "written_mm": 250.5,
+   "report_mm": 250.0
+  },
+  "nut_plate_fl": {
+   "written_mm": 381.5,
+   "report_mm": 381.0
+  },
+  "nut_keeper_fl": {
+   "written_mm": 250.5,
+   "report_mm": 250.0
+  },
+  "nut_plate_fr": {
+   "written_mm": 381.5,
+   "report_mm": 381.0
+  },
+  "nut_keeper_fr": {
+   "written_mm": 250.5,
+   "report_mm": 250.0
+  },
+  "bed_plate": {
+   "written_mm": 1045.0,
+   "report_mm": 1045.0
+  },
+  "z_motor_plate": {
+   "written_mm": 334.1,
+   "report_mm": 334.0
+  },
+  "z_motor_plate_fl": {
+   "written_mm": 334.1,
+   "report_mm": 334.0
+  },
+  "z_motor_plate_fr": {
+   "written_mm": 334.1,
+   "report_mm": 334.0
+  },
+  "y_plate_left": {
+   "written_mm": 466.4,
+   "report_mm": 466.0
+  },
+  "y_plate_right": {
+   "written_mm": 546.2,
+   "report_mm": 546.0
+  },
+  "tool_plate": {
+   "written_mm": 338.6,
+   "report_mm": 339.0
+  },
+  "tool_plate_rear": {
+   "written_mm": 405.9,
+   "report_mm": 406.0
+  },
+  "x_belt_bracket": {
+   "written_mm": 157.8,
+   "report_mm": null
+  },
+  "x_belt_clamp": {
+   "written_mm": 146.0,
+   "report_mm": 146.0
+  },
+  "x_motor_mount": {
+   "written_mm": 423.2,
+   "report_mm": 423.0
+  },
+  "x_idler_mount": {
+   "written_mm": 263.6,
+   "report_mm": null
+  },
+  "x_tension_anchor": {
+   "written_mm": 149.0,
+   "report_mm": null
+  },
+  "y_motor_mount": {
+   "written_mm": 39.8,
+   "report_mm": null
+  },
+  "y_tension_anchor": {
+   "written_mm": 103.9,
+   "report_mm": null
+  },
+  "y_idler_mount": {
+   "written_mm": 286.7,
+   "report_mm": 287.0
+  },
+  "y_motor_mount_l": {
+   "written_mm": 452.1,
+   "report_mm": null
+  },
+  "y_tension_anchor_l": {
+   "written_mm": 103.9,
+   "report_mm": null
+  },
+  "y_idler_mount_l": {
+   "written_mm": 286.7,
+   "report_mm": 287.0
+  },
+  "y_endstop_mount": {
+   "written_mm": 57.6,
+   "report_mm": null
+  },
+  "electronics_tray": {
+   "written_mm": 1498.9,
+   "report_mm": 1499.0
+  },
+  "inlet_panel": {
+   "written_mm": 570.5,
+   "report_mm": 571.0
+  }
+ }
+}
