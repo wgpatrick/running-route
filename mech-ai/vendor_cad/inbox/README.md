@@ -51,19 +51,22 @@ Keep each file under about 5 MB. Part numbers marked "look up" are not known wit
 | MEAN WELL LRS-200-24 (only if you use the 200 W supply) | LRS-200-24 | https://www.meanwell.com/upload/pdf/LRS-200/LRS-200-3D.zip (it is a RAR archive: unpack by hand) | `LRS-200-24.step` |
 | BIGTREETECH SKR Mini E3 V3.0, full model | SKR MINI E3 V3.0 | already fetched; the full 17.7 MB file can replace the reduced one | `BTT E3 SKR MINI V3.0.step` |
 
-## T-slot hardware and other stand-ins added with printer_v10_1 (2026-11-18)
+## Still wanted after printer_v10_1 (2026-11-19)
 
-Wanted as supplier CAD; each is a stand-in in the model today (docs/PRINTER_V10_1.md lists every assumed dimension).
+McMaster's files for most fasteners are in this folder since the 2026-11-18 supplier batch (`../SOURCES.md` lists them).
+What is still a re-make or a stand-in in the model (docs/PRINTER_V10_1.md):
 
 | part (catalogue call) | what to get | save as |
 |---|---|---|
-| Drop-in T-nut M5, 2020 slot 6 (`tnut_2020("M5")`), 123 in printer_v10_1 | the STEP of the nut you will buy (post-assembly insertion, spring-held), AND its dimensioned drawing: overall height, height behind the slot's lip, thread length | `TNUT-2020-M5.step` |
-| Drop-in T-nut M3, 2020 slot 6 (`tnut_2020("M3")`), 33 | same | `TNUT-2020-M3.step` |
-| 2020 extrusion's slot section | the supplier's dimensioned section drawing: slot depth, lip thickness, cavity width. Put the figures in `mechloop/parts/vendor/tslot_2020_hardware.json` ("slot" / "used") | (figures, not a file) |
+| Drop-in T-nut M5, 2020 slot 6 (`tnut_2020("M5")`), 123 in printer_v10_1: Misumi HNTAJ5-5, re-made from the catalogue drawing | Misumi's STEP (us.misumi-ec.com part page; CAD needs a login) | `TNUT-2020-M5.step` |
+| Drop-in T-nut M3 (`tnut_2020("M3")`), 33: Misumi HNTAJ5-3 | same | `TNUT-2020-M3.step` |
+| 2020 extrusion, slot 6: Misumi HFS5-2020 | Misumi's STEP; the slot's figures are already read from the catalogue drawing | `EXT2020-<length>.step` or `HFS5-2020.step` |
 | Self-clinching nut M3 in sheet (`hex_nut("M3", "pem")`), 5 | PennEngineering S-M3-1 (or what SendCutSend installs) | `NUT-PEM-S-M3-1.step` |
-| Flat washers, nyloc nuts, toothed washer, countersunk screws | see `vendor_cad/mcmaster_wanted.csv`: every fastener type of printer_v10_1 with its SKU (the file name to save under), quantity and the state of its geometry today | `<SKU>.step` |
+| Large washers M3 9 mm OD (12) and M4 12 mm OD (3) | not sold by McMaster: another supplier's file | `WASHER-M3-LARGE.step`, `WASHER-M4-LARGE.step` |
+| M4 x 6 cap screw (4), M5 x 6 cap screw (1), M5 toothed washer (1) | McMaster 90128A208 (its STEP is over 5 MB: reduce it), 91290A221 (number not checked), a DIN 6797 washer | `SHCS-M4x6.step`, `SHCS-M5x6.step`, `WASHER-M5-SERRATED.step` |
 
-McMaster numbers in `mcmaster_wanted.csv` are all marked unverified: none was checked on McMaster's pages.
+`vendor_cad/mcmaster_wanted.csv` lists every fastener type of printer_v10_1 with its SKU, quantity, McMaster number and the
+state of its geometry today.
 
 ## Fasteners (McMaster-Carr was not reachable)
 

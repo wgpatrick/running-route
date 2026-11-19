@@ -2495,42 +2495,40 @@ CURATED_V10 = [
 
 
 CURATED_V10_1 = [
-    ("A", "T-nut and slot dimensions are assumed: the screw-length verdicts rest on them",
-     "No supplier drawing of the 2020 slot or of a drop-in T-nut could be fetched. The checks use: slot 6.0 mm deep with a 2.0 mm lip (a community copy "
-     "of Misumi's HFS5-2020 section); T-nut 4.4 mm high of which 3.4 mm, with its thread, is behind the lip (one search snippet and two guesses); "
-     "0.5 mm kept between a screw's tip and the slot floor; at least 0.5 d of thread. On the other 2020 section on file (B-type: 5.3 mm deep, 1.5 mm lip) "
-     "84 of the 156 T-slot screws would end closer than 0.5 mm to the floor. On McMaster's 5 mm-slot rail with its own T-nuts (measured in the supplier's "
-     "STEP files; a different system, not adopted) none would bottom and 12 would have 2.49 mm of thread against the 2.5 mm asked "
-     "(docs/PRINTER_V10_1.md has every verdict under each geometry).",
-     "before buying screws: measure the slot depth and lip of the extrusion you bought and the height and thread length of the T-nut you bought, put the "
-     "figures in mechloop/parts/vendor/tslot_2020_hardware.json and re-run verify; save the T-nut's STEP as vendor_cad/inbox/TNUT-2020-M5.step / -M3.step"),
-    ("A", "M5 screws in T-nuts have a thin nut's thread, not a full nut's",
-     "With a 2.0 mm lip and a 6.0 mm slot no M5 screw can have more than 3.5 mm (0.7 d) of thread in a T-nut without coming within 0.5 mm of the floor; "
-     "the 123 M5 T-slot screws have 2.6 to 3.5 mm. The class-8.8 torque (6.5 N.m) assumes a full nut.",
-     "tighten M5 screws in T-nuts to a reduced torque (about 4 N.m, ASSUMED, in proportion to the thread) until the bought T-nut's maker states one"),
     ("A", "Corner-bracket screws have no washer on the casting's slot",
      "Each of the 64 bracket legs takes a bare M5 x 8 cap-screw head on the casting's 6 mm slot: 27 % of the seat the head has on a round hole (ratings "
-     "warning). Washers do not fit: with one under each head the two heads in a bracket collide inside the slots, and the screw is then too short or "
-     "bottoms. The guideline 'washers on slots' is therefore NOT met at the brackets.",
-     "use flanged button-head screws ISO 7380-2 M5 x 8 (flange about 11.5 mm; not in the catalogue, not checked) or brackets with round holes; decide before buying"),
-    ("B", "Two washers under 30 M5 x 10 and M5 x 12 screws",
-     "On the 3.2 mm plates (deck, X motor, idler and tension-anchor plates, Y tension anchors, tray, inlet panel) and the 4.75 mm Y plates one washer "
-     "leaves no standard screw length that neither bottoms nor falls under 0.5 d: a second ISO 7089 washer under the head sets the depth.",
-     "fit both washers; or use one 2 mm thick washer (DIN 7349, not in the catalogue) if you have them"),
-    ("A", "Choose the T-slot system: standard 2020 (6 mm slot) or McMaster's 20 mm rail (5 mm slot)",
-     "The design is drawn on the standard 2020 6 mm slot with stand-in T-nuts. McMaster sells a 20 mm rail with a 5 mm slot (5537T101), drop-in "
-     "T-nuts for it (5278N42 M3, 5278N44 M5) and a corner bracket (5537T935); their CAD is staged, not adopted. An M5 screw is as wide as that "
-     "slot's opening, and every plate hole, rail and bracket would have to be checked again on it.",
-     "decide before ordering extrusion, T-nuts or brackets; the screw-length check already reports its verdicts for both"),
+     "warning). Washers do not fit: with one under each head the two heads in a bracket collide inside the slots. The guideline 'washers on "
+     "slots' is therefore NOT met at the brackets.",
+     "use flanged button-head screws ISO 7380-2 M5 x 8 (flange about 11.5 mm; not in the catalogue, not checked) or brackets with round holes "
+     "(Misumi HBLFSN5 has 5.2 mm holes); decide before buying"),
+    ("A", "Screw lengths in T-slots rest on Misumi's catalogue drawings, without tolerances",
+     "Slot 6.0 mm deep with a 2.0 mm lip (HFS5 series), T-nut HNTAJ5 3.2 mm high with a 2.4 mm body under the lips: read from the 2019 US "
+     "catalogue (copies in vendor_docs/). The drawings give no tolerances; 0.5 mm is kept between a screw's tip and the slot floor. If an "
+     "extrusion of another make is bought, its slot may be shallower: on the other 2020 section on file (5.3 mm deep) 80 of the 156 T-slot "
+     "screws would end closer than 0.5 mm to the floor (docs/PRINTER_V10_1.md).",
+     "buy Misumi HFS5-2020 and HNTAJ5-5 / HNTAJ5-3, or measure the slot depth and lip of what is bought, put the figures in "
+     "mechloop/parts/vendor/tslot_2020_hardware.json and re-run verify"),
+    ("B", "T-nut model: re-made from the catalogue drawing, not supplier CAD",
+     "The drawn T-nut has every dimension of Misumi's HNTAJ5 drawing; its edge chamfers, leaf spring and countersink ring are drawn there without "
+     "dimensions and are left out.",
+     "save Misumi's STEP as vendor_cad/inbox/TNUT-2020-M5.step and TNUT-2020-M3.step when it is in hand"),
+    ("B", "Two washers under 26 M5 x 10 screws",
+     "On the 3.2 mm plates (deck, X motor, idler and tension-anchor plates, Y tension anchors, tray) and the 2.5 mm inlet panel one washer leaves "
+     "M5 x 8 (2.5 mm of thread, 0.505 d: a pass by 0.03 mm) or M5 x 10 (0.3 mm from the slot floor). A second ISO 7089 washer under an M5 x 10 "
+     "puts the screw through the whole nut, 1.4 mm off the floor.",
+     "fit both washers; or use M5 x 8 with one washer and accept the smaller thread"),
+    ("B", "Four beam bolts stop 0.25 mm short of the T-nut's far side",
+     "M5 x 10 through the 4.75 mm Y plate and a washer: 2.95 mm of thread (0.59 d) of the nut's 3.2 mm. As v10 had them.",
+     "M5 x 12 with a second washer uses the whole nut, if preferred"),
     ("B", "Hardware McMaster does not sell, or sells differently",
      "Large washers M3 9 mm OD (12) and M4 12 mm OD (3): not sold by McMaster, still stand-ins. M4 x 6 cap screws (4): only zinc-plated (90128A208), "
      "no CAD under 5 MB. M5 x 6 (1, the earth stud) and the M5 toothed washer were not in the supplier batch. The M5 hex nut is DIN 934 (4.0 mm), "
      "which the design now uses. Washers M2.5 to M5 are 0.1 mm thicker than the standard's mid value and the model now has the bought thickness.",
      "find another supplier for the two large washers or change them to a size that is sold"),
     ("B", "Earth stud: the ring terminal's tongue is taken as 0.8 mm",
-     "M5 x 6, toothed washer on the rail, ring terminal, head: the tip ends 4.6 mm below the rail's face with a 0.8 mm tongue. The terminal is an "
-     "electrical BOM line and is not drawn.",
-     "measure the terminal; with a tongue over 0.9 mm the screw has under 0.5 d of thread: use M5 x 8 with a plain washer under the head then, and check the depth"),
+     "M5 x 6, toothed washer on the rail, ring terminal, head: the tip ends 4.6 mm below the rail's face with a 0.8 mm tongue (the whole nut from "
+     "4.4 mm). The terminal is an electrical BOM line and is not drawn.",
+     "measure the terminal; with a tongue over 1.7 mm the screw has under 0.5 d of thread: use M5 x 8 then, and check the depth"),
     ("B", "Nut pins: hex nut with thread locker instead of an M2.5 nyloc",
      "v10 listed M2.5 nylocs on the BOM while drawing plain hex nuts. v10.1 keeps the drawn hex nut and thread-locks it (it clamps the pin's sleeve).",
      "medium thread locker on the three M2.5 nuts"),

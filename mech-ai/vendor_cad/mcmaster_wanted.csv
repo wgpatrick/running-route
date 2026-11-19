@@ -23,18 +23,18 @@ SHCS-M3x45,Socket head cap screw M3 x 45,91290A079,ISO 4762 M3,2,supplier CAD,0
 SHCS-M3x5,Socket head cap screw M3 x 5,91290A110,ISO 4762 M3,12,supplier CAD,0
 SHCS-M3x8,Socket head cap screw M3 x 8,91290A400,ISO 4762 M3,45,supplier CAD,0
 SHCS-M4x6,Socket head cap screw M4 x 6,90128A208 (zinc-plated; no STEP under 5 MB),ISO 4762 M4,4,stand-in (generated to standard),0
-SHCS-M5x10,Socket head cap screw M5 x 10,91290A224,ISO 4762 M5,26,supplier CAD,0
-SHCS-M5x12,Socket head cap screw M5 x 12,91290A228,ISO 4762 M5,10,supplier CAD,0
+SHCS-M5x10,Socket head cap screw M5 x 10,91290A224,ISO 4762 M5,30,supplier CAD,0
+SHCS-M5x12,Socket head cap screw M5 x 12,91290A228,ISO 4762 M5,6,supplier CAD,0
 SHCS-M5x30,Socket head cap screw M5 x 30,91290A194,ISO 4762 M5,2,supplier CAD,0
 SHCS-M5x35,Socket head cap screw M5 x 35,91290A195,ISO 4762 M5,1,supplier CAD,0
 SHCS-M5x6,Socket head cap screw M5 x 6,91290A221 (unverified: not checked on McMaster's page),ISO 4762 M5,1,stand-in (generated to standard),0
 SHCS-M5x70,Socket head cap screw M5 x 70,91290A201,ISO 4762 M5,6,supplier CAD,0
 SHCS-M5x8,Socket head cap screw M5 x 8,91290A222,ISO 4762 M5,80,supplier CAD,0
-TNUT-2020-M3,"Drop-in T-nut M3 for 2020 slot 6 (post-assembly insertion, spring-held)",,"drop-in T-nut M3, 2020 slot 6",33,stand-in (assumed dimensions / simulation solid),0
-TNUT-2020-M5,"Drop-in T-nut M5 for 2020 slot 6 (post-assembly insertion, spring-held)",,"drop-in T-nut M5, 2020 slot 6",123,stand-in (assumed dimensions / simulation solid),0
+TNUT-2020-M3,Drop-in T-nut M3 for 2020 slot 6: Misumi HNTAJ5-3 (post-assembly insertion short nut),,MISUMI HNTAJ5-3,33,faithful re-make,0
+TNUT-2020-M5,Drop-in T-nut M5 for 2020 slot 6: Misumi HNTAJ5-5 (post-assembly insertion short nut),,MISUMI HNTAJ5-5,123,faithful re-make,0
 WASHER-M2.5,"Flat washer M2.5, 6 x 2.7 x 0.6 mm (ISO 7089)",91166A190,ISO 7089 M2.5,2,supplier CAD,0
 WASHER-M3-LARGE,"Flat washer M3, 9 x 3.2 x 0.8 mm (ISO 7093-1)",not sold by McMaster,ISO 7093-1 M3,12,stand-in (generated to standard),0
 WASHER-M4,"Flat washer M4, 9 x 4.3 x 0.9 mm (ISO 7089)",91166A230,ISO 7089 M4,6,supplier CAD,0
 WASHER-M4-LARGE,"Flat washer M4, 12 x 4.3 x 1 mm (ISO 7093-1)",not sold by McMaster,ISO 7093-1 M4,3,stand-in (generated to standard),0
-WASHER-M5,"Flat washer M5, 10 x 5.3 x 1.1 mm (ISO 7089)",91166A240,ISO 7089 M5,95,supplier CAD,0
+WASHER-M5,"Flat washer M5, 10 x 5.3 x 1.1 mm (ISO 7089)",91166A240,ISO 7089 M5,91,supplier CAD,0
 WASHER-M5-SERRATED,"Internal-tooth lock washer M5, 10 x 5.3 x 0.6 mm (DIN 6797 J)",,DIN 6797 J M5,1,stand-in (generated to standard),0
