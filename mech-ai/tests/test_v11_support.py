@@ -127,14 +127,14 @@ def test_v11_builds_with_stock_parts(v11):
     assert all(s <= e for s, e in zip(size, v11.ENVELOPE))
 
 
-def test_delta_blower_and_omron_e2b_are_labelled_standins_picked_up_by_the_inbox_names():
+def test_delta_blower_is_supplier_cad_and_omron_e2b_is_a_standin_picked_up_by_its_inbox_name():
     b = parts.blower_bfb0524hh()
-    assert b.ratings["rated_current_a"] == 0.11 and b.ratings["static_pressure_pa"] == 216.0 and b.cost_usd == 17.0
+    assert b.ratings["rated_current_a"] == 0.11 and b.ratings["static_pressure_pa"] == pytest.approx(215.7) and b.cost_usd == 17.0
     assert b.ratings["electrical"]["ratings"]["current_a"] == 0.11 and "BFB0524HH" in b.model.get("inbox", [])
-    assert vc.model_state(b.model) == "stand-in"
+    assert vc.model_state(b.model) == "supplier CAD" and vc.check_stock(b)[0] == []        # Delta's STEP in the inbox
     p = parts.probe_omron_e2e("E2B-M12KS04-WP-C1", clamp=(15, 17.286), nuts="separate")
     el = p.ratings["electrical"]["ratings"]
     assert p.cost_usd == pytest.approx(35.22) and el["output"] == "npn_no" and el["max_ambient_c"] == 70.0
-    assert el["switching_distance_steel_mm"] == 4.0
+    assert el["switching_distance_steel_mm"] == 4.0 and el["internal_pullup"] is False
     assert p.interfaces["mounting"]["shielded"] and p.interfaces["mounting"]["head_proud_of_metal_l"] == 0.0
     assert "E2B-M12KS04-WP-C1" in p.model.get("inbox", [])

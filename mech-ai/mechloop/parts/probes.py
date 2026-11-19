@@ -104,9 +104,9 @@ def probe_omron_e2e(model: str = "E2E-X5ME1", clamp: tuple | None = None, nuts: 
                 "interface stage between it and a logic input (declare params['interface']); it cannot go straight on an endstop pin")
         desc = "DC two-wire, normally open"
     else:
-        rt.update({"internal_pullup": True, "internal_pullup_ma": list(v["internal_pullup_ma"]), "output_max_a": v["load_current_ma_max"] / 1000.0,
+        rt.update({"internal_pullup": bool(v.get("internal_pullup", True)), "internal_pullup_ma": list(v["internal_pullup_ma"]), "output_max_a": v["load_current_ma_max"] / 1000.0,
                    "supply_current_a": v["current_consumption_ma_max"] / 1000.0, "residual_voltage_v_max": v["residual_voltage_v_max"]})
-        src["internal_pullup"] = (f"{sheet} p.21 output circuit: a constant-current source of 1.5 to 3 mA from +V to the output (black "
+        src["internal_pullup"] = v.get("internal_pullup_note") or (f"{sheet} p.21 output circuit: a constant-current source of 1.5 to 3 mA from +V to the output (black "
                                   "lead), so the output sits at the supply voltage when the sensor is not switched")
         work = ("brown to the 24 V rail, blue to 0 V, black (output) to the endstop / probe input through a BAT85-class diode, "
                 "cathode to the sensor, because the output is pulled up to the supply inside the sensor (declare "

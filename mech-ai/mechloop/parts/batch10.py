@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import math
 
-from build123d import Box, Cylinder, Pos
+from build123d import Box, Cylinder, Pos, Rot
 
 from . import Stock, _source, part, vendor_data
 
@@ -175,40 +175,39 @@ def bhcs_flanged(size: str = "M5", length: float = 8.0) -> Stock:
 
 @part
 def blower_bfb0524hh() -> Stock:
-    """Delta BFB0524HH centrifugal blower, 50 x 50 x 15 mm (51.3 square drawn, the usual 5015 frame), 24 V, about 0.11 A, 4.6 CFM
-    free air, 216 Pa shut-off, 45 dB(A), ball bearing, two wires; bought from Digi-Key ($17.00). Figures are the owner's (from the
-    distributor's listing); Delta's drawing and P-Q chart were NOT read: the envelope, the two M4 holes at the corners opposite the
-    outlet and the 19.5 x 13 mm outlet at one end of the -Y edge are those of the usual 5015 frame (STAND-IN), and the P-Q curve's
-    shape between its two published end points is assumed. Local frame: the 51.3 x 51.3 face in XY centred, 15 thick along Z,
-    air leaving along -Y. Delta's STEP saved as vendor_cad/inbox/BFB0524HH.step replaces the display model."""
+    """Delta BFB0524HH centrifugal blower (maker's specification, vendor_docs/delta_BFB0524HH_spec.pdf): 24 V (14 to 27.6), 0.11 A
+    (0.16 max), 6500 rpm, 4.59 CFM free air, 22 mmH2O (216 Pa) shut-off, 45 dB(A), two ball bearings, 28 g; bought from
+    Digi-Key ($17.00). Local frame: the maker's STEP's own axes with its bounding box centred (52.59 x 15.34 x 51.42): X across
+    the face, Y the thickness, Z up the face; the outlet (20 x 12.2) on the +Z edge at X 6.5 to 26.3, air leaving along +Z; two
+    4.5 mm holes along Y (positions measured on the STEP). The simulation solid is the bounding box; the maker's STEP in
+    vendor_cad/inbox/BFB0524HH.step is the display model."""
     v = vendor_data("delta_bfb0524hh")["values"]
     sx, sy, sz = v["size_mm"]
     body = Box(sx, sy, sz)
-    holes = [(x, y, -sz / 2) for x, y in v["mount_holes"]["positions_mm"]]
-    for x, y, _ in holes:
-        body -= Pos(x, y, 0) * Cylinder(v["mount_holes"]["dia_mm"] / 2, sz)
-    ol, ow, off = v["outlet_mm"]["length"], v["outlet_mm"]["width"], v["outlet_mm"]["offset_mm"]
+    holes = [(x, -sy / 2, z) for x, z in v["mount_holes"]["positions_mm"]]
+    for x, _, z in holes:
+        body -= Pos(x, 0, z) * Rot(90, 0, 0) * Cylinder(v["mount_holes"]["dia_mm"] / 2, sy)
+    ox0, ox1 = v["outlet_mm"]["x_range"]
     pq = v["pq_curve_cfm_pa"]["points"]
     el = {"kind": "fan", "ports": {"in": dict(kind="fan", connector="JST-XH", max_a=3.0)},
           "ratings": {"current_a": v["rated_current_a"], "volts": v["rated_voltage_v"]},
-          "sources": {"current_a": "owner's specification (Digi-Key listing): 24 V, about 0.11 A", "volts": "owner's specification: 24 V DC"},
-          "params": {}, "product": dict(product="24 V centrifugal blower 50 x 50 x 15 mm, ball bearing, 2-wire (Delta BFB0524HH)", vendor="Delta Electronics",
-                                        part_number="BFB0524HH (Digi-Key)", form="component", off_the_shelf=True, custom_pcb=False,
-                                        builder_work="crimp a 2-way JST-XH")}
-    return Stock(body, "FAN-BLOWER-5015-BFB0524HH", "Centrifugal blower 50 x 50 x 15 mm, 24 V, ball bearing (Delta BFB0524HH, Digi-Key)",
+          "sources": {"current_a": "Delta BFB0524HH specification p.1: input current 0.11 (max 0.16) A", "volts": "Delta specification p.1: rated 24 VDC"},
+          "params": {}, "product": dict(product="24 V centrifugal blower 50 x 50 x 15 mm, two ball bearings, 2-wire (Delta BFB0524HH)", vendor="Delta Electronics",
+                                        part_number="BFB0524HH (Digi-Key 603-1116-ND)", form="component", off_the_shelf=True, custom_pcb=False,
+                                        builder_work="crimp a 2-way JST-XH (red +, black -)")}
+    return Stock(body, "FAN-BLOWER-5015-BFB0524HH", "Centrifugal blower 50 x 50 x 15 mm, 24 V, two ball bearings (Delta BFB0524HH, Digi-Key)",
                  v["mass_g"] / 1000.0, material="abs", cost_usd=v["price_usd"],
-                 detail=body, model={"kind": "proxy", "state": "stand-in", "inbox": ["BFB0524HH"],
-                                     "source": "envelope of the usual 5015 frame at the owner's 50 x 50 x 15 (Delta's drawing not read)"},
+                 model={"inbox": ["BFB0524HH"], "tolerance": {"volume_ratio": (0.5, 3.5)}},
                  interfaces={"mount_holes_m4": holes, "mount_hole_dia": v["mount_holes"]["dia_mm"],
-                             "outlet_centre": [(off, -sy / 2, 0.0)], "outlet_size": (ol, ow), "outlet_direction": (0.0, -1.0, 0.0), "thickness": sz},
+                             "outlet_x_range": (ox0, ox1), "outlet_centre": [((ox0 + ox1) / 2, 0.0, sz / 2)], "outlet_size": (ox1 - ox0, 12.2),
+                             "outlet_direction": (0.0, 0.0, 1.0), "thickness": sy, "width": sx, "height": sz},
                  ratings={"electrical": el, "rated_voltage_v": v["rated_voltage_v"], "rated_current_a": v["rated_current_a"],
                           "air_flow_cfm": v["air_flow_cfm"], "static_pressure_pa": v["max_static_pressure_pa"], "noise_dba": v["noise_dba"],
-                          "pq_curve_cfm_pa": [tuple(x) for x in pq], "bearing": v["bearing"], "distributor": v["distributor"],
-                          "vendor_part": "BFB0524HH", "rated_current_source": "owner's specification (Digi-Key listing)",
-                          "rated_voltage_source": "owner's specification"},
-                 source=_source("delta_bfb0524hh", "secondary", "BFB0524HH",
-                                unverified=("frame dimensions, holes and outlet (usual 5015 frame)", "P-Q curve shape", "mass"),
-                                note="24 V, 0.11 A, 4.6 CFM, 216 Pa, 45 dB(A), ball bearing: the owner's figures from the distributor"))
+                          "speed_rpm": v["speed_rpm"], "pq_curve_cfm_pa": [tuple(x) for x in pq], "bearing": v["bearing"],
+                          "distributor": v["distributor"], "vendor_part": "BFB0524HH", "max_ambient_c": v["operating_temp_c"][1],
+                          "rated_current_source": "Delta specification p.1", "rated_voltage_source": "Delta specification p.1"},
+                 source=_source("delta_bfb0524hh", "vendor", "BFB0524HH", unverified=("P-Q points (read by eye)", "outlet's position across the thickness"),
+                                note="maker's specification for approval (A00) and the maker's STEP"))
 
 
 def blower_flow_estimate_pa(outlet_area_mm2: float, k_total: float, pq_cfm_pa, rho: float = 1.2) -> dict:

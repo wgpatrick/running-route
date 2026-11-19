@@ -67,7 +67,7 @@ def test_every_file_has_a_sources_entry_and_nothing_else_is_in_the_folder():
     assert inbox == set(rows) - root_rows, inbox ^ (set(rows) - root_rows)
     for k in inbox:
         # McMaster's fasteners (2026-11-18 batch) and, since printer_v11, other suppliers' files copied unchanged from staging
-        assert "vendor" in rows[k]["made by"] and ("McMaster-Carr 9" in rows[k]["origin"] or "unchanged copy" in rows[k]["origin"]) \
+        assert "vendor" in rows[k]["made by"] and ("McMaster-Carr 9" in rows[k]["origin"] or "unchanged" in rows[k]["origin"]) \
             and rows[k]["licence"], k
         assert (vc.root() / k).stat().st_size < 5.2e6
 

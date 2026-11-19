@@ -812,11 +812,13 @@ def nut_pocket(at, axis, up, extra_back=0.0):
 
 # ---- v11 part cooling: one GDB4010 radial blower behind the Roto, outlet down, a short printed duct -----------------------
 # v11 (owner, 2026-11-19): Delta BFB0524HH 5015 blower (was GDSTIME GDB4010 4010)
-BL_W, BL_T = 51.3, 15.0                 # its face (the usual 5015 frame, stand-in) and thickness
-BL_X0 = NOZ_X + 20.0                    # x from 20 to 71.3 right of the nozzle: right of the probe bracket and the Roto's screw heads
-BL_X1 = BL_X0 + BL_W                    # (above z 424.5 nothing on the frame reaches in: at the right end it is at x 154.6)
+BL_WX, BL_W, BL_T = 52.59, 51.42, 15.34   # the maker's STEP's bounding box: width, height, thickness
+BL_X0 = NOZ_X + 23.0                    # x from 23 to 75.6 right of the nozzle: right of the probe bracket and the Roto's screw heads
+BL_X1 = BL_X0 + BL_WX                   # (above z 424.5 nothing on the frame reaches in: at the right end it is at x 158.9)
 BL_Z0 = Z_NOZZLE + 51.05                # 424.5: its outlet edge, above the Y switch board (z 422.6) and the top back rail: its outlet edge; its lower lugs' nuts pass 1 mm above the top back rail at the rear end
 CRADLE_T = 4.0
+BL_HOLES = lambda: [((BL_X0 + BL_X1) / 2 - 22.3, BL_Z0 + BL_W / 2 + 18.24), ((BL_X0 + BL_X1) / 2 + 20.9, BL_Z0 + BL_W / 2 - 19.85)]
+                                        # the Delta's two 4.5 mm holes (measured on its STEP), as the blower is turned here
 DUCT_FLOOR = Z_NOZZLE + 3.05            # 376.5: the duct's lowest face, 3.05 mm above the nozzle tip (owner: >= 2.5)
 OUT_D, OUT_W, OUT_H, OUT_L = 24.0, 14.0, 3.0, 6.0     # outlet: 24 mm from the nozzle's axis on the rear-right diagonal, 14 x 3 mm bore
 OUT_Z = Z_NOZZLE + 5.5                  # outlet centre height; the jet is aimed at 0.5 mm under the tip
@@ -862,7 +864,8 @@ def part_duct_shape(y_noz, bl_y0):
     c += bx(NOZ_X + 21.5, NOZ_X + 48.5, y_rf + 0.6, by1, Z_NOZZLE + 32.55, BL_Z0)            # deeper above z 406, up to the blower
     c += bx(NOZ_X + 13.0, NOZ_X + 28.0, y_c0, y_noz + 23.0, DUCT_FLOOR, DUCT_FLOOR + 9.5)   # chamber B, its front-left extension
     c += bx(NOZ_X + 41.0, NOZ_X + 48.5, by1, by1 + CRADLE_T, Z_NOZZLE + 32.55, BL_Z0 + BL_W)   # cradle: a 7.5 mm upright from the riser's back
-    c += bx(BL_X0, BL_X1, by1, by1 + CRADLE_T, BL_Z0 + BL_W - 14.0, BL_Z0 + BL_W)               # and a bar along the blower's top for its two screws
+    c += bx(BL_X0, NOZ_X + 48.5, by1, by1 + CRADLE_T, BL_Z0 + BL_W - 14.0, BL_Z0 + BL_W)        # a bar to the blower's upper-left hole
+    c += bx(NOZ_X + 41.0, BL_X1, by1, by1 + CRADLE_T, BL_Z0 + 1.0, BL_Z0 + 11.0)                 # and one to its lower-right hole
     o, ax = _outlet_frame(y_noz)
     c += _tube(o, ax, OUT_W + 2.4, OUT_H + 2.4, OUT_L)
     # the air passage
@@ -870,15 +873,15 @@ def part_duct_shape(y_noz, bl_y0):
     c -= bx(NOZ_X + 21.5 + w, NOZ_X + 48.5 - w, y_rf - 0.01, yl_back - w, DUCT_FLOOR + w, Z_NOZZLE + 32.55 + 0.01)
     c -= bx(NOZ_X + 21.5 + w, NOZ_X + 48.5 - w, y_rf - 0.01, by1 - w, Z_NOZZLE + 32.55, BL_Z0 - w)
     bc = (BL_X0 + BL_X1) / 2
-    oc = bc - 14.4                                      # the blower's outlet (19.5 x 13, at the -x end of its lower edge: stand-in)
-    c -= bx(max(oc - 9.75, NOZ_X + 21.5 + w), min(oc + 9.75, NOZ_X + 48.5 - w), bl_y0 + BL_T / 2 - 6.5, bl_y0 + BL_T / 2 + 6.5, BL_Z0 - w - 0.1, BL_Z0 + 0.1)
+    # the blower's outlet (Delta drawing: 20 x 12.2) at the -x end of its lower edge, as the blower is turned here
+    c -= bx(max(BL_X0, NOZ_X + 21.5 + w), min(BL_X0 + 19.8, NOZ_X + 48.5 - w), bl_y0 + BL_T / 2 - 6.1, bl_y0 + BL_T / 2 + 6.1, BL_Z0 - w - 0.1, BL_Z0 + 0.1)
     c -= bx(NOZ_X + 13.0 + w, NOZ_X + 28.0, y_c0 + w, y_noz + 23.0 - w, DUCT_FLOOR + w, DUCT_FLOOR + 9.5 - w)
     c -= _tube(o + ax * 0.05, ax, OUT_W, OUT_H, OUT_L + 2.0)
     for x, z in FC_SCREWS:
         c -= Pos(x, yf + FC_FL / 2, Z_BEAM + z) * ycyl(PH3 / 2, FC_FL)
         c -= nut_pocket((x, yf + POCKET_WALL, Z_BEAM + z), (0, 1, 0), (0, 0, -1))     # opens at the flange's underside
-    for x in (bc - 21.5, bc + 21.5):                  # the blower's two upper holes: M4 clearance through the cradle
-        c -= Pos(x, by1 + CRADLE_T / 2, BL_Z0 + BL_W / 2 + 21.5) * ycyl(printed_clearance_hole("M3") / 2, CRADLE_T)
+    for x, z in BL_HOLES():                            # the blower's two holes: M3 clearance through the cradle
+        c -= Pos(x, by1 + CRADLE_T / 2, z) * ycyl(printed_clearance_hole("M3") / 2, CRADLE_T)
     return c
 
 
@@ -891,7 +894,7 @@ def probe_bracket_shape(y_face):
     z_b = Z_PRB + PRB_CLAMP[0]
     roto = ROTO_HOLES()
     h_a = Z_BEAM + 36.0 - z_b                             # up to z 443: the toolhead loom is clamped to it
-    xl0, xl1 = NOZ_X - 9.5, NOZ_X + 12.5
+    xl0, xl1 = NOZ_X - 13.0, NOZ_X + 12.5       # 25.5 wide at the bend: over half of it clears the probe's hole (SendCutSend)
     w = xl1 - xl0
     x_c = (xl0 + xl1) / 2
     l_b = (YB0 + PRB_Y + 10.5) - y_face
@@ -942,9 +945,10 @@ def build_electrical(d: Design) -> Electrical:
     # anchored on TOP of the top back rail and drops down that rail's outer face, not in the frame's inside corner
     P1 = (118.0, 189.0, FZ + 12.0)
     yl = YB0 + R_TPR + ROTO_W + B23 + 2.0      # v11: clamped to the probe bracket's upper leg, at the blower's top
+    by_c = YB0 + R_TPR + ROTO_W + B23 + 2 * WASHER["large"]["M3"][2] + 3.0 + 1.5 + BL_T + CRADLE_T     # back of the blower's cradle
     el.loom("toolhead", [Waypoint("xbody", (NOZ_X - 8.0, yl, Z_BEAM + 33.0), clamp="probe_mount"),
-                         Waypoint("xbody", (NOZ_X + 18.0, yl, Z_BEAM + 33.0), clamp="probe_mount"),
-                         ("xbody", (NOZ_X - 8.0, yl + 25.0, Z_BEAM + 33.0)),       # v11: back past the blower's left side
+                         ("xbody", (NOZ_X - 14.0, yl + 14.0, Z_BEAM + 55.0)),      # v11: up past the blower's left side
+                         Waypoint("xbody", (NOZ_X + 30.0, by_c + 1.5, BL_Z0 + BL_W - 4.0), clamp="part_duct"),   # on the cradle's back
                          Waypoint("world", (118.0, 175.0, FZ + 12.0), clamp="frame_top_back"), Waypoint("world", P1)],
             flex_length={2: 480.0})
     # over the back rail's rear edge on a 30 mm radius (the 10 mm bundle needs 26), down the outside of the back wall (beside the
@@ -1490,13 +1494,13 @@ def build() -> Design:
                   clamps=("tool_plate", "tool_plate_rear", "part_duct"), washer=True).meta["torque_nm"] = PRINTED_JOINT_TORQUE
         captive_nut(d, f"part_duct_screw_{i}", (x, YB0 + R_TPR + POCKET_WALL, Z_BEAM + z), (0, 1, 0), "part_duct", "xbody")
     bc = (BL_X0 + BL_X1) / 2
-    place(d, "part_fan", blower_bfb0524hh(), Location(Plane(origin=(bc, bl_y0 + BL_T / 2, BL_Z0 + BL_W / 2), x_dir=(1, 0, 0), z_dir=(0, -1, 0))),
+    # turned so its outlet (local +Z) points down and lies at the blower's left end (local X -> world -X, thickness along Y)
+    place(d, "part_fan", blower_bfb0524hh(), Location(Plane(origin=(bc, bl_y0 + BL_T / 2, BL_Z0 + BL_W / 2), x_dir=(-1, 0, 0), z_dir=(0, 0, -1))),
           body="xbody")
     W3n = WASHER["normal"]["M3"][2]
-    for i, x in enumerate((bc - 21.5, bc + 21.5)):
-        # v11: the Delta's two upper holes (stand-in positions): M3 x 25 through the blower (washer on the plastic) and the duct's
+    for i, (x, z) in enumerate(BL_HOLES()):
+        # v11: the Delta's two holes (upper left, lower right; measured on its STEP): M3 x 25 through the blower (washer on the plastic) and the duct's
         # cradle, washer and nut on the cradle's back; the outlet seats in the riser's opening below
-        z = BL_Z0 + BL_W / 2 + 21.5
         # M3 (with washers) in the blower's 4.3 mm holes: lighter than M4; the toolhead stays under its 0.40 kg target
         fs = add_screw(d, f"part_fan_screw_{i}", "M3", 25, at=(x, bl_y0, z), direction=(0, 1, 0), body="xbody",
                        clamps=("part_fan", "part_duct"), washer=True, locking="adhesive")
@@ -2318,24 +2322,24 @@ def add_requirements(d, zs):
     d.requirements.append(Requirement("v11: purchased parts at stock sizes (no rail or screw cut); only the extrusion is bought cut, by its supplier", stock_sizes))
 
     def probe_zone(dd, m):
-        # v11 (owner, 2026-11-19): OMRON E2B-M12KS04-WP-C1, SHIELDED M12. OMRON's E2B surrounding-metal table was not read: the
-        # generic shielded rule is applied (flush mounting allowed; no metal within the sensor's diameter for 3 x Sn = 12 mm in
-        # front of the face, the target excepted)
+        # v11 (owner, 2026-11-19): OMRON E2B-M12KS04-WP-C1, double-distance SHIELDED M12. OMRON's E2B sheet p.20 (Table 1, double
+        # distance, shielded, M12): the face l = 2.4 mm proud of the surrounding metal, d = 18 mm diameter round the head clear,
+        # facing metal m = 12 mm away. Checked on the toolhead (the bed is the target)
         pr = dd.get("bed_probe")
         mt = pr.meta["interfaces"]["mounting"]
         P = np.array(pr.meta["placement"], float)
         o, z = P[:, 3], P[:, 2]
-        m_ = float(mt["to_facing_metal_m"])
-        zone = Location(Plane(origin=tuple(o - z * m_), z_dir=tuple(z))) * Pos(0, 0, m_ / 2) * Cylinder(float(mt["metal_free_dia_d"]) / 2, m_)
+        l_, d_, m_ = float(mt["head_proud_of_metal_l"]), float(mt["metal_free_dia_d"]), float(mt["to_facing_metal_m"])
+        side = Location(Plane(origin=tuple(o), z_dir=tuple(z))) * Pos(0, 0, l_ / 2) * Cylinder(d_ / 2, l_)
+        front = Location(Plane(origin=tuple(o - z * m_), z_dir=tuple(z))) * Pos(0, 0, m_ / 2) * Cylinder(d_ / 2, m_)
         metals = ("al6061", "al5052", "al_mic6", "steel", "stainless304", "brass")
         own = {"bed_probe", "bed_probe_nut_front", "bed_probe_nut_rear"}
         hits = [c.name for c in dd.components if c.body == pr.body and c.name not in own and c.material in metals
-                and (c.shape & zone).volume > 0.5]
-        return not hits, (f"OMRON E2B-M12KS04-WP-C1, shielded M12, 4 mm: flush mounting allowed; nothing metal on the toolhead within "
-                          f"{mt['metal_free_dia_d']:g} mm diameter for {m_:g} mm in front of its face (GENERIC shielded rule, 3 x Sn: OMRON's "
-                          f"E2B table not read); found: {hits or 'none'}. The bracket clamps it 15 mm behind its face (kept from the unshielded "
-                          f"sensor; a shielded one could sit flush)")
-    d.requirements.append(Requirement("v11: the shielded probe's facing-metal clearance (generic shielded M12 rule) holds", probe_zone))
+                and ((c.shape & side).volume > 0.5 or (c.shape & front).volume > 0.5)]
+        return not hits, (f"OMRON E2B-M12KS04-WP-C1, double-distance shielded M12, 4 mm: OMRON's figures (E2B data sheet p.20): face {l_:g} mm proud "
+                          f"of metal with {d_:g} mm diameter round the head clear, facing metal {m_:g} mm away; metal on the toolhead in those "
+                          f"zones: {hits or 'none'}. The bracket clamps it 15 mm behind its face (kept from the unshielded sensor)")
+    d.requirements.append(Requirement("v11: the shielded probe's surrounding-metal clearances (OMRON E2B, p.20) hold", probe_zone))
 
     def probe_temperature(dd, m):
         # v11 (owner): the probe's temperature at its mounting point against its 70 degC rating, as a lumped steady estimate
@@ -2360,7 +2364,7 @@ def add_requirements(d, zs):
         hot = solve(70.0, 10.0, 55.0, 180.0)
         return hot <= rating, (f"probe barrel at its bracket, bed at {BED_MAX_C:g} degC, face 2.1 mm above the sheet: about {nom:.0f} degC (air over "
                                f"the bed 55 degC, bracket 45 degC, sock 150 degC) and {hot:.0f} degC in a hot case (air 70, bracket 55, sock 180, "
-                               f"weaker convection) against the sensor's {rating:g} degC rating. An ESTIMATE: the air temperatures round the "
+                               f"weaker convection) against the sensor's {rating:g} degC rating (its +/-10 % drift figure holds to 55 degC; +/-15 % to 70). An ESTIMATE: the air temperatures round the "
                                f"barrel and the bracket's temperature are assumed, not computed; no enclosure (owner)")
     d.requirements.append(Requirement("v11: the probe stays within its 70 degC rating at its mounting point (thermal estimate)", probe_temperature))
     STANDINS = ["bed_magnet"]

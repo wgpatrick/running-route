@@ -1,18 +1,23 @@
 {
  "retrieved": "2026-11-19",
  "family": "Delta Electronics BFB0524HH 50 x 50 x 15 mm centrifugal blower, 24 V",
- "vendor": "Delta Electronics (bought from Digi-Key)",
- "source_level": "owner's specification (Digi-Key listing figures), not read from Delta's data sheet in this session",
- "source_url": "https://www.digikey.com/",
+ "vendor": "Delta Electronics (bought from Digi-Key, 603-1116-ND)",
+ "source_level": "maker's specification for approval (vendor_docs/delta_BFB0524HH_spec.pdf, 7 pages, rev A00, 2003-10-28) and the maker's STEP (vendor_cad/inbox/BFB0524HH.step)",
+ "source_url": "https://www.delta-fan.com/Download/3D/BFB0524HH.stp",
+ "document_file": "vendor_docs/delta_BFB0524HH_spec.pdf",
  "values": {
-  "size_mm": [51.3, 51.3, 15.0],
-  "size_note": "the owner's 50 x 50 x 15; the usual 5015 frame is 51.3 square. STAND-IN envelope",
-  "mount_holes": {"count": 2, "dia_mm": 4.3, "positions_mm": [[-21.5, 21.5], [21.5, 21.5]], "note": "ASSUMED: two M4 holes at the corners opposite the outlet, as the usual 5015 frame; Delta's drawing not read"},
-  "outlet_mm": {"length": 19.5, "width": 13.0, "offset_mm": -14.4, "note": "ASSUMED: a 19.5 x 13 mm outlet at one end of an edge (the scroll's exit), as the usual 5015 frame"},
-  "rated_voltage_v": 24.0, "rated_current_a": 0.11, "air_flow_cfm": 4.6, "max_static_pressure_pa": 216.0, "noise_dba": 45.0,
-  "bearing": "ball", "wires": 2, "price_usd": 17.00, "distributor": "Digi-Key", "mass_g": 30,
-  "mass_note": "ASSUMED (typical 5015 blower)",
-  "pq_curve_cfm_pa": {"points": [[0.0, 216.0], [1.0, 200.0], [2.0, 172.0], [3.0, 128.0], [4.0, 62.0], [4.6, 0.0]],
-                      "basis": "ASSUMED shape between the two published end points (216 Pa shut-off, 4.6 CFM free air): Delta's P-Q chart was not read"}
+  "size_mm": [52.59, 15.34, 51.42],
+  "size_note": "bounding box of the maker's STEP (X width, Y thickness, Z height); the drawing (p.6) gives 51.0 x 51.3 x 15.0 for the body",
+  "step_frame": "the STEP's own axes, its bounding box centred at the origin: X across the face, Y the thickness, Z up the face; the outlet on the +Z edge at X 6.5 .. 26.3, air leaving along +Z",
+  "step_bbox_centre": [25.515, 0.57, 25.21],
+  "mount_holes": {"count": 2, "dia_mm": 4.5, "positions_mm": [[22.3, -18.24], [-20.9, 19.85]], "axis": "Y",
+                  "note": "2 x dia 4.5 +/-0.3 (drawing p.6); positions measured on the STEP, in the frame above (X, Z)"},
+  "outlet_mm": {"x_range": [6.5, 26.3], "width_across_thickness": 12.2, "note": "drawing p.6: outlet 20.0 +/-0.5 long, 12.2 across the 15 mm thickness (1.8 and 1.0 walls); placed on the STEP by the holes' pattern (the STEP is the drawing's front view turned 90 degrees)"},
+  "rated_voltage_v": 24.0, "operating_voltage_v": [14.0, 27.6], "rated_current_a": 0.11, "max_current_a": 0.16, "input_power_w": 2.64,
+  "speed_rpm": 6500, "air_flow_cfm": 4.59, "air_flow_m3_min": 0.130, "max_static_pressure_pa": 215.7, "max_static_pressure_mmh2o": 22.0,
+  "noise_dba": 45.0, "bearing": "two ball bearings", "wires": 2, "life_h": "50,000 h at 40 degC", "operating_temp_c": [-10, 70],
+  "mass_g": 28, "price_usd": 17.00, "distributor": "Digi-Key",
+  "pq_curve_cfm_pa": {"points": [[0.0, 213.8], [1.41, 194.0], [2.47, 165.0], [2.83, 137.0], [3.53, 93.0], [4.24, 34.0], [4.59, 0.0]],
+                      "basis": "read by eye from the maker's P&Q curve at 24 V (spec p.5; mmH2O x 9.807), about +/-1 mmH2O and +/-0.1 CFM"}
  }
 }
