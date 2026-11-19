@@ -4,8 +4,10 @@
 
 Columns: sku, desc, mcmaster, standard, qty, model_now, toolhead.
   sku        the catalogue SKU; a STEP file saved as vendor_cad/inbox/<sku>.step replaces the part's display model
-  mcmaster   the McMaster-Carr number on file, always marked "(unverified ...)": McMaster's pages cannot be reached from the
-             sessions that wrote this repository, so no number here was checked against the page it names. Empty: none on file
+  mcmaster   the McMaster-Carr number. Plain: read from McMaster's product page for the owner (supplier CAD batch 2026-11-18,
+             vendor_cad/staging/supplier_2026-11-18/00-REPORT-supplier-cad-table.md). "(unverified ...)": on file from an
+             earlier collector and never checked against the page it names. "not sold by McMaster": checked, no such part.
+             Empty: none on file
   standard   the standard or maker's part the catalogue part was drawn from
   model_now  the state of the geometry in the model today: "supplier CAD", "faithful re-make" or "stand-in", with what the
              stand-in is (generated to standard / community CAD / assumed dimensions)
@@ -21,8 +23,6 @@ from mechloop.parts import vendor_cad, vendor_data
 from mechloop.runner import load_design
 
 HARDWARE = ("SHCS", "FHCS", "NUT-", "WASHER", "TNUT")          # fasteners and T-nuts; lead-screw nuts (NUT-TR8...) are drive parts
-SUSPECT = {"91290A400": "does not fit the 91290A series' numbering for M3 x 8", "91290A500": "does not fit the 91290A series' numbering for M3 x 12",
-           "91290A600": "does not fit the 91290A series' numbering for M3 x 14"}
 
 
 def short_desc(sku: str, descs: list[str]) -> str:
@@ -48,7 +48,8 @@ def state_text(model: dict) -> str:
 
 
 def rows_for(design, toolhead_body: str = "xbody") -> list[dict]:
-    mc = vendor_data("mcmaster_fasteners")["part_numbers"]
+    mf = vendor_data("mcmaster_fasteners")
+    mc, batch = mf["part_numbers"], mf.get("supplier_batch_2026_11_18") or {}
     by = collections.defaultdict(list)
     for c in design.components:
         if (c.sku or "").startswith(HARDWARE) and not (c.sku or "").startswith("NUT-TR8"):
@@ -56,9 +57,17 @@ def rows_for(design, toolhead_body: str = "xbody") -> list[dict]:
     rows = []
     for sku, cs in by.items():
         pn = mc.get(sku, "")
-        if pn:
-            why = SUSPECT.get(pn)
-            pn = f"{pn} (unverified: {why}; likely wrong)" if why else f"{pn} (unverified: not checked on McMaster's page)"
+        note = (batch.get("notes") or {}).get(sku, "")
+        if sku == "NUT-M5-DIN934":
+            pn = mc.get("NUT-M5", "")
+        elif pn and sku == "NUT-M5":
+            pn = f"{pn} is the DIN 934 nut (4.0 mm), not this ISO 4032 one: use NUT-M5-DIN934"
+        elif pn and sku not in batch.get("confirmed", []):
+            pn = f"{pn} (unverified: not checked on McMaster's page)"
+        elif not pn and note.startswith("not sold by McMaster"):
+            pn = "not sold by McMaster"
+        if pn and sku == "SHCS-M4x6":
+            pn += " (zinc-plated; no STEP under 5 MB)"
         src = cs[0].meta.get("source") or {}
         rows.append({"sku": sku, "desc": short_desc(sku, [str(c.meta.get("description") or "") for c in cs if c.meta.get("description")]),
                      "mcmaster": pn, "standard": src.get("part") or "not specified", "qty": len(cs),

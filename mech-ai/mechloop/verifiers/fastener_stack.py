@@ -204,6 +204,8 @@ def fastener_stack(design, pr: Probe) -> list[dict]:
                 e.update(hole(pr, n, under + tdir * (0.5 * (z0 + min(z1, L))), u, v, d))
             stack.append(e)
         thr0 = thread_start_mm(size, L)
+        if itf.get("thread_length") is not None:       # the bought screw's own thread length (supplier data), not ISO's b
+            thr0 = max(0.0, L - float(itf["thread_length"]))
         threaded = []
         for n in threads_into:
             ss = seen_core.get(n, [])

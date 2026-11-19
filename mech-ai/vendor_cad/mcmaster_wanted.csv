@@ -1,40 +1,40 @@
 sku,desc,mcmaster,standard,qty,model_now,toolhead
-WASHER-M3,"Flat washer M3, 7 x 3.2 x 0.5 mm (ISO 7089)",,ISO 7089 M3,71,stand-in (generated to standard),20
-NUT-M3,Hex nut M3,90591A250 (unverified: not checked on McMaster's page),ISO 4032 M3,19,stand-in (generated to standard),6
-SHCS-M3x10,Socket head cap screw M3 x 10,91290A115 (unverified: not checked on McMaster's page),ISO 4762 M3,20,stand-in (generated to standard),6
-NUT-M3-NYLOC,"Nylon-insert lock nut M3 (ISO 10511, 4 mm high)",,ISO 10511 M3,16,stand-in (generated to standard),4
-SHCS-M3x6,Socket head cap screw M3 x 6,91290A111 (unverified: not checked on McMaster's page),ISO 4762 M3,12,stand-in (generated to standard),4
+WASHER-M3,"Flat washer M3, 7 x 3.2 x 0.6 mm (ISO 7089)",91166A210,ISO 7089 M3,71,supplier CAD,20
+NUT-M3,Hex nut M3,90591A250,ISO 4032 M3,19,supplier CAD,6
+SHCS-M3x10,Socket head cap screw M3 x 10,91290A115,ISO 4762 M3,20,supplier CAD,6
+NUT-M3-NYLOC,"Nylon-insert lock nut M3 (ISO 10511, 4 mm high)",90576A102,ISO 10511 M3,16,supplier CAD,4
+SHCS-M3x6,Socket head cap screw M3 x 6,91290A111,ISO 4762 M3,12,supplier CAD,4
 NUT-PEM-S-M3-1,Self-clinching nut M3 in sheet (PEM S-M3-1 class; installed by the sheet supplier),,PEM S-M3-1 (self-clinching nut),5,stand-in (assumed dimensions / simulation solid),2
-SHCS-M3x16,Socket head cap screw M3 x 16,91290A120 (unverified: not checked on McMaster's page),ISO 4762 M3,14,stand-in (generated to standard),2
-SHCS-M3x18,Socket head cap screw M3 x 18,,ISO 4762 M3,2,stand-in (generated to standard),2
-SHCS-M3x50,Socket head cap screw M3 x 50,,ISO 4762 M3,2,stand-in (generated to standard),2
+SHCS-M3x16,Socket head cap screw M3 x 16,91290A120,ISO 4762 M3,14,supplier CAD,2
+SHCS-M3x18,Socket head cap screw M3 x 18,91290A121,ISO 4762 M3,2,supplier CAD,2
+SHCS-M3x50,Socket head cap screw M3 x 50,91290A137,ISO 4762 M3,2,supplier CAD,2
 NUT-OMRON-E2E-M12,clamping nut of an OMRON E2E M12 x 1 sensor (supplied with the sensor),,E2E-X5ME1 2M (nut),1,stand-in (generated to standard),1
 NUT-OMRON-E2E-M12-W,clamping nut of an OMRON E2E M12 x 1 sensor with its toothed washer (supplied with the sensor),,E2E-X5ME1 2M (nut),1,stand-in (generated to standard),1
-FHCS-M4x40,Countersunk socket screw M4 x 40 (ISO 10642),,ISO 10642 M4,3,stand-in (generated to standard),0
-NUT-M2.5,Hex nut M2.5,90591A270 (unverified: not checked on McMaster's page),ISO 4032 M2.5,5,stand-in (generated to standard),0
-NUT-M4,Hex nut M4,,ISO 4032 M4,3,stand-in (generated to standard),0
-NUT-M5,Hex nut M5,90591A260 (unverified: not checked on McMaster's page),ISO 4032 M5,3,stand-in (generated to standard),0
-SHCS-M2.5x12,Socket head cap screw M2.5 x 12,91290A008 (unverified: not checked on McMaster's page),ISO 4762 M2.5,2,stand-in (generated to standard),0
-SHCS-M2.5x16,Socket head cap screw M2.5 x 16,,ISO 4762 M2.5,3,stand-in (generated to standard),0
-SHCS-M3x12,Socket head cap screw M3 x 12,91290A500 (unverified: does not fit the 91290A series' numbering for M3 x 12; likely wrong),ISO 4762 M3,2,stand-in (generated to standard),0
-SHCS-M3x20,Socket head cap screw M3 x 20,,ISO 4762 M3,8,stand-in (generated to standard),0
-SHCS-M3x40,Socket head cap screw M3 x 40,,ISO 4762 M3,2,stand-in (generated to standard),0
-SHCS-M3x45,Socket head cap screw M3 x 45,,ISO 4762 M3,2,stand-in (generated to standard),0
-SHCS-M3x5,Socket head cap screw M3 x 5,,ISO 4762 M3,12,stand-in (generated to standard),0
-SHCS-M3x8,Socket head cap screw M3 x 8,91290A400 (unverified: does not fit the 91290A series' numbering for M3 x 8; likely wrong),ISO 4762 M3,45,stand-in (generated to standard),0
-SHCS-M4x6,Socket head cap screw M4 x 6,91290A139 (unverified: not checked on McMaster's page),ISO 4762 M4,4,stand-in (generated to standard),0
-SHCS-M5x10,Socket head cap screw M5 x 10,91290A224 (unverified: not checked on McMaster's page),ISO 4762 M5,26,stand-in (generated to standard),0
-SHCS-M5x12,Socket head cap screw M5 x 12,,ISO 4762 M5,10,stand-in (generated to standard),0
-SHCS-M5x30,Socket head cap screw M5 x 30,91290A194 (unverified: not checked on McMaster's page),ISO 4762 M5,2,stand-in (generated to standard),0
-SHCS-M5x35,Socket head cap screw M5 x 35,91290A195 (unverified: not checked on McMaster's page),ISO 4762 M5,1,stand-in (generated to standard),0
+FHCS-M4x40,Countersunk socket screw M4 x 40 (ISO 10642),91294A204,ISO 10642 M4,3,supplier CAD,0
+NUT-M2.5,Hex nut M2.5,90591A270,ISO 4032 M2.5,5,supplier CAD,0
+NUT-M4,Hex nut M4,90591A255,ISO 4032 M4,3,supplier CAD,0
+NUT-M5-DIN934,"Hex nut M5 (DIN 934, McMaster 90591A260)",90591A260,90591A260 (DIN 934 M5 hex nut),3,supplier CAD,0
+SHCS-M2.5x12,Socket head cap screw M2.5 x 12,91290A008,ISO 4762 M2.5,2,supplier CAD,0
+SHCS-M2.5x16,Socket head cap screw M2.5 x 16,91290A200,ISO 4762 M2.5,3,supplier CAD,0
+SHCS-M3x12,Socket head cap screw M3 x 12,91290A500,ISO 4762 M3,2,supplier CAD,0
+SHCS-M3x20,Socket head cap screw M3 x 20,91290A123,ISO 4762 M3,8,supplier CAD,0
+SHCS-M3x40,Socket head cap screw M3 x 40,91290A136,ISO 4762 M3,2,supplier CAD,0
+SHCS-M3x45,Socket head cap screw M3 x 45,91290A079,ISO 4762 M3,2,supplier CAD,0
+SHCS-M3x5,Socket head cap screw M3 x 5,91290A110,ISO 4762 M3,12,supplier CAD,0
+SHCS-M3x8,Socket head cap screw M3 x 8,91290A400,ISO 4762 M3,45,supplier CAD,0
+SHCS-M4x6,Socket head cap screw M4 x 6,90128A208 (zinc-plated; no STEP under 5 MB),ISO 4762 M4,4,stand-in (generated to standard),0
+SHCS-M5x10,Socket head cap screw M5 x 10,91290A224,ISO 4762 M5,26,supplier CAD,0
+SHCS-M5x12,Socket head cap screw M5 x 12,91290A228,ISO 4762 M5,10,supplier CAD,0
+SHCS-M5x30,Socket head cap screw M5 x 30,91290A194,ISO 4762 M5,2,supplier CAD,0
+SHCS-M5x35,Socket head cap screw M5 x 35,91290A195,ISO 4762 M5,1,supplier CAD,0
 SHCS-M5x6,Socket head cap screw M5 x 6,91290A221 (unverified: not checked on McMaster's page),ISO 4762 M5,1,stand-in (generated to standard),0
-SHCS-M5x70,Socket head cap screw M5 x 70,,ISO 4762 M5,6,stand-in (generated to standard),0
-SHCS-M5x8,Socket head cap screw M5 x 8,91290A222 (unverified: not checked on McMaster's page),ISO 4762 M5,80,stand-in (generated to standard),0
+SHCS-M5x70,Socket head cap screw M5 x 70,91290A201,ISO 4762 M5,6,supplier CAD,0
+SHCS-M5x8,Socket head cap screw M5 x 8,91290A222,ISO 4762 M5,80,supplier CAD,0
 TNUT-2020-M3,"Drop-in T-nut M3 for 2020 slot 6 (post-assembly insertion, spring-held)",,"drop-in T-nut M3, 2020 slot 6",33,stand-in (assumed dimensions / simulation solid),0
 TNUT-2020-M5,"Drop-in T-nut M5 for 2020 slot 6 (post-assembly insertion, spring-held)",,"drop-in T-nut M5, 2020 slot 6",123,stand-in (assumed dimensions / simulation solid),0
-WASHER-M2.5,"Flat washer M2.5, 6 x 2.7 x 0.5 mm (ISO 7089)",,ISO 7089 M2.5,2,stand-in (generated to standard),0
-WASHER-M3-LARGE,"Flat washer M3, 9 x 3.2 x 0.8 mm (ISO 7093-1)",,ISO 7093-1 M3,12,stand-in (generated to standard),0
-WASHER-M4,"Flat washer M4, 9 x 4.3 x 0.8 mm (ISO 7089)",,ISO 7089 M4,6,stand-in (generated to standard),0
-WASHER-M4-LARGE,"Flat washer M4, 12 x 4.3 x 1 mm (ISO 7093-1)",,ISO 7093-1 M4,3,stand-in (generated to standard),0
-WASHER-M5,"Flat washer M5, 10 x 5.3 x 1 mm (ISO 7089)",,ISO 7089 M5,95,stand-in (generated to standard),0
+WASHER-M2.5,"Flat washer M2.5, 6 x 2.7 x 0.6 mm (ISO 7089)",91166A190,ISO 7089 M2.5,2,supplier CAD,0
+WASHER-M3-LARGE,"Flat washer M3, 9 x 3.2 x 0.8 mm (ISO 7093-1)",not sold by McMaster,ISO 7093-1 M3,12,stand-in (generated to standard),0
+WASHER-M4,"Flat washer M4, 9 x 4.3 x 0.9 mm (ISO 7089)",91166A230,ISO 7089 M4,6,supplier CAD,0
+WASHER-M4-LARGE,"Flat washer M4, 12 x 4.3 x 1 mm (ISO 7093-1)",not sold by McMaster,ISO 7093-1 M4,3,stand-in (generated to standard),0
+WASHER-M5,"Flat washer M5, 10 x 5.3 x 1.1 mm (ISO 7089)",91166A240,ISO 7089 M5,95,supplier CAD,0
 WASHER-M5-SERRATED,"Internal-tooth lock washer M5, 10 x 5.3 x 0.6 mm (DIN 6797 J)",,DIN 6797 J M5,1,stand-in (generated to standard),0

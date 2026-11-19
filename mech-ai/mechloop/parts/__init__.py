@@ -661,8 +661,12 @@ def mcmaster_part(sku: str) -> dict:
         return {"mcmaster_pn": pn, "mcmaster_pn_status": "unconfirmed: the STEP file delivered under this name was a different part "
                                                          "(" + m["wrong_file"][f"{sku}.step"].split(";")[0] + ")"}
     seen = sku in m.get("screws", {}) or sku in m.get("nuts", {})
-    # "confirmed" here means only that a STEP file delivered under this number has the ISO dimensions; the number itself
-    # was never checked on McMaster's page (not reachable), and two of them (91290A400, 91290A500) do not fit the series
+    batch = m.get("supplier_batch_2026_11_18") or {}
+    if sku in batch.get("confirmed", []):      # read from McMaster's product page for the owner (supplier CAD batch 2026-11-18)
+        note = (batch.get("notes") or {}).get(sku)
+        return {"mcmaster_pn": pn, "mcmaster_pn_status": "confirmed on McMaster's product page (supplier CAD batch 2026-11-18)"
+                                                         + (f": {note}" if note else "")}
+    # otherwise "confirmed" means only that a STEP file delivered under this number has the ISO dimensions
     return {"mcmaster_pn": pn, "mcmaster_pn_status": "confirmed by the delivered STEP file (geometry only: the part number was not "
                                                      "checked on McMaster's page)" if seen else
             "unconfirmed: listed in the collector's sources, no file inspected"}
@@ -675,10 +679,17 @@ def shcs(size: str = "M3", length: float = 10.0) -> Stock:
     shape = Pos(0, 0, -length / 2) * Cylinder(d / 2, length) + Pos(0, 0, hh / 2) * Cylinder(hd / 2, hh)
     mass = (math.pi * (d / 2) ** 2 * length + math.pi * (hd / 2) ** 2 * hh) * 7.85e-6
     detail, model = details.shcs(size, length)
-    return Stock(shape, f"SHCS-{size}x{length:g}", f"Socket head cap screw {size} x {length:g}", mass,
+    sku_ = f"SHCS-{size}x{length:g}"
+    batch = vendor_data("mcmaster_fasteners").get("supplier_batch_2026_11_18") or {}
+    thr = {}
+    if sku_ in (batch.get("thread_length_mm") or {}):       # the bought screw is partly threaded: thread over this length from the tip
+        thr = {"thread_length": float(batch["thread_length_mm"][sku_])}
+    elif sku_ in (batch.get("fully_threaded") or []):       # the bought screw is threaded to the head, longer than ISO's b
+        thr = {"thread_length": float(length)}
+    return Stock(shape, sku_, f"Socket head cap screw {size} x {length:g}", mass,
                  detail=detail, model=model,
-                 ratings={"proof_load_n": SCREW[size][6], **mcmaster_part(f"SHCS-{size}x{length:g}")},
-                 interfaces={"thread_d": d, "head_d": hd, "head_h": hh, "hex_key": key}, cost_usd=0.08,
+                 ratings={"proof_load_n": SCREW[size][6], **mcmaster_part(sku_)},
+                 interfaces={"thread_d": d, "head_d": hd, "head_h": hh, "hex_key": key, **thr}, cost_usd=0.08,
                  source=_source("iso_fasteners", "standard", f"ISO 4762 {size}", unverified=("proof_load_n",)))
 
 
@@ -705,7 +716,7 @@ def fhcs(size: str = "M5", length: float = 16.0) -> Stock:
     detail, model = details.fhcs(size, length)
     return Stock(shape, f"FHCS-{size}x{length:g}", f"Countersunk socket screw {size} x {length:g} (ISO 10642)", mass,
                  detail=detail, model=model,
-                 ratings={"proof_load_n": SCREW[size][6] * 0.8, "head": "countersunk"},
+                 ratings={"proof_load_n": SCREW[size][6] * 0.8, "head": "countersunk", **mcmaster_part(f"FHCS-{size}x{length:g}")},
                  interfaces={"thread_d": d, "head_d": dk, "head_h": 0.0, "hex_key": key, "head": "countersunk", "csk_dia": dk_t,
                              "head_below_surface": round((dk_t - dk) / 2.0, 2)},
                  cost_usd=0.12,
@@ -759,7 +770,7 @@ def hex_nut(size: str = "M3", standard: str = "iso4032") -> Stock:
         body = extrude(RegularPolygon(af / 2, 6, major_radius=False), h)
         detail, model = details.nyloc_nut(size, af, NUT[size][1], h)
         return Stock(body, f"NUT-{size}-NYLOC", f"Nylon-insert lock nut {size} (ISO 10511, {h:g} mm high)",
-                     af * af * 0.866 * h * 7.85e-6 * 0.7, ratings={"locking": "nyloc", "max_temp_c": 120.0},
+                     af * af * 0.866 * h * 7.85e-6 * 0.7, ratings={"locking": "nyloc", "max_temp_c": 120.0, **mcmaster_part(f"NUT-{size}-NYLOC")},
                      interfaces={"across_flats": af, "height": h, "thread_d": SCREW[size][0]}, cost_usd=0.05,
                      detail=detail, model=model,
                      source=_source("iso_fasteners", "standard", f"ISO 10511 {size}", unverified=("height", "max_temp_c"),

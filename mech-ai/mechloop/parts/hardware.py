@@ -101,7 +101,10 @@ def bed_column_silicone(height: float = 18.0, installed: float | None = None) ->
 # of the standards' tables: vendor_cad/staging/practice_refs/06_RC_ISO_washers.pdf, page 1 (ISO 7089: M2.5 2.7-2.84 /
 # 6 / 0.45-0.55 ... M8 8.4-8.62 / 16 / 1.4-1.8) and page 3 (ISO 7093: M3 3.2 / 9 / 0.7-0.9 ... M8 8.4 / 24 / 1.8-2.2).
 # ISO 7093-1's scope starts at M3 (no large M2.5). A distributor's table, not the licensed standard.
-WASHER = {"normal": {"M2.5": (2.7, 6.0, 0.5), "M3": (3.2, 7.0, 0.5), "M4": (4.3, 9.0, 0.8), "M5": (5.3, 10.0, 1.0),
+# 2026-11-18: the normal washers M2.5 to M5 are what is bought, McMaster 91166A190 / A210 / A230 / A240, measured in the
+# supplier's STEP files: 0.1 mm thicker than the mid of the ISO band (M2.5 0.6, M3 0.6, M4 0.9, M5 1.1; before: 0.5, 0.5,
+# 0.8, 1.0). M6, M8 and the large series are still the standard's mid values (McMaster sells no 9 or 12 mm OD metric washer).
+WASHER = {"normal": {"M2.5": (2.7, 6.0, 0.6), "M3": (3.2, 7.0, 0.6), "M4": (4.3, 9.0, 0.9), "M5": (5.3, 10.0, 1.1),
                      "M6": (6.4, 12.0, 1.6), "M8": (8.4, 16.0, 1.6)},
           "large": {"M3": (3.2, 9.0, 0.8), "M4": (4.3, 12.0, 1.0), "M5": (5.3, 15.0, 1.2), "M6": (6.4, 18.0, 1.6),
                     "M8": (8.4, 24.0, 2.0)}}
@@ -117,9 +120,12 @@ def washer_flat(size: str = "M3", series: str = "normal") -> Stock:
     d1, d2, h = WASHER[series][size]
     body = Pos(0, 0, h / 2) * (Cylinder(d2 / 2, h) - Cylinder(d1 / 2, h))
     std = "ISO 7089" if series == "normal" else "ISO 7093-1"
-    return Stock(body, f"WASHER-{size}" + ("-LARGE" if series == "large" else ""),
+    from . import mcmaster_part
+
+    sku_ = f"WASHER-{size}" + ("-LARGE" if series == "large" else "")
+    return Stock(body, sku_,
                  f"Flat washer {size}, {d2:g} x {d1:g} x {h:g} mm ({std})", math.pi * (d2 ** 2 - d1 ** 2) / 4 * h * 7.85e-6,
-                 material="steel", cost_usd=0.02, ratings={"approximate": True, "screw": size},
+                 material="steel", cost_usd=0.02, ratings={"approximate": True, "screw": size, **mcmaster_part(sku_)},
                  interfaces={"od": d2, "bore": d1, "thickness": h},
                  # the ring at the standard's nominal sizes IS the standard's shape (no chamfer is specified for the display):
                  # a placeholder until the supplier's STEP is in vendor_cad/inbox/ under the SKU

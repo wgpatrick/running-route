@@ -26,8 +26,36 @@ the frame it is placed in, is `mechloop/parts/details.py`. See `docs/VENDOR_CAD.
 | `17HS19-2004S1.step` | NEMA 17 stepper, 48 mm (`nema17(48)`) | STEPPERONLINE product page https://www.omc-stepperonline.com/nema-17-bipolar-59ncm-84oz-in-2a-42x48mm-4-wires-w-1m-cable-connector-17hs19-2004s1, file `17HS19-2004S1.STEP` (one solid), unchanged; lead stubs cut and frame changed in code | hand-downloaded by the owner (free account), 2026-11-14; integrated 2026-11-15 | not stated on the page (vendor copyright; internal design use) | vendor-made |
 | `COUPLER-5x8.step` | 5 x 8 mm jaw coupling MH2025-5-8 (`shaft_coupler(5, 8)`): two clamp hubs, elastomer spider, two M3 x 10 clamp screws | STEPPERONLINE product page https://www.omc-stepperonline.com/5mm-8mm-flexible-jaw-coupling-20x25mm-cnc-stepper-motor-shaft-coupler-mh2025-5-8, STEP header `MH2025-5-8.STEP` (SolidWorks 2016, 2023-01-12; five solids), unchanged; re-centred on the part axis and turned 5 mm end down in code | hand-downloaded by the owner (free account), 2026-11-14; integrated 2026-11-15 | not stated on the page (vendor copyright; internal design use) | vendor-made |
 
-Not files: socket head cap screws and hex nuts are generated to ISO 4762 / ISO 4032 by the `bd_warehouse` package
-(Apache-2.0) at run time; nothing is stored.
+## Supplier CAD batch 2026-11-18 (in `inbox/`, under the catalogue SKU)
+
+Collected for the owner from McMaster-Carr's product pages (with a login) and staged in `staging/supplier_2026-11-18/`
+with its report (`00-REPORT-supplier-cad-table.md`: part number, description and page per file) and `MANIFEST.md`
+(bounding box and check per file). The exact matches were copied unchanged into `inbox/` on 2026-11-19; each is aligned to
+its part's frame automatically and passes the same proxy-match check as every other model. They are the detail models
+(display, STEP export) of these catalogue parts; the simulation solids are unchanged except the washers' thickness.
+
+| file in `inbox/` | catalogue part | McMaster-Carr | note |
+|---|---|---|---|
+| `SHCS-M2.5x12.step`, `SHCS-M2.5x16.step` | `shcs("M2.5", L)` | 91290A008, 91290A200 | ISO 4762, black-oxide alloy steel, fully threaded |
+| `SHCS-M3x5`, `x6`, `x8`, `x10`, `x12`, `x16`, `x18`, `x20.step` | `shcs("M3", L)` | 91290A110, A111, A400, A115, A500, A120, A121, A123 | fully threaded |
+| `SHCS-M3x40`, `x45`, `x50.step` | `shcs("M3", L)` | 91290A136, 91290A079, 91290A137 | partly threaded: 18 mm of thread (the catalogue part's `interfaces["thread_length"]`; practice FST-060 uses it) |
+| `SHCS-M5x8`, `x10`, `x12.step` | `shcs("M5", L)` | 91290A222, A224, A228 | fully threaded |
+| `SHCS-M5x30`, `x35`, `x70.step` | `shcs("M5", L)` | 91290A194, A195, A201 | fully threaded per McMaster's page (ISO 4762 would thread 22 mm): `interfaces["thread_length"]` = the full length |
+| `FHCS-M4x40.step` | `fhcs("M4", 40)` | 91294A204 | DIN 7991 / ISO 10642, fully threaded |
+| `WASHER-M2.5`, `-M3`, `-M4`, `-M5.step` | `washer_flat(size)` | 91166A190, A210, A230, A240 | DIN 125 / ISO 7089; 0.6, 0.6, 0.9, 1.1 mm thick, 0.1 mm more than the catalogue had: `hardware.WASHER` changed to these |
+| `NUT-M2.5`, `-M3`, `-M4.step` | `hex_nut(size)` | 90591A270, A250, A255 | DIN 934; same height as ISO 4032 at these sizes |
+| `NUT-M3-NYLOC.step` | `hex_nut("M3", "iso10511")` | 90576A102 | DIN 985 / ISO 10511, 4.0 mm high; two solids (nut, nylon insert) |
+| `NUT-M5-DIN934.step` | `hex_nut("M5", "din934")` | 90591A260 | DIN 934, 4.0 mm high. Staged as `_DEVIATIONS/NUT-M5.step` (it is not the ISO 4032 nut, 4.7 mm); filed here under the SKU of the DIN 934 part, which printer_v10_1 uses |
+
+Not promoted from that batch, deliberately: McMaster's 5 mm-slot extrusion, T-nuts and corner bracket (a different system
+from the 2020 6 mm slot; the owner has to choose; their measured dimensions are in
+`mechloop/parts/vendor/tslot_2020_hardware.json` as a geometry the T-slot check reports against); `SHCS-M4x6` (90128A208,
+zinc-plated, drawing only: its STEP is over 5 MB); the probe, spring, inlet, pulleys and data sheets (next revision).
+Not sold by McMaster: `WASHER-M3-LARGE` (9 mm OD) and `WASHER-M4-LARGE` (12 mm OD), which stay stand-ins.
+McMaster's files carry no licence grant; they are the supplier's published downloads, kept for internal design use.
+
+Not files: where no supplier file is in `inbox/`, socket head cap screws and hex nuts are generated to ISO 4762 / ISO 4032
+by the `bd_warehouse` package (Apache-2.0) at run time; nothing is stored.
 
 Licence notes: the FreeCAD-library files are CC-BY 3.0 and must keep this attribution. The Voron file is GPL-3.0:
 keep this notice with it, and take it out (and use the wish-list replacement) before distributing this repository

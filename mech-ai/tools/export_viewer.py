@@ -77,6 +77,38 @@ def detail_mesh(c):
     return trimesh.Trimesh(v @ P[:, :3].T + P[:, 3], t, process=False)
 
 
+FASTENER_TRI_BUDGET = 1500      # triangles a fastener may cost in viewer/meshes.txt
+_LIGHT: dict = {}
+
+
+def light_fastener_mesh(c):
+    """A light display mesh for a fastener whose supplier CAD is too heavy for the page (McMaster's screws carry a modelled
+    helical thread: 8,000 to 29,000 triangles each, and there are several hundred). Cap screws and countersunk screws are
+    shown as their ISO outline (the geometry generated to the standard, same dimensions, thread not cut); washers, nuts and
+    the rest as their simulation solid. The part's record still says what the model is (the supplier's file); only this
+    page's picture is simplified, and the part's `model_note` says so. STEP export and drawings use the supplier's file."""
+    import trimesh
+
+    from mechloop.parts import details
+
+    P = c.meta.get("placement")
+    m = re.match(r"(SHCS|FHCS)-(M[\d.]+)x([\d.]+)$", c.sku or "")
+    if m and P is not None:
+        key = (m.group(1), m.group(2), float(m.group(3)))
+        if key not in _LIGHT:
+            gen = (details.shcs if key[0] == "SHCS" else details.fhcs)(key[1], key[2])[0]
+            if gen is not None:
+                verts, tris = gen.tessellate(0.08, 0.4)
+                _LIGHT[key] = (np.array([(p.X, p.Y, p.Z) for p in verts], dtype=float), np.array(tris, dtype=int))
+            else:
+                _LIGHT[key] = None
+        if _LIGHT[key] is not None:
+            v, t = _LIGHT[key]
+            P = np.asarray(P, dtype=float)
+            return trimesh.Trimesh(v @ P[:, :3].T + P[:, 3], t, process=False), "its ISO outline (thread not drawn)"
+    return to_trimesh(c.shape, 0.12, 0.45), "its plain simulation solid"
+
+
 def d_density(c):
     from mechloop.model import MATERIALS
     mat = MATERIALS.get(c.material)
@@ -143,6 +175,12 @@ def main():
         model = c.meta.get("model") or {"kind": "proxy" if c.cots else "design", "source": ""}
         # display the detail model (vendor / community CAD) where there is one; verifiers used c.shape
         tm = detail_mesh(c) if c.detail is not None else to_trimesh(c.shape, 0.12, 0.45)
+        shown_as = None
+        if kind_of(c) == "fastener" and len(tm.faces) > FASTENER_TRI_BUDGET:
+            full = len(tm.faces)
+            tm, how = light_fastener_mesh(c)
+            shown_as = (f"Shown on this page as {how}: the model's own file has {full} triangles for this one part. "
+                        f"The model, its STEP export and the drawings use the file named above.")
         v = np.asarray(tm.vertices, dtype=np.float32)
         t = np.asarray(tm.faces, dtype=np.uint32)
         vb, tb = v.tobytes(), t.tobytes()
@@ -156,7 +194,8 @@ def main():
             # what the displayed geometry is: "vendor CAD" | "community CAD" | "generated to standard" | "proxy"
             # (catalog parts) or "design" (custom parts), where it came from, and the STEP file behind it
             "model": model.get("kind"), "model_source": model.get("source", ""), "model_file": model.get("file"),
-            "model_note": model.get("note"),
+            "model_note": " ".join(x for x in (model.get("note"), shown_as) if x) or None,
+            "model_state": __import__("mechloop.parts.vendor_cad", fromlist=["x"]).model_state(model) if c.cots else None,
             "vendor": bool(c.meta.get("vendor_backed")), "source": src if isinstance(src, str) else json.dumps(src)[:300] if src else "",
             "product": (c.ratings.get("electrical") or {}).get("product") if isinstance(c.ratings.get("electrical"), dict) else None,
             "bbox": [round(x, 2) for x in (bb.min.X, bb.min.Y, bb.min.Z, bb.max.X, bb.max.Y, bb.max.Z)],

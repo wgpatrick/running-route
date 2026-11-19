@@ -32,8 +32,13 @@ def slot_2020() -> dict:
     out = {"opening": u["opening_mm"], "lip": u["lip_thickness_mm"], "depth": u["depth_mm"], "cavity_width": u["cavity_width_mm"],
            "profile": u["profile"], "source": u["source"], "status": u["status"],
            "sim_depth": SIM_SLOT_DEPTH, "sim_width": SIM_SLOT_WIDTH,
-           "alternative": {"opening": a["opening_mm"], "lip": a["lip_thickness_mm"], "depth": a["depth_mm"],
-                           "cavity_width": a["cavity_width_mm"], "profile": a["profile"], "source": a["source"], "status": a["status"]}}
+           # other slot + T-nut geometries on file, each judged and reported beside the one used (data, not constants):
+           # the B-type community section, and McMaster's measured 5 mm-slot rail with its own T-nuts
+           "alternatives": [{"name": g["name"], "report_as": g.get("report_as", "warning"), "opening": g["opening_mm"], "lip": g["lip_mm"],
+                             "depth": g["depth_mm"], "cavity_width": g["cavity_width_mm"], "status": g["status"],
+                             "tnut": {k: {"thread_start": t["thread_start_mm"], "thread_length": t["thread_length_mm"]}
+                                      for k, t in g["tnut"].items()}}
+                            for g in vendor_data(FAMILY)["geometries"]["alternatives"]]}
     return out
 
 

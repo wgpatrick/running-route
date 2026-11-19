@@ -1444,7 +1444,7 @@ def build() -> Design:
     place(d, "x_idler", gt2_idler(20, belt_width=BWX), fwd(XI_X, yb_r + X_SP, XD_Z), body="ybody")
     add_screw(d, "x_idler_bolt", "M5", 35, at=(XI_X, yb_f, XD_Z), direction=(0, 1, 0), body="ybody",
               clamps=("x_idler_mount", "x_idler_spacer"), washer=True)
-    add_nut(d, "x_idler_nut", "M5", at=(XI_X, yb_r + X_SP + I_H(BWX), XD_Z), direction=(0, 1, 0), body="ybody", screw="x_idler_bolt")
+    add_nut(d, "x_idler_nut", "M5", at=(XI_X, yb_r + X_SP + I_H(BWX), XD_Z), direction=(0, 1, 0), body="ybody", screw="x_idler_bolt", standard="din934")      # v10.1: the M5 nut that is bought (McMaster 90591A260, DIN 934, 4.0 mm)
     d.join("x_idler", "x_idler_bolt", "axle")
     d.join("x_idler_spacer", "x_idler_mount", "clamp")
     XA_FIN = LUG_X - 8.0                                # anchor fin's outboard face
@@ -1543,7 +1543,7 @@ def build() -> Design:
         add_washer(d, f"y_idler{tag}_spacer", "M5", (sg * (xf + MT_YI), YI_Y, Z_YC), (sg, 0, 0), screw=f"y_idler{tag}_bolt")
         add_washer(d, f"y_idler{tag}_spacer_b", "M5", (sg * (xf + MT_YI + W5), YI_Y, Z_YC), (sg, 0, 0), screw=f"y_idler{tag}_bolt")
         add_washer(d, f"y_idler{tag}_nwasher", "M5", (sg * xf, YI_Y, Z_YC), (-sg, 0, 0), screw=f"y_idler{tag}_bolt")
-        add_nut(d, f"y_idler{tag}_nut", "M5", at=(sg * (xf - W5), YI_Y, Z_YC), direction=(-sg, 0, 0), screw=f"y_idler{tag}_bolt")
+        add_nut(d, f"y_idler{tag}_nut", "M5", at=(sg * (xf - W5), YI_Y, Z_YC), direction=(-sg, 0, 0), screw=f"y_idler{tag}_bolt", standard="din934")
         d.join(f"y_idler{tag}_nut", f"y_idler_mount{tag}", "clamped through its washer")
         d.join(f"y_idler{tag}", f"y_idler{tag}_bolt", "axle")
     # Y endstop (v10): v9's stood on a plate on the right top rail's inner face, where the toolhead now passes (the plenum
@@ -1660,7 +1660,7 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
     for i, (hx, hy, hz) in enumerate(inlet.meta["interfaces"]["mount_holes_m3"]):
         add_screw(d, f"inlet_screw_{i}", "M3", 10, at=(XP - T_IP - 2.5, hy, hz), direction=(1, 0, 0), clamps=("inlet", "inlet_panel"))
         add_washer(d, f"inlet_washer_{i}", "M3", (XP, hy, hz), (1, 0, 0), screw=f"inlet_screw_{i}")
-        add_nut(d, f"inlet_nut_{i}", "M3", at=(XP + 0.5, hy, hz), direction=(1, 0, 0), screw=f"inlet_screw_{i}")
+        add_nut(d, f"inlet_nut_{i}", "M3", at=(XP + WASHER["normal"]["M3"][2], hy, hz), direction=(1, 0, 0), screw=f"inlet_screw_{i}")
         d.join(f"inlet_nut_{i}", "inlet_panel", "clamped through its washer")
     # the inlet is 30.5 wide (y) and 65 tall (z) behind the panel; the hood: top, two sides, an inner end wall open below
     hood = bx(XP, XP + 32.0, IN_Y - 19.0, IN_Y + 19.0, IN_Z + 34.0, IN_Z + 36.0)

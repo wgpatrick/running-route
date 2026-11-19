@@ -93,5 +93,70 @@
  "bottoming_margin_mm": {
   "value": 0.5,
   "status": "DERIVED: ISO 4762 length tolerance js15 (+/-0.29 mm to 10 mm, +/-0.35 to 18 mm; recalled) plus about 0.1 mm each for washer and sheet thickness"
+ },
+ "geometries": {
+  "_about": "Named slot + T-nut geometries the T-slot screw check judges every screw against. 'used' decides errors; each entry of 'alternatives' is reported (as a warning or an info) with the screws that would fail on it. All depths are from the extrusion's nominal outer face, mm. thread_start: where the T-nut's thread begins with the nut pulled up under the lips; thread_length: how much thread it has from there.",
+  "used": {
+   "name": "2020 slot 6, assumed (HFS5 community DXF + stand-in T-nut)",
+   "slot": "slot.used",
+   "tnut": "the drawn T-nut part's own interfaces (tnut section): thread starts at the lip underside"
+  },
+  "alternatives": [
+   {
+    "name": "2020 slot 6, B-type (community STEP) + stand-in T-nut",
+    "report_as": "warning",
+    "opening_mm": 6.0,
+    "lip_mm": 1.5,
+    "depth_mm": 5.3,
+    "cavity_width_mm": 12.0,
+    "tnut": {
+     "M3": {
+      "thread_start_mm": 1.5,
+      "thread_length_mm": 3.4
+     },
+     "M5": {
+      "thread_start_mm": 1.5,
+      "thread_length_mm": 3.4
+     }
+    },
+    "status": "ASSUMED: slot from vendor_cad/profile_2020_slot6.step (community); T-nut the stand-in"
+   },
+   {
+    "name": "McMaster 20 mm rail 5537T101 (5 mm slot) + drop-in T-nuts 5278N42 / 5278N44",
+    "report_as": "info",
+    "opening_mm": 5.0,
+    "lip_mm": 1.8,
+    "depth_mm": 6.1,
+    "depth_on_centre_line_mm": 6.4,
+    "cavity_width_mm": 11.5,
+    "tnut": {
+     "M3": {
+      "thread_start_mm": 1.37,
+      "thread_length_mm": 4.45
+     },
+     "M5": {
+      "thread_start_mm": 2.06,
+      "thread_length_mm": 3.3
+     }
+    },
+    "tnut_body": {
+     "height_mm": 4.6,
+     "neck_mm": [
+      0.6,
+      4.9
+     ],
+     "under_lip_mm": 4.0,
+     "span_across_slot_mm": 7.7,
+     "width_along_slot_mm": 12.0,
+     "hole_offset_along_slot_mm": {
+      "M3": -3.0,
+      "M5": -2.0
+     },
+     "spring_ball": "3 mm, 1.0 mm below the body, bears on the slot floor"
+    },
+    "status": "MEASURED in McMaster's STEP files (vendor_cad/staging/supplier_2026-11-18/_DEVIATIONS/EXT2020-PROFILE.step, TNUT-2020-M3.step, TNUT-2020-M5.step; MANIFEST.md). Supplier CAD of a DIFFERENT system: a 5 mm slot, not the standard 2020 6 mm slot. NOT adopted: the owner has to choose. depth_mm is the floor 2.4 mm off the centre line (where an M5's edge runs); 6.40 on the centre line",
+    "note": "an M5 screw is as wide as this slot's 5.00 mm opening; the nuts' holes are off the nut's centre (does not change depths)"
+   }
+  ]
  }
 }

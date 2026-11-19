@@ -317,7 +317,8 @@ def _tslot_screws(design: Design, r: VerifierResult) -> dict:
               f"{len(screws)} screw(s) go into T-nuts that are BOM lines, not parts (design.tnut_style is not set): their length "
               f"against the slot floor and their thread in the nut were not checked.", count=len(screws))
         return {"checked": False, "screws": len(screws)}
-    rows, marginal, sensitive, n_err = [], [], [], 0
+    rows, marginal, sensitive, n_err = [], [], {}, 0
+    verdicts = {"used": {"bottoms": [], "short": [], "thin": [], "full": []}}
     for c in screws:
         f = fast[c.name]
         a = np.array(f.axis, dtype=float)
@@ -382,24 +383,26 @@ def _tslot_screws(design: Design, r: VerifierResult) -> dict:
                   f"{tn.name} is not a drop-in T-nut: it has to be slid into the slot of {ext.name} from an open end before that end is closed.",
                   tnut=tn.name, into=ext.name)
 
-        def judge(sl, p_=p):
-            eng = max(0.0, min(p_, sl["lip"] + thread_len) - sl["lip"])
-            return eng, sl["depth"] - p_
+        size = f"M{d:g}"
+        # where the nut's thread starts and how long it is come from the T-nut part and the slot (data, not constants)
+        thr_start = slot["lip"] + float(ti.get("thread_offset", 0.0))
 
-        eng, clear = judge(slot)
+        def judge(start, length, depth, p_=p):
+            return max(0.0, min(p_, start + length) - start), depth - p_
+
+        eng, clear = judge(thr_start, thread_len, slot["depth"])
         row.update(engagement_mm=round(eng, 3), engagement_d=round(eng / d, 3), tip_to_floor_mm=round(clear, 3))
         # what the standard lengths would do through the same grip, for the hint
         fits = []
         for Ls in STANDARD_LENGTHS_MM:
-            e_, c_ = judge(slot, Ls - grip)
+            e_, c_ = judge(thr_start, thread_len, slot["depth"], Ls - grip)
             if c_ >= SLOT_BOTTOM_MARGIN_MM - 1e-6 and e_ >= TNUT_ENGAGEMENT_MIN_D * d - 1e-6:
                 fits.append((Ls, round(e_, 2)))
         best = max(fits, key=lambda x: x[1]) if fits else None
         row["standard_lengths_that_fit"] = [x[0] for x in fits]
-        size = f"M{d:g}"
         how = (f"{size} x {best[0]:g} through the same stack gives {best[1]:.1f} mm of thread and stays {slot['depth'] - (best[0] - grip):.1f} mm off the floor."
                if best else f"No standard length works through a {grip:.2f} mm stack: change the stack (one washer more or less, or the plate) so that "
-                            f"a standard length ends {slot['lip'] + TNUT_ENGAGEMENT_MIN_D * d:.1f} to {slot['depth'] - SLOT_BOTTOM_MARGIN_MM:.1f} mm below the extrusion's face.")
+                            f"a standard length ends {thr_start + TNUT_ENGAGEMENT_MIN_D * d:.1f} to {slot['depth'] - SLOT_BOTTOM_MARGIN_MM:.1f} mm below the extrusion's face.")
         bad = False
         if clear < SLOT_BOTTOM_MARGIN_MM - 1e-6:
             bad = True
@@ -416,44 +419,63 @@ def _tslot_screws(design: Design, r: VerifierResult) -> dict:
             n_err += 1
             r.add("error", "tnut_thread_engagement",
                   f"{c.name} ({c.sku}) has only {eng:.2f} mm of thread ({eng / d:.2f} d) in its T-nut in {ext.name}: it ends {p:.2f} mm "
-                  f"below the face and the nut's thread starts behind the {slot['lip']:g} mm lip. At least {TNUT_ENGAGEMENT_MIN_D:g} d "
+                  f"below the face and the nut's thread starts {thr_start:g} mm below it. At least {TNUT_ENGAGEMENT_MIN_D:g} d "
                   f"({TNUT_ENGAGEMENT_MIN_D * d:.1f} mm) is needed.",
                   screw=c.name, into=ext.name, engagement_mm=round(eng, 3), required_mm=TNUT_ENGAGEMENT_MIN_D * d, grip_mm=round(grip, 3), hint=how)
         elif eng < TNUT_ENGAGEMENT_FULL_D * d - 1e-6:
             marginal.append({"screw": c.name, "engagement_mm": round(eng, 2), "d": round(eng / d, 2)})
-        if not bad:
-            e2, c2 = judge(slot["alternative"])
-            row["alternative_profile"] = {"engagement_mm": round(e2, 3), "tip_to_floor_mm": round(c2, 3)}
-            if c2 < SLOT_BOTTOM_MARGIN_MM - 1e-6 or e2 < TNUT_ENGAGEMENT_MIN_D * d - 1e-6:
-                sensitive.append({"screw": c.name, "tip_to_floor_mm": round(c2, 2), "engagement_mm": round(e2, 2)})
+        verdicts["used"]["bottoms" if clear < SLOT_BOTTOM_MARGIN_MM - 1e-6 else "short" if eng < TNUT_ENGAGEMENT_MIN_D * d - 1e-6
+                         else "thin" if eng < TNUT_ENGAGEMENT_FULL_D * d - 1e-6 else "full"].append(c.name)
+        row["alternatives"] = {}
+        for g in slot.get("alternatives") or []:
+            tg = (g.get("tnut") or {}).get(size)
+            if tg is None:
+                continue
+            e2, c2 = judge(tg["thread_start"], tg["thread_length"], g["depth"])
+            row["alternatives"][g["name"]] = {"engagement_mm": round(e2, 3), "tip_to_floor_mm": round(c2, 3)}
+            v = verdicts.setdefault(g["name"], {"bottoms": [], "short": [], "thin": [], "full": []})
+            kind = ("bottoms" if c2 < SLOT_BOTTOM_MARGIN_MM - 1e-6 else "short" if e2 < TNUT_ENGAGEMENT_MIN_D * d - 1e-6
+                    else "thin" if e2 < TNUT_ENGAGEMENT_FULL_D * d - 1e-6 else "full")
+            v[kind].append(c.name)
+            if not bad and kind in ("bottoms", "short"):
+                sensitive.setdefault(g["name"], []).append({"screw": c.name, "tip_to_floor_mm": round(c2, 2), "engagement_mm": round(e2, 2),
+                                                           "engagement_d": round(e2 / d, 2), "why": kind})
         rows.append(row)
+    slot_any = next((c.meta["interfaces"]["slot"] for c in design.components if "slot" in (c.meta.get("interfaces") or {})), {})
     if marginal:
         w = min(marginal, key=lambda x: x["d"])
-        slot0 = next(iter(c.meta["interfaces"]["slot"] for c in design.components if "slot" in (c.meta.get("interfaces") or {})))
-        most = slot0["depth"] - SLOT_BOTTOM_MARGIN_MM - slot0["lip"]
         r.add("warning", "tnut_thread_engagement_marginal",
               f"{len(marginal)} screw(s) have between {TNUT_ENGAGEMENT_MIN_D:g} d and {TNUT_ENGAGEMENT_FULL_D:g} d of thread in their T-nut "
               f"(least: {w['screw']}, {w['engagement_mm']:.2f} mm = {w['d']:.2f} d). That is a thin nut's thread, not a full nut's: "
-              f"tighten to a reduced torque. With a {slot0['lip']:g} mm lip and a {slot0['depth']:g} mm deep slot the most any screw can "
-              f"have without coming within {SLOT_BOTTOM_MARGIN_MM:g} mm of the floor is {most:.1f} mm, so an M5 cannot reach {TNUT_ENGAGEMENT_FULL_D:g} d "
-              f"in this slot. Slot and T-nut dimensions are assumed (stand-in data).",
+              f"tighten to a reduced torque. With a {slot_any['lip']:g} mm lip and a {slot_any['depth']:g} mm deep slot the most any screw can "
+              f"have without coming within {SLOT_BOTTOM_MARGIN_MM:g} mm of the floor is {slot_any['depth'] - SLOT_BOTTOM_MARGIN_MM - slot_any['lip']:.1f} mm, "
+              f"so an M5 cannot reach {TNUT_ENGAGEMENT_FULL_D:g} d in this slot. Slot and T-nut dimensions are assumed (stand-in data).",
               screws=[x["screw"] for x in marginal][:200], least=w, count=len(marginal),
               hint="State a reduced tightening torque for these joints, or confirm the bought T-nut's thread length and the slot's lip.")
-    if sensitive:
-        alt = next(iter(c.meta["interfaces"]["slot"]["alternative"] for c in design.components if "slot" in (c.meta.get("interfaces") or {})))
-        w = min(sensitive, key=lambda x: x["tip_to_floor_mm"])
-        r.add("warning", "tslot_profile_sensitive",
-              f"{len(sensitive)} screw(s) pass on the slot section used but not on the other section on file ({alt['profile']}: "
-              f"lip {alt['lip']:g} mm, {alt['depth']:g} mm deep); worst: {w['screw']}, {w['tip_to_floor_mm']:.2f} mm from that floor. "
-              f"Measure the slot of the extrusion that is bought before fitting these.",
-              screws=[x["screw"] for x in sensitive][:200], count=len(sensitive), alternative=alt,
-              hint="Measure the bought extrusion's slot depth and lip; both sections on file are community drawings.")
+    for g in slot_any.get("alternatives") or []:
+        lst = sensitive.get(g["name"])
+        if not lst:
+            continue
+        w = min(lst, key=lambda x: (x["why"] != "bottoms", x["tip_to_floor_mm"] if x["why"] == "bottoms" else x["engagement_d"]))
+        nb, ns = sum(x["why"] == "bottoms" for x in lst), sum(x["why"] == "short" for x in lst)
+        r.add(g.get("report_as", "warning"), "tslot_profile_sensitive",
+              f"{len(lst)} screw(s) pass on the slot and T-nut geometry used but not on '{g['name']}' (slot {g['depth']:g} mm deep, lip "
+              f"{g['lip']:g} mm): {nb} would end within {SLOT_BOTTOM_MARGIN_MM:g} mm of that floor or on it, {ns} would have under "
+              f"{TNUT_ENGAGEMENT_MIN_D:g} d of thread; worst: {w['screw']} ({w['tip_to_floor_mm']:.2f} mm from the floor, {w['engagement_d']:.2f} d). "
+              f"Measure what is bought before fitting these.",
+              screws=[x["screw"] for x in lst][:200], count=len(lst), bottoms=nb, short=ns, geometry=g["name"], status=g.get("status"),
+              hint="Put the bought extrusion's and T-nut's figures in mechloop/parts/vendor/tslot_2020_hardware.json and run verify again.")
     slot0 = next((c.meta["interfaces"]["slot"] for c in design.components if "slot" in (c.meta.get("interfaces") or {})), {})
     types = sorted({(comps[x["tnut"]].meta.get("interfaces") or {}).get("insertion", "?") for x in rows if x.get("tnut")})
     return {"checked": True, "screws": len(screws), "tnuts_drawn": sum(1 for x in rows if x.get("tnut")), "tnut_types": types,
-            "errors": n_err, "marginal_engagement": len(marginal), "profile_sensitive": len(sensitive),
+            "errors": n_err, "marginal_engagement": len(marginal),
+            "profile_sensitive": {k: len(v) for k, v in sensitive.items()},
+            # every screw judged on every geometry on file: counts, and the screws that would bottom or be short
+            "verdicts_by_geometry": {k: {"bottoms": len(v["bottoms"]), "short": len(v["short"]), "thin_nut_thread": len(v["thin"]),
+                                         "full_nut_thread": len(v["full"]), "bottoming_screws": v["bottoms"][:200], "short_screws": v["short"][:200]}
+                                     for k, v in verdicts.items()},
             "limits": {"bottom_margin_mm": SLOT_BOTTOM_MARGIN_MM, "engagement_min_d": TNUT_ENGAGEMENT_MIN_D, "engagement_full_d": TNUT_ENGAGEMENT_FULL_D},
-            "slot": {k: v for k, v in slot0.items() if k != "alternative"}, "slot_alternative": slot0.get("alternative"),
+            "slot": {k: v for k, v in slot0.items() if k != "alternatives"}, "slot_alternatives": slot0.get("alternatives"),
             "assumed_dimensions": assumed_dimensions(), "rows": rows}
 
 
