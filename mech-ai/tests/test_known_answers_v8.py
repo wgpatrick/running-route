@@ -630,10 +630,10 @@ def test_a_head_over_a_slot_or_an_oversize_hole_needs_a_washer_and_a_washer_clea
     assert f == {} and m["on_washers"] == 1 and m["worst"][0]["bears_with"] == "head on washer s_washer"
     assert m["worst"][0]["seat_area_over_standard"] > 1.0
     w = d.get("s_washer")
-    assert w.sku == "WASHER-M5" and w.meta["interfaces"] == {"od": 10.0, "bore": 5.3, "thickness": 1.0}
+    assert w.sku == "WASHER-M5" and w.meta["interfaces"] == {"od": 10.0, "bore": 5.3, "thickness": 1.1}
     assert d.joins[frozenset(("s", "s_washer"))] == "washer" and "s_washer" in d.fasteners[0].clamps
     zs = lambda dd: (dd.get("s").shape.bounding_box().min.Z, dd.get("s").shape.bounding_box().max.Z)
-    assert zs(d) == pytest.approx(tuple(z + 1.0 for z in zs(seated_screw(hole="slot"))), abs=1e-6)       # 1 mm less thread in the block
+    assert zs(d) == pytest.approx(tuple(z + 1.1 for z in zs(seated_screw(hole="slot"))), abs=1e-6)       # 1.1 mm less thread in the block (the bought washer)
     from mechloop.verifiers.ratings import verify_ratings
 
     assert verify_ratings(d).metrics["bom"]["WASHER-M5"]["qty"] == 1

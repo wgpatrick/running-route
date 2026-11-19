@@ -47,6 +47,9 @@ def test_every_file_has_a_sources_entry_and_nothing_else_is_in_the_folder():
             assert src in rows and (vc.root() / src).exists() and "unchanged" in rows[src]["origin"]
         if "file" in st.model:
             name = Path(st.model["file"]).name
+            if Path(st.model["file"]).parent.name == "inbox":      # a supplier file promoted to the inbox (checked below)
+                assert f"inbox/{name}" in rows, f"inbox/{name} is not in vendor_cad/SOURCES.md"
+                continue
             used.add(name)
             assert name in rows, f"{name} is not in vendor_cad/SOURCES.md"
             assert (vc.root() / name).exists()
@@ -54,8 +57,15 @@ def test_every_file_has_a_sources_entry_and_nothing_else_is_in_the_folder():
             assert ("vendor" in made) == (st.model["kind"] == "vendor CAD"), f"{name}: {made} vs {st.model['kind']}"
             assert rows[name]["licence"] and rows[name]["origin"]
     on_disk = {p.name for p in vc.root().iterdir() if p.suffix.lower() in (".step", ".stp")}
-    assert on_disk == used == set(rows), (on_disk ^ used, set(rows) ^ used)
+    root_rows = {k for k in rows if not k.startswith("inbox/")}
+    assert on_disk == used == root_rows, (on_disk ^ used, root_rows ^ used)
     assert all((vc.root() / n).stat().st_size < 5.2e6 for n in on_disk)
+    # supplier files in the inbox (2026-11-18 batch): every one has a row naming the supplier and its part number
+    inbox = {f"inbox/{p.name}" for p in (vc.root() / "inbox").iterdir() if p.suffix.lower() in (".step", ".stp")}
+    assert inbox == set(rows) - root_rows, inbox ^ (set(rows) - root_rows)
+    for k in inbox:
+        assert "vendor" in rows[k]["made by"] and "McMaster-Carr 9" in rows[k]["origin"] and rows[k]["licence"], k
+        assert (vc.root() / k).stat().st_size < 5.2e6
 
 
 def test_parts_without_cad_say_proxy():
@@ -160,13 +170,15 @@ def test_inbox_file_overrides_with_no_code_change(tmp_path, monkeypatch):
     from build123d import export_step
 
     (tmp_path / "inbox").mkdir()
-    odd = Pos(40, -7, 3) * Rot(90, 0, 0) * HexNut(size="M3-0.5", fastener_type="iso4032", simple=True)   # some other frame
-    export_step(odd, str(tmp_path / "inbox" / "NUT-M3.step"))
+    # M6: a size with no supplier file in the repository's own inbox (M2.5 to M4 have McMaster's since 2026-11-18)
+    odd = Pos(40, -7, 3) * Rot(90, 0, 0) * HexNut(size="M6-1", fastener_type="iso4032", simple=True)   # some other frame
+    export_step(odd, str(tmp_path / "inbox" / "NUT-M6.step"))
     monkeypatch.setenv("MECHLOOP_VENDOR_CAD", str(tmp_path))
-    st = hex_nut("M3")
-    assert st.model["kind"] == "vendor CAD" and st.model["file"] == "vendor_cad/inbox/NUT-M3.step"
+    st = hex_nut("M6")
+    assert st.model["kind"] == "vendor CAD" and st.model["file"] == "vendor_cad/inbox/NUT-M6.step"
     assert st.model["replaced"] == "generated to standard"
     bad, _ = vc.check_stock(st)                              # aligned automatically into the part's frame
     assert not bad, [b["message"] for b in bad]
     monkeypatch.delenv("MECHLOOP_VENDOR_CAD")
-    assert hex_nut("M3").model["kind"] == "generated to standard"
+    assert hex_nut("M6").model["kind"] == "generated to standard"
+    assert hex_nut("M3").model["kind"] == "vendor CAD"           # the repository's own inbox: McMaster 90591A250

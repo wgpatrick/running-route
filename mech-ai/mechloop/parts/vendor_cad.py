@@ -538,12 +538,12 @@ def sources_table() -> dict:
         if not line.startswith("|"):
             continue
         cells = [c.strip() for c in line.strip().strip("|").split("|")]
-        if head is None:
+        if head is None or cells[0].lower() == "file":      # a header row (the file may hold more than one table)
             head = [c.lower() for c in cells]
             continue
         if set(cells[0]) <= set("-: "):
             continue
-        rows[cells[0].strip("`")] = dict(zip(head, cells))
+        rows[cells[0].strip("`")] = dict(zip(head, cells))      # files in the inbox are keyed "inbox/<name>"
     return rows
 
 
