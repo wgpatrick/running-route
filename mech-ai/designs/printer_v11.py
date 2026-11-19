@@ -223,10 +223,12 @@ FS_Y = -101.0
 NUT_OUT_R = LS_Y - SQ_Y1      # 57.1: the rear nut plate reaches out through the back wall
 NUT_OUT_F = FS_X - SQ_X       # 9.1
 NUT_OUT = NUT_OUT_F
-NUT_PIN = (8.0, 8.0)          # v11: the anti-rotation pin in a corner hole of the POM nut's square flange
+NUT_PIN = (-8.0, 8.0)         # v11: the anti-rotation pin in a corner hole of the POM nut's square flange
+KEEP_HOLES = None             # set below: the keeper's two bolts (one each side of the open slot)
 NUT_FLOAT = 2.8
 NUT_FT = 6.0                  # the POM nut's flange thickness (STAND-IN, estimated from photographs)
-KEEP_GAP, T_KEEP, KEEP_BX = 0.1, 3.175, 19.0   # nut keeper: axial play, thickness (6061), bolts +/- along the member from the nut
+KEEP_GAP, T_KEEP, KEEP_BX = 0.1, 3.175, 19.0   # nut keeper: axial play, thickness (6061), bolts along the member from the nut
+KEEP_HOLES = [(-KEEP_BX, 0.0), (KEEP_BX, 13.0)]  # v11: the +x one beside the open slot (local x along the member, y outward)
 Z_DN = 3.0
 Z_UP = 1.65
 Z_RAIL_L = 250.0
@@ -323,7 +325,8 @@ T_MP = G64                                       # motor plate 6.35 mm 6061
 Z_MPT = Z_MF + T_MP
 Z_SCREW_ABOVE = 328.0                            # v11: the screw as sold (330 nominal; 328 above the face as the sister model's STEP has it),
                                                  # NOT cut: tops at 401.2 (rear, outside the back wall) and 400.2 (front, inboard of the top rails)
-MP_POST_DY = 28.0                                # posts on the rail under the motor, +/- along the rail from the screw
+MP_POST_DY = 30.0                                # v11: front posts +/- along the rail from the screw, clear of the keepers' drivers' paths
+MP_POST_DX_R = 40.0                              # v11: rear posts +/- along the back rail, outside the rear nut plate's width
 MP_PILOT_HOLE = 22.3                             # the motor's 22 mm pilot locates in it
 PSU_COVER_TOP = 56.04                            # mains cover over the supply's terminals (v8.1: 2.8 mm under its belt plane)
 # Y endstop
@@ -655,11 +658,14 @@ def nut_plate_local(z0, z1, nut_out=NUT_OUT):
     yc, ly = (NP_R1 - nut_out - 20.0) / 2, NP_R1 + nut_out + 20.0
     s = Pos(0, yc, z0) * extrude(RectangleRounded(2 * NP_U, ly, 3.0), h)
     s -= zc(0, 0, z0, z1, NP_HOLE / 2)
-    s -= slot_z(NUT_PIN[0], NUT_PIN[1], 45.0, NUT_FLOAT, PIN_SP_D + 1.2, z0, z1)
+    s -= slot_z(NUT_PIN[0], NUT_PIN[1], 135.0, NUT_FLOAT, PIN_SP_D + 1.2, z0, z1)
+    # v11: the screw's hole is open along the member (+x) to the plate's end: the plate slides onto the nut sideways (the
+    # 330 mm screw cannot be threaded through a closed hole once the motor stands in the frame)
+    s -= bx(0.0, NP_U + 1.0, -NP_HOLE / 2, NP_HOLE / 2, z0, z1)
     for u in (-NP_BOLT_U, NP_BOLT_U):
         s -= zc(u, -nut_out - 10.0, z0, z1, clearance_hole("M5") / 2)
-    for u in (-KEEP_BX, KEEP_BX):
-        s -= zc(u, 0, z0, z1, 4.8 / 2)          # keeper bolts (4.8: with a large washer; M3 clearance is under the sheet's thickness)
+    for u, v in KEEP_HOLES:
+        s -= zc(u, v, z0, z1, 4.8 / 2)          # keeper bolts (4.8: with a large washer; M3 clearance is under the sheet's thickness)
     return s
 
 
@@ -668,14 +674,15 @@ def nut_keeper_local(z0, z1):
     from build123d import Circle, SlotOverall
     s = Pos(0, 0, z0) * extrude(RectangleRounded(50.0, 36.0, 3.0), z1 - z0)
     # the barrel's hole and the slot the pin's nut moves in, as one opening; its four corners rounded (v8.2's were sharp)
-    cut = Circle(KP_HOLE / 2) + Pos(NUT_PIN[0], NUT_PIN[1]) * Rot(0, 0, 45) * SlotOverall(2 * NUT_FLOAT + 7.0, 7.0)
+    cut = (Circle(KP_HOLE / 2) + Pos(NUT_PIN[0], NUT_PIN[1]) * Rot(0, 0, 135) * SlotOverall(2 * NUT_FLOAT + 7.0, 7.0)
+           + Pos(13.0, 0) * RectangleRounded(26.0, KP_HOLE, 0.5))      # v11: open along the member: the keeper slides in under the flange
     try:
         cut = fillet(cut.vertices(), 0.8)
     except Exception:
         pass
     s -= Pos(0, 0, z0) * extrude(cut, z1 - z0)
-    for u in (-KEEP_BX, KEEP_BX):
-        s -= zc(u, 0, z0, z1, clearance_hole("M3") / 2)
+    for u, v in KEEP_HOLES:
+        s -= zc(u, v, z0, z1, clearance_hole("M3") / 2)
     return s
 
 
@@ -847,14 +854,14 @@ def part_duct_shape(y_noz, bl_y0):
     c += bx(NOZ_X + 21.5, FC_X1, yf + FC_FL, y_c0, z0, zf)                        # arm under the Roto
     y_rf = YB0 + R_TPR + ROTO_W                         # the Roto's rear face: under the Roto the chamber stays below its underside
     c += bx(NOZ_X + 21.5, NOZ_X + 48.5, y_c0, y_rf, DUCT_FLOOR, Z_NOZZLE + 20.55)   # chamber A, under the Roto
-    c += bx(NOZ_X + 21.5, NOZ_X + 48.5, y_rf, by1, DUCT_FLOOR, BL_Z0)               # and its riser behind the Roto, up to the blower
+    c += bx(NOZ_X + 21.5, NOZ_X + 48.5, y_rf + 0.6, by1, DUCT_FLOOR, BL_Z0)         # and its riser behind the Roto (0.6 mm clear of it), up to the blower
     c += bx(NOZ_X + 13.0, NOZ_X + 28.0, y_c0, y_noz + 23.0, DUCT_FLOOR, DUCT_FLOOR + 9.5)   # chamber B, its front-left extension
     c += bx(BL_X0, BL_X1, by1, by1 + CRADLE_T, BL_Z0, BL_Z0 + 40.0)             # cradle behind the blower
     o, ax = _outlet_frame(y_noz)
     c += _tube(o, ax, OUT_W + 2.4, OUT_H + 2.4, OUT_L)
     # the air passage
     c -= bx(NOZ_X + 21.5 + w, NOZ_X + 48.5 - w, y_c0 + w, y_rf + 0.01, DUCT_FLOOR + w, Z_NOZZLE + 20.55 - w)
-    c -= bx(NOZ_X + 21.5 + w, NOZ_X + 48.5 - w, y_rf, by1 - w, DUCT_FLOOR + w, BL_Z0 - w)
+    c -= bx(NOZ_X + 21.5 + w, NOZ_X + 48.5 - w, y_rf - 0.01, by1 - w, DUCT_FLOOR + w, BL_Z0 - w)
     bc = (BL_X0 + BL_X1) / 2
     c -= bx(max(bc - 14.0, NOZ_X + 21.5 + w), min(bc + 14.0, NOZ_X + 48.5 - w), bl_y0 + 5.0 - 3.72, bl_y0 + 5.0 + 3.72, BL_Z0 - w - 0.1, BL_Z0 + 0.1)
     c -= bx(NOZ_X + 13.0 + w, NOZ_X + 28.0, y_c0 + w, y_noz + 23.0 - w, DUCT_FLOOR + w, DUCT_FLOOR + 9.5 - w)
@@ -1235,8 +1242,8 @@ def build_frame_z():
         kz1 = Z_TAB - NUT_FT - KEEP_GAP
         kz0 = kz1 - T_KEEP
         d.add(f"nut_keeper{tg}", rz(nut_keeper_local(kz0, kz1), cx, cy, ang), material=AL, body="zbody", process="sheet", meta={"finish": "bare"})
-        for k_, u in enumerate((-KEEP_BX, KEEP_BX)):
-            bx_, by_ = W(u, 0.0)
+        for k_, (u, v) in enumerate(KEEP_HOLES):
+            bx_, by_ = W(u, v)
             spn = f"nut_keeper{tg}_spacer_{k_}"
             place(d, spn, spacer_round("M3", KEEP_GAP + NUT_FT, "aluminium"), Location((bx_, by_, kz1)), body="zbody")
             bolt_nut(d, f"nut_keeper{tg}_bolt_{k_}", "M3", screw_len(T_NP + KEEP_GAP + NUT_FT + T_KEEP + 1.0, 4.0, 1.0, choices=(20, 25, 30)),
@@ -1325,7 +1332,7 @@ def build_frame_z():
     # ================= Z drive: three lead-screw motors, each on its own laser-cut plate ======
     mounts = []
     # v11: the rear motor stands outboard of the back wall; its plate's posts are in the bottom back rail's top slot (y 170)
-    rear_posts = [(-MP_POST_DY, FY / 2 - 10), (MP_POST_DY, FY / 2 - 10)]
+    rear_posts = [(-MP_POST_DX_R, FY / 2 - 10), (MP_POST_DX_R, FY / 2 - 10)]
     # (tag, screw x, y, motor turn, posts, rail part, base: tray (front) or the rail (rear)). Connectors: rear to +X (along the
     # wall, clear of the rail), fronts inboard
     mounts.append(("", 0.0, LS_Y, 0.0, rear_posts, "frame_bot_back", False))
@@ -1630,7 +1637,7 @@ def build() -> Design:
         # its head bears on the push bracket's standing leg. Turning the nuts moves the screw: no PEM nut, no tapped aluminium
         ab = f"y_tension_anchor{tag}"
         place_casting(d, ab, (sg * xf, YA_C, FZ), (0, -1, 0), (sg, 0, 0))
-        foot = np.array([sg * xf, YA_C - BRACKET_SLOT_LEG["offsets"][0], FZ])
+        foot = np.array([sg * xf, YA_C - BRACKET_SLOT_LEG["offsets"][1], FZ])     # 13.1 out: its driver passes the front jam nut
         add_screw(d, f"{ab}_screw_a", "M5", 8, at=tuple(foot + np.array([sg * 3.0, 0, 0])), direction=(-sg, 0, 0), threads_into=rail,
                   tnut=True, clamps=(ab,), head="flanged_button")
         d.get(f"{ab}_screw_a").meta["bracket_leg_of"] = ab
@@ -1641,6 +1648,8 @@ def build() -> Design:
         add_screw(d, ts, "M5", 30, at=(x_ts, YP_C - hh, FZ), direction=(0, -1, 0), clamps=(ab,), locking="jam")
         d.get(ts).meta["torque_nm"] = 0.0
         d.get(ts).meta["note"] = "tension screw: positioned by its two jam nuts on the anchor; its head pushes the motor plate's bracket"
+        # it is set by turning its nuts, not driven by its head (which bears on the bracket): no driver-access record for it
+        d.fasteners[:] = [f_ for f_ in d.fasteners if f_.name != ts]
         for side_, y0_, dv in (("rear", YA_C, (0, 1, 0)), ("front", YA_C - 3.0, (0, -1, 0))):
             add_washer(d, f"{ts}_{side_}_washer", "M5", (x_ts, y0_, FZ), dv, screw=ts)
             add_nut(d, f"{ts}_{side_}_nut", "M5", at=(x_ts, y0_ + dv[1] * W5, FZ), direction=dv, screw=ts, locking="jam")
@@ -1812,7 +1821,9 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
     have = {c.name for c in d.components}
     for tg, x0, y0, turn, posts, rail, on_tray in mounts:
         # motor, its screw and plate go in as one unit onto the two spacers; the post bolts follow
-        d.subassemblies[f"z_drive{tg or '_rear'}"] = [n for n in mount_parts[tg] if "_bolt_" not in n and "_spacer_" not in n and n in have]
+        # v11: the POM nut comes on the screw (threaded on at the bench from the screw's free end) and goes in with the drive; the
+        # nut plate and keeper, open-slotted, slide onto it sideways afterwards
+        d.subassemblies[f"z_drive{tg or '_rear'}"] = [n for n in mount_parts[tg] if "_bolt_" not in n and "_spacer_" not in n and n in have] + [f"z_nut{tg}"]
     # v9 / v10: the bed is a bench unit: plate with its three countersunk studs, their washers and lock nuts, heater and cut-off;
     # the springs go over the studs, the unit goes down through the deck's holes, the thumb nuts go on from below, and the
     # magnetic base and sheet go on last
