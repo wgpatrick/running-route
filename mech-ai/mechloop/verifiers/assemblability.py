@@ -42,7 +42,7 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
             _with_subassemblies(design, base, r)
         return r
     with timed(r):
-        from ..assembly.planner import TNUT_CLEAR_MM, _only_directions
+        from ..assembly.planner import TNUT_CLEAR_MM, _only_directions, tnut_carried_through
 
         meshes = {n: to_trimesh(c.shape) for n, c in comps.items()}
         bounds = {n: m.bounds for n, m in meshes.items()}
@@ -196,7 +196,10 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
                     key = (name, dname)
                     if key in blocked_by and blocked_by[key] & remaining:
                         continue
-                    blockers = try_remove(name, dname, d, limit=TNUT_CLEAR_MM if comps[name].meta.get("tnut_of") and len(dirs) == 1 else None)
+                    is_tn = bool(comps[name].meta.get("tnut_of")) and len(dirs) == 1
+                    blockers = try_remove(name, dname, d, limit=TNUT_CLEAR_MM if is_tn else None)
+                    if is_tn:      # a drop-in T-nut may arrive on its screw, through the parts that screw goes through
+                        blockers -= tnut_carried_through(design, comps[name])
                     if not blockers and name in tools and dname == "axis":
                         blockers = {o for o in tool_blockers(name) if o in remaining}
                         tool_block[name] = blockers

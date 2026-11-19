@@ -990,9 +990,9 @@ def corner_bracket_2020() -> Stock:
 # 16.1 mm from the corner in each leg (so an M5 can sit 10.0 to 13.1 mm out) between side webs 12 mm apart. Two cap-screw
 # heads in the two legs clear each other only with no washer under them (one at 12.25 mm or more), and their drivers
 # only with both at 11.2 mm or more; with one or two washers under each head there is no pair of positions inside the
-# slots. So: M5 x 8, no washer, 11.5 and 12.5 mm out. The bare head on the 6 mm slot is a small seat (ratings:
+# slots. So: M5 x 8, no washer, 11.5 and 13.1 mm out (heads 0.85 mm apart; at 12.5 the 0.25 mm gap closes in 1 build in 15). The bare head on the 6 mm slot is a small seat (ratings:
 # screw_head_seat_too_small); a flanged button-head screw (ISO 7380-2) is what this casting wants and is not in the catalogue.
-BRACKET_SLOT_LEG = {"size": "M5", "length": 8, "washers": 0, "offsets": (11.5, 12.5)}
+BRACKET_SLOT_LEG = {"size": "M5", "length": 8, "washers": 0, "offsets": (11.5, 13.1)}
 BRACKET_CAD_SLOT = (10.0, 13.1, 3.0)        # centres of the slot's end radii and that radius, measured on the CAD model
 
 
@@ -1011,7 +1011,7 @@ def add_corner_bracket(design: Design, name: str, a: str, b: str, corner, u, v, 
     In a design with `design.tnut_style = "drop_in"` a leg on a T-slot extrusion is drawn too: an M5 cap screw
     `<name>_screw_a` / `<name>_screw` with flat washers under its head (the casting's leg is slotted) into a drop-in T-nut
     `<..>_tnut` in the extrusion's slot, checked like every other T-nut screw. Defaults (BRACKET_SLOT_LEG): M5 x 8 with no
-    washer, 11.5 mm from the corner on the first leg and 12.5 mm on the second, so the two heads and their drivers clear
+    washer, 11.5 mm from the corner on the first leg and 13.1 mm on the second, so the two heads and their drivers clear
     each other inside the casting's slots (10.0 to 13.1 mm); `slot_leg={"length": .., "washers": .., "offsets": (.., ..)}`
     overrides. In such a design the casting's slots are drawn as its CAD model has them.
     The part needs its own M5 clearance hole `screw_offset` mm from the corner along the leg (the

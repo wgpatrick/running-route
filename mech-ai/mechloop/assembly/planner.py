@@ -110,6 +110,33 @@ def _only_directions(c) -> set | None:
     return {dn for dn, d in DIRS.items() if float(np.dot(n, d)) > 0.99}
 
 
+def tnut_carried_through(design: Design, tn) -> set[str]:
+    """The parts a drop-in T-nut may pass on its way into its slot because it arrives ON its screw, through them: what its
+    own screw goes through between its head and the extrusion (the plate, washers, spacers, a rail), and the screw itself.
+    That is how a post-assembly-insertion nut is used: screw and nut are started in the part on the bench, the part is
+    offered up, the nut enters the slot through the opening and turns under the lips as the screw is tightened. So such a
+    nut need not be in its slot before the part that covers it. Found from bounding boxes along the screw's axis."""
+    screw = tn.meta.get("tnut_of")
+    f = next((x for x in design.fasteners if x.name == screw), None)
+    if f is None or not tn.meta.get("placement"):
+        return set()
+    a = np.array(f.axis, dtype=float)
+    a /= np.linalg.norm(a)
+    head = np.array(f.head_center, dtype=float)
+    o = np.array(tn.meta["placement"], dtype=float)[:, 3]
+    span = float((head - o) @ a)
+    pts = [o + a * t for t in np.arange(0.5, max(span, 0.5) + 1e-9, 0.5)]
+    out = {screw}
+    for c in design.components:
+        if c.name in (tn.name, tn.meta.get("slot_of")):
+            continue
+        bb = c.shape.bounding_box()
+        lo, hi = np.array([bb.min.X, bb.min.Y, bb.min.Z]) - 1e-6, np.array([bb.max.X, bb.max.Y, bb.max.Z]) + 1e-6
+        if any(np.all(p >= lo) and np.all(p <= hi) for p in pts):
+            out.add(c.name)
+    return out
+
+
 def _steps(clear: float) -> np.ndarray:
     fine = [0.5, 1, 2, 3, 5, 8, 12]
     coarse = np.arange(16.0, clear + 8.0, 8.0)
@@ -249,6 +276,8 @@ def plan(design: Design, base: str | None = None, members: list[str] | None = No
             # a drop-in T-nut only has to come clear of its slot: once it is TNUT_CLEAR_MM out of the opening it is a loose
             # 10 mm part in the hand, not something that must travel in a straight line out of the machine
             blk, reached = sweep(u, d, limit=TNUT_CLEAR_MM if only is not None else None)
+            if only is not None:
+                blk -= tnut_carried_through(design, W.comps[u])
             if not blk:
                 return [(dn, float("inf"))], None
             why[dn] = (sorted(blk), reached)

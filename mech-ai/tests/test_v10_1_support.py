@@ -249,7 +249,7 @@ def test_bracket_legs_on_slots_get_real_screws_and_tnuts():
     asm = verify_assemblability(d)
     assert not codes(asm, "error") and asm.metrics["fasteners_drivable_in_sequence"] == "2/2"
     seq = asm.metrics["assembly_sequence"]
-    assert seq.index("k_screw_tnut") < seq.index("k") < seq.index("k_screw")          # nut in the slot, bracket, screw
+    assert seq.index("k") < seq.index("k_screw") and seq.index("k_screw_tnut") < seq.index("k_screw")      # the nut may arrive with the bracket
 
 
 def test_bracket_legs_stay_bom_lines_without_tnut_style_and_bad_offsets_are_refused():
@@ -263,7 +263,7 @@ def test_bracket_legs_stay_bom_lines_without_tnut_style_and_bad_offsets_are_refu
 def test_washers_under_both_bracket_heads_do_not_fit_and_the_default_says_so():
     """Why the default bracket screw has no washer: with one under each head the heads (or, further out, the slot's end)
     collide."""
-    assert P.BRACKET_SLOT_LEG == {"size": "M5", "length": 8, "washers": 0, "offsets": (11.5, 12.5)}
+    assert P.BRACKET_SLOT_LEG == {"size": "M5", "length": 8, "washers": 0, "offsets": (11.5, 13.1)}
     d = corner(slot_leg={"length": 8, "washers": 1, "offsets": (12.0, 13.0)})
     r = verify_interference(d)
     assert "tnut_thread_engagement" in codes(r, "error")          # M5 x 8 with a washer: 2.0 mm of thread
@@ -277,11 +277,19 @@ def test_a_drop_in_tnut_leaves_only_through_its_slots_opening():
     d = bar()
     add_screw(d, "s", "M5", 10, at=(0, 0, 13.175), threads_into="bar", tnut=True, clamps=("plate",), washer=True, washers=2)
     assert _only_directions(d.get("s_tnut")) == {"+Z"} and _only_directions(d.get("plate")) is None
+    from mechloop.assembly.planner import tnut_carried_through
+
+    # it may arrive on its screw through the plate and washers that screw goes through (post-assembly insertion)
+    assert tnut_carried_through(d, d.get("s_tnut")) == {"s", "plate", "s_washer", "s_washer_2"}
     p = plan(d, two_step=False)
     order = [st.unit for st in p.steps]
-    assert p.complete and order.index("s_tnut") < order.index("plate") < order.index("s")
+    assert p.complete and order.index("s_tnut") < order.index("s")
     step = next(st for st in p.steps if st.unit == "s_tnut")
     assert step.path == [("-Z", float("inf"))]                    # put in from above, through the opening
+    # something else over the slot's opening does block it
+    d.add("lid", Pos(40, 0, 13.7) * Box(18, 20, 1.0), material="al6061")      # beside the screw, not on its axis
+    d.join("lid", "plate", "bond")
+    assert "lid" not in tnut_carried_through(d, d.get("s_tnut"))
     d.get("s_tnut").meta["interfaces"]["insertion"] = "slide-in"
     assert _only_directions(d.get("s_tnut")) is None
 
