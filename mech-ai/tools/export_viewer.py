@@ -109,6 +109,92 @@ def light_fastener_mesh(c):
     return to_trimesh(c.shape, 0.12, 0.45), "its plain simulation solid"
 
 
+BELT_BODY = {"x_belt": "ybody"}      # the X belt's pulleys ride on the gantry beam; Y belts' pulleys are on the frame
+BELT_DENSITY = 1.2e-6                # kg/mm3, rubber with glass cord: an estimate, the BOM line carries no mass
+
+
+def belt_parts(d, bom: dict):
+    """Each design belt as a display part: a ribbon of the belt's width and thickness along its routed pitch line at the
+    home pose (straight runs from mechloop.verifiers.belts.route plus arcs round each pulley it wraps). Belts are not
+    components of the design, so this is display only; the verifiers judge them from design.belts."""
+    import math
+
+    import trimesh
+
+    from mechloop.geom import forward_kinematics
+    from mechloop.verifiers.belts import _basis, route
+
+    T = forward_kinematics(d, {})
+    comps = {c.name: c for c in (d.components.values() if isinstance(d.components, dict) else d.components)}
+    out = []
+    for b in d.belts:
+        try:
+            rt = route(d, b, T)
+        except Exception as e:                                       # noqa: BLE001  shown as missing, not fatal
+            print(f"belt {b.name}: not drawn ({e})")
+            continue
+        a, u, v = _basis(b.axis)
+        segs = rt["segments"]
+        nodes = []                                                   # (centre 3D, radius, sense) per path node
+        for node in b.path:
+            if node[0] == "pulley":
+                c = comps[node[1]]
+                ctr = c.meta["interfaces"]["belt_center"][0]
+                nodes.append(((T[c.body] @ np.array([*ctr, 1.0]))[:3], c.ratings["pitch_diameter_mm"] / 2,
+                              1.0 if node[2] == "ccw" else -1.0))
+            else:
+                nodes.append((None, 0.0, 1.0))
+        pts = []
+        n = len(segs)
+        for k, (p0, p1) in enumerate(segs):
+            pts += [np.asarray(p0, float), np.asarray(p1, float)]
+            j = (k + 1) % len(nodes)                                 # the node between this run and the next
+            if not (rt["closed"] or k + 1 < n):
+                continue
+            ctr, r, s = nodes[j]
+            if ctr is None or r <= 0:
+                continue
+            q0, q1 = np.asarray(p1, float) - ctr, np.asarray(segs[(k + 1) % n][0], float) - ctr
+            a_in, a_out = math.atan2(q0 @ v, q0 @ u), math.atan2(q1 @ v, q1 @ u)
+            sweep = ((a_out - a_in) * s) % (2 * math.pi)
+            h0, h1 = q0 @ a, q1 @ a
+            m = max(2, int(math.degrees(sweep) / 12))
+            for i in range(1, m):
+                t = i / m
+                th = a_in + s * sweep * t
+                pts.append(ctr + r * (math.cos(th) * u + math.sin(th) * v) + (h0 + (h1 - h0) * t) * a)
+        if rt["closed"]:
+            pts.append(pts[0])
+        P = [pts[0]]
+        for p in pts[1:]:
+            if np.linalg.norm(p - P[-1]) > 1e-6:
+                P.append(p)
+        P = np.array(P)
+        # cross-section: width along the pulley axis, thickness in the belt's plane, normal to the run
+        V, F = [], []
+        hw, ht = b.width / 2, b.thickness / 2
+        for i, p in enumerate(P):
+            tan = P[min(i + 1, len(P) - 1)] - P[max(i - 1, 0)]
+            tan = tan - (tan @ a) * a
+            tan /= max(np.linalg.norm(tan), 1e-9)
+            nrm = np.cross(a, tan)
+            V += [p + hw * a + ht * nrm, p - hw * a + ht * nrm, p - hw * a - ht * nrm, p + hw * a - ht * nrm]
+        for i in range(len(P) - 1):
+            for e in range(4):
+                i0, i1 = 4 * i + e, 4 * i + (e + 1) % 4
+                F += [[i0, i1, i1 + 4], [i0, i1 + 4, i0 + 4]]
+        if not rt["closed"]:
+            last = 4 * (len(P) - 1)
+            F += [[0, 2, 1], [0, 3, 2], [last, last + 1, last + 2], [last, last + 2, last + 3]]
+        tm = trimesh.Trimesh(np.array(V), np.array(F)[:, ::-1], process=False)       # reversed: normals outward
+        sku = next((k for k in bom if k.startswith(f"GT2-BELT-{b.width:g}MM")), None)
+        vol = rt["length"] * b.width * b.thickness
+        body = BELT_BODY.get(b.name, "world")
+        name = b.name if b.name.startswith("belt_") else "belt_" + b.name.replace("_belt", "").lstrip("_")
+        out.append((name, body, sku, tm, round(vol * BELT_DENSITY, 4), rt["length"], b))
+    return out
+
+
 def d_density(c):
     from mechloop.model import MATERIALS
     mat = MATERIALS.get(c.material)
@@ -201,6 +287,30 @@ def main():
             "bbox": [round(x, 2) for x in (bb.min.X, bb.min.Y, bb.min.Z, bb.max.X, bb.max.Y, bb.max.Z)],
             "v": [off, len(v)], "t": [off + len(vb), len(t)],
             "mfg": mfg.get(c.name), "dxf": c.name in dxf, "findings": by_part.get(c.name, []), "color": c.color,
+        })
+        blob += [vb, tb]
+        off += len(vb) + len(tb)
+    groups = {"world": "Y drive and rails", "ybody": "Gantry beam (moves in Y)"}
+    for name, body, sku, tm, mass, length, b in belt_parts(d, m.get("ratings", {}).get("bom", {}) or {}):
+        v = np.asarray(tm.vertices, dtype=np.float32)
+        t = np.asarray(tm.faces, dtype=np.uint32)
+        vb, tb = v.tobytes(), t.tobytes()
+        lo, hi = v.min(axis=0), v.max(axis=0)
+        bl = (m.get("ratings", {}).get("bom", {}) or {}).get(sku) or {}
+        parts.append({
+            "name": name, "body": body, "kind": "purchased", "group": groups.get(body, "Frame"),
+            "material": "rubber_gt2", "process": None, "sku": sku,
+            "desc": f"GT2 timing belt, {b.width:g} mm wide, open length (cut from the BOM line's 1 m): {length:.0f} mm routed",
+            "cost": bl.get("unit_cost_usd"), "mass": mass,
+            "model": "proxy", "model_source": "belt route at the home pose (mechloop.verifiers.belts.route); display only",
+            "model_file": None,
+            "model_note": (f"Not a part of the design model: drawn from design.belts ({b.name}) as a {b.width:g} x {b.thickness:g} mm "
+                           f"ribbon on the pitch line at the home pose. It moves with {'the gantry beam' if body != 'world' else 'the frame'} "
+                           f"on this page and does not follow the carriage. Mass estimated at {BELT_DENSITY * 1e6:g} g/cm3."),
+            "model_state": "stand-in", "vendor": False, "source": "", "product": None,
+            "bbox": [round(float(x), 2) for x in (*lo, *hi)],
+            "v": [off, len(v)], "t": [off + len(vb), len(t)],
+            "mfg": None, "dxf": False, "findings": by_part.get(b.name, []), "color": "#161616",
         })
         blob += [vb, tb]
         off += len(vb) + len(tb)
