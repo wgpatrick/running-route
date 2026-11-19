@@ -3,13 +3,14 @@ what changed, what the new checks found and what is assumed.
 
 What v10.1 changes against v10 (frame, envelope, travel, bed, cooling fan and duct, belt tension brackets and probe mount are v10's):
 - d.tnut_style = "drop_in": every tnut=True screw and every corner-bracket leg has its own drawn drop-in T-nut (catalogue
-  tnut_2020, a STAND-IN: mechloop/parts/tslot.py), and every bracket leg its own M5 x 10 cap screw with two washers.
-- T-slot screw lengths, chosen so the tip ends 4.5 to 5.5 mm below the extrusion's face (0.5 d of thread behind an assumed
-  2.0 mm lip, 0.5 mm clear of an assumed 6.0 mm slot floor): a second washer under the M5 x 10 on 3.2 mm plates (deck, X motor,
-  idler and tension-anchor plates, Y tension anchors, tray, inlet panel), M5 x 12 on the 6.35 mm nut plates, M5 x 12 with two
-  washers on the 4.75 mm Y plates, M5 x 8 on the 1.9 mm Y motor and idler mounts, M5 x 6 on the earth stud.
+  tnut_2020: Misumi HNTAJ5, re-made from the maker's catalogue drawing), and every bracket leg its own M5 x 8 cap screw.
+- T-slot screw lengths, so the tip ends at least 0.5 mm above the slot floor (6.0 mm deep, 2.0 mm lip: Misumi's drawing)
+  with at least 0.5 d of thread in the nut (3.2 mm of thread, from 1.2 to 4.4 mm below the face): a second washer under the
+  M5 x 10 on 3.2 mm and 2.5 mm plates (deck, X motor, idler and tension-anchor plates, Y tension anchors, tray, inlet panel),
+  M5 x 12 on the 6.35 mm nut plates, M5 x 8 on the 1.9 mm Y motor and idler mounts, M5 x 6 on the earth stud.
 - No BOM-only hardware: the PEM nuts are catalogue parts (stand-in solids), the nut keepers' nylocs are drawn as nylocs, the
   earth stud's toothed washer is drawn, the nut pins' hex nuts are thread-locked instead of swapped for M2.5 nylocs.
+- The hardware that is bought: McMaster's washers (0.1 mm thicker), the DIN 934 M5 nut.
 
 Below: printer_v10's own description, unchanged.
 
@@ -1297,8 +1298,8 @@ def build() -> Design:
             beam_bolts.append((f"beam_bolt_{n}" + ("" if i == 0 else f"_{i}"), (sx * xb, YB0, zp1), f"y_plate_{n}"))
     # ================= X axis ====================================================
     place(d, "x_beam", extrusion_2020(BEAM_L), Location((0, YB0, Z_BEAM)), body="ybody")
-    for nm_, at_, pl_ in beam_bolts:      # v10.1: after the beam (the T-nut is placed in its slot); M5 x 12 with two washers
-        add_screw(d, nm_, "M5", 12, at=at_, body="ybody", threads_into="x_beam", tnut=True, clamps=(pl_,), washer=True, washers=2)
+    for nm_, at_, pl_ in beam_bolts:      # v10.1: after the beam (the T-nut is placed in its slot); the screw is v10's
+        add_screw(d, nm_, "M5", 10, at=at_, body="ybody", threads_into="x_beam", tnut=True, clamps=(pl_,), washer=True)
     rear = lambda x: Location(Plane(origin=(x, YB0 + 10.0, Z_BEAM), x_dir=(1, 0, 0), z_dir=(0, 1, 0)))
     # v10: the rail is as long as the beam (HIWIN MGNR12R cut to 288 mm). v9's two rail-stop plates are gone: the hard stops
     # are the Y plates' tabs against the tool plates' edges

@@ -114,3 +114,5 @@ until a check exists.
 - Purchased parts are used at stock sizes, as sold. Do not assume a purchased part is cut, shortened or
   otherwise modified (rails, lead screws, shafts, belts sold in closed lengths). Where a part is only sold
   cut to order (T-slot extrusion), say so and name the supplier's cutting service.
+- Frame: the common 2020 profile with the 6 mm slot (Misumi HFS5-2020 class); McMaster's 20 mm rail with a 5 mm slot,
+  its T-nuts and its bracket are not used (owner, 2026-11-19). T-nuts and corner brackets are standard-2020 parts.

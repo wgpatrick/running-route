@@ -1,24 +1,24 @@
 {
- "retrieved": "2026-11-18",
- "family": "T-slot hardware for 20 x 20 slot-6 extrusion: slot section, drop-in T-nuts M3 / M5",
- "vendor": "none read: no supplier drawing could be fetched (every supplier host was refused by the session's network proxy)",
- "source_level": "stand-in",
- "source_url": "https://www.electrokit.com/en/product/t-nut-drop-in-for-2020-m5-single/",
- "title": "Web-search result snippets and two community CAD files already in the repository; NOT a supplier drawing",
- "state": "stand-in",
- "wanted": "supplier CAD (STEP) of the drop-in T-nut that will be bought, saved as vendor_cad/inbox/TNUT-2020-M5.step and TNUT-2020-M3.step; the supplier's dimensioned drawing of the extrusion's slot (Misumi HFS5-2020 or the profile that will be bought)",
+ "retrieved": "2026-11-19",
+ "family": "T-slot hardware for 20 x 20 slot-6 extrusion (Misumi HFS5 series): slot section, post-assembly insertion (drop-in) nuts HNTAJ5 M3 / M5",
+ "vendor": "MISUMI",
+ "source_level": "vendor catalogue drawing",
+ "source_url": "https://us.misumi-ec.com/pdf/fa/2019/2019_US_2716.pdf",
+ "title": "MISUMI USA 2019 catalogue, pages 2716-2717 (post-assembly insertion nuts for HFS5 series) and 2686-2687 (HFS5 series extrusions, 'Slot Details (Common to All Series)')",
+ "state": "slot section: read from the maker's dimensioned catalogue drawing. T-nut: re-made from the maker's dimensioned catalogue drawing (all six dimensions used; two drawn but un-dimensioned features left out). Supplier CAD still wanted (Misumi's CAD needs a login).",
+ "wanted": "Misumi's STEP of HNTAJ5-5 and HNTAJ5-3, saved as vendor_cad/inbox/TNUT-2020-M5.step and TNUT-2020-M3.step",
  "slot": {
   "used": {
-   "profile": "Misumi HFS5-2020 (the profile on the BOM), as drawn in a COMMUNITY copy of its section",
+   "profile": "Misumi HFS5 series (HFS5-2020), slot width 6",
    "opening_mm": 6.0,
    "lip_thickness_mm": 2.0,
    "cavity_width_mm": 12.0,
    "depth_mm": 6.0,
-   "floor_width_mm": 5.88,
+   "lip_to_floor_mm": 4.0,
    "centre_groove_depth_mm": 6.3,
-   "wall_angle_deg": 45.0,
-   "source": "vendor_docs/hfs5-2020-profile.dxf (thing_libutils repository, community copy of the Misumi section; measured from its line entities 2026-11-18): opening x = +/-3.0, lip underside at 8.0 from the centre (2.0 thick), cavity to x = +/-6.0, 45 degree walls from (6.0, 7.061) to (2.939, 4.0), flat floor at 4.0 from the centre (6.0 deep), V groove to 3.7 on the centre line",
-   "status": "ASSUMED: a community file, not Misumi's drawing; no tolerance"
+   "centre_groove": "120 degree V, 0.3 mm deep ('Slot Bottom Details', HFS and CAF series)",
+   "source": "MISUMI USA 2019 catalogue (us.misumi-ec.com/pdf/fa/2019/) p.2686, 'Slot Details (Common to All Series)': 6 (opening), 2 (lip), 4 (lip underside to slot floor), 12 (T slot width); 'Slot Bottom Details': 120 degrees, 0.3. The HFS5-2020 section on the same page: 20 square, 4-R1, centre hole 4.2. The community DXF in vendor_docs/ agrees with every one of these",
+   "status": "READ from the maker's catalogue drawing (fetched 2026-11-19, copy in vendor_docs/). No tolerances are given on the drawing"
   },
   "alternative": {
    "profile": "20 x 20 B-type slot 6 (Bosch-compatible), as drawn in the community STEP that is the extrusion's display model",
@@ -28,7 +28,7 @@
    "depth_mm": 5.3,
    "centre_groove_depth_mm": 5.7,
    "source": "vendor_cad/profile_2020_slot6.step (FreeCAD-library Profile-20x20-B-Type_Slot6_A.step), measured by point-in-solid probing 2026-11-18: lip underside 1.495 mm below the face, floor 5.30 mm below the face from 1 to 3 mm off the centre line, 5.70 mm on the centre line",
-   "status": "ASSUMED: a community file"
+   "status": "ASSUMED: a community file of another make of 2020 slot-6 profile (B-type); kept to show what a shallower slot would do"
   },
   "secondary": [
    {
@@ -45,65 +45,68 @@
   "simulation_solid": "extrusion_2020's simulation solid has plain rectangular slots 6.2 mm wide and 5.0 mm deep, with no T cavity and no lips: shallower than both drawings (6.0 / 5.3 mm) and without the 2.0 / 1.5 mm lip"
  },
  "tnut": {
-  "type": "drop-in (post-assembly insertion: hammer-head / roll-in with a spring ball or leaf that holds it in the slot)",
+  "part": "Misumi HNTAJ5-3 / HNTAJ5-5 (PACK-HNTAJ5-*: 100 per pack), 'Post-Assembly Insertion Short Nuts' for HFS5 series; body 1010 carbon steel, trivalent chromate; wing part (leaf spring that holds it in the slot) 304 stainless",
+  "type": "drop-in (post-assembly insertion: goes into the slot through the opening anywhere along the extrusion; a leaf spring holds its position)",
   "sizes": [
    "M3",
    "M5"
   ],
-  "span_across_slot_mm": {
-   "value": 10.3,
-   "status": "ASSUMED from a search snippet: electrokit.com 'T-nut drop-in for 2020 M5', listed as 6 x 10.3 x 4.4 mm (the listing is marked discontinued); a second snippet gives 10 x 6 x 4 mm for a hammer nut sold for M3 / M4 / M5"
+  "source": "MISUMI USA 2019 catalogue (us.misumi-ec.com/pdf/fa/2019/) p.2717, drawing of HNTAJ5: 10 (length), 8 (width), 3.2 (overall height), 2.4 (height of the wide body), 5.8 (width of the neck), M (thread, through). Part number table: M = 3, 4, 5",
+  "length_along_slot_mm": {
+   "value": 10.0,
+   "status": "drawing"
   },
-  "width_along_slot_mm": {
-   "value": 6.0,
-   "status": "ASSUMED, same snippet"
+  "span_across_slot_mm": {
+   "value": 8.0,
+   "status": "drawing"
   },
   "overall_height_mm": {
-   "value": 4.4,
-   "status": "ASSUMED, same snippet"
+   "value": 3.2,
+   "status": "drawing"
   },
-  "neck_height_mm": {
-   "value": 1.0,
-   "status": "ASSUMED, no source: the part of the overall height taken to stand in the slot opening between the lips; the rest, 3.4 mm, is the body under the lips"
-  },
-  "thread_length_mm": {
-   "value": 3.4,
-   "status": "ASSUMED, no source: thread is counted only in the body under the lips (the neck's thread, if the bought nut has one, is not counted)"
-  },
-  "m3_body": "ASSUMED the same body as the M5 nut",
-  "not_modelled": [
-   "the spring ball / leaf",
-   "the threaded hole (the thread is the overlap with the screw)"
-  ],
-  "underside_chamfer_mm": {
-   "value": 1.7,
-   "status": "ASSUMED, no source: 45 degree chamfers on the two lower long edges, sized so the stand-in clears the slot's 45 degree walls of the section used"
+  "body_height_mm": {
+   "value": 2.4,
+   "status": "drawing: the 8 mm wide part that sits under the slot's lips"
   },
   "neck_width_mm": {
    "value": 5.8,
-   "status": "ASSUMED, no source"
-  }
+   "status": "drawing: the part that stands in the 6 mm slot opening"
+  },
+  "neck_height_mm": {
+   "value": 0.8,
+   "status": "3.2 - 2.4, both from the drawing"
+  },
+  "thread_length_mm": {
+   "value": 3.2,
+   "status": "drawing: the thread is shown through the whole height (hidden lines through body and neck)"
+  },
+  "reference_tightening_torque_nm": {
+   "M5": 6.8,
+   "status": "catalogue table beside the HFS5 post-assembly nuts on the same pages (1010 carbon steel, M5: 6.8 N.m); no figure is given for M3"
+  },
+  "left_out_of_the_model": [
+   "the chamfers on the body's four long edges (drawn, no dimension)",
+   "the leaf-spring wing (drawn, no dimension)",
+   "the countersink ring round the hole in the plan view (drawn, no dimension)"
+  ],
+  "read_by_us": "that the nut seats with its 8 mm body against the underside of the lips and its neck up in the opening is our reading of the catalogue's application sketch; the drawing does not say it in words",
+  "m3_body": "the catalogue gives one drawing for M3, M4 and M5: same body"
  },
  "engagement_rule": {
-  "full": "0.8 d of thread in the nut (the height of an ISO 4032 style 1 hex nut is 0.8 to 0.94 d): no finding",
-  "reduced": "0.5 d to 0.8 d (ISO 4035 thin nut height, about 0.5 to 0.6 d): warning, grouped",
+  "full": "the screw passes the nut's whole thread, or has 0.8 d of thread in it: no finding",
+  "reduced": "0.5 d to 0.8 d without using the nut's whole thread: warning, grouped",
   "short": "under 0.5 d: error",
-  "status": "DERIVED by us from standard nut heights (ISO 4035 height recalled, not fetched); T-nut makers publish no engagement figure that was read"
+  "status": "DERIVED by us from standard nut heights (ISO 4035 thin nut about 0.5 d, recalled; ISO 4032 0.8 d). The maker rates the M5 nut at 6.8 N.m with its own 3.2 mm (0.64 d) of thread, which is why a screw through the whole nut raises no finding"
  },
  "bottoming_margin_mm": {
   "value": 0.5,
   "status": "DERIVED: ISO 4762 length tolerance js15 (+/-0.29 mm to 10 mm, +/-0.35 to 18 mm; recalled) plus about 0.1 mm each for washer and sheet thickness"
  },
  "geometries": {
-  "_about": "Named slot + T-nut geometries the T-slot screw check judges every screw against. 'used' decides errors; each entry of 'alternatives' is reported (as a warning or an info) with the screws that would fail on it. All depths are from the extrusion's nominal outer face, mm. thread_start: where the T-nut's thread begins with the nut pulled up under the lips; thread_length: how much thread it has from there.",
-  "used": {
-   "name": "2020 slot 6, assumed (HFS5 community DXF + stand-in T-nut)",
-   "slot": "slot.used",
-   "tnut": "the drawn T-nut part's own interfaces (tnut section): thread starts at the lip underside"
-  },
+  "_about": "Slot + T-nut geometries the T-slot screw check judges every screw against. 'used' decides errors: the slot from slot.used and the drawn T-nut part's own dimensions. Each entry of 'alternatives' is reported with the screws that would fail on it. Depths are from the extrusion's outer face, mm; thread_start is where the nut's thread begins with the nut seated under the lips.",
   "alternatives": [
    {
-    "name": "2020 slot 6, B-type (community STEP) + stand-in T-nut",
+    "name": "2020 slot 6, B-type (community STEP) + Misumi HNTAJ5 nut",
     "report_as": "warning",
     "opening_mm": 6.0,
     "lip_mm": 1.5,
@@ -111,52 +114,22 @@
     "cavity_width_mm": 12.0,
     "tnut": {
      "M3": {
-      "thread_start_mm": 1.5,
-      "thread_length_mm": 3.4
+      "thread_start_mm": 0.7,
+      "thread_length_mm": 3.2
      },
      "M5": {
-      "thread_start_mm": 1.5,
-      "thread_length_mm": 3.4
+      "thread_start_mm": 0.7,
+      "thread_length_mm": 3.2
      }
     },
-    "status": "ASSUMED: slot from vendor_cad/profile_2020_slot6.step (community); T-nut the stand-in"
-   },
-   {
-    "name": "McMaster 20 mm rail 5537T101 (5 mm slot) + drop-in T-nuts 5278N42 / 5278N44",
-    "report_as": "info",
-    "opening_mm": 5.0,
-    "lip_mm": 1.8,
-    "depth_mm": 6.1,
-    "depth_on_centre_line_mm": 6.4,
-    "cavity_width_mm": 11.5,
-    "tnut": {
-     "M3": {
-      "thread_start_mm": 1.37,
-      "thread_length_mm": 4.45
-     },
-     "M5": {
-      "thread_start_mm": 2.06,
-      "thread_length_mm": 3.3
-     }
-    },
-    "tnut_body": {
-     "height_mm": 4.6,
-     "neck_mm": [
-      0.6,
-      4.9
-     ],
-     "under_lip_mm": 4.0,
-     "span_across_slot_mm": 7.7,
-     "width_along_slot_mm": 12.0,
-     "hole_offset_along_slot_mm": {
-      "M3": -3.0,
-      "M5": -2.0
-     },
-     "spring_ball": "3 mm, 1.0 mm below the body, bears on the slot floor"
-    },
-    "status": "MEASURED in McMaster's STEP files (vendor_cad/staging/supplier_2026-11-18/_DEVIATIONS/EXT2020-PROFILE.step, TNUT-2020-M3.step, TNUT-2020-M5.step; MANIFEST.md). Supplier CAD of a DIFFERENT system: a 5 mm slot, not the standard 2020 6 mm slot. NOT adopted: the owner has to choose. depth_mm is the floor 2.4 mm off the centre line (where an M5's edge runs); 6.40 on the centre line",
-    "note": "an M5 screw is as wide as this slot's 5.00 mm opening; the nuts' holes are off the nut's centre (does not change depths)"
+    "status": "ASSUMED: slot from vendor_cad/profile_2020_slot6.step (community drawing of another make of 2020 slot-6 profile); the nut as Misumi draws it"
    }
-  ]
- }
+  ],
+  "not_used": "McMaster's 20 mm rail 5537T101 (5 mm slot) with T-nuts 5278N42 / 5278N44: owner decision 2026-11-19, the frame is standard 2020 with the 6 mm slot. Their measurements are in vendor_cad/staging/supplier_2026-11-18/MANIFEST.md and are not judged here."
+ },
+ "local_copies": [
+  "vendor_docs/misumi_2019_US_2716_post_assembly_nuts_HFS5.pdf",
+  "vendor_docs/misumi_2019_US_2686_HFS5_extrusions_slot_details.pdf"
+ ],
+ "decision": "Owner, 2026-11-19: the frame is the common 2020 profile with the 6 mm slot (Misumi HFS5-2020 class). McMaster's 20 mm rail with a 5 mm slot, its T-nuts and its bracket are not used; their files stay in vendor_cad/staging/supplier_2026-11-18/_DEVIATIONS/."
 }

@@ -287,15 +287,17 @@ def _tslot_screws(design: Design, r: VerifierResult) -> dict:
 
     In a design with `design.tnut_style` set, every such screw has a drawn T-nut and is judged against the slot's real
     section (the extrusion's interfaces["slot"]; the simulation solid's slot is plainer and shallower) and the T-nut's
-    own dimensions, both of which are STAND-IN data today (mechloop/parts/tslot.py):
+    own dimensions (thread start and length included): data read from the maker's catalogue drawings, not constants
+    here (mechloop/parts/tslot.py, mechloop/parts/vendor/tslot_2020_hardware.json):
 
       tnut_missing / tnut_misplaced / tnut_does_not_fit   the nut is a part, sits under the lips on the screw's axis,
                                passes the slot opening (drop-in), fits the cavity and stays inside the extrusion's length
       screw_off_slot_centre    the screw's axis is not on the slot's centre line
       screw_bottoms_in_slot    (error) the tip comes within SLOT_BOTTOM_MARGIN_MM of the slot floor: the screw would stop on
                                the floor before the joint is clamped
-      tnut_thread_engagement   (error) under 0.5 d of thread in the nut; counted only in the nut's body under the lips
-      tnut_thread_engagement_marginal  (one grouped warning) 0.5 d to 0.8 d
+      tnut_thread_engagement   (error) under 0.5 d of thread in the nut
+      tnut_thread_engagement_marginal  (one grouped warning) 0.5 d to 0.8 d without passing the nut's whole thread (a screw
+                               through the whole nut uses it as its maker rates it: no finding)
       tslot_profile_sensitive  (one grouped warning) screws that pass on the profile used but would bottom or fall under
                                0.5 d on the alternative slot section on file
       tnut_needs_end_loading   (warning) a nut that is not a drop-in type
@@ -364,15 +366,15 @@ def _tslot_screws(design: Design, r: VerifierResult) -> dict:
                   f"(bearing face {('%.2f' % tfr['depth']) if tfr else '?'} mm below the face, lips {slot['lip']:g} mm; {off_axis:.2f} mm off the axis).",
                   tnut=tn.name, screw=c.name, into=ext.name)
         problems = []
-        if ti.get("insertion") == "drop-in" and float(ti.get("width", 0.0)) > slot["opening"] + 1e-6:
-            problems.append(f"{ti.get('width')} mm wide: does not pass the {slot['opening']:g} mm opening")
+        if float(ti.get("neck_width", 0.0)) > slot["opening"] + 1e-6:
+            problems.append(f"neck {ti.get('neck_width')} mm wide: does not stand in the {slot['opening']:g} mm opening")
         if float(ti.get("span", 0.0)) > slot["cavity_width"] + 1e-6:
             problems.append(f"{ti.get('span')} mm across: wider than the {slot['cavity_width']:g} mm cavity")
         if slot["lip"] + body_h > slot["depth"] + 1e-6:
             problems.append(f"body {body_h:g} mm under a {slot['lip']:g} mm lip: deeper than the {slot['depth']:g} mm slot")
         if float(ti.get("neck", 0.0)) > slot["lip"] + 1e-6:
             problems.append(f"neck {ti.get('neck')} mm stands proud of the {slot['lip']:g} mm lip")
-        if tfr is not None and abs(tfr["along_mm"]) + float(ti.get("width", 0.0)) / 2 > tfr["half_length"] + 1e-6:
+        if tfr is not None and abs(tfr["along_mm"]) + float(ti.get("length", 0.0)) / 2 > tfr["half_length"] + 1e-6:
             problems.append("hangs out of the end of the extrusion")
         if problems:
             n_err += 1
@@ -422,10 +424,11 @@ def _tslot_screws(design: Design, r: VerifierResult) -> dict:
                   f"below the face and the nut's thread starts {thr_start:g} mm below it. At least {TNUT_ENGAGEMENT_MIN_D:g} d "
                   f"({TNUT_ENGAGEMENT_MIN_D * d:.1f} mm) is needed.",
                   screw=c.name, into=ext.name, engagement_mm=round(eng, 3), required_mm=TNUT_ENGAGEMENT_MIN_D * d, grip_mm=round(grip, 3), hint=how)
-        elif eng < TNUT_ENGAGEMENT_FULL_D * d - 1e-6:
+        elif eng < min(TNUT_ENGAGEMENT_FULL_D * d, thread_len) - 1e-6:      # neither 0.8 d nor the nut's whole thread
             marginal.append({"screw": c.name, "engagement_mm": round(eng, 2), "d": round(eng / d, 2)})
+        row["through_whole_nut"] = bool(eng >= thread_len - 1e-6)
         verdicts["used"]["bottoms" if clear < SLOT_BOTTOM_MARGIN_MM - 1e-6 else "short" if eng < TNUT_ENGAGEMENT_MIN_D * d - 1e-6
-                         else "thin" if eng < TNUT_ENGAGEMENT_FULL_D * d - 1e-6 else "full"].append(c.name)
+                         else "thin" if eng < min(TNUT_ENGAGEMENT_FULL_D * d, thread_len) - 1e-6 else "full"].append(c.name)
         row["alternatives"] = {}
         for g in slot.get("alternatives") or []:
             tg = (g.get("tnut") or {}).get(size)
@@ -435,7 +438,7 @@ def _tslot_screws(design: Design, r: VerifierResult) -> dict:
             row["alternatives"][g["name"]] = {"engagement_mm": round(e2, 3), "tip_to_floor_mm": round(c2, 3)}
             v = verdicts.setdefault(g["name"], {"bottoms": [], "short": [], "thin": [], "full": []})
             kind = ("bottoms" if c2 < SLOT_BOTTOM_MARGIN_MM - 1e-6 else "short" if e2 < TNUT_ENGAGEMENT_MIN_D * d - 1e-6
-                    else "thin" if e2 < TNUT_ENGAGEMENT_FULL_D * d - 1e-6 else "full")
+                    else "thin" if e2 < min(TNUT_ENGAGEMENT_FULL_D * d, tg["thread_length"]) - 1e-6 else "full")
             v[kind].append(c.name)
             if not bad and kind in ("bottoms", "short"):
                 sensitive.setdefault(g["name"], []).append({"screw": c.name, "tip_to_floor_mm": round(c2, 2), "engagement_mm": round(e2, 2),
@@ -446,12 +449,10 @@ def _tslot_screws(design: Design, r: VerifierResult) -> dict:
         w = min(marginal, key=lambda x: x["d"])
         r.add("warning", "tnut_thread_engagement_marginal",
               f"{len(marginal)} screw(s) have between {TNUT_ENGAGEMENT_MIN_D:g} d and {TNUT_ENGAGEMENT_FULL_D:g} d of thread in their T-nut "
-              f"(least: {w['screw']}, {w['engagement_mm']:.2f} mm = {w['d']:.2f} d). That is a thin nut's thread, not a full nut's: "
-              f"tighten to a reduced torque. With a {slot_any['lip']:g} mm lip and a {slot_any['depth']:g} mm deep slot the most any screw can "
-              f"have without coming within {SLOT_BOTTOM_MARGIN_MM:g} mm of the floor is {slot_any['depth'] - SLOT_BOTTOM_MARGIN_MM - slot_any['lip']:.1f} mm, "
-              f"so an M5 cannot reach {TNUT_ENGAGEMENT_FULL_D:g} d in this slot. Slot and T-nut dimensions are assumed (stand-in data).",
+              f"(least: {w['screw']}, {w['engagement_mm']:.2f} mm = {w['d']:.2f} d) and do not pass the nut's whole thread: "
+              f"the nut is not used to its maker's rating. Tighten to a reduced torque or use the next screw length.",
               screws=[x["screw"] for x in marginal][:200], least=w, count=len(marginal),
-              hint="State a reduced tightening torque for these joints, or confirm the bought T-nut's thread length and the slot's lip.")
+              hint="A longer standard screw that still ends clear of the slot floor, or one washer fewer; otherwise state a reduced torque.")
     for g in slot_any.get("alternatives") or []:
         lst = sensitive.get(g["name"])
         if not lst:

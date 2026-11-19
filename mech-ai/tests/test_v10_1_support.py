@@ -8,8 +8,8 @@
 - the display models and the three states of purchased-part geometry;
 - printer_v10_1's own declared facts against printer_v10.
 
-Slot and T-nut dimensions are stand-in data (mechloop/parts/vendor/tslot_2020_hardware.json): the tests pin the arithmetic
-of the checks on those figures, not the figures themselves.
+Slot and T-nut dimensions are data (mechloop/parts/vendor/tslot_2020_hardware.json, read from Misumi's catalogue drawings):
+the tests pin the arithmetic of the checks on those figures.
 """
 import importlib.util
 import math
@@ -28,8 +28,7 @@ from mechloop.verifiers.practice import verify_practice
 
 ROOT = Path(__file__).resolve().parents[1]
 W5 = 1.1          # the M5 washer that is bought (McMaster 91166A240, measured in its STEP): the catalogue had 1.0
-B_TYPE = "2020 slot 6, B-type (community STEP) + stand-in T-nut"
-MCMASTER = "McMaster 20 mm rail 5537T101 (5 mm slot) + drop-in T-nuts 5278N42 / 5278N44"
+B_TYPE = "2020 slot 6, B-type (community STEP) + Misumi HNTAJ5 nut"
 
 
 def bar(style="drop_in", plate_t=3.175):
@@ -52,36 +51,42 @@ def finding(r, code):
     return next(f for f in r.findings if f.code == code)
 
 
-# ---------------------------------------------------------------- the slot and the T-nut (stand-in data)
-def test_slot_section_is_recorded_with_both_drawings_and_the_plain_simulation_slot():
+# ---------------------------------------------------------------- the slot and the T-nut (Misumi's catalogue drawings)
+def test_slot_section_is_misumis_drawing_beside_the_plain_simulation_slot():
     s = slot_2020()
-    assert (s["opening"], s["lip"], s["depth"], s["cavity_width"]) == (6.0, 2.0, 6.0, 12.0)
-    b, mc = s["alternatives"]
-    assert (b["lip"], b["depth"], b["report_as"]) == (1.5, 5.3, "warning") and "ASSUMED" in b["status"]
-    # McMaster's 5 mm-slot rail and its T-nuts, measured in the supplier's STEP files: on file as data, not adopted
-    assert (mc["opening"], mc["lip"], mc["depth"], mc["cavity_width"], mc["report_as"]) == (5.0, 1.8, 6.1, 11.5, "info")
-    assert mc["tnut"] == {"M3": {"thread_start": 1.37, "thread_length": 4.45}, "M5": {"thread_start": 2.06, "thread_length": 3.3}}
-    assert "MEASURED" in mc["status"] and "NOT adopted" in mc["status"]
-    assert s["sim_depth"] == 5.0 and "ASSUMED" in s["status"]
+    assert (s["opening"], s["lip"], s["depth"], s["cavity_width"]) == (6.0, 2.0, 6.0, 12.0)       # 6, 2, 2 + 4, 12 on the drawing
+    assert "READ from the maker's catalogue drawing" in s["status"] and "HFS5" in s["profile"]
+    (b,) = s["alternatives"]                                  # one other 2020 section on file; McMaster's 5 mm slot is not judged
+    assert (b["name"], b["lip"], b["depth"], b["report_as"]) == (B_TYPE, 1.5, 5.3, "warning") and "ASSUMED" in b["status"]
+    assert b["tnut"]["M5"] == {"thread_start": 0.7, "thread_length": 3.2}
+    assert s["sim_depth"] == 5.0
     st = extrusion_2020(100)
     assert st.interfaces["slot"]["depth"] == 6.0 and st.interfaces["slot_width"] == 6.2
+    for f in ("misumi_2019_US_2716_post_assembly_nuts_HFS5.pdf", "misumi_2019_US_2686_HFS5_extrusions_slot_details.pdf"):
+        assert (ROOT / "vendor_docs" / f).read_bytes()[:4] == b"%PDF"
+    assert "not used" in __import__("json").load(open(ROOT / "mechloop/parts/vendor/tslot_2020_hardware.json"))["decision"]
 
 
-def test_tnut_is_a_catalogue_stand_in_with_every_assumption_listed():
+def test_tnut_is_misumis_hntaj5_remade_from_its_drawing():
     for size in ("M3", "M5"):
         st = tnut_2020(size)
         bb = st.shape.bounding_box()
-        assert st.sku == f"TNUT-2020-{size}" and st.catalog and not st.verified
-        assert (round(bb.size.X, 3), round(bb.size.Y, 3), round(bb.size.Z, 3)) == (6.0, 10.3, 4.4)
-        assert bb.max.Z == pytest.approx(1.0) and bb.min.Z == pytest.approx(-3.4)       # neck above the bearing face, body below
-        assert st.interfaces["insertion"] == "drop-in" and st.interfaces["thread_length"] == 3.4
-        assert st.model["kind"] == "proxy" and vendor_cad.model_state(st.model) == "stand-in"
-        assert len(st.ratings["assumed"]) >= 4 and all("ASSUMED" in a for a in st.ratings["assumed"])
+        assert st.sku == f"TNUT-2020-{size}" and st.catalog and st.verified and st.source["part"] == f"MISUMI HNTAJ5-{size[1:]}"
+        assert (round(bb.size.X, 3), round(bb.size.Y, 3), round(bb.size.Z, 3)) == (10.0, 8.0, 3.2)
+        assert bb.max.Z == pytest.approx(0.8) and bb.min.Z == pytest.approx(-2.4)       # neck above the bearing face, body below
+        i = st.interfaces
+        assert (i["insertion"], i["thread_length"], i["thread_offset"], i["neck_width"], i["body_height"]) == ("drop-in", 3.2, -0.8, 5.8, 2.4)
+        assert vendor_cad.model_state(st.model) == "faithful re-make" and "p.2717" in st.model["remade_from"]
+        assert len(st.ratings["left_out_of_the_model"]) == 3            # chamfers, leaf spring, countersink ring: no dimension given
+        assert st.detail.volume < st.shape.volume                       # the display model has the thread's hole
+        assert vendor_cad.check_stock(st)[0] == []
+    assert tnut_2020("M5").ratings["reference_tightening_torque_nm"] == 6.8 and "reference_tightening_torque_nm" not in tnut_2020("M3").ratings
     with pytest.raises(ValueError):
         tnut_2020("M4")
     whats = " | ".join(a["what"] for a in assumed_dimensions())
-    for word in ("slot depth", "lip thickness", "T-nut overall height", "thread length", "tip and the slot floor"):
+    for word in ("slot depth", "lip thickness", "T-nut overall height", "thread length", "how the T-nut seats", "tolerances", "tip and the slot floor"):
         assert word in whats
+    assert sum("READ" in a["status"] for a in assumed_dimensions()) >= 6
 
 
 def test_slot_frame_gives_depth_below_the_face_and_offset_from_the_centre_line():
@@ -102,8 +107,8 @@ def test_tnut_screw_draws_its_tnut_under_the_lips_on_the_screw_axis():
     tn = d.get("s_tnut")
     bb = tn.shape.bounding_box()
     assert tn.sku == "TNUT-2020-M5" and tn.meta["tnut_of"] == "s" and d.get("s").meta["tnut_part"] == "s_tnut"
-    assert bb.max.Z == pytest.approx(10.0 - 2.0 + 1.0) and bb.min.Z == pytest.approx(10.0 - 2.0 - 3.4)      # lip 2.0, neck 1.0, body 3.4
-    assert (bb.min.X + bb.max.X) / 2 == pytest.approx(20.0) and bb.size.Y == pytest.approx(10.3)        # wings across the slot
+    assert bb.max.Z == pytest.approx(10.0 - 2.0 + 0.8) and bb.min.Z == pytest.approx(10.0 - 2.0 - 2.4)      # lip 2.0, neck 0.8, body 2.4
+    assert (bb.min.X + bb.max.X) / 2 == pytest.approx(20.0) and (bb.size.X, bb.size.Y) == pytest.approx((10.0, 8.0))
     # two washers: the head sits 2 mm above the plate
     assert d.get("s").shape.bounding_box().max.Z == pytest.approx(13.175 + 2 * W5 + 5.0)
     assert d.get("s_washer_2").shape.bounding_box().min.Z == pytest.approx(13.175 + W5)
@@ -146,7 +151,7 @@ def test_m5x10_through_an_eighth_inch_plate_and_one_washer_bottoms_in_the_slot()
     assert row["depth_in_slot_mm"] == pytest.approx(5.725) and row["tip_to_floor_mm"] == pytest.approx(0.275)
     f = finding(r, "screw_bottoms_in_slot")
     assert f.severity == "error" and f.data["grip_mm"] == pytest.approx(4.275) and "0.5" in f.message
-    assert row["standard_lengths_that_fit"] == []                        # 8 is too short, 10 too long: change the stack
+    assert row["standard_lengths_that_fit"] == [8] and "M5 x 8" in f.data["hint"]      # 2.5 mm of thread (0.505 d): just enough
     assert "interference" not in codes(r)                                # 16.2 mm^3 is inside what the real slot allows
 
 
@@ -158,54 +163,53 @@ def test_m5x12_through_the_same_stack_is_an_interference_too():
     assert set(i.data["parts"]) == {"s", "bar"} and i.data["volume_mm3"] == pytest.approx(math.pi * 2.5 ** 2 * 2.725, rel=0.02)
 
 
-def test_m5x8_through_plate_and_washer_has_too_little_thread():
+def test_thread_in_the_nut_is_counted_from_the_top_of_its_neck():
+    """The nut's thread runs from 1.2 to 4.4 mm below the face (neck top to body bottom). M5 x 8 through plate and washer
+    ends 3.725 mm down: 2.525 mm (0.505 d), a pass with a warning (not the whole nut). With a second washer it ends
+    2.625 mm down: 1.425 mm (0.285 d), an error."""
     r, row = judged(8, 1)
-    assert row["engagement_mm"] == pytest.approx(1.725) and row["engagement_d"] == pytest.approx(0.345)
+    assert row["engagement_mm"] == pytest.approx(2.525) and not codes(r, "error") and row["through_whole_nut"] is False
+    w = finding(r, "tnut_thread_engagement_marginal")
+    assert w.severity == "warning" and w.data["count"] == 1
+    r, row = judged(8, 2)
+    assert row["engagement_mm"] == pytest.approx(1.425) and row["engagement_d"] == pytest.approx(0.285)
     f = finding(r, "tnut_thread_engagement")
-    assert f.severity == "error" and f.data["required_mm"] == pytest.approx(2.5)
+    assert f.severity == "error" and f.data["required_mm"] == pytest.approx(2.5) and "1.2 mm below" in f.message
     assert "screw_bottoms_in_slot" not in codes(r)
 
 
-def test_m5x10_with_a_second_washer_passes_with_a_thin_nut_warning():
+def test_m5x10_with_a_second_washer_passes_through_the_whole_nut():
     r, row = judged(10, 2)
-    assert row["depth_in_slot_mm"] == pytest.approx(4.625) and row["engagement_d"] == pytest.approx(0.525)
-    assert not codes(r, "error")
-    w = finding(r, "tnut_thread_engagement_marginal")
-    assert w.severity == "warning" and w.data["count"] == 1 and "3.5 mm" in w.message      # most an M5 can have: 6.0 - 0.5 - 2.0
-    # the same screw on the other geometries on file: 0.675 mm off the B-type floor; 2.565 mm of thread in McMaster's nut
-    assert row["alternatives"][B_TYPE] == {"engagement_mm": pytest.approx(3.125), "tip_to_floor_mm": pytest.approx(0.675)}
-    assert row["alternatives"][MCMASTER] == {"engagement_mm": pytest.approx(2.565), "tip_to_floor_mm": pytest.approx(1.475)}
-    assert "tslot_profile_sensitive" not in codes(r)
+    assert row["depth_in_slot_mm"] == pytest.approx(4.625) and row["engagement_mm"] == pytest.approx(3.2)
+    assert row["through_whole_nut"] and not [f for f in r.findings if f.severity != "info"]      # 0.64 d, as its maker rates the nut
+    # the same screw on the other 2020 section on file: 0.675 mm off that floor, the whole nut again
+    assert row["alternatives"][B_TYPE] == {"engagement_mm": pytest.approx(3.2), "tip_to_floor_mm": pytest.approx(0.675)}
     v = r.metrics["tslot_screws"]["verdicts_by_geometry"]
-    assert set(v) == {"used", B_TYPE, MCMASTER} and all(x["bottoms"] == 0 and x["short"] == 0 for x in v.values())
+    assert set(v) == {"used", B_TYPE} and all(x["bottoms"] == 0 and x["short"] == 0 for x in v.values())
+    assert v["used"]["full_nut_thread"] == 1
 
 
-def test_a_screw_that_passes_here_but_not_on_another_geometry_on_file_is_named():
-    """M5 x 12 through 6.35 mm and a washer ends 4.55 mm down: 2.55 mm of thread behind the assumed 2.0 mm lip (passes), but
-    2.49 mm in McMaster's M5 nut, whose thread starts 2.06 mm down (an info: that system is not adopted). A bare M5 x 8
-    through 2.6 mm ends 5.4 mm down: fine here, on the floor of the B-type section (a warning)."""
-    r, row = judged(12, 1, plate_t=6.35)
-    assert not codes(r, "error") and row["alternatives"][MCMASTER]["engagement_mm"] == pytest.approx(2.49)
-    f = finding(r, "tslot_profile_sensitive")
-    assert f.severity == "info" and f.data["geometry"] == MCMASTER and (f.data["short"], f.data["bottoms"]) == (1, 0)
+def test_a_screw_that_passes_here_but_not_on_the_other_section_on_file_is_named():
+    """A bare M5 x 8 through 2.6 mm ends 5.4 mm down: 0.6 mm off Misumi's floor, on the floor of the B-type section."""
     r, row = judged(8, 0, plate_t=2.6)
+    assert not codes(r, "error")
     f = finding(r, "tslot_profile_sensitive")
     assert f.severity == "warning" and f.data["geometry"] == B_TYPE and (f.data["short"], f.data["bottoms"]) == (0, 1)
     assert r.metrics["tslot_screws"]["verdicts_by_geometry"][B_TYPE]["bottoming_screws"] == ["s"]
 
 
 def test_m3x8_through_a_rail_seat_has_a_full_nuts_thread():
-    """An MGN12 rail's screw seat is 3.5 mm above its base: M3 x 8 ends 4.5 mm into the slot, 2.5 mm (0.83 d) behind the lip."""
+    """An MGN12 rail's screw seat is 3.5 mm above its base: M3 x 8 ends 4.5 mm into the slot, through the nut's whole 3.2 mm
+    of thread (1.07 d)."""
     r, row = judged(8, 0, plate_t=3.5, size="M3")
-    assert row["engagement_mm"] == pytest.approx(2.5) and row["engagement_d"] == pytest.approx(0.833, abs=1e-3)
+    assert row["engagement_mm"] == pytest.approx(3.2) and row["engagement_d"] == pytest.approx(1.067, abs=1e-3)
     assert not codes(r, "error") and "tnut_thread_engagement_marginal" not in codes(r)
     assert row["tip_to_floor_mm"] == pytest.approx(1.5) and row["alternatives"][B_TYPE]["tip_to_floor_mm"] == pytest.approx(0.8)
-    assert row["alternatives"][MCMASTER]["engagement_mm"] == pytest.approx(3.13)        # M3 thread from 1.37 mm: 1.04 d
 
 
 def test_margin_is_the_documented_half_millimetre_and_the_hint_names_a_length_that_fits():
     assert SLOT_BOTTOM_MARGIN_MM == 0.5
-    r, row = judged(10, 1, plate_t=6.35)              # v10's nut plates: 2.55 mm in, 0.55 mm of thread; M5 x 12 gives 2.55 mm
+    r, row = judged(10, 1, plate_t=6.35)              # v10's nut plates: 2.55 mm in, 1.35 mm of thread; M5 x 12 passes the whole nut
     f = finding(r, "tnut_thread_engagement")
     assert row["standard_lengths_that_fit"] == [12] and "M5 x 12" in f.data["hint"]
 
@@ -233,14 +237,16 @@ def test_a_tnut_too_deep_for_the_slot_or_not_drop_in_is_reported():
     itf["body_height"] = 4.5                           # 2.0 + 4.5 > 6.0
     r = verify_interference(d)
     assert "deeper than the 6 mm slot" in finding(r, "tnut_does_not_fit").message
-    itf["body_height"], itf["insertion"] = 3.4, "slide-in"
+    itf["body_height"], itf["neck_width"] = 2.4, 6.4
+    assert "does not stand in the 6 mm opening" in finding(verify_interference(d), "tnut_does_not_fit").message
+    itf["neck_width"], itf["insertion"] = 5.8, "slide-in"
     r = verify_interference(d)
     assert finding(r, "tnut_needs_end_loading").severity == "warning" and r.metrics["tslot_screws"]["tnut_types"] == ["slide-in"]
 
 
 def test_two_tnuts_at_one_place_in_adjacent_slots_do_not_collide():
-    """The stand-in's chamfered underside stays inside the slot's 45 degree walls, so nuts in the top and side slots at the
-    same station do not overlap (a plain block would, by 1.8 mm^3)."""
+    """The 8 mm wide, 2.4 mm thick body stays inside the slot's 45 degree walls, so nuts in the top and side slots at the same
+    station do not overlap."""
     d = Design("corner", base="bar")
     d.tnut_style = "drop_in"
     place(d, "bar", extrusion_2020(100), Location((0, 0, 0)))
@@ -270,8 +276,9 @@ def test_bracket_legs_on_slots_get_real_screws_and_tnuts():
     r = verify_interference(d)
     rows = {x["screw"]: x for x in r.metrics["tslot_screws"]["rows"]}
     assert not codes(r, "error")
-    for n in ("k_screw_a", "k_screw"):        # 3 mm leg, no washer: 5.0 mm into the slot, 3.0 mm (0.6 d) of thread
-        assert rows[n]["grip_mm"] == pytest.approx(3.0) and rows[n]["engagement_d"] == pytest.approx(0.6)
+    for n in ("k_screw_a", "k_screw"):        # 3 mm leg, no washer: 5.0 mm into the slot, through the whole nut (3.2 mm, 0.64 d)
+        assert rows[n]["grip_mm"] == pytest.approx(3.0) and rows[n]["engagement_d"] == pytest.approx(0.64) and rows[n]["through_whole_nut"]
+    assert finding(r, "tslot_profile_sensitive").data["count"] == 2      # 0.3 mm from the floor of the shallower section on file
     from mechloop.verifiers.assemblability import verify_assemblability
 
     asm = verify_assemblability(d)
@@ -294,7 +301,6 @@ def test_washers_under_both_bracket_heads_do_not_fit_and_the_default_says_so():
     assert P.BRACKET_SLOT_LEG == {"size": "M5", "length": 8, "washers": 0, "offsets": (11.5, 13.1)}
     d = corner(slot_leg={"length": 8, "washers": 1, "offsets": (12.0, 13.0)})
     r = verify_interference(d)
-    assert "tnut_thread_engagement" in codes(r, "error")          # M5 x 8 with a washer: 2.0 mm of thread
     assert any(f.code == "interference" and set(f.data["parts"]) == {"k_screw_a", "k_screw"} for f in r.findings)
 
 
@@ -420,7 +426,7 @@ def test_mcmaster_numbers_say_whether_they_were_read_from_the_page():
     assert rows["SHCS-M3x8"]["mcmaster"] == "91290A400" and rows["SHCS-M3x8"]["model_now"] == "supplier CAD"
     assert rows["SHCS-M3x30"]["mcmaster"].startswith("91290A171 (unverified")           # not in the supplier batch
     assert rows["SHCS-M3x30"]["model_now"] == "stand-in (generated to standard)"
-    assert rows["TNUT-2020-M3"]["mcmaster"] == "" and rows["TNUT-2020-M3"]["model_now"].startswith("stand-in (assumed")
+    assert rows["TNUT-2020-M3"]["mcmaster"] == "" and rows["TNUT-2020-M3"]["model_now"] == "faithful re-make"
     assert rows["WASHER-M3-LARGE"]["mcmaster"] == "not sold by McMaster"
     assert P.shcs("M3", 8).ratings["mcmaster_pn_status"].startswith("confirmed on McMaster's product page")
     assert "geometry only" in P.shcs("M3", 30).ratings["mcmaster_pn_status"]
@@ -521,7 +527,7 @@ def test_v10_1_toolhead_fasteners_have_no_bare_simulation_solids(v10, v101):
     assert st == {"supplier CAD": 46, "stand-in": 4}                  # stand-ins: 2 clinch nuts, the probe's 2 nuts
 
 
-def test_v10_1_tslot_screws_all_pass_and_v10s_wrong_ones_are_the_45_listed(v10, v101):
+def test_v10_1_tslot_screws_all_pass_and_v10s_wrong_ones_are_the_41_listed(v10, v101):
     from mechloop.verifiers.interference import _tslot_screws
     from mechloop.report import VerifierResult
 
@@ -531,6 +537,7 @@ def test_v10_1_tslot_screws_all_pass_and_v10s_wrong_ones_are_the_45_listed(v10, 
     assert not [f for f in r.findings if f.severity == "error"]
     for row in m["rows"]:
         assert row["tip_to_floor_mm"] >= 0.5 - 1e-6 and row["engagement_d"] >= 0.5 - 1e-6, row["screw"]
+    assert m["marginal_engagement"] == 4 and sum(row["through_whole_nut"] for row in m["rows"]) == 152      # the four beam bolts: 0.59 d
     # v10 judged with the same rule (its own screws, the nuts taken as drawn): which were wrong
     slot = slot_2020()
     comps = {c.name: c for c in v10.components}
@@ -544,12 +551,13 @@ def test_v10_1_tslot_screws_all_pass_and_v10s_wrong_ones_are_the_45_listed(v10, 
         under = np.array(f.head_center) - a * c.meta["interfaces"]["head_h"]
         fr = slot_frame(comps[c.meta["threads_into"][0]], under, -a)
         p = fr["depth"] + float(c.sku.split("x")[1])
-        eng = max(0.0, min(p, slot["lip"] + 3.4) - slot["lip"])
+        eng = max(0.0, min(p, slot["lip"] + 2.4) - (slot["lip"] - 0.8))          # Misumi's nut: thread from 1.2 to 4.4 mm
         if slot["depth"] - p < 0.5 - 1e-6:
             wrong[c.name] = "bottoms"
         elif eng < 0.5 * c.meta["thread_d"] - 1e-6:
             wrong[c.name] = "short"
-    assert len(wrong) == 45
-    assert sum(v == "bottoms" for v in wrong.values()) == 35 and sum(v == "short" for v in wrong.values()) == 10
+    assert len(wrong) == 41
+    assert sum(v == "bottoms" for v in wrong.values()) == 35 and sum(v == "short" for v in wrong.values()) == 6
     assert {n for n in wrong if n.startswith("nut_plate")} == {f"nut_plate{t}_bolt_{i}" for t in ("", "_fl", "_fr") for i in (0, 1)}
     assert "earth_stud" in wrong and not [n for n in wrong if "rail" in n and "screw" in n]       # the M3 x 8 rail screws were right
+    assert not [n for n in wrong if n.startswith("beam_bolt")]                                    # 0.59 d: kept as v10 had them

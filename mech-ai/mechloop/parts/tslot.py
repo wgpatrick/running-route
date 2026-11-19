@@ -1,10 +1,11 @@
-"""T-slot hardware for 20 x 20 slot-6 extrusion: the slot's section and drop-in T-nuts, as STAND-INS.
+"""T-slot hardware for 20 x 20 slot-6 extrusion (Misumi HFS5 series): the slot's section and drop-in T-nuts.
 
-No supplier drawing of the slot or of a T-nut could be fetched (the suppliers' hosts are refused by the network proxy), so
-nothing here is a faithful re-make. The slot section is measured from two community CAD files that are in the repository
-and that disagree; the T-nut body is from one web-search snippet plus two guesses. Every figure, its source and its status
-is in mechloop/parts/vendor/tslot_2020_hardware.json, and `assumed_dimensions()` lists the ones the screw-length checks
-depend on. A supplier STEP saved as vendor_cad/inbox/TNUT-2020-M5.step (or -M3) replaces the display model.
+Both are read from Misumi's dimensioned catalogue drawings (MISUMI USA 2019 catalogue p.2686 and p.2717, fetched
+2026-11-19, copies in vendor_docs/): the slot is 6 wide, 2 of lip, 4 from lip to floor, 12 across the cavity; the nut is
+HNTAJ5, 10 x 8 x 3.2 with a 2.4 mm body and a 5.8 mm neck. The T-nut part is a re-make from that drawing (every
+dimension used, nothing guessed, two un-dimensioned features left out), not supplier CAD. Every figure, its source and
+its status is in mechloop/parts/vendor/tslot_2020_hardware.json, and `assumed_dimensions()` lists what the screw-length
+checks still take on trust. A supplier STEP saved as vendor_cad/inbox/TNUT-2020-M5.step (or -M3) replaces the display model.
 
   slot_2020()            the slot section the checks use (profile on the BOM) and the alternative section
   tnut_2020("M5")        drop-in T-nut, SKU TNUT-2020-M5 / TNUT-2020-M3
@@ -44,26 +45,31 @@ def slot_2020() -> dict:
 
 def tnut_dims() -> dict:
     t = vendor_data(FAMILY)["tnut"]
-    return {"span": t["span_across_slot_mm"]["value"], "width": t["width_along_slot_mm"]["value"],
-            "height": t["overall_height_mm"]["value"], "neck": t["neck_height_mm"]["value"],
-            "thread_length": t["thread_length_mm"]["value"], "chamfer": t["underside_chamfer_mm"]["value"]}
+    return {"length": t["length_along_slot_mm"]["value"], "span": t["span_across_slot_mm"]["value"],
+            "height": t["overall_height_mm"]["value"], "body": t["body_height_mm"]["value"], "neck": t["neck_height_mm"]["value"],
+            "neck_width": t["neck_width_mm"]["value"], "thread_length": t["thread_length_mm"]["value"],
+            "torque": dict(t["reference_tightening_torque_nm"])}
 
 
 def assumed_dimensions() -> list[dict]:
-    """Every assumed dimension the T-slot screw checks depend on: [{"what", "value_mm", "status"}]."""
+    """Every figure the T-slot screw checks depend on, with where it comes from: [{"what", "value_mm", "status"}]. Since
+    2026-11-19 the slot and the T-nut are read from Misumi's dimensioned catalogue drawings; what is still ours is listed
+    as DERIVED or as our reading."""
     v = vendor_data(FAMILY)
     u, a, t = v["slot"]["used"], v["slot"]["alternative"], v["tnut"]
     return [
-        {"what": "slot depth, face to floor (profile used)", "value_mm": u["depth_mm"], "status": u["status"] + "; " + u["source"].split(" (")[0]},
-        {"what": "slot lip thickness (profile used)", "value_mm": u["lip_thickness_mm"], "status": u["status"]},
-        {"what": "slot opening / cavity width (profile used)", "value_mm": [u["opening_mm"], u["cavity_width_mm"]], "status": u["status"]},
-        {"what": "slot depth (alternative B-type section)", "value_mm": a["depth_mm"], "status": a["status"] + "; " + a["source"].split(" (")[0]},
-        {"what": "slot lip thickness (alternative B-type section)", "value_mm": a["lip_thickness_mm"], "status": a["status"]},
-        {"what": "T-nut overall height", "value_mm": t["overall_height_mm"]["value"], "status": t["overall_height_mm"]["status"]},
-        {"what": "T-nut neck height (in the slot opening)", "value_mm": t["neck_height_mm"]["value"], "status": t["neck_height_mm"]["status"]},
-        {"what": "T-nut thread length (body under the lips)", "value_mm": t["thread_length_mm"]["value"], "status": t["thread_length_mm"]["status"]},
-        {"what": "T-nut span across the slot / width along it", "value_mm": [t["span_across_slot_mm"]["value"], t["width_along_slot_mm"]["value"]],
-         "status": t["span_across_slot_mm"]["status"]},
+        {"what": "slot depth, face to floor", "value_mm": u["depth_mm"], "status": u["status"] + " (2 + 4)"},
+        {"what": "slot lip thickness", "value_mm": u["lip_thickness_mm"], "status": u["status"]},
+        {"what": "slot opening / cavity width", "value_mm": [u["opening_mm"], u["cavity_width_mm"]], "status": u["status"]},
+        {"what": "T-nut overall height / height of the body under the lips", "value_mm": [t["overall_height_mm"]["value"], t["body_height_mm"]["value"]],
+         "status": "READ from the maker's catalogue drawing of HNTAJ5 (fetched 2026-11-19)"},
+        {"what": "T-nut thread length", "value_mm": t["thread_length_mm"]["value"], "status": "READ: " + t["thread_length_mm"]["status"]},
+        {"what": "T-nut length along the slot / span across it / neck width", "value_mm": [t["length_along_slot_mm"]["value"], t["span_across_slot_mm"]["value"], t["neck_width_mm"]["value"]],
+         "status": "READ from the same drawing"},
+        {"what": "how the T-nut seats (body against the lips' underside, neck up in the opening)", "value_mm": None, "status": "OUR READING: " + t["read_by_us"]},
+        {"what": "tolerances of the slot and the nut", "value_mm": None, "status": "NOT GIVEN on either drawing"},
+        {"what": "that the extrusion bought is Misumi HFS5-2020 or has the same slot", "value_mm": None,
+         "status": "ASSUMED. Another make's 2020 slot-6 profile on file is " + f"{a['depth_mm']} mm deep with a {a['lip_thickness_mm']} mm lip ({a['status']})"},
         {"what": "clearance kept between a screw's tip and the slot floor", "value_mm": v["bottoming_margin_mm"]["value"], "status": v["bottoming_margin_mm"]["status"]},
         {"what": "thread engagement limits in a T-nut (x d)", "value_mm": [0.5, 0.8], "status": v["engagement_rule"]["status"]},
     ]
@@ -71,37 +77,44 @@ def assumed_dimensions() -> list[dict]:
 
 @part
 def tnut_2020(size: str = "M5") -> Stock:
-    """Drop-in T-nut for 2020 slot-6 extrusion, M3 or M5 (STAND-IN: dimensions assumed, see the module docstring).
-    Drop-in type (post-assembly insertion, held by a spring ball or leaf): it goes into the slot through the opening
-    anywhere along the extrusion, so it never has to be loaded from an end. Local frame: Z along the slot's outward
-    normal, X along the slot; the face that bears on the underside of the slot's lips is Z=0, the body below it, the
-    neck that stands in the slot opening above it. Place it `lip` mm below the extrusion's face."""
+    """Drop-in T-nut for 2020 slot-6 extrusion, M3 or M5: Misumi HNTAJ5 ("Post-Assembly Insertion Short Nut" for the HFS5
+    series), re-made from the dimensioned drawing in Misumi's catalogue: 10 long, 8 wide, 3.2 high, a 2.4 mm body under
+    the slot's lips and a 5.8 mm wide neck in the opening, threaded through. It goes into the slot through the opening
+    anywhere along the extrusion (never from an end) and a leaf spring holds it. The chamfers and the leaf spring are
+    drawn in the catalogue without dimensions and are left out. Local frame: Z along the slot's outward normal, X along
+    the slot; the face that bears on the underside of the lips is Z=0, the body below it, the neck above it. Place it
+    `lip` mm below the extrusion's face."""
     if size not in TNUT_SIZES:
         raise ValueError(f"tnut_2020 size must be one of {TNUT_SIZES}")
-    d = tnut_dims()
-    body_h = d["height"] - d["neck"]
-    from build123d import Plane, Polygon, extrude
+    from build123d import Cylinder
 
-    h, ch = d["span"] / 2, d["chamfer"]
-    wings = extrude(Plane.YZ * Polygon((-h, 0), (h, 0), (h, -(body_h - ch)), (h - ch, -body_h), (-(h - ch), -body_h),
-                                       (-h, -(body_h - ch)), align=None), d["width"] / 2, both=True)
-    shape = wings + Pos(0, 0, d["neck"] / 2) * Box(d["width"], 5.8, d["neck"])
+    d = tnut_dims()
+    shape = (Pos(0, 0, -d["body"] / 2) * Box(d["length"], d["span"], d["body"])
+             + Pos(0, 0, d["neck"] / 2) * Box(d["length"], d["neck_width"], d["neck"]))
     thread_d = float(size[1:])
-    mass = (float(shape.volume) - np.pi * (thread_d / 2) ** 2 * d["height"]) * 7.85e-6
-    assumed = [f"{a['what']}: {a['value_mm']} mm ({a['status']})" for a in assumed_dimensions() if a["what"].startswith("T-nut")]
-    return Stock(shape, f"TNUT-2020-{size}", f"Drop-in T-nut {size} for 2020 slot 6 (post-assembly insertion, spring-held)", float(mass),
-                 material="steel", cost_usd=0.15,
-                 ratings={"approximate": True, "insertion": "drop-in", "assumed": assumed},
-                 interfaces={"thread_d": thread_d, "span": d["span"], "width": d["width"], "height": d["height"], "neck": d["neck"],
-                             "body_height": body_h, "thread_length": d["thread_length"], "insertion": "drop-in"},
-                 detail=shape,
-                 model={"kind": "proxy", "state": "stand-in", "inbox": [f"TNUT-2020-{size}"],
-                        "source": "STAND-IN: a block and neck of assumed dimensions (search snippet 6 x 10.3 x 4.4 mm; neck 1.0 mm, thread "
-                                  "length 3.4 mm and the 1.7 mm underside chamfers guessed). Wanted: the supplier's STEP as vendor_cad/inbox/TNUT-2020-" + size + ".step",
-                        "tolerance": {"volume_ratio": (0.3, 3.0), "mass_ratio": (0.2, 5.0)}},
-                 source=_source(FAMILY, "proxy", f"drop-in T-nut {size}, 2020 slot 6",
-                                unverified=("span", "width", "height", "neck", "thread_length", "mass_kg", "cost"),
-                                note="stand-in: no supplier drawing was fetched; dimensions from a web-search snippet and two guesses"))
+    hole = Pos(0, 0, (d["neck"] - d["body"]) / 2) * Cylinder(thread_d / 2, d["height"])
+    detail = shape - hole                       # the display model has the thread's hole; the simulation solid does not
+    mass = float(detail.volume) * 7.85e-6
+    v = vendor_data(FAMILY)
+    drawing = v["tnut"]["source"]
+    return Stock(shape, f"TNUT-2020-{size}", f"Drop-in T-nut {size} for 2020 slot 6: Misumi HNTAJ5-{size[1:]} (post-assembly insertion short nut)",
+                 mass, material="steel", cost_usd=0.5,
+                 ratings={"approximate": True, "insertion": "drop-in", "maker_part": f"MISUMI HNTAJ5-{size[1:]}",
+                          **({"reference_tightening_torque_nm": d["torque"][size]} if size in d["torque"] else {}),
+                          "left_out_of_the_model": list(v["tnut"]["left_out_of_the_model"])},
+                 interfaces={"thread_d": thread_d, "length": d["length"], "span": d["span"], "height": d["height"], "neck": d["neck"],
+                             "neck_width": d["neck_width"], "body_height": d["body"], "thread_length": d["thread_length"],
+                             # the thread starts at the top of the neck: this far above the face that bears on the lips
+                             "thread_offset": -d["neck"], "insertion": "drop-in"},
+                 detail=detail,
+                 model={"kind": "generated to standard", "inbox": [f"TNUT-2020-{size}", f"HNTAJ5-{size[1:]}"],
+                        "remade_from": drawing,
+                        "source": "re-made from the maker's dimensioned drawing: " + drawing + ". All six dimensions are in the model and "
+                                  "nothing is guessed; the chamfers, the leaf spring and the countersink ring are drawn there without "
+                                  "dimensions and are left out. Misumi's own STEP is still wanted (vendor_cad/inbox/TNUT-2020-" + size + ".step)",
+                        "tolerance": {"volume_ratio": (0.8, 1.6), "mass_ratio": (0.5, 2.0)}},
+                 source=_source(FAMILY, "vendor", f"MISUMI HNTAJ5-{size[1:]}", unverified=("mass_kg", "cost"),
+                                note="dimensions from the maker's catalogue drawing (copy in vendor_docs/); mass from the drawn solid; price not read"))
 
 
 def slot_frame(ext, point, direction) -> dict | None:
