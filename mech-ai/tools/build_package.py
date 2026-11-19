@@ -224,7 +224,7 @@ CATEGORIES = [  # (category, test on sku)
     ("Electronics", lambda s: s.startswith(("PSU", "CTRL", "HOST", "RELAY", "INLET", "ENDSTOP", "FUSE", "DIODE", "MOSFET"))),
     ("Wire, connectors, cable management", lambda s: s.startswith(("WIRE", "CONN", "SLEEVE", "CABLE"))),
     ("Spacers", lambda s: s.startswith("SPACER")),
-    ("Fasteners", lambda s: s.startswith(("SHCS", "NUT", "NYLOC", "WASHER"))),
+    ("Fasteners", lambda s: s.startswith(("SHCS", "BHCS", "NUT", "NYLOC", "WASHER"))),
 ]
 
 # Which purchased lines are STAND-INS: a rule on what the catalogue records, with the reason shown in the BOM. (generator)
@@ -412,14 +412,14 @@ def fastener_table(cx: Ctx, bom: dict):
     rows = []
     for L in bom["lines"]:
         s = L["sku"]
-        if not s.startswith(("SHCS", "NUT-M", "NYLOC", "WASHER", "TNUT")):
+        if not s.startswith(("SHCS", "BHCS", "NUT-M", "NYLOC", "WASHER", "TNUT")):
             continue
         n = L["qty"]
         order = max(n + 1, math.ceil(n * (1 + SPARE_FRAC)))
         c = cx.comps.get(L["used"][0]) if L["used"] else None
         key = dig(c.meta, "interfaces", "hex_key") if c is not None else None
-        m = re.match(r"SHCS-(M[\d.]+)x([\d.]+)", s)
-        kind = ("cap screw ISO 4762" if s.startswith("SHCS") else "T-nut 2020" if s.startswith("TNUT") else "nyloc nut" if s.startswith("NYLOC")
+        m = re.match(r"(?:SHCS|BHCS-FL)-(M[\d.]+)x([\d.]+)", s)
+        kind = ("cap screw ISO 4762" if s.startswith("SHCS") else "flanged button head ISO 7380-2" if s.startswith("BHCS") else "T-nut 2020" if s.startswith("TNUT") else "nyloc nut" if s.startswith("NYLOC")
                 else "star washer" if s.startswith("WASHER") else "hex nut " + ("DIN 934" if "DIN934" in s else "ISO 4032"))
         size = m.group(1) if m else (re.search(r"M[\d.]+", s) or [""])[0] if re.search(r"M[\d.]+", s) else ""
         rows.append({"sku": s, "kind": kind, "size": size, "length": m.group(2) if m else "", "in_model": L["qty_model"],
@@ -2535,8 +2535,69 @@ CURATED_V10_1 = [
      "medium thread locker on the three M2.5 nuts"),
 ] + CURATED_V10
 
+STAGE_NOTES_BY_DESIGN["printer_v11"] = {
+    **STAGE_NOTES_BY_DESIGN["printer_v10"],
+    "frame": ["v11: every T-nut is a drop-in nut and is its own step: put it into the slot through the opening, slide it to its place, then offer up "
+              "the part and start the screw. Corner brackets: one flanged button head screw ISO 7380-2 M5 x 8 per leg (its collar covers the slot, no "
+              "washer), 3 mm key; start both screws of a bracket before tightening either. The extrusions come cut to length from Misumi "
+              "(HFS5-2020-<length>)."] + list(STAGE_NOTES_BY_DESIGN["printer_v10"]["frame"]),
+}
+
+
+CURATED_V11 = [
+    ("A", "Bed plate flatness: the figure the limit is worked with is a receiving check",
+     "Limit (a), out of flat as installed <= 0.3 mm, is met with the owner's 0.13 mm for the plate as bought plus the computed sag. The maker's "
+     "brochure in the repository gives 0.381 mm for 6.35 to 15.9 mm cast plate (whole plate); on that figure alone (a) is exceeded and no MIC-6 "
+     "plate thinner than 19 mm would pass. McMaster's listing could not be read from here.",
+     "check the cut 232 mm plate on arrival with a straight edge and feelers: accept it at 0.13 mm or better, or ask SendCutSend for a flatter piece"),
+    ("A", "The Z nuts' dimensions are a stand-in",
+     "The POM anti-backlash nuts that come on the 17E19S1684AB4-330RA screws are drawn from the maker's photographs (flange 23 x 23 x 6, barrel "
+     "12.7 x 26, holes on 16 mm, +/-1.5 mm): no drawing is published and the datasheet could not be fetched. The nut plates' screw hole, pin slot, "
+     "keeper hole and keeper spacers follow those figures.",
+     "measure one nut before cutting the nut plates and keepers; correct leadscrew_nut_pom_ab4 and re-run verify"),
+    ("A", "Z screws at full length stand close to the frame",
+     "Used as sold (330 mm), the screws' tops are at 400 to 401 mm. The front two stand 1.5 mm inboard of the top side rails' inner faces and 2.5 mm "
+     "outboard of the X beam's ends, free at the top; the rear one stands outside the back wall. Run-out or whip of more than about 1 mm at the top "
+     "would let a front screw touch the top side rail.",
+     "check each screw's run-out at its tip on arrival (motor running slowly); run the bed through its whole travel by hand before first power"),
+    ("A", "Lead-screw motors: no thrust rating, datasheet not in hand",
+     "Each 17E19S1684AB4-330RA carries the bed along its screw on its own bearings; the maker states no axial rating.",
+     "get the datasheet and an axial rating from StepperOnline before ordering three"),
+    ("A", "Screw lengths in T-slots rest on Misumi's drawings, without tolerances",
+     "Slot 6.0 deep, 2.0 lip (Misumi HFS5, confirmed by Misumi's STEP), T-nut HNTAJ5. 24 screws now have between 0.5 d and 0.8 d of thread (the owner "
+     "chose M5 x 8 with one washer); on a shallower slot of another make 94 screws would end closer than 0.5 mm to the floor.",
+     "buy Misumi HFS5-2020 and HNTAJ5 nuts, or measure what is bought and re-run verify"),
+    ("B", "Part-cooling flow is an estimate; the blower's bearing is not known",
+     "GDSTIME GDB4010 24 V: delivered flow estimated from the maker's P-Q curve (read by eye) and handbook duct losses, not measured. The data sheet "
+     "lists ball, sleeve and hydraulic bearings for the family without saying which this part has.",
+     "ask the seller for a ball-bearing part; check cooling with bridging and overhang test prints"),
+    ("B", "Probe bracket stiffness not analysed",
+     "The OMRON hangs on a 2.286 mm 5052 L. Its stiffness and any vibration were not computed.",
+     "check probe repeatability (PROBE_ACCURACY in Klipper) after assembly"),
+    ("B", "X belt tensioned by hand",
+     "No tensioner (owner's choice): the X motor plate slides in two slots on the beam and is pulled outward by hand before its two M5 are tightened.",
+     "tension, tighten, then check the belt frequency; re-tension after the first hours"),
+    ("B", "Print sheet and magnetic base are third-party parts",
+     "220 x 220 mm textured PEI on spring steel is a third-party size (Creality sells 235); its magnetic base must be bought rated 120 degC continuous; "
+     "its thickness (1.5 mm drawn) is not published.",
+     "measure the sheet and base and re-set the probe's z_offset"),
+    ("B", "Thumb nuts: KIPP K0143.04, steel; finish not stated",
+     "KIPP's STEP and sheet are in hand (thread through the full 9.5 mm); the sheet says steel without a finish.",
+     "ask for the zinc-plated or stainless variant"),
+    ("B", "T-nut model: re-made from the catalogue drawing, not supplier CAD",
+     "Every dimension of Misumi's HNTAJ5 drawing is in the model; chamfers, leaf spring and countersink ring are left out.",
+     "save Misumi's STEP as vendor_cad/inbox/TNUT-2020-M5.step and -M3.step when in hand"),
+    ("B", "Hardware still without supplier CAD",
+     "M4 x 6 cap screws (McMaster 90128A208, zinc-plated; STEP over 5 MB), M5 x 65 post bolts, M5 x 16, M2 screws and nuts, flanged button heads, "
+     "the PEM nuts and the toothed washer are generated stand-ins.",
+     "add the supplier files to vendor_cad/inbox/ under their SKUs (vendor_cad/mcmaster_wanted.csv)"),
+    ("B", "Earth stud: the ring terminal's tongue is taken as 0.8 mm",
+     "M5 x 6 on a toothed washer: with a tongue over 1.7 mm the screw has under 0.5 d of thread.", "measure the terminal"),
+    ("B", "Frame stiffness is not in the twin", "The twin's resonances use belts, guide blocks and the gantry's FEA only.", "resonance measurement E13"),
+]
+
 CURATED_BY_DESIGN = {"printer_v8_1": CURATED_V8_1, "printer_v8_2": CURATED_V8_2, "printer_v9": CURATED_V9, "printer_v10": CURATED_V10,
-                     "printer_v10_1": CURATED_V10_1}
+                     "printer_v10_1": CURATED_V10_1, "printer_v11": CURATED_V11}
 
 
 def write_open_items(cx: Ctx, bom: dict, fab: dict, asm: dict, wash: list, lead: list) -> dict:

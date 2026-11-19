@@ -1,6 +1,6 @@
 """Write vendor_cad/mcmaster_wanted.csv: every fastener and T-nut type of a design, for fetching supplier CAD.
 
-    python tools/mcmaster_wanted.py designs/printer_v10_1.py
+    python tools/mcmaster_wanted.py designs/printer_v11.py
 
 Columns: sku, desc, mcmaster, standard, qty, model_now, toolhead.
   sku        the catalogue SKU; a STEP file saved as vendor_cad/inbox/<sku>.step replaces the part's display model
@@ -22,7 +22,7 @@ from pathlib import Path
 from mechloop.parts import vendor_cad, vendor_data
 from mechloop.runner import load_design
 
-HARDWARE = ("SHCS", "FHCS", "NUT-", "WASHER", "TNUT")          # fasteners and T-nuts; lead-screw nuts (NUT-TR8...) are drive parts
+HARDWARE = ("SHCS", "FHCS", "BHCS", "NUT-", "WASHER", "TNUT")          # fasteners and T-nuts; lead-screw nuts (NUT-TR8...) are drive parts
 
 
 def short_desc(sku: str, descs: list[str]) -> str:
@@ -32,6 +32,9 @@ def short_desc(sku: str, descs: list[str]) -> str:
     m = re.match(r"FHCS-(M[\d.]+)x([\d.]+)$", sku)
     if m:
         return f"Countersunk socket screw {m.group(1)} x {m.group(2)} (ISO 10642)"
+    m = re.match(r"BHCS-FL-(M[\d.]+)x([\d.]+)$", sku)
+    if m:
+        return f"Flanged button head screw {m.group(1)} x {m.group(2)} (ISO 7380-2)"
     m = re.match(r"NUT-(M[\d.]+)$", sku)
     if m:
         return f"Hex nut {m.group(1)}"
@@ -52,7 +55,7 @@ def rows_for(design, toolhead_body: str = "xbody") -> list[dict]:
     mc, batch = mf["part_numbers"], mf.get("supplier_batch_2026_11_18") or {}
     by = collections.defaultdict(list)
     for c in design.components:
-        if (c.sku or "").startswith(HARDWARE) and not (c.sku or "").startswith("NUT-TR8"):
+        if (c.sku or "").startswith(HARDWARE) and not (c.sku or "").startswith(("NUT-TR8", "NUT-T8x2-POM")):
             by[c.sku].append(c)
     rows = []
     for sku, cs in by.items():

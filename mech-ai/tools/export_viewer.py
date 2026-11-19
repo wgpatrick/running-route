@@ -18,7 +18,7 @@ import numpy as np
 from mechloop.geom import to_trimesh
 from mechloop.runner import load_design
 
-LEADSCREW_NUT_SKUS = ("T8-NUT", "NUT-TR8")
+LEADSCREW_NUT_SKUS = ("T8-NUT", "NUT-TR8", "NUT-T8x2-POM")
 FAST = re.compile(r"(_screw|_bolt|_nut|_locknut|_pin|_stud)(_[a-z]+)?(_\d+)?$")
 
 
@@ -45,7 +45,7 @@ def kind_of(c):
     # NUT-TR8...: the nut supplied on a StepperOnline lead-screw motor, whose SKU would otherwise read as a hex nut)
     if (c.sku or "").startswith(LEADSCREW_NUT_SKUS):
         return "purchased"
-    if FAST.search(c.name) or (c.sku or "").startswith(("SHCS", "NUT", "HEX", "TNUT", "WASHER")):
+    if FAST.search(c.name) or (c.sku or "").startswith(("SHCS", "BHCS", "NUT", "HEX", "TNUT", "WASHER")):
         return "fastener"
     if c.ratings.get("electrical") or "electrical" in c.ratings:
         return "electrical"
