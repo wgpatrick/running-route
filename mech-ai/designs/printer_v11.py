@@ -947,7 +947,8 @@ def build_electrical(d: Design) -> Electrical:
     yl = YB0 + R_TPR + ROTO_W + B23 + 2.0      # v11: clamped to the probe bracket's upper leg, at the blower's top
     by_c = YB0 + R_TPR + ROTO_W + B23 + 2 * WASHER["large"]["M3"][2] + 3.0 + 1.5 + BL_T + CRADLE_T     # back of the blower's cradle
     el.loom("toolhead", [Waypoint("xbody", (NOZ_X - 8.0, yl, Z_BEAM + 33.0), clamp="probe_mount"),
-                         ("xbody", (NOZ_X - 14.0, yl + 14.0, Z_BEAM + 55.0)),      # v11: up past the blower's left side
+                         ("xbody", (NOZ_X - 10.0, yl + 8.0, Z_BEAM + 52.0)),       # v11: up past the blower's left side,
+                         ("xbody", (NOZ_X + 4.0, yl + 20.0, Z_BEAM + 70.0)),       # over its top
                          Waypoint("xbody", (NOZ_X + 30.0, by_c + 1.5, BL_Z0 + BL_W - 4.0), clamp="part_duct"),   # on the cradle's back
                          Waypoint("world", (118.0, 175.0, FZ + 12.0), clamp="frame_top_back"), Waypoint("world", P1)],
             flex_length={2: 480.0})
