@@ -805,7 +805,7 @@ def nut_pocket(at, axis, up, extra_back=0.0):
 # ---- v11 part cooling: one GDB4010 radial blower behind the Roto, outlet down, a short printed duct -----------------------
 BL_X0 = NOZ_X + 13.0                    # the blower's 40 mm face: x from 13 to 53 right of the nozzle (v10's 30 mm fan and plenum
 BL_X1 = BL_X0 + 40.0                    # reached 46.8); at the right end of the travel it is 4 mm from the right front lead screw
-BL_Z0 = Z_NOZZLE + 31.55                # 405.0: its outlet edge; its lower lugs' nuts pass 1 mm above the top back rail at the rear end
+BL_Z0 = Z_NOZZLE + 33.05                # 406.5: its outlet edge; its lower lugs' nuts pass 1 mm above the top back rail at the rear end
 CRADLE_T = 4.0
 DUCT_FLOOR = Z_NOZZLE + 3.05            # 376.5: the duct's lowest face, 3.05 mm above the nozzle tip (owner: >= 2.5)
 OUT_D, OUT_W, OUT_H, OUT_L = 24.0, 10.0, 3.0, 6.0     # outlet: 24 mm from the nozzle's axis on the rear-right diagonal, 10 x 3 mm bore
@@ -847,14 +847,14 @@ def part_duct_shape(y_noz, bl_y0):
     c += bx(NOZ_X + 21.5, FC_X1, yf + FC_FL, y_c0, z0, zf)                        # arm under the Roto
     y_rf = YB0 + R_TPR + ROTO_W                         # the Roto's rear face: under the Roto the chamber stays below its underside
     c += bx(NOZ_X + 21.5, NOZ_X + 48.5, y_c0, y_rf, DUCT_FLOOR, Z_NOZZLE + 20.55)   # chamber A, under the Roto
-    c += bx(NOZ_X + 21.5, NOZ_X + 48.5, y_rf, by1 + CRADLE_T, DUCT_FLOOR, BL_Z0)    # and its riser behind the Roto, up to the blower
+    c += bx(NOZ_X + 21.5, NOZ_X + 48.5, y_rf, by1, DUCT_FLOOR, BL_Z0)               # and its riser behind the Roto, up to the blower
     c += bx(NOZ_X + 13.0, NOZ_X + 28.0, y_c0, y_noz + 23.0, DUCT_FLOOR, DUCT_FLOOR + 9.5)   # chamber B, its front-left extension
     c += bx(BL_X0, BL_X1, by1, by1 + CRADLE_T, BL_Z0, BL_Z0 + 40.0)             # cradle behind the blower
     o, ax = _outlet_frame(y_noz)
     c += _tube(o, ax, OUT_W + 2.4, OUT_H + 2.4, OUT_L)
     # the air passage
     c -= bx(NOZ_X + 21.5 + w, NOZ_X + 48.5 - w, y_c0 + w, y_rf + 0.01, DUCT_FLOOR + w, Z_NOZZLE + 20.55 - w)
-    c -= bx(NOZ_X + 21.5 + w, NOZ_X + 48.5 - w, y_rf, by1, DUCT_FLOOR + w, BL_Z0 - w)
+    c -= bx(NOZ_X + 21.5 + w, NOZ_X + 48.5 - w, y_rf, by1 - w, DUCT_FLOOR + w, BL_Z0 - w)
     bc = (BL_X0 + BL_X1) / 2
     c -= bx(max(bc - 14.0, NOZ_X + 21.5 + w), min(bc + 14.0, NOZ_X + 48.5 - w), bl_y0 + 5.0 - 3.72, bl_y0 + 5.0 + 3.72, BL_Z0 - w - 0.1, BL_Z0 + 0.1)
     c -= bx(NOZ_X + 13.0 + w, NOZ_X + 28.0, y_c0 + w, y_noz + 23.0 - w, DUCT_FLOOR + w, DUCT_FLOOR + 9.5 - w)
@@ -1465,7 +1465,7 @@ def build() -> Design:
     d.join("bed_probe", "probe_mount", "clamped by its two nuts")
     # part cooling (v11): the GDB4010 blower behind the Roto, 0.1 mm behind the probe bracket's leg, outlet down into the duct
     y_noz = YB0 + HOT_OFF
-    bl_y0 = yb_pm + B23 + 2 * WASHER["large"]["M3"][2] + 3.0 + 0.3     # behind the Roto screws' heads and washers
+    bl_y0 = yb_pm + B23 + 2 * WASHER["large"]["M3"][2] + 3.0 + 1.5     # 1.5 mm behind the Roto screws' heads and washers
     d.add("part_duct", part_duct_shape(y_noz, bl_y0), material=HOT, body="xbody", process="printed",
           meta={"print_up": "-Y", "print": {**PRINT_ABS, "orientation": "-Y"}, "service_temp_c": 45.0})
     for i, (x, z) in enumerate(FC_SCREWS):
