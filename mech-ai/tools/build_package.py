@@ -2511,7 +2511,7 @@ CURATED_V10_1 = [
      "warning). Washers do not fit: with one under each head the two heads in a bracket collide inside the slots, and the screw is then too short or "
      "bottoms. The guideline 'washers on slots' is therefore NOT met at the brackets.",
      "use flanged button-head screws ISO 7380-2 M5 x 8 (flange about 11.5 mm; not in the catalogue, not checked) or brackets with round holes; decide before buying"),
-    ("B", "Two washers under 28 M5 x 10 and M5 x 12 screws",
+    ("B", "Two washers under 30 M5 x 10 and M5 x 12 screws",
      "On the 3.2 mm plates (deck, X motor, idler and tension-anchor plates, Y tension anchors, tray, inlet panel) and the 4.75 mm Y plates one washer "
      "leaves no standard screw length that neither bottoms nor falls under 0.5 d: a second ISO 7089 washer under the head sets the depth.",
      "fit both washers; or use one 2 mm thick washer (DIN 7349, not in the catalogue) if you have them"),
