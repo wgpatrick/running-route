@@ -144,7 +144,7 @@ from mechloop.parts.batch12 import (add_bracket_misumi, adxl345_btt, cam_arducam
                                     din_rail_wago, heater_keenovo_200, hiwin_mgn12_rail, hiwin_mgn12h_block, laser_vlm520, lens_cil062,
                                     leadscrew_motor_a4003, leadscrew_nut_pom_a4003, leadscrew_screw_a4003, picam3, pi5_host, probe_eddy_duo,
                                     relay_phoenix_1119897, sfs_v2, spacer_harwin, thermostat_cs7,
-                                    whambam_base_220, whambam_plate_220, pulley_mcmaster_3684n13, idler_misumi_agtfw30)
+                                    whambam_base_220, whambam_plate_220, pulley_mcmaster_3684n13, idler_misumi_agtfw30, bracket_misumi)
 
 # ---- brief ------------------------------------------------------------------------
 PRINT_X, PRINT_Y, PRINT_Z = 186.6, 208.1, 180.0     # v12: Y 6.4 mm less (v11 214.5): the owner's 30T idlers (AGTFW30) are 3.2 mm larger in radius at the front     # v12: X from a 245 mm HIWIN rail (v11 191.6 on a 250 mm rail)
@@ -1757,7 +1757,7 @@ def build() -> Design:
     xf = FX / 2
     YMB = (142.0, 168.0)
     side = lambda x, y, z, sg: Location(Plane(origin=(x, y, z), x_dir=(0, 1, 0), z_dir=(sg, 0, 0)))
-    YA_C, YP_C, T_SCREW_V = 116.5, YMB[0] - BRACKET_SLOT_LEG["offsets"][0], 12.0   # anchor and push brackets' corners (y); screw 12 mm out
+    YA_C, YP_C, T_SCREW_V = YMB[0] - 18.0 - 14.0, YMB[0] - 18.0, 10.0   # v12: MISUMI HBLFSNF5 brackets (30 / 20 legs, holes at 18 / 10): corners and screw
     for sg, tag, n in ((1, "", "right"), (-1, "_l", "left")):
         rail = f"frame_top_{n}"
         # motor plate: 1.88 mm 304, FLAT (v10: a bent fin at its front edge for the jack screw), same outline otherwise, so the
@@ -1776,7 +1776,8 @@ def build() -> Design:
             m -= Pos(xm, y, FZ) * xcyl(clearance_hole("M5") / 2, MT_Y)
         # a 6.4 mm slot under the push bracket's leg for the casting's locating nub (it drops through into the rail's slot
         # opening and keeps the bracket from turning on its one screw)
-        m -= Pos(xm, YP_C + 10.0, FZ) * Box(MT_Y, 20.0, 6.4)
+        for y0t, y1t in ((4.08, 12.92), (23.58, 26.42)):         # v12: pockets for the HBLFSNF5's two tabs (its hole at 18 between them)
+            m -= Pos(xm, YP_C + (y0t + y1t) / 2, FZ) * Box(MT_Y, y1t - y0t, 6.5)
         sheet(d, f"y_motor_mount{tag}", m, SS)
         place(d, f"y_motor{tag}", nema17(48), Location(Plane(origin=(sg * xf, YM_Y, Z_YC), x_dir=(0, 0, -1), z_dir=(sg, 0, 0))))
         place(d, f"y_pulley{tag}", pulley_mcmaster_3684n13(),
@@ -1791,9 +1792,10 @@ def build() -> Design:
         # (a flanged button head through the bracket's slot and the plate into the rail's T-nut); its other leg stands out
         # square to the rail and takes the tension screw's push
         pb = f"y_tension_bracket{tag}"
-        place_casting(d, pb, (sg * (xf + MT_Y), YP_C, FZ), (0, 1, 0), (sg, 0, 0))
-        add_screw(d, f"y_motor_mount{tag}_bolt_0", "M5", 10, at=(sg * (xf + MT_Y + 3.0), YMB[0], FZ), direction=(-sg, 0, 0),
-                  threads_into=rail, tnut=True, clamps=(pb, f"y_motor_mount{tag}"), head="flanged_button")
+        place(d, pb, bracket_misumi("HBLFSNF5"), Location(Plane(origin=(sg * (xf + MT_Y), YP_C, FZ), x_dir=(0, 1, 0),
+                                                                     z_dir=tuple(np.cross((0, 1, 0), (sg, 0, 0))))))
+        add_screw(d, f"y_motor_mount{tag}_bolt_0", "M5", 12, at=(sg * (xf + MT_Y + 4.5), YMB[0], FZ), direction=(-sg, 0, 0),
+                  threads_into=rail, tnut=True, clamps=(pb, f"y_motor_mount{tag}"), washer=True)
         d.join(pb, f"y_motor_mount{tag}", "clamped under the plate's front M5")
         add_screw(d, f"y_motor_mount{tag}_bolt_1", "M5", 8, at=(sg * (xf + MT_Y), YMB[1], FZ), direction=(-sg, 0, 0),
                   threads_into=rail, tnut=True, clamps=(f"y_motor_mount{tag}",), washer=True)
@@ -1801,10 +1803,11 @@ def build() -> Design:
         # in front of the push bracket's. The tension screw (M5 x 30) passes the anchor's slot between two jam nuts with washers;
         # its head bears on the push bracket's standing leg. Turning the nuts moves the screw: no PEM nut, no tapped aluminium
         ab = f"y_tension_anchor{tag}"
-        place_casting(d, ab, (sg * xf, YA_C, FZ), (0, -1, 0), (sg, 0, 0))
-        foot = np.array([sg * xf, YA_C - BRACKET_SLOT_LEG["offsets"][1], FZ])     # 13.1 out: its driver passes the front jam nut
-        add_screw(d, f"{ab}_screw_a", "M5", 8, at=tuple(foot + np.array([sg * 3.0, 0, 0])), direction=(-sg, 0, 0), threads_into=rail,
-                  tnut=True, clamps=(ab,), head="flanged_button")
+        place(d, ab, bracket_misumi("HBLFSNF5"), Location(Plane(origin=(sg * xf, YA_C, FZ), x_dir=(0, -1, 0),
+                                                                     z_dir=tuple(np.cross((0, -1, 0), (sg, 0, 0))))))
+        foot = np.array([sg * xf, YA_C - 18.0, FZ])                # the 30 mm leg's hole, 18 from the corner
+        add_screw(d, f"{ab}_screw_a", "M5", 10, at=tuple(foot + np.array([sg * 4.5, 0, 0])), direction=(-sg, 0, 0), threads_into=rail,
+                  tnut=True, clamps=(ab,))
         d.get(f"{ab}_screw_a").meta["bracket_leg_of"] = ab
         d.join(ab, rail, "m5_tnut")
         ts = f"y_tension_screw{tag}"
@@ -1815,7 +1818,7 @@ def build() -> Design:
         d.get(ts).meta["note"] = "tension screw: positioned by its two jam nuts on the anchor; its head pushes the motor plate's bracket"
         # it is set by turning its nuts, not driven by its head (which bears on the bracket): no driver-access record for it
         d.fasteners[:] = [f_ for f_ in d.fasteners if f_.name != ts]
-        for side_, y0_, dv in (("rear", YA_C, (0, 1, 0)), ("front", YA_C - 3.0, (0, -1, 0))):
+        for side_, y0_, dv in (("rear", YA_C, (0, 1, 0)), ("front", YA_C - 4.5, (0, -1, 0))):
             add_washer(d, f"{ts}_{side_}_washer", "M5", (x_ts, y0_, FZ), dv, screw=ts)
             add_nut(d, f"{ts}_{side_}_nut", "M5", at=(x_ts, y0_ + dv[1] * W5, FZ), direction=dv, screw=ts, locking="jam", standard="din934")
             d.join(f"{ts}_{side_}_nut", ab, "jam nut on the anchor's leg, through its washer")
@@ -2772,7 +2775,7 @@ def add_feedback_hardware(d):
     for i, xh in enumerate((-10.5, 10.5)):
         bolt_nut(d, f"cam_topdown_screw_{i}", "M2", 20, (-60.0 + xh, yb + 20.0, FZ + 30.0), (0, -1, 0), "world", ("cam_topdown_mount", "cam_topdown"),
                  nut_at=(-60.0 + xh, yc - 1.0, FZ + 30.0))
-    place(d, "filament_sensor", sfs_v2(), Location((30.0, yb + 10.0 + 14.0, FZ)))
+    place(d, "filament_sensor", sfs_v2(), Location((30.0, yb + 10.0 + 30.3 / 2, FZ)))
     d.join("filament_sensor", "sfs_mount", "two cable ties round the sensor and the bracket's plate (its own holes face the spool)")
     # overview COB strip in two printed clips on the top front rail's inner face: the clip's plate on the face (screw at the slot), the
     # strip in a channel in front of it below the screw head

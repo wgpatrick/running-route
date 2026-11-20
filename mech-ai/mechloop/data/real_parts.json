@@ -979,6 +979,19 @@
     }
    ],
    "replace_with": "McMaster's STEP and drawing (Instinct REQ-013) in vendor_cad/inbox as GT2-20T-B5-W9.step; fallback MISUMI GPA32GT2090-A-P5 (32T) only if a check fails"
+  },
+  "NUT-PEM-S-M3-0": {
+   "maker": "PennEngineering (PEM)",
+   "mpn": "S-M3-0ZI",
+   "sellers": [
+    {
+     "name": "SendCutSend hardware service (installs PEM S-M3-0 class nuts) / Mouser",
+     "part_number": "S-M3-0ZI",
+     "checked": "2026-11-20",
+     "note": "owner decision 2026-11-20: zinc-plated S-M3-0ZI, same geometry as S-M3-0"
+    }
+   ],
+   "replace_with": "PEM's CAD for S-M3-0ZI (requested via Instinct); geometry is a stand-in until then"
   }
  }
 }

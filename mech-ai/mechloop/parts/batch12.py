@@ -328,17 +328,21 @@ def thermostat_cs7() -> Stock:
                         part_number="CS712025Y", form="component", off_the_shelf=True, custom_pcb=False,
                         builder_work="FASTON 6.3 receptacles; clamp the cap to the plate with the laser-cut clamp plate and thermal paste")
     e["ratings"]["resistance_ohm"] = 0.05
-    shape = Pos(0, 0, -6.0) * Cylinder(8.75, 12.0)
+    # R53, horizontal (Y) terminals, as drawn in vendor_docs/Cantherm_R53_CS712025Y_datasheet_rev2017-04.pdf p.2: cap dia 16.2, 12.3 over
+    # the housing; the loose mounting ring (23.8) is not used (the thermostat is bonded); the terminals' length is not dimensioned
+    shape = Pos(0, 0, -6.15) * Cylinder(8.1, 12.3)
     rp = {"maker": "Cantherm", "mpn": "CS712025Y", "sellers": [{"name": "Digi-Key", "part_number": "Cantherm CS712025Y", "checked": CHECKED,
                                                                "note": "$5.38, 427 in stock (V12_PLAN, distributor API 2026-11-19)"}],
           "datasheet": "vendor_docs/Cantherm_CS7_R53_thermostat_datasheet.pdf",
           "ratings_source": {"trip_c": "Cantherm data sheet (120 degC NC per the order code CS712025Y)", "hold_c": "data sheet hysteresis 20K +/-5K",
                              "amps": "data sheet: 24VDC 10A", "resistance_ohm": "data sheet: contact resistance < 50 mOhm"},
           "replace_with": "the R53 drawing's full outline (terminals, bracket) in the model"}
+    rp.pop("replace_with", None)
     return _tagged(st, "THERMOSTAT-CANTHERM-CS712025Y", "Cantherm CS712025Y bimetal thermostat 120 degC NC (bed cut-off)", rp,
                    shape=shape, mass_kg=0.006, cost_usd=5.38,
-                   model={"kind": "proxy", "source": "dia 17.5 x 12 envelope of the R53 housing (drawing not transcribed: geometry pending)",
-                          "state": "stand-in"})
+                   model={"kind": "generated to standard", "remade_from": "vendor_docs/Cantherm_R53_CS712025Y_datasheet_rev2017-04.pdf p.2 (R53, Y terminals: "
+                          "dia 16.2 x 12.3)", "source": "cap dia 16.2, housing 12.3 (Cantherm's R53 drawing); terminals (not dimensioned) and the "
+                          "loose ring (not used) left out", "no_auto_features": True})
 
 
 # ------------------------------------------------------------------ electronics
@@ -621,11 +625,13 @@ def adxl345_btt() -> Stock:
 def sfs_v2() -> Stock:
     """BIGTREETECH SFS V2.0 smart filament (motion) sensor. Envelope from BTT's STEP (staged, provenance_2026-11-19); not transcribed
     here: 40 x 28 x 26 assumed (geometry pending). Local frame: filament axis along Z, centred."""
-    return _simple("SFS-BTT-V2", "BIGTREETECH SFS V2.0 filament motion sensor", Box(40.0, 28.0, 26.0), 0.025, 12.0,
+    return _simple("SFS-BTT-V2", "BIGTREETECH SFS V2.0 filament motion sensor", Box(53.15, 30.3, 27.3), 0.025, 12.0,
                    {"maker": "BIGTREETECH", "mpn": "SFS V2.0", "sellers": [{"name": "biqu.equipment (BTT store)", "checked": CHECKED}],
                     "sold_by_maker": True, "datasheet": "vendor_docs/BTT_SFS_V2.0_user_manual_20231123.pdf",
                     "replace_with": "the outline from BTT's STEP (vendor_cad/staging/provenance_2026-11-19/BTT_SFS_V2.0_Model.step.gz)"},
-                   {"kind": "proxy", "source": "assumed envelope", "state": "stand-in"})
+                   {"kind": "generated to standard", "remade_from": "BTT's SFS V2.0 STEP (vendor_cad/staging/provenance_2026-11-19/BTT_SFS_V2.0_Model.step.gz): "
+                    "envelope 53.15 x 30.3 x 27.3 measured", "no_auto_features": True,
+                    "source": "the envelope of BTT's own STEP (25 MB, 248 solids: not used for display)"})
 
 
 @part
