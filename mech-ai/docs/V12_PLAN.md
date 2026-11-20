@@ -34,3 +34,6 @@ strain relief. All checked like every other part (clearances, heat, cable routin
   6.0 mm half-die limit: move them out (if v11 has not already).
 - PEM nuts drawn as `S-M3-1` (not in SendCutSend's catalogue): use `S-M3-0` where the sheet thickness allows.
 - Review the hole-to-edge warnings against the reference-part results once the supplier uploads come back.
+
+Camera choice (owner, 2026-11-20): Raspberry Pi Camera Module 3 (SC1223) for both the overview and the top-down camera;
+the HQ Camera (SC1220) is out of stock at Digi-Key with a 26-week factory lead, which alone set the critical path.

@@ -516,19 +516,19 @@
    "qty_basis": "overview camera"
   },
   {
-   "sku": "CAMERA-RPI-HQ",
+   "sku": "CAMERA-RPI-CM3-TOPDOWN",
    "qty": 1,
    "category": "Feedback",
    "kind": "distributor",
    "items": [
     {
      "maker": "Raspberry Pi",
-     "mpn": "SC1220",
+     "mpn": "SC1223",
      "qty_per": 1
     }
    ],
    "source": "docs/V12_PLAN.md feedback hardware + docs/PROVENANCE_AUDIT.md Real-part replacements (v12 rows)",
-   "qty_basis": "top-down camera (phase 2)"
+   "qty_basis": "top-down camera (phase 2): Camera Module 3 instead of the HQ Camera (owner, 2026-11-20; HQ Camera SC1220 out of stock with a 26-week lead)"
   },
   {
    "sku": "CAMERA-NOZZLE-FIT0819",
