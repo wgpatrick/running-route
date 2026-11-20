@@ -3,7 +3,8 @@
 Everything here is simulated. Nothing has been built.
 
 `designs/printer_v11.py` starts from a copy of `designs/printer_v10_1.py` (v10.1 was not edited, apart from one stale code
-comment). It carries out the changes the owner approved on 2026-11-19 (A to F below). The frame's extrusions, the 420 x 420 x
+comment). It carries out the changes the owner approved on 2026-11-19 (A to F below; the blower and probe changes the owner made
+later the same day are in C; G and H are the two new checks). The frame's extrusions, the 420 x 420 x
 480 mm envelope, the Z rails, the electronics and the gantry's Y side are v10.1's except where a change below says otherwise.
 
 **Verify (all 13 verifiers, on the final code, 2026-11-20 07:20): FAILS, 118 errors, 142 warnings** (v10.1: 0 errors, 61
@@ -136,7 +137,9 @@ washer on the plastic, through the duct's printed cradle, washer and nut behind,
 right side, a chamber under the Roto with a riser behind it up to the blower's outlet (deeper above z 406 for the 15 mm
 blower), a cradle behind the blower for its two bolts, and a front-left extension carrying the outlet tube. The outlet is
 **14 x 3 mm** (42 mm2; 10 x 3 for the GDB4010) at 24 mm out on the rear-right diagonal, pointing **14.0 degrees down** at a
-point 0.5 mm under the nozzle tip. Measured on the model: the duct is 5.15 mm from the heater block (owner: 4 to 5) and its lowest face 2.88 mm above the tip (owner: >= 2.5); the jet's axis reaches the nozzle's axis 0.5 mm under the tip (off by 0.00 mm) and passes 0.41 mm under the heater core's edge. E3D's silicone sock is on the BOM.
+point 0.5 mm under the nozzle tip. This pass found the duct drawn in two pieces: the riser's front wall had been cut
+away, leaving it open to the Roto's back through a 0.6 mm slit (the geometry check's `multiple_solids` warning). It now has
+its front wall and a bridge to the chamber under the Roto below the Roto's underside: one closed solid, 22 g. Measured on the model: the duct is 5.15 mm from the heater block (owner: 4 to 5) and its lowest face 2.88 mm above the tip (owner: >= 2.5); the jet's axis reaches the nozzle's axis 0.5 mm under the tip (off by 0.00 mm) and passes 0.41 mm under the heater core's edge. E3D's silicone sock is on the BOM.
 
 **Flow estimate** (not measured): the blower's P-Q curve (read by eye from Delta's chart at 24 V, spec p.5) against a duct
 loss of K = 1.85 at the outlet velocity (contraction 0.40, exit 1.00, tube friction 0.25, two 45-degree turns at chamber
