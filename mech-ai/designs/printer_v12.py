@@ -140,7 +140,7 @@ from mechloop.parts.hardware import WASHER, spacer_round
 from mechloop.parts.probes import add_probe_nuts, probe_omron_e2e
 from mechloop.parts.toolhead import extruder_roto, hotend_revo
 from mechloop.shops import assign
-from mechloop.parts.batch12 import (add_bracket_misumi, adxl345_btt, cam_arducam_b0454, cob_led, contactor_finder_2232, din_endstop_wago,
+from mechloop.parts.batch12 import (tnut_hntp5, add_bracket_misumi, adxl345_btt, cam_arducam_b0454, cob_led, contactor_finder_2232, din_endstop_wago,
                                     din_rail_wago, heater_keenovo_200, hiwin_mgn12_rail, hiwin_mgn12h_block, laser_vlm520, lens_cil062,
                                     leadscrew_motor_a4003, leadscrew_nut_pom_a4003, leadscrew_screw_a4003, picam3, pi5_host, probe_eddy_duo,
                                     relay_phoenix_1119897, sfs_v2, spacer_harwin, thermostat_cs7,
@@ -385,6 +385,9 @@ LAND_X0, LAND_Y1 = X_CAR_MAX + (40.9 - C_NOZ) + 2.0, 50.0     # right Y plate's 
 ES_SP_XS = 5.0  # v12: Harwin R30-6700594 (stock 5; v11 5.5)         # spacers under the X switch (its M3 x 16 then end 1.3 mm above the right Y rail)
 ES_SLOT = 2.0
 ES_OT = 1.5
+ES_OT_YF = 0.5         # v12: Y over-travel at the FRONT (soft-limit) end: Klipper's position_min stops the carriage there, so only
+                       # following error passes it (0.5 allowed); the 1.5 of the lever spread belongs to the rear (homing) end only.
+                       # Keeps the Y carriages and plates 1.4-1.55 mm off the 30T idlers at the front stop
 YIM_BOLTS = (-174.0, -126.0)
 YEM_BOLTS = (89.0, 101.0)
 Y_RAIL_C = -28.0       # v12: the 295 mm rail 0.5 mm further back than v11 (-28.5 on 300), between the 30T idler nuts and the block (v11 -28.5 on 300): >= 5 mm of rail beyond the block at both ends
@@ -840,8 +843,8 @@ def tool_plate_rear_shape():
     for x in (-10, 10):
         for z in (-10, 10):
             tp -= Pos(x, (y0 + y1) / 2, Z_BEAM + z) * ycyl(3.25, T_TPR)
-    for x, z in ROTO_HOLES():               # v12: round 6.9 pockets for the PEM S-M3-0ZI heads (dia 6.35 x 1.5, McMaster 95185A520)
-        tp -= Pos(x, (y0 + y1) / 2, z) * ycyl(6.9 / 2, T_TPR)
+    for x, z in ROTO_HOLES():               # v12: round 8.1 pockets for the PEM S-M3-0ZI heads (dia 6.35 x 1.5, McMaster 95185A520)
+        tp -= Pos(x, (y0 + y1) / 2, z) * ycyl(8.1 / 2, T_TPR)       # 8.1: 0.88 mm round the head (6.9 closed in 31% of builds; 8.1 is the most SendCutSend's 2.38 mm web allows)
     for x, z in BLK_SCREWS:
         tp -= Location(Plane(origin=(x, y0, Z_BEAM + BRK_Z), z_dir=(0, 1, 0))) * extrude(RegularPolygon(5.65 / 2, 6, major_radius=False), T_TPR)
     for x, z in FC_SCREWS:
@@ -1812,8 +1815,11 @@ def build() -> Design:
         place(d, ab, bracket_misumi("HBLFSNF5"), Location(Plane(origin=(sg * xf, YA_C, FZ), x_dir=(0, -1, 0),
                                                                      z_dir=tuple(np.cross((0, -1, 0), (sg, 0, 0))))))
         foot = np.array([sg * xf, YA_C - 18.0, FZ])                # the 30 mm leg's hole, 18 from the corner
+        from mechloop.parts.tslot import slot_frame
+        fr_ = slot_frame(d.get(rail), tuple(foot + np.array([sg * 4.5, 0, 0])), (-sg, 0, 0))
+        flip_ = fr_ is not None and float(np.dot(np.asarray(fr_["along"], float), (0, -1, 0))) < 0   # the set's HNTP5-5, long end off the corner
         add_screw(d, f"{ab}_screw_a", "M5", 10, at=tuple(foot + np.array([sg * 4.5, 0, 0])), direction=(-sg, 0, 0), threads_into=rail,
-                  tnut=True, clamps=(ab,), head="flanged_button")       # low head: clear of the tension screw beside it
+                  tnut=True, clamps=(ab,), head="flanged_button", tnut_stock=tnut_hntp5(flip_))       # low head: clear of the tension screw beside it
         d.get(f"{ab}_screw_a").meta["bracket_leg_of"] = ab
         d.join(ab, rail, "m5_tnut")
         ts = f"y_tension_screw{tag}"
@@ -2057,7 +2063,7 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
     d.bom_extra("THREADLOCKER-MEDIUM (Loctite 243 class: Z motor screws and posts, pulley set screws, jack screws, post jam nuts)", 1, 6.0)
     d.bom_extra("DRIVER-BTT-TMC2209 (Octopus: X, Y, Y1, Z, Z1, Z2, E)", 7, 6.0)
     # ================= joints ====================================================
-    d.joints.append(Joint("y", "slide", "world", "ybody", (0, 1, 0), range=(-TY_F, TY), overtravel=(ES_OT, ES_OT),
+    d.joints.append(Joint("y", "slide", "world", "ybody", (0, 1, 0), range=(-TY_F, TY), overtravel=(ES_OT_YF, ES_OT),
                           max_speed=V_XY, max_accel=A_XY, min_drive_margin=MARGIN,
                           drive={"motor": ["y_motor", "y_motor_l"], "kind": "belt", "pulley": "y_pulley"}))
     d.joints.append(Joint("x", "slide", "ybody", "xbody", (1, 0, 0), range=(-TX, TX), overtravel=(ES_OT_X, ES_OT_X),
@@ -2558,6 +2564,21 @@ def add_requirements(d, zs):
                                f"the bed 55 degC, holder 45 degC, sock 150 degC) and {hot:.0f} degC in a hot case (air 70, holder 55, sock 180, "
                                f"weaker convection) against the probe's {rating:g} degC rating (BTT). An ESTIMATE (assumed air and holder temperatures)")
     d.requirements.append(Requirement("v12: the Eddy stays within its 60 degC rating at its mounting point in the nominal case (thermal estimate; the hot case is reported and is over: open question)", probe_temperature))
+    def bed_current_margins(dd, m):
+        # owner (2026-11-20): bed stays 24 V on the Octopus HB output; size the bed path for the pad's full 200 W at 24 V (8.33 A) and
+        # flag thin margins. Reported (always passes): the electrical verifier judges the firmware-limited RMS current itself.
+        i_full = BED_W / 24.0
+        i_rms = i_full * math.sqrt(0.95)                                   # Klipper max_power 0.95 on heater_bed
+        oct_a = dd.get("control_board").ratings["electrical"]["ports"]["HB"]["max_a"]
+        rows = [("Octopus HB output", oct_a, "BTT manual: beds up to 300 W"), ("Littelfuse 0297010 MINI blade fuse", 10.0, "10 A"),
+                ("Cantherm CS712025Y thermostat", 10.0, "10 A resistive (Cantherm)")]
+        txt = []
+        for nm, a, src in rows:
+            f_full, f_rms = i_full / a, i_rms / a
+            txt.append(f"{nm} {a:g} A ({src}): {f_full:.0%} at 200 W, {f_rms:.0%} at max_power 0.95"
+                       + (" THIN (over the usual 80 % continuous loading)" if f_rms > 0.8 else (" thin at full power" if f_full > 0.8 else "")))
+        return True, f"bed pad {BED_W:g} W at 24 V = {i_full:.2f} A ({i_rms:.2f} A RMS at max_power 0.95): " + "; ".join(txt)
+    d.requirements.append(Requirement("reported: the 24 V bed path at the pad's full 200 W (owner, 2026-11-20): HB output, blade fuse and thermostat margins", bed_current_margins))
     STANDINS = []
     d.requirements.append(Requirement("target: no purchased part is a stand-in where the catalogue has a real one", lambda dd: (
         sorted(px := [c.name for c in dd.components if c.cots and not c.meta.get("catalog")]) == STANDINS,
