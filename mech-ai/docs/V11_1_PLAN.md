@@ -36,3 +36,8 @@ v11 fails limit (b), nozzle-gap change after probing: -0.101 mm vs 0.1 mm (compu
   model's time constant); model limit (b) on that basis, with the remaining carrier warming only. Write the soak into the
   build package's commissioning steps and the Klipper start macro.
 - Also evaluate a stiffer / shorter thermal path in the bed carrier and report its effect on (b) and on mass/cost.
+
+Update (owner, 2026-11-20): no international shipping. LDO (UK-only) is out for Y and Z. X stays genuine HIWIN. For Y and Z:
+evaluate US-stocked options — HIWIN (about $185/set, Digi-Key/MotionUSA), IKO ML12 (about $84/assembly at Misumi USA, to
+confirm), NSK PAU12 ($49 at MROSupply, block or assembly to confirm), Misumi SSEB13 (from $117) — noting rail height (8 vs
+7.5 mm) and block length differences against MGN12H, and the two-Z-rails option. Choose the cheapest that passes the checks.

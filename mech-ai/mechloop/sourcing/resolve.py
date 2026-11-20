@@ -75,8 +75,15 @@ def resolve_sku(sku: str, component=None, line: dict | None = None) -> dict:
         house = next((v for k, v in HOUSES.items() if k in names), None)
         kind = KIND_DISTRIBUTOR if any(d in names for d in ("digi", "mouser", "newark", "farnell", "element14")) else \
             KIND_HOUSE if house else KIND_MAKER if rp.get("sold_by_maker") else KIND_DISTRIBUTOR
-        out.update(kind=kind, items=[_item(rp["maker"], rp["mpn"])], seller=house or (sellers[0].get("name") if sellers else ""),
-                   source="mechloop/data/real_parts.json", placeholder=False)
+        # the order breakdown (colours per wire gauge, housings + crimps per connector line) stays in mpn_map.json when it names
+        # the same maker part: the DG-07 record says what the part is, the map says how many of what to order
+        m = mpn_map().get(b) or {}
+        same = m.get("kind") != KIND_PLACEHOLDER and any(str(i.get("mpn")) == str(rp["mpn"]) for i in m.get("items") or [])
+        items = [_item(i["maker"], i["mpn"], i.get("qty_per", 1), i.get("unit", "each"), i.get("match", "exact"), i.get("note", ""))
+                 for i in m["items"]] if same else [_item(rp["maker"], rp["mpn"])]
+        out.update(kind=kind, items=items, seller=house or (sellers[0].get("name") if sellers else ""),
+                   source="mechloop/data/real_parts.json", placeholder=False, note=m.get("note", "") if same else "",
+                   design_change=bool(m.get("design_change") or rp.get("design_change")), alternates=m.get("alternates", []) if same else [])
         return out
     # 2. mapping file
     m = mpn_map().get(b) or mpn_map().get(sku)

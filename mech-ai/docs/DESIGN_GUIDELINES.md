@@ -16,6 +16,8 @@ until a check exists.
 - **Its geometry comes from the maker**: ideally the maker's own CAD file; otherwise a faithful re-make from the maker's
   dimensioned drawing (every dimension on the drawing in the model, nothing un-dimensioned, the drawing recorded). Its
   ratings (current, torque, temperature, load) come from the maker's datasheet, with source and quote.
+- **Domestic (US) sources only** (owner, 2026-11-20): every purchased part must be orderable from a seller that ships
+  within the US (no international shipping). A part sold only abroad is not a real option for Build 1.
 - Anything else is a **placeholder**. Placeholders are allowed while designing, but must be impossible to miss: named
   `PLACEHOLDER-...` in the BOM, drawn in a distinct warning colour in the viewer and review page, listed at the top of the
   design doc and the build package with the real part (or the search) that will replace each one, and reported by the
