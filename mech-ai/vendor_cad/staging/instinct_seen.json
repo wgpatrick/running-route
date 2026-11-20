@@ -1,7 +1,7 @@
 {
  "folder_id": "1ZtlzfkmX-Yz92soEepnPbyNiPK0uQ43v",
  "folder": "mechloop handoff/results/REQ-001-supplier-cad-batch-3",
- "last_checked": "2026-11-20T22:13:00Z",
+ "last_checked": "2026-11-20T23:15:00Z",
  "result_status": "partial (Misumi delivered and staged in instinct_REQ-001b; PEM S-M3-0 not fulfilled, owner decision pending)",
  "files": {
   "1vwRHKJkIJW3gaI138gcNPCUbF5RF8TUX": {
@@ -1311,9 +1311,65 @@
    "last_checked": "2026-11-20T19:15:00Z",
    "result_status": "partial (Keenovo 10133 confirmed; Hydra SQ1451144 alternative with NPH drawing; Gulfcoast price/stock not captured)",
    "staged_in": "vendor_cad/staging/instinct_REQ-016"
+  },
+  "1oTmOZq2zwA42wp-kq_f6DTyidvPqnw8e": {
+   "files": {
+    "1S4rpFB43LfQ2Odm9mI_khVKfjDDGYD0o": {
+     "title": "RESULT.md",
+     "size": 5055,
+     "note": "staged as instinct_REQ-017/RESULT_instinct_REQ-017_2026-11-20.md, sha256 61f483ca..."
+    },
+    "19resH6P5BZC0G4oRLNNMvJSadFDcHYSj": {
+     "title": "6301K78__cad.step",
+     "size": 1164569,
+     "note": "staged as instinct_REQ-017/McMaster_6301K78_swivel-leveling-mount_M6.step, sha256 3f670eea...; 4 solids valid, 19x41x19, matches drawing"
+    },
+    "11fytjz4doReU6hrNldvJ4s3u34F6jQC5": {
+     "title": "6301K78__datasheet.pdf",
+     "size": 47856,
+     "note": "staged as vendor_docs/McMaster_6301K78_drawing.pdf, sha256 0ac2a2b1...; Instinct GIF-to-PDF conversion of McMaster drawing image"
+    },
+    "1306vwGq_b6djhcEdBHOW4Mu8lSBzFLX-": {
+     "title": "6301K79__cad.step",
+     "size": 1226081,
+     "note": "staged as instinct_REQ-017/McMaster_6301K79_swivel-leveling-mount_M8.step, sha256 4f4faa12...; 4 solids valid, 25x52x25, matches drawing"
+    },
+    "1pmlCZmQ8wcOoAtaC9kbPm_GfJT9lp6W3": {
+     "title": "6301K79__datasheet.pdf",
+     "size": 48401,
+     "note": "staged as vendor_docs/McMaster_6301K79_drawing.pdf, sha256 064d234d...; Instinct GIF-to-PDF conversion"
+    },
+    "18SZUQX5PzHOEW5LbQrKEFIw_LcA4Cv_I": {
+     "title": "NFJN5-30__cad.step",
+     "size": 97399,
+     "note": "staged as instinct_REQ-017/Misumi_NFJN5-30_leveling-mount_M5.step, sha256 301747c2...; 3 solids valid, 30x40.5x30, matches M5 table; simplified (no thread, solid foot)"
+    },
+    "13nQoPkRtmYHmKdMr8gqxZmvn_3uk5Jss": {
+     "title": "NFJN5-30__datasheet.pdf",
+     "size": 300865,
+     "note": "staged as vendor_docs/Misumi_NFJN_leveling-mounts_2019US_p3166-3167.pdf, sha256 4924f3a1...; catalog spread"
+    }
+   },
+   "folder": "mechloop handoff/results/REQ-017-printer-feet",
+   "last_checked": "2026-11-20T23:15:00Z",
+   "result_status": "done (McMaster 6301K78 M6 / 6301K79 M8 rubber-pad swivel feet; Misumi NFJN5-30 M5 all-metal; no M5 rubber-pad foot found)",
+   "staged_in": "vendor_cad/staging/instinct_REQ-017"
+  },
+  "1LUF4BGyRvbsBEL23O5ovpvjlOsvmyYrf": {
+   "files": {
+    "1Xd6q51QZ-nGX2bJTv1bws0IbmIcM52Um": {
+     "title": "RESULT.md",
+     "size": 3676,
+     "note": "staged as instinct_REQ-018/RESULT_instinct_REQ-018_2026-11-20.md, sha256 26941a6b...; interim, text only"
+    }
+   },
+   "folder": "mechloop handoff/results/REQ-018-spool-and-filament-path",
+   "last_checked": "2026-11-20T23:15:00Z",
+   "result_status": "partial (PTFE done; spool drawing, couplers, 608 CAD open)",
+   "staged_in": "vendor_cad/staging/instinct_REQ-018"
   }
  },
- "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..008 (REQ-005..008 added 2026-11-20 batch 5). Batch 6 (2026-11-20 05:20Z): 7 new files + RESULT.md revision in REQ-005; nothing else new (154 files, 2 pages). Batch 7 (2026-11-20 06:20Z): 9 new files + RESULT.md revision in REQ-008; nothing else new (169 items incl. 8 folders, 3 pages). Batch 8 (2026-11-20 06:45Z): 2 new files + RESULT.md revision in REQ-008; new REQ-009 folder (RESULT.md only); new REQ-010 folder empty. Search: created or modified after 05:30Z under results, plus listing of the new folders. Batch 9 (2026-11-20 07:20Z): 5 new files in REQ-010; new NOTE-pcbway-review-status folder (RESULT.md only). Search: created or modified after 06:30Z under results (6 files + 2 folders). Batch 10 (2026-11-20 14:20Z): 3 new files + RESULT.md revision (07:22Z) in REQ-008; new REQ-012 folder (RESULT.md only). Only the five named file ids were fetched; no full search of results this batch. Batch 11 (2026-11-20 15:15Z): new REQ-013 folder (22 files + RESULT.md) and REQ-014 folder (RESULT.md only); only the named file ids plus a listing of these two folders; no full search of results this batch. Batch 12 (2026-11-20 16:15Z): 3 new files in REQ-014 (S-M3-0ZI STEP + drawing, RESULT.md new id) and 4 in REQ-013 (RESULT.md new id + 3 PDFs); only the named file ids fetched; no folder listing or full search. BTT ADXL345 V2.0 STEP fetched from GitHub master: byte-identical to the instinct_REQ-003 zip content, not re-staged. Batch 14 (2026-11-20 18:15Z): new REQ-015 folder (Molex + Phoenix STEP, RESULT.md) and REQ-013 RESULT.md new id (17:58Z); only the named file ids fetched; no folder listing or full search. Batch 15 (2026-11-20 19:15Z): 7 new files + RESULT.md revision (18:53Z) in REQ-015 (JST XH STEP x6 + SXH contact PDF); new REQ-016 folder (RESULT.md + 3 PDFs, NTC table a byte-duplicate); only the named file ids fetched; no folder listing or full search.",
+ "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..008 (REQ-005..008 added 2026-11-20 batch 5). Batch 6 (2026-11-20 05:20Z): 7 new files + RESULT.md revision in REQ-005; nothing else new (154 files, 2 pages). Batch 7 (2026-11-20 06:20Z): 9 new files + RESULT.md revision in REQ-008; nothing else new (169 items incl. 8 folders, 3 pages). Batch 8 (2026-11-20 06:45Z): 2 new files + RESULT.md revision in REQ-008; new REQ-009 folder (RESULT.md only); new REQ-010 folder empty. Search: created or modified after 05:30Z under results, plus listing of the new folders. Batch 9 (2026-11-20 07:20Z): 5 new files in REQ-010; new NOTE-pcbway-review-status folder (RESULT.md only). Search: created or modified after 06:30Z under results (6 files + 2 folders). Batch 10 (2026-11-20 14:20Z): 3 new files + RESULT.md revision (07:22Z) in REQ-008; new REQ-012 folder (RESULT.md only). Only the five named file ids were fetched; no full search of results this batch. Batch 11 (2026-11-20 15:15Z): new REQ-013 folder (22 files + RESULT.md) and REQ-014 folder (RESULT.md only); only the named file ids plus a listing of these two folders; no full search of results this batch. Batch 12 (2026-11-20 16:15Z): 3 new files in REQ-014 (S-M3-0ZI STEP + drawing, RESULT.md new id) and 4 in REQ-013 (RESULT.md new id + 3 PDFs); only the named file ids fetched; no folder listing or full search. BTT ADXL345 V2.0 STEP fetched from GitHub master: byte-identical to the instinct_REQ-003 zip content, not re-staged. Batch 14 (2026-11-20 18:15Z): new REQ-015 folder (Molex + Phoenix STEP, RESULT.md) and REQ-013 RESULT.md new id (17:58Z); only the named file ids fetched; no folder listing or full search. Batch 15 (2026-11-20 19:15Z): 7 new files + RESULT.md revision (18:53Z) in REQ-015 (JST XH STEP x6 + SXH contact PDF); new REQ-016 folder (RESULT.md + 3 PDFs, NTC table a byte-duplicate); only the named file ids fetched; no folder listing or full search. Batch 16 (2026-11-20 23:15Z): new REQ-017 folder (RESULT.md + 3 STEP + 3 PDFs) and new REQ-018 folder (interim RESULT.md only); only the named file ids fetched; no folder listing or full search.",
  "last_checked_all": "2026-11-20T07:20:00Z",
  "_note_not_downloaded": "Files with 'NOT downloaded' notes are recorded as seen but were never fetched; retry them if a larger download route exists."
 }
