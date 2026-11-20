@@ -627,7 +627,9 @@ def measure(image, dxf, dpi: float, *, calibration: Calibration | str | None = "
     matched = dict((i, j) for i, j in reg["pairs"])
     for i, h in enumerate(hole_fits):
         c = tf(h["center"])
-        row = {"measured_center": c.round(4).tolist(), "measured_d": round(h["d"], 4), "roundness_rms": round(h["rms"], 4)}
+        web = float(np.min(np.linalg.norm(reg["outline_mm"] - c, axis=1)) - 0.5 * h["d"])
+        row = {"measured_center": c.round(4).tolist(), "measured_d": round(h["d"], 4), "roundness_rms": round(h["rms"], 4),
+               "edge_web": round(web, 4)}
         if i in matched:
             j = matched[i]
             nc, nd = prof.circles[j]["center"], prof.circles[j]["d"]
@@ -695,7 +697,7 @@ def measure(image, dxf, dpi: float, *, calibration: Calibration | str | None = "
                           "dpi_nominal": dpi},
                      image=img_name, dxf=prof.source)
     if plan:
-        res.plan_ids = map_plan_ids(plan, prof)
+        res.plan_ids = plan_frame(plan, prof)
     if out_dir:
         out_dir = Path(out_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
@@ -705,15 +707,23 @@ def measure(image, dxf, dpi: float, *, calibration: Calibration | str | None = "
     return res
 
 
-def map_plan_ids(plan: dict, prof: Profile) -> dict:
-    """{DXF circle index: plan hole id} by registering the plan's round holes (drawing frame) to the DXF circles."""
-    hs = [h for h in plan.get("holes", []) if h.get("round") and abs((h.get("axis") or [0, 0, 1])[2]) > 0.9]
-    if not hs or not prof.circles:
-        return {}
-    P = np.array([h["center"][:2] for h in hs], float)
-    Pd = np.array([h["d"] for h in hs])
+def plan_frame(plan: dict, prof: Profile) -> dict:
+    """How the inspection plan's drawing frame sits on the DXF: {"ids": {DXF circle index: plan hole id}, "cut_ids": {DXF cut-out
+    index: plan id}, "A", "b"} with plan_xy = A @ dxf_xy + b (A may include a reflection). Found by registering the plan's
+    features (round holes, and cut-out centres as tie-breakers) to the DXF's."""
+    from shapely.geometry import Polygon
+
+    hs = [h for h in plan.get("holes", []) if abs((h.get("axis") or [0, 0, 1])[2]) > 0.9]
+    rh = [h for h in hs if h.get("round")]
+    if not rh or not prof.circles:
+        return {"ids": {}, "cut_ids": {}, "A": None, "b": None}
+    P = np.array([h["center"][:2] for h in rh], float)
+    Pd = np.array([h["d"] for h in rh])
     Q = np.array([c["center"] for c in prof.circles], float)
     Qd = np.array([c["d"] for c in prof.circles])
+    ch = [h for h in hs if not h.get("round")]
+    Pc = np.array([h["center"][:2] for h in ch], float).reshape(-1, 2)
+    Qc = np.array([Polygon(c).centroid.coords[0] for c in prof.cutouts], float).reshape(-1, 2)
     best = None
     for mirror in (False, True):
         Mx = np.diag([-1.0, 1.0]) if mirror else np.eye(2)
@@ -722,17 +732,36 @@ def map_plan_ids(plan: dict, prof: Profile) -> dict:
             th = k * math.pi / 2
             R0 = np.array([[math.cos(th), -math.sin(th)], [math.sin(th), math.cos(th)]])
             Pr = Pm @ R0.T
-            # align centroids of the outline boxes: use the hole sets' bounding boxes as a first guess, refine with Kabsch
             t0 = (Q.min(0) + Q.max(0)) / 2 - (Pr.min(0) + Pr.max(0)) / 2
             pairs = _match_holes(Pm, Pd, Q, Qd, R0, t0, tol=2.0)
+            R1, t1 = R0, t0
             if len(pairs) >= 2:
                 pi, pj = np.array(pairs).T
                 R1, t1 = _kabsch(Pm[pi], Q[pj])
                 pairs = _match_holes(Pm, Pd, Q, Qd, R1, t1, tol=0.5)
-            score = len(pairs)
-            if best is None or score > best[0]:
-                best = (score, pairs)
-    return {int(j): hs[i]["id"] for i, j in best[1]}
+            cut_err = 0.0
+            if len(Pc) and len(Qc):
+                pc = (Pc @ Mx.T) @ R1.T + t1
+                cut_err = float(np.mean(np.min(np.linalg.norm(pc[:, None] - Qc[None], axis=2), axis=1)))
+            key = (len(pairs), -cut_err)
+            if best is None or key > best[0]:
+                best = (key, pairs, Mx, R1, t1)
+    _, pairs, Mx, R1, t1 = best
+    A = Mx @ R1.T
+    b = -A @ t1
+    cut_ids = {}
+    if len(Pc) and len(Qc):
+        qc = Qc @ A.T + b
+        for j, q in enumerate(qc):
+            i = int(np.argmin(np.linalg.norm(Pc - q, axis=1)))
+            if np.linalg.norm(Pc[i] - q) < 1.0:
+                cut_ids[int(j)] = ch[i]["id"]
+    return {"ids": {int(j): rh[i]["id"] for i, j in pairs}, "cut_ids": cut_ids, "A": A.round(9).tolist(), "b": b.round(6).tolist()}
+
+
+def map_plan_ids(plan: dict, prof: Profile) -> dict:
+    """{DXF circle index: plan hole id}."""
+    return plan_frame(plan, prof)["ids"]
 
 
 def deviation_plot(res: ScanResult, prof: Profile, path, outline_mm=None, gain: float = 50.0) -> str:
