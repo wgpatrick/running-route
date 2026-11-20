@@ -2231,9 +2231,18 @@ def add_requirements(d, zs):
         cb, rb = dd.get("x_carriage").shape.bounding_box(), dd.get("x_rail").shape.bounding_box()
         lo, hi = jr(dd, "x").mechanical_range
         on_rail = min(cb.min.X + lo - rb.min.X, rb.max.X - cb.max.X - hi)
-        # the toolhead (everything on the X body below the top of the top side rails) against the rails' inner faces
-        xs = [(c.shape.bounding_box().min.X, c.shape.bounding_box().max.X, c.name) for c in dd.components
-              if c.body == "xbody" and c.shape.bounding_box().min.Z < FZ + 10.0]
+        # the toolhead (everything on the X body below the top of the top side rails) against the rails' inner faces. v11: only the
+        # part of each solid below the rails' top counts (the blower and the duct's cradle reach out over the rails above z 424.5,
+        # where nothing on the frame reaches in; the motion check covers them)
+        def below(c):
+            bb = c.shape.bounding_box()
+            if bb.max.Z <= FZ + 10.0:
+                return bb
+            cut = c.shape & Pos((bb.min.X + bb.max.X) / 2, (bb.min.Y + bb.max.Y) / 2, (bb.min.Z + FZ + 10.0) / 2) * Box(
+                bb.size.X + 2.0, bb.size.Y + 2.0, FZ + 10.0 - bb.min.Z)
+            return cut.bounding_box()
+        xs = [(b.min.X, b.max.X, c.name) for c in dd.components
+              if c.body == "xbody" and c.shape.bounding_box().min.Z < FZ + 10.0 for b in [below(c)]]
         left = min(xs)
         right = max(xs, key=lambda v: v[1])
         cl, cr = left[0] + lo + (FX / 2 - 20.0), (FX / 2 - 20.0) - (right[1] + hi)
