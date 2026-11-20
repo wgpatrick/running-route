@@ -246,6 +246,20 @@ def _completeness(ctx, r, m):
 
 
 # ====================================================================== bed probe: supply, output type, signal level
+def _heater_rms_factor(el, dev) -> float:
+    """sqrt(max_power) of the firmware heater whose feed `dev` is in series with (1.0 when it is not in a heater's feed or uncapped)."""
+    if dev is None:
+        return 1.0
+    for hc in ((el.firmware or {}).get("heaters") or {}).values():
+        p = float(hc.get("max_power", 1.0))
+        if p >= 1.0 or not hc.get("heater"):
+            continue
+        _, series, _ = E.trace_supply(el, f"{hc['heater']}.in")
+        if any(sd is dev for sd, _, _ in series):
+            return p ** 0.5
+    return 1.0
+
+
 def _probe(ctx, r, m):
     """A three-wire proximity probe on a board input: is it fed inside its supply range, and what voltage does its
     output put on the board pin? NPN (open collector) only pulls the pin to 0 V, so the pin sees the board's own
@@ -570,6 +584,7 @@ def _wires(ctx, r, m):
             worst["ampacity_frac"] = (round(i / amp, 3), w.name)
         if drop > worst["drop_v"][0] and not kinds & {"mains_in", "mains_out"}:
             worst["drop_v"] = (round(drop, 3), w.name)
+        i_wire = i
         if i > amp:
             r.add("error", "wire_overloaded",
                   f"Wire '{w.name}' (AWG {w.awg} {w.insulation}, {n_b} loaded conductors bundled) carries {i:.1f} A; its ampacity "
@@ -582,6 +597,9 @@ def _wires(ctx, r, m):
                 continue
             cn = override or port.connector
             lim = min([x for x in (port.max_current_a, E.CONNECTOR_MAX_A.get(cn)) if x is not None] or [1e9])
+            # a contact in series with a PWM heater whose firmware caps its duty (max_power p) carries i * sqrt(p) RMS: the heating
+            # that the continuous rating is about (v12)
+            i = i_wire * _heater_rms_factor(el, dev)
             if i > lim * olim + 1e-9 and port.kind not in ("mains_in", "mains_out", "pe"):
                 what = "output" if port.kind.endswith("_out") else "connector"
                 r.add("error", "output_overloaded" if what == "output" else "connector_overloaded",
@@ -597,6 +615,7 @@ def _wires(ctx, r, m):
         _, series, _ = E.trace_supply(el, f"{h}.in")
         for dev, _, _ in series:
             lim = dev.ratings.get("amps") or dev.ratings.get("contact_a")
+            i = c["heaters"][h]["current_a"] * _heater_rms_factor(el, dev)
             if lim and i > lim * olim:
                 r.add("error", "series_device_overloaded", f"{dev.name} ({dev.kind}) carries the {i:.1f} A of heater '{h}'; rated "
                       f"{lim:g} A, continuous limit {lim * olim:.1f} A.", device=dev.name, part=dev.component, current_a=i, rating_a=lim)

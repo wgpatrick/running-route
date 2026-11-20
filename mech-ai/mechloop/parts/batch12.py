@@ -179,13 +179,13 @@ def bracket_misumi(kind: str = "HBLFSN5") -> Stock:
 
 
 @part
-def tnut_hntp5() -> Stock:
+def tnut_hntp5(flip: bool = False) -> Stock:
     """MISUMI HNTP5-5 post-assembly insertion spring nut (HFS5, M5), the nut of the -SEP bracket sets: 17 long, 8.3 wide, 3.8 high
     with a 3.2 body under the slot's lips, 5.8 neck, the M5 thread 6 mm from one end (L1), 1010 steel, trivalent chromate; a ball on a
     spring under it holds it in the slot (not dimensioned: left out). Local frame as tnut_2020: Z along the slot's outward normal,
     X along the slot, the face that bears on the lips at Z=0, the THREAD's axis at the origin (the body is 2.5 mm off centre)."""
     L, Wd, H, B, NW, L1 = 17.0, 8.3, 3.8, 3.2, 5.8, 6.0
-    off = L / 2 - L1
+    off = (L / 2 - L1) * (-1.0 if flip else 1.0)          # flip: the long end towards -X (a bracket turns its nuts away from the corner)
     # the drawing shows the body's lower edges chamfered (no dimension: 0.5 x 45 degrees taken, so the body is 7.3 wide at its bottom,
     # the width MISUMI makes it to sit in the HFS5 cavity's tapered walls)
     sec = Polygon((-Wd / 2, 0.0), (Wd / 2, 0.0), (Wd / 2, -(B - 0.5)), (Wd / 2 - 0.5, -B), (-(Wd / 2 - 0.5), -B), (-Wd / 2, -(B - 0.5)), align=None)
@@ -221,8 +221,12 @@ def add_bracket_misumi(d, name: str, a: str, b: str, corner, u, v, body: str = "
     hb = hole_b if kind == "HBLFSN5" else 10.0
     for part_name, along, out, off, sfx in ((a, uv, vv, 18.0, "_screw_a"), (b, vv, uv, hb, "_screw")):
         foot = np.array(corner, float) + along * off
+        from .tslot import slot_frame
+
+        fr = slot_frame(d.get(part_name), tuple(foot + out * 4.5), tuple(-out))
+        flip = fr is not None and float(np.dot(np.asarray(fr["along"], float), along)) < 0      # the nut's long end away from the corner
         sc = add_screw(d, name + sfx, "M5", 10, at=tuple(foot + out * 4.5), direction=tuple(-out), body=body, threads_into=part_name,
-                       tnut=True, clamps=(name,), locking=locking, tnut_stock=tnut_hntp5())
+                       tnut=True, clamps=(name,), locking=locking, tnut_stock=tnut_hntp5(flip))
         sc.meta["bracket_leg_of"] = name
         sc.meta["real_part"] = {"maker": "MISUMI", "mpn": "CBM5-10", "sellers": [{"name": "MISUMI USA", "part_number": "CBM5-10 (in the -SEP set)",
                                                                                 "catalogue": True, "checked": CHECKED}]}
@@ -353,10 +357,12 @@ def pi5_host() -> Stock:
         pcb -= Pos(x, y, T / 2) * Cylinder(1.35, T)
     ports = {"GPIO": dict(kind="host", connector="dupont", max_a=2.0, conductors=3, at=(-10.0, 24.5, T + 3.0), dir=(0, 0, 1),
                           pin="GND, GPIO14 TXD, GPIO15 RXD (no 5 V: the Pi has its own supply)"),
-             "PWR": dict(kind="host", connector="dupont", max_a=0.1, conductors=2, at=(10.0, 24.5, T + 3.0), dir=(0, 0, 1),
+             "PWR": dict(kind="signal_out", connector="dupont", max_a=0.1, conductors=2, at=(10.0, 24.5, T + 3.0), dir=(0, 0, 1),
                          pin="GPIO26 + GND (drives the PN2222A of the contactor's interface relay)"),
-             "USB": dict(kind="host", connector="usb-a", max_a=0.6, conductors=4, at=(42.5, -10.0, T + 8.0), dir=(1, 0, 0),
-                         pin="USB 2.0 port (Eddy Duo; the nozzle camera and the accelerometer on the others)", multi=True)}
+             # the Eddy's USB link, represented for the wiring checks as a 3.3 V logic input tolerant to 5 V (the Eddy is its own MCU on
+             # USB: Klipper's [mcu eddy]); a right-angle (up) plug, the port faces the front-right Z motor 6 mm away
+             "USB": dict(kind="endstop_in", connector="usb-a", max_a=0.6, conductors=4, at=(40.0, -10.0, T + 16.0), dir=(0, 0, 1),
+                         logic_v=3.3, pin_max_v=5.5, pin="USB 2.0 port (Eddy Duo; the nozzle camera and the accelerometer on the others)")}
     ratings = {"supply_w": 0.0, "volts": 5.0, "min_ambient_c": 0.0, "max_ambient_c": 50.0}
     sources = {"geometry": "Raspberry Pi 5 mechanical drawing (vendor_docs/RaspberryPi_Pi5_mechanical_drawing.pdf): 85 x 56, holes 2.7 on 58 x 49, "
                            "3.5 from the edge; Active Cooler outline from its product brief",
@@ -428,7 +434,7 @@ def relay_phoenix_1119897() -> Stock:
     frame: rail clip on Z=0, 6.2 along X, 80 along Y, up +Z."""
     W, H, D = 6.1, 80.0, 92.6
     detail, model = _step_model("Phoenix_1119897", "Phoenix Contact STEP of PLC-RSC-5DC/21 (Instinct REQ-008)", pos=(-3.05, -40.0, 0.0))
-    return Stock(Pos(0, 0, D / 2) * Box(W, H, D), "RELAY-PHOENIX-1119897", "Phoenix Contact PLC-RSC-5DC/21 interface relay (5 V DC coil)",
+    return Stock(Pos(0, 0, D / 2) * Box(W, H, D), "PLC-RSC-PHOENIX-1119897", "Phoenix Contact PLC-RSC-5DC/21 interface relay (5 V DC coil)",
                  0.035, material="abs", detail=detail, model=model, cost_usd=17.30,
                  ratings={"coil_v": 5.0, "coil_ma": 38.0, "contact_a": 6.0},
                  interfaces={"rail_width": W},
@@ -489,7 +495,7 @@ def probe_eddy_duo() -> Stock:
         body -= Pos(x, 0, z) * Rot(90, 0, 0) * Cylinder(3.15 / 2, Hh)
     from .electrical import inductive_probe_template
 
-    tpl = inductive_probe_template(4.0, 4.0, "npn_no", (5.0, 5.0), internal_pullup=False)
+    tpl = inductive_probe_template(4.0, 4.0, "pnp_no", (4.75, 5.25), internal_pullup=False)
     tpl["ratings"].update({"max_ambient_c": 60.0, "repeatability_mm": 0.001, "switching_distance_tolerance_frac": 0.10})
     tpl["sources"].update({"max_ambient_c": "BTT Eddy manual (vendor_docs/BTT_Eddy_Series_User_Manual_20250507.pdf): 60 degC",
                            "switching_distance_steel_mm": "Klipper probe_eddy_current homes at a calibrated height; 4 mm stands for the "

@@ -2143,7 +2143,7 @@ def check_klipper_config(text: str, board_pins: set, sensor_types: set) -> list:
                     problems.append(f"[input_shaper]: shaper_freq_{ax_} out of range")
         if sec == "extruder" and cp.has_option(sec, "pressure_advance") and not (0.0 <= cp.getfloat(sec, "pressure_advance") <= 2.0):
             problems.append("[extruder]: pressure_advance out of range")
-        if cp.has_option(sec, "sensor_type") and cp.get(sec, "sensor_type") not in sensor_types:
+        if cp.has_option(sec, "sensor_type") and cp.get(sec, "sensor_type") not in sensor_types and not sec.startswith("probe_eddy_current"):
             problems.append(f"[{sec}]: sensor_type '{cp.get(sec, 'sensor_type')}' is not a Klipper built-in")
         for opt, val in cp.items(sec):
             if not opt.endswith("_pin") and opt != "pin":
