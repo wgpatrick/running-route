@@ -1,31 +1,64 @@
 {
  "schema": "mechloop.sourcing.config/1",
  "about": "Settings of the live sourcing module (mechloop/sourcing). Every figure that is a planning assumption rather than a distributor or shop figure says so in its note.",
- "distributors": ["Digi-Key", "Mouser", "Newark", "Farnell"],
+ "distributors": [
+  "Digi-Key",
+  "Mouser",
+  "Newark"
+ ],
  "cache_ttl_hours": 24,
- "pacing_s": {"Digi-Key": 0.6, "Mouser": 2.2, "Newark": 0.6, "Farnell": 0.6,
-              "note": "minimum gap between calls: Mouser limits calls per minute (about 30), element14 about 2 per second, Digi-Key 120 per minute"},
+ "pacing_s": {
+  "Digi-Key": 0.6,
+  "Mouser": 2.2,
+  "Newark": 0.6,
+  "Farnell": 0.6,
+  "note": "minimum gap between calls: Mouser limits calls per minute (about 30), element14 about 2 per second, Digi-Key 120 per minute"
+ },
  "retries": 4,
  "backoff_s": 3.0,
  "currency": "USD",
  "prefer_home_currency": true,
  "prefer_home_currency_note": "the best offer is taken from distributors pricing in USD (Digi-Key, Mouser, Newark) when one holds the quantity; Farnell (GBP, ships from the UK) only when none does",
- "fx_to_usd": {"USD": 1.0, "GBP": 1.27, "EUR": 1.08,
-               "note": "planning conversion for comparing Farnell (GBP) offers with USD ones; not a quoted rate. Best offers are chosen in USD after this conversion and a converted price is marked as such."},
+ "fx_to_usd": {
+  "USD": 1.0,
+  "GBP": 1.27,
+  "EUR": 1.08,
+  "note": "planning conversion for comparing Farnell (GBP) offers with USD ones; not a quoted rate. Best offers are chosen in USD after this conversion and a converted price is marked as such."
+ },
  "in_stock_ship_business_days": 3,
  "in_stock_ship_note": "distributor shipping estimate for an in-stock item, order to arrival (planning default; Digi-Key / Mouser / Newark ship in-stock US orders the same or next day, ground delivery 1-3 days)",
  "low_stock_factor": 5,
  "long_lead_business_days": 10,
  "long_lead_note": "long_lead when the line's lead time exceeds 14 calendar days (10 business days)",
- "single_source_ignores": ["Farnell"],
+ "single_source_ignores": [
+  "Farnell"
+ ],
  "single_source_note": "Newark and Farnell are one company (element14); a part only at Newark + Farnell counts as one source",
  "no_distributor_houses": {
-  "McMaster-Carr": {"business_days": 2, "basis": "planning default, not API-verified: McMaster ships stocked items the same day; US delivery typically next day to 2 days (no API access: client-certificate API requested, docs/ROADMAP.md)"},
-  "MISUMI": {"business_days": 5, "basis": "planning default, not API-verified: MISUMI USA states ship days per configured item on its pages (misumi-ec.com refuses bots); 2020 profile cut to length and T-nuts are typically 1-4 ship days + ground"},
-  "maker-direct": {"business_days": 10, "basis": "planning default, not API-verified: maker web shops (BIGTREETECH, StepperOnline, E3D, Coolerguys, Pololu) ship from their own stock; international parcel 5-10 business days"},
-  "unknown": {"business_days": 10, "basis": "planning default for a line with no seller identified (placeholder)"}
+  "McMaster-Carr": {
+   "business_days": 2,
+   "basis": "planning default, not API-verified: McMaster ships stocked items the same day; US delivery typically next day to 2 days (no API access: client-certificate API requested, docs/ROADMAP.md)"
+  },
+  "MISUMI": {
+   "business_days": 5,
+   "basis": "planning default, not API-verified: MISUMI USA states ship days per configured item on its pages (misumi-ec.com refuses bots); 2020 profile cut to length and T-nuts are typically 1-4 ship days + ground"
+  },
+  "maker-direct": {
+   "business_days": 5,
+   "basis": "planning default, not API-verified: maker shops must ship from a US warehouse or through a US reseller (domestic only); 5 business days assumed until each line records its US seller"
+  },
+  "unknown": {
+   "business_days": 10,
+   "basis": "planning default for a line with no seller identified (placeholder)"
+  }
  },
  "build_quantity": 1,
  "order_date_default": "next business day after the run",
- "assembly_business_days": {"subassembly": 0, "final": 0, "note": "bench time per sub-assembly and for the final assembly; 0 = not modelled (the schedule gives the earliest start, not the finish)"}
+ "assembly_business_days": {
+  "subassembly": 0,
+  "final": 0,
+  "note": "bench time per sub-assembly and for the final assembly; 0 = not modelled (the schedule gives the earliest start, not the finish)"
+ },
+ "domestic_only": true,
+ "domestic_only_note": "owner, 2026-11-20: no international shipping. Farnell (UK) removed; maker-direct shops count only through a seller that ships within the US (e.g. a US warehouse or US reseller), recorded per line."
 }
