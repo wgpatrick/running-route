@@ -6,6 +6,9 @@ until a check exists.
 
 ## Key rule: off-the-shelf parts are real parts (owner, 2026-11-20)
 
+- **Only parts we fabricate are generated.** Geometry made by our code is allowed only for parts we will make or have made
+  to our design (laser-cut and bent sheet, machined parts, printed parts). Every other part in the model is a purchased part
+  and follows the rules below; no purchased part is drawn from a generic or "standard-typical" generator.
 - **Every off-the-shelf part is a real, orderable product**: a named maker, the maker's part number, and a seller where it can
   be bought (distributor or maker) at the stock size used. No generic, "typical", "class value" or "any to the standard"
   purchased parts in a design that is presented as buildable. Commodity hardware (screws, nuts, washers, wire, ferrules) is
