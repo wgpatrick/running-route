@@ -62,7 +62,7 @@ def test_connector_remakes_match_their_drawings():
     for n, length in ((2, 7.3), (3, 9.8), (4, 12.3)):           # JST XH p.4 table, dimension B
         st = b.jst_xhp_housing(n)
         assert abs(st.shape.bounding_box().size.X - length) < 1e-6
-        assert vc.model_state(st.model) == "faithful re-make"
+        assert vc.model_state(st.model) in ("faithful re-make", "supplier CAD")     # JST STEPs in the inbox (REQ-015)
     hb = b.jst_xh_header(4).shape.bounding_box()                   # p.5: B 12.4, 7 above the board, posts 3.4 below
     assert abs(hb.size.X - 12.4) < 1e-6 and abs(hb.max.Z - 7.0) < 1e-6 and abs(hb.min.Z + 3.4) < 1e-6
     mb = b.molex_minifit_39_01_2020().shape.bounding_box()         # SD-5557-003 / Molex STEP: 5.40 wide, 19.6 long
