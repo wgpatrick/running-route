@@ -28,3 +28,11 @@ of the maker's drawing (docs/DESIGN_GUIDELINES.md, key rule), and X travel won b
 - The checks must model LDO's clearance (play) in the bed-support, tolerance and motion checks (Y rail parallelism, Z tilt
   allowance, bed level over travel) and pass; if Y fails, fall back to HIWIN on Y. LDO CAD and full drawing: REQ-004/005.
 - Estimated rails total about $365 (vs $1,104 all-HIWIN).
+
+## Bed thermal limit (b) (owner, 2026-11-20)
+
+v11 fails limit (b), nozzle-gap change after probing: -0.101 mm vs 0.1 mm (computed as if probed cold).
+- Commissioning procedure: probe the bed after a heat soak (bed at print temperature, stated soak time from the thermal
+  model's time constant); model limit (b) on that basis, with the remaining carrier warming only. Write the soak into the
+  build package's commissioning steps and the Klipper start macro.
+- Also evaluate a stiffer / shorter thermal path in the bed carrier and report its effect on (b) and on mass/cost.
