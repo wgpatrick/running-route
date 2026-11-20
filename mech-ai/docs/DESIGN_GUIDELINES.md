@@ -16,8 +16,11 @@ until a check exists.
 - **Its geometry comes from the maker**: ideally the maker's own CAD file; otherwise a faithful re-make from the maker's
   dimensioned drawing (every dimension on the drawing in the model, nothing un-dimensioned, the drawing recorded). Its
   ratings (current, torque, temperature, load) come from the maker's datasheet, with source and quote.
-- Anything else is a stand-in. A stand-in is an **error** in a design presented as buildable: it is allowed only in an
-  exploratory design and must be listed, with the real part that will replace it.
+- Anything else is a **placeholder**. Placeholders are allowed while designing, but must be impossible to miss: named
+  `PLACEHOLDER-...` in the BOM, drawn in a distinct warning colour in the viewer and review page, listed at the top of the
+  design doc and the build package with the real part (or the search) that will replace each one, and reported by the
+  check as an **error** ("must be fixed before buying"), never as a pass or a quiet info line. A design with any
+  placeholder is not buildable.
 - Check: to be implemented (`practice` DG-07, `purchased_part_not_real` / `purchased_geometry_not_sourced` /
   `purchased_rating_not_sourced`, errors). Audit of the current catalogue: docs/PROVENANCE_AUDIT.md.
 
