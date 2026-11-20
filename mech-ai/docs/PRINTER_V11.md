@@ -20,8 +20,8 @@ comment). It carries out the changes the owner approved on 2026-11-19 (A to F be
 | Print sheet | **220 x 220 mm textured PEI on 0.4 mm spring steel** with a magnetic base (a third-party stock size; Creality sells 235 x 235 only). The print area is 84.9 % of it. The magnetic base must be bought rated 120 degC continuous. |
 | Bed plate | **MIC-6 232 x 232 x 6.35 mm** (v10.1: 241 x 241 x 12.7). 6.35 mm is the thinnest stock MIC-6. |
 | Bed limits | (a) out of flat as installed: **{{FLAT_A}}** of 0.3 mm; (b) change after probing: **{{FLAT_B}}** of 0.1 mm; (c) 1 kg at the worst corner: **{{FLAT_C}}** of 0.2 mm. **(b) binds**; (a) passes only on the owner's 0.13 mm figure for the plate as bought (see "The flatness figure"). |
-| Part cooling | One GDSTIME GDB4010 24 V radial blower behind the Roto, outlet down into a short printed duct; a 10 x 3 mm outlet 24 mm from the nozzle on the rear-right diagonal aims the jet 14 degrees down at 0.5 mm under the tip. **Estimated** delivered flow **{{FLOW}}**. |
-| Probe holder | One-bend L of 2.286 mm 5052 under the Roto's two screws; the OMRON clamped by its two nuts in a 12.5 mm hole, 15 mm behind its face. Metal in the 40 mm zone round the head: none (checked). |
+| Part cooling | One **Delta BFB0524HH** 5015 24 V radial blower (two ball bearings; owner's change from the GDSTIME GDB4010) behind the Roto, outlet down into a short printed duct; a 14 x 3 mm outlet 24 mm from the nozzle on the rear-right diagonal aims the jet 14 degrees down at 0.5 mm under the tip. **Estimated** delivered flow **{{FLOW}}** (GDB4010 on its 10 x 3 outlet: 0.62 CFM). |
+| Probe | **OMRON E2B-M12KS04-WP-C1 2M** (M12 shielded, 4 mm, NPN NO; owner's change from the E2E-X5ME1), OMRON's STEP; on a one-bend L of 2.286 mm 5052 under the Roto's two screws, clamped by its two nuts 15 mm behind its face. Metal in its zone (2.4 mm proud, 18 mm round the head): none (checked). Probed {{PROBED_SHORT}}. Temperature (estimate) {{PTEMP_SHORT}} against its 70 degC rating. |
 | Bent parts | **2** (the X belt bracket, kept bent by the owner, and the probe L). v10.1: 8. |
 | Z screws | Used at **330 mm as sold** (328 above the face). Front two inboard of the top side rails at x +/-144.5, rear one outboard of the back wall at y 202.5; motors on posts of two stacked stock spacers. Envelope unchanged. |
 | POM nuts | The anti-backlash nuts the motors ship with, drawn as a **labelled stand-in** (no dimensions published), flange up under open-slotted nut plates, barrel hanging below, captive under open-slotted keepers. |
@@ -102,31 +102,70 @@ guarantees it either). Question 1.
 
 ### C. Toolhead
 
-**Blower and duct.** The GDB4010 (40 x 40 x 10, 24 V, 9500 rpm, 0.08 A, 0.52 inH2O; bearing NOT stated) stands behind the Roto,
-its face in the XZ plane, outlet down, 1.5 mm behind the Roto screws' heads; its lower edge is at z 406.5 so that its nuts pass
-above the top back rail at the rear end of the Y travel. Two M2 x 20 through its right-hand lugs into the duct's printed cradle
-(the left lugs are next to the Roto's screw and the probe's zone). The duct: v10.1's flange on the tool plates' tab (two M3
-through-bolts into captured nyloc nuts), an arm under the Roto's right side, a chamber under the Roto with a riser behind it
-up to the blower's outlet, and a front-left extension carrying the outlet tube. Old duct (from the earlier study): aimed
-horizontally at the heater, two 90-degree turns, a blind wall, 72 mm2 outlet. New: one chamber, the outlet tube points down
-at 14 degrees from 24 mm out on the rear-right diagonal at 0.5 mm under the tip, 10 x 3 mm (30 mm2). Measured on the model:
-{{COOL_GEOM}}. The jet's axis passes 0.41 mm under the heater core's edge; E3D's silicone sock is on the BOM.
+Two owner changes after the first v11 pass (2026-11-19, late): the part-cooling blower is now a **Delta BFB0524HH** (in
+place of the GDSTIME GDB4010) and the bed probe an **OMRON E2B-M12KS04-WP-C1 2M** (in place of the E2E-X5ME1). Both are in
+the design, the BOM and the checks below.
 
-**Flow estimate** (not measured): the blower's P-Q curve (read by eye from the maker's chart, 9500 rpm) against a duct loss of
-K = 1.85 at the outlet velocity (contraction 0.40, exit 1.00, tube friction 0.25, two 45-degree turns at chamber velocity 0.20:
-handbook figures): **{{FLOW}}** at {{VEL}} through the outlet, {{PA}} Pa. With K 1.4 to 2.5 it is 0.55 to 0.71 CFM. For
-comparison on the same method, the old axial fan (CG3010U24, 5.45 CFM free, 78 Pa shut-off) on its duct (72 mm2, K about 4.4)
-gave about 0.8 CFM at about 5 m/s, aimed at the heater: the new jet has about half as much air again at twice the speed and is
-aimed at the part. An airflow model is not part of the checks.
+**Blower.** Delta BFB0524HH, 5015 class: 24 V (14 to 27.6), 0.11 A (0.16 max), 6500 rpm, 4.59 CFM free air, 22 mmH2O
+(216 Pa) shut-off, 45 dB(A), **two ball bearings**, 28 g, Digi-Key 603-1116-ND, $17.00 (maker's specification
+`vendor_docs/delta_BFB0524HH_spec.pdf`, record `delta_bfb0524hh.json`). The maker's STEP (`vendor_cad/inbox/BFB0524HH.step`)
+is its display model and passes the proxy check: supplier CAD. It stands behind the Roto with its face in the XZ plane,
+1.5 mm behind the Roto screws' heads and washers, x from 23 to 75.6 mm right of the nozzle (clear of the probe bracket and the
+Roto's right-hand screw head), its outlet edge at z 424.5: above the Y switch board (z 422.6) and the top back rail at the
+rear end of the Y travel. Its outlet (20 x 12.2 mm, Delta drawing p.6) is at the -x end of its lower edge and blows down into
+the duct's riser. Two M3 x 25 through its two 4.5 mm holes (upper left, lower right, positions measured on Delta's STEP),
+washer on the plastic, through the duct's printed cradle, washer and nut behind, thread-locked, 0.3 N.m.
 
-**Probe holder.** 2.286 mm 5052 (SendCutSend .090, inside radius 0.81; the .125 gauge's 3.18 mm radius put the bend where the
-probe's upper nut sits). The upper leg lies on the Roto's rear face under its two M3 x 50; each now has two large washers
-(Accu HPLW-M3-A2, 0.9 mm), which brings its tip inside the front tool plate (with one normal washer it stood 0.35 mm into the
-guide block). Below z 396 the leg is 22 mm wide, beside the blower; above, 29.5 mm, and it reaches up to z 455 where the
-toolhead loom is clamped above the blower. The OMRON stays where it was (34.5 mm behind the nozzle), so X travel and the
-probed area are unchanged: the holder was redrawn instead. OMRON's surrounding-metal figures (`omron_e2e.json`: face 15 mm
-proud of metal, 40 mm round the head clear) are enforced by the subsystems verifier (`probe_metal_in_clear_zone`, an error)
-and by a requirement: nothing metal is in the zone.
+**Duct.** v10.1's flange on the tool plates' tab (two M3 through-bolts into captured nyloc nuts), an arm under the Roto's
+right side, a chamber under the Roto with a riser behind it up to the blower's outlet (deeper above z 406 for the 15 mm
+blower), a cradle behind the blower for its two bolts, and a front-left extension carrying the outlet tube. The outlet is
+**14 x 3 mm** (42 mm2; 10 x 3 for the GDB4010) at 24 mm out on the rear-right diagonal, pointing **14.0 degrees down** at a
+point 0.5 mm under the nozzle tip. Measured on the model: {{COOL_GEOM}}. E3D's silicone sock is on the BOM.
+
+**Flow estimate** (not measured): the blower's P-Q curve (read by eye from Delta's chart at 24 V, spec p.5) against a duct
+loss of K = 1.85 at the outlet velocity (contraction 0.40, exit 1.00, tube friction 0.25, two 45-degree turns at chamber
+velocity 0.20: handbook figures): **{{FLOW}}** at {{VEL}} through the outlet, {{PA}} Pa. With K 1.4 to 2.5 it is 1.03 to
+1.35 CFM. On the same method the GDB4010 on its 10 x 3 mm outlet gave 0.62 CFM at 9.8 m/s (107 Pa), and v10.1's axial
+fan about 0.8 CFM at about 5 m/s aimed at the heater: the Delta gives about twice the GDB4010's air at a third more speed,
+aimed at the bead. An airflow model is not part of the checks.
+
+**What the swap did to X travel and the toolhead's mass.** X travel is unchanged at 191.6 mm: the rail limits it, not the
+toolhead. Below the top side rails' top (z 414) the toolhead's right-most part is still the duct, now **19.7 mm** from the
+right top rail at the end of the mechanical travel (GDB4010 layout: 15.2 mm); the left side is unchanged (Roto, 21.0 mm). The
+Delta is wider (52.6 mm) and stands higher: at the right end of the travel it and the duct's cradle reach 8.9 mm out over the
+right top rail, 10.5 mm above its top, where nothing on the frame reaches in (the motion check sweeps it: no collision). The
+X-travel requirement now measures only what is below the rails' top (it took each part's whole bounding box before, which
+the taller duct made meaningless). Moving mass on the X block: **{{XMASS}}** (GDB4010: 0.379 kg) against the 0.40 kg target:
+it passes with 2 g to spare.
+
+**Probe.** OMRON E2B-M12KS04-WP-C1 2M: M12 x 1, **shielded**, double sensing distance **4 mm** (setting 0 to 3.2 mm), NPN
+open collector, normally open, 10 to 30 V, ambient -25 to 70 degC, pre-wired 2 m, Digi-Key, $35.22 (OMRON E2B data sheet,
+`vendor_docs/omron_E2B_datasheet_en.pdf`; record in `omron_e2e.json`). Its model is now **OMRON's own STEP**
+(`vendor_cad/inbox/E2B-M12KS04-WP-C1.step`, collected 2026-11-19 through a browser session after OMRON's server refused
+scripted downloads, adopted 2026-11-20; the file's two nuts are left out because the design draws the nuts as parts). It
+confirmed the data sheet's 47 mm body but showed that the catalogue record split it wrongly (39.1 mm at 12 mm diameter + 7.9
+protector); it is now 30 mm of thread + 7.9 mm rear body at 10.2 + 9.1 mm protector at 8.2 (D116-E1-02 p.14), plus a 4 mm
+cable stub 10 mm long in the STEP. It sits where the E2E sat, 34.5 mm behind the nozzle on its X, face 2.0 mm above the tip,
+clamped 15 mm behind its face by its two nuts in the bracket's 12.5 mm hole.
+
+- **Surrounding metal** (E2B p.20, double distance, shielded, M12): face 2.4 mm proud of metal, an 18 mm diameter round the
+  head clear, facing metal 12 mm away. Metal on the toolhead in those zones: **none** (requirement and the subsystems
+  verifier). The 15 mm clamp height was kept from the unshielded E2E (it needed 15 mm and a 40 mm zone); the shielded sensor
+  could be clamped much lower (a stiffer, shorter holder): question 7.
+- **Trigger height:** {{TRIG}} (E2E: 2.00 to 4.00 mm). Z over-travel (1.65 mm) still ends short of the face (2.0 mm).
+- **Probe coverage:** {{PROBED}}. The front 34.5 mm strip is the probe's offset behind the nozzle; the mesh extrapolates
+  there (`bed_mesh_does_not_cover_print_area`, a warning, as in v10.1).
+- **Temperature** (owner: against the 70 degC rating): {{PTEMP}}. A lumped steady estimate: radiation from the 80 degC bed to
+  the face 2.1 mm above it, convection from the warm air over the bed to the 15 mm of barrel below the bracket, radiation
+  from the silicone sock seen at 34.5 mm, conduction up the shell to the bracket. The air and bracket temperatures are
+  assumed, not computed; there is no enclosure. 55 degC is where OMRON's +/-10 % drift figure stops (+/-15 % to 70).
+
+**Probe holder.** 2.286 mm 5052 (SendCutSend .090, inside radius 0.81). The upper leg lies on the Roto's rear face under its
+two M3 x 50, each with two large washers (Accu HPLW-M3-A2, 0.9 mm), which brings the screw's tip inside the front tool plate.
+Below z 396 the leg is 22 mm wide, beside the blower; it is 25.5 mm wide at the bend (SendCutSend: over half of the bend line
+clear of the probe's hole) and reaches up to z 443, where the toolhead loom is clamped before it climbs past the blower's
+left side, over its top and down the back of its cradle. The PEM nuts the Roto's screws thread into are now **S-M3-0**
+(SendCutSend stocks no S-M3-1; mounting hole 4.27 mm).
 
 ### D. Belt brackets
 
@@ -159,8 +198,9 @@ keep 1.88 mm as the owner asked; the belt plane does move, by 0.36 mm, to fix th
 | Large washers | Accu HPLW-M3-A2 (9 x 3.2 x 0.9) and HPLW-M4-A2 (12 x 4.3 x 1.1), A2 stainless, re-made from Accu's drawings: outside diameter, bore and thickness with tolerances are all a flat washer has, so they are faithful re-makes. Every design's large M3 / M4 washer is now these (0.1 mm thicker than the ISO mid value) |
 | M4 x 6 | McMaster 90128A208 zinc-plated, still a generated placeholder (its STEP is over 5 MB) |
 
-New fasteners: M5 x 16 for the 9.525 mm nut plates, M5 x 65 post bolts, M2 x 20 with M2 nuts and washers for the blower (M2
-added to the catalogue's tables), M2.5 x 20 nut pins, M5 x 30 tension screws with jam nuts.
+New fasteners: M5 x 16 for the 9.525 mm nut plates, M5 x 65 post bolts, M3 x 25 with washers and nuts for the blower (M2 was
+added to the catalogue's tables for the GDB4010 and is no longer used in v11), M2.5 x 20 nut pins, M5 x 30 tension screws with
+jam nuts. The Roto's PEM nuts are S-M3-0 (SendCutSend's stock).
 
 ### F. Supplier CAD folded in
 
@@ -170,7 +210,9 @@ added to the catalogue's tables), M2.5 x 20 nut pins, M5 x 30 tension screws wit
 | KIPP K0143.04 thumb nut STEP | `THUMBNUT-DIN466-M4.step`; the part is now steel (KIPP), 6.2 g, thread through the full 9.5 mm |
 | Century Spring DJ-8X20YCS STEP | `SPRING-DIE-DJ-8X20YCS.step` with a sidecar placing it and showing it at the installed height; OD 7.36 (catalogue 7.6, corrected) |
 | Schurter DD11 STEP | `INLET-C14-SW-FUSE-T8A.step` with a sidecar; 33.5 mm deep with its terminals (data sheet 30): the inlet's printed hood is 2 mm deeper |
-| OMRON E2E-X5ME1 STEP | `PROBE-OMRON-E2E-X5ME1.step`: the barrel solid (the file's two nuts are left out; the design draws the nuts as parts) |
+| OMRON E2E-X5ME1 STEP | `PROBE-OMRON-E2E-X5ME1.step`: the barrel solid (the file's two nuts are left out; the design draws the nuts as parts). No longer used by v11 (the probe is now the E2B) |
+| Delta BFB0524HH STEP | `BFB0524HH.step` (the maker's download): the blower's display model, supplier CAD |
+| OMRON E2B-M12KS04-WP-C1 STEP | `E2B-M12KS04-WP-C1.step` with a sidecar (body solid; the nuts are left out): the probe's display model, supplier CAD (adopted 2026-11-20; it corrected the catalogue's split of the 47 mm body) |
 | ServoCity GT2 pulley | not used: it is for 6 mm belt; the 9 and 12 mm pulleys keep their stand-ins |
 
 Each is recorded in `vendor_cad/SOURCES.md`.
@@ -195,7 +237,8 @@ From the two full verify reports and the two scorecards, each on its design's fi
    screws (not stock). The front screws stand 1.5 mm from the top side rails' inner faces at their free tops.
 3. **Limit (b)** is bounded by the whole heat growth, as if the bed were probed cold: conservative. Probing after a heat soak
    leaves only the carrier's slower warming.
-4. **The probe stays where it was**; the blower was fitted beside it and the holder redrawn (owner: keep X travel).
+4. **The probe stays where it was**; the blower was fitted beside it and the holder redrawn (owner: keep X travel). The E2B
+   took the E2E's place and clamp height unchanged.
 5. **Y belt plane 0.36 mm nearer the motors** (thinner idler plates) to clear the shaft-load warning; the motor plates keep
    1.88 mm.
 6. **The sheet requirement** is 84 % (v10: 85 %): 220 x 220 is the stock size the reach nearly fills, at 84.9 %.
@@ -206,9 +249,13 @@ From the two full verify reports and the two scorecards, each on its design's fi
 
 ## Checker and catalogue changes
 
-1. `mechloop/parts/batch10.py`: `blower_gdb4010` (maker's sheet, P-Q curve), `blower_flow_estimate`, `leadscrew_nut_pom_ab4`
+1. `mechloop/parts/batch10.py`: `blower_bfb0524hh` (Delta's specification and STEP, P-Q curve in Pa) with
+   `blower_flow_estimate_pa`, and `blower_gdb4010` (kept in the catalogue, no longer used by v11), `blower_flow_estimate`, `leadscrew_nut_pom_ab4`
    (stand-in), `print_sheet_pei220` (secondary), `bhcs_flanged` (ISO 7380-2, secondary). Vendor files `gdstime_gdb4010.json`,
-   `generic_pei220.json`, `iso7380_2.json`, `accu_iso7093.json`; the POM nut's estimate in `stepperonline_17e19_ab4.json`.
+   `generic_pei220.json`, `iso7380_2.json`, `accu_iso7093.json`, `delta_bfb0524hh.json`; the POM nut's estimate in
+   `stepperonline_17e19_ab4.json`. `mechloop/parts/probes.py`: the E2B-M12KS04-WP-C1 (record in `omron_e2e.json`, shielded
+   surrounding-metal figures, no internal pull-up), a narrower rear body and the cable stub's protrusion for OMRON's STEP.
+   `hex_nut(..., "pem0")`: PEM S-M3-0.
 2. `add_screw(head="flanged_button")`; `add_corner_bracket(slot_leg={"head": ...})`; BHCS screws counted as hardware by the
    completeness and interference checks, the viewer, the build package and the wanted list.
 3. M2 in the screw, nut, washer, clearance, torque and thread tables.
@@ -219,18 +266,22 @@ From the two full verify reports and the two scorecards, each on its design's fi
    shown at its installed height); a sidecar may carry its own note. Probe, spring and inlet catalogue parts carry the
    protrusions / volume tolerances their supplier files need. The extrusion's display model is Misumi's section when its
    STEP is in the inbox.
-8. Build package: v11 stage notes and open items. Viewer: the POM nut kept visible with the drive parts.
+8. Build package: v11 stage notes and open items (the blower and probe items now name the Delta and the E2B). Viewer: the POM
+   nut kept visible with the drive parts.
+10. The supplier sheet-metal rules (`mechloop/data/supplier_rules/`, `mechloop/verifiers/dfm_supplier.py`) now run inside the
+   manufacture verifier; their findings for v11 are below.
 9. Tests: `tests/test_v11_support.py` ({{NTESTS}} tests).
 
 ## Unverified, assumed or not done
 
 - The POM nut's dimensions (photographs); the magnetic base's thickness (1.5 mm) and rating (to be bought at 120 degC); the
-  220 sheet (resellers' snippets); the blower's bearing and its P-Q points (read by eye); the flanged button head's
+  220 sheet (resellers' snippets); the blower's P-Q points (read by eye from Delta's chart); the flanged button head's
   dimensions (distributors' snippets); the HIWIN stock-length list (not obtained: 250 mm is the brief's figure).
 - The flow estimate: handbook K values, no airflow model; the jet's spread and its effect on the sock and the nozzle.
 - MIC-6 flatness: the owner's 0.13 mm against the maker's 0.381 mm (whole plate).
 - The 330 mm screws' run-out and whip at their free tops, 1.5 mm from the top side rails.
-- The probe bracket's stiffness.
+- The probe bracket's stiffness; the E2B's switching distance on the 0.4 mm spring-steel sheet (OMRON's figure is for a
+  1 mm iron target); the probe's temperature (a lumped estimate with assumed air and bracket temperatures).
 - v10.1's open items that still stand (T-slot tolerances, the T-nut re-make, McMaster files not in hand).
 {{NOTRUN}}
 
