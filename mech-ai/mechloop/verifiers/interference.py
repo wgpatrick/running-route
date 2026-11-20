@@ -18,15 +18,21 @@ def verify_interference(design: Design) -> VerifierResult:
         contacts: dict[str, set[str]] = {c.name: set() for c in comps}
         n_pairs = n_exact = 0
         worst = 0.0
-        for a, b in combinations(comps, 2):
-            n_pairs += 1
+        from .. import incremental as _inc      # pair results reused under an incremental run (no-op otherwise)
+
+        n_pairs = len(comps) * (len(comps) - 1) // 2
+        boxes = [_box(c.shape) for c in comps]
+        reach = max([TOUCH_TOL] + [float(g) for g in design.min_clearances.values() if g is not None])
+        for i, j in _near_pairs(boxes, reach):   # every pair whose boxes come within `reach`, in combinations() order
+            a, b = comps[i], comps[j]
             key = frozenset((a.name, b.name))
             need_gap = design.min_clearances.get(key)
             margin = max(TOUCH_TOL, need_gap or 0.0)
-            if not bboxes_overlap(a.shape, b.shape, margin):
+            if not _boxes_overlap(boxes[i], boxes[j], margin):
                 continue
             n_exact += 1
-            vol, where = overlap_volume(a.shape, b.shape)
+            vol, where = _inc.memo("pairs", lambda: ["overlap", _inc.shape_key(a.shape), _inc.shape_key(b.shape)],
+                                   lambda: overlap_volume(a.shape, b.shape))
             allowed = design.allowed_overlaps.get(key)
             if vol > VOL_TOL:
                 contacts[a.name].add(b.name)
@@ -38,10 +44,8 @@ def verify_interference(design: Design) -> VerifierResult:
                           parts=[a.name, b.name], volume_mm3=round(vol, 2), at=where,
                           hint="Move/resize one part, add a pocket or hole, or declare allow_overlap for a real thread/press fit.")
                 continue
-            try:
-                gap = a.shape.distance_to(b.shape)
-            except Exception:
-                gap = None
+            gap = _inc.memo("pairs", lambda: ["gap", _inc.shape_key(a.shape), _inc.shape_key(b.shape)],
+                            lambda: _distance(a.shape, b.shape))
             if gap is not None and gap <= TOUCH_TOL:
                 contacts[a.name].add(b.name)
                 contacts[b.name].add(a.name)
@@ -90,6 +94,42 @@ def verify_interference(design: Design) -> VerifierResult:
                      "worst_overlap_mm3": round(worst, 2),
                      "contact_pairs": sum(len(v) for v in contacts.values()) // 2}
     return r
+
+
+def _box(shape) -> tuple:
+    bb = shape.bounding_box()
+    return (bb.min.X, bb.min.Y, bb.min.Z), (bb.max.X, bb.max.Y, bb.max.Z)
+
+
+def _boxes_overlap(A, B, margin: float) -> bool:
+    """geom.bboxes_overlap on precomputed boxes (the same test, without recomputing each box for every pair)."""
+    (alo, ahi), (blo, bhi) = A, B
+    return not any(ahi[k] + margin < blo[k] or bhi[k] + margin < alo[k] for k in range(3))
+
+
+def _near_pairs(boxes: list, reach: float) -> list:
+    """Spatial index: index pairs (i < j) whose boxes come within `reach` of each other, found by a sweep over the
+    boxes sorted along X, then checked on Y and Z; returned in itertools.combinations order. Every pair that
+    bboxes_overlap(.., margin <= reach) accepts is in it."""
+    order = sorted(range(len(boxes)), key=lambda k: boxes[k][0][0])
+    out = []
+    for n, i in enumerate(order):
+        (ilo, ihi) = boxes[i]
+        for j in order[n + 1:]:
+            jlo, jhi = boxes[j]
+            if jlo[0] > ihi[0] + reach:
+                break
+            if _boxes_overlap(boxes[i], boxes[j], reach):
+                out.append((i, j) if i < j else (j, i))
+    out.sort()
+    return out
+
+
+def _distance(a, b):
+    try:
+        return a.distance_to(b)
+    except Exception:
+        return None
 
 
 def _not_free_standing(design: Design, body: str, groups: list, r, what: str) -> list:

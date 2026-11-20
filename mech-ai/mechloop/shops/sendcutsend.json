@@ -134,6 +134,11 @@
    "url": "https://sendcutsend.com/guidelines/cnc-machining/",
    "title": "CNC machining guidelines (billet)",
    "accessed": "2026-11-15"
+  },
+  "benchmark-2026-11-19": {
+   "title": "Owner's agent web benchmark of reference parts RP01-RP05, quote pages read 2026-11-19 (reference_parts/batch01/results/web_benchmark_2026-11-19.csv)",
+   "file": "reference_parts/batch01/results/web_benchmark_2026-11-19.csv",
+   "accessed": "2026-11-19"
   }
  },
  "materials": {
@@ -7099,5 +7104,33 @@
   "hole-to-hole position tolerance separate from the general cut tolerance",
   "kerf width per material (only the 0.006-0.012 in common-line gap)",
   "thickness tolerance of the stock"
- ]
+ ],
+ "lead_time": {
+  "source": "benchmark-2026-11-19",
+  "basis": "delivered (quote page 'Arrives as soon as'), counted in business days from the quote date Thu 2026-11-19; shipping included in the date, price excludes shipping",
+  "by_form": {
+   "flat": {
+    "business_days": 2,
+    "verbatim": "Arrives as soon as: Mon, Nov 23",
+    "part": "RP04 (6061-T6 3.2 mm, laser cut, qty 1 and 10)"
+   },
+   "bent": {
+    "business_days": 3,
+    "verbatim": "Arrives as soon as: Tue, Nov 24",
+    "part": "RP03 (5052-H32 2.3 mm, 2 bends, qty 1 and 10)"
+   }
+  },
+  "planning_note": "'as soon as' is the earliest date the site offered; the coordinator's planning range for US sheet shops is 3-5 business days",
+  "price_reference": {
+   "RP04": {
+    "qty1_usd": 15.01,
+    "qty10_usd_total": 90.5
+   },
+   "RP03": {
+    "qty1_usd": 21.64,
+    "qty10_usd_total": 68.5
+   },
+   "note": "observed quote totals, shipping excluded; the design's own sheet estimates (cut length only) are much lower than these"
+  }
+ }
 }

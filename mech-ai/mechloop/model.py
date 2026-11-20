@@ -359,6 +359,9 @@ class Design:
     # bracket screws are BOM lines only. "drop_in": each is a drawn catalogue part (parts.tslot.tnut_2020, post-assembly
     # insertion), bracket screws are real screws, and the T-slot screw checks of the interference verifier run.
     tnut_style: Optional[str] = None
+    # A design frozen for release (to be built / ordered): `mechloop verify --tier quick|affected` runs a full verify on it
+    # anyway, with no reused results (mechloop.incremental).
+    release: bool = False
 
     # -- helpers ---------------------------------------------------------
     def waive(self, rule: str, parts=None, reason: str = "") -> None:

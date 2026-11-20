@@ -1,0 +1,160 @@
+{
+ "schema": "mechloop.sourcing.fab_services/1",
+ "about": "Lead times and price references of fabrication services that have no shop profile in mechloop/shops/ (SendCutSend and Xometry carry theirs in their profile's lead_time). Every figure is from the owner's agent's benchmark quote pages of 2026-11-19 (reference_parts/batch01/results/web_benchmark_2026-11-19.csv); business days counted from the quote date Thu 2026-11-19. 'delivered' = the figure includes shipping; otherwise shipping_business_days is added (its basis is stated). Owner decision 2026-11-20: no owner 3D printer for Build 1; printed parts (PETG) are ordered from a print service, default Craftcloud.",
+ "source": "reference_parts/batch01/results/web_benchmark_2026-11-19.csv",
+ "accessed": "2026-11-19",
+ "defaults": {
+  "sheet": "sendcutsend",
+  "machined": "xometry",
+  "printed": "craftcloud",
+  "printed_basis": "owner decision 2026-11-20 (coordinator): Craftcloud for price; Hubs has a $90 minimum order",
+  "machined_fallback": "pcbway",
+  "machined_fallback_basis": "Xometry's lead was not observed (benchmark skipped it); PCBWay's quote page gave build + DHL days"
+ },
+ "services": {
+  "oshcut": {
+   "processes": [
+    "sheet"
+   ],
+   "lead": {
+    "flat": {
+     "business_days": 3,
+     "ships": true,
+     "verbatim": "Standard: ships in 3 business days (Nov 24)",
+     "part": "RP04"
+    }
+   },
+   "shipping_business_days": 2,
+   "shipping_basis": "not stated on the quote page: planning default for US ground",
+   "price_reference": {
+    "RP04": {
+     "qty1_usd": 18.94,
+     "qty10_usd_total": 95.4
+    }
+   },
+   "note": "lead tiers: Priority Rush ships next day $228.94, Expedited $183.94, Standby $7.71 by Dec 8 (qty 1)"
+  },
+  "fabworks": {
+   "processes": [
+    "sheet"
+   ],
+   "lead": {},
+   "note": "lead time requires a zip code; not shown",
+   "price_reference": {
+    "RP04": {
+     "qty1_usd": 19.58,
+     "qty10_usd_total": 90.4
+    },
+    "RP03": {
+     "qty1_usd": 21.42,
+     "qty10_usd_total": 66.2
+    }
+   }
+  },
+  "jlccnc": {
+   "processes": [
+    "sheet",
+    "machined"
+   ],
+   "lead": {
+    "flat": {
+     "business_days": 2,
+     "verbatim": "Standard 2 days",
+     "part": "RP04 (build only)"
+    },
+    "bent": {
+     "business_days": 2,
+     "verbatim": "Standard 2 days",
+     "part": "RP03 (build only)"
+    },
+    "machined": {
+     "business_days": 5,
+     "verbatim": "Standard 5 days (Expedited 3d $47.97 / Economic 10d $25.17)",
+     "part": "RP01 (build only)"
+    }
+   },
+   "shipping_business_days": 7,
+   "shipping_basis": "international shipping from China, not stated on the quote page: planning default",
+   "price_reference": {
+    "RP04": {
+     "qty1_usd": 3.75,
+     "note": "5052 only, estimate pending review"
+    },
+    "RP01": {
+     "qty1_usd": 27.98
+    }
+   }
+  },
+  "pcbway": {
+   "processes": [
+    "machined"
+   ],
+   "lead": {
+    "machined": {
+     "business_days": 5,
+     "verbatim": "3-5 Business Days build (+DHL 2-4 business days shipping $26.55)",
+     "part": "RP01 (upper end of 3-5 build)"
+    }
+   },
+   "shipping_business_days": 4,
+   "shipping_basis": "DHL 2-4 business days (quote page), upper end",
+   "price_reference": {
+    "RP01": {
+     "qty1_usd": 39.84,
+     "shipping_usd": 26.55
+    }
+   }
+  },
+  "craftcloud": {
+   "processes": [
+    "printed"
+   ],
+   "lead": {
+    "printed": {
+     "business_days": 11,
+     "delivered": true,
+     "verbatim": "8-11 business days (arrives Dec 1-4)",
+     "part": "RP05 PETG qty 1, best-price offer $24.02 incl. shipping"
+    }
+   },
+   "lead_options": {
+    "fast": {
+     "business_days": 4,
+     "delivered": true,
+     "verbatim": "Site RECOMMENDATION offer $44.32 (Detroit 3D Manufacturing, 2-4 business days, arrives Nov 23-25)",
+     "order_usd": 44.32
+    }
+   },
+   "order_floor_usd": 24.02,
+   "order_floor_basis": "RP05 qty 1 total incl. shipping (best price); qty 10 total $25.88: the order total is dominated by a per-order amount",
+   "price_reference": {
+    "RP05": {
+     "qty1_usd": 24.02,
+     "qty10_usd_total": 25.88,
+     "fast_qty1_usd": 44.32
+    }
+   }
+  },
+  "hubs": {
+   "processes": [
+    "printed"
+   ],
+   "lead": {
+    "printed": {
+     "business_days": 8,
+     "delivered": true,
+     "verbatim": "Economy 3 business days + 3-5 business days shipping (free); estimated delivery 1 December 2026",
+     "part": "RP05 PETG"
+    }
+   },
+   "order_floor_usd": 90.0,
+   "order_floor_basis": "minimum order value: US$90.00 landed for qty 1 and qty 10 (part $8.64 + surcharge $81.36)",
+   "price_reference": {
+    "RP05": {
+     "qty1_usd": 90.0,
+     "qty10_usd_total": 90.0
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,592 @@
+{
+ "Products": [
+  {
+   "Description": {
+    "ProductDescription": "SWITCH SNAP ACTION SPDT 0.1A 30V",
+    "DetailedDescription": "Switch SPDT Through Hole"
+   },
+   "Manufacturer": {
+    "Id": 39,
+    "Name": "Aratas (Formerly Omron Components)"
+   },
+   "ManufacturerProductNumber": "D2F-01L",
+   "UnitPrice": 1.44,
+   "ProductUrl": "https://www.digikey.com/en/products/detail/aratas-formerly-omron-components/D2F-01L/83264",
+   "DatasheetUrl": "//mm.digikey.com/Volume0/opasdata/d220001/medias/docus/875/D2F_0318_DS.pdf",
+   "PhotoUrl": "https://mm.digikey.com/Volume0/opasdata/d220001/medias/images/600/D2F-01L.JPG",
+   "ProductVariations": [
+    {
+     "DigiKeyProductNumber": "SW154-ND",
+     "PackageType": {
+      "Id": 3,
+      "Name": "Bulk"
+     },
+     "StandardPricing": [
+      {
+       "BreakQuantity": 1,
+       "UnitPrice": 1.44,
+       "TotalPrice": 1.44
+      },
+      {
+       "BreakQuantity": 10,
+       "UnitPrice": 1.188,
+       "TotalPrice": 11.88
+      },
+      {
+       "BreakQuantity": 25,
+       "UnitPrice": 1.102,
+       "TotalPrice": 27.55
+      },
+      {
+       "BreakQuantity": 50,
+       "UnitPrice": 1.041,
+       "TotalPrice": 52.05
+      },
+      {
+       "BreakQuantity": 100,
+       "UnitPrice": 0.9835,
+       "TotalPrice": 98.35
+      },
+      {
+       "BreakQuantity": 250,
+       "UnitPrice": 0.93124,
+       "TotalPrice": 232.81
+      }
+     ],
+     "MyPricing": [],
+     "MarketPlace": false,
+     "TariffActive": false,
+     "Supplier": {
+      "Id": 39,
+      "Name": "Aratas (Formerly Omron Components)"
+     },
+     "QuantityAvailableforPackageType": 79863,
+     "MinimumOrderQuantity": 1,
+     "DigiReelFee": 0.0
+    }
+   ],
+   "QuantityAvailable": 79863,
+   "ProductStatus": {
+    "Id": 0,
+    "Status": "Active"
+   },
+   "BackOrderNotAllowed": false,
+   "NormallyStocking": true,
+   "Discontinued": false,
+   "EndOfLife": false,
+   "Ncnr": false,
+   "PrimaryVideoUrl": "",
+   "Parameters": [
+    {
+     "ParameterId": 130,
+     "ParameterText": "Circuit",
+     "ParameterType": "String",
+     "ValueId": "405967",
+     "ValueText": "SPDT"
+    },
+    {
+     "ParameterId": 235,
+     "ParameterText": "Switch Function",
+     "ParameterType": "String",
+     "ValueId": "382041",
+     "ValueText": "On-Mom"
+    }
+   ],
+   "BaseProductNumber": {
+    "Id": 353414,
+    "Name": "D2F"
+   },
+   "Category": {
+    "CategoryId": 15,
+    "ParentId": 0,
+    "Name": "Switches",
+    "ProductCount": 0,
+    "NewProductCount": 0,
+    "ImageUrl": "https://mm.digikey.com/Volume0/opasdata/d220001/derivates/3/300/274/017/MFG_TL3215_tmb.jpg",
+    "SeoDescription": "Switches are devices used to interrupt the flow of electrical current in one or more circuits, under the direct physical control of some outside mechanism such as a user's finger or thumb, a magnet, or a moving machine component. Organization of sub-groups within the category occurs along lines of the physical style or form of switches' actuators, or a particular application or purpose for which they are designed.",
+    "ChildCategories": [
+     {
+      "CategoryId": 198,
+      "ParentId": 15,
+      "Name": "Limit Switches",
+      "ProductCount": 0,
+      "NewProductCount": 0,
+      "ImageUrl": "https://mm.digikey.com/Volume0/opasdata/d220001/derivates/3/300/252/578/Z-15GQ21_tmb.jpg",
+      "SeoDescription": "Snap action limit switches are mechanical devices that make or break an electrical connection by the closing or opening electrical contacts or solid state circuitry when actuated by human or mechanical interaction most commonly at a travel limit position. Limit switches are selected by actuator types such as an adjustable plunger or rod, toggle, arm lever, roller, cone, leaf, rotary actuator, spring, whisker or cable.",
+      "ChildCategories": []
+     }
+    ]
+   },
+   "ManufacturerLeadWeeks": "26",
+   "ManufacturerPublicQuantity": 18000,
+   "Series": {
+    "Id": 16055,
+    "Name": "D2F"
+   },
+   "Classifications": {
+    "ReachStatus": "REACH Unaffected",
+    "RohsStatus": "ROHS3 Compliant",
+    "MoistureSensitivityLevel": "Not Applicable",
+    "ExportControlClassNumber": "EAR99",
+    "HtsusCode": "8536.50.7000"
+   },
+   "OtherNames": [
+    "D2F-01L(UL/CSA)",
+    "SW154",
+    "Q2505549",
+    "D2F01L",
+    "D2F01LULCSA"
+   ]
+  },
+  {
+   "Description": {
+    "ProductDescription": "SWITCH SNAP ACTION SPDT 0.1A 30V",
+    "DetailedDescription": "Switch SPDT Through Hole"
+   },
+   "Manufacturer": {
+    "Id": 39,
+    "Name": "Aratas (Formerly Omron Components)"
+   },
+   "ManufacturerProductNumber": "D2F-01L3",
+   "UnitPrice": 2.35,
+   "ProductUrl": "https://www.digikey.com/en/products/detail/aratas-formerly-omron-components/D2F-01L3/368448",
+   "DatasheetUrl": "//mm.digikey.com/Volume0/opasdata/d220001/medias/docus/875/D2F_0318_DS.pdf",
+   "PhotoUrl": "https://mm.digikey.com/Volume0/opasdata/d220001/medias/images/1176/D2F-01L3.jpg",
+   "ProductVariations": [
+    {
+     "DigiKeyProductNumber": "SW859-ND",
+     "PackageType": {
+      "Id": 3,
+      "Name": "Bulk"
+     },
+     "StandardPricing": [
+      {
+       "BreakQuantity": 1,
+       "UnitPrice": 2.35,
+       "TotalPrice": 2.35
+      },
+      {
+       "BreakQuantity": 10,
+       "UnitPrice": 1.942,
+       "TotalPrice": 19.42
+      },
+      {
+       "BreakQuantity": 25,
+       "UnitPrice": 1.8008,
+       "TotalPrice": 45.02
+      },
+      {
+       "BreakQuantity": 50,
+       "UnitPrice": 1.7014,
+       "TotalPrice": 85.07
+      },
+      {
+       "BreakQuantity": 100,
+       "UnitPrice": 1.6074,
+       "TotalPrice": 160.74
+      },
+      {
+       "BreakQuantity": 250,
+       "UnitPrice": 1.491,
+       "TotalPrice": 372.75
+      },
+      {
+       "BreakQuantity": 750,
+       "UnitPrice": 1.36243,
+       "TotalPrice": 1021.8225
+      },
+      {
+       "BreakQuantity": 1500,
+       "UnitPrice": 1.287,
+       "TotalPrice": 1930.5
+      },
+      {
+       "BreakQuantity": 5250,
+       "UnitPrice": 1.19767,
+       "TotalPrice": 6287.7675
+      }
+     ],
+     "MyPricing": [],
+     "MarketPlace": false,
+     "TariffActive": false,
+     "Supplier": {
+      "Id": 39,
+      "Name": "Aratas (Formerly Omron Components)"
+     },
+     "QuantityAvailableforPackageType": 17560,
+     "MinimumOrderQuantity": 1,
+     "DigiReelFee": 0.0
+    }
+   ],
+   "QuantityAvailable": 17560,
+   "ProductStatus": {
+    "Id": 0,
+    "Status": "Active"
+   },
+   "BackOrderNotAllowed": false,
+   "NormallyStocking": true,
+   "Discontinued": false,
+   "EndOfLife": false,
+   "Ncnr": false,
+   "PrimaryVideoUrl": "",
+   "Parameters": [
+    {
+     "ParameterId": 130,
+     "ParameterText": "Circuit",
+     "ParameterType": "String",
+     "ValueId": "405967",
+     "ValueText": "SPDT"
+    },
+    {
+     "ParameterId": 235,
+     "ParameterText": "Switch Function",
+     "ParameterType": "String",
+     "ValueId": "382041",
+     "ValueText": "On-Mom"
+    }
+   ],
+   "BaseProductNumber": {
+    "Id": 353414,
+    "Name": "D2F"
+   },
+   "Category": {
+    "CategoryId": 15,
+    "ParentId": 0,
+    "Name": "Switches",
+    "ProductCount": 0,
+    "NewProductCount": 0,
+    "ImageUrl": "https://mm.digikey.com/Volume0/opasdata/d220001/derivates/3/300/274/017/MFG_TL3215_tmb.jpg",
+    "SeoDescription": "Switches are devices used to interrupt the flow of electrical current in one or more circuits, under the direct physical control of some outside mechanism such as a user's finger or thumb, a magnet, or a moving machine component. Organization of sub-groups within the category occurs along lines of the physical style or form of switches' actuators, or a particular application or purpose for which they are designed.",
+    "ChildCategories": [
+     {
+      "CategoryId": 198,
+      "ParentId": 15,
+      "Name": "Limit Switches",
+      "ProductCount": 0,
+      "NewProductCount": 0,
+      "ImageUrl": "https://mm.digikey.com/Volume0/opasdata/d220001/derivates/3/300/252/578/Z-15GQ21_tmb.jpg",
+      "SeoDescription": "Snap action limit switches are mechanical devices that make or break an electrical connection by the closing or opening electrical contacts or solid state circuitry when actuated by human or mechanical interaction most commonly at a travel limit position. Limit switches are selected by actuator types such as an adjustable plunger or rod, toggle, arm lever, roller, cone, leaf, rotary actuator, spring, whisker or cable.",
+      "ChildCategories": []
+     }
+    ]
+   },
+   "ManufacturerLeadWeeks": "26",
+   "ManufacturerPublicQuantity": 0,
+   "Series": {
+    "Id": 16055,
+    "Name": "D2F"
+   },
+   "Classifications": {
+    "ReachStatus": "REACH Unaffected",
+    "RohsStatus": "ROHS3 Compliant",
+    "MoistureSensitivityLevel": "Not Applicable",
+    "ExportControlClassNumber": "EAR99",
+    "HtsusCode": "8536.50.7000"
+   },
+   "OtherNames": [
+    "D2F01L3SIMULATEDROLLERLEV",
+    "SW859",
+    "D2F-01L3-ND",
+    "Q2580740",
+    "5831-D2F-01L3",
+    "B3WZ4009H",
+    "D2F01L3"
+   ]
+  },
+  {
+   "Description": {
+    "ProductDescription": "SWITCH SNAP ACTION SPDT 0.1A 30V",
+    "DetailedDescription": "Switch SPDT Through Hole"
+   },
+   "Manufacturer": {
+    "Id": 39,
+    "Name": "Aratas (Formerly Omron Components)"
+   },
+   "ManufacturerProductNumber": "D2F-01L3-T",
+   "UnitPrice": 0.85,
+   "ProductUrl": "https://www.digikey.com/en/products/detail/aratas-formerly-omron-components/D2F-01L3-T/5423416",
+   "DatasheetUrl": "//mm.digikey.com/Volume0/opasdata/d220001/medias/docus/875/D2F_0318_DS.pdf",
+   "PhotoUrl": "https://mm.digikey.com/Volume0/opasdata/d220001/medias/images/2421/D2F-01L3-T%28N%29.JPG",
+   "ProductVariations": [
+    {
+     "DigiKeyProductNumber": "39-D2F-01L3-T-ND",
+     "PackageType": {
+      "Id": 3,
+      "Name": "Bulk"
+     },
+     "StandardPricing": [
+      {
+       "BreakQuantity": 1,
+       "UnitPrice": 0.85,
+       "TotalPrice": 0.85
+      },
+      {
+       "BreakQuantity": 10,
+       "UnitPrice": 0.702,
+       "TotalPrice": 7.02
+      },
+      {
+       "BreakQuantity": 25,
+       "UnitPrice": 0.6516,
+       "TotalPrice": 16.29
+      },
+      {
+       "BreakQuantity": 50,
+       "UnitPrice": 0.6154,
+       "TotalPrice": 30.77
+      },
+      {
+       "BreakQuantity": 100,
+       "UnitPrice": 0.5814,
+       "TotalPrice": 58.14
+      },
+      {
+       "BreakQuantity": 250,
+       "UnitPrice": 0.53928,
+       "TotalPrice": 134.82
+      },
+      {
+       "BreakQuantity": 750,
+       "UnitPrice": 0.52771,
+       "TotalPrice": 395.7825
+      },
+      {
+       "BreakQuantity": 5250,
+       "UnitPrice": 0.49784,
+       "TotalPrice": 2613.66
+      }
+     ],
+     "MyPricing": [],
+     "MarketPlace": false,
+     "TariffActive": false,
+     "Supplier": {
+      "Id": 39,
+      "Name": "Aratas (Formerly Omron Components)"
+     },
+     "QuantityAvailableforPackageType": 4627,
+     "MaxQuantityForDistribution": 999999999,
+     "MinimumOrderQuantity": 1,
+     "StandardPackage": 750,
+     "DigiReelFee": 0.0
+    }
+   ],
+   "QuantityAvailable": 4627,
+   "ProductStatus": {
+    "Id": 0,
+    "Status": "Active"
+   },
+   "BackOrderNotAllowed": false,
+   "NormallyStocking": true,
+   "Discontinued": false,
+   "EndOfLife": false,
+   "Ncnr": false,
+   "PrimaryVideoUrl": "",
+   "Parameters": [
+    {
+     "ParameterId": 130,
+     "ParameterText": "Circuit",
+     "ParameterType": "String",
+     "ValueId": "405967",
+     "ValueText": "SPDT"
+    },
+    {
+     "ParameterId": 235,
+     "ParameterText": "Switch Function",
+     "ParameterType": "String",
+     "ValueId": "382041",
+     "ValueText": "On-Mom"
+    }
+   ],
+   "BaseProductNumber": {
+    "Id": 353414,
+    "Name": "D2F"
+   },
+   "Category": {
+    "CategoryId": 15,
+    "ParentId": 0,
+    "Name": "Switches",
+    "ProductCount": 0,
+    "NewProductCount": 0,
+    "ImageUrl": "https://mm.digikey.com/Volume0/opasdata/d220001/derivates/3/300/274/017/MFG_TL3215_tmb.jpg",
+    "SeoDescription": "Switches are devices used to interrupt the flow of electrical current in one or more circuits, under the direct physical control of some outside mechanism such as a user's finger or thumb, a magnet, or a moving machine component. Organization of sub-groups within the category occurs along lines of the physical style or form of switches' actuators, or a particular application or purpose for which they are designed.",
+    "ChildCategories": [
+     {
+      "CategoryId": 198,
+      "ParentId": 15,
+      "Name": "Limit Switches",
+      "ProductCount": 0,
+      "NewProductCount": 0,
+      "ImageUrl": "https://mm.digikey.com/Volume0/opasdata/d220001/derivates/3/300/252/578/Z-15GQ21_tmb.jpg",
+      "SeoDescription": "Snap action limit switches are mechanical devices that make or break an electrical connection by the closing or opening electrical contacts or solid state circuitry when actuated by human or mechanical interaction most commonly at a travel limit position. Limit switches are selected by actuator types such as an adjustable plunger or rod, toggle, arm lever, roller, cone, leaf, rotary actuator, spring, whisker or cable.",
+      "ChildCategories": []
+     }
+    ]
+   },
+   "ManufacturerLeadWeeks": "26",
+   "ManufacturerPublicQuantity": 0,
+   "Series": {
+    "Id": 16055,
+    "Name": "D2F"
+   },
+   "Classifications": {
+    "ReachStatus": "REACH Unknown",
+    "RohsStatus": "RoHS Compliant",
+    "MoistureSensitivityLevel": "Not Applicable",
+    "ExportControlClassNumber": "EAR99",
+    "HtsusCode": "8536.50.7000"
+   },
+   "OtherNames": [
+    "D2F01L3TN",
+    "D2F01L3T",
+    "D2F-01L3-T(N)-ND",
+    "D2F-01L3-T",
+    "-D2F-01L3-T(N)",
+    "-D2F-01L3-T-ND",
+    "-D2F-01L3-T",
+    "D2F-01L3-T(N)",
+    "39-D2F-01L3-T"
+   ]
+  }
+ ],
+ "ProductsCount": 30,
+ "ExactMatches": [
+  {
+   "Description": {
+    "ProductDescription": "SWITCH SNAP ACTION SPDT 0.1A 30V",
+    "DetailedDescription": "Switch SPDT Through Hole"
+   },
+   "Manufacturer": {
+    "Id": 39,
+    "Name": "Aratas (Formerly Omron Components)"
+   },
+   "ManufacturerProductNumber": "D2F-01L",
+   "UnitPrice": 1.44,
+   "ProductUrl": "https://www.digikey.com/en/products/detail/aratas-formerly-omron-components/D2F-01L/83264",
+   "DatasheetUrl": "//mm.digikey.com/Volume0/opasdata/d220001/medias/docus/875/D2F_0318_DS.pdf",
+   "PhotoUrl": "https://mm.digikey.com/Volume0/opasdata/d220001/medias/images/600/D2F-01L.JPG",
+   "ProductVariations": [
+    {
+     "DigiKeyProductNumber": "SW154-ND",
+     "PackageType": {
+      "Id": 3,
+      "Name": "Bulk"
+     },
+     "StandardPricing": [
+      {
+       "BreakQuantity": 1,
+       "UnitPrice": 1.44,
+       "TotalPrice": 1.44
+      },
+      {
+       "BreakQuantity": 10,
+       "UnitPrice": 1.188,
+       "TotalPrice": 11.88
+      },
+      {
+       "BreakQuantity": 25,
+       "UnitPrice": 1.102,
+       "TotalPrice": 27.55
+      },
+      {
+       "BreakQuantity": 50,
+       "UnitPrice": 1.041,
+       "TotalPrice": 52.05
+      },
+      {
+       "BreakQuantity": 100,
+       "UnitPrice": 0.9835,
+       "TotalPrice": 98.35
+      },
+      {
+       "BreakQuantity": 250,
+       "UnitPrice": 0.93124,
+       "TotalPrice": 232.81
+      }
+     ],
+     "MyPricing": [],
+     "MarketPlace": false,
+     "TariffActive": false,
+     "Supplier": {
+      "Id": 39,
+      "Name": "Aratas (Formerly Omron Components)"
+     },
+     "QuantityAvailableforPackageType": 79863,
+     "MinimumOrderQuantity": 1,
+     "DigiReelFee": 0.0
+    }
+   ],
+   "QuantityAvailable": 79863,
+   "ProductStatus": {
+    "Id": 0,
+    "Status": "Active"
+   },
+   "BackOrderNotAllowed": false,
+   "NormallyStocking": true,
+   "Discontinued": false,
+   "EndOfLife": false,
+   "Ncnr": false,
+   "PrimaryVideoUrl": "",
+   "Parameters": [
+    {
+     "ParameterId": 130,
+     "ParameterText": "Circuit",
+     "ParameterType": "String",
+     "ValueId": "405967",
+     "ValueText": "SPDT"
+    },
+    {
+     "ParameterId": 235,
+     "ParameterText": "Switch Function",
+     "ParameterType": "String",
+     "ValueId": "382041",
+     "ValueText": "On-Mom"
+    }
+   ],
+   "BaseProductNumber": {
+    "Id": 353414,
+    "Name": "D2F"
+   },
+   "Category": {
+    "CategoryId": 15,
+    "ParentId": 0,
+    "Name": "Switches",
+    "ProductCount": 0,
+    "NewProductCount": 0,
+    "ImageUrl": "https://mm.digikey.com/Volume0/opasdata/d220001/derivates/3/300/274/017/MFG_TL3215_tmb.jpg",
+    "SeoDescription": "Switches are devices used to interrupt the flow of electrical current in one or more circuits, under the direct physical control of some outside mechanism such as a user's finger or thumb, a magnet, or a moving machine component. Organization of sub-groups within the category occurs along lines of the physical style or form of switches' actuators, or a particular application or purpose for which they are designed.",
+    "ChildCategories": [
+     {
+      "CategoryId": 198,
+      "ParentId": 15,
+      "Name": "Limit Switches",
+      "ProductCount": 0,
+      "NewProductCount": 0,
+      "ImageUrl": "https://mm.digikey.com/Volume0/opasdata/d220001/derivates/3/300/252/578/Z-15GQ21_tmb.jpg",
+      "SeoDescription": "Snap action limit switches are mechanical devices that make or break an electrical connection by the closing or opening electrical contacts or solid state circuitry when actuated by human or mechanical interaction most commonly at a travel limit position. Limit switches are selected by actuator types such as an adjustable plunger or rod, toggle, arm lever, roller, cone, leaf, rotary actuator, spring, whisker or cable.",
+      "ChildCategories": []
+     }
+    ]
+   },
+   "ManufacturerLeadWeeks": "26",
+   "ManufacturerPublicQuantity": 18000,
+   "Series": {
+    "Id": 16055,
+    "Name": "D2F"
+   },
+   "Classifications": {
+    "ReachStatus": "REACH Unaffected",
+    "RohsStatus": "ROHS3 Compliant",
+    "MoistureSensitivityLevel": "Not Applicable",
+    "ExportControlClassNumber": "EAR99",
+    "HtsusCode": "8536.50.7000"
+   },
+   "OtherNames": [
+    "D2F-01L(UL/CSA)",
+    "SW154",
+    "Q2505549",
+    "D2F01L",
+    "D2F01LULCSA"
+   ]
+  }
+ ]
+}

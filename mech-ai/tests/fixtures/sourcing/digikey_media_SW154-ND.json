@@ -1,0 +1,51 @@
+{
+ "MediaLinks": [
+  {
+   "MediaType": "Datasheets",
+   "Title": "D2F Series Datasheet~",
+   "Url": "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/875/D2F_0318_DS.pdf"
+  },
+  {
+   "MediaType": "Product Photos",
+   "Title": "D2F-01L",
+   "SmallPhoto": "https://mm.digikey.com/Volume0/opasdata/d220001/derivates/1/010/178/020/D2F-01L_sml.jpg",
+   "Thumbnail": "https://mm.digikey.com/Volume0/opasdata/d220001/derivates/3/010/178/020/D2F-01L_tmb.jpg",
+   "Url": "https://mm.digikey.com/Volume0/opasdata/d220001/medias/images/600/D2F-01L.JPG"
+  },
+  {
+   "MediaType": "Other Related Documents",
+   "Title": "How to Read Date Codes",
+   "Url": "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/412/Omron_Date_Code.pdf"
+  },
+  {
+   "MediaType": "Product Training Modules",
+   "Title": "Snap Switches",
+   "Url": "https://www.digikey.com/ptm/o/omron-electronics-inc-emc-div/snap-switches"
+  },
+  {
+   "MediaType": "Featured Product",
+   "Title": "D2F Ultra-Mini Unsealed Switch",
+   "Url": "https://www.digikey.com/product-highlight/o/omron/d2f-ultra-mini-unsealed-switch"
+  },
+  {
+   "MediaType": "CAD Models",
+   "Title": "D2F-01L by TraceParts",
+   "Url": "https://www.traceparts.com/els/digikey/goto?Product=10-16052011-063956&SelectionPath=3|3|3|3|3|1|2|"
+  },
+  {
+   "MediaType": "EDA Models",
+   "Title": "D2F-01L by SnapEDA",
+   "Url": "https://www.snapeda.com/parts/D2F-01L/Omron%20Electronics/view-part/?ref=digikey"
+  },
+  {
+   "MediaType": "EDA Models",
+   "Title": "D2F-01L by Ultra Librarian",
+   "Url": "https://app.ultralibrarian.com/details/51D932DD-4DC3-11EB-9033-0A34D6323D74/Omron/D2F-01L?ref=digikey"
+  },
+  {
+   "MediaType": "360 Product Photos",
+   "Title": "D2F-01L",
+   "Url": "https://media.digikey.com/360Images/Omron/SW154-ND/HTML5Viewer.html"
+  }
+ ]
+}

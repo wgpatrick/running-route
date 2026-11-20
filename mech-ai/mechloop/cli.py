@@ -30,6 +30,14 @@ def main(argv=None) -> int:
     v.add_argument("--out", default="out", help=OUT_HELP)
     v.add_argument("--no-render", action="store_true")
     v.add_argument("--max-findings", type=int, default=25)
+    v.add_argument("--tier", choices=["quick", "affected", "full"], default=None,
+                   help="staged verify (mechloop.incremental): quick = geometry, interference on changed parts, manufacture, "
+                        "practice, ratings (other verifiers reused if their inputs are unchanged, else NOT RUN: a partial "
+                        "report); affected = re-run every verifier (FEA case by case, interference pair by pair) whose inputs "
+                        "changed and reuse the rest; full = everything, nothing reused (required before release; a design "
+                        "with release = True always gets it). Default (no --tier): a full verify, as before")
+    v.add_argument("--no-cache", action="store_true",
+                   help="neither read nor write the result cache (out/<design>/verify_cache/)")
     h = sub.add_parser("history", help="show the loop history of a design")
     h.add_argument("name")
     h.add_argument("--out", default="out", help="ROOT folder the verify runs wrote to (reads <out>/<name>/history.jsonl)")
@@ -79,7 +87,7 @@ def main(argv=None) -> int:
         from .verifiers import electrical as _ve
 
         _ve.OUT_ROOT = a.out      # the electrical verifier writes printer.cfg and the wiring tables under the same root
-        rep = run(a.design, a.out, only, render=not a.no_render)
+        rep = run(a.design, a.out, only, render=not a.no_render, tier=a.tier, use_cache=not a.no_cache)
         _warn_nested_out(a.out, rep.design)
         print(rep.to_json(max_findings=a.max_findings))
         return 0 if rep.ok else 1

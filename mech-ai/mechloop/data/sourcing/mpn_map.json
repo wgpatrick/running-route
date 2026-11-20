@@ -1,0 +1,502 @@
+{
+ "schema": "mechloop.sourcing.mpn_map/1",
+ "about": "BOM line (catalogue SKU) -> the orderable maker part(s), with where each mapping was read. kind: distributor (priced live from Digi-Key / Mouser / element14), maker_direct (sold by the maker's own shop: price and lead time from the catalogue, flagged no_distributor), catalogue_house (McMaster / MISUMI). items[].qty_per: orderable units per BOM unit (feet per metre for wire sold by the foot, contacts per connector). design_change: true when the mapped part is not identical to what the design draws (the design must follow before it is buildable). Lines with no mapping, no real_parts.json record and no maker part number in the catalogue are placeholders (practice DG-07). Nothing here is from memory: each source is named.",
+ "parts": {
+  "TCO-133C-15A": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Cantherm",
+     "mpn": "CS712025Y",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (TCO row) and docs/V12_PLAN.md, Electronics (bed thermal cut-off)",
+   "note": "v12 choice: 120 degC NC bimetal, 10 A at 24 V DC. The audit's nearest like-for-like is Cantherm RT128 (one-shot, no DC rating).",
+   "alternates": [
+    {
+     "maker": "Cantherm",
+     "mpn": "RT128",
+     "note": "one-shot thermal fuse Tf 128 degC, 15 A 250 VAC, no DC rating (audit)"
+    }
+   ],
+   "design_change": true
+  },
+  "FUSE-5x20-T8A": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Schurter",
+     "mpn": "0001.2513",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (FUSE-5x20-T8A row); docs/V12_PLAN.md, Electronics (inlet)",
+   "alternates": [
+    {
+     "maker": "Littelfuse",
+     "mpn": "0218008.MXP",
+     "note": "glass T8A (audit)"
+    }
+   ]
+  },
+  "INLET-C14-SW-FUSE-T8A": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Schurter",
+     "mpn": "DD11.0114.1111",
+     "qty_per": 1
+    },
+    {
+     "maker": "Schurter",
+     "mpn": "4301.1401",
+     "qty_per": 1,
+     "note": "2-pole fuse drawer; the DD11 ships without it"
+    }
+   ],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (INLET row); docs/V12_PLAN.md, Electronics (inlet)",
+   "note": "confirm the lamp voltage of 0114 vs 0113 (v12 plan)"
+  },
+  "DIODE-BAT85": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Vishay",
+     "mpn": "BAT85S-TAP",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (DIODE-BAT85 row)",
+   "alternates": [
+    {
+     "maker": "Nexperia",
+     "mpn": "BAT85,133",
+     "note": "DO-34, no stock shown (audit)"
+    }
+   ]
+  },
+  "ENDSTOP-MICRO": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Omron",
+     "mpn": "D2F-01L",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (ENDSTOP-MICRO row); docs/V12_PLAN.md, Electronics (endstops)"
+  },
+  "CONN-JST-XH": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "JST",
+     "mpn": "SXH-001T-P0.6",
+     "qty_per": 1,
+     "note": "one crimp contact per wire end (the BOM line counts wire ends)"
+    },
+    {
+     "maker": "JST",
+     "mpn": "XHP-2",
+     "qty_per": 0.5,
+     "note": "housing: the design does not say how many ways per connector; 2-way assumed, 1 housing per 2 ends"
+    }
+   ],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (CONN-JST-XH row)",
+   "note": "housing ways per connector are not in the design; XHP-3 / XHP-4 and headers B2B-XH-A / B4B-XH-A as the wiring needs"
+  },
+  "CONN-MOLEX-MICROFIT": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Molex",
+     "mpn": "43025-0200",
+     "qty_per": 1,
+     "note": "receptacle housing 2-way"
+    },
+    {
+     "maker": "Molex",
+     "mpn": "43030-0001",
+     "qty_per": 2,
+     "note": "female crimp"
+    },
+    {
+     "maker": "Molex",
+     "mpn": "43020-0200",
+     "qty_per": 1,
+     "note": "plug housing 2-way (hotend heater, v12 plan)"
+    },
+    {
+     "maker": "Molex",
+     "mpn": "43031-0001",
+     "qty_per": 2,
+     "note": "male crimp"
+    }
+   ],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (CONN-MOLEX-MICROFIT row); docs/V12_PLAN.md, Electronics (other connectors)",
+   "note": "one mated 2-way pair per BOM count"
+  },
+  "CONN-FASTON-4.8": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "TE Connectivity",
+     "mpn": "2-520182-2",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (CONN-FASTON-4.8 row)"
+  },
+  "CONN-FERRULE": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Phoenix Contact",
+     "mpn": "3200519",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (CONN-FERRULE row)",
+   "note": "0.75 mm2 gray; 3200014 (0.5 mm2 white) for thinner wire",
+   "alternates": [
+    {
+     "maker": "Phoenix Contact",
+     "mpn": "3200014",
+     "note": "0.5 mm2 white"
+    }
+   ]
+  },
+  "CABLE-TIE-100MM": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Panduit",
+     "mpn": "PLT1M-C",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (CABLE-TIE-100MM row)"
+  },
+  "THREADLOCKER-MEDIUM": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Henkel / Loctite",
+     "mpn": "1329837",
+     "qty_per": 1,
+     "note": "Loctite 243, 10 ml"
+    }
+   ],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (THREADLOCKER-MEDIUM row)"
+  },
+  "WIRE-AWG20-SILICONE-M": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "CNC Tech",
+     "mpn": "3239-20-1-0500-001-1-TS",
+     "qty_per": 3.2808,
+     "unit": "ft",
+     "note": "20 AWG silicone, sold per foot; colour by the -00x field"
+    }
+   ],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (WIRE row: CNC Tech 3239-20); exact MPN: Digi-Key v4 keyword search 2026-11-20 (sourcing module set-up): exact spelling of the orderable MPN"
+  },
+  "WIRE-AWG16-SILICONE-M": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "igus",
+     "mpn": "CF880-15-02",
+     "qty_per": 3.2808,
+     "unit": "ft",
+     "note": "2 x 16 AWG high-flex cable for the moving bed run, per foot"
+    }
+   ],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (WIRE row) and docs/V12_PLAN.md, Electronics (bed wiring)",
+   "note": "one 2-core cable replaces the two 16 AWG wires of the bed run",
+   "design_change": true
+  },
+  "NUT-PEM-S-M3-1": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "PennEngineering (PEM)",
+     "mpn": "S-M3-1ZI",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (NUT-PEM-S-M3-1 row; Mouser)",
+   "note": "v12: S-M3-0 where the sheet allows"
+  },
+  "SPACER-NYLON-M3-5x3.3x6": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Harwin",
+     "mpn": "R30-6700694",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (SPACER-NYLON-M3 row: R30-6700694, 6 mm)",
+   "note": "Harwin bore 3.2 vs the catalogue's 3.3"
+  },
+  "MGN12-R-300": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "HIWIN",
+     "mpn": "MGN-R12-R300-HM",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (MGN12 row); docs/V11_1_PLAN.md item 1",
+   "note": "Digi-Key's parameter text says 2 m: confirm the length on the order page"
+  },
+  "MGN12H": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "HIWIN",
+     "mpn": "MGN-12-H-Z0-HM",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (MGN12 row); docs/V11_1_PLAN.md item 1"
+  },
+  "PSU-LRS-350-24": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "MEAN WELL",
+     "mpn": "LRS-350-24",
+     "qty_per": 1
+    }
+   ],
+   "source": "catalogue electrical product record (mechloop/parts/electrical.py); kept in docs/V12_PLAN.md, Electronics"
+  },
+  "PROBE-OMRON-E2E-X5ME1": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Omron",
+     "mpn": "E2E-X5ME1 2M",
+     "qty_per": 1
+    }
+   ],
+   "source": "catalogue vendor record (mechloop/parts/vendor/omron_e2e.json)",
+   "note": "v12 keeps the Omron probe as E2B-M12KS04 (docs/V12_PLAN.md, Electronics)",
+   "alternates": [
+    {
+     "maker": "Omron",
+     "mpn": "E2B-M12KS04-WP-C1 2M",
+     "note": "the v12 probe, Digi-Key 35.22 USD, 153 in stock (audit item 14 / owner's agent list)"
+    }
+   ]
+  },
+  "FAN-BLOWER-BFB0524HH": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Delta Electronics",
+     "mpn": "BFB0524HH",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics (kept: Delta BFB0524HH blower)"
+  },
+  "CTRL-OCTOPUS-V1.1": {
+   "kind": "maker_direct",
+   "items": [
+    {
+     "maker": "BIGTREETECH",
+     "mpn": "Octopus V1.1",
+     "qty_per": 1
+    }
+   ],
+   "source": "catalogue vendor record (mechloop/parts/vendor/*.json); seller from docs/PROVENANCE_AUDIT.md / docs/V12_PLAN.md",
+   "note": "sold by the maker (BIGTREETECH store / Amazon); no distributor API covers it"
+  },
+  "RELAY-BTT-V1.2": {
+   "kind": "maker_direct",
+   "items": [
+    {
+     "maker": "BIGTREETECH",
+     "mpn": "Relay V1.2",
+     "qty_per": 1
+    }
+   ],
+   "source": "catalogue vendor record (mechloop/parts/vendor/*.json); seller from docs/PROVENANCE_AUDIT.md / docs/V12_PLAN.md",
+   "note": "sold by the maker (BIGTREETECH store / Amazon); no distributor API covers it"
+  },
+  "DRIVER-BTT-TMC2209": {
+   "kind": "maker_direct",
+   "items": [
+    {
+     "maker": "BIGTREETECH",
+     "mpn": "TMC2209 V1.3",
+     "qty_per": 1
+    }
+   ],
+   "source": "catalogue vendor record (mechloop/parts/vendor/*.json); seller from docs/PROVENANCE_AUDIT.md / docs/V12_PLAN.md",
+   "note": "sold by the maker (BIGTREETECH store / Amazon); no distributor API covers it"
+  },
+  "NEMA17-34": {
+   "kind": "maker_direct",
+   "items": [
+    {
+     "maker": "StepperOnline",
+     "mpn": "17HS13-0404S",
+     "qty_per": 1
+    }
+   ],
+   "source": "catalogue vendor record (mechloop/parts/vendor/*.json); seller from docs/PROVENANCE_AUDIT.md / docs/V12_PLAN.md",
+   "note": "sold by the maker (omc-stepperonline.com); no distributor API covers it"
+  },
+  "NEMA17-48": {
+   "kind": "maker_direct",
+   "items": [
+    {
+     "maker": "StepperOnline",
+     "mpn": "17HS19-2004S1",
+     "qty_per": 1
+    }
+   ],
+   "source": "catalogue vendor record (mechloop/parts/vendor/*.json); seller from docs/PROVENANCE_AUDIT.md / docs/V12_PLAN.md",
+   "note": "sold by the maker (omc-stepperonline.com); no distributor API covers it"
+  },
+  "NEMA17-48-LEADSCREW-TR8x2-330-AB4": {
+   "kind": "maker_direct",
+   "items": [
+    {
+     "maker": "StepperOnline",
+     "mpn": "17E19S1684AB4-330RA",
+     "qty_per": 1
+    }
+   ],
+   "source": "catalogue vendor record (mechloop/parts/vendor/*.json); seller from docs/PROVENANCE_AUDIT.md / docs/V12_PLAN.md",
+   "note": "sold by the maker (omc-stepperonline.com); no distributor API covers it"
+  },
+  "EXTRUDER-E3D-ROTO": {
+   "kind": "maker_direct",
+   "items": [
+    {
+     "maker": "E3D",
+     "mpn": "REVO-ROTO-COLDSIDE-AS",
+     "qty_per": 1
+    }
+   ],
+   "source": "catalogue vendor record (mechloop/parts/vendor/*.json); seller from docs/PROVENANCE_AUDIT.md / docs/V12_PLAN.md",
+   "note": "sold by the maker (e3d-online.com); no distributor API covers it"
+  },
+  "HOTEND-REVO-24V-40W": {
+   "kind": "maker_direct",
+   "items": [
+    {
+     "maker": "E3D",
+     "mpn": "RC-CORE-24V-AS-SPRING + RC-NOZ",
+     "qty_per": 1
+    }
+   ],
+   "source": "catalogue vendor record (mechloop/parts/vendor/*.json); seller from docs/PROVENANCE_AUDIT.md / docs/V12_PLAN.md",
+   "note": "sold by the maker (e3d-online.com); no distributor API covers it"
+  },
+  "FAN-3010-CG3010U24": {
+   "kind": "maker_direct",
+   "items": [
+    {
+     "maker": "Coolerguys",
+     "mpn": "CG3010U24",
+     "qty_per": 1
+    }
+   ],
+   "source": "catalogue vendor record (mechloop/parts/vendor/*.json); seller from docs/PROVENANCE_AUDIT.md / docs/V12_PLAN.md",
+   "note": "sold by the maker (coolerguys.com); no distributor API covers it"
+  },
+  "FILAMENT-SENSOR-BTT-SFS-V2": {
+   "kind": "maker_direct",
+   "items": [
+    {
+     "maker": "BIGTREETECH",
+     "mpn": "SFS V2.0",
+     "qty_per": 1
+    }
+   ],
+   "source": "catalogue vendor record (mechloop/parts/vendor/*.json); seller from docs/PROVENANCE_AUDIT.md / docs/V12_PLAN.md",
+   "note": "sold by the maker (BIGTREETECH store / Amazon); no distributor API covers it"
+  },
+  "MGN12-R-250": {
+   "kind": "placeholder",
+   "items": [],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (MGN12 row); docs/V11_1_PLAN.md item 1",
+   "replace_with": "HIWIN MGN-R12-R220-HM or MGN-R12-R300-HM (stock lengths; 250 is not stocked at Digi-Key)"
+  },
+  "MGN12-R-288": {
+   "kind": "placeholder",
+   "items": [],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (MGN12 row); docs/V11_1_PLAN.md item 1",
+   "replace_with": "HIWIN MGN-R12-R300-HM (stock 300 mm; v11.1 X rail)"
+  },
+  "GT2-20T-B5": {
+   "kind": "placeholder",
+   "items": [],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (GT2-20T-B5 / IDLER row); docs/V11_1_PLAN.md items 2-3",
+   "replace_with": "no 12 mm GT2 2 mm-pitch belt is stocked: 9 mm GT2 with MISUMI GPA20GT2090-B-P5 / -A-N5 class (v11.1 plan items 2-3)"
+  },
+  "GT2-IDLER-20T-B5": {
+   "kind": "placeholder",
+   "items": [],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (GT2-20T-B5 / IDLER row); docs/V11_1_PLAN.md items 2-3",
+   "replace_with": "no 12 mm GT2 2 mm-pitch belt is stocked: 9 mm GT2 with MISUMI GPA20GT2090-B-P5 / -A-N5 class (v11.1 plan items 2-3)"
+  },
+  "GT2-20T-B5-W9": {
+   "kind": "placeholder",
+   "items": [],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (GT2-20T-B5-W9 row)",
+   "replace_with": "MISUMI GPA20GT2090-B-P5 class (5 mm bore) or SDP/SI A 6A51M020DF0906 (6 mm bore)"
+  },
+  "GT2-IDLER-20T-B5-W9": {
+   "kind": "placeholder",
+   "items": [],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (GT2-IDLER-20T-B5-W9 row)",
+   "replace_with": "MISUMI GPA20GT2090-A-N5 class toothed idler"
+  },
+  "GT2-BELT-9MM-OPEN-1M": {
+   "kind": "placeholder",
+   "items": [],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (GT2-BELT-9MM-OPEN row)",
+   "replace_with": "Gates 2MGT 9 mm open length (gates.com: owner's agent)"
+  },
+  "GT2-BELT-12MM-OPEN-1M": {
+   "kind": "placeholder",
+   "items": [],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (GT2-20T-B5 row)",
+   "replace_with": "none stocked: move to 9 mm GT2 (v11.1 plan item 2)"
+  },
+  "SPACER-NYLON-M3-5x3.3x5.5": {
+   "kind": "placeholder",
+   "items": [],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (SPACER-NYLON-M3 row)",
+   "replace_with": "Harwin R30-6700594 (5 mm) or R30-6700694 (6 mm): 5.5 is not stock"
+  },
+  "HEATER-SIL-230x207-24V-180W": {
+   "kind": "placeholder",
+   "items": [],
+   "source": "docs/V11_1_PLAN.md item 5; docs/PROVENANCE_AUDIT.md, Real-part replacements (HEATER row)",
+   "replace_with": "a stock heater from a real maker with a datasheet (v11.1 plan item 5); Keenovo custom as fallback"
+  },
+  "BED-MAGNET-PEI235-BASE-STANDIN": {
+   "kind": "placeholder",
+   "items": [],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (BED-MAGNET row)",
+   "replace_with": "a named magnetic PEI kit (maker, size, steel thickness): owner's agent"
+  },
+  "SHEET-PEI-235": {
+   "kind": "placeholder",
+   "items": [],
+   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (BED-MAGNET row)",
+   "replace_with": "a named magnetic PEI kit (maker, size, steel thickness): owner's agent"
+  }
+ }
+}

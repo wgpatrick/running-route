@@ -1,0 +1,595 @@
+{
+ "schema": "mechloop.sourcing.list/1",
+ "name": "v12_electronics",
+ "about": "The v12 plan's electronics and feedback-hardware list as orderable lines, for a live sourcing run before the v12 design exists. Quantities say their basis; where the plan gives none it is the v10_1 count or an assumption, marked as such.",
+ "build_quantity": 1,
+ "lines": [
+  {
+   "sku": "HOST-RPI5-8GB",
+   "qty": 1,
+   "category": "Host",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Raspberry Pi",
+     "mpn": "SC1432",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "one per machine (v12 plan)"
+  },
+  {
+   "sku": "HOST-RPI5-COOLER",
+   "qty": 1,
+   "category": "Host",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Raspberry Pi",
+     "mpn": "SC1148",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "one per machine (v12 plan)"
+  },
+  {
+   "sku": "HOST-RPI5-PSU-27W",
+   "qty": 1,
+   "category": "Host",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Raspberry Pi",
+     "mpn": "SC1153",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "one per machine (v12 plan)"
+  },
+  {
+   "sku": "CONTACTOR-FINDER-22.32",
+   "qty": 1,
+   "category": "Mains switching",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Finder",
+     "mpn": "22.32.0.120.4320",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "one per machine (v12 plan)",
+   "note": "120 V coil variant; 22.32.0.230.4340 for 230 V"
+  },
+  {
+   "sku": "RELAY-PHOENIX-PLC-RSC-5DC",
+   "qty": 1,
+   "category": "Mains switching",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Phoenix Contact",
+     "mpn": "1119897",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "one per machine (v12 plan)"
+  },
+  {
+   "sku": "TRANSISTOR-PN2222A",
+   "qty": 1,
+   "category": "Mains switching",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "STMicroelectronics",
+     "mpn": "PN2222A",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "one per machine (v12 plan)",
+   "alternates": [
+    {
+     "maker": "onsemi",
+     "mpn": "PN2222ATA",
+     "note": "same TO-92 NPN, ammo pack (Digi-Key search 2026-11-20 lists it in stock)"
+    },
+    {
+     "maker": "onsemi",
+     "mpn": "PN2222ABU",
+     "note": "bulk"
+    }
+   ]
+  },
+  {
+   "sku": "INLET-SCHURTER-DD11",
+   "qty": 1,
+   "category": "Inlet",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Schurter",
+     "mpn": "DD11.0114.1111",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "one per machine (v12 plan)"
+  },
+  {
+   "sku": "INLET-FUSE-DRAWER",
+   "qty": 1,
+   "category": "Inlet",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Schurter",
+     "mpn": "4301.1401",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "one per machine (v12 plan)"
+  },
+  {
+   "sku": "FUSE-5x20-T8A-CERAMIC",
+   "qty": 4,
+   "category": "Inlet",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Schurter",
+     "mpn": "0001.2513",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "2 fitted (L and N) + 2 spares"
+  },
+  {
+   "sku": "FUSE-BED-10A-BLADE",
+   "qty": 2,
+   "category": "Bed",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Littelfuse",
+     "mpn": "0297010.WXNV",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "1 fitted + 1 spare"
+  },
+  {
+   "sku": "TCO-CANTHERM-CS712025Y",
+   "qty": 1,
+   "category": "Bed",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Cantherm",
+     "mpn": "CS712025Y",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "one per machine (v12 plan)"
+  },
+  {
+   "sku": "THERMISTOR-SEMITEC-104NT",
+   "qty": 1,
+   "category": "Bed",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Semitec",
+     "mpn": "104NT-4-R025H42G",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "one per machine (v12 plan)"
+  },
+  {
+   "sku": "ENDSTOP-OMRON-D2F-01L",
+   "qty": 2,
+   "category": "Endstops",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Omron",
+     "mpn": "D2F-01L",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "X and Y (v10_1 count)"
+  },
+  {
+   "sku": "CONN-MINIFIT-39-01-2020",
+   "qty": 2,
+   "category": "Bed wiring",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Molex",
+     "mpn": "39-01-2020",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "one per bed-run end (assumed 2)"
+  },
+  {
+   "sku": "CONN-MINIFIT-HCS-0457503111",
+   "qty": 4,
+   "category": "Bed wiring",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Molex",
+     "mpn": "0457503111",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "2 per housing"
+  },
+  {
+   "sku": "CABLE-IGUS-CF880-15-02",
+   "qty": 7,
+   "category": "Bed wiring",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "igus",
+     "mpn": "CF880-15-02",
+     "qty_per": 1,
+     "unit": "ft"
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "feet: 2 m bed run (v10_1 WIRE-AWG16 2 m)"
+  },
+  {
+   "sku": "CABLE-IGUS-CF130-03-02",
+   "qty": 10,
+   "category": "Bed wiring",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "igus",
+     "mpn": "CF130-03-02",
+     "qty_per": 1,
+     "unit": "ft"
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "feet: about 3 m of flexing signal runs (assumed)"
+  },
+  {
+   "sku": "CONN-JST-XHP-2",
+   "qty": 14,
+   "category": "Connectors",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "JST",
+     "mpn": "XHP-2",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "28 wire ends in v10_1, 2-way assumed"
+  },
+  {
+   "sku": "CONN-JST-SXH-001T",
+   "qty": 28,
+   "category": "Connectors",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "JST",
+     "mpn": "SXH-001T-P0.6",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "one per wire end (v10_1: 28)"
+  },
+  {
+   "sku": "CONN-JST-B2B-XH-A",
+   "qty": 4,
+   "category": "Connectors",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "JST",
+     "mpn": "B2B-XH-A",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "assumed"
+  },
+  {
+   "sku": "CONN-MICROFIT-43025-0200",
+   "qty": 3,
+   "category": "Connectors",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Molex",
+     "mpn": "43025-0200",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "v10_1 Micro-Fit count"
+  },
+  {
+   "sku": "CONN-MICROFIT-43030-0001",
+   "qty": 6,
+   "category": "Connectors",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Molex",
+     "mpn": "43030-0001",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "2 per housing"
+  },
+  {
+   "sku": "CONN-MICROFIT-43020-0200",
+   "qty": 3,
+   "category": "Connectors",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Molex",
+     "mpn": "43020-0200",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "mating plug"
+  },
+  {
+   "sku": "CONN-MICROFIT-43031-0001",
+   "qty": 6,
+   "category": "Connectors",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Molex",
+     "mpn": "43031-0001",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "2 per plug"
+  },
+  {
+   "sku": "CONN-FERRULE-0.75",
+   "qty": 22,
+   "category": "Connectors",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Phoenix Contact",
+     "mpn": "3200519",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "v10_1 ferrule count"
+  },
+  {
+   "sku": "CONN-FERRULE-0.5",
+   "qty": 10,
+   "category": "Connectors",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Phoenix Contact",
+     "mpn": "3200014",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "assumed"
+  },
+  {
+   "sku": "CONN-FASTON-187",
+   "qty": 4,
+   "category": "Connectors",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "TE Connectivity",
+     "mpn": "2-520182-2",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "v10_1 count"
+  },
+  {
+   "sku": "PSU-MEANWELL-LRS-350-24",
+   "qty": 1,
+   "category": "Kept",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "MEAN WELL",
+     "mpn": "LRS-350-24",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "one per machine (v12 plan)"
+  },
+  {
+   "sku": "PROBE-OMRON-E2B-M12KS04",
+   "qty": 1,
+   "category": "Kept",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Omron",
+     "mpn": "E2B-M12KS04-WP-C1 2M",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "one per machine (v12 plan)"
+  },
+  {
+   "sku": "DIODE-BAT85",
+   "qty": 1,
+   "category": "Kept",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Vishay",
+     "mpn": "BAT85S-TAP",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "one per machine (v12 plan)"
+  },
+  {
+   "sku": "FAN-DELTA-BFB0524HH",
+   "qty": 1,
+   "category": "Kept",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Delta Electronics",
+     "mpn": "BFB0524HH",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "one per machine (v12 plan)"
+  },
+  {
+   "sku": "CTRL-OCTOPUS-V1.1",
+   "qty": 1,
+   "category": "Kept",
+   "kind": "maker_direct",
+   "items": [
+    {
+     "maker": "BIGTREETECH",
+     "mpn": "Octopus V1.1",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md, Electronics table",
+   "qty_basis": "one per machine (v12 plan)",
+   "note": "BIGTREETECH store"
+  },
+  {
+   "sku": "CAMERA-RPI-CM3",
+   "qty": 1,
+   "category": "Feedback",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Raspberry Pi",
+     "mpn": "SC1223",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md feedback hardware + docs/PROVENANCE_AUDIT.md Real-part replacements (v12 rows)",
+   "qty_basis": "overview camera"
+  },
+  {
+   "sku": "CAMERA-RPI-HQ",
+   "qty": 1,
+   "category": "Feedback",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Raspberry Pi",
+     "mpn": "SC1220",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md feedback hardware + docs/PROVENANCE_AUDIT.md Real-part replacements (v12 rows)",
+   "qty_basis": "top-down camera (phase 2)"
+  },
+  {
+   "sku": "CAMERA-NOZZLE-FIT0819",
+   "qty": 1,
+   "category": "Feedback",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "DFRobot",
+     "mpn": "FIT0819",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md feedback hardware + docs/PROVENANCE_AUDIT.md Real-part replacements (v12 rows)",
+   "qty_basis": "one per machine (v12 plan)"
+  },
+  {
+   "sku": "ACCEL-ADAFRUIT-ADXL345",
+   "qty": 1,
+   "category": "Feedback",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Adafruit",
+     "mpn": "1231",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md feedback hardware + docs/PROVENANCE_AUDIT.md Real-part replacements (v12 rows)",
+   "qty_basis": "one per machine (v12 plan)"
+  },
+  {
+   "sku": "LED-INSPIRED-24V-COB",
+   "qty": 1,
+   "category": "Feedback",
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Inspired LED",
+     "mpn": "24V-COB-4000K-12M",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md feedback hardware + docs/PROVENANCE_AUDIT.md Real-part replacements (v12 rows)",
+   "qty_basis": "1 unit (sold per unit length, see the listing)"
+  },
+  {
+   "sku": "FILAMENT-SENSOR-BTT-SFS-V2",
+   "qty": 1,
+   "category": "Feedback",
+   "kind": "maker_direct",
+   "items": [
+    {
+     "maker": "BIGTREETECH",
+     "mpn": "SFS V2.0",
+     "qty_per": 1
+    }
+   ],
+   "source": "docs/V12_PLAN.md feedback hardware + docs/PROVENANCE_AUDIT.md Real-part replacements (v12 rows)",
+   "qty_basis": "one per machine (v12 plan)",
+   "note": "BTT shop / Amazon"
+  }
+ ]
+}

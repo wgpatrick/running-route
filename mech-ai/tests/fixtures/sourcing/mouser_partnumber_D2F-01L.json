@@ -1,0 +1,118 @@
+{
+ "Errors": [],
+ "SearchResults": {
+  "NumberOfResult": 1,
+  "Parts": [
+   {
+    "Availability": "9830 In Stock",
+    "DataSheetUrl": "",
+    "Description": "Basic / Snap Action Switches HNG LVR STD uV/C PCB",
+    "FactoryStock": "0",
+    "ImagePath": "https://www.mouser.com/images/omron/images/D2F_hinge_lever_DSL.jpg",
+    "Category": "Basic / Snap Action Switches",
+    "LeadTime": "28 Days",
+    "LifecycleStatus": null,
+    "Manufacturer": "Aratas",
+    "ManufacturerPartNumber": "D2F-01L",
+    "Min": "1",
+    "Mult": "1",
+    "MouserPartNumber": "653-D2F-01L",
+    "ProductAttributes": [
+     {
+      "AttributeName": "Standard Pack Qty",
+      "AttributeValue": "1000"
+     }
+    ],
+    "PriceBreaks": [
+     {
+      "Quantity": 1,
+      "Price": "$1.44",
+      "RawPrice": 1.44,
+      "Currency": "USD"
+     },
+     {
+      "Quantity": 10,
+      "Price": "$1.21",
+      "RawPrice": 1.21,
+      "Currency": "USD"
+     },
+     {
+      "Quantity": 6000,
+      "Price": "$1.18",
+      "RawPrice": 1.18,
+      "Currency": "USD"
+     }
+    ],
+    "AlternatePackagings": null,
+    "ProductDetailUrl": "https://www.mouser.com/en/ProductDetail/Aratas/D2F-01L?qs=0w99tykdtPJyAZbwr7e4aQ%3D%3D",
+    "Reeling": false,
+    "ROHSStatus": "RoHS Compliant",
+    "SuggestedReplacement": "",
+    "MultiSimBlue": 0,
+    "UnitWeightKg": {
+     "UnitWeight": 0.0005
+    },
+    "AvailabilityInStock": "9830",
+    "AvailabilityOnOrder": [],
+    "InfoMessages": [],
+    "SurchargeMessages": [
+     {
+      "code": "TARIFF_US",
+      "message": "A tariff of 7% may be applied if shipping to the United States."
+     }
+    ],
+    "ProductCompliance": [
+     {
+      "ComplianceName": "USHTS",
+      "ComplianceValue": "8536509040"
+     },
+     {
+      "ComplianceName": "CNHTS",
+      "ComplianceValue": "8536500090"
+     },
+     {
+      "ComplianceName": "CAHTS",
+      "ComplianceValue": "8536509040"
+     },
+     {
+      "ComplianceName": "JPHTS",
+      "ComplianceValue": "853650090"
+     },
+     {
+      "ComplianceName": "KRHTS",
+      "ComplianceValue": "8536509090"
+     },
+     {
+      "ComplianceName": "MXHTS",
+      "ComplianceValue": "8536509999"
+     },
+     {
+      "ComplianceName": "BRHTS",
+      "ComplianceValue": "85365090"
+     },
+     {
+      "ComplianceName": "ECCN",
+      "ComplianceValue": "EAR99"
+     }
+    ],
+    "TradeCompliance": [
+     {
+      "ComplianceName": "Country of Origin",
+      "ComplianceValue": "Japan",
+      "ComplianceDescription": "The country where a product was manufactured, produced, or substantially transformed."
+     },
+     {
+      "ComplianceName": "Assembly Country of Origin",
+      "ComplianceValue": "Not available",
+      "ComplianceDescription": "The country where the final product is physically assembled from its components."
+     },
+     {
+      "ComplianceName": "Country of Diffusion",
+      "ComplianceValue": "Not available",
+      "ComplianceDescription": "The country where the wafer used in a semiconductor was fabricated."
+     }
+    ]
+   }
+  ]
+ }
+}

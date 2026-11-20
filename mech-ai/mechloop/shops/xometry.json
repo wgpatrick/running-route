@@ -59,6 +59,11 @@
    "url": "",
    "title": "recalled, no document fetched",
    "accessed": "2026-11-15"
+  },
+  "benchmark-2026-11-19": {
+   "title": "Owner's agent web benchmark of reference parts RP01-RP05, quote pages read 2026-11-19 (reference_parts/batch01/results/web_benchmark_2026-11-19.csv)",
+   "file": "reference_parts/batch01/results/web_benchmark_2026-11-19.csv",
+   "accessed": "2026-11-19"
   }
  },
  "materials": {
@@ -436,5 +441,11 @@
   "hole depth-to-diameter, pocket depth and minimum hole diameter rules (in the gated design guide; mechloop's general rules stay in force)",
   "which tolerance class of ISO 2768 (the page says 'in accordance with ISO 2768' beside +/-0.005 in; it names no class)",
   "a positional tolerance between features cut in one set-up"
- ]
+ ],
+ "lead_time": {
+  "source": "benchmark-2026-11-19",
+  "basis": "not observed: the benchmark skipped Xometry (terms-of-service gate, no upload)",
+  "by_form": {},
+  "not_published": "no lead time read; use a quote"
+ }
 }

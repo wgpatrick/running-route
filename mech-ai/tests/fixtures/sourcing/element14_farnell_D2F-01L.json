@@ -1,0 +1,287 @@
+{
+ "manufacturerPartNumberSearchReturn": {
+  "numberOfResults": 20,
+  "products": [
+   {
+    "sku": "1961084",
+    "displayName": "ARATAS (FORMERLY OMRON COMPONENTS) - D2F01LD - Microswitch, Miniature, Lever, SPDT, Solder, 100 mA, 30 VDC",
+    "productStatus": "STOCKED",
+    "rohsStatusCode": "YES",
+    "packSize": 1,
+    "unitOfMeasure": "EACH",
+    "id": "pf_UK1_1961084_0",
+    "image": {
+     "baseName": "/1961064-40.jpg",
+     "vrntPath": "farnell/"
+    },
+    "datasheets": [
+     {
+      "type": "T",
+      "description": "Technical Data Sheet (830.73KB) EN",
+      "url": "http://www.farnell.com/datasheets/2633070.pdf"
+     }
+    ],
+    "prices": [
+     {
+      "to": 9,
+      "from": 1,
+      "cost": 2.02
+     },
+     {
+      "to": 24,
+      "from": 10,
+      "cost": 1.67
+     },
+     {
+      "to": 49,
+      "from": 25,
+      "cost": 1.55
+     },
+     {
+      "to": 99,
+      "from": 50,
+      "cost": 1.47
+     },
+     {
+      "to": 999999999,
+      "from": 100,
+      "cost": 1.39
+     }
+    ],
+    "inv": 0,
+    "vendorId": "1001837",
+    "vendorName": "ARATAS (FORMERLY OMRON COMPONENTS)",
+    "brandName": "ARATAS (FORMERLY OMRON COMPONENTS)",
+    "translatedManufacturerPartNumber": "D2F01LD",
+    "translatedMinimumOrderQuality": 1,
+    "attributes": [
+     {
+      "attributeLabel": "tariffCode",
+      "attributeValue": "85365007"
+     },
+     {
+      "attributeLabel": "euEccn",
+      "attributeValue": "NLR"
+     }
+    ],
+    "related": {
+     "containAlternatives": false,
+     "containcontainRoHSAlternatives": false,
+     "containAccessories": false,
+     "containcontainRoHSAccessories": false
+    },
+    "stock": {
+     "level": 0,
+     "leastLeadTime": 159,
+     "status": 0
+    },
+    "countryOfOrigin": "JP",
+    "comingSoon": false,
+    "inventoryCode": 5,
+    "nationalClassCode": null,
+    "publishingModule": null,
+    "vatHandlingCode": "SLST",
+    "releaseStatusCode": 4,
+    "isSpecialOrder": false,
+    "isAwaitingRelease": false,
+    "reeling": false,
+    "discountReason": 30,
+    "brandId": "1001837"
+   },
+   {
+    "sku": "4430697",
+    "displayName": "OMRON / PARTNER STOCK - D2F-01L - MICROSWITCH",
+    "productStatus": "DIRECT_SHIP",
+    "rohsStatusCode": "YES",
+    "packSize": 1,
+    "unitOfMeasure": "EACH",
+    "id": "pf_UK1_4430697_0",
+    "image": {
+     "baseName": "/9901957-40.jpg",
+     "vrntPath": "farnell/"
+    },
+    "datasheets": [
+     {
+      "type": "T",
+      "description": "Technical Data Sheet (133.00B) EN",
+      "url": "https://4donline.ihs.com/images/VipMasterIC/IC/OMRN/OMRN-S-A0002892239/OMRN-S-A0002892239-1.pdf?hkey=6D3A4C79FDBF58556ACFDE234799DDF0"
+     }
+    ],
+    "prices": [
+     {
+      "to": 449,
+      "from": 150,
+      "cost": 0.898
+     },
+     {
+      "to": 999999999,
+      "from": 450,
+      "cost": 0.845
+     }
+    ],
+    "inv": 0,
+    "vendorId": "1120497",
+    "vendorName": "OMRON / PARTNER STOCK",
+    "brandName": "OMRON / PARTNER STOCK",
+    "translatedManufacturerPartNumber": "D2F-01L",
+    "translatedMinimumOrderQuality": 150,
+    "attributes": [
+     {
+      "attributeLabel": "tariffCode",
+      "attributeValue": "85365080"
+     },
+     {
+      "attributeLabel": "productTraceability",
+      "attributeValue": "No"
+     }
+    ],
+    "related": {
+     "containAlternatives": false,
+     "containcontainRoHSAlternatives": false,
+     "containAccessories": false,
+     "containcontainRoHSAccessories": false
+    },
+    "stock": {
+     "level": 0,
+     "leastLeadTime": 9,
+     "status": -1
+    },
+    "countryOfOrigin": "JP",
+    "comingSoon": false,
+    "inventoryCode": 2,
+    "nationalClassCode": null,
+    "publishingModule": null,
+    "vatHandlingCode": "SLST",
+    "releaseStatusCode": 2,
+    "isSpecialOrder": false,
+    "isAwaitingRelease": true,
+    "reeling": false,
+    "discountReason": 30,
+    "brandId": "1120497"
+   },
+   {
+    "sku": "9901957",
+    "displayName": "ARATAS (FORMERLY OMRON COMPONENTS) - D2F-01L - Microswitch, Snap Action, Lever, SPDT, Through Hole, 100 mA, 30 V",
+    "productStatus": "STOCKED",
+    "rohsStatusCode": "YES",
+    "packSize": 1,
+    "unitOfMeasure": "EACH",
+    "id": "pf_UK1_9901957_0",
+    "image": {
+     "baseName": "/42256774.jpg",
+     "vrntPath": "farnell/"
+    },
+    "datasheets": [
+     {
+      "type": "T",
+      "description": "Technical Data Sheet (744.00KB) EN",
+      "url": "http://www.farnell.com/datasheets/2340369.pdf"
+     }
+    ],
+    "prices": [
+     {
+      "to": 9,
+      "from": 1,
+      "cost": 1.33
+     },
+     {
+      "to": 24,
+      "from": 10,
+      "cost": 1.09
+     },
+     {
+      "to": 49,
+      "from": 25,
+      "cost": 1.01
+     },
+     {
+      "to": 99,
+      "from": 50,
+      "cost": 0.958
+     },
+     {
+      "to": 999999999,
+      "from": 100,
+      "cost": 0.904
+     }
+    ],
+    "inv": 2109,
+    "vendorId": "1001837",
+    "vendorName": "ARATAS (FORMERLY OMRON COMPONENTS)",
+    "brandName": "ARATAS (FORMERLY OMRON COMPONENTS)",
+    "translatedManufacturerPartNumber": "D2F-01L",
+    "translatedMinimumOrderQuality": 1,
+    "attributes": [
+     {
+      "attributeLabel": "tariffCode",
+      "attributeValue": "85365007"
+     },
+     {
+      "attributeLabel": "euEccn",
+      "attributeValue": "NLR"
+     }
+    ],
+    "related": {
+     "containAlternatives": false,
+     "containcontainRoHSAlternatives": false,
+     "containAccessories": false,
+     "containcontainRoHSAccessories": false
+    },
+    "stock": {
+     "level": 2109,
+     "leastLeadTime": 197,
+     "status": 1,
+     "shipsFromMultipleWarehouses": false,
+     "breakdown": [
+      {
+       "inv": 4409,
+       "region": "UK",
+       "lead": 197,
+       "warehouse": "UK1"
+      },
+      {
+       "inv": 0,
+       "region": "UK",
+       "lead": 197,
+       "warehouse": "GB1"
+      },
+      {
+       "inv": 0,
+       "region": "-",
+       "lead": 197,
+       "warehouse": "PE1"
+      }
+     ],
+     "regionalBreakdown": [
+      {
+       "level": 4409,
+       "leastLeadTime": 197,
+       "status": 1,
+       "warehouse": "UK",
+       "shipsFromMultipleWarehouses": true
+      },
+      {
+       "level": 0,
+       "leastLeadTime": 197,
+       "status": 1,
+       "warehouse": "-",
+       "shipsFromMultipleWarehouses": false
+      }
+     ]
+    },
+    "countryOfOrigin": "JP",
+    "comingSoon": false,
+    "inventoryCode": 5,
+    "nationalClassCode": null,
+    "publishingModule": null,
+    "vatHandlingCode": "SLST",
+    "releaseStatusCode": 4,
+    "isSpecialOrder": false,
+    "isAwaitingRelease": false,
+    "reeling": false,
+    "discountReason": 30,
+    "brandId": "1001837"
+   }
+  ]
+ }
+}

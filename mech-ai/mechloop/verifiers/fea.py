@@ -1080,15 +1080,19 @@ def verify_fea(design: Design, keep_dir: Path | None = None) -> VerifierResult:
     if not shutil.which("ccx"):
         r.add("error", "fea_unavailable", "CalculiX (ccx) is not installed; FEA was NOT run.")
         return r
+    from .. import incremental as _inc     # per-case reuse under `--tier affected` (a no-op outside an incremental run)
+
     with timed(r):
         for lc in design.loadcases:
             try:
-                r.metrics[lc.name] = run_loadcase(design, lc, r, keep_dir)
+                r.metrics[lc.name] = _inc.fea_case(design, r, "loadcase", lc, [lc.component],
+                                                    lambda rr, lc=lc: run_loadcase(design, lc, rr, keep_dir))
             except Exception as e:
                 r.add("error", "fea_crashed", f"{lc.name}: {type(e).__name__}: {e}", loadcase=lc.name)
         for ac in design.assemblycases:
             try:
-                r.metrics[ac.name] = run_assembly(design, ac, r)
+                r.metrics[ac.name] = _inc.fea_case(design, r, "assembly", ac, list(ac.components),
+                                                    lambda rr, ac=ac: run_assembly(design, ac, rr))
             except Exception as e:
                 hint = ("Two of these parts are separated by a very thin gap, which the mesher cannot fill. Leave one of the "
                         "two out of `components`, or make them touch or stand clearly apart in this case."
@@ -1096,12 +1100,14 @@ def verify_fea(design: Design, keep_dir: Path | None = None) -> VerifierResult:
                 r.add("error", "fea_crashed", f"{ac.name}: {type(e).__name__}: {e}", case=ac.name, **({"hint": hint} if hint else {}))
         for tc in design.thermalcases:
             try:
-                r.metrics[tc.name] = run_thermal(design, tc, r)
+                r.metrics[tc.name] = _inc.fea_case(design, r, "thermal", tc, list(tc.components),
+                                                    lambda rr, tc=tc: run_thermal(design, tc, rr))
             except Exception as e:
                 r.add("error", "fea_crashed", f"{tc.name}: {type(e).__name__}: {e}", case=tc.name)
         for mc in design.modalcases:
             try:
-                r.metrics[mc.name] = run_modal(design, mc, r)
+                r.metrics[mc.name] = _inc.fea_case(design, r, "modal", mc, [mc.component],
+                                                    lambda rr, mc=mc: run_modal(design, mc, rr))
             except Exception as e:
                 r.add("error", "fea_crashed", f"{mc.name}: {type(e).__name__}: {e}", case=mc.name)
         if has_bed:      # how the printer's bed is held: support compliance, flexure, screw offset (bed_support.py)
@@ -1112,7 +1118,7 @@ def verify_fea(design: Design, keep_dir: Path | None = None) -> VerifierResult:
                 from . import electrical as _VE
 
                 _BS.FIELD_DIR = Path(_VE.OUT_ROOT) / design.name / "fea"      # the displacement fields, for rendering
-                bs = bed_support(design, r)
+                bs = _inc.fea_case(design, r, "bed_support", None, [], lambda rr: bed_support(design, rr))
                 if bs is not None:
                     r.metrics["bed_support"] = bs
             except Exception as e:      # not evaluated is not a pass

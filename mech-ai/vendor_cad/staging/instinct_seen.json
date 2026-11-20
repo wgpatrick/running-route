@@ -1,13 +1,9 @@
 {
  "folder_id": "1ZtlzfkmX-Yz92soEepnPbyNiPK0uQ43v",
  "folder": "mechloop handoff/results/REQ-001-supplier-cad-batch-3",
- "last_checked": "2026-11-20T00:41:09Z",
- "result_status": "partial (Misumi pending, PEM blocked)",
+ "last_checked": "2026-11-20T00:58:00Z",
+ "result_status": "partial (Misumi delivered and staged in instinct_REQ-001b; PEM S-M3-0 not fulfilled, owner decision pending)",
  "files": {
-  "1qGicnMheu4PMkvryH7cUO5eCvComTrGy": {
-   "title": "RESULT.md",
-   "modifiedTime": "2026-11-20T00:31:30.187Z"
-  },
   "1vwRHKJkIJW3gaI138gcNPCUbF5RF8TUX": {
    "title": "91290A139.pdf",
    "modifiedTime": "2026-11-20T00:30:24.080Z"
@@ -87,6 +83,41 @@
   "11IQYSh9vKKSjzajHqHI8yjZFP_cRuQ0t": {
    "title": "91100A120.step",
    "modifiedTime": "2026-11-20T00:30:14.325Z"
+  },
+  "1fejF-rYkvSkkPuPXiRLh15wT455zHyRW": {
+   "title": "RESULT.md",
+   "modifiedTime": "2026-11-20T00:52:19.936Z"
+  },
+  "1Wl39ZBGucHvOfke0hSMmvl62QjKjAHND": {
+   "title": "HNTAJ5-3.stp",
+   "modifiedTime": "2026-11-20T00:36:37.438Z"
+  },
+  "1C9FyZQ532bsf4ipkm6zqDomnQwVpzm8X": {
+   "title": "HNTAJ5-3.pdf",
+   "modifiedTime": "2026-11-20T00:36:38.708Z"
+  },
+  "1T2bUkQ0dVZLbua5ntmUukdzdq8jqrJLx": {
+   "title": "HNTAJ5-5.stp",
+   "modifiedTime": "2026-11-20T00:49:56.894Z"
+  },
+  "1DXHroAOVfujpZGuubaOXyc0k2DRLsE_-": {
+   "title": "HNTAJ5-5.pdf",
+   "modifiedTime": "2026-11-20T00:49:58.097Z"
+  },
+  "1jM_P_jXaz5N8D-3LAwvR3FQE3Bs4BbUL": {
+   "title": "HBLFSNF5.stp",
+   "modifiedTime": "2026-11-20T00:52:08.025Z"
+  },
+  "16jSfHWA-cR6FprEEo_i6oU8lHy3JO0Ue": {
+   "title": "HBLFSNF5.pdf",
+   "modifiedTime": "2026-11-20T00:52:09.298Z"
+  }
+ },
+ "superseded": {
+  "1qGicnMheu4PMkvryH7cUO5eCvComTrGy": {
+   "title": "RESULT.md",
+   "modifiedTime": "2026-11-20T00:31:30.187Z",
+   "note": "earlier RESULT.md, no longer in the folder; replaced by 1fejF-rYkvSkkPuPXiRLh15wT455zHyRW"
   }
  }
 }

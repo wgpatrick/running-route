@@ -8,6 +8,8 @@
  "retries": 4,
  "backoff_s": 3.0,
  "currency": "USD",
+ "prefer_home_currency": true,
+ "prefer_home_currency_note": "the best offer is taken from distributors pricing in USD (Digi-Key, Mouser, Newark) when one holds the quantity; Farnell (GBP, ships from the UK) only when none does",
  "fx_to_usd": {"USD": 1.0, "GBP": 1.27, "EUR": 1.08,
                "note": "planning conversion for comparing Farnell (GBP) offers with USD ones; not a quoted rate. Best offers are chosen in USD after this conversion and a converted price is marked as such."},
  "in_stock_ship_business_days": 3,

@@ -506,11 +506,20 @@ def write_bom(cx: Ctx) -> dict:
     bom["wires"] = wires
     tl = thread_length_issues(cx)
     bom["thread_length_issues"] = tl
+    # ---- live sourcing (mechloop/sourcing): the last `python -m mechloop.sourcing --design ...` report for this design
+    src_cols = _sourcing_columns(cx.name)
+    src_sum = src_cols.pop("__summary__", None)
+    for L in lines:
+        L["sourcing"] = src_cols.get(L["key"]) or src_cols.get(L["sku"])
+    bom["sourcing"] = src_sum
     # ---- markdown
     T = [f"# Purchasing list: {cx.name}", "", cx.stamp(),
-         "Costs are the design's own estimates (`cost_usd` on each catalogue part, `bom_extra` prices), not quotes. No price or supplier "
-         "was looked up for this package. Where the catalogue records no maker or part number the cell says **not specified** and the "
-         "key-spec column says what to search for.", "",
+         "Costs in the Unit / Ext columns are the design's own estimates (`cost_usd` on each catalogue part, `bom_extra` prices), not quotes. "
+         + (f"The **Live sourcing** column is the sourcing report of {src_sum.get('generated')} (`out/sourcing/{cx.name}/SOURCING.md`): distributor "
+            "list price at the build quantity, distributor, stock, lead time in business days and flags. "
+            if src_sum else "No live price was looked up for this package (run `python -m mechloop.sourcing --design <design>` first to add "
+            "distributor price, stock, lead time and flags). ")
+         + "Where the catalogue records no maker or part number the cell says **not specified** and the key-spec column says what to search for.", "",
          "Provenance: **vendor data** = the catalogue record rests on the maker's datasheet / CAD (`vendor_docs/`, `vendor_cad/`, "
          "`mechloop/parts/vendor/*.json`); **class value** = a generic part, dimensions to a standard or typical for its class; "
          "**STAND-IN** = no real part is identified yet: confirm before buying.", ""]
@@ -533,18 +542,31 @@ def write_bom(cx: Ctx) -> dict:
                "$" + f2(sum((p.get("estimate") or {}).get(k, 0) for p in dig(m, "manufacture", "parts", default={}).values()
                             for k in ("cost_usd_each_qty1", "cut_usd", "material_usd")))],
           ]), ""]
+    if src_sum:
+        T += ["## Live sourcing (distributor APIs)", "",
+              table(["", "Value"], [
+                  ["purchased cost at build quantity (live where API-verified, catalogue elsewhere)",
+                   f"${src_sum['purchased_cost_usd']:.2f} (design estimate ${src_sum['purchased_old_estimate_usd']:.2f})"],
+                  ["API-verified lines", f"{src_sum['api_verified']['lines']} of {src_sum['lines']}: ${src_sum['api_verified']['cost_usd']:.2f} "
+                                         f"(estimate ${src_sum['api_verified']['old_estimate_usd']:.2f})"],
+                  ["flags", ", ".join(f"{k} {v}" for k, v in src_sum["flags"].items()) or "none"],
+                  ["final assembly can start (Build 1 schedule)", f"{src_sum['final_assembly']['earliest_start']}, "
+                                                                  f"{src_sum['final_assembly']['business_days_from_order']} business days after ordering on {src_sum['order_date']}"],
+                  ["critical path", "; ".join(" -> ".join(c["path"]) for c in src_sum["critical_path"])],
+              ]), "", "Full report and schedule: `out/sourcing/" + cx.name + "/SOURCING.md`, `SCHEDULE.md`.", ""]
     for cat in [n for n, _ in CATEGORIES] + ["Other"]:
         rows = [L for L in lines if L["category"] == cat]
         if not rows:
             continue
         T += [f"## {cat}", "",
-              table(["Qty", "SKU (design)", "Placeholder (DG-07)", "Description", "Maker", "Maker part no.", "McMaster no.", "Key spec / what to search for", "Unit $", "Ext $", "Provenance", "Basis", "CAD in the model"],
+              table(["Qty", "SKU (design)", "Placeholder (DG-07)", "Description", "Maker", "Maker part no.", "McMaster no.", "Key spec / what to search for", "Unit $", "Ext $", "Provenance", "Basis", "CAD in the model"]
+                    + (["Live sourcing"] if src_sum else []),
                     [[L["qty"], f"**`{L['bom_key']}`**" if L["placeholder"] else f"`{L['key']}`",
                       f"**PLACEHOLDER** ({L['real_part_state']}): {L['placeholder_why']}" if L["placeholder"] else "no (real part)",
                       ("PLACEHOLDER: " if L["placeholder"] else "") + L["description"], L["maker"], L["maker_pn"],
                       (L["mcmaster"] + (" (" + L["mcmaster_status"] + ")" if L["mcmaster_status"] and "confirmed by" not in L["mcmaster_status"] else "")) or "not recorded",
                       L["spec"] or "-", money(L["unit"]), money(L["ext"]), f"**{L['provenance']}**" if L["provenance"].startswith("STAND") else L["provenance"], L["why"],
-                      L.get("cad", "")]
+                      L.get("cad", "")] + ([_sourcing_cell(L.get("sourcing"))] if src_sum else [])
                      for L in rows]), ""]
     cad_parts, cad_lines = Counter(), Counter()
     for L in lines:
@@ -601,18 +623,46 @@ def write_bom(cx: Ctx) -> dict:
         w = csv.writer(fh)
         w.writerow(["category", "qty", "sku", "bom_key", "description", "maker", "maker_part_number", "mcmaster_number", "mcmaster_status", "key_spec",
                     "unit_cost_usd", "ext_cost_usd", "provenance", "basis", "qty_in_model", "qty_bom_only", "used_as",
-                    "placeholder", "real_part_state", "placeholder_why", "replace_with"])
+                    "placeholder", "real_part_state", "placeholder_why", "replace_with",
+                    "live_cost_usd", "distributor", "distributor_part_number", "stock", "lead_business_days", "sourcing_flags"])
         for L in lines:
             w.writerow([L["category"], L["qty"], L["sku"], L["bom_key"], ("PLACEHOLDER: " if L["placeholder"] else "") + L["description"], L["maker"],
                         L["maker_pn"], L["mcmaster"], L["mcmaster_status"],
                         L["spec"], "" if L["unit"] is None else round(L["unit"], 4), "" if L["ext"] is None else round(L["ext"], 2), L["provenance"], L["why"],
                         L["qty_model"], L["qty_extra"], " ".join(L["used"]),
-                        "yes" if L["placeholder"] else "no", L["real_part_state"] or "", L["placeholder_why"], L["replace_with"]])
+                        "yes" if L["placeholder"] else "no", L["real_part_state"] or "", L["placeholder_why"], L["replace_with"]]
+                       + _sourcing_csv(L.get("sourcing")))
     with open(cx.out / "fasteners.csv", "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(fast[0].keys()))
         w.writeheader()
         w.writerows(fast)
     return bom
+
+
+def _sourcing_columns(name: str) -> dict:
+    """Per-SKU live sourcing cells from the last sourcing report of the design (mechloop/sourcing/report.py); {} if none."""
+    try:
+        from mechloop.sourcing.report import bom_columns
+
+        return dict(bom_columns(name))
+    except Exception as e:          # the package is still written without the column
+        print(f"WARNING: sourcing report not read ({type(e).__name__})", file=sys.stderr)
+        return {}
+
+
+def _sourcing_cell(sc) -> str:
+    if not sc:
+        return "not in the sourcing report"
+    price = "-" if sc.get("price") is None else f"${sc['price']:.2f}"
+    lead = "-" if sc.get("lead") is None else f"{sc['lead']} bd"
+    stock = "" if sc.get("stock") in (None, "-", "") else f", stock {sc['stock']}"
+    return f"{price} {sc.get('distributor', '')}{stock}; lead {lead}; {', '.join(sc.get('flags') or []) or 'ok'}"
+
+
+def _sourcing_csv(sc) -> list:
+    sc = sc or {}
+    return ["" if sc.get("price") is None else round(sc["price"], 2), sc.get("distributor", ""), sc.get("distributor_pn", ""),
+            sc.get("stock", ""), "" if sc.get("lead") is None else sc["lead"], " ".join(sc.get("flags") or [])]
 
 
 NOT_IN_MODEL = [

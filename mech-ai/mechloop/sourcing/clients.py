@@ -41,8 +41,8 @@ def _env(name: str) -> str:
 
 
 def _matches(found_mpn, want, match: str) -> bool:
-    a, b = norm_pn(found_mpn), norm_pn(want)
-    return a == b or (match == "prefix" and a.startswith(b))
+    a, b = norm_pn(found_mpn).lstrip("0"), norm_pn(want).lstrip("0")      # Molex: "0430250200" is "43025-0200"
+    return bool(b) and (a == b or (match == "prefix" and a.startswith(b)))
 
 
 # ------------------------------------------------------------------------------------------------ Digi-Key

@@ -1,0 +1,453 @@
+{
+ "manufacturerPartNumberSearchReturn": {
+  "numberOfResults": 58,
+  "products": [
+   {
+    "sku": "83T2595",
+    "displayName": "ARATAS (FORMERLY OMRON COMPONENTS) - D2F01LD - MICROSWITCH, HINGE LEVER, 0.1",
+    "productStatus": "DIRECT_SHIP",
+    "rohsStatusCode": "YES",
+    "packSize": 1,
+    "unitOfMeasure": "EACH",
+    "id": "pf_US1_83T2595_0",
+    "image": {
+     "baseName": "/1961064-40.jpg",
+     "vrntPath": "farnell/"
+    },
+    "datasheets": [
+     {
+      "type": "T",
+      "description": "Technical Data Sheet (830.73KB) EN",
+      "url": "http://www.farnell.com/datasheets/2633070.pdf"
+     },
+     {
+      "type": "T",
+      "description": "Technical Data Sheet (251.16KB) EN",
+      "url": "http://www.omron.com/ecb/products/pdf/en-d2f.pdf"
+     }
+    ],
+    "prices": [
+     {
+      "to": 9,
+      "from": 1,
+      "cost": 1.98
+     },
+     {
+      "to": 24,
+      "from": 10,
+      "cost": 1.88
+     },
+     {
+      "to": 49,
+      "from": 25,
+      "cost": 1.77
+     },
+     {
+      "to": 99,
+      "from": 50,
+      "cost": 1.67
+     },
+     {
+      "to": 249,
+      "from": 100,
+      "cost": 1.55
+     },
+     {
+      "to": 499,
+      "from": 250,
+      "cost": 1.42
+     },
+     {
+      "to": 999,
+      "from": 500,
+      "cost": 1.3
+     },
+     {
+      "to": 999999999,
+      "from": 1000,
+      "cost": 1.2
+     }
+    ],
+    "inv": 0,
+    "vendorId": "1001837",
+    "vendorName": "ARATAS (FORMERLY OMRON COMPONENTS)",
+    "brandName": "ARATAS (FORMERLY OMRON COMPONENTS)",
+    "translatedManufacturerPartNumber": "D2F01LD",
+    "translatedMinimumOrderQuality": 1,
+    "attributes": [
+     {
+      "attributeLabel": "rohsCompliant",
+      "attributeValue": "YES"
+     },
+     {
+      "attributeLabel": "hazardous",
+      "attributeValue": "false"
+     }
+    ],
+    "related": {
+     "containAlternatives": false,
+     "containcontainRoHSAlternatives": false,
+     "containAccessories": false,
+     "containcontainRoHSAccessories": false
+    },
+    "stock": {
+     "level": 0,
+     "leastLeadTime": 161,
+     "status": -1
+    },
+    "comingSoon": false,
+    "inventoryCode": 2,
+    "nationalClassCode": null,
+    "publishingModule": null,
+    "releaseStatusCode": 2,
+    "isSpecialOrder": false,
+    "isAwaitingRelease": true,
+    "reeling": false,
+    "discountReason": 30,
+    "brandId": "1001837"
+   },
+   {
+    "sku": "36K7261",
+    "displayName": "ARATAS (FORMERLY OMRON COMPONENTS) - D2F-01L - Microswitch, Ultra Subminiature, Hinge Lever, SPDT, Solder, 100 mA, 30 V",
+    "productStatus": "STOCKED",
+    "rohsStatusCode": "YES",
+    "packSize": 1,
+    "unitOfMeasure": "EACH",
+    "id": "pf_US1_36K7261_0",
+    "image": {
+     "baseName": "/36K7261-40.jpg",
+     "vrntPath": "nio/"
+    },
+    "datasheets": [
+     {
+      "type": "T",
+      "description": "Technical Data Sheet (744.00KB) EN",
+      "url": "http://www.farnell.com/datasheets/2340369.pdf"
+     }
+    ],
+    "prices": [
+     {
+      "to": 9,
+      "from": 1,
+      "cost": 1.62
+     },
+     {
+      "to": 24,
+      "from": 10,
+      "cost": 1.39
+     },
+     {
+      "to": 49,
+      "from": 25,
+      "cost": 1.36
+     },
+     {
+      "to": 99,
+      "from": 50,
+      "cost": 1.33
+     },
+     {
+      "to": 249,
+      "from": 100,
+      "cost": 1.31
+     },
+     {
+      "to": 499,
+      "from": 250,
+      "cost": 1.28
+     },
+     {
+      "to": 999,
+      "from": 500,
+      "cost": 1.25
+     },
+     {
+      "to": 999999999,
+      "from": 1000,
+      "cost": 1.22
+     }
+    ],
+    "inv": 405,
+    "vendorId": "1001837",
+    "vendorName": "ARATAS (FORMERLY OMRON COMPONENTS)",
+    "brandName": "ARATAS (FORMERLY OMRON COMPONENTS)",
+    "translatedManufacturerPartNumber": "D2F-01L",
+    "translatedMinimumOrderQuality": 1,
+    "attributes": [
+     {
+      "attributeLabel": "rohsCompliant",
+      "attributeValue": "YES"
+     },
+     {
+      "attributeLabel": "hazardous",
+      "attributeValue": "false"
+     }
+    ],
+    "related": {
+     "containAlternatives": false,
+     "containcontainRoHSAlternatives": false,
+     "containAccessories": false,
+     "containcontainRoHSAccessories": false
+    },
+    "stock": {
+     "level": 405,
+     "leastLeadTime": 38,
+     "status": 1,
+     "shipsFromMultipleWarehouses": false,
+     "breakdown": [
+      {
+       "inv": 405,
+       "region": "US",
+       "lead": 38,
+       "warehouse": "P1"
+      }
+     ],
+     "regionalBreakdown": [
+      {
+       "level": 405,
+       "leastLeadTime": 38,
+       "status": 1,
+       "warehouse": "US",
+       "shipsFromMultipleWarehouses": false
+      }
+     ]
+    },
+    "translatedPrimaryCatalogPage": "1805",
+    "comingSoon": false,
+    "inventoryCode": 5,
+    "nationalClassCode": null,
+    "publishingModule": null,
+    "releaseStatusCode": 4,
+    "isSpecialOrder": false,
+    "isAwaitingRelease": false,
+    "reeling": false,
+    "discountReason": 30,
+    "brandId": "1001837"
+   },
+   {
+    "sku": "36M3890",
+    "displayName": "ARATAS (FORMERLY OMRON COMPONENTS) - D2F-01L - SWITCH, LEVER, SPDT, 0.1A, 30VDC",
+    "productStatus": "DIRECT_SHIP",
+    "rohsStatusCode": "TBA",
+    "packSize": 1,
+    "unitOfMeasure": "EACH",
+    "id": "pf_US1_36M3890_0",
+    "datasheets": [
+     {
+      "type": "T",
+      "description": "Technical Data Sheet (744.00KB) EN",
+      "url": "http://www.farnell.com/datasheets/2340369.pdf"
+     }
+    ],
+    "prices": [
+     {
+      "to": 9,
+      "from": 1,
+      "cost": 3.2
+     },
+     {
+      "to": 24,
+      "from": 10,
+      "cost": 3.04
+     },
+     {
+      "to": 49,
+      "from": 25,
+      "cost": 2.83
+     },
+     {
+      "to": 99,
+      "from": 50,
+      "cost": 2.59
+     },
+     {
+      "to": 249,
+      "from": 100,
+      "cost": 2.41
+     },
+     {
+      "to": 499,
+      "from": 250,
+      "cost": 1.9
+     },
+     {
+      "to": 999,
+      "from": 500,
+      "cost": 1.69
+     },
+     {
+      "to": 999999999,
+      "from": 1000,
+      "cost": 1.37
+     }
+    ],
+    "inv": 0,
+    "vendorId": "1001837",
+    "vendorName": "ARATAS (FORMERLY OMRON COMPONENTS)",
+    "brandName": "ARATAS (FORMERLY OMRON COMPONENTS)",
+    "translatedManufacturerPartNumber": "D2F-01L",
+    "translatedMinimumOrderQuality": 1,
+    "attributes": [
+     {
+      "attributeLabel": "productTraceability",
+      "attributeValue": "No"
+     },
+     {
+      "attributeLabel": "rohsCompliant",
+      "attributeValue": "TBA"
+     }
+    ],
+    "related": {
+     "containAlternatives": false,
+     "containcontainRoHSAlternatives": false,
+     "containAccessories": false,
+     "containcontainRoHSAccessories": false
+    },
+    "stock": {
+     "level": 0,
+     "leastLeadTime": 21,
+     "status": -1
+    },
+    "comingSoon": false,
+    "inventoryCode": 2,
+    "nationalClassCode": null,
+    "publishingModule": null,
+    "releaseStatusCode": 2,
+    "isSpecialOrder": false,
+    "isAwaitingRelease": true,
+    "reeling": false,
+    "discountReason": 30,
+    "brandId": "1001837"
+   },
+   {
+    "sku": "96K9000",
+    "displayName": "ARATAS (FORMERLY OMRON COMPONENTS) - D2F-01L - Microswitch, D2F Series, SPDT, Lever, Th",
+    "productStatus": "DIRECT_SHIP",
+    "rohsStatusCode": "YES",
+    "packSize": 1,
+    "unitOfMeasure": "EACH",
+    "id": "pf_US1_96K9000_0",
+    "image": {
+     "baseName": "/9901957-40.jpg",
+     "vrntPath": "farnell/"
+    },
+    "datasheets": [
+     {
+      "type": "T",
+      "description": "Technical Data Sheet (744.00KB) EN",
+      "url": "http://www.farnell.com/datasheets/2340369.pdf"
+     }
+    ],
+    "prices": [
+     {
+      "to": 9,
+      "from": 1,
+      "cost": 1.69
+     },
+     {
+      "to": 24,
+      "from": 10,
+      "cost": 1.6
+     },
+     {
+      "to": 49,
+      "from": 25,
+      "cost": 1.51
+     },
+     {
+      "to": 99,
+      "from": 50,
+      "cost": 1.42
+     },
+     {
+      "to": 249,
+      "from": 100,
+      "cost": 1.32
+     },
+     {
+      "to": 499,
+      "from": 250,
+      "cost": 1.21
+     },
+     {
+      "to": 999,
+      "from": 500,
+      "cost": 1.11
+     },
+     {
+      "to": 999999999,
+      "from": 1000,
+      "cost": 1.02
+     }
+    ],
+    "inv": 2109,
+    "vendorId": "1001837",
+    "vendorName": "ARATAS (FORMERLY OMRON COMPONENTS)",
+    "brandName": "ARATAS (FORMERLY OMRON COMPONENTS)",
+    "translatedManufacturerPartNumber": "D2F-01L",
+    "translatedMinimumOrderQuality": 1,
+    "attributes": [
+     {
+      "attributeLabel": "rohsCompliant",
+      "attributeValue": "YES"
+     },
+     {
+      "attributeLabel": "hazardous",
+      "attributeValue": "false"
+     }
+    ],
+    "related": {
+     "containAlternatives": false,
+     "containcontainRoHSAlternatives": false,
+     "containAccessories": false,
+     "containcontainRoHSAccessories": false
+    },
+    "stock": {
+     "level": 2109,
+     "leastLeadTime": 199,
+     "status": 1,
+     "shipsFromMultipleWarehouses": false,
+     "breakdown": [
+      {
+       "inv": 5409,
+       "region": "UK",
+       "warehouse": "UK"
+      },
+      {
+       "inv": 0,
+       "region": "US",
+       "lead": 199,
+       "warehouse": "P1"
+      }
+     ],
+     "regionalBreakdown": [
+      {
+       "level": 5409,
+       "leastLeadTime": 0,
+       "status": 1,
+       "warehouse": "UK",
+       "shipsFromMultipleWarehouses": false
+      },
+      {
+       "level": 0,
+       "leastLeadTime": 199,
+       "status": 1,
+       "warehouse": "US",
+       "shipsFromMultipleWarehouses": false
+      }
+     ]
+    },
+    "comingSoon": false,
+    "inventoryCode": 2,
+    "nationalClassCode": null,
+    "publishingModule": null,
+    "releaseStatusCode": 2,
+    "isSpecialOrder": false,
+    "isAwaitingRelease": true,
+    "reeling": false,
+    "discountReason": 30,
+    "brandId": "1001837"
+   }
+  ]
+ }
+}

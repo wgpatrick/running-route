@@ -263,6 +263,8 @@ def is_unstable(fp: str) -> bool:
 # -------------------------------------------------------------------------------------------------------- designs
 # Component fields that no check reads (render colour); everything else is part of a part's fingerprint.
 PART_FIELDS_IGNORED = ("color",)
+# Design fields that decide no result: `release` only chooses the tier.
+DESIGN_FIELDS_IGNORED = ("release",)
 
 
 def part_fp(c) -> dict:
@@ -286,7 +288,7 @@ def part_fp(c) -> dict:
 def design_field_names(design) -> list[str]:
     names = [f.name for f in dataclasses.fields(design)] if dataclasses.is_dataclass(design) else []
     names += [k for k in vars(design) if k not in names]
-    return [n for n in names if not n.startswith("_") and n != "components"]
+    return [n for n in names if not n.startswith("_") and n != "components" and n not in DESIGN_FIELDS_IGNORED]
 
 
 @dataclasses.dataclass

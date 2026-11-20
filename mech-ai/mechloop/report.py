@@ -25,6 +25,7 @@ class VerifierResult:
     seconds: float = 0.0
     skipped: str = ""
     artifacts_sim: object = None  # raw simulation trace, for rendering (not serialised)
+    reused: dict = field(default_factory=dict)  # incremental verify: the stored run this result was taken from ({} = ran now)
 
     @property
     def ok(self) -> bool:
@@ -43,6 +44,7 @@ class Report:
     artifacts: dict = field(default_factory=dict)
     partial: bool = False  # only a subset of verifiers was requested
     provenance: dict = field(default_factory=dict)  # what produced this report: hashes of the mechloop source and of the design file
+    incremental: dict = field(default_factory=dict)  # tier run, what was reused and from which run (mechloop.incremental)
 
     @property
     def ok(self) -> bool:
@@ -59,6 +61,7 @@ class Report:
             "ok": self.ok,
             **({"provenance": self.provenance} if self.provenance else {}),
             **({"partial": "only some verifiers were run; this is not a full pass"} if self.partial else {}),
+            **({"incremental": self.incremental} if self.incremental else {}),
             "summary": {
                 r.verifier: (
                     "skipped: " + r.skipped
@@ -66,6 +69,7 @@ class Report:
                     else ("pass" if r.ok else "FAIL")
                     + f" ({sum(f.severity == 'error' for f in r.findings)} errors, "
                     f"{sum(f.severity == 'warning' for f in r.findings)} warnings, {r.seconds:.1f}s)"
+                    + (f" [reused from run {r.reused.get('iteration')} of {r.reused.get('time')}]" if r.reused else "")
                 )
                 for r in self.results
             },
@@ -103,21 +107,22 @@ def without_timings(report: dict) -> dict:
     """A report (Report.to_dict / report.json) with everything that is a timing or a place on disk taken out, so that
     two runs can be compared: a verify is a function of the design alone, and every other field must be identical
     between two runs of one design, whatever the process's hash seed, the machine's load or what earlier runs left
-    on disk. Removed: keys named `seconds` or ending in `_seconds`, the `(…, 12.3s)` of each summary line, and
-    `artifacts` (file paths, the iteration counter and run times) at any depth."""
+    on disk. Removed: keys named `seconds` or ending in `_seconds`, the `(…, 12.3s)` of each summary line (and its
+    `[reused from run N ...]` mark), `artifacts` (file paths, the iteration counter and run times) and `incremental` (which
+    tier ran and what was reused from which run) at any depth."""
     import re
 
     def strip(x):
         if isinstance(x, dict):
             return {k: strip(v) for k, v in x.items()
-                    if not (k == "seconds" or str(k).endswith("_seconds") or k == "artifacts")}
+                    if not (k == "seconds" or str(k).endswith("_seconds") or k == "artifacts" or k == "incremental")}
         if isinstance(x, list):
             return [strip(v) for v in x]
         return x
 
     out = strip(report)
     if isinstance(out.get("summary"), dict):
-        out["summary"] = {k: re.sub(r", \d+(\.\d+)?s\)$", ")", str(v)) for k, v in out["summary"].items()}
+        out["summary"] = {k: re.sub(r", \d+(\.\d+)?s\)( \[reused from run [^\]]*\])?$", ")", str(v)) for k, v in out["summary"].items()}
     return out
 
 

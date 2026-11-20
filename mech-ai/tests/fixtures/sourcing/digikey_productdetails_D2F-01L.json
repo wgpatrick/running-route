@@ -1,0 +1,154 @@
+{
+ "SearchLocaleUsed": {
+  "Site": "US",
+  "Language": "en",
+  "Currency": "USD"
+ },
+ "Product": {
+  "Description": {
+   "ProductDescription": "SWITCH SNAP ACTION SPDT 0.1A 30V",
+   "DetailedDescription": "Switch SPDT Through Hole"
+  },
+  "Manufacturer": {
+   "Id": 39,
+   "Name": "Aratas (Formerly Omron Components)"
+  },
+  "ManufacturerProductNumber": "D2F-01L",
+  "UnitPrice": 1.44,
+  "ProductUrl": "https://www.digikey.com/en/products/detail/aratas-formerly-omron-components/D2F-01L/83264",
+  "DatasheetUrl": "//mm.digikey.com/Volume0/opasdata/d220001/medias/docus/875/D2F_0318_DS.pdf",
+  "PhotoUrl": "https://mm.digikey.com/Volume0/opasdata/d220001/medias/images/600/D2F-01L.JPG",
+  "ProductVariations": [
+   {
+    "DigiKeyProductNumber": "SW154-ND",
+    "PackageType": {
+     "Id": 3,
+     "Name": "Bulk"
+    },
+    "StandardPricing": [
+     {
+      "BreakQuantity": 1,
+      "UnitPrice": 1.44,
+      "TotalPrice": 1.44
+     },
+     {
+      "BreakQuantity": 10,
+      "UnitPrice": 1.188,
+      "TotalPrice": 11.88
+     },
+     {
+      "BreakQuantity": 25,
+      "UnitPrice": 1.102,
+      "TotalPrice": 27.55
+     },
+     {
+      "BreakQuantity": 50,
+      "UnitPrice": 1.041,
+      "TotalPrice": 52.05
+     },
+     {
+      "BreakQuantity": 100,
+      "UnitPrice": 0.9835,
+      "TotalPrice": 98.35
+     },
+     {
+      "BreakQuantity": 250,
+      "UnitPrice": 0.93124,
+      "TotalPrice": 232.81
+     }
+    ],
+    "MyPricing": [],
+    "MarketPlace": false,
+    "TariffActive": false,
+    "Supplier": {
+     "Id": 39,
+     "Name": "Aratas (Formerly Omron Components)"
+    },
+    "QuantityAvailableforPackageType": 79863,
+    "MinimumOrderQuantity": 1,
+    "DigiReelFee": 0.0
+   }
+  ],
+  "QuantityAvailable": 79863,
+  "ProductStatus": {
+   "Id": 0,
+   "Status": "Active"
+  },
+  "BackOrderNotAllowed": false,
+  "NormallyStocking": true,
+  "Discontinued": false,
+  "EndOfLife": false,
+  "Ncnr": false,
+  "PrimaryVideoUrl": "",
+  "Parameters": [
+   {
+    "ParameterId": 130,
+    "ParameterText": "Circuit",
+    "ParameterType": "String",
+    "ValueId": "405967",
+    "ValueText": "SPDT"
+   },
+   {
+    "ParameterId": 235,
+    "ParameterText": "Switch Function",
+    "ParameterType": "String",
+    "ValueId": "382041",
+    "ValueText": "On-Mom"
+   },
+   {
+    "ParameterId": 66,
+    "ParameterText": "Current Rating (Amps)",
+    "ParameterType": "String",
+    "ValueId": "68840",
+    "ValueText": "100mA (DC)"
+   }
+  ],
+  "BaseProductNumber": {
+   "Id": 353414,
+   "Name": "D2F"
+  },
+  "Category": {
+   "CategoryId": 15,
+   "ParentId": 0,
+   "Name": "Switches",
+   "ProductCount": 0,
+   "NewProductCount": 0,
+   "ImageUrl": "https://mm.digikey.com/Volume0/opasdata/d220001/derivates/3/300/274/017/MFG_TL3215_tmb.jpg",
+   "SeoDescription": "Switches are devices used to interrupt the flow of electrical current in one or more circuits, under the direct physical control of some outside mechanism such as a user's finger or thumb, a magnet, or a moving machine component. Organization of sub-groups within the category occurs along lines of the physical style or form of switches' actuators, or a particular application or purpose for which they are designed.",
+   "ChildCategories": [
+    {
+     "CategoryId": 198,
+     "ParentId": 15,
+     "Name": "Limit Switches",
+     "ProductCount": 0,
+     "NewProductCount": 0,
+     "ImageUrl": "https://mm.digikey.com/Volume0/opasdata/d220001/derivates/3/300/252/578/Z-15GQ21_tmb.jpg",
+     "SeoDescription": "Snap action limit switches are mechanical devices that make or break an electrical connection by the closing or opening electrical contacts or solid state circuitry when actuated by human or mechanical interaction most commonly at a travel limit position. Limit switches are selected by actuator types such as an adjustable plunger or rod, toggle, arm lever, roller, cone, leaf, rotary actuator, spring, whisker or cable.",
+     "ChildCategories": []
+    }
+   ]
+  },
+  "ManufacturerLeadWeeks": "26",
+  "ManufacturerPublicQuantity": 18000,
+  "Series": {
+   "Id": 16055,
+   "Name": "D2F"
+  },
+  "Classifications": {
+   "ReachStatus": "REACH Unaffected",
+   "RohsStatus": "ROHS3 Compliant",
+   "MoistureSensitivityLevel": "Not Applicable",
+   "ExportControlClassNumber": "EAR99",
+   "HtsusCode": "8536.50.7000"
+  },
+  "OtherNames": [
+   "D2F-01L(UL/CSA)",
+   "SW154",
+   "Q2505549",
+   "D2F01L",
+   "D2F01LULCSA"
+  ]
+ },
+ "AccountIdUsed": 0,
+ "CustomerIdUsed": 0
+}
