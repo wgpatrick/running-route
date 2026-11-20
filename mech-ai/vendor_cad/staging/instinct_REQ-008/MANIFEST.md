@@ -83,3 +83,41 @@ domain (schurter.com / phoenixcontact.com). STEP files: plain ISO-10303-21 text,
 - In progress / pending: 2 (Finder 22.32 STEP re-verify), 5, 6, 7, 8 (spacer research; STEP blocked on TraceParts), 9, 10,
   13, 14 (part numbers), 15, 16, 17, 18, 19 (partial, no official drawing exists), 20.
 - RESULT.md still says "drawing DRG-02007" for item 8 (see the note above).
+
+## Batch 8 (ingested 2026-11-20, Drive state at about 06:45Z): REQ-008b, Schurter DD11.0124.1111
+
+Two new files plus a revised RESULT.md in REQ-008. Recursive search of `mechloop handoff/results` for anything created or
+modified after 05:30Z, plus a full listing of the two new folders, found only these, the new REQ-009 folder (see
+../instinct_REQ-009/MANIFEST.md) and an empty REQ-010 folder (see ../instinct_REQ-010/MANIFEST.md). Downloaded one at a time into
+scratchpad `instinct_batch8/REQ-008/`; sizes match Drive. Untrusted data. Nothing copied to `vendor_cad/inbox/`, nothing committed.
+
+RESULT.md (1sj3kBNRTE9p_aGhdKOtaj0Fow2kYnAf-, 06:30:10Z, 5,502 B, sha256
+8ed3ec952048fd29ceec45820ceb5e080124e2e8a4990b4cd3be2343ec534347) overwrites the 05:33Z copy (150fc3d2...). STATUS is unchanged
+(**partial, interim; items 1, 3, 4, 12 resolved**). It adds a "REQ-008b-updates" section.
+
+| Delivered as (Drive id) | Staged as | sha256 | Content |
+|---|---|---|---|
+| DD11.0124.1111__cad.step (15ovyvGT0a3xsqiBbY87jgLduX0a_KO5u, 2,998,289 B) | **not staged**: byte-identical to `vendor_cad/inbox/INLET-C14-SW-FUSE-T8A.step` and to the batch-7 DD11.0114.1111__cad.step | 4f86626e145c33b3359ad398d4d31fb69e74cff102b190e2b352c6d445bd7c84 | Schurter family model `0100.2571.STEP` (SolidWorks 2006, AP214), 1 MANIFOLD_SOLID_BREP, complete, no URLs |
+| DD11.0124.1111__datasheet.pdf (1iyr9HDluKtGykXGcrvnuw8DUalr6WkLV, 450,651 B) | **not copied**: same sha256 as `vendor_docs/INLET-C14-SW-FUSE-T8A_datasheet.pdf` (already scanned: real PDF, no JavaScript) | 1db97cff0daf3ff16140aba71b86a4556479dc26ed8a657b23d7a6a0d3ea0fe7 | typ_DD11 series sheet, 6 p, 01.09.2025 |
+
+### Checks
+
+- **2-pole confirmed from the datasheet.** Variants table (p.5): `2-pole | none | illuminated | green | cover | V-Lock | A |
+  DD11.0124.1111`. The first column is the fuseholder pole count; the line switch is 2-pole on every DD11 (header "Line Switch
+  2-pole, Fuseholder 1- or 2-pole"). DD11.0114.1111 is the same line with a 1-pole fuseholder.
+- **Flange / cut-out same as DD11.0114.1111**: both are mounting version A on the one series sheet, so flange 65 x 30.5 x 2.5,
+  cut-out 47.1 x 28.1 R1, screws 56 apart apply to both. The STEP is the identical file checked in batch 7 (all dimensions matched;
+  see the table above), so build123d was not re-run.
+- **Flag: the STEP is not specific to 0124.1111.** RESULT.md says it was "fetched via Schurter's own CAD download flow for the exact
+  order number", but its bytes are the generic family model already in the inbox. Externally a 2-pole fuse drawer differs from a 1-pole
+  drawer + spare-fuse case only inside the drawer, so the outline is still usable.
+- Instinct reports (not verified): Digi-Key 486-1286-ND, $28.36 qty 1 ($24.10 @10, $22.59 @25, $21.51 @50, $20.49 @100), **not
+  stocked, 16-week standard lead time**. DD11.0123.1111 (red lamp, 486-1284-ND, $28.04, 108 in stock) noted as a different part.
+- Item 4 (plain-cartridge 5x20 STEP) and item 5 (newer Phoenix 1119897 CAD): no action, no new files. Instinct says Schurter offers
+  only pigtail STEPs for 0001.2511 / .2513, and Phoenix only the one model (92.6 mm deep vs 94 mm sheet).
+
+### Owner flags
+
+- Switching to DD11.0124.1111 resolves the batch-7 pole mismatch with the 2-pole drawer 4301.1401 and the 2 fitted 0001.2513
+  fuses, but `mechloop/data/sourcing/mpn_map.json` and `v12_electronics.json` still list DD11.0114.1111. Not changed here.
+- 16-week lead time and no stock at Digi-Key (as reported) for DD11.0124.1111.

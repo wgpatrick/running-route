@@ -29,3 +29,16 @@ Interim result landed early so an interruption never leaves the folder empty. It
 18. Arducam UVC nozzle camera candidates — pending.
 19. Pi 5 camera cable 22-to-15 — REQ-006 item 2 partial (no official drawing exists; reseller SKUs recorded).
 20. 24 V COB LED strip CRI 90+ + channel — pending.
+
+## REQ-008b-updates (worked 2026-11-19)
+
+Items 1-2 (item 4 photo + item 16): skipped per REQ-008b, already done by owner.
+
+Item 3 - Schurter DD11.0124.1111 (new part): DONE. Two files added to this folder:
+- DD11.0124.1111__cad.step - official schurter.com STEP (AP214, 1 solid, ~3 MB), fetched via Schurter's own CAD download flow for the exact order number.
+- DD11.0124.1111__datasheet.pdf - copy of the typ_DD11 series datasheet. 2-pole confirmed two ways: the series datasheet variant table lists the line "2-pole none illuminated green ... DD11.0124.1111", and the product page text reads "IEC Appliance Inlet C14 with Line Switch 2-pole, Fuseholder 1- or 2-pole".
+US distributor price/stock (Digi-Key, checked 2026-11-19): DD11.0124.1111 = Digi-Key 486-1286-ND, $28.36 qty 1 (price breaks $24.10 @10, $22.59 @25, $21.51 @50, $20.49 @100), not stocked, Manufacturer Standard Lead Time 16 weeks. Digi-Key also lists DD11.0123.1111 (486-1284-ND, $28.04 qty 1, 108 in stock) - a different order number (switch variant), recorded for reference only, not a substitute. Mouser product page was inaccessible (bot-protection block).
+
+Item 4 - cartridge (no-leads) STEP check for 0001.2513 / 0001.2511: NO ACTION, per the REQ's fallback. Schurter's official CAD entries for these exact order numbers offer only pigtail STEP geometry (0001-2511-pt.stp / 0001-2513-pt.stp, already in this folder as 0001.2511__cad.step / 0001.2513__cad.step). No plain-cartridge STEP exists for 2511/2513 (some other ratings, e.g. 0001.2514, do have plain cartridge STEPs). Owner will model the cartridge from the datasheet as stated in the REQ.
+
+Item 5 - Phoenix 1119897 alternative/newer CAD check: NO ACTION, per the REQ's fallback. The product page's CAD download offers a single model with a format picker only - no newer version, no variant including the base element. The delivered 1119897__cad.stp (92.6 mm deep vs 94 mm datasheet depth) remains the only official CAD for the exact part number. The relay base PLC-BSC-5DC/21 (item 2980225) is a separate product with its own CAD; Phoenix offers no combined module+base assembly CAD.
