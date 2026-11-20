@@ -1,0 +1,5 @@
+{
+ "schema": "mechloop.real_parts/1",
+ "about": "Purchased parts pinned to a real, orderable product, by SKU (practice rule DG-07, docs/DESIGN_GUIDELINES.md key rule). Each record: maker, mpn (the maker's orderable number at the stock size used), sellers [{name, part_number, url, checked}], sold_by_maker (true when the maker sells it itself), stock_size, datasheet (vendor_docs file + URL), ratings_source {rating: 'datasheet p.N'}, replace_with (for a placeholder: the real part or the search). A design can also give the record on the part: place(..., real_part={...}). Only facts read from the maker's or seller's own page go here; nothing is filled in from memory.",
+ "parts": {}
+}
