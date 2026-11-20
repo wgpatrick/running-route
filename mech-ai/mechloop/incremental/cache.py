@@ -5,8 +5,10 @@ Layout:
   verify_cache/results/<verifier>/<key>.pkl
                                         one verifier's findings, metrics and the run it came from
   verify_cache/fea_cases/<key>.pkl      one FEA case (load / modal / assembly / thermal / bed support)
-  verify_cache/pairs.pkl                interference pair kernel results {pair key: (overlap volume, where, gap)}
-  verify_cache/overlap_memo.pkl         assemblability exact overlap volumes {(fp a, fp b, offset): volume}
+  verify_cache/<verifier>.<table>.pkl   memoised geometric kernels, keyed by the shapes' fingerprints and the kernel's
+                                        parameters: interference.pairs (overlap volume and place, gap of each pair),
+                                        assemblability.overlap_memo (distances, overlaps along removal paths and of the
+                                        driver), motion.overlap (overlap at each relative pose)
 
 Every key is a digest of what decides the result: the verifier's code hash (its module and imports, the package's data
 files, library versions), the fingerprints of the parts and design fields it reads, and the metrics of earlier

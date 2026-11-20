@@ -176,6 +176,8 @@ def verify_motion(design: Design, per_joint: int = 9) -> VerifierResult:
                 f"nozzle contact plus each part's toolhead margin; every other pair is checked over the whole over-travel")
         if ot_m:
             r.metrics["overtravel"] = ot_m
+        from .. import incremental as _inc
+
         worst: dict[tuple, dict] = {}
         exact_checks = 0
         cache: dict = {}
@@ -238,8 +240,11 @@ def verify_motion(design: Design, per_joint: int = 9) -> VerifierResult:
                 ck = (a, b, tuple(np.round(rel.reshape(-1), 4)))
                 if ck not in cache:
                     exact_checks += 1
-                    sb = comps[b].shape.moved(location_from_matrix(rel))
-                    cache[ck] = overlap_volume(comps[a].shape, sb)
+                    sa_, sb_, rel_ = comps[a].shape, comps[b].shape, rel
+                    # reused across runs for unchanged parts (a no-op outside an incremental run)
+                    cache[ck] = _inc.memo("overlap", lambda: ["rel", _inc.shape_key(sa_), _inc.shape_key(sb_), list(ck[2]),
+                                                             [float(x) for x in rel_.reshape(-1)]],
+                                          lambda: overlap_volume(sa_, sb_.moved(location_from_matrix(rel_))))
                 vol, where = cache[ck]
                 allowed = design.allowed_overlaps.get(frozenset((a, b)))
                 if vol > VOL_TOL and (allowed is None or vol > allowed):

@@ -102,6 +102,7 @@ def test_status_words_and_maker_match():
     assert status_of("Active") == "active" and status_of("Not For New Designs") == "nrnd" and status_of("Obsolete") == "obsolete"
     assert status_of("Last Time Buy") == "obsolete" and status_of("") == "unknown"
     assert same_maker("Omron", "Aratas (Formerly Omron Components)") and not same_maker("Vishay", "Nexperia")
+    assert same_maker("Omron", "Aratas") and same_maker("Henkel / Loctite", "LOCTITE")       # Mouser names the maker "Aratas"
     assert norm_pn("BAT85,133") == "BAT85133"
 
 

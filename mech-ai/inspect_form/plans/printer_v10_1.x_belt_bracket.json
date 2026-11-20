@@ -1,0 +1,1876 @@
+{
+ "schema": "mechloop.inspection_plan/1",
+ "part": "x_belt_bracket",
+ "part_id": "printer_v10_1.x_belt_bracket",
+ "revision": "printer_v10_1",
+ "generated": "2026-11-20T01:15:16",
+ "process": "sheet",
+ "form": "bent",
+ "material": "al5052",
+ "thickness_mm": 2.286,
+ "shop": "sendcutsend",
+ "shop_name": "SendCutSend",
+ "source": {
+  "design": "designs/printer_v10_1.py",
+  "component": "x_belt_bracket"
+ },
+ "dxf": null,
+ "frame": {
+  "note": "drawing frame: origin at the part's bounding-box corner; Z = sheet normal (flat) or the smallest extent; X the longer of the other two. Datum C = the x = 0 edge, B = the y = 0 edge, A = the z = 0 face.",
+  "R_world_to_local": [
+   [
+    0.0,
+    1.0,
+    -0.0
+   ],
+   [
+    -1.0,
+    0.0,
+    0.0
+   ],
+   [
+    -0.0,
+    -0.0,
+    1.0
+   ]
+  ],
+  "offset": [
+   -49.614999999999995,
+   -15.0,
+   432.0198022763241
+  ]
+ },
+ "size_mm": [
+  31.0,
+  30.0,
+  12.600000000000023
+ ],
+ "tolerances": {
+  "cut": {
+   "pm": 0.127,
+   "unit": "mm",
+   "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+   "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+   "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+   "published": true
+  },
+  "hole": {
+   "pm": 0.127,
+   "unit": "mm",
+   "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+   "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+   "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+   "published": true
+  },
+  "bend_edge": {
+   "pm": 0.381,
+   "unit": "mm",
+   "source": "SendCutSend published (sendcutsend.bend.tolerance_edge)",
+   "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+   "url": "https://sendcutsend.com/services/cnc-bending/",
+   "published": true
+  },
+  "bend_angle_deg": {
+   "pm": 1.0,
+   "unit": "deg",
+   "source": "SendCutSend published (sendcutsend.bend.tolerance_angle)",
+   "quote": "Bends up to 24\u2033: +/- 1\u00b0",
+   "url": "https://sendcutsend.com/services/cnc-bending/",
+   "published": true
+  },
+  "flat": {
+   "pm": 0.2,
+   "unit": "mm",
+   "published": false,
+   "source": "mechloop class value (tolerance/process.py sheet flat, 2 standard deviations); SendCutSend publishes none for this"
+  },
+  "general": {
+   "pm": 0.127,
+   "unit": "mm",
+   "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+   "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+   "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+   "published": true
+  }
+ },
+ "holes": [
+  {
+   "id": "H3",
+   "center": [
+    29.857,
+    24.5,
+    3.2301977236758717
+   ],
+   "axis": [
+    -1.0,
+    0.0,
+    -2.220446049250313e-16
+   ],
+   "d": 3.4,
+   "round": true,
+   "through": true,
+   "interfaces": [
+    {
+     "kind": "fastener",
+     "name": "x_belt_bracket_screw_0",
+     "sku": "SHCS-M3x10",
+     "size": "M3",
+     "d": 3.0,
+     "mates": [
+      "tool_plate"
+     ]
+    }
+   ],
+   "edge_web": 1.53,
+   "to_bend": [
+    {
+     "d_tan": 4.574,
+     "r": 0.81,
+     "angle": 90.00000000000026
+    }
+   ]
+  },
+  {
+   "id": "H4",
+   "center": [
+    29.857,
+    5.5,
+    3.2301977236758717
+   ],
+   "axis": [
+    -1.0,
+    0.0,
+    -2.220446049250313e-16
+   ],
+   "d": 3.4,
+   "round": true,
+   "through": true,
+   "interfaces": [
+    {
+     "kind": "fastener",
+     "name": "x_belt_bracket_screw_1",
+     "sku": "SHCS-M3x10",
+     "size": "M3",
+     "d": 3.0,
+     "mates": [
+      "tool_plate"
+     ]
+    }
+   ],
+   "edge_web": 1.53,
+   "to_bend": [
+    {
+     "d_tan": 4.574,
+     "r": 0.81,
+     "angle": 90.00000000000026
+    }
+   ]
+  },
+  {
+   "id": "H6",
+   "center": [
+    20.2,
+    5.0,
+    11.45700000000005
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "d": 3.4,
+   "round": true,
+   "through": true,
+   "interfaces": [
+    {
+     "kind": "fastener",
+     "name": "x_belt_clamp_screw_3",
+     "sku": "SHCS-M3x10",
+     "size": "M3",
+     "d": 3.0,
+     "mates": [
+      "x_belt_clamp"
+     ]
+    }
+   ],
+   "edge_web": 3.3,
+   "to_bend": [
+    {
+     "d_tan": 6.004,
+     "r": 0.81,
+     "angle": 90.00000000000026
+    }
+   ]
+  },
+  {
+   "id": "H5",
+   "center": [
+    6.200000000000003,
+    5.0,
+    11.45700000000005
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "d": 3.4,
+   "round": true,
+   "through": true,
+   "interfaces": [
+    {
+     "kind": "fastener",
+     "name": "x_belt_clamp_screw_2",
+     "sku": "SHCS-M3x10",
+     "size": "M3",
+     "d": 3.0,
+     "mates": [
+      "x_belt_clamp"
+     ]
+    }
+   ],
+   "edge_web": 3.3,
+   "to_bend": [
+    {
+     "d_tan": 20.004,
+     "r": 0.81,
+     "angle": 90.00000000000026
+    }
+   ]
+  },
+  {
+   "id": "H2",
+   "center": [
+    20.2,
+    25.0,
+    11.45700000000005
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "d": 3.4,
+   "round": true,
+   "through": true,
+   "interfaces": [
+    {
+     "kind": "fastener",
+     "name": "x_belt_clamp_screw_1",
+     "sku": "SHCS-M3x10",
+     "size": "M3",
+     "d": 3.0,
+     "mates": [
+      "x_belt_clamp"
+     ]
+    }
+   ],
+   "edge_web": 3.3,
+   "to_bend": [
+    {
+     "d_tan": 6.004,
+     "r": 0.81,
+     "angle": 90.00000000000026
+    }
+   ]
+  },
+  {
+   "id": "H1",
+   "center": [
+    6.200000000000003,
+    25.0,
+    11.45700000000005
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "d": 3.4,
+   "round": true,
+   "through": true,
+   "interfaces": [
+    {
+     "kind": "fastener",
+     "name": "x_belt_clamp_screw_0",
+     "sku": "SHCS-M3x10",
+     "size": "M3",
+     "d": 3.0,
+     "mates": [
+      "x_belt_clamp"
+     ]
+    }
+   ],
+   "edge_web": 3.3,
+   "to_bend": [
+    {
+     "d_tan": 20.004,
+     "r": 0.81,
+     "angle": 90.00000000000026
+    }
+   ]
+  }
+ ],
+ "bends": [
+  {
+   "id": "B1",
+   "radius": 0.81,
+   "angle": 90.0,
+   "length": 30.0,
+   "at": [
+    28.474999999999994,
+    15.0,
+    10.080197723675894
+   ],
+   "axis": [
+    0.0,
+    -1.0,
+    -2.220446049250313e-16
+   ],
+   "flanges": [
+    {
+     "length": 12.6,
+     "reach": 9.504,
+     "at": [
+      28.714999999999996,
+      15.0,
+      0.00019772367585346728
+     ]
+    },
+    {
+     "length": 31.0,
+     "reach": 27.904,
+     "at": [
+      0.0049999999999954525,
+      15.0,
+      10.310197723675856
+     ]
+    }
+   ]
+  }
+ ],
+ "predictions": [
+  {
+   "code": "supplier_rule",
+   "severity": "warning",
+   "rule": "sendcutsend.cut.hole_edge_al5052_page",
+   "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_al5052_page: hole edge to part edge 1.53 mm (6 of 6), limit >= 4.57 mm (warning: the supplier's words: \"Spacing from edges: Leave at least 2x thickness between a hole and an edge.\")."
+  },
+  {
+   "code": "supplier_rule",
+   "severity": "warning",
+   "rule": "sendcutsend.cut.hole_edge_d_ratio",
+   "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 1.53 mm (6 of 6), limit >= 3.4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+  },
+  {
+   "code": "supplier_rule",
+   "severity": "warning",
+   "rule": "sendcutsend.bend.die_width.al5052.2.286mm",
+   "finding": "x_belt_bracket: SendCutSend rule sendcutsend.bend.die_width.al5052.2.286mm: hole or cut-out to bend 5.87 mm (2 of 6), limit >= 6 mm (warning: the supplier's words: \"Bending specifications per material (bending calculator), 5052 Aluminum .090\u2033: Die Width .472\u2033. Bend deformation guideline: make sure your cut features are at l\")."
+  }
+ ],
+ "dimensions": [
+  {
+   "key": "H3-H4.pitch",
+   "kind": "hole_pitch",
+   "label": "Pitch H3 to H4 (pattern for tool_plate)",
+   "nominal": 19.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 19.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: centre-to-centre from the fitted circles (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "screws of tool_plate pass through both holes: the pattern must match tool_plate's"
+   ],
+   "score": 90.0,
+   "at": [
+    29.857,
+    15.0,
+    3.23
+   ],
+   "view": "side",
+   "features": [
+    "H3",
+    "H4"
+   ],
+   "id": 1
+  },
+  {
+   "key": "H1-H2.pitch",
+   "kind": "hole_pitch",
+   "label": "Pitch H1 to H2 (pattern for x_belt_clamp)",
+   "nominal": 14.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 14.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: centre-to-centre from the fitted circles (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "screws of x_belt_clamp pass through both holes: the pattern must match x_belt_clamp's"
+   ],
+   "score": 90.0,
+   "at": [
+    13.2,
+    25.0,
+    11.457
+   ],
+   "view": "plan",
+   "features": [
+    "H1",
+    "H2"
+   ],
+   "id": 2
+  },
+  {
+   "key": "H2-H5.pitch",
+   "kind": "hole_pitch",
+   "label": "Pitch H2 to H5 (pattern for x_belt_clamp)",
+   "nominal": 24.4131,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 24.4131,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: centre-to-centre from the fitted circles (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "screws of x_belt_clamp pass through both holes: the pattern must match x_belt_clamp's"
+   ],
+   "score": 90.0,
+   "at": [
+    13.2,
+    15.0,
+    11.457
+   ],
+   "view": "plan",
+   "features": [
+    "H2",
+    "H5"
+   ],
+   "id": 3
+  },
+  {
+   "key": "H5-H6.pitch",
+   "kind": "hole_pitch",
+   "label": "Pitch H5 to H6 (pattern for x_belt_clamp)",
+   "nominal": 14.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 14.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: centre-to-centre from the fitted circles (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "screws of x_belt_clamp pass through both holes: the pattern must match x_belt_clamp's"
+   ],
+   "score": 90.0,
+   "at": [
+    13.2,
+    5.0,
+    11.457
+   ],
+   "view": "plan",
+   "features": [
+    "H5",
+    "H6"
+   ],
+   "id": 4
+  },
+  {
+   "key": "H3.to_bend",
+   "kind": "hole_to_bend",
+   "label": "Hole H3 centre to the outside of the nearest bend",
+   "nominal": 9.37,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.508,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_edge) + the cut tolerance (hole to edge)",
+    "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 9.37,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.bend.die_width.al5052.2.286mm",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.bend.die_width.al5052.2.286mm: hole or cut-out to bend 5.87 mm (2 of 6), limit >= 6 mm (warning: the supplier's words: \"Bending specifications per material (bending calculator), 5052 Aluminum .090\u2033: Die Width .472\u2033. Bend deformation guideline: make sure your cut features are at l\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers step (or depth bar) on the outside face of the other flange; jaw tip to the near edge of the hole; add half the hole diameter.",
+    "alternates": []
+   },
+   "depends": [
+    "x_belt_bracket_screw_0 (SHCS-M3x10) clamps tool_plate"
+   ],
+   "score": 90.0,
+   "at": [
+    29.857,
+    24.5,
+    3.23
+   ],
+   "view": "side",
+   "features": [
+    "H3"
+   ],
+   "id": 5
+  },
+  {
+   "key": "H4.to_bend",
+   "kind": "hole_to_bend",
+   "label": "Hole H4 centre to the outside of the nearest bend",
+   "nominal": 9.37,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.508,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_edge) + the cut tolerance (hole to edge)",
+    "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 9.37,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.bend.die_width.al5052.2.286mm",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.bend.die_width.al5052.2.286mm: hole or cut-out to bend 5.87 mm (2 of 6), limit >= 6 mm (warning: the supplier's words: \"Bending specifications per material (bending calculator), 5052 Aluminum .090\u2033: Die Width .472\u2033. Bend deformation guideline: make sure your cut features are at l\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers step (or depth bar) on the outside face of the other flange; jaw tip to the near edge of the hole; add half the hole diameter.",
+    "alternates": []
+   },
+   "depends": [
+    "x_belt_bracket_screw_1 (SHCS-M3x10) clamps tool_plate"
+   ],
+   "score": 90.0,
+   "at": [
+    29.857,
+    5.5,
+    3.23
+   ],
+   "view": "side",
+   "features": [
+    "H4"
+   ],
+   "id": 6
+  },
+  {
+   "key": "H3.dia_across",
+   "kind": "hole_ovality",
+   "label": "Hole H3 diameter across the bend",
+   "nominal": 3.4,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 3.4,
+    "basis": "our check expects the hole to stretch into an oval when the bend is formed (no numeric model: the measurement sets one)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_al5052_page",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_al5052_page: hole edge to part edge 1.53 mm (6 of 6), limit >= 4.57 mm (warning: the supplier's words: \"Spacing from edges: Leave at least 2x thickness between a hole and an edge.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 1.53 mm (6 of 6), limit >= 3.4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.bend.die_width.al5052.2.286mm",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.bend.die_width.al5052.2.286mm: hole or cut-out to bend 5.87 mm (2 of 6), limit >= 6 mm (warning: the supplier's words: \"Bending specifications per material (bending calculator), 5052 Aluminum .090\u2033: Die Width .472\u2033. Bend deformation guideline: make sure your cut features are at l\")."
+     }
+    ],
+    "expect_out_of_tolerance": true
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws: across the bend (perpendicular to the bend line) and along it; record both.",
+    "alternates": []
+   },
+   "depends": [
+    "x_belt_bracket_screw_0 (SHCS-M3x10) clamps tool_plate"
+   ],
+   "score": 86.0,
+   "at": [
+    29.857,
+    24.5,
+    3.23
+   ],
+   "view": "side",
+   "features": [
+    "H3"
+   ],
+   "fit": "clearance for M3: 0.40 mm over the screw; the screw passes while the hole is above 3.05 mm",
+   "id": 7
+  },
+  {
+   "key": "H4.dia_across",
+   "kind": "hole_ovality",
+   "label": "Hole H4 diameter across the bend",
+   "nominal": 3.4,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 3.4,
+    "basis": "our check expects the hole to stretch into an oval when the bend is formed (no numeric model: the measurement sets one)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_al5052_page",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_al5052_page: hole edge to part edge 1.53 mm (6 of 6), limit >= 4.57 mm (warning: the supplier's words: \"Spacing from edges: Leave at least 2x thickness between a hole and an edge.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 1.53 mm (6 of 6), limit >= 3.4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.bend.die_width.al5052.2.286mm",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.bend.die_width.al5052.2.286mm: hole or cut-out to bend 5.87 mm (2 of 6), limit >= 6 mm (warning: the supplier's words: \"Bending specifications per material (bending calculator), 5052 Aluminum .090\u2033: Die Width .472\u2033. Bend deformation guideline: make sure your cut features are at l\")."
+     }
+    ],
+    "expect_out_of_tolerance": true
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws: across the bend (perpendicular to the bend line) and along it; record both.",
+    "alternates": []
+   },
+   "depends": [
+    "x_belt_bracket_screw_1 (SHCS-M3x10) clamps tool_plate"
+   ],
+   "score": 86.0,
+   "at": [
+    29.857,
+    5.5,
+    3.23
+   ],
+   "view": "side",
+   "features": [
+    "H4"
+   ],
+   "fit": "clearance for M3: 0.40 mm over the screw; the screw passes while the hole is above 3.05 mm",
+   "id": 8
+  },
+  {
+   "key": "H1.dia",
+   "kind": "hole_diameter",
+   "label": "Hole H1 diameter (M3 fastener)",
+   "nominal": 3.4,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 3.4,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_al5052_page",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_al5052_page: hole edge to part edge 1.53 mm (6 of 6), limit >= 4.57 mm (warning: the supplier's words: \"Spacing from edges: Leave at least 2x thickness between a hole and an edge.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 1.53 mm (6 of 6), limit >= 3.4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws, two readings 90 degrees apart (record the mean; note ovality).",
+    "alternates": []
+   },
+   "depends": [
+    "x_belt_clamp_screw_0 (SHCS-M3x10) clamps x_belt_clamp"
+   ],
+   "score": 85.0,
+   "at": [
+    6.2,
+    25.0,
+    11.457
+   ],
+   "view": "plan",
+   "features": [
+    "H1"
+   ],
+   "fit": "clearance for M3: 0.40 mm over the screw; the screw passes while the hole is above 3.05 mm",
+   "id": 9
+  },
+  {
+   "key": "H1.to_bend",
+   "kind": "hole_to_bend",
+   "label": "Hole H1 centre to the outside of the nearest bend",
+   "nominal": 24.8,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.508,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_edge) + the cut tolerance (hole to edge)",
+    "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 24.8,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers step (or depth bar) on the outside face of the other flange; jaw tip to the near edge of the hole; add half the hole diameter.",
+    "alternates": []
+   },
+   "depends": [
+    "x_belt_clamp_screw_0 (SHCS-M3x10) clamps x_belt_clamp"
+   ],
+   "score": 85.0,
+   "at": [
+    6.2,
+    25.0,
+    11.457
+   ],
+   "view": "plan",
+   "features": [
+    "H1"
+   ],
+   "id": 10
+  },
+  {
+   "key": "H2.dia",
+   "kind": "hole_diameter",
+   "label": "Hole H2 diameter (M3 fastener)",
+   "nominal": 3.4,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 3.4,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_al5052_page",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_al5052_page: hole edge to part edge 1.53 mm (6 of 6), limit >= 4.57 mm (warning: the supplier's words: \"Spacing from edges: Leave at least 2x thickness between a hole and an edge.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 1.53 mm (6 of 6), limit >= 3.4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws, two readings 90 degrees apart (record the mean; note ovality).",
+    "alternates": []
+   },
+   "depends": [
+    "x_belt_clamp_screw_1 (SHCS-M3x10) clamps x_belt_clamp"
+   ],
+   "score": 85.0,
+   "at": [
+    20.2,
+    25.0,
+    11.457
+   ],
+   "view": "plan",
+   "features": [
+    "H2"
+   ],
+   "fit": "clearance for M3: 0.40 mm over the screw; the screw passes while the hole is above 3.05 mm",
+   "id": 11
+  },
+  {
+   "key": "H2.to_bend",
+   "kind": "hole_to_bend",
+   "label": "Hole H2 centre to the outside of the nearest bend",
+   "nominal": 10.8,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.508,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_edge) + the cut tolerance (hole to edge)",
+    "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 10.8,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers step (or depth bar) on the outside face of the other flange; jaw tip to the near edge of the hole; add half the hole diameter.",
+    "alternates": []
+   },
+   "depends": [
+    "x_belt_clamp_screw_1 (SHCS-M3x10) clamps x_belt_clamp"
+   ],
+   "score": 85.0,
+   "at": [
+    20.2,
+    25.0,
+    11.457
+   ],
+   "view": "plan",
+   "features": [
+    "H2"
+   ],
+   "id": 12
+  },
+  {
+   "key": "H3.dia_along",
+   "kind": "hole_ovality",
+   "label": "Hole H3 diameter along the bend",
+   "nominal": 3.4,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 3.4,
+    "basis": "along the bend the hole is expected to keep its size",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_al5052_page",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_al5052_page: hole edge to part edge 1.53 mm (6 of 6), limit >= 4.57 mm (warning: the supplier's words: \"Spacing from edges: Leave at least 2x thickness between a hole and an edge.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 1.53 mm (6 of 6), limit >= 3.4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.bend.die_width.al5052.2.286mm",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.bend.die_width.al5052.2.286mm: hole or cut-out to bend 5.87 mm (2 of 6), limit >= 6 mm (warning: the supplier's words: \"Bending specifications per material (bending calculator), 5052 Aluminum .090\u2033: Die Width .472\u2033. Bend deformation guideline: make sure your cut features are at l\")."
+     }
+    ],
+    "expect_out_of_tolerance": false
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws: across the bend (perpendicular to the bend line) and along it; record both.",
+    "alternates": []
+   },
+   "depends": [
+    "x_belt_bracket_screw_0 (SHCS-M3x10) clamps tool_plate"
+   ],
+   "score": 85.0,
+   "at": [
+    29.857,
+    24.5,
+    3.23
+   ],
+   "view": "side",
+   "features": [
+    "H3"
+   ],
+   "fit": "clearance for M3: 0.40 mm over the screw; the screw passes while the hole is above 3.05 mm",
+   "id": 13
+  },
+  {
+   "key": "H4.dia_along",
+   "kind": "hole_ovality",
+   "label": "Hole H4 diameter along the bend",
+   "nominal": 3.4,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 3.4,
+    "basis": "along the bend the hole is expected to keep its size",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_al5052_page",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_al5052_page: hole edge to part edge 1.53 mm (6 of 6), limit >= 4.57 mm (warning: the supplier's words: \"Spacing from edges: Leave at least 2x thickness between a hole and an edge.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 1.53 mm (6 of 6), limit >= 3.4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.bend.die_width.al5052.2.286mm",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.bend.die_width.al5052.2.286mm: hole or cut-out to bend 5.87 mm (2 of 6), limit >= 6 mm (warning: the supplier's words: \"Bending specifications per material (bending calculator), 5052 Aluminum .090\u2033: Die Width .472\u2033. Bend deformation guideline: make sure your cut features are at l\")."
+     }
+    ],
+    "expect_out_of_tolerance": false
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws: across the bend (perpendicular to the bend line) and along it; record both.",
+    "alternates": []
+   },
+   "depends": [
+    "x_belt_bracket_screw_1 (SHCS-M3x10) clamps tool_plate"
+   ],
+   "score": 85.0,
+   "at": [
+    29.857,
+    5.5,
+    3.23
+   ],
+   "view": "side",
+   "features": [
+    "H4"
+   ],
+   "fit": "clearance for M3: 0.40 mm over the screw; the screw passes while the hole is above 3.05 mm",
+   "id": 14
+  },
+  {
+   "key": "H5.dia",
+   "kind": "hole_diameter",
+   "label": "Hole H5 diameter (M3 fastener)",
+   "nominal": 3.4,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 3.4,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_al5052_page",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_al5052_page: hole edge to part edge 1.53 mm (6 of 6), limit >= 4.57 mm (warning: the supplier's words: \"Spacing from edges: Leave at least 2x thickness between a hole and an edge.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 1.53 mm (6 of 6), limit >= 3.4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws, two readings 90 degrees apart (record the mean; note ovality).",
+    "alternates": []
+   },
+   "depends": [
+    "x_belt_clamp_screw_2 (SHCS-M3x10) clamps x_belt_clamp"
+   ],
+   "score": 85.0,
+   "at": [
+    6.2,
+    5.0,
+    11.457
+   ],
+   "view": "plan",
+   "features": [
+    "H5"
+   ],
+   "fit": "clearance for M3: 0.40 mm over the screw; the screw passes while the hole is above 3.05 mm",
+   "id": 15
+  },
+  {
+   "key": "H5.to_bend",
+   "kind": "hole_to_bend",
+   "label": "Hole H5 centre to the outside of the nearest bend",
+   "nominal": 24.8,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.508,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_edge) + the cut tolerance (hole to edge)",
+    "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 24.8,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers step (or depth bar) on the outside face of the other flange; jaw tip to the near edge of the hole; add half the hole diameter.",
+    "alternates": []
+   },
+   "depends": [
+    "x_belt_clamp_screw_2 (SHCS-M3x10) clamps x_belt_clamp"
+   ],
+   "score": 85.0,
+   "at": [
+    6.2,
+    5.0,
+    11.457
+   ],
+   "view": "plan",
+   "features": [
+    "H5"
+   ],
+   "id": 16
+  },
+  {
+   "key": "H6.dia",
+   "kind": "hole_diameter",
+   "label": "Hole H6 diameter (M3 fastener)",
+   "nominal": 3.4,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 3.4,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_al5052_page",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_al5052_page: hole edge to part edge 1.53 mm (6 of 6), limit >= 4.57 mm (warning: the supplier's words: \"Spacing from edges: Leave at least 2x thickness between a hole and an edge.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 1.53 mm (6 of 6), limit >= 3.4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws, two readings 90 degrees apart (record the mean; note ovality).",
+    "alternates": []
+   },
+   "depends": [
+    "x_belt_clamp_screw_3 (SHCS-M3x10) clamps x_belt_clamp"
+   ],
+   "score": 85.0,
+   "at": [
+    20.2,
+    5.0,
+    11.457
+   ],
+   "view": "plan",
+   "features": [
+    "H6"
+   ],
+   "fit": "clearance for M3: 0.40 mm over the screw; the screw passes while the hole is above 3.05 mm",
+   "id": 17
+  },
+  {
+   "key": "H6.to_bend",
+   "kind": "hole_to_bend",
+   "label": "Hole H6 centre to the outside of the nearest bend",
+   "nominal": 10.8,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.508,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_edge) + the cut tolerance (hole to edge)",
+    "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 10.8,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers step (or depth bar) on the outside face of the other flange; jaw tip to the near edge of the hole; add half the hole diameter.",
+    "alternates": []
+   },
+   "depends": [
+    "x_belt_clamp_screw_3 (SHCS-M3x10) clamps x_belt_clamp"
+   ],
+   "score": 85.0,
+   "at": [
+    20.2,
+    5.0,
+    11.457
+   ],
+   "view": "plan",
+   "features": [
+    "H6"
+   ],
+   "id": 18
+  },
+  {
+   "key": "B1.angle",
+   "kind": "bend_angle",
+   "label": "Bend B1 angle",
+   "nominal": 90.0,
+   "unit": "deg",
+   "tol": {
+    "pm": 1.0,
+    "unit": "deg",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_angle)",
+    "quote": "Bends up to 24\u2033: +/- 1\u00b0",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 90.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "square_feeler",
+    "how": "Engineer's square on the outside faces of the two flanges; feeler gauge at the open end; angle error = atan(gap / flange length). Record the angle (90 + error) and which way it opened.",
+    "alternates": []
+   },
+   "depends": [
+    "every feature on the flange moves by (angle error) x (its distance from the bend)"
+   ],
+   "score": 80.0,
+   "at": [
+    28.475,
+    15.0,
+    10.08
+   ],
+   "view": "front",
+   "features": [
+    "B1"
+   ],
+   "id": 19
+  },
+  {
+   "key": "H1.edge_web",
+   "kind": "edge_web",
+   "label": "Material from hole H1 to the part edge",
+   "nominal": 3.3,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 3.3,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_al5052_page",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_al5052_page: hole edge to part edge 1.53 mm (6 of 6), limit >= 4.57 mm (warning: the supplier's words: \"Spacing from edges: Leave at least 2x thickness between a hole and an edge.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 1.53 mm (6 of 6), limit >= 3.4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers depth bar: part edge to the hole edge.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 72.0,
+   "at": [
+    6.2,
+    25.0,
+    11.457
+   ],
+   "view": "plan",
+   "features": [
+    "H1"
+   ],
+   "id": 20
+  },
+  {
+   "key": "H2.edge_web",
+   "kind": "edge_web",
+   "label": "Material from hole H2 to the part edge",
+   "nominal": 3.3,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 3.3,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_al5052_page",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_al5052_page: hole edge to part edge 1.53 mm (6 of 6), limit >= 4.57 mm (warning: the supplier's words: \"Spacing from edges: Leave at least 2x thickness between a hole and an edge.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 1.53 mm (6 of 6), limit >= 3.4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers depth bar: part edge to the hole edge.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 72.0,
+   "at": [
+    20.2,
+    25.0,
+    11.457
+   ],
+   "view": "plan",
+   "features": [
+    "H2"
+   ],
+   "id": 21
+  },
+  {
+   "key": "H3.edge_web",
+   "kind": "edge_web",
+   "label": "Material from hole H3 to the part edge",
+   "nominal": 1.53,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 1.53,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_al5052_page",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_al5052_page: hole edge to part edge 1.53 mm (6 of 6), limit >= 4.57 mm (warning: the supplier's words: \"Spacing from edges: Leave at least 2x thickness between a hole and an edge.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 1.53 mm (6 of 6), limit >= 3.4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.bend.die_width.al5052.2.286mm",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.bend.die_width.al5052.2.286mm: hole or cut-out to bend 5.87 mm (2 of 6), limit >= 6 mm (warning: the supplier's words: \"Bending specifications per material (bending calculator), 5052 Aluminum .090\u2033: Die Width .472\u2033. Bend deformation guideline: make sure your cut features are at l\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers depth bar: part edge to the hole edge.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 72.0,
+   "at": [
+    29.857,
+    24.5,
+    3.23
+   ],
+   "view": "side",
+   "features": [
+    "H3"
+   ],
+   "id": 22
+  },
+  {
+   "key": "H4.edge_web",
+   "kind": "edge_web",
+   "label": "Material from hole H4 to the part edge",
+   "nominal": 1.53,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 1.53,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_al5052_page",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_al5052_page: hole edge to part edge 1.53 mm (6 of 6), limit >= 4.57 mm (warning: the supplier's words: \"Spacing from edges: Leave at least 2x thickness between a hole and an edge.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 1.53 mm (6 of 6), limit >= 3.4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.bend.die_width.al5052.2.286mm",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.bend.die_width.al5052.2.286mm: hole or cut-out to bend 5.87 mm (2 of 6), limit >= 6 mm (warning: the supplier's words: \"Bending specifications per material (bending calculator), 5052 Aluminum .090\u2033: Die Width .472\u2033. Bend deformation guideline: make sure your cut features are at l\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers depth bar: part edge to the hole edge.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 72.0,
+   "at": [
+    29.857,
+    5.5,
+    3.23
+   ],
+   "view": "side",
+   "features": [
+    "H4"
+   ],
+   "id": 23
+  },
+  {
+   "key": "H5.edge_web",
+   "kind": "edge_web",
+   "label": "Material from hole H5 to the part edge",
+   "nominal": 3.3,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 3.3,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_al5052_page",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_al5052_page: hole edge to part edge 1.53 mm (6 of 6), limit >= 4.57 mm (warning: the supplier's words: \"Spacing from edges: Leave at least 2x thickness between a hole and an edge.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 1.53 mm (6 of 6), limit >= 3.4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers depth bar: part edge to the hole edge.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 72.0,
+   "at": [
+    6.2,
+    5.0,
+    11.457
+   ],
+   "view": "plan",
+   "features": [
+    "H5"
+   ],
+   "id": 24
+  },
+  {
+   "key": "H6.edge_web",
+   "kind": "edge_web",
+   "label": "Material from hole H6 to the part edge",
+   "nominal": 3.3,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 3.3,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_al5052_page",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_al5052_page: hole edge to part edge 1.53 mm (6 of 6), limit >= 4.57 mm (warning: the supplier's words: \"Spacing from edges: Leave at least 2x thickness between a hole and an edge.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "x_belt_bracket: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 1.53 mm (6 of 6), limit >= 3.4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers depth bar: part edge to the hole edge.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 72.0,
+   "at": [
+    20.2,
+    5.0,
+    11.457
+   ],
+   "view": "plan",
+   "features": [
+    "H6"
+   ],
+   "id": 25
+  },
+  {
+   "key": "B1.F1",
+   "kind": "flange_length",
+   "label": "Flange 1 of bend B1: outside of the bend to the free edge",
+   "nominal": 12.6,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.381,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_edge)",
+    "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 12.6,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers outside jaws: outside face of the bend (the other flange's outside face) to the flange's free edge, near each end of the bend; record the mean.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 72.0,
+   "at": [
+    28.715,
+    15.0,
+    0.0
+   ],
+   "view": "front",
+   "features": [
+    "B1"
+   ],
+   "id": 26
+  },
+  {
+   "key": "B1.F2",
+   "kind": "flange_length",
+   "label": "Flange 2 of bend B1: outside of the bend to the free edge",
+   "nominal": 31.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.381,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_edge)",
+    "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 31.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers outside jaws: outside face of the bend (the other flange's outside face) to the flange's free edge, near each end of the bend; record the mean.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 72.0,
+   "at": [
+    0.005,
+    15.0,
+    10.31
+   ],
+   "view": "front",
+   "features": [
+    "B1"
+   ],
+   "id": 27
+  },
+  {
+   "key": "overall.X",
+   "kind": "overall",
+   "label": "Overall size along X",
+   "nominal": 31.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.381,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_edge)",
+    "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 31.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers outside jaws across the part.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 50.0,
+   "at": [
+    15.5,
+    0.0,
+    6.3
+   ],
+   "view": "plan",
+   "id": 28
+  },
+  {
+   "key": "overall.Y",
+   "kind": "overall",
+   "label": "Overall size along Y",
+   "nominal": 30.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.381,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_edge)",
+    "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 30.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers outside jaws across the part.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 49.0,
+   "at": [
+    0.0,
+    15.0,
+    6.3
+   ],
+   "view": "plan",
+   "id": 29
+  },
+  {
+   "key": "overall.Z",
+   "kind": "overall",
+   "label": "Overall size along Z",
+   "nominal": 12.6,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.381,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_edge)",
+    "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 12.6,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers outside jaws across the part.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 48.0,
+   "at": [
+    15.5,
+    15.0,
+    6.3
+   ],
+   "view": "front",
+   "id": 30
+  },
+  {
+   "key": "flatness",
+   "kind": "flatness",
+   "label": "Flatness (largest gap under a corner with the opposite corner pressed down)",
+   "nominal": 0.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.2,
+    "unit": "mm",
+    "published": false,
+    "source": "mechloop class value (tolerance/process.py sheet flat, 2 standard deviations); SendCutSend publishes none for this"
+   },
+   "predicted": {
+    "value": 0.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "feeler",
+    "how": "Lay the part on the scanner glass (or a known-flat surface), press lightly at each corner in turn and slide feeler leaves under the opposite corner; record the largest leaf that enters.",
+    "alternates": []
+   },
+   "depends": [
+    "general"
+   ],
+   "score": 45.0,
+   "at": [
+    15.5,
+    15.0,
+    6.3
+   ],
+   "view": "plan",
+   "id": 31
+  },
+  {
+   "key": "B1.radius",
+   "kind": "bend_radius",
+   "label": "Bend B1 inside radius",
+   "nominal": 0.81,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.15,
+    "unit": "mm",
+    "published": false,
+    "source": "mechloop supplier_rules match tolerance (a radius within 0.15 mm is taken as the shop's)"
+   },
+   "predicted": {
+    "value": 0.81,
+    "basis": "the shop's radius matches the model's",
+    "findings": []
+   },
+   "method": {
+    "instrument": "radius_gauge",
+    "how": "Radius gauge set on the inside of the bend; or stand the part on its end on the scanner glass and scan the bend's end profile (fit the inside arc).",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 40.0,
+   "at": [
+    28.475,
+    15.0,
+    10.08
+   ],
+   "view": "front",
+   "features": [
+    "B1"
+   ],
+   "id": 32
+  },
+  {
+   "key": "thickness",
+   "kind": "thickness",
+   "label": "Stock thickness",
+   "nominal": 2.286,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.1,
+    "unit": "mm",
+    "published": false,
+    "source": "typical stock thickness tolerance (not a shop figure: the shop does not cut it)"
+   },
+   "predicted": {
+    "value": 2.286,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers outside jaws (micrometer if available) at three places away from holes and bends; record the mean.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 20.0,
+   "at": [
+    27.9,
+    15.0,
+    0.0
+   ],
+   "view": "plan",
+   "id": 33
+  }
+ ],
+ "dimensions_not_listed": 0,
+ "scanner": {
+  "suitable": false,
+  "note": "Bent part: lay each flange flat on the glass where it fits and scan the holes on it; bend angles, flanges and holes-to-bend by calipers and square (see docs/INSPECTION.md)."
+ },
+ "drawing": "printer_v10_1.x_belt_bracket.svg"
+}

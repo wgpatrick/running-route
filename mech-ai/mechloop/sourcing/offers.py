@@ -51,6 +51,11 @@ def norm_pn(s) -> str:
     return re.sub(r"[^A-Za-z0-9]", "", str(s or "")).upper()
 
 
+MAKER_ALIASES = (("omron", "aratas"), ("te", "tyco", "amp"), ("henkel", "loctite"), ("pennengineering", "pem"),
+                 ("onsemi", "on semiconductor", "fairchild"), ("nexperia", "nxp"), ("meanwell", "mean well"), ("stmicroelectronics", "st"),
+                 ("semitec", "ishizuka"), ("finder", "finder relays"))
+
+
 def same_maker(a, b) -> bool:
     """Loose maker match: one name's first significant word appears in the other ("Omron" vs "Aratas (Formerly Omron
     Components)", "TE Connectivity AMP Connectors" vs "TE"). Empty on either side matches."""
@@ -61,7 +66,10 @@ def same_maker(a, b) -> bool:
             "technologies", "technology", "industries", "connectivity", "products", "inc.", "&", "and", "contact", "group"}
     wa = [w for w in re.findall(r"[a-z0-9]+", A) if w not in stop]
     wb = [w for w in re.findall(r"[a-z0-9]+", B) if w not in stop]
-    return any(w in wb for w in wa[:2]) or any(w in wa for w in wb[:2]) or A in B or B in A
+    if any(w in wb for w in wa[:2]) or any(w in wa for w in wb[:2]) or A in B or B in A:
+        return True
+    words_a, words_b = set(re.findall(r"[a-z0-9]+", A)) | {A}, set(re.findall(r"[a-z0-9]+", B)) | {B}
+    return any(words_a & set(g) and words_b & set(g) for g in MAKER_ALIASES)
 
 
 def unit_price_at(breaks, qty: int) -> float | None:

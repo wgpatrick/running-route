@@ -97,8 +97,9 @@ def verify_interference(design: Design) -> VerifierResult:
 
 
 def _box(shape) -> tuple:
-    bb = shape.bounding_box()
-    return (bb.min.X, bb.min.Y, bb.min.Z), (bb.max.X, bb.max.Y, bb.max.Z)
+    from ..geom import box_of
+
+    return box_of(shape)
 
 
 def _boxes_overlap(A, B, margin: float) -> bool:

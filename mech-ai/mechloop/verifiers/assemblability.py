@@ -15,9 +15,10 @@ import numpy as np
 import trimesh
 from build123d import Axis, Cylinder, Location, Plane, Pos, Vector
 
-from ..geom import bboxes_overlap, location_from_matrix, overlap_volume, to_trimesh, translation
+from ..geom import bboxes_overlap, box_of, location_from_matrix, overlap_volume, to_trimesh, translation, volume_of
 from ..model import Design
 from ..report import VerifierResult, timed
+from .interference import _boxes_overlap
 
 VOL_TOL = 0.5
 DIRS = {"+X": (1, 0, 0), "-X": (-1, 0, 0), "+Y": (0, 1, 0), "-Y": (0, -1, 0),
@@ -48,19 +49,23 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
         bounds = {n: m.bounds for n, m in meshes.items()}
         fast_axis = {f.name: tuple(float(x) for x in f.axis) for f in design.fasteners if f.name in comps}
         tools_names = set(fast_axis)
-        base = base or design.base or max(comps, key=lambda n: comps[n].shape.volume if comps[n].body == "world" else -1)
+        base = base or design.base or max(comps, key=lambda n: volume_of(comps[n].shape) if comps[n].body == "world" else -1)
         remaining = set(comps)
         cm = trimesh.collision.CollisionManager()
         for n in comps:
             cm.add_object(n, meshes[n])
+        from .. import incremental as _inc      # exact overlaps reused across runs for unchanged parts (no-op otherwise)
+
         exact_cache: dict = {}
         blocked_by: dict[tuple[str, str], set[str]] = {}
 
         def exact(a: str, b: str, d: np.ndarray, s: float) -> float:
             k = (a, b, tuple(np.round(d * s, 3)))
             if k not in exact_cache:
-                moved = comps[a].shape.moved(Location(tuple(d * s)))
-                exact_cache[k] = overlap_volume(moved, comps[b].shape)[0]
+                sa, sb, off = comps[a].shape, comps[b].shape, tuple(float(x) for x in d * s)
+                exact_cache[k] = _inc.memo("overlap_memo", lambda: ["moved", _inc.shape_key(sa), _inc.shape_key(sb), list(k[2]),
+                                                                    list(off)],
+                                           lambda: overlap_volume(sa.moved(Location(off)), sb)[0])
             return exact_cache[k]
 
         def base_overlap(a: str, b: str) -> float:
@@ -82,7 +87,7 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
             for n, c in comps.items():
                 if n == f.name or n in held or n in tools_names:
                     continue
-                if bboxes_overlap(fb, c.shape, 0.05):
+                if _boxes_overlap(box_of(fb), box_of(c.shape), 0.05):
                     try:
                         if fb.distance_to(c.shape) <= 0.05:
                             held.add(n)
@@ -96,7 +101,7 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
         names_l = list(comps)
         for i, a in enumerate(names_l):
             for b in names_l[i + 1:]:
-                if not bboxes_overlap(comps[a].shape, comps[b].shape, 0.05):
+                if not _boxes_overlap(box_of(comps[a].shape), box_of(comps[b].shape), 0.05):
                     continue
                 try:
                     near = comps[a].shape.distance_to(comps[b].shape) <= 0.05
@@ -179,7 +184,7 @@ def verify_assemblability(design: Design, base: str | None = None) -> VerifierRe
             progress = False
             # fasteners first, then small parts: mirrors how things are actually taken apart
             # ties (identical parts) are broken by name: a set's order changes from run to run
-            cands = sorted(remaining - {base}, key=lambda n: (n not in fast_axis, round(comps[n].shape.volume, 3), n))
+            cands = sorted(remaining - {base}, key=lambda n: (n not in fast_axis, round(volume_of(comps[n].shape), 3), n))
             for name in cands:
                 if name not in fast_axis and held_by(name):
                     continue  # still screwed down: its fasteners come out first

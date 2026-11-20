@@ -1,0 +1,1083 @@
+{
+ "schema": "mechloop.inspection_plan/1",
+ "part": "RP03_sheet_channel",
+ "part_id": "RP03",
+ "revision": "batch01",
+ "generated": "2026-11-20T01:14:47",
+ "process": "sheet",
+ "form": "bent",
+ "material": "al5052",
+ "thickness_mm": 2.286,
+ "shop": "sendcutsend",
+ "shop_name": "SendCutSend",
+ "source": {
+  "step": "reference_parts/batch01/RP03_sheet_channel.step",
+  "manifest": "reference_parts/batch01/manifest.json",
+  "expected": [
+   "6 mm flange (outside; 1.4 mm straight after the bend) is shorter than typical minimum flange for 0.090 in",
+   "5.5 mm hole in the tall flange 1.5 mm from the bend tangent: too close, will distort"
+  ]
+ },
+ "dxf": null,
+ "frame": {
+  "note": "drawing frame: origin at the part's bounding-box corner; Z = sheet normal (flat) or the smallest extent; X the longer of the other two. Datum C = the x = 0 edge, B = the y = 0 edge, A = the z = 0 face.",
+  "R_world_to_local": [
+   [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   [
+    -0.0,
+    1.0,
+    0.0
+   ],
+   [
+    0.0,
+    0.0,
+    1.0
+   ]
+  ],
+  "offset": [
+   -30.0,
+   -20.0,
+   -8.881784197001e-16
+  ]
+ },
+ "size_mm": [
+  60.0,
+  40.0,
+  25.0
+ ],
+ "tolerances": {
+  "cut": {
+   "pm": 0.127,
+   "unit": "mm",
+   "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+   "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+   "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+   "published": true
+  },
+  "hole": {
+   "pm": 0.127,
+   "unit": "mm",
+   "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+   "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+   "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+   "published": true
+  },
+  "bend_edge": {
+   "pm": 0.381,
+   "unit": "mm",
+   "source": "SendCutSend published (sendcutsend.bend.tolerance_edge)",
+   "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+   "url": "https://sendcutsend.com/services/cnc-bending/",
+   "published": true
+  },
+  "bend_angle_deg": {
+   "pm": 1.0,
+   "unit": "deg",
+   "source": "SendCutSend published (sendcutsend.bend.tolerance_angle)",
+   "quote": "Bends up to 24\u2033: +/- 1\u00b0",
+   "url": "https://sendcutsend.com/services/cnc-bending/",
+   "published": true
+  },
+  "flat": {
+   "pm": 0.2,
+   "unit": "mm",
+   "published": false,
+   "source": "mechloop class value (tolerance/process.py sheet flat, 2 standard deviations); SendCutSend publishes none for this"
+  },
+  "general": {
+   "pm": 0.127,
+   "unit": "mm",
+   "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+   "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+   "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+   "published": true
+  }
+ },
+ "holes": [
+  {
+   "id": "H1",
+   "center": [
+    1.1430000000000007,
+    20.0,
+    8.822
+   ],
+   "axis": [
+    1.0,
+    0.0,
+    0.0
+   ],
+   "d": 5.5,
+   "round": true,
+   "through": true,
+   "interfaces": [],
+   "edge_web": 13.428,
+   "to_bend": [
+    {
+     "d_tan": 1.5,
+     "r": 2.286,
+     "angle": 90.00000000000591
+    }
+   ]
+  },
+  {
+   "id": "H2",
+   "center": [
+    18.0,
+    20.0,
+    1.143000000000001
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "d": 5.5,
+   "round": true,
+   "through": true,
+   "interfaces": [],
+   "edge_web": 17.25,
+   "to_bend": [
+    {
+     "d_tan": 10.678,
+     "r": 2.286,
+     "angle": 90.00000000000591
+    },
+    {
+     "d_tan": 34.678,
+     "r": 2.286,
+     "angle": 90.00000000000594
+    }
+   ]
+  },
+  {
+   "id": "H3",
+   "center": [
+    42.0,
+    20.0,
+    1.143000000000001
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "d": 5.5,
+   "round": true,
+   "through": true,
+   "interfaces": [],
+   "edge_web": 17.25,
+   "to_bend": [
+    {
+     "d_tan": 34.678,
+     "r": 2.286,
+     "angle": 90.00000000000591
+    },
+    {
+     "d_tan": 10.678,
+     "r": 2.286,
+     "angle": 90.00000000000594
+    }
+   ]
+  }
+ ],
+ "bends": [
+  {
+   "id": "B1",
+   "radius": 2.286,
+   "angle": 90.0,
+   "length": 40.0,
+   "at": [
+    2.960000000000001,
+    20.0,
+    2.960000000000001
+   ],
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "flanges": [
+    {
+     "length": 25.0,
+     "reach": 20.428,
+     "at": [
+      2.289999999999999,
+      20.55,
+      25.0
+     ]
+    },
+    {
+     "length": 55.428,
+     "reach": 50.856,
+     "at": [
+      55.43,
+      20.0,
+      2.290000000000001
+     ]
+    }
+   ]
+  },
+  {
+   "id": "B2",
+   "radius": 2.286,
+   "angle": 90.0,
+   "length": 40.0,
+   "at": [
+    57.04,
+    20.0,
+    2.960000000000001
+   ],
+   "axis": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "flanges": [
+    {
+     "length": 55.428,
+     "reach": 50.856,
+     "at": [
+      4.57,
+      20.0,
+      2.290000000000001
+     ]
+    },
+    {
+     "length": 6.0,
+     "reach": 1.428,
+     "at": [
+      57.71,
+      20.0,
+      6.000000000000001
+     ]
+    }
+   ]
+  }
+ ],
+ "predictions": [
+  {
+   "code": "bend_radius_differs",
+   "severity": "warning",
+   "rule": null,
+   "finding": "RP03_sheet_channel: 2 bend(s) modelled at 2.29 mm inside radius; sendcutsend forms 2.286 mm al5052 at 0.81 mm and offers no other radius (radii more than 0.15 mm apart are taken as different): this will change the finished dimensions of the part (flange positions move)."
+  },
+  {
+   "code": "flange_too_short",
+   "severity": "error",
+   "rule": "sheet.flange_min_t_ratio",
+   "finding": "RP03_sheet_channel: 1 flange(s) too short to bend (shortest 6.00 mm from the outside of the bend at [27.71, 0.0, 6.0], needs 8.28 mm, sendcutsend's minimum for this stock): the brake's die has nothing to bear on."
+  },
+  {
+   "code": "hole_too_close_to_bend",
+   "severity": "warning",
+   "rule": "sheet.hole_to_bend_t_ratio",
+   "finding": "RP03_sheet_channel: 1 hole(s) closer than 4.57161 mm (2 x thickness) to where a bend's radius starts (nearest 1.50 mm, a 5.5 mm hole at [-28.86, 0.0, 8.82]): the hole stretches into an oval when the bend is formed."
+  },
+  {
+   "code": "supplier_rule",
+   "severity": "warning",
+   "rule": "sendcutsend.bend.radius.al5052.2.286mm",
+   "finding": "RP03_sheet_channel: SendCutSend rule sendcutsend.bend.radius.al5052.2.286mm: inside bend radius (the only one offered) 2.29 mm (2 of 2), limit == 0.813 +/- 0.15 mm (warning: the supplier's words: \"Bending specifications per material (bending calculator), 5052 Aluminum .090\u2033: Effective Bend Radius @ 90\u00b0 .032\u2033\"). SendCutSend forms the bend at its own radius, which will change the finished dimensions (its quote page: 'This will impact the finished dimensions of your parts')."
+  },
+  {
+   "code": "supplier_rule",
+   "severity": "warning",
+   "rule": "sendcutsend.bend.die_width.al5052.2.286mm",
+   "finding": "RP03_sheet_channel: SendCutSend rule sendcutsend.bend.die_width.al5052.2.286mm: hole or cut-out to bend 3.96 mm (1 of 5), limit >= 6 mm (warning: the supplier's words: \"Bending specifications per material (bending calculator), 5052 Aluminum .090\u2033: Die Width .472\u2033. Bend deformation guideline: make sure your cut features are at l\")."
+  },
+  {
+   "code": "supplier_rule",
+   "severity": "error",
+   "rule": "sendcutsend.bend.flange_min_formed.al5052.2.286mm",
+   "finding": "RP03_sheet_channel: SendCutSend rule sendcutsend.bend.flange_min_formed.al5052.2.286mm: formed flange length 6 mm (1 of 4), limit >= 8.28 mm (error: the supplier's words: \"Bending specifications per material (bending calculator), 5052 Aluminum .090\u2033: Min Formed Flange Length @ 90\u00b0 .326\u2033\"). Same requirement in the flat pattern (sendcutsend.bend.flange_min_flat.al5052.2.286mm): flat-pattern flange length from the bend line 4.2 mm, limit >= 6.48 mm."
+  },
+  {
+   "code": "sharp_profile_corners",
+   "severity": "warning",
+   "rule": "sheet.outside_corner_radius_mm",
+   "finding": "RP03_sheet_channel: 4 outside corner(s) of the cut profile are dead sharp (no radius). A sheet part with needle corners cuts hands and cables and chips its paint; a corner radius costs nothing in laser or waterjet cutting."
+  }
+ ],
+ "dimensions": [
+  {
+   "key": "H1.dia_across",
+   "kind": "hole_ovality",
+   "label": "Hole H1 diameter across the bend",
+   "nominal": 5.5,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 5.5,
+    "basis": "our check expects the hole to stretch into an oval when the bend is formed (no numeric model: the measurement sets one)",
+    "findings": [
+     {
+      "code": "hole_too_close_to_bend",
+      "severity": "warning",
+      "rule": "sheet.hole_to_bend_t_ratio",
+      "finding": "RP03_sheet_channel: 1 hole(s) closer than 4.57161 mm (2 x thickness) to where a bend's radius starts (nearest 1.50 mm, a 5.5 mm hole at [-28.86, 0.0, 8.82]): the hole stretches into an oval when the bend is formed."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.bend.die_width.al5052.2.286mm",
+      "finding": "RP03_sheet_channel: SendCutSend rule sendcutsend.bend.die_width.al5052.2.286mm: hole or cut-out to bend 3.96 mm (1 of 5), limit >= 6 mm (warning: the supplier's words: \"Bending specifications per material (bending calculator), 5052 Aluminum .090\u2033: Die Width .472\u2033. Bend deformation guideline: make sure your cut features are at l\")."
+     }
+    ],
+    "expect_out_of_tolerance": true
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws: across the bend (perpendicular to the bend line) and along it; record both.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 86.0,
+   "at": [
+    1.143,
+    20.0,
+    8.822
+   ],
+   "view": "side",
+   "features": [
+    "H1"
+   ],
+   "fit": null,
+   "id": 1
+  },
+  {
+   "key": "H1.dia_along",
+   "kind": "hole_ovality",
+   "label": "Hole H1 diameter along the bend",
+   "nominal": 5.5,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 5.5,
+    "basis": "along the bend the hole is expected to keep its size",
+    "findings": [
+     {
+      "code": "hole_too_close_to_bend",
+      "severity": "warning",
+      "rule": "sheet.hole_to_bend_t_ratio",
+      "finding": "RP03_sheet_channel: 1 hole(s) closer than 4.57161 mm (2 x thickness) to where a bend's radius starts (nearest 1.50 mm, a 5.5 mm hole at [-28.86, 0.0, 8.82]): the hole stretches into an oval when the bend is formed."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.bend.die_width.al5052.2.286mm",
+      "finding": "RP03_sheet_channel: SendCutSend rule sendcutsend.bend.die_width.al5052.2.286mm: hole or cut-out to bend 3.96 mm (1 of 5), limit >= 6 mm (warning: the supplier's words: \"Bending specifications per material (bending calculator), 5052 Aluminum .090\u2033: Die Width .472\u2033. Bend deformation guideline: make sure your cut features are at l\")."
+     }
+    ],
+    "expect_out_of_tolerance": false
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws: across the bend (perpendicular to the bend line) and along it; record both.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 85.0,
+   "at": [
+    1.143,
+    20.0,
+    8.822
+   ],
+   "view": "side",
+   "features": [
+    "H1"
+   ],
+   "fit": null,
+   "id": 2
+  },
+  {
+   "key": "B2.F2",
+   "kind": "flange_length",
+   "label": "Flange 2 of bend B2: outside of the bend to the free edge",
+   "nominal": 6.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.381,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_edge)",
+    "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 5.684,
+    "basis": "the shop bends at its own 0.813 mm inside radius (model 2.286 mm) from a flat pattern developed at the model's radius (supplier K-factor 0.37); each flange's outside dimension moves by -0.32 mm per bend",
+    "findings": [
+     {
+      "code": "flange_too_short",
+      "severity": "error",
+      "rule": "sheet.flange_min_t_ratio",
+      "finding": "RP03_sheet_channel: 1 flange(s) too short to bend (shortest 6.00 mm from the outside of the bend at [27.71, 0.0, 6.0], needs 8.28 mm, sendcutsend's minimum for this stock): the brake's die has nothing to bear on."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "error",
+      "rule": "sendcutsend.bend.flange_min_formed.al5052.2.286mm",
+      "finding": "RP03_sheet_channel: SendCutSend rule sendcutsend.bend.flange_min_formed.al5052.2.286mm: formed flange length 6 mm (1 of 4), limit >= 8.28 mm (error: the supplier's words: \"Bending specifications per material (bending calculator), 5052 Aluminum .090\u2033: Min Formed Flange Length @ 90\u00b0 .326\u2033\"). Same requirement in the flat pattern (sendcutsend.bend.flange_min_flat.al5052.2.286mm): flat-pattern flange length from the bend line 4.2 mm, limit >= 6.48 mm."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers outside jaws: outside face of the bend (the other flange's outside face) to the flange's free edge, near each end of the bend; record the mean.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 82.0,
+   "at": [
+    57.71,
+    20.0,
+    6.0
+   ],
+   "view": "front",
+   "features": [
+    "B2"
+   ],
+   "id": 3
+  },
+  {
+   "key": "H1.to_bend",
+   "kind": "hole_to_bend",
+   "label": "Hole H1 centre to the outside of the nearest bend",
+   "nominal": 8.822,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.508,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_edge) + the cut tolerance (hole to edge)",
+    "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 8.506,
+    "basis": "the shop bends at its own 0.813 mm inside radius (model 2.286 mm) from a flat pattern developed at the model's radius (supplier K-factor 0.37); each flange's outside dimension moves by -0.32 mm per bend",
+    "findings": [
+     {
+      "code": "hole_too_close_to_bend",
+      "severity": "warning",
+      "rule": "sheet.hole_to_bend_t_ratio",
+      "finding": "RP03_sheet_channel: 1 hole(s) closer than 4.57161 mm (2 x thickness) to where a bend's radius starts (nearest 1.50 mm, a 5.5 mm hole at [-28.86, 0.0, 8.82]): the hole stretches into an oval when the bend is formed."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.bend.die_width.al5052.2.286mm",
+      "finding": "RP03_sheet_channel: SendCutSend rule sendcutsend.bend.die_width.al5052.2.286mm: hole or cut-out to bend 3.96 mm (1 of 5), limit >= 6 mm (warning: the supplier's words: \"Bending specifications per material (bending calculator), 5052 Aluminum .090\u2033: Die Width .472\u2033. Bend deformation guideline: make sure your cut features are at l\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers step (or depth bar) on the outside face of the other flange; jaw tip to the near edge of the hole; add half the hole diameter.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 80.0,
+   "at": [
+    1.143,
+    20.0,
+    8.822
+   ],
+   "view": "side",
+   "features": [
+    "H1"
+   ],
+   "id": 4
+  },
+  {
+   "key": "B1.angle",
+   "kind": "bend_angle",
+   "label": "Bend B1 angle",
+   "nominal": 90.0,
+   "unit": "deg",
+   "tol": {
+    "pm": 1.0,
+    "unit": "deg",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_angle)",
+    "quote": "Bends up to 24\u2033: +/- 1\u00b0",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 90.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "square_feeler",
+    "how": "Engineer's square on the outside faces of the two flanges; feeler gauge at the open end; angle error = atan(gap / flange length). Record the angle (90 + error) and which way it opened.",
+    "alternates": []
+   },
+   "depends": [
+    "every feature on the flange moves by (angle error) x (its distance from the bend)"
+   ],
+   "score": 80.0,
+   "at": [
+    2.96,
+    20.0,
+    2.96
+   ],
+   "view": "front",
+   "features": [
+    "B1"
+   ],
+   "id": 5
+  },
+  {
+   "key": "B2.angle",
+   "kind": "bend_angle",
+   "label": "Bend B2 angle",
+   "nominal": 90.0,
+   "unit": "deg",
+   "tol": {
+    "pm": 1.0,
+    "unit": "deg",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_angle)",
+    "quote": "Bends up to 24\u2033: +/- 1\u00b0",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 90.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "square_feeler",
+    "how": "Engineer's square on the outside faces of the two flanges; feeler gauge at the open end; angle error = atan(gap / flange length). Record the angle (90 + error) and which way it opened.",
+    "alternates": []
+   },
+   "depends": [
+    "every feature on the flange moves by (angle error) x (its distance from the bend)"
+   ],
+   "score": 80.0,
+   "at": [
+    57.04,
+    20.0,
+    2.96
+   ],
+   "view": "front",
+   "features": [
+    "B2"
+   ],
+   "id": 6
+  },
+  {
+   "key": "B1.radius",
+   "kind": "bend_radius",
+   "label": "Bend B1 inside radius",
+   "nominal": 2.286,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.15,
+    "unit": "mm",
+    "published": false,
+    "source": "mechloop supplier_rules match tolerance (a radius within 0.15 mm is taken as the shop's)"
+   },
+   "predicted": {
+    "value": 0.813,
+    "basis": "the shop bends at its own 0.813 mm inside radius (model 2.286 mm) from a flat pattern developed at the model's radius (supplier K-factor 0.37); each flange's outside dimension moves by -0.32 mm per bend",
+    "findings": [
+     {
+      "code": "bend_radius_differs",
+      "severity": "warning",
+      "rule": null,
+      "finding": "RP03_sheet_channel: 2 bend(s) modelled at 2.29 mm inside radius; sendcutsend forms 2.286 mm al5052 at 0.81 mm and offers no other radius (radii more than 0.15 mm apart are taken as different): this will change the finished dimensions of the part (flange positions move)."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.bend.radius.al5052.2.286mm",
+      "finding": "RP03_sheet_channel: SendCutSend rule sendcutsend.bend.radius.al5052.2.286mm: inside bend radius (the only one offered) 2.29 mm (2 of 2), limit == 0.813 +/- 0.15 mm (warning: the supplier's words: \"Bending specifications per material (bending calculator), 5052 Aluminum .090\u2033: Effective Bend Radius @ 90\u00b0 .032\u2033\"). SendCutSend forms the bend at its own radius, which will change the finished dimensions (its quote page: 'This will impact the finished dimensions of your parts')."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "radius_gauge",
+    "how": "Radius gauge set on the inside of the bend; or stand the part on its end on the scanner glass and scan the bend's end profile (fit the inside arc).",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 78.0,
+   "at": [
+    2.96,
+    20.0,
+    2.96
+   ],
+   "view": "front",
+   "features": [
+    "B1"
+   ],
+   "id": 7
+  },
+  {
+   "key": "B2.radius",
+   "kind": "bend_radius",
+   "label": "Bend B2 inside radius",
+   "nominal": 2.286,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.15,
+    "unit": "mm",
+    "published": false,
+    "source": "mechloop supplier_rules match tolerance (a radius within 0.15 mm is taken as the shop's)"
+   },
+   "predicted": {
+    "value": 0.813,
+    "basis": "the shop bends at its own 0.813 mm inside radius (model 2.286 mm) from a flat pattern developed at the model's radius (supplier K-factor 0.37); each flange's outside dimension moves by -0.32 mm per bend",
+    "findings": [
+     {
+      "code": "bend_radius_differs",
+      "severity": "warning",
+      "rule": null,
+      "finding": "RP03_sheet_channel: 2 bend(s) modelled at 2.29 mm inside radius; sendcutsend forms 2.286 mm al5052 at 0.81 mm and offers no other radius (radii more than 0.15 mm apart are taken as different): this will change the finished dimensions of the part (flange positions move)."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.bend.radius.al5052.2.286mm",
+      "finding": "RP03_sheet_channel: SendCutSend rule sendcutsend.bend.radius.al5052.2.286mm: inside bend radius (the only one offered) 2.29 mm (2 of 2), limit == 0.813 +/- 0.15 mm (warning: the supplier's words: \"Bending specifications per material (bending calculator), 5052 Aluminum .090\u2033: Effective Bend Radius @ 90\u00b0 .032\u2033\"). SendCutSend forms the bend at its own radius, which will change the finished dimensions (its quote page: 'This will impact the finished dimensions of your parts')."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "radius_gauge",
+    "how": "Radius gauge set on the inside of the bend; or stand the part on its end on the scanner glass and scan the bend's end profile (fit the inside arc).",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 78.0,
+   "at": [
+    57.04,
+    20.0,
+    2.96
+   ],
+   "view": "front",
+   "features": [
+    "B2"
+   ],
+   "id": 8
+  },
+  {
+   "key": "H2.to_bend",
+   "kind": "hole_to_bend",
+   "label": "Hole H2 centre to the outside of the nearest bend",
+   "nominal": 18.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.508,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_edge) + the cut tolerance (hole to edge)",
+    "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 17.684,
+    "basis": "the shop bends at its own 0.813 mm inside radius (model 2.286 mm) from a flat pattern developed at the model's radius (supplier K-factor 0.37); each flange's outside dimension moves by -0.32 mm per bend",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers step (or depth bar) on the outside face of the other flange; jaw tip to the near edge of the hole; add half the hole diameter.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 75.0,
+   "at": [
+    18.0,
+    20.0,
+    1.143
+   ],
+   "view": "plan",
+   "features": [
+    "H2"
+   ],
+   "id": 9
+  },
+  {
+   "key": "H3.to_bend",
+   "kind": "hole_to_bend",
+   "label": "Hole H3 centre to the outside of the nearest bend",
+   "nominal": 42.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.508,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_edge) + the cut tolerance (hole to edge)",
+    "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 41.684,
+    "basis": "the shop bends at its own 0.813 mm inside radius (model 2.286 mm) from a flat pattern developed at the model's radius (supplier K-factor 0.37); each flange's outside dimension moves by -0.32 mm per bend",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers step (or depth bar) on the outside face of the other flange; jaw tip to the near edge of the hole; add half the hole diameter.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 75.0,
+   "at": [
+    42.0,
+    20.0,
+    1.143
+   ],
+   "view": "plan",
+   "features": [
+    "H3"
+   ],
+   "id": 10
+  },
+  {
+   "key": "B1.F1",
+   "kind": "flange_length",
+   "label": "Flange 1 of bend B1: outside of the bend to the free edge",
+   "nominal": 25.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.381,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_edge)",
+    "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 24.684,
+    "basis": "the shop bends at its own 0.813 mm inside radius (model 2.286 mm) from a flat pattern developed at the model's radius (supplier K-factor 0.37); each flange's outside dimension moves by -0.32 mm per bend",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers outside jaws: outside face of the bend (the other flange's outside face) to the flange's free edge, near each end of the bend; record the mean.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 72.0,
+   "at": [
+    2.29,
+    20.55,
+    25.0
+   ],
+   "view": "front",
+   "features": [
+    "B1"
+   ],
+   "id": 11
+  },
+  {
+   "key": "B1-B?.web",
+   "kind": "web_width",
+   "label": "Outside width across bends B1 and the next",
+   "nominal": 60.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.762,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_edge) x 2 (two bends)",
+    "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 59.368,
+    "basis": "the shop bends at its own 0.813 mm inside radius (model 2.286 mm) from a flat pattern developed at the model's radius (supplier K-factor 0.37); each flange's outside dimension moves by -0.32 mm per bend",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers outside jaws across the outside faces of the two flanges, near each end; record the mean.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 70.0,
+   "at": [
+    55.43,
+    20.0,
+    2.29
+   ],
+   "view": "front",
+   "features": [
+    "B1"
+   ],
+   "id": 12
+  },
+  {
+   "key": "overall.X",
+   "kind": "overall",
+   "label": "Overall size along X",
+   "nominal": 60.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.381,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_edge)",
+    "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 60.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers outside jaws across the part.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 50.0,
+   "at": [
+    30.0,
+    0.0,
+    12.5
+   ],
+   "view": "plan",
+   "id": 13
+  },
+  {
+   "key": "overall.Y",
+   "kind": "overall",
+   "label": "Overall size along Y",
+   "nominal": 40.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.381,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_edge)",
+    "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 40.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers outside jaws across the part.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 49.0,
+   "at": [
+    0.0,
+    20.0,
+    12.5
+   ],
+   "view": "plan",
+   "id": 14
+  },
+  {
+   "key": "overall.Z",
+   "kind": "overall",
+   "label": "Overall size along Z",
+   "nominal": 25.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.381,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.bend.tolerance_edge)",
+    "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+    "url": "https://sendcutsend.com/services/cnc-bending/",
+    "published": true
+   },
+   "predicted": {
+    "value": 25.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers outside jaws across the part.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 48.0,
+   "at": [
+    30.0,
+    20.0,
+    12.5
+   ],
+   "view": "front",
+   "id": 15
+  },
+  {
+   "key": "flatness",
+   "kind": "flatness",
+   "label": "Flatness (largest gap under a corner with the opposite corner pressed down)",
+   "nominal": 0.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.2,
+    "unit": "mm",
+    "published": false,
+    "source": "mechloop class value (tolerance/process.py sheet flat, 2 standard deviations); SendCutSend publishes none for this"
+   },
+   "predicted": {
+    "value": 0.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "feeler",
+    "how": "Lay the part on the scanner glass (or a known-flat surface), press lightly at each corner in turn and slide feeler leaves under the opposite corner; record the largest leaf that enters.",
+    "alternates": []
+   },
+   "depends": [
+    "general"
+   ],
+   "score": 45.0,
+   "at": [
+    30.0,
+    20.0,
+    12.5
+   ],
+   "view": "plan",
+   "id": 16
+  },
+  {
+   "key": "H2.dia",
+   "kind": "hole_diameter",
+   "label": "Hole H2 diameter",
+   "nominal": 5.5,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 5.5,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws, two readings 90 degrees apart (record the mean; note ovality).",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 30.0,
+   "at": [
+    18.0,
+    20.0,
+    1.143
+   ],
+   "view": "plan",
+   "features": [
+    "H2"
+   ],
+   "fit": null,
+   "id": 17
+  },
+  {
+   "key": "H3.dia",
+   "kind": "hole_diameter",
+   "label": "Hole H3 diameter",
+   "nominal": 5.5,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al5052.2.286mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU-090 5052 H32 Aluminum 0.090: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 5.5,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws, two readings 90 degrees apart (record the mean; note ovality).",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 30.0,
+   "at": [
+    42.0,
+    20.0,
+    1.143
+   ],
+   "view": "plan",
+   "features": [
+    "H3"
+   ],
+   "fit": null,
+   "id": 18
+  },
+  {
+   "key": "thickness",
+   "kind": "thickness",
+   "label": "Stock thickness",
+   "nominal": 2.286,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.1,
+    "unit": "mm",
+    "published": false,
+    "source": "typical stock thickness tolerance (not a shop figure: the shop does not cut it)"
+   },
+   "predicted": {
+    "value": 2.286,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers outside jaws (micrometer if available) at three places away from holes and bends; record the mean.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 20.0,
+   "at": [
+    54.0,
+    20.0,
+    0.0
+   ],
+   "view": "plan",
+   "id": 19
+  }
+ ],
+ "dimensions_not_listed": 0,
+ "scanner": {
+  "suitable": false,
+  "note": "Bent part: lay each flange flat on the glass where it fits and scan the holes on it; bend angles, flanges and holes-to-bend by calipers and square (see docs/INSPECTION.md)."
+ },
+ "drawing": "RP03.svg"
+}

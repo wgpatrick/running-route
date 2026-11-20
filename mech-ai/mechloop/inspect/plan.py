@@ -18,7 +18,7 @@ Outputs: <out>/<part>.json (schema mechloop.inspection_plan/1) and <out>/<part>.
 numbered balloon per dimension). The projection helpers are the build package's (tools/build_package.py: _frame_for,
 _to_local, _edges_2d), loaded from there so the inspection drawings use the same frame as the fabrication drawings.
 
-    .venv/bin/python -m mechloop.inspect.plan --stage0 [--out out/inspect/plans]
+    .venv/bin/python -m mechloop.inspect.plan --stage0 [--out inspect_form/plans]
 """
 from __future__ import annotations
 
@@ -742,7 +742,7 @@ def _rel(p) -> str:
 
 def stage0(out_dir=None, design_file="designs/printer_v10_1.py", parts=STAGE0_PARTS, refs=("RP03", "RP04")) -> list[dict]:
     """Plans for the reference parts and the likely stage-0 printer parts. Returns [{"part_id", "json", "svg"}]."""
-    out_dir = Path(out_dir or ROOT / "out" / "inspect" / "plans")
+    out_dir = Path(out_dir or ROOT / "inspect_form" / "plans")
     done = []
     batch = ROOT / "reference_parts" / "batch01"
     man = {m["id"]: m for m in json.loads((batch / "manifest.json").read_text())}
@@ -767,6 +767,7 @@ def stage0(out_dir=None, design_file="designs/printer_v10_1.py", parts=STAGE0_PA
                                   source={"design": design_file, "component": n})
             done.append({"part_id": plan["part_id"], **write_plan(plan, svg, out_dir)})
         del d
+    done = [{k: (_rel(v) if k in ("json", "svg") else v) for k, v in r.items()} for r in done]
     (out_dir / "index.json").write_text(json.dumps(done, indent=1))
     return done
 
@@ -780,7 +781,7 @@ def main(argv=None) -> int:
     ap.add_argument("--shop", default="sendcutsend")
     ap.add_argument("--design", default="designs/printer_v10_1.py")
     ap.add_argument("--parts", nargs="*")
-    ap.add_argument("--out", default=str(ROOT / "out" / "inspect" / "plans"))
+    ap.add_argument("--out", default=str(ROOT / "inspect_form" / "plans"))
     a = ap.parse_args(argv)
     if a.step:
         plan, svg = plan_for_step(a.step, a.material, process=a.process, shop=a.shop)

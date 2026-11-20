@@ -123,6 +123,34 @@ def forward_kinematics(design: Design, q: dict[str, float]) -> dict[str, np.ndar
     return out
 
 
+# id(wrapped) -> (wrapped, value): a part's exact bounding box and volume, computed once per process. Shapes are not
+# changed in place anywhere in mechloop (moved() makes a new one), so the id names the geometry. The assembly planner
+# asked for the same boxes millions of times on an 800-part printer (most of its run time); see mechloop.incremental.
+_BOX_CACHE: dict[int, tuple] = {}
+_VOL_CACHE: dict[int, tuple] = {}
+
+
+def box_of(shape) -> tuple[tuple, tuple]:
+    """((xmin, ymin, zmin), (xmax, ymax, zmax)) of shape.bounding_box(), cached per shape."""
+    w = shape.wrapped
+    hit = _BOX_CACHE.get(id(w))
+    if hit is None or hit[0] is not w:
+        bb = shape.bounding_box()
+        hit = (w, ((bb.min.X, bb.min.Y, bb.min.Z), (bb.max.X, bb.max.Y, bb.max.Z)))
+        _BOX_CACHE[id(w)] = hit
+    return hit[1]
+
+
+def volume_of(shape) -> float:
+    """shape.volume, cached per shape."""
+    w = shape.wrapped
+    hit = _VOL_CACHE.get(id(w))
+    if hit is None or hit[0] is not w:
+        hit = (w, shape.volume)
+        _VOL_CACHE[id(w)] = hit
+    return hit[1]
+
+
 def bbox_of(shapes) -> tuple[np.ndarray, np.ndarray]:
     lo = np.full(3, np.inf)
     hi = np.full(3, -np.inf)

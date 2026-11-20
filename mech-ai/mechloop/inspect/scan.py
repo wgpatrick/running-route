@@ -140,7 +140,7 @@ def load_dxf(path, tol: float = 0.01) -> Profile:
 
 # --------------------------------------------------------------------------------------------- calibration target
 def make_target(out_dir, name: str = "scan_target", pitch: float = TARGET_PITCH_MM, dot: float = TARGET_DOT_MM,
-                cols: int = 18, rows: int = 26) -> dict:
+                cols: int = 18, rows: int = 24) -> dict:
     """A printable dot-grid target on A4 (SVG and PDF at 1:1): `cols` x `rows` dots of `dot` mm at `pitch` mm, an orientation
     mark (a ring at the origin dot), and a 150 mm scale bar to check the print scale with calipers. Print at 100 % ("actual
     size"), measure the bar, and pass bar_mm / 150 as `print_scale` to `calibrate` if it is not 150.00."""
@@ -168,7 +168,7 @@ def make_target(out_dir, name: str = "scan_target", pitch: float = TARGET_PITCH_
     ax.add_patch(Rectangle((x0, yb), 150.0, 1.2, color="black", lw=0))
     for k in range(16):
         ax.plot([x0 + 10 * k, x0 + 10 * k], [yb - 2.5, yb], color="black", lw=0.5)
-    ax.text(x0, yb - 6, "150 mm bar: measure with calipers. Print at 100 % (actual size). Dots: %g mm at %g mm pitch, ring = origin." % (dot, pitch),
+    ax.text(x0, yb - 6, "150 mm bar: measure with calipers. Print at 100 %% (actual size). Dots: %g mm at %g mm pitch, ring = origin." % (dot, pitch),
             fontsize=6.5, va="top")
     ax.text(x0, H - 12, "mechloop scan calibration target (mechloop.inspect.scan.make_target)", fontsize=8, va="top")
     meta = {"pitch_mm": pitch, "dot_mm": dot, "cols": cols, "rows": rows, "origin_mm": [x0, y0], "bar_mm": 150.0, "page": "A4"}

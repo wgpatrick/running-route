@@ -17,7 +17,7 @@ import numpy as np
 import trimesh
 from build123d import Cylinder, Location, Plane, Pos, Vector
 
-from ..geom import bboxes_overlap, overlap_volume, to_trimesh, translation
+from ..geom import box_of, overlap_volume, to_trimesh, translation, volume_of
 from ..model import Design
 
 VOL_TOL = 0.5
@@ -60,16 +60,20 @@ class _World:
         self.exact_cache: dict = {}
         self.touch = {n: set() for n in self.comps}
         names = list(self.comps)
-        for i, a in enumerate(names):
-            for b in names[i + 1:]:
-                if not bboxes_overlap(self.comps[a].shape, self.comps[b].shape, 0.05):
-                    continue
-                try:
-                    near = self.comps[a].shape.distance_to(self.comps[b].shape) <= 0.05
-                except Exception:
-                    near = True
-                if near:
-                    self.touch[a].add(b); self.touch[b].add(a)
+        from .. import incremental as _inc      # distances reused across runs for unchanged pairs (no-op otherwise)
+        from ..verifiers.interference import _box, _boxes_overlap, _near_pairs
+
+        boxes = [_box(self.comps[n].shape) for n in names]
+        for i, j in _near_pairs(boxes, 0.05):   # = every pair bboxes_overlap(.., 0.05) accepts
+            a, b = names[i], names[j]
+            if not _boxes_overlap(boxes[i], boxes[j], 0.05):
+                continue
+            sa, sb = self.comps[a].shape, self.comps[b].shape
+            gap = _inc.memo("overlap_memo", lambda: ["gap", _inc.shape_key(sa), _inc.shape_key(sb)],
+                            lambda: _gap(sa, sb))
+            near = True if gap is None else gap <= 0.05
+            if near:
+                self.touch[a].add(b); self.touch[b].add(a)
         for pair in design.joins:
             if len(pair) == 2 and all(n in self.comps for n in pair):
                 a, b = tuple(pair)
@@ -86,8 +90,16 @@ class _World:
     def exact(self, a: str, b: str, offset) -> float:
         k = (a, b, tuple(np.round(offset, 3)))
         if k not in self.exact_cache:
-            moved = self.comps[a].shape.moved(Location(tuple(float(x) for x in offset)))
-            self.exact_cache[k] = overlap_volume(moved, self.comps[b].shape)[0]
+            from .. import incremental as _inc
+
+            def compute():
+                moved = self.comps[a].shape.moved(Location(tuple(float(x) for x in offset)))
+                return overlap_volume(moved, self.comps[b].shape)[0]
+
+            sa, sb = self.comps[a].shape, self.comps[b].shape
+            self.exact_cache[k] = _inc.memo("overlap_memo", lambda: ["moved", _inc.shape_key(sa), _inc.shape_key(sb),
+                                                                     [float(x) for x in k[2]],
+                                                                     [float(x) for x in offset]], compute)
         return self.exact_cache[k]
 
     def allowed(self, a: str, b: str, vol: float) -> bool:
@@ -98,6 +110,14 @@ class _World:
 
 
 TNUT_CLEAR_MM = 12.0      # how far a drop-in T-nut is swept out of its slot's opening (slot 6 mm deep, nut 4.4 mm high)
+
+
+def _gap(a, b):
+    """Distance between two shapes; None when the kernel cannot measure it (treated as touching)."""
+    try:
+        return a.distance_to(b)
+    except Exception:
+        return None
 
 
 def _only_directions(c) -> set | None:
@@ -130,8 +150,8 @@ def tnut_carried_through(design: Design, tn) -> set[str]:
     for c in design.components:
         if c.name in (tn.name, tn.meta.get("slot_of")):
             continue
-        bb = c.shape.bounding_box()
-        lo, hi = np.array([bb.min.X, bb.min.Y, bb.min.Z]) - 1e-6, np.array([bb.max.X, bb.max.Y, bb.max.Z]) + 1e-6
+        blo, bhi = box_of(c.shape)
+        lo, hi = np.array(blo) - 1e-6, np.array(bhi) + 1e-6
         if any(np.all(p >= lo) and np.all(p <= hi) for p in pts):
             out.add(c.name)
     return out
@@ -160,9 +180,9 @@ def plan(design: Design, base: str | None = None, members: list[str] | None = No
                 unit_of[p] = sname
             units[sname] = parts
     names = sorted(names)
-    base_part = base or design.base or max(names, key=lambda n: W.comps[n].shape.volume if W.comps[n].body == "world" else -1)
+    base_part = base or design.base or max(names, key=lambda n: volume_of(W.comps[n].shape) if W.comps[n].body == "world" else -1)
     if base_part not in nameset:
-        base_part = max(names, key=lambda n: W.comps[n].shape.volume)
+        base_part = max(names, key=lambda n: volume_of(W.comps[n].shape))
     base_unit = unit_of[base_part]
     cm = trimesh.collision.CollisionManager()
     for n in names:
@@ -243,15 +263,24 @@ def plan(design: Design, base: str | None = None, members: list[str] | None = No
                 cm.add_object(m, W.mesh[m])
         return blockers, reached
 
+    from .. import incremental as _inc
+    from ..verifiers.interference import _boxes_overlap
+
     def tool_blockers(f) -> set[str]:
         a = Vector(*f.axis).normalized()
         start = Vector(*f.head_center) + a * 0.3
         tool = Plane(origin=start, z_dir=a) * Pos(0, 0, f.tool_length / 2) * Cylinder(f.tool_diameter / 2, f.tool_length)
         out = set()
+        tb = tool.bounding_box()
+        tbox = ((tb.min.X, tb.min.Y, tb.min.Z), (tb.max.X, tb.max.Y, tb.max.Z))
         for n in parts_left():
-            if n == f.name or not bboxes_overlap(tool, W.comps[n].shape):
+            if n == f.name or not _boxes_overlap(tbox, box_of(W.comps[n].shape), 0.0):
                 continue
-            if overlap_volume(tool, W.comps[n].shape)[0] > VOL_TOL:
+            sn = W.comps[n].shape
+            vol = _inc.memo("overlap_memo", lambda: ["tool", [float(x) for x in f.axis], [float(x) for x in f.head_center],
+                                                     float(f.tool_length), float(f.tool_diameter), _inc.shape_key(sn)],
+                            lambda: overlap_volume(tool, sn)[0])
+            if vol > VOL_TOL:
                 out.add(n)
         return out
 
@@ -307,7 +336,7 @@ def plan(design: Design, base: str | None = None, members: list[str] | None = No
         # so each screw is then removed just before the part it holds, i.e. installed right after it
         # (fasten as you go). Ties are broken by name so the plan is the same on every run.
         cands = sorted(remaining - {base_unit},
-                       key=lambda u: (kind(u) == "fastener", round(sum(W.comps[p].shape.volume for p in units[u]), 3), u))
+                       key=lambda u: (kind(u) == "fastener", round(sum(volume_of(W.comps[p].shape) for p in units[u]), 3), u))
         for u in cands:
             if kind(u) != "fastener" and held_by(u):
                 continue

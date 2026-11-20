@@ -422,6 +422,11 @@ def loop_metrics(rows: list[dict] | None = None, orders: list[dict] | None = Non
     """Loop time, fidelity and autonomy from the record (docs/ROADMAP.md: measure the loop, not just the parts)."""
     rows = load(record_path) if rows is None else rows
     orders = _read_jsonl(orders_path) if orders is None else orders
+    merged: dict = {}                 # an order may be appended again later (received date): later non-empty fields win
+    for o in orders:
+        cur = merged.setdefault(o["order"], {})
+        cur.update({k: v for k, v in o.items() if v not in (None, "", [])})
+    orders = list(merged.values())
     by_order: dict = {}
     for r in rows:
         by_order.setdefault(r.get("order"), []).append(r)

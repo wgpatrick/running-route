@@ -72,7 +72,8 @@ class Session:
             return False       # a crash may be the machine's (memory, a killed solver): never reuse it
         return self.cache.put(f"results/{name}", key, {
             "verifier": name, "findings": list(res.findings), "metrics": res.metrics, "skipped": res.skipped,
-            "seconds": res.seconds, "run": dict(self.run)})
+            "seconds": res.seconds, "run": dict(self.run),
+            "artifacts_sim": res.artifacts_sim})      # the motion program's trace, so a reused result still renders
 
     # ------------------------------------------------------------------------------------------ memo tables
     def table(self, name: str) -> dict:
@@ -199,17 +200,18 @@ def memo(table: str, key_parts, compute):
     s = CURRENT
     if s is None:
         return compute()
+    short, table = table, f"{s.verifier or 'none'}.{table}"   # one table per verifier: one reused whole keeps its memo
     t = s.table(table)
     if callable(key_parts):
         key_parts = key_parts()
     k = digest(FP_VERSION, code_hash(DEPS[s.verifier].module) if s.verifier in DEPS else "?", table, key_parts)
     s.mark_used(table, k)
     if k in t:
-        s.stat(f"{table}_reused")
+        s.stat(f"{short}_reused")
         return t[k]
     v = compute()
     t[k] = v
-    s.stat(f"{table}_computed")
+    s.stat(f"{short}_computed")
     return v
 
 

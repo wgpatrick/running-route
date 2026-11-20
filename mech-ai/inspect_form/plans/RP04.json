@@ -1,0 +1,1585 @@
+{
+ "schema": "mechloop.inspection_plan/1",
+ "part": "RP04_laser_plate",
+ "part_id": "RP04",
+ "revision": "batch01",
+ "generated": "2026-11-20T01:14:48",
+ "process": "sheet",
+ "form": "flat",
+ "material": "al6061",
+ "thickness_mm": 3.175,
+ "shop": "sendcutsend",
+ "shop_name": "SendCutSend",
+ "source": {
+  "step": "reference_parts/batch01/RP04_laser_plate.step",
+  "manifest": "reference_parts/batch01/manifest.json",
+  "expected": [
+   "1.2 mm hole: below the usual minimum hole (about 50-100 % of thickness)",
+   "4 mm hole with 0.8 mm to the edge: too close",
+   "1.0 mm slot: narrower than the usual minimum feature width",
+   "sharp inside corner of the L cutout (laser leaves a kerf radius; usually acceptable)"
+  ]
+ },
+ "dxf": "reference_parts/batch01/RP04_laser_plate.dxf",
+ "frame": {
+  "note": "drawing frame: origin at the part's bounding-box corner; Z = sheet normal (flat) or the smallest extent; X the longer of the other two. Datum C = the x = 0 edge, B = the y = 0 edge, A = the z = 0 face.",
+  "R_world_to_local": [
+   [
+    1.0,
+    -0.0,
+    -0.0
+   ],
+   [
+    0.0,
+    1.0,
+    0.0
+   ],
+   [
+    -0.0,
+    -0.0,
+    1.0
+   ]
+  ],
+  "offset": [
+   -60.0,
+   -40.0,
+   0.0
+  ]
+ },
+ "size_mm": [
+  120.0,
+  80.0,
+  3.175
+ ],
+ "tolerances": {
+  "cut": {
+   "pm": 0.127,
+   "unit": "mm",
+   "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+   "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+   "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+   "published": true
+  },
+  "hole": {
+   "pm": 0.127,
+   "unit": "mm",
+   "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+   "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+   "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+   "published": true
+  },
+  "bend_edge": {
+   "pm": 0.381,
+   "unit": "mm",
+   "source": "SendCutSend published (sendcutsend.bend.tolerance_edge)",
+   "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+   "url": "https://sendcutsend.com/services/cnc-bending/",
+   "published": true
+  },
+  "bend_angle_deg": {
+   "pm": 1.0,
+   "unit": "deg",
+   "source": "SendCutSend published (sendcutsend.bend.tolerance_angle)",
+   "quote": "Bends up to 24\u2033: +/- 1\u00b0",
+   "url": "https://sendcutsend.com/services/cnc-bending/",
+   "published": true
+  },
+  "flat": {
+   "pm": 0.2,
+   "unit": "mm",
+   "published": false,
+   "source": "mechloop class value (tolerance/process.py sheet flat, 2 standard deviations); SendCutSend publishes none for this"
+  },
+  "general": {
+   "pm": 0.127,
+   "unit": "mm",
+   "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+   "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+   "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+   "published": true
+  }
+ },
+ "holes": [
+  {
+   "id": "H3",
+   "center": [
+    40.0,
+    40.0,
+    1.5875
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "d": 1.2,
+   "round": true,
+   "through": true,
+   "interfaces": [],
+   "edge_web": 39.4,
+   "to_bend": []
+  },
+  {
+   "id": "H6",
+   "center": [
+    60.0,
+    2.799999999999997,
+    1.5875
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "d": 4.0,
+   "round": true,
+   "through": true,
+   "interfaces": [],
+   "edge_web": 0.8,
+   "to_bend": []
+  },
+  {
+   "id": "H4",
+   "center": [
+    8.0,
+    8.0,
+    1.5875
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "d": 5.5,
+   "round": true,
+   "through": true,
+   "interfaces": [],
+   "edge_web": 5.25,
+   "to_bend": []
+  },
+  {
+   "id": "H5",
+   "center": [
+    112.0,
+    8.0,
+    1.5875
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "d": 5.5,
+   "round": true,
+   "through": true,
+   "interfaces": [],
+   "edge_web": 5.25,
+   "to_bend": []
+  },
+  {
+   "id": "H1",
+   "center": [
+    8.0,
+    72.0,
+    1.5875
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "d": 5.5,
+   "round": true,
+   "through": true,
+   "interfaces": [],
+   "edge_web": 5.25,
+   "to_bend": []
+  },
+  {
+   "id": "H2",
+   "center": [
+    112.0,
+    72.0,
+    1.5875
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "d": 5.5,
+   "round": true,
+   "through": true,
+   "interfaces": [],
+   "edge_web": 5.25,
+   "to_bend": []
+  },
+  {
+   "id": "C8",
+   "center": [
+    92.12,
+    32.12,
+    1.59
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "d": 7.027,
+   "round": false,
+   "through": true,
+   "interfaces": [],
+   "edge_web": 15.0,
+   "to_bend": []
+  },
+  {
+   "id": "C7",
+   "center": [
+    80.0,
+    50.0,
+    1.59
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "d": 1.0,
+   "round": false,
+   "through": true,
+   "interfaces": [],
+   "edge_web": 29.5,
+   "to_bend": []
+  }
+ ],
+ "bends": [],
+ "predictions": [
+  {
+   "code": "hole_too_small_to_cut",
+   "severity": "error",
+   "rule": "sheet.hole_min_t_ratio",
+   "finding": "RP04_laser_plate: 2 hole(s) or cut-out(s) smaller than a laser can cut in 3.175 mm (smallest 1.00 mm at [20.0, 10.0, 1.59], minimum 1.59 mm)."
+  },
+  {
+   "code": "hole_too_close_to_edge",
+   "severity": "warning",
+   "rule": "sheet.hole_to_edge_t_ratio",
+   "finding": "RP04_laser_plate: 1 hole(s) with less than 3.175 mm of material to the edge (least 0.80 mm at [-0.0, -37.2, 1.59]): the web overheats and distorts, and tears if the part is bent or loaded."
+  },
+  {
+   "code": "shop_web_below_minimum",
+   "severity": "error",
+   "rule": "sendcutsend.web_min_t_ratio",
+   "finding": "RP04_laser_plate: 0.80 mm of material between a hole and the edge; sendcutsend asks for at least 1.59 mm (0.5 x the 3.175 mm stock) between cut features and to the edge."
+  },
+  {
+   "code": "supplier_rule",
+   "severity": "warning",
+   "rule": "sendcutsend.cut.hole_min_al6061_page",
+   "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.cut.hole_min_al6061_page: smallest hole or cut-out 1 mm (2 of 8), limit >= 3.17 mm (warning: the supplier's words: \"Design holes no smaller than material thickness.\")."
+  },
+  {
+   "code": "supplier_rule",
+   "severity": "warning",
+   "rule": "sendcutsend.cut.hole_edge_al6061_page",
+   "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.cut.hole_edge_al6061_page: hole edge to part edge 0.8 mm (1 of 6), limit >= 4.76 mm (warning: the supplier's words: \"Keep holes and cutouts 1.5\u20132\u00d7 material thickness away from edges to prevent warping or distortion.\")."
+  },
+  {
+   "code": "supplier_rule",
+   "severity": "warning",
+   "rule": "sendcutsend.cut.hole_edge_d_ratio",
+   "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 0.8 mm (5 of 6), limit >= 4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+  },
+  {
+   "code": "supplier_rule",
+   "severity": "warning",
+   "rule": "sendcutsend.cut.slot_edge_w_ratio",
+   "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.cut.slot_edge_w_ratio: slot to edge or next feature 4.5 mm (1 of 2), limit >= 10.5 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+  },
+  {
+   "code": "supplier_rule",
+   "severity": "warning",
+   "rule": "sendcutsend.specs.min_hole_to_edge.al6061.3.175mm",
+   "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.specs.min_hole_to_edge.al6061.3.175mm: hole edge to part edge 0.8 mm (1 of 6), limit >= 0.965 mm (warning: the supplier's words: \"sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.min_hole_to_edge = \"0.038\"\"). Order review required: below this the part is not instant-quoted, it goes to SendCutSend's review (not a refusal)."
+  },
+  {
+   "code": "sharp_profile_corners",
+   "severity": "warning",
+   "rule": "sheet.outside_corner_radius_mm",
+   "finding": "RP04_laser_plate: 1 outside corner(s) of the cut profile are dead sharp (no radius). A sheet part with needle corners cuts hands and cables and chips its paint; a corner radius costs nothing in laser or waterjet cutting."
+  }
+ ],
+ "dimensions": [
+  {
+   "key": "H1.edge_web",
+   "kind": "edge_web",
+   "label": "Material from hole H1 to the part edge",
+   "nominal": 5.25,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 5.25,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 0.8 mm (5 of 6), limit >= 4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole edge to part edge from the registered outline.",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 72.0,
+   "at": [
+    8.0,
+    72.0,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H1"
+   ],
+   "id": 1
+  },
+  {
+   "key": "H2.edge_web",
+   "kind": "edge_web",
+   "label": "Material from hole H2 to the part edge",
+   "nominal": 5.25,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 5.25,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 0.8 mm (5 of 6), limit >= 4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole edge to part edge from the registered outline.",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 72.0,
+   "at": [
+    112.0,
+    72.0,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H2"
+   ],
+   "id": 2
+  },
+  {
+   "key": "H4.edge_web",
+   "kind": "edge_web",
+   "label": "Material from hole H4 to the part edge",
+   "nominal": 5.25,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 5.25,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 0.8 mm (5 of 6), limit >= 4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole edge to part edge from the registered outline.",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 72.0,
+   "at": [
+    8.0,
+    8.0,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H4"
+   ],
+   "id": 3
+  },
+  {
+   "key": "H5.edge_web",
+   "kind": "edge_web",
+   "label": "Material from hole H5 to the part edge",
+   "nominal": 5.25,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 5.25,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 0.8 mm (5 of 6), limit >= 4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole edge to part edge from the registered outline.",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 72.0,
+   "at": [
+    112.0,
+    8.0,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H5"
+   ],
+   "id": 4
+  },
+  {
+   "key": "H6.edge_web",
+   "kind": "edge_web",
+   "label": "Material from hole H6 to the part edge",
+   "nominal": 0.8,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 0.8,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "hole_too_close_to_edge",
+      "severity": "warning",
+      "rule": "sheet.hole_to_edge_t_ratio",
+      "finding": "RP04_laser_plate: 1 hole(s) with less than 3.175 mm of material to the edge (least 0.80 mm at [-0.0, -37.2, 1.59]): the web overheats and distorts, and tears if the part is bent or loaded."
+     },
+     {
+      "code": "shop_web_below_minimum",
+      "severity": "error",
+      "rule": "sendcutsend.web_min_t_ratio",
+      "finding": "RP04_laser_plate: 0.80 mm of material between a hole and the edge; sendcutsend asks for at least 1.59 mm (0.5 x the 3.175 mm stock) between cut features and to the edge."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_al6061_page",
+      "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.cut.hole_edge_al6061_page: hole edge to part edge 0.8 mm (1 of 6), limit >= 4.76 mm (warning: the supplier's words: \"Keep holes and cutouts 1.5\u20132\u00d7 material thickness away from edges to prevent warping or distortion.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 0.8 mm (5 of 6), limit >= 4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.specs.min_hole_to_edge.al6061.3.175mm",
+      "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.specs.min_hole_to_edge.al6061.3.175mm: hole edge to part edge 0.8 mm (1 of 6), limit >= 0.965 mm (warning: the supplier's words: \"sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.min_hole_to_edge = \"0.038\"\"). Order review required: below this the part is not instant-quoted, it goes to SendCutSend's review (not a refusal)."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole edge to part edge from the registered outline.",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 72.0,
+   "at": [
+    60.0,
+    2.8,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H6"
+   ],
+   "id": 5
+  },
+  {
+   "key": "C7.width",
+   "kind": "slot_width",
+   "label": "Slot C7 width",
+   "nominal": 1.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 1.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "hole_too_small_to_cut",
+      "severity": "error",
+      "rule": "sheet.hole_min_t_ratio",
+      "finding": "RP04_laser_plate: 2 hole(s) or cut-out(s) smaller than a laser can cut in 3.175 mm (smallest 1.00 mm at [20.0, 10.0, 1.59], minimum 1.59 mm)."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_min_al6061_page",
+      "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.cut.hole_min_al6061_page: smallest hole or cut-out 1 mm (2 of 8), limit >= 3.17 mm (warning: the supplier's words: \"Design holes no smaller than material thickness.\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: slot width from the outline; or a feeler gauge stack that just enters.",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 70.0,
+   "at": [
+    80.0,
+    50.0,
+    1.59
+   ],
+   "view": "plan",
+   "features": [
+    "C7"
+   ],
+   "id": 6
+  },
+  {
+   "key": "C8.width",
+   "kind": "slot_width",
+   "label": "Slot C8 width",
+   "nominal": 7.027,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 7.027,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.slot_edge_w_ratio",
+      "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.cut.slot_edge_w_ratio: slot to edge or next feature 4.5 mm (1 of 2), limit >= 10.5 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     },
+     {
+      "code": "sharp_profile_corners",
+      "severity": "warning",
+      "rule": "sheet.outside_corner_radius_mm",
+      "finding": "RP04_laser_plate: 1 outside corner(s) of the cut profile are dead sharp (no radius). A sheet part with needle corners cuts hands and cables and chips its paint; a corner radius costs nothing in laser or waterjet cutting."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: slot width from the outline; or a feeler gauge stack that just enters.",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 70.0,
+   "at": [
+    92.12,
+    32.12,
+    1.59
+   ],
+   "view": "plan",
+   "features": [
+    "C8"
+   ],
+   "id": 7
+  },
+  {
+   "key": "overall.X",
+   "kind": "overall",
+   "label": "Overall size along X",
+   "nominal": 120.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 120.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: extent of the registered outline.",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 50.0,
+   "at": [
+    60.0,
+    0.0,
+    1.587
+   ],
+   "view": "plan",
+   "id": 8
+  },
+  {
+   "key": "overall.Y",
+   "kind": "overall",
+   "label": "Overall size along Y",
+   "nominal": 80.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 80.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: extent of the registered outline.",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 49.0,
+   "at": [
+    0.0,
+    40.0,
+    1.587
+   ],
+   "view": "plan",
+   "id": 9
+  },
+  {
+   "key": "H1.dia",
+   "kind": "hole_diameter",
+   "label": "Hole H1 diameter",
+   "nominal": 5.5,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 5.5,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 0.8 mm (5 of 6), limit >= 4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws, two readings 90 degrees apart (record the mean; note ovality).",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 45.0,
+   "at": [
+    8.0,
+    72.0,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H1"
+   ],
+   "fit": null,
+   "id": 10
+  },
+  {
+   "key": "H2.dia",
+   "kind": "hole_diameter",
+   "label": "Hole H2 diameter",
+   "nominal": 5.5,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 5.5,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 0.8 mm (5 of 6), limit >= 4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws, two readings 90 degrees apart (record the mean; note ovality).",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 45.0,
+   "at": [
+    112.0,
+    72.0,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H2"
+   ],
+   "fit": null,
+   "id": 11
+  },
+  {
+   "key": "H3.dia",
+   "kind": "hole_diameter",
+   "label": "Hole H3 diameter",
+   "nominal": 1.2,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 1.2,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "hole_too_small_to_cut",
+      "severity": "error",
+      "rule": "sheet.hole_min_t_ratio",
+      "finding": "RP04_laser_plate: 2 hole(s) or cut-out(s) smaller than a laser can cut in 3.175 mm (smallest 1.00 mm at [20.0, 10.0, 1.59], minimum 1.59 mm)."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_min_al6061_page",
+      "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.cut.hole_min_al6061_page: smallest hole or cut-out 1 mm (2 of 8), limit >= 3.17 mm (warning: the supplier's words: \"Design holes no smaller than material thickness.\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "pin_gauge",
+    "how": "Too small for caliper jaws: largest drill shank or pin gauge that passes (record its size).",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 45.0,
+   "at": [
+    40.0,
+    40.0,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H3"
+   ],
+   "fit": null,
+   "id": 12
+  },
+  {
+   "key": "H4.dia",
+   "kind": "hole_diameter",
+   "label": "Hole H4 diameter",
+   "nominal": 5.5,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 5.5,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 0.8 mm (5 of 6), limit >= 4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws, two readings 90 degrees apart (record the mean; note ovality).",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 45.0,
+   "at": [
+    8.0,
+    8.0,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H4"
+   ],
+   "fit": null,
+   "id": 13
+  },
+  {
+   "key": "H5.dia",
+   "kind": "hole_diameter",
+   "label": "Hole H5 diameter",
+   "nominal": 5.5,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 5.5,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 0.8 mm (5 of 6), limit >= 4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws, two readings 90 degrees apart (record the mean; note ovality).",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 45.0,
+   "at": [
+    112.0,
+    8.0,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H5"
+   ],
+   "fit": null,
+   "id": 14
+  },
+  {
+   "key": "H6.dia",
+   "kind": "hole_diameter",
+   "label": "Hole H6 diameter",
+   "nominal": 4.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 4.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "hole_too_close_to_edge",
+      "severity": "warning",
+      "rule": "sheet.hole_to_edge_t_ratio",
+      "finding": "RP04_laser_plate: 1 hole(s) with less than 3.175 mm of material to the edge (least 0.80 mm at [-0.0, -37.2, 1.59]): the web overheats and distorts, and tears if the part is bent or loaded."
+     },
+     {
+      "code": "shop_web_below_minimum",
+      "severity": "error",
+      "rule": "sendcutsend.web_min_t_ratio",
+      "finding": "RP04_laser_plate: 0.80 mm of material between a hole and the edge; sendcutsend asks for at least 1.59 mm (0.5 x the 3.175 mm stock) between cut features and to the edge."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_al6061_page",
+      "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.cut.hole_edge_al6061_page: hole edge to part edge 0.8 mm (1 of 6), limit >= 4.76 mm (warning: the supplier's words: \"Keep holes and cutouts 1.5\u20132\u00d7 material thickness away from edges to prevent warping or distortion.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.cut.hole_edge_d_ratio",
+      "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.cut.hole_edge_d_ratio: hole edge to part edge 0.8 mm (5 of 6), limit >= 4 mm (warning: the supplier's words: \"we generally recommend keeping your holes at least 1X their diameter from an edge and slots at least 1.5X their width away from edges or other cut features.\")."
+     },
+     {
+      "code": "supplier_rule",
+      "severity": "warning",
+      "rule": "sendcutsend.specs.min_hole_to_edge.al6061.3.175mm",
+      "finding": "RP04_laser_plate: SendCutSend rule sendcutsend.specs.min_hole_to_edge.al6061.3.175mm: hole edge to part edge 0.8 mm (1 of 6), limit >= 0.965 mm (warning: the supplier's words: \"sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.min_hole_to_edge = \"0.038\"\"). Order review required: below this the part is not instant-quoted, it goes to SendCutSend's review (not a refusal)."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws, two readings 90 degrees apart (record the mean; note ovality).",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 45.0,
+   "at": [
+    60.0,
+    2.8,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H6"
+   ],
+   "fit": null,
+   "id": 15
+  },
+  {
+   "key": "flatness",
+   "kind": "flatness",
+   "label": "Flatness (largest gap under a corner with the opposite corner pressed down)",
+   "nominal": 0.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.2,
+    "unit": "mm",
+    "published": false,
+    "source": "mechloop class value (tolerance/process.py sheet flat, 2 standard deviations); SendCutSend publishes none for this"
+   },
+   "predicted": {
+    "value": 0.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "feeler",
+    "how": "Lay the part on the scanner glass (or a known-flat surface), press lightly at each corner in turn and slide feeler leaves under the opposite corner; record the largest leaf that enters.",
+    "alternates": []
+   },
+   "depends": [
+    "general"
+   ],
+   "score": 45.0,
+   "at": [
+    60.0,
+    40.0,
+    1.587
+   ],
+   "view": "plan",
+   "id": 16
+  },
+  {
+   "key": "H1.x",
+   "kind": "hole_position",
+   "label": "Hole H1 centre X from datum C (x = 0 edge)",
+   "nominal": 8.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 8.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 35.0,
+   "at": [
+    8.0,
+    72.0,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H1"
+   ],
+   "id": 17
+  },
+  {
+   "key": "H2.x",
+   "kind": "hole_position",
+   "label": "Hole H2 centre X from datum C (x = 0 edge)",
+   "nominal": 112.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 112.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 35.0,
+   "at": [
+    112.0,
+    72.0,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H2"
+   ],
+   "id": 18
+  },
+  {
+   "key": "H3.x",
+   "kind": "hole_position",
+   "label": "Hole H3 centre X from datum C (x = 0 edge)",
+   "nominal": 40.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 40.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 35.0,
+   "at": [
+    40.0,
+    40.0,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H3"
+   ],
+   "id": 19
+  },
+  {
+   "key": "H4.x",
+   "kind": "hole_position",
+   "label": "Hole H4 centre X from datum C (x = 0 edge)",
+   "nominal": 8.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 8.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 35.0,
+   "at": [
+    8.0,
+    8.0,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H4"
+   ],
+   "id": 20
+  },
+  {
+   "key": "H5.x",
+   "kind": "hole_position",
+   "label": "Hole H5 centre X from datum C (x = 0 edge)",
+   "nominal": 112.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 112.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 35.0,
+   "at": [
+    112.0,
+    8.0,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H5"
+   ],
+   "id": 21
+  },
+  {
+   "key": "H6.x",
+   "kind": "hole_position",
+   "label": "Hole H6 centre X from datum C (x = 0 edge)",
+   "nominal": 60.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 60.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 35.0,
+   "at": [
+    60.0,
+    2.8,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H6"
+   ],
+   "id": 22
+  },
+  {
+   "key": "H1.y",
+   "kind": "hole_position",
+   "label": "Hole H1 centre Y from datum B (y = 0 edge)",
+   "nominal": 72.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 72.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 34.5,
+   "at": [
+    8.0,
+    72.0,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H1"
+   ],
+   "id": 23
+  },
+  {
+   "key": "H2.y",
+   "kind": "hole_position",
+   "label": "Hole H2 centre Y from datum B (y = 0 edge)",
+   "nominal": 72.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 72.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 34.5,
+   "at": [
+    112.0,
+    72.0,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H2"
+   ],
+   "id": 24
+  },
+  {
+   "key": "H3.y",
+   "kind": "hole_position",
+   "label": "Hole H3 centre Y from datum B (y = 0 edge)",
+   "nominal": 40.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 40.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 34.5,
+   "at": [
+    40.0,
+    40.0,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H3"
+   ],
+   "id": 25
+  },
+  {
+   "key": "H4.y",
+   "kind": "hole_position",
+   "label": "Hole H4 centre Y from datum B (y = 0 edge)",
+   "nominal": 8.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 8.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 34.5,
+   "at": [
+    8.0,
+    8.0,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H4"
+   ],
+   "id": 26
+  },
+  {
+   "key": "H5.y",
+   "kind": "hole_position",
+   "label": "Hole H5 centre Y from datum B (y = 0 edge)",
+   "nominal": 8.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 8.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 34.5,
+   "at": [
+    112.0,
+    8.0,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H5"
+   ],
+   "id": 27
+  },
+  {
+   "key": "H6.y",
+   "kind": "hole_position",
+   "label": "Hole H6 centre Y from datum B (y = 0 edge)",
+   "nominal": 2.8,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.3.175mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-125 6061 T6 Aluminum 0.125: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 2.8,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 34.5,
+   "at": [
+    60.0,
+    2.8,
+    1.587
+   ],
+   "view": "plan",
+   "features": [
+    "H6"
+   ],
+   "id": 28
+  },
+  {
+   "key": "thickness",
+   "kind": "thickness",
+   "label": "Stock thickness",
+   "nominal": 3.175,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.1,
+    "unit": "mm",
+    "published": false,
+    "source": "typical stock thickness tolerance (not a shop figure: the shop does not cut it)"
+   },
+   "predicted": {
+    "value": 3.175,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers outside jaws (micrometer if available) at three places away from holes and bends; record the mean.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 20.0,
+   "at": [
+    108.0,
+    40.0,
+    0.0
+   ],
+   "view": "plan",
+   "id": 29
+  }
+ ],
+ "dimensions_not_listed": 0,
+ "scanner": {
+  "suitable": true,
+  "note": "Flat part: scan it on the glass with the calibration target (mechloop.inspect.scan); the scan measures every hole, the outline and overall size against the DXF."
+ },
+ "drawing": "RP04.svg"
+}

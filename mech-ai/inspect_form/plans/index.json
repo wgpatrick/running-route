@@ -1,0 +1,27 @@
+[
+ {
+  "part_id": "RP03",
+  "json": "inspect_form/plans/RP03.json",
+  "svg": "inspect_form/plans/RP03.svg"
+ },
+ {
+  "part_id": "RP04",
+  "json": "inspect_form/plans/RP04.json",
+  "svg": "inspect_form/plans/RP04.svg"
+ },
+ {
+  "part_id": "printer_v10_1.x_belt_bracket",
+  "json": "inspect_form/plans/printer_v10_1.x_belt_bracket.json",
+  "svg": "inspect_form/plans/printer_v10_1.x_belt_bracket.svg"
+ },
+ {
+  "part_id": "printer_v10_1.y_plate_left",
+  "json": "inspect_form/plans/printer_v10_1.y_plate_left.json",
+  "svg": "inspect_form/plans/printer_v10_1.y_plate_left.svg"
+ },
+ {
+  "part_id": "printer_v10_1.z_deck",
+  "json": "inspect_form/plans/printer_v10_1.z_deck.json",
+  "svg": "inspect_form/plans/printer_v10_1.z_deck.svg"
+ }
+]

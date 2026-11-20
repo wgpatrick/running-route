@@ -128,7 +128,7 @@ def _incremental_step(session, design: Design, name: str, call, rep: Report) -> 
         hit = session.lookup(name, key)
         if hit is not None:
             res = VerifierResult(name, findings=list(hit["findings"]), metrics=hit["metrics"], skipped=hit["skipped"],
-                                 seconds=0.0, reused=dict(hit.get("run") or {}))
+                                 seconds=0.0, reused=dict(hit.get("run") or {}), artifacts_sim=hit.get("artifacts_sim"))
             dec.update({"status": "reused", "from_run": hit.get("run"), "original_seconds": round(hit.get("seconds", 0.0), 1)})
             return res
         if session.tier == "quick" and name not in QUICK:
