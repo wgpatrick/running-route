@@ -317,7 +317,7 @@ def heater_keenovo_200() -> Stock:
                           "state": "stand-in"})
 
 
-HYDRA_DWG = "vendor_cad/staging/instinct_REQ-016/ (National Plastic Heater drawing NPHSF365; pending)"
+HYDRA_DWG = "vendor_docs/NPH_NPHSF365_HydraResearch-SQ1451144_24V-200W-210x210_heater_drawing.pdf"
 
 
 @part
@@ -339,11 +339,16 @@ def heater_hydra_sq1451144() -> Stock:
                        "note": "$9.99, 6 in stock (owner, 2026-11-20)"}],
           "stock_size": "210 x 210 mm", "datasheet": HYDRA_DWG,
           "ratings_source": {"watts": "Hydra / NPHSF365: 200 W", "volts": "Hydra / NPHSF365: 24 V"},
-          "replace_with": "read NPHSF365 when it lands (REQ-016) and measure the thickness; fallback Keenovo SKU 10133 200 x 200"}
+          "replace_with": "measure the thickness on arrival; fallback Keenovo SKU 10133 200 x 200 (China, $43.28, 2-6 weeks)",
+          "note": "leads end in a Molex 43640-0401 (Micro-Fit 3.0, 4 positions: about 5 A per contact, under the 8.3 A heater current): "
+                  "cut it off and crimp the bed loom's Mini-Fit HCS (16 AWG max) onto the heater pair; the lead gauge is not stated"}
     return _tagged(st, "HEATER-HYDRA-SQ1451144-210x210-24V-200W", "Hydra Research SQ1451144 silicone heater 210 x 210 mm 24 V 200 W", rp,
                    cost_usd=9.99,
-                   model={"kind": "proxy", "state": "stand-in",
-                          "source": "210 x 210 x 1.5 sheet: outline per Hydra's listing; drawing NPHSF365 not yet read, thickness ASSUMED 1.5"})
+                   model={"kind": "generated to standard", "remade_from": HYDRA_DWG, "no_auto_features": True,
+                          "assumed": ["thickness 1.5 mm (not dimensioned on NPHSF365; Keenovo-class figure): measure on arrival"],
+                          "source": "re-made from NPH drawing NPHSF365 rev 0: 210 x 210 outline, leads leaving the middle of one edge (130 +/-15 "
+                                    "to the Molex 43640-0401); thickness 1.5 ASSUMED (not on the drawing); the terminal and thermistor "
+                                    "patches (about 30 x 20 and 21 x 31, scaled, not dimensioned) are not modelled"})
 
 
 @part
