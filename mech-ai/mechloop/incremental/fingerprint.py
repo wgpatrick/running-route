@@ -5,7 +5,8 @@ anything a check could read changes. It does not depend on tessellation (meshes 
 hash seed, on dict/set order or on memory addresses.
 
 - shape_fp(shape): the shape's B-rep written as text WITHOUT triangulation (OCCT BRepTools, format version 1: every
-  surface, curve, vertex and the shape's placement), plus its bounding box. Two builds of the same geometry by the
+  surface, curve, vertex and the shape's placement; the per-shape state flags, which flip when a part is meshed or
+  checked, are left out), plus its bounding box. Two builds of the same geometry by the
   same code give the same text; any change of geometry or placement changes it.
 - canon(obj): a JSON-able, order-independent form of any design value (dicts, dataclasses, numpy arrays, shapes,
   callables: their byte code, constants, closure values and the module-level values they name). A value that has no
@@ -41,6 +42,7 @@ def digest(*parts) -> str:
 
 
 # ---------------------------------------------------------------------------------------------------------- shapes
+_FLAGS = __import__("re").compile(rb"(?m)^[01]{7}\r?\n")
 _SHAPE_FP: dict[int, tuple] = {}      # id(wrapped) -> (wrapped, fp); holding `wrapped` keeps the id from being reused
 
 
@@ -63,7 +65,9 @@ def shape_fp(shape) -> str:
 
     buf = io.BytesIO()
     BRepTools.Write_s(w, buf, False, False, TopTools_FormatVersion.TopTools_FormatVersion_VERSION_1)
-    h = hashlib.sha256(buf.getvalue())
+    # drop the per-shape state flags (free / modified / checked / orientable / closed / infinite / convex): "modified"
+    # and "checked" flip when a part is meshed or checked, which is not a change of the part
+    h = hashlib.sha256(_FLAGS.sub(b"", buf.getvalue()))
     try:
         from OCP.Bnd import Bnd_Box
         from OCP.BRepBndLib import BRepBndLib

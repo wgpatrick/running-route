@@ -130,4 +130,4 @@ def code_hash(*modules: str) -> str:
 def clear() -> None:
     """Forget every cached hash (tests that edit source files)."""
     for f in (_imports, module_closure, data_files, _file_hash, externals, code_hash):
-        f.cache_clear()
+        getattr(f, "cache_clear", lambda: None)()

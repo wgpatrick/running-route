@@ -27,7 +27,7 @@ from pathlib import Path
 from .cache import ResultCache, verifier_key
 from .codehash import code_hash
 from .deps import DEPS, QUICK
-from .fingerprint import FP_VERSION, digest, diff, fingerprint, is_unstable, shape_fp, value_fp
+from .fingerprint import FP_VERSION, digest, diff, fingerprint as fingerprint_design, is_unstable, shape_fp, value_fp
 
 TIERS = ("quick", "affected", "full")
 CURRENT: "Session | None" = None
@@ -49,7 +49,7 @@ class Session:
         self.design = design
         self.cache = ResultCache(Path(out_dir) / "verify_cache", read=use_cache and tier != "full", write=use_cache)
         self.use_cache = use_cache
-        self.fps = fingerprint(design)
+        self.fps = fingerprint_design(design)
         self.changes = diff(self.cache.manifest() if use_cache else None, self.fps)
         self.run = {"iteration": iteration, "time": time.strftime("%Y-%m-%dT%H:%M:%S"), "tier": tier}
         self.decisions: dict[str, dict] = {}
