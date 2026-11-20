@@ -68,6 +68,9 @@ class Stock:
     # "proxy"), source, file, and what the proxy-match check should find. See mechloop/parts/vendor_cad.py.
     detail: Shape | None = None
     model: dict = field(default_factory=dict)
+    # The real, orderable product (practice DG-07, mechloop/verifiers/purchased.py): maker, mpn, sellers, stock_size, datasheet,
+    # ratings_source. Empty: taken from mechloop/data/real_parts.json by SKU, else from `source` and the ratings.
+    real_part: dict = field(default_factory=dict)
 
 
 def part(fn):
@@ -131,6 +134,7 @@ def place(design: Design, name: str, stock: Stock, loc: Location = Location(), b
                    detail=stock.detail.moved(loc) if stock.detail is not None else None,
                    meta={"catalog": stock.catalog, "description": stock.description, "cost_usd": stock.cost_usd,
                          "vendor_backed": stock.verified, "source": dict(stock.source),
+                         **({"real_part": dict(stock.real_part)} if stock.real_part else {}),
                          # what the displayed / exported geometry is, and where this instance sits (local -> world)
                          "model": {x: stock.model[x] for x in ("kind", "source", "file", "note", "key", "replaced", "state", "remade_from")
                                    if x in stock.model} or {"kind": "proxy", "source": "hand-made simulation solid"},

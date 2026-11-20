@@ -352,6 +352,9 @@ class Design:
     practice: dict = field(default_factory=dict)
     # Declared exceptions to practice rules, each {"rule", "parts", "reason"}: see `waive`.
     waivers: list = field(default_factory=list)
+    # A design still being explored, not presented as buildable: practice DG-07 (purchased parts that are not real, orderable
+    # products with the maker's CAD and ratings: placeholders) reports warnings instead of errors. Default: buildable, errors.
+    exploratory: bool = False
     # T-nut type for every add_screw(..., tnut=True) and corner-bracket leg on a slot. None (older designs): T-nuts and
     # bracket screws are BOM lines only. "drop_in": each is a drawn catalogue part (parts.tslot.tnut_2020, post-assembly
     # insertion), bracket screws are real screws, and the T-slot screw checks of the interference verifier run.
@@ -397,9 +400,12 @@ class Design:
         kind = str(self.joins.get(frozenset((a, b)), "")).strip().lower()
         return kind.startswith(SLIDING_JOIN_PREFIXES)
 
-    def bom_extra(self, sku: str, qty: int = 1, unit_cost_usd: float | None = None) -> None:
+    def bom_extra(self, sku: str, qty: int = 1, unit_cost_usd: float | None = None, real_part: dict | None = None) -> None:
+        """A bought item with no geometry. real_part: the orderable product (maker, mpn, sellers ...; practice DG-07)."""
         e = self.bom_extras.setdefault(sku, {"qty": 0, "unit_cost_usd": unit_cost_usd})
         e["qty"] += qty
+        if real_part:
+            e["real_part"] = dict(real_part)
 
     def require_clearance(self, a: str, b: str, gap: float) -> None:
         self.min_clearances[frozenset((a, b))] = gap

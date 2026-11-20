@@ -5,7 +5,8 @@ which are cross-referenced to the verifier that already enforces them, and which
 research_notes/practice/rules.yaml. Three more rules are the owner's standing practice (docs/DESIGN_GUIDELINES.md):
 DG-01 no 3D-printed part in a load path, DG-02 no tapped thread in aluminium we make (nor in an extrusion end), DG-03 a
 machined part with only through-features is a 2D laser-cut candidate, DG-04 no thread in a printed part (through-bolt and
-nut; a heat-set insert only with a written reason), DG-05 printed clearance holes at ISO 273 medium plus the FDM allowance.
+nut; a heat-set insert only with a written reason), DG-05 printed clearance holes at ISO 273 medium plus the FDM allowance,
+DG-06 every fastener drawn, DG-07 off-the-shelf parts are real parts (mechloop/verifiers/purchased.py).
 
 Measurement is shared with the read-only audit (`mechloop/verifiers/fastener_stack.py`, promoted from
 tools/practice_audit.py): point-in-solid probing of the B-rep at the home pose along and round every screw and round
@@ -138,6 +139,14 @@ RULES: dict[str, Rule] = {r.id: r for r in [
               "tnut_without_screw: a tnut=True screw without its T-nut part, or the reverse; joint_without_fasteners: a declared "
               "join whose kind names a fastener (m5_tnut, through_bolt, bolted...) with no drawn fastener holding both parts. "
               "Set screws inside a bought pulley's hub are listed (metrics), not required as parts"),
+    Rule("DG-07", "Off-the-shelf parts are real parts: maker, part number and seller; maker's CAD; maker's ratings", "error", "owner",
+         "docs/DESIGN_GUIDELINES.md, key rule (owner, 2026-11-20); docs/PROVENANCE_AUDIT.md, DG-07 check", "implemented",
+         note="every purchased part (cots, or process purchased / extrusion) and BOM-only line, one finding per SKU: "
+              "purchased_part_not_real (no maker, maker part number or seller; a confirmed McMaster number or a MISUMI / Accu catalogue "
+              "number counts as all three), purchased_geometry_not_sourced (geometry not supplier CAD nor a faithful re-make from a "
+              "recorded drawing), purchased_rating_not_sourced (a rating some check reads without a maker's or standard source). "
+              "Errors; warnings when design.exploratory is True. Parts we fabricate (sheet, machined, printed) are exempt. Facts from "
+              "meta['real_part'] or mechloop/data/real_parts.json, then the catalogue record (mechloop/verifiers/purchased.py)"),
     # ---- enforced by another verifier: cross-referenced, not duplicated ------------------------------------------------
     Rule("FST-031", "Washer under any head or nut on a slot or oversize hole", "warning", "document", "ISO 7089 / 7093",
          "xref", "ratings.head_bearing (screw_head_seat_too_small)"),
@@ -1208,6 +1217,45 @@ def _dg06(x: _Ctx):
             "note": "set screws are inside the bought pulley's hub and come with it: listed here, not required as parts"}
 
 
+def _dg07(x: _Ctx):
+    """Off-the-shelf parts are real parts (mechloop/verifiers/purchased.py): one finding per SKU and failure."""
+    from . import purchased as P
+
+    res = P.dg07(x.d)
+    sev = "warning" if res["exploratory"] else None
+    tail = (" Allowed while exploring (design.exploratory); must be fixed before buying." if res["exploratory"]
+            else " A placeholder: must be fixed before buying; the design is not buildable while it remains.")
+    for sku, g in sorted(res["by_sku"].items()):
+        parts = g["parts"]
+        what = f"{sku} ({g['qty']} in the model{', ' + g['description'][:70] if g['description'] else ''})"
+        if g["missing"] and not x.waived("DG-07", "purchased_part_not_real", parts):
+            x.flag("DG-07", "purchased_part_not_real",
+                   f"{what} is not pinned to a real, orderable product: no {', '.join(g['missing'])}." + tail, parts,
+                   value=g["missing"], limit="maker, maker part number and seller (or a catalogue-house number)", severity=sev, sku=sku,
+                   maker=g["maker"], mpn=g["mpn"], sellers=g["sellers"], replace_with=g["replace_with"] or None,
+                   hint="Record the maker, the maker's part number at the stock size used and a seller (part.meta['real_part'] or "
+                        "mechloop/data/real_parts.json), or replace it with a part that has them.")
+        if g["geometry"] not in ("supplier CAD", "faithful re-make") and not x.waived("DG-07", "purchased_geometry_not_sourced", parts):
+            x.flag("DG-07", "purchased_geometry_not_sourced",
+                   f"{what}: its geometry is a {g['geometry']}, not the maker's CAD nor a faithful re-make from its dimensioned drawing." + tail,
+                   parts, value=g["geometry"], limit="supplier CAD | faithful re-make", severity=sev, sku=sku,
+                   hint="Save the maker's STEP in vendor_cad/inbox/ under the SKU, or re-make it from the maker's drawing with every "
+                        "dimension and record the drawing (model 'remade_from').")
+        if g["unsourced_ratings"] and not x.waived("DG-07", "purchased_rating_not_sourced", parts):
+            x.flag("DG-07", "purchased_rating_not_sourced",
+                   f"{what}: rating(s) a check reads have no maker's source: {', '.join(g['unsourced_ratings'][:8])}." + tail, parts,
+                   value=g["unsourced_ratings"], limit="every rating a check uses from the maker's datasheet", severity=sev, sku=sku,
+                   hint="Read each from the maker's datasheet and record it with its page (real_part['ratings_source'] or the vendor record).")
+    for sku, e in sorted(res["extras"].items()):
+        if e["missing"] and not x.waived("DG-07", "purchased_part_not_real", [sku]):
+            x.flag("DG-07", "purchased_part_not_real",
+                   f"{e['qty']} x {sku} (BOM-only line) is not pinned to a real, orderable product: no {', '.join(e['missing'])}." + tail,
+                   [sku], value=e["missing"], limit="maker, maker part number and seller (or a catalogue-house number)", severity=sev,
+                   sku=sku, bom_only=True,
+                   hint="Give the line its maker, part number and seller (design.bom_extra(..., real_part={...}) or real_parts.json).")
+    return {k: res[k] for k in ("counts", "placeholders", "buildable", "exploratory")}
+
+
 def verify_practice(design: Design) -> VerifierResult:
     r = VerifierResult("practice")
     with timed(r):
@@ -1229,7 +1277,7 @@ def verify_practice(design: Design) -> VerifierResult:
                  ("FST-072", lambda: _fst072(x, rows)),
                  ("DG-01", lambda: _dg01(x, rows)), ("DG-02", lambda: _dg02(x, rows)), ("DG-03", lambda: _dg03(x)),
                  ("DG-04", lambda: _dg04(x, rows, results.get("DG-01") or [])), ("DG-05", lambda: _dg05(x, rows, pr)),
-                 ("DG-06", lambda: _dg06(x))]
+                 ("DG-06", lambda: _dg06(x)), ("DG-07", lambda: _dg07(x))]
         results = {}
         for name, fn in steps:
             try:
@@ -1280,6 +1328,7 @@ def verify_practice(design: Design) -> VerifierResult:
             "threads_in_printed_parts": results.get("DG-04"),
             "printed_clearance_holes": results.get("DG-05"),
             "hardware_completeness": results.get("DG-06"),
+            "purchased_parts": results.get("DG-07"),
             "nyloc_temperature": results.get("FST-072"),
             "machined_parts": results.get("DG-03"),
             "limits_overridden": dict(x.limits) or None, "disabled": sorted(x.disabled) or None,
