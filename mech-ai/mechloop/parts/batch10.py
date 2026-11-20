@@ -13,7 +13,7 @@ import math
 
 from build123d import Box, Cylinder, Pos, Rot
 
-from . import Stock, _source, part, vendor_data
+from . import Stock, _source, mcmaster_part, part, vendor_data
 
 INH2O_PA = 249.089
 CFM_M3S = 4.71947e-4
@@ -165,7 +165,7 @@ def bhcs_flanged(size: str = "M5", length: float = 8.0) -> Stock:
     return Stock(shape, sku, f"Flanged button head screw {size} x {length:g} (ISO 7380-2)", round(mass, 5),
                  detail=shape, model={"kind": "generated to standard", "state": "stand-in",
                                       "source": "ISO 7380-2 figures from distributors' listings (collar, head height, button), plain solids"},
-                 ratings={"proof_load_n": SCREW[size][6] * 0.8, "head": "flanged_button"},
+                 ratings={"proof_load_n": SCREW[size][6] * 0.8, "head": "flanged_button", **mcmaster_part(sku)},
                  interfaces={"thread_d": d, "head_d": dc, "head_h": k, "hex_key": v["hex_s"], "head": "flanged_button",
                              "button_dia": dk, "collar_height": kc},
                  cost_usd=0.12,

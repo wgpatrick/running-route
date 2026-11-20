@@ -1814,6 +1814,11 @@ def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict
     host = next((d for d in el.devices.values() if d.kind == "host"), None)
     L += ["[mcu]"] + ([f"# klipper_mcu: {board.ratings['klipper_mcu']}"] if board is not None and board.ratings.get("klipper_mcu") else []) + \
          [f"serial: {fw.get('serial', '/dev/ttyAMA0' if host else '/dev/serial/by-id/usb-Klipper')}", "restart_method: command", ""]
+    # secondary MCUs (USB probe / accelerometer boards, the host's own GPIO MCU): el.firmware["extra_mcus"] = [{"name", "serial",
+    # "klipper_mcu", "note"}]; the '# klipper_mcu:' mark inside the section lets the offline klippy run load their dictionaries
+    for xm in fw.get("extra_mcus") or []:
+        L += [f"[mcu {xm['name']}]", f"# klipper_mcu: {xm['klipper_mcu']}"] + ([f"# {_one_line(xm['note'])}"] if xm.get("note") else []) + \
+             [f"serial: {xm['serial']}", ""]
     vmax = min((joints[pr[a]].max_speed for a in "xy" if pr.get(a) in joints), default=200.0)
     amax = min((joints[pr[a]].max_accel for a in "xy" if pr.get(a) in joints), default=1000.0)
     zj = joints.get(pr.get("z", "z"))
@@ -1825,6 +1830,8 @@ def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict
     sw_dev = {d.component: d for d in el.devices.values() if d.kind == "endstop"}
     pg = tuning.get("probe")
     probe_pin, probe_dev, _ = _probe_pin(el, design)
+    if fw.get("probe_klipper") and probe_dev is not None:
+        probe_pin = "probe_klipper"      # the probe is not on a board pin (an eddy-current probe on its own MCU): its own section
     for ax in ("x", "y", "z"):
         jn = pr.get(ax, ax)
         j = joints.get(jn)
@@ -1985,7 +1992,11 @@ def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict
         else:
             L += [f"[controller_fan {fname}]", f"pin: {fp.pin if fp else 'NOT WIRED'}", ""]
     for d in el.devices.values():
-        if d.kind == "relay" and d.params.get("cuts") == "psu":
+        if d.kind == "relay" and d.params.get("cuts") == "psu" and d.params.get("switched_by") == "host":
+            L += ["# mains contactor ahead of the 24 V supply: switched from a host (Pi) GPIO by Moonraker, not by Klipper:",
+                  f"#   moonraker.conf [power printer]  type: gpio  pin: {d.params.get('host_pin', 'gpiochip0/gpio26')}",
+                  "#   off_when_shutdown: True  locked_while_printing: True  restart_klipper_when_powered: True", ""]
+        elif d.kind == "relay" and d.params.get("cuts") == "psu":
             bp = _board_port_of(el, d.name, "ctrl")
             L += ["# mains relay ahead of the 24 V supply: energised while the firmware runs, dropped on any shutdown",
                   "[output_pin ps_on]", f"pin: {bp.pin if bp else 'NOT WIRED'}", "value: 1", "shutdown_value: 0", ""]
@@ -2000,7 +2011,9 @@ def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict
                       f"damping_ratio_{ax}: {sh[ax]['damping_ratio']:.3f}"]
         L += [""]
     # ---- probe, Z homing over the bed, bed mesh
-    if pg and probe_pin and pg.get("z_offset") is not None:
+    if pg and probe_pin == "probe_klipper" and pg.get("z_offset") is not None:
+        L += [str(x).format(x_offset=pg["x_offset"], y_offset=pg["y_offset"], z_offset=pg["z_offset"]) for x in fw["probe_klipper"]] + [""]
+    elif pg and probe_pin and pg.get("z_offset") is not None:
         prov = _one_line((pg.get("sources") or {}).get(f"switching_distance_{pg.get('target')}_mm") or "source not stated")
         L += [f"# probe: offsets from the CAD; z_offset from the probe's nominal switching distance on {pg.get('target')} "
               f"({pg.get('sensing_distance_mm')} mm) - set it on the machine with PROBE_CALIBRATE",
@@ -2027,6 +2040,8 @@ def klipper_config(el: Electrical, design, sim: dict | None = None, tuning: dict
             if prof:
                 L += [f"# stored mesh: {prof.get('basis', 'measured by the twin on its as-built bed')}"]
                 L += mesh_profile_lines(prof) + [""]
+    if fw.get("extra_sections"):
+        L += ["# ---- feedback hardware and power control (the design's el.firmware['extra_sections'])"] + list(fw["extra_sections"]) + [""]
     return "\n".join(L)
 
 
@@ -2065,7 +2080,12 @@ KLIPPER_REQUIRED = {   # section prefix -> options klippy refuses to start witho
     # and rotation_distance; endstop_pin is optional and position_* come from the axis's first stepper
     "stepper_extra": ["step_pin", "dir_pin", "enable_pin", "microsteps", "rotation_distance"],
     "z_tilt": ["z_positions", "points"],
+    # v12 feedback hardware (Klipper Config_Reference)
+    "probe_eddy_current": ["sensor_type", "z_offset"], "temperature_probe": ["sensor_type", "sensor_pin"],
+    "adxl345": ["cs_pin"], "resonance_tester": ["probe_points"], "filament_motion_sensor": ["switch_pin", "detection_length"],
+    "temperature_sensor": ["sensor_type"], "gcode_macro": [],
 }
+PROBE_SECTIONS = ("probe", "probe_eddy_current")
 
 
 def check_klipper_config(text: str, board_pins: set, sensor_types: set) -> list:
@@ -2083,6 +2103,10 @@ def check_klipper_config(text: str, board_pins: set, sensor_types: set) -> list:
         return [f"does not parse: {e}"]
     used = {}
     for sec in cp.sections():
+        if sec.startswith("mcu "):
+            if not cp.has_option(sec, "serial"):
+                problems.append(f"[{sec}]: missing serial")
+            continue
         key = "stepper_extra" if re.fullmatch(r"stepper_[xyz]\d+", sec) else \
             next((k for k in KLIPPER_REQUIRED if sec == k or sec.startswith(k + " ") or (k.endswith("_") and sec.startswith(k))), None)
         if key is None:
@@ -2099,7 +2123,8 @@ def check_klipper_config(text: str, board_pins: set, sensor_types: set) -> list:
             for opt in ("mesh_min", "mesh_max"):
                 if not cp.has_option(sec, opt):
                     problems.append(f"[{sec}]: missing {opt}")
-            if not cp.has_section("probe"):
+            psec = next((x for x in cp.sections() if x.split(" ")[0] in PROBE_SECTIONS), None)
+            if psec is None:
                 problems.append("[bed_mesh] without a [probe]")
             elif cp.has_option(sec, "mesh_min") and cp.has_option(sec, "mesh_max"):
                 lo_, hi_ = ([float(v) for v in cp.get(sec, o).split(",")] for o in ("mesh_min", "mesh_max"))
@@ -2107,7 +2132,7 @@ def check_klipper_config(text: str, board_pins: set, sensor_types: set) -> list:
                     problems.append(f"[bed_mesh]: empty mesh area {lo_} .. {hi_} (the probe cannot reach the bed)")
                 for k_, ax_ in enumerate("xy"):      # the nozzle must be able to carry the probe to every mesh point
                     if cp.has_section(f"stepper_{ax_}"):
-                        off_ = cp.getfloat("probe", f"{ax_}_offset", fallback=0.0)
+                        off_ = cp.getfloat(psec, f"{ax_}_offset", fallback=0.0)
                         a0, a1 = cp.getfloat(f"stepper_{ax_}", "position_min", fallback=0.0), cp.getfloat(f"stepper_{ax_}", "position_max")
                         if lo_[k_] - off_ < a0 - 1e-6 or hi_[k_] - off_ > a1 + 1e-6:
                             problems.append(f"[bed_mesh]: mesh {ax_.upper()} {lo_[k_]:g}..{hi_[k_]:g} needs the nozzle at "
@@ -2124,10 +2149,12 @@ def check_klipper_config(text: str, board_pins: set, sensor_types: set) -> list:
             if not opt.endswith("_pin") and opt != "pin":
                 continue
             if "virtual_endstop" in val:
-                if val.strip().startswith("probe:") and not cp.has_section("probe"):
+                if val.strip().startswith("probe:") and not any(x.split(" ")[0] in PROBE_SECTIONS for x in cp.sections()):
                     problems.append(f"[{sec}] {opt}: homes on the probe but there is no [probe] section")
                 continue
             pin = re.sub(r"^[\^~!]+", "", val.strip())
+            if ":" in pin and "NOT WIRED" not in val:      # a pin of a secondary MCU ("eddy:gpio9", "host:gpio17"): not the board's
+                continue
             if "NOT WIRED" in val or pin not in board_pins:
                 problems.append(f"[{sec}] {opt}: '{val}' is not a pin of the board")
                 continue

@@ -670,6 +670,10 @@ def mcmaster_part(sku: str) -> dict:
                                                          "(" + m["wrong_file"][f"{sku}.step"].split(";")[0] + ")"}
     seen = sku in m.get("screws", {}) or sku in m.get("nuts", {})
     batch = m.get("supplier_batch_2026_11_18") or {}
+    b20 = m.get("instinct_2026_11_20") or {}
+    if sku in b20.get("confirmed", []):        # McMaster's own STEP and drawing collected for the owner (Instinct REQ-001 / 002 / 006)
+        return {"mcmaster_pn": pn, "mcmaster_pn_status": "confirmed: McMaster's drawing and STEP of this number collected for the owner "
+                                                         "(Instinct, 2026-11-20; vendor_cad/staging/instinct_REQ-00x/MANIFEST.md)"}
     if sku in batch.get("confirmed", []):      # read from McMaster's product page for the owner (supplier CAD batch 2026-11-18)
         note = (batch.get("notes") or {}).get(sku)
         return {"mcmaster_pn": pn, "mcmaster_pn_status": "confirmed on McMaster's product page (supplier CAD batch 2026-11-18)"
@@ -878,7 +882,7 @@ def add_screw(design: Design, name: str, size: str, length: float, at, direction
               body: str = "world", threads_into: str | list[str] | None = None, clamps=(),
               tnut: bool = False, washer: bool | str = False, insert: bool | str = False,
               locking: str | None = None, insert_reason: str | None = None, head: str = "socket",
-              washers: int = 1) -> Component:
+              washers: int = 1, tnut_stock: "Stock | None" = None) -> Component:
     """Place a cap screw with the underside of its head at `at`, pointing along `direction`.
     Registers it as a Fastener (tool access is checked), allows the thread to overlap the
     part(s) it screws into and records that it holds them. tnut=True means it threads into
@@ -948,7 +952,7 @@ def add_screw(design: Design, name: str, size: str, length: float, at, direction
     if tnut:
         if getattr(design, "tnut_style", None):
             _place_tnut(design, c, name, size, length, at, dvec, body,
-                        [threads_into] if isinstance(threads_into, str) else list(threads_into or []))
+                        [threads_into] if isinstance(threads_into, str) else list(threads_into or []), stock=tnut_stock)
         else:
             design.bom_extra(f"TNUT-2020-{size}", 1, 0.15)
     if washer_at is not None:
@@ -962,7 +966,8 @@ def add_screw(design: Design, name: str, size: str, length: float, at, direction
     return c
 
 
-def _place_tnut(design: Design, screw: Component, name: str, size: str, length: float, at, dvec, body: str, targets: list) -> None:
+def _place_tnut(design: Design, screw: Component, name: str, size: str, length: float, at, dvec, body: str, targets: list,
+                stock: "Stock | None" = None) -> None:
     """The drawn T-nut of a tnut=True screw: `<name>_tnut` in the slot of the extrusion the screw enters, its bearing
     face against the underside of the slot's lips, centred on the screw's axis. The simulation solid of the extrusion
     has a plain slot with no T cavity, so the nut's wings overlap that solid by design (allowed, and limited to the
@@ -970,7 +975,7 @@ def _place_tnut(design: Design, screw: Component, name: str, size: str, length: 
     verifier works out what the real slot allows)."""
     from .tslot import slot_frame, tnut_2020
 
-    st = tnut_2020(size)
+    st = stock if stock is not None else tnut_2020(size)      # v12: a bracket set's own nut (MISUMI HNTP5-5) where given
     known = {c.name for c in design.components}
     if any(t not in known for t in targets):
         raise ValueError(f"add_screw('{name}', tnut=True): {[t for t in targets if t not in known]} is not in the design yet. With "
@@ -1134,3 +1139,4 @@ from .batch7 import leadscrew_motor_17e19_ab4, leadscrew_screw_17e19_ab4, octopu
 from .batch8 import add_thumb_nut, die_spring_dj8x20, print_sheet_pei257, thumb_nut_din466  # noqa: E402,F401
 from .batch9 import print_sheet_pei235  # noqa: E402,F401
 from .batch10 import bhcs_flanged, blower_bfb0524hh, blower_gdb4010, leadscrew_nut_pom_ab4, print_sheet_pei220  # noqa: E402,F401
+from . import batch12  # noqa: E402,F401  (printer_v12 parts: mechloop.parts.batch12)

@@ -19,7 +19,7 @@
   "SHCS-M5x30": "91290A194",
   "SHCS-M5x35": "91290A195",
   "SHCS-M2.5x12": "91290A008",
-  "SHCS-M4x6": "90128A208",
+  "SHCS-M4x6": "91290A139",
   "NUT-M2.5": "90591A270",
   "NUT-M3": "90591A250",
   "NUT-M5": "90591A260",
@@ -38,7 +38,17 @@
   "WASHER-M4": "91166A230",
   "WASHER-M5": "91166A240",
   "NUT-M4": "90591A255",
-  "NUT-M3-NYLOC": "90576A102"
+  "NUT-M3-NYLOC": "90576A102",
+  "BHCS-FL-M5x8": "92137A412",
+  "BHCS-FL-M5x10": "92137A414",
+  "SHCS-M2x20": "91290A049",
+  "SHCS-M2.5x20": "91290A108",
+  "SHCS-M3x25": "91290A125",
+  "SHCS-M5x16": "91290A232",
+  "SHCS-M5x65": "91290A270",
+  "WASHER-M2": "91166A180",
+  "NUT-M2": "91828A111",
+  "WASHER-M5-SERRATED": "91106A126"
  },
  "pages": "https://www.mcmaster.com/<part number>/",
  "wrong_file": {},
@@ -370,5 +380,22 @@
    "WASHER-M4-LARGE": "not sold by McMaster (12 mm outside diameter): stand-in, open item",
    "washers": "91166A190 / A210 / A230 / A240 are 0.1 mm thicker than the mid of the ISO 7089 band: M2.5 0.6, M3 0.6, M4 0.9, M5 1.1 mm (measured in the STEP files); the catalogue's WASHER table now carries these"
   }
+ },
+ "instinct_2026_11_20": {
+  "confirmed": [
+   "BHCS-FL-M5x10",
+   "BHCS-FL-M5x8",
+   "NUT-M2",
+   "SHCS-M2.5x20",
+   "SHCS-M2x20",
+   "SHCS-M3x25",
+   "SHCS-M4x6",
+   "SHCS-M5x16",
+   "SHCS-M5x6",
+   "SHCS-M5x65",
+   "WASHER-M2",
+   "WASHER-M5-SERRATED"
+  ],
+  "note": "McMaster drawing + STEP collected by Instinct for the owner (REQ-001, REQ-002, REQ-006); M4 x 6 is now 91290A139 (black-oxide, 12.9) instead of the zinc 90128A208; NUT-M2 is 91828A111 (18-8, DIN 934 height 1.6), not the thin 90370A201"
  }
 }

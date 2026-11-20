@@ -106,6 +106,22 @@ def mcu_dictionary(cfg_text: str, kdir: Path) -> Path:
     return f
 
 
+EXTRA_MCU = re.compile(r"^\[mcu ([A-Za-z0-9_]+)\]\s*\n(?:#[^\n]*\n)*?# klipper_mcu: ([A-Za-z0-9_]+)", re.M)
+
+
+def extra_mcu_dictionaries(cfg_text: str, kdir: Path) -> list:
+    """`-d <name>=<dict>` for every secondary MCU section (`[mcu eddy]` ...) that names its MCU with a '# klipper_mcu: <name>'
+    comment line inside the section (rp2040 for the BTT Eddy Duo and ADXL345 V2, linuxprocess for the Pi's host MCU):
+    tools/setup_klipper.sh builds out_<name>/klipper.dict. A secondary MCU without the mark cannot be planned offline."""
+    out = []
+    for name, mcu in EXTRA_MCU.findall(cfg_text or ""):
+        f = kdir / f"out_{mcu}" / "klipper.dict"
+        if not f.exists():
+            raise FirmwareNotAvailable(f"printer.cfg's [mcu {name}] names MCU '{mcu}' but {f} does not exist: run tools/setup_klipper.sh")
+        out += ["-d", f"{name}={f}"]
+    return out
+
+
 def run_klippy(cfg_text: str, gcode_text: str, workdir: Path) -> dict:
     """Run klippy offline. Returns {"dump": path, "messages": [...], "commit": ...}; raises FirmwareError when
     Klipper rejects the configuration or stops."""
@@ -116,7 +132,7 @@ def run_klippy(cfg_text: str, gcode_text: str, workdir: Path) -> dict:
     (workdir / "printer.cfg").write_text(cfg_text)
     (workdir / "job.gcode").write_text(gcode_text)
     p = subprocess.run([str(py), str(kdir / "klippy" / "klippy.py"), "printer.cfg", "-i", "job.gcode", "-o", "out.serial",
-                        "-d", str(kdict)], cwd=workdir, capture_output=True, text=True, timeout=3600)
+                        "-d", str(kdict)] + extra_mcu_dictionaries(cfg_text, kdir), cwd=workdir, capture_output=True, text=True, timeout=3600)
     log = p.stdout + p.stderr
     (workdir / "klippy.log").write_text(log)
     msgs: dict[str, int] = {}

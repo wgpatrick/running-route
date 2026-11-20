@@ -1227,24 +1227,25 @@ def _dg07(x: _Ctx):
             else " A placeholder: must be fixed before buying; the design is not buildable while it remains.")
     for sku, g in sorted(res["by_sku"].items()):
         parts = g["parts"]
-        what = f"{sku} ({g['qty']} in the model{', ' + g['description'][:70] if g['description'] else ''})"
+        what = (f"{sku} ({g['qty']} in the model{', ' + g['description'][:70] if g['description'] else ''}"
+                f"{'; build stage ' + str(g['stage']) if g.get('stage') else ''})")
         if g["missing"] and not x.waived("DG-07", "purchased_part_not_real", parts):
             x.flag("DG-07", "purchased_part_not_real",
                    f"{what} is not pinned to a real, orderable product: no {', '.join(g['missing'])}." + tail, parts,
-                   value=g["missing"], limit="maker, maker part number and seller (or a catalogue-house number)", severity=sev, sku=sku,
+                   value=g["missing"], limit="maker, maker part number and seller (or a catalogue-house number)", severity=sev, sku=sku, stage=g.get("stage"),
                    maker=g["maker"], mpn=g["mpn"], sellers=g["sellers"], replace_with=g["replace_with"] or None,
                    hint="Record the maker, the maker's part number at the stock size used and a seller (part.meta['real_part'] or "
                         "mechloop/data/real_parts.json), or replace it with a part that has them.")
         if g["geometry"] not in ("supplier CAD", "faithful re-make") and not x.waived("DG-07", "purchased_geometry_not_sourced", parts):
             x.flag("DG-07", "purchased_geometry_not_sourced",
                    f"{what}: its geometry is a {g['geometry']}, not the maker's CAD nor a faithful re-make from its dimensioned drawing." + tail,
-                   parts, value=g["geometry"], limit="supplier CAD | faithful re-make", severity=sev, sku=sku,
+                   parts, value=g["geometry"], limit="supplier CAD | faithful re-make", severity=sev, sku=sku, stage=g.get("stage"),
                    hint="Save the maker's STEP in vendor_cad/inbox/ under the SKU, or re-make it from the maker's drawing with every "
                         "dimension and record the drawing (model 'remade_from').")
         if g["unsourced_ratings"] and not x.waived("DG-07", "purchased_rating_not_sourced", parts):
             x.flag("DG-07", "purchased_rating_not_sourced",
                    f"{what}: rating(s) a check reads have no maker's source: {', '.join(g['unsourced_ratings'][:8])}." + tail, parts,
-                   value=g["unsourced_ratings"], limit="every rating a check uses from the maker's datasheet", severity=sev, sku=sku,
+                   value=g["unsourced_ratings"], limit="every rating a check uses from the maker's datasheet", severity=sev, sku=sku, stage=g.get("stage"),
                    hint="Read each from the maker's datasheet and record it with its page (real_part['ratings_source'] or the vendor record).")
     for sku, e in sorted(res["extras"].items()):
         if e["missing"] and not x.waived("DG-07", "purchased_part_not_real", [sku]):

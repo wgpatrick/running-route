@@ -269,6 +269,23 @@ def extra_missing(sku: str, e: dict) -> list[str]:
     return miss
 
 
+def stage_of(c, design=None):
+    """Build stage of a part (owner's staged Build 1: 1 frame, electronics bay, bed and Z; 2 XY gantry and toolhead; 3 feedback
+    hardware), from meta["build_stage"]; a fastener, washer or T-nut inherits the stage of what it holds when it has none."""
+    st = c.meta.get("build_stage")
+    if st is None and design is not None:
+        for k in ("tnut_of", "washer_of", "screw"):
+            o = c.meta.get(k)
+            if o:
+                try:
+                    st = design.get(o).meta.get("build_stage")
+                except Exception:
+                    st = None
+                if st is not None:
+                    break
+    return int(st) if st is not None else None
+
+
 def dg07(design) -> dict:
     """Every purchased part and BOM-only line of a design, grouped by SKU: {"by_sku", "extras", "counts", "placeholders"}."""
     by = {}
@@ -278,17 +295,21 @@ def dg07(design) -> dict:
             continue
         g = by.setdefault(a["sku"], {**{k: a[k] for k in ("sku", "state", "maker", "mpn", "missing", "geometry", "unsourced_ratings",
                                                            "replace_with")},
-                                     "sellers": [s.get("name") for s in a["sellers"]], "parts": [], "qty": 0,
+                                     "sellers": [s.get("name") for s in a["sellers"]], "parts": [], "qty": 0, "stage": None,
                                      "description": c.meta.get("description", "")})
         g["parts"].append(c.name)
         g["qty"] += 1
+        stg = stage_of(c, design)
+        if stg is not None and (g["stage"] is None or stg < g["stage"]):
+            g["stage"] = stg                      # a SKU is needed at the earliest stage any instance is
         rank = {"real": 0, "geometry pending": 1, "placeholder": 2}
         if rank[a["state"]] > rank[g["state"]]:              # one SKU, worst instance (sizes and placements may differ)
             g.update({k: a[k] for k in ("state", "missing", "geometry", "unsourced_ratings")})
     extras = {}
     for sku, e in (design.bom_extras or {}).items():
         miss = extra_missing(sku, e)
-        extras[sku] = {"sku": sku, "qty": e.get("qty", 0), "missing": miss, "state": "placeholder" if miss else "real"}
+        extras[sku] = {"sku": sku, "qty": e.get("qty", 0), "missing": miss, "state": "placeholder" if miss else "real",
+                       "stage": e.get("stage")}
     rows = list(by.values())
     counts = {
         "purchased_skus": len(rows), "purchased_parts": sum(r["qty"] for r in rows), "bom_only_lines": len(extras),
@@ -302,9 +323,17 @@ def dg07(design) -> dict:
         "rating_not_sourced": {"skus": sum(bool(r["unsourced_ratings"]) for r in rows),
                                "parts": sum(r["qty"] for r in rows if r["unsourced_ratings"])},
     }
-    placeholders = [{"sku": r["sku"], "qty": r["qty"], "state": r["state"], "why": "; ".join(why(r)), "replace_with": r["replace_with"]}
+    by_stage = {}
+    for r in rows + list(extras.values()):
+        b = by_stage.setdefault(str(r.get("stage") or "untagged"), {"skus": 0, "placeholder_skus": 0, "placeholders": []})
+        b["skus"] += 1
+        if r["state"] != "real":
+            b["placeholder_skus"] += 1
+            b["placeholders"].append(r["sku"])
+    counts["by_stage"] = by_stage
+    placeholders = [{"sku": r["sku"], "qty": r["qty"], "state": r["state"], "stage": r.get("stage"), "why": "; ".join(why(r)), "replace_with": r["replace_with"]}
                     for r in sorted(rows, key=lambda r: (r["state"] == "geometry pending", r["sku"])) if r["state"] != "real"]
-    placeholders += [{"sku": x["sku"], "qty": x["qty"], "state": "placeholder", "why": "BOM-only line with no " + ", ".join(x["missing"]),
+    placeholders += [{"sku": x["sku"], "qty": x["qty"], "state": "placeholder", "stage": x.get("stage"), "why": "BOM-only line with no " + ", ".join(x["missing"]),
                       "replace_with": ""} for x in extras.values() if x["missing"]]
     return {"by_sku": by, "extras": extras, "counts": counts, "placeholders": placeholders,
             "buildable": not placeholders,

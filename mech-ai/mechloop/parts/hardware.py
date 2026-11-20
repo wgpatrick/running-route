@@ -161,11 +161,13 @@ def washer_toothed(size: str = "M5") -> Stock:
     material thickness (the teeth's set is not drawn); SKU WASHER-<size>-SERRATED. Dimensions recalled, not fetched."""
     if size not in WASHER_TOOTHED:
         raise ValueError(f"washer_toothed: size one of {tuple(WASHER_TOOTHED)}")
+    from . import mcmaster_part
+
     d1, d2, h = WASHER_TOOTHED[size]
     body = Pos(0, 0, h / 2) * (Cylinder(d2 / 2, h) - Cylinder(d1 / 2, h))
     return Stock(body, f"WASHER-{size}-SERRATED", f"Internal-tooth lock washer {size}, {d2:g} x {d1:g} x {h:g} mm (DIN 6797 J)",
                  math.pi * (d2 ** 2 - d1 ** 2) / 4 * h * 7.85e-6 * 0.8, material="steel", cost_usd=0.05,
-                 ratings={"approximate": True, "screw": size, "locking": "serrated"},
+                 ratings={"approximate": True, "screw": size, "locking": "serrated", **mcmaster_part(f"WASHER-{size}-SERRATED")},
                  interfaces={"od": d2, "bore": d1, "thickness": h},
                  detail=body, model={"kind": "generated to standard", "source": "DIN 6797 J sizes (recalled), drawn as a plain ring; "
                                      "placeholder for the supplier's CAD", "tolerance": {"volume_ratio": (0.8, 1.25)}},

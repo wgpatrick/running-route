@@ -677,6 +677,10 @@ def _mains(ctx, r, m):
     w_psu, w_frame = pe_link(inlet, "psu"), pe_link(inlet, "earth_point")
     if w_frame is None:      # daisy-chained through the supply's FG terminal is also a bond
         w_frame = pe_link(psu, "earth_point") if w_psu is not None else None
+    if w_psu is None and w_frame is not None:
+        # star from the frame's earth stud (one conductor per inlet tab, v12): inlet PE -> stud, stud -> supply FG
+        ep_ = next(el.port(x)[0] for x in (w_frame.a, w_frame.b) if el.port(x)[0].kind == "earth_point")
+        w_psu = pe_link(ep_, "psu")
     out["pe_to_psu"], out["pe_to_frame"] = (w_psu.name if w_psu else None), (w_frame.name if w_frame else None)
     if w_psu is None:
         r.add("error", "psu_not_earthed", "No protective-earth wire from the inlet's PE pin to the supply's FG terminal.",

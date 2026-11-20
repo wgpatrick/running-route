@@ -1,0 +1,668 @@
+"""Catalogue parts added for printer_v12, the Build 1 candidate (2026-11-20). Every part names its maker, maker part number,
+seller, and where its geometry and ratings come from (practice rule DG-07, docs/DESIGN_GUIDELINES.md key rule). A part whose
+geometry or a rating has no maker source says so in its model / ratings and is reported as a placeholder.
+
+  hiwin_mgn12_rail(length)     HIWIN MGNR12R rail, HIWIN's own section (official CAD, REQ-005) swept to a stock length, holes by
+                               HIWIN's E rule (10 + n x 25 + 10 for 245 / 295)
+  hiwin_mgn12h_block()         HIWIN MGN12H block, preload Z0, accuracy C (MGN12HZ0C set), HIWIN's own block solids
+  bracket_misumi(kind)         MISUMI HBLFSN5 (30 x 30, re-made from the catalogue drawing) / HBLFSNF5 (30 x 20, MISUMI STEP)
+  tnut_hntp5()                 MISUMI HNTP5-5 post-assembly spring nut (the -SEP set's nut), re-made from catalogue p.2716
+  add_bracket_misumi(...)      a -SEP bracket on two T-slots: CBM5-10 into HNTP5-5 in each leg, every part drawn
+  spacer_harwin(length, mat)   Harwin R30-620xx14 (aluminium) / R30-670xx94 (nylon) M3 round spacers, re-made from Harwin's drawings
+  heater_keenovo_200()         Keenovo 200 x 200 mm 24 V 200 W silicone heater (stock product, maker-direct)
+  thermostat_cs7()             Cantherm CS712025Y: CS-7 bimetal thermostat, 120 degC NC, 10 A at 24 V DC (maker's sheet)
+  pi5_host()                   Raspberry Pi 5 8 GB (SC1432), the Klipper / Moonraker host, own 27 W supply
+  contactor_finder_2232()      Finder 22.32.0.120.4320 25 A 2-pole modular contactor, 120 V coil (DIN rail)
+  relay_phoenix_1119897()      Phoenix Contact PLC-RSC-5DC/21 interface relay, 5 V DC coil (DIN rail)
+  din_rail_wago(length), din_endstop_wago()   WAGO 210-112 35 x 7.5 rail (cut by the builder) and 249-117 end stop
+  probe_eddy_duo()             BIGTREETECH Eddy Duo eddy-current probe (re-made from BTT's dimensioned drawing)
+  cam_arducam_b0454(), lens_cil062(), picam3()   nozzle camera board + lens, overview / top-down camera
+  laser_vlm520()               Quarton VLM-520-56 LPO-D30-F10 green line laser (Class 1M)
+  adxl345_btt(), sfs_v2(), cob_led(length)       accelerometer, filament motion sensor, 24 V COB LED segment
+"""
+from __future__ import annotations
+
+import dataclasses
+import math
+
+from build123d import Box, Cylinder, Location, Plane, Polygon, Pos, Rot, extrude
+
+from . import Stock, add_screw, mgn12_rail, mgn12h_carriage, part, place, vendor_data
+from . import vendor_cad as vc
+from .vendor_cad import hole_feature
+
+CHECKED = "2026-11-20"
+MC = {"name": "Motion Constrained (Colorado, US)", "part_number": "HIWIN MGN12HZ0C set", "url": "https://motionconstrained.com",
+      "checked": f"{CHECKED} (owner's agent, REQ-009; stock and lead to confirm on ordering)",
+      "note": "MGN12HZ0C set = MGNR12R rail + one MGN12H block, preload Z0, accuracy C: $79.64 per set at 295 mm, free US shipping; "
+              "rail only $49.49 at 245 mm"}
+HIWIN_SRC = ("HIWIN Corporation official CAD from configure.hiwin.com (collected for the owner, Instinct REQ-005 batch 6; "
+             "checks in vendor_cad/staging/instinct_REQ-005/MANIFEST.md)")
+
+
+def _tagged(st: Stock, sku: str, desc: str, real_part: dict, **kw) -> Stock:
+    return dataclasses.replace(st, sku=sku, description=desc, real_part=real_part, **kw)
+
+
+# ------------------------------------------------------------------ HIWIN rails and blocks
+@part
+def hiwin_mgn12_rail(length: float) -> Stock:
+    """HIWIN MGNR12R rail at a HIWIN standard length (245, 295 ...). Local frame as mgn12_rail (along X, base Z=0). Display model:
+    the section of HIWIN's own rail STEP (MGNR-12-R0300-H-M) swept to `length`, holes drilled per HIWIN's E rule (the same hole
+    layout mgn12_rail computes: 10 + n x 25 + 10 at 245 and 295)."""
+    base = mgn12_rail(length)
+    v = vendor_data("hiwin_mgn12")["parts"]["MGNR12_rail"]["values"]
+    holes = base.interfaces["mount_holes_m3"]
+    e_end = (length - (len(holes) - 1) * v["hole_pitch_P_mm"]) / 2
+    f = vc.find_file("HIWIN-MGNR12R-R0300", inbox_only=True)
+    model = {"kind": "proxy", "source": "HIWIN STEP not in vendor_cad/inbox"}
+    detail = None
+    if f is not None:
+        def build():
+            from build123d import extrude as ex
+
+            s = vc.frame(vc.solids_of(vc.load_step(f)), rot=(90, 0, 90))
+            bb = s.bounding_box()
+            thin = s & (Pos(bb.min.X + 25.0, 0, 4) * Box(0.02, 40, 40))
+            face = max((q for q in thin.faces() if abs(abs(tuple(q.normal_at())[0]) - 1) < 1e-6), key=lambda q: q.center().X)
+            bar = ex(Pos(-face.center().X - length / 2, 0, 0) * face, length, dir=(1, 0, 0))
+            hr, cb = v["height_HR_mm"], v["counterbore_depth_h_mm"]
+            for x, _, _ in holes:
+                bar -= Pos(x, 0, hr / 2) * Cylinder(v["bolt_hole_d_mm"] / 2, hr + 1)
+                bar -= Pos(x, 0, hr - cb / 2 + 0.5) * Cylinder(v["counterbore_D_mm"] / 2, cb + 1)
+            return vc.bake(bar)
+
+        detail = vc.cached(f"hiwin_rail:{length}", [f], build)
+        model = {"kind": "vendor CAD", "file": f"vendor_cad/inbox/{f.name}", "no_auto_features": True,
+                 "source": f"{HIWIN_SRC}: the MGNR-12-R0300-H-M rail's section swept to {length:g} mm, holes per HIWIN's E rule "
+                           f"(E = {e_end:g} mm at each end, {len(holes)} holes at 25 mm; HIWIN's own 245 mm file has exactly this layout)",
+                 "features": [hole_feature(f"mount_holes_m3[{i}]", (x, 0, 1.0), v["bolt_hole_d_mm"], (0, 0, 1), tol_dia=0.05)
+                              for i, (x, _, _) in enumerate(holes)]}
+    rp = {"maker": "HIWIN", "mpn": f"MGNR12R{int(length)} (rail of the MGN12HZ0C set)" if int(length) == 295 else f"MGNR12R{int(length)}H (rail only)",
+          "sellers": [MC], "stock_size": f"{length:g} mm (HIWIN standard length; E = {e_end:g}/{e_end:g})",
+          "datasheet": "vendor_docs/HIWIN_MG_series_catalog_excerpt_p79-93.pdf; vendor_docs/HIWIN_MGNR-12-R0245-H-M_drawing.pdf",
+          "ratings_source": {"mass_kg_per_m": "HIWIN MG catalogue 0.65 kg/m"}}
+    st = _tagged(base, f"HIWIN-MGNR12R-{int(length)}", f"HIWIN MGNR12R rail {length:g} mm (stock length, not cut)", rp,
+                 detail=detail, model=model, cost_usd=49.49 if int(length) == 245 else 79.64)
+    return st
+
+
+@part
+def hiwin_mgn12h_block() -> Stock:
+    """HIWIN MGN12H block of an MGN12HZ0C set (preload Z0, accuracy C). Local frame as mgn12h_carriage. Display model: the block's
+    nine solids (body, end caps, seals, plugs) from HIWIN's MGN-12-H-1R0300-ZF-H-M block + rail assembly STEP (the ZF file: the
+    outside of a Z0 block is the same; preload is internal)."""
+    base = mgn12h_carriage(preload="Z0")
+    f = vc.find_file("HIWIN-MGN12H-ASSEMBLY", inbox_only=True)
+    detail, model = None, {"kind": "proxy", "source": "HIWIN STEP not in vendor_cad/inbox"}
+    if f is not None:
+        def build():
+            full = vc.load_step(f)
+            sol = sorted(full.solids(), key=lambda so: so.bounding_box().size.Z)       # the rail is the one 300 mm long
+            blk = vc.solids_of(full, keep=lambda so, bb: bb.size.Z < 100.0)
+            s = vc.frame(blk, rot=(90, 0, 90))
+            bb = s.bounding_box()
+            return vc.frame(s, pos=(-(bb.min.X + bb.max.X) / 2, 0, 0))
+
+        detail = vc.cached("hiwin_block", [f], build)
+        model = {"kind": "vendor CAD", "file": f"vendor_cad/inbox/{f.name}", "no_auto_features": True, "mates_with": ("HIWIN-MGNR12R",),
+                 "tolerance": {"volume_ratio": (0.6, 2.2)},
+                 "protrusions": {"xmin": (1.11, "the end caps' lubrication plugs (HIWIN STEP), beyond the catalogue's 45.4 mm"),
+                                 "xmax": (1.11, "the end caps' lubrication plugs (HIWIN STEP), beyond the catalogue's 45.4 mm")},
+                 "source": f"{HIWIN_SRC}: the block's solids of MGN-12-H-1R0300-ZF-H-M (the rail solid left out)"}
+    rp = {"maker": "HIWIN", "mpn": "MGN12HZ0C (block of the set)", "sellers": [MC], "stock_size": "MGN12H, Z0, C",
+          "datasheet": "vendor_docs/HIWIN_MGN-12-H-1R0300-ZF-H-M_drawing.pdf; vendor_docs/Hiwin_MG_catalogue.pdf",
+          "ratings_source": {k: "HIWIN MG catalogue GW-11-5-EN-2207-K Table 3.79 / 3.77 / 3.88" for k in
+                             ("dynamic_load_n", "static_load_n", "static_moment_nm", "static_moment_mr_nm", "static_moment_mp_nm",
+                              "static_moment_my_nm", "radial_stiffness_n_per_m", "allowable_parallelism_mm", "ball_track_length_m")}}
+    st = _tagged(base, "HIWIN-MGN12HZ0C", "HIWIN MGN12H block, preload Z0, accuracy C (MGN12HZ0C set)", rp, detail=detail, model=model,
+                 cost_usd=0.0)
+    st.ratings["accuracy_class"] = "C"
+    st.ratings["accuracy_class_source"] = "HIWIN MG excerpt p.79-93: C (normal) +/-40 um on H"
+    return st
+
+
+# ------------------------------------------------------------------ MISUMI tabbed brackets and spring nuts
+HBLF_DRAWING = ("MISUMI 2019 US catalogue p.2692 (HBLFSN5 / HBLFSNF5, vendor_cad/staging/supplier_2026-11-19/BRKT-2020.pdf) and the "
+                "owner-supplied MISUMI pages (docs/V11_1_PLAN.md)")
+
+
+def _hblf_solid(leg_a: float, leg_b: float):
+    """Reversal tabbed bracket in the catalogue frame: inside corner at the origin, leg A along +X lying on the plane y = 0 (its
+    outside face on the extrusion), leg B along +Y on x = 0; width 20 along Z, centred. Legs 4.5 thick (drawing), side webs 2 mm
+    (MISUMI's HBLFSNF5 STEP of the same series), tabs 1 mm proud and 6 mm wide in the slot opening (drawing: 1; width from the
+    same STEP). Open between the side webs, so heads and drivers reach the leg holes from inside."""
+    T, W, WEB, TAB_W = 4.5, 20.0, 2.0, 6.0
+    s = Pos(leg_a / 2, T / 2, 0) * Box(leg_a, T, W) + Pos(T / 2, leg_b / 2, 0) * Box(T, leg_b, W)
+    tri = extrude(Polygon((0, 0), (leg_a, 0), (0, leg_b), align=None), WEB / 2, both=True)
+    for zc in (W / 2 - WEB / 2, -(W / 2 - WEB / 2)):
+        s += Pos(0, 0, zc) * tri
+    s += Pos(leg_a / 2 + 2.0, -0.5, 0) * Box(leg_a - 8.0, 1.0, TAB_W) + Pos(-0.5, leg_b / 2 + 2.0, 0) * Box(1.0, leg_b - 8.0, TAB_W)
+    return s
+
+
+@part
+def bracket_misumi(kind: str = "HBLFSN5") -> Stock:
+    """MISUMI reversal tabbed bracket for HFS5 (slot 6) 2020, aluminium casting 383.0, no surface treatment, allowable load 1176 N,
+    applicable screws CBM5-10 x 2 with spring nuts (-SEP set: CBM5-10 + HNTP5-5). HBLFSN5: legs 30 x 30, 3 x dia 5.3 (one in leg A at
+    18 from the corner, two in leg B at 10 and 18: 'use one, depending on the mounting direction'), 15 g. HBLFSNF5: legs 30 x 20,
+    2 x dia 5.2 (18 in the 30 leg, 10 in the 20 leg), 13 g; its display model is MISUMI's STEP."""
+    if kind not in ("HBLFSN5", "HBLFSNF5"):
+        raise ValueError("kind is HBLFSN5 or HBLFSNF5")
+    la, lb = (30.0, 30.0) if kind == "HBLFSN5" else (30.0, 20.0)
+    hd = 5.3 if kind == "HBLFSN5" else 5.2
+    s = _hblf_solid(la, lb)
+    holes_a = [18.0]
+    holes_b = [10.0, 18.0] if kind == "HBLFSN5" else [10.0]
+    for x in holes_a:
+        s -= Pos(x, 2.25, 0) * Rot(90, 0, 0) * Cylinder(hd / 2, 8.0)
+    for y in holes_b:
+        s -= Pos(2.25, y, 0) * Rot(0, 90, 0) * Cylinder(hd / 2, 8.0)
+    mass = 0.015 if kind == "HBLFSN5" else 0.013
+    model = {"kind": "generated to standard", "remade_from": HBLF_DRAWING, "inbox": [kind],
+             "tolerance": {"volume_ratio": (0.5, 2.5), "mass_ratio": (0.2, 5.0)},
+             "source": (f"re-made from the maker's dimensioned drawing ({HBLF_DRAWING}): legs {la:g} / {lb:g}, width 20 (10 + 10), wall 4.5, "
+                        f"tab height 1, holes {len(holes_a) + len(holes_b)} x dia {hd:g} at 18 / 12 / 10, all in the model. The drawing does "
+                        "not dimension the tab width, the side webs and the inner fillets: those are taken from MISUMI's own HBLFSNF5 STEP "
+                        "of the same series (tabs 6.0 wide, webs about 2 mm), nothing scaled or guessed beyond that"),
+             "no_auto_features": True}
+    rp = {"maker": "MISUMI", "mpn": f"{kind}-SEP", "sellers": [{"name": "MISUMI USA", "part_number": f"{kind}-SEP", "catalogue": True,
+                                                              "url": "https://us.misumi-ec.com", "checked": CHECKED}],
+          "stock_size": "set: bracket + 2 x CBM5-10 + 2 x HNTP5-5", "datasheet": HBLF_DRAWING,
+          "ratings_source": {"allowable_load_n": "MISUMI p.2692 table: 1176 N"}}
+    st = Stock(s, kind, f"MISUMI {kind} reversal tabbed bracket ({la:g} x {lb:g}), casting 383.0, -SEP set", mass, material="al6061",
+               cost_usd=1.05 if kind == "HBLFSN5" else 1.0, ratings={"allowable_load_n": 1176.0, "maker_part": f"MISUMI {kind}-SEP"},
+               interfaces={"holes_a": holes_a, "holes_b": holes_b, "leg_t": 4.5, "legs": (la, lb)}, model=model, real_part=rp,
+               source={"level": "vendor", "vendor": "MISUMI", "part": kind, "url": HBLF_DRAWING, "retrieved": CHECKED, "unverified_fields": [],
+                       "file": "docs/V11_1_PLAN.md"})
+    return st
+
+
+@part
+def tnut_hntp5() -> Stock:
+    """MISUMI HNTP5-5 post-assembly insertion spring nut (HFS5, M5), the nut of the -SEP bracket sets: 17 long, 8.3 wide, 3.8 high
+    with a 3.2 body under the slot's lips, 5.8 neck, the M5 thread 6 mm from one end (L1), 1010 steel, trivalent chromate; a ball on a
+    spring under it holds it in the slot (not dimensioned: left out). Local frame as tnut_2020: Z along the slot's outward normal,
+    X along the slot, the face that bears on the lips at Z=0, the THREAD's axis at the origin (the body is 2.5 mm off centre)."""
+    L, Wd, H, B, NW, L1 = 17.0, 8.3, 3.8, 3.2, 5.8, 6.0
+    off = L / 2 - L1
+    shape = Pos(off, 0, -B / 2) * Box(L, Wd, B) + Pos(off, 0, (H - B) / 2) * Box(L, NW, H - B)
+    detail = shape - Pos(0, 0, (H - B - B) / 2) * Cylinder(2.5, H)
+    drawing = "MISUMI 2019 US catalogue p.2716 (vendor_docs/misumi_2019_US_2716_post_assembly_nuts_HFS5.pdf): HNTP5, M5: 17, 8.3, 5.8, 3.8, 3.2, L1 = 6"
+    return Stock(shape, "HNTP5-5", "MISUMI HNTP5-5 post-assembly spring nut M5 (-SEP set)", float(detail.volume) * 7.85e-6, material="steel",
+                 cost_usd=0.0, detail=detail,
+                 ratings={"insertion": "drop-in", "maker_part": "MISUMI HNTP5-5", "reference_tightening_torque_nm": 6.8},
+                 interfaces={"thread_d": 5.0, "length": L, "span": Wd, "height": H, "neck": H - B, "neck_width": NW, "body_height": B,
+                             "thread_length": H, "thread_offset": -(H - B), "insertion": "drop-in"},
+                 model={"kind": "generated to standard", "remade_from": drawing, "no_auto_features": True,
+                        "tolerance": {"volume_ratio": (0.8, 1.6), "mass_ratio": (0.5, 2.0)},
+                        "source": f"re-made from the maker's dimensioned drawing ({drawing}); the ball and spring are drawn without "
+                                  "dimensions and are left out"},
+                 real_part={"maker": "MISUMI", "mpn": "HNTP5-5", "sellers": [{"name": "MISUMI USA", "part_number": "HNTP5-5 (in the -SEP set)",
+                                                                            "catalogue": True, "checked": CHECKED}],
+                            "datasheet": drawing, "ratings_source": {"reference_tightening_torque_nm": "MISUMI p.2716: 6.8 N.m (M5)"}},
+                 source={"level": "vendor", "vendor": "MISUMI", "part": "HNTP5-5", "url": drawing, "retrieved": CHECKED,
+                         "unverified_fields": [], "file": "vendor_docs/misumi_2019_US_2716_post_assembly_nuts_HFS5.pdf"})
+
+
+def add_bracket_misumi(d, name: str, a: str, b: str, corner, u, v, body: str = "world", kind: str = "HBLFSN5",
+                       locking: str | None = None, hole_b: float = 18.0):
+    """A MISUMI -SEP tabbed bracket on two slotted extrusions: inside corner at `corner`, leg A along u on part a, leg B along v on
+    part b. Each leg: a CBM5-10 (ISO 4762 M5 x 10) from inside the casting through its 4.5 mm leg into an HNTP5-5 spring nut in the
+    slot, 18 mm from the corner (leg B of an HBLFSN5 may use its 10 mm hole, `hole_b`; leg B of an HBLFSNF5 is 10)."""
+    import numpy as np
+
+    st = bracket_misumi(kind)
+    uv, vv = np.array(u, float), np.array(v, float)
+    c = place(d, name, st, Location(Plane(origin=tuple(corner), x_dir=tuple(uv), z_dir=tuple(np.cross(uv, vv)))), body=body)
+    hb = hole_b if kind == "HBLFSN5" else 10.0
+    for part_name, along, out, off, sfx in ((a, uv, vv, 18.0, "_screw_a"), (b, vv, uv, hb, "_screw")):
+        foot = np.array(corner, float) + along * off
+        sc = add_screw(d, name + sfx, "M5", 10, at=tuple(foot + out * 4.5), direction=tuple(-out), body=body, threads_into=part_name,
+                       tnut=True, clamps=(name,), locking=locking, tnut_stock=tnut_hntp5())
+        sc.meta["bracket_leg_of"] = name
+        sc.meta["real_part"] = {"maker": "MISUMI", "mpn": "CBM5-10", "sellers": [{"name": "MISUMI USA", "part_number": "CBM5-10 (in the -SEP set)",
+                                                                                "catalogue": True, "checked": CHECKED}]}
+        d.join(name, part_name, "m5_tnut")
+    return c
+
+
+# ------------------------------------------------------------------ Harwin spacers
+HARWIN = {"aluminium": ("R30-620{:02d}14", "Harwin_R30-620XX14_drawing.pdf", 5.0, 3.2, 2.7e-3, 0.50),
+          "nylon": ("R30-670{:02d}94", "Harwin_R30-670XX94_drawing.pdf", 5.0, 3.2, 1.14e-3, 0.67)}
+HARWIN_LENGTHS = (3, 4, 5, 6, 8, 10, 12, 15, 20)
+
+
+@part
+def spacer_harwin(length: float = 6.0, material: str = "nylon") -> Stock:
+    """Harwin R30 M3 round spacer, dia 5.0 x dia 3.2 bore x `length` (stock lengths only), aluminium (R30-620xx14) or nylon 6.6
+    (R30-670xx94). Local frame as spacer_round: axis Z, bottom at Z=0. Re-made from Harwin's drawing (OD, bore, length are all it has)."""
+    if int(length) != length or int(length) not in HARWIN_LENGTHS:
+        raise ValueError(f"Harwin R30 stock lengths used here: {HARWIN_LENGTHS}")
+    pat, dwg, od, bore, rho, cost = HARWIN[material]
+    mpn = pat.format(int(length))
+    body = Pos(0, 0, length / 2) * (Cylinder(od / 2, length) - Cylinder(bore / 2, length))
+    mass = math.pi * (od ** 2 - bore ** 2) / 4 * length * rho
+    return Stock(body, f"SPACER-HARWIN-{mpn}", f"Harwin {mpn} round spacer M3, {od:g} x {bore:g} x {length:g} mm, {material}", mass,
+                 material="al6061" if material == "aluminium" else "nylon_pa12", cost_usd=cost,
+                 ratings={"screw": "M3", "vendor_part": f"Harwin {mpn}"},
+                 interfaces={"od": od, "bore": bore, "length": float(length), "top": [(0.0, 0.0, float(length))]},
+                 model={"kind": "generated to standard", "remade_from": f"vendor_docs/{dwg}", "no_auto_features": True,
+                        "source": f"re-made from Harwin's drawing vendor_docs/{dwg}: OD {od:g}, bore {bore:g}, length {length:g}"},
+                 real_part={"maker": "Harwin", "mpn": mpn, "sellers": [{"name": "Digi-Key", "part_number": f"Harwin {mpn}", "checked": CHECKED}],
+                            "stock_size": f"{length:g} mm", "datasheet": f"vendor_docs/{dwg}"},
+                 source={"level": "vendor", "vendor": "Harwin", "part": mpn, "url": f"vendor_docs/{dwg}", "retrieved": CHECKED,
+                         "unverified_fields": [], "file": f"vendor_docs/{dwg}"})
+
+
+# ------------------------------------------------------------------ bed heater and thermostat
+@part
+def heater_keenovo_200() -> Stock:
+    """Keenovo standard square silicone heater 200 x 200 mm, 24 V, 200 W, 3M adhesive, with Keenovo's NTC 100K B3950 (not used: the
+    bed is read by a Semitec 104NT-4 clamped to the plate). Maker-direct, keenovo.store, $43.28 (REQ-003). Thickness and lead exit are
+    NOT published on the maker's page: 1.5 mm and the -Y edge are assumed (geometry pending: measure on arrival)."""
+    from .electrical import bed_heater_pad
+
+    st = bed_heater_pad(200.0, 200.0, 200.0, 24.0)
+    e = st.ratings["electrical"]
+    e["sources"] = {**e["sources"], "watts": "Keenovo product page (vendor_docs/Keenovo_200x200-24V-200W_page_2026-11-20.pdf): 200 W, 24 V",
+                    "volts": "Keenovo product page: 24 V"}
+    e["product"] = dict(e["product"], vendor="Keenovo", part_number="Keenovo silicone heater 200x200 mm 24 V 200 W (standard square)")
+    rp = {"maker": "Keenovo", "mpn": "Silicone heater 200x200 mm 24V 200W (standard square, 3M adhesive)",
+          "sellers": [{"name": "Keenovo (keenovo.store, maker direct)", "part_number": "200x200 24V 200W", "checked": CHECKED,
+                       "note": "$43.28, available (REQ-003); ships from Keenovo: confirm US shipping cost and lead"}],
+          "sold_by_maker": True, "stock_size": "200 x 200 mm", "datasheet": "vendor_docs/Keenovo_200x200-24V-200W_page_2026-11-20.pdf",
+          "ratings_source": {"watts": "Keenovo page: 200 W", "electrical.watts": "Keenovo page: 200 W", "electrical.volts": "Keenovo page: 24 V"},
+          "replace_with": "Keenovo's drawing with thickness and lead exit (ask Keenovo), or measure the delivered pad"}
+    return _tagged(st, "HEATER-KEENOVO-200x200-24V-200W", "Keenovo silicone heater 200 x 200 mm 24 V 200 W (stock)", rp, cost_usd=43.28,
+                   model={"kind": "proxy", "source": "plain 200 x 200 x 1.5 sheet: thickness not published (geometry pending)",
+                          "state": "stand-in"})
+
+
+@part
+def thermostat_cs7() -> Stock:
+    """Cantherm CS712025Y: CS-7 bimetal disc thermostat, normally closed, opens at 120 degC (+/-5 typical), resets 20 K lower, rated
+    24 V DC 10 A (20,000 cycles, not agency-listed), 250 V AC 10 A; R53 housing (thermoset, metal cap, loose bracket). Clamped
+    against the bed plate's underside. Local frame: cap face (the sensing face) on Z=0 looking up +Z, body below. Its outline is a
+    re-make of the R53 drawing's main dimensions; terminals and bracket are left out (geometry pending)."""
+    from .electrical import thermal_fuse
+
+    st = thermal_fuse(120.0, 100.0, 10.0)
+    e = st.ratings["electrical"]
+    e["ratings"] = {**e["ratings"], "auto_reset": True}
+    e["sources"] = {"trip_c": "Cantherm CS-7 / R53 data sheet (vendor_docs/Cantherm_CS7_R53_thermostat_datasheet.pdf): temperature steps of "
+                              "5 degC, tolerance +/-5 typical; 120 degC NC per the order code CS712025Y (V12_PLAN, Digi-Key listing)",
+                    "hold_c": "reset 20 K +/- 5 K below the opening temperature (data sheet: hysteresis 20K +/-5K)",
+                    "amps": "data sheet: 'Additional ratings for CS-7 only: 24VDC 10A / 20,000 switching cycles (Not UL, CSA, VDE)'",
+                    "resistance_ohm": "data sheet: contact resistance < 50 mOhm"}
+    e["product"] = dict(product="Cantherm CS712025Y bimetal thermostat, 120 degC NC, 10 A 24 V DC", vendor="Cantherm",
+                        part_number="CS712025Y", form="component", off_the_shelf=True, custom_pcb=False,
+                        builder_work="FASTON 6.3 receptacles; clamp the cap to the plate with the laser-cut clamp plate and thermal paste")
+    e["ratings"]["resistance_ohm"] = 0.05
+    shape = Pos(0, 0, -6.0) * Cylinder(8.75, 12.0)
+    rp = {"maker": "Cantherm", "mpn": "CS712025Y", "sellers": [{"name": "Digi-Key", "part_number": "Cantherm CS712025Y", "checked": CHECKED,
+                                                               "note": "$5.38, 427 in stock (V12_PLAN, distributor API 2026-11-19)"}],
+          "datasheet": "vendor_docs/Cantherm_CS7_R53_thermostat_datasheet.pdf",
+          "ratings_source": {"electrical.trip_c": "Cantherm data sheet / order code", "electrical.hold_c": "data sheet hysteresis 20K",
+                             "electrical.amps": "data sheet 24VDC 10A", "electrical.resistance_ohm": "data sheet < 50 mOhm"},
+          "replace_with": "the R53 drawing's full outline (terminals, bracket) in the model"}
+    return _tagged(st, "THERMOSTAT-CANTHERM-CS712025Y", "Cantherm CS712025Y bimetal thermostat 120 degC NC (bed cut-off)", rp,
+                   shape=shape, mass_kg=0.006, cost_usd=5.38,
+                   model={"kind": "proxy", "source": "dia 17.5 x 12 envelope of the R53 housing (drawing not transcribed: geometry pending)",
+                          "state": "stand-in"})
+
+
+# ------------------------------------------------------------------ electronics
+def _ports(ports):
+    from .electrical import _ports_to_interfaces
+
+    return _ports_to_interfaces(ports)
+
+
+def _step_model(name: str, src: str, rot=(0, 0, 0), pos=(0, 0, 0), tol=(0.2, 6.0), keep=None):
+    """(detail, model) from a maker STEP in vendor_cad/inbox/, framed by rot/pos; None detail when the file is absent."""
+    f = vc.find_file(name, inbox_only=True)
+    if f is None:
+        return None, {"kind": "proxy", "source": f"{name} not in vendor_cad/inbox (maker STEP staged, not moved)"}
+    detail = vc.cached(f"b12:{name}:{rot}:{pos}", [f], lambda: vc.frame(vc.solids_of(vc.load_step(f), keep=keep), rot, pos))
+    return detail, {"kind": "vendor CAD", "file": f"vendor_cad/inbox/{f.name}", "source": src, "no_auto_features": True,
+                    "tolerance": {"volume_ratio": tol, "mass_ratio": (0.05, 20.0)}, "assembly": True}
+
+
+def _env_of(detail, fallback):
+    if detail is None:
+        return fallback
+    bb = detail.bounding_box()
+    return Pos((bb.min.X + bb.max.X) / 2, (bb.min.Y + bb.max.Y) / 2, (bb.min.Z + bb.max.Z) / 2) * Box(bb.size.X, bb.size.Y, bb.size.Z)
+
+
+@part
+def pi5_host() -> Stock:
+    """Raspberry Pi 5 8 GB (SC1432) with the Active Cooler (SC1148), powered by its own official 27 W USB-C supply (SC1153) from its
+    own mains plug, so it stays up when the printer's contactor cuts the 24 V supply. Klipper host and Moonraker; UART to the Octopus
+    (no 5 V on that lead), two CSI cameras, USB for the nozzle camera, the Eddy and the accelerometer, GPIO for the contactor's driver.
+    Local frame: PCB centred, underside on Z=0; four M2.5 holes on 58 x 49 (3.5 from the edges; RPi mechanical drawing)."""
+    T = 1.5
+    pcb = Pos(0, 0, T / 2) * Box(85.0, 56.0, T)
+    cooler = Pos(-6.0, 0.0, T + 7.0) * Box(52.0, 42.0, 13.0)
+    holes = [(x, y, 0.0) for x in (-85 / 2 + 3.5, -85 / 2 + 3.5 + 58.0) for y in (-24.5, 24.5)]
+    for x, y, _ in holes:
+        pcb -= Pos(x, y, T / 2) * Cylinder(1.35, T)
+    ports = {"GPIO": dict(kind="host", connector="dupont", max_a=2.0, conductors=3, at=(-10.0, 24.5, T + 3.0), dir=(0, 0, 1),
+                          pin="GND, GPIO14 TXD, GPIO15 RXD (no 5 V: the Pi has its own supply)")}
+    ratings = {"supply_w": 0.0, "volts": 5.0, "min_ambient_c": 0.0, "max_ambient_c": 50.0}
+    sources = {"geometry": "Raspberry Pi 5 mechanical drawing (vendor_docs/RaspberryPi_Pi5_mechanical_drawing.pdf): 85 x 56, holes 2.7 on 58 x 49, "
+                           "3.5 from the edge; Active Cooler outline from its product brief",
+               "supply_w": "drawn from its own 27 W USB-C supply (SC1153), not from the board's 5 V rail: 0 W on the Octopus rail",
+               "max_ambient_c": "Raspberry Pi 5 product brief: 0 to 50 degC"}
+    detail, model = _step_model("RPi5_SC1432", "Raspberry Pi Ltd STEP of the Pi 5 (vendor_cad/staging/provenance_2026-11-19)")
+    if detail is not None:
+        model = {**model, "protrusions": {}, "tolerance": {"volume_ratio": (0.2, 8.0)}}
+    rp = {"maker": "Raspberry Pi Ltd", "mpn": "SC1432 (Raspberry Pi 5 8GB)",
+          "sellers": [{"name": "Digi-Key", "part_number": "SC1432", "checked": CHECKED, "note": "$175.00, 19,347 in stock (V12_PLAN)"}],
+          "datasheet": "vendor_docs/RaspberryPi_Pi5_mechanical_drawing.pdf",
+          "ratings_source": {"electrical.supply_w": "own 27 W supply SC1153", "electrical.volts": "product brief: 5 V USB-C",
+                             "electrical.min_ambient_c": "product brief", "electrical.max_ambient_c": "product brief 0-50 degC"}}
+    from .electrical import _ots
+
+    return Stock(pcb + cooler, "HOST-RPI5-8GB-SC1432", "Raspberry Pi 5 8 GB + Active Cooler (Klipper host, own 27 W supply)", 0.073,
+                 material="abs", detail=None, model={"kind": "proxy", "source": "board + cooler envelope from the RPi mechanical drawing",
+                                                    "remade_from": "vendor_docs/RaspberryPi_Pi5_mechanical_drawing.pdf"},
+                 ratings={"electrical": {"kind": "host", "ports": ports, "ratings": ratings, "sources": sources,
+                                         "product": _ots("Raspberry Pi 5 8 GB", "Raspberry Pi Ltd", "SC1432", "assembled board",
+                                                         "fit the Active Cooler; own 27 W USB-C supply; 3-wire UART lead to the Octopus"),
+                                         "params": {}}},
+                 interfaces={"mount_holes_m2.5": holes, "standoff_min": 3.0, **_ports(ports)}, cost_usd=175.0, real_part=rp)
+
+
+@part
+def contactor_finder_2232() -> Stock:
+    """Finder 22.32.0.120.4320 modular contactor: 2 NO, 25 A (AC-1, 250 V), 120 V AC/DC coil (2 VA), 17.5 mm wide on 35 mm DIN rail,
+    88.8 high. Both poles switched: L and N of the supply's feed. Its coil is fed from the inlet's L through the Phoenix
+    PLC-RSC-5DC/21 contact, which a Pi GPIO switches through a PN2222A (Moonraker [power], off_when_shutdown). Local frame: rail
+    clip on Z=0 (the rail's top face), centred on the rail's axis X; 17.5 along X, 88.8 along Y, front face up +Z."""
+    W, H, D = 17.5, 88.85, 55.8
+    body = Pos(0, 0, D / 2) * Box(W, H, D)
+    sc = dict(connector="screw-box", max_a=25.0)
+    ports = {"LIN": dict(kind="series", at=(0.0, H / 2 - 6.0, 40.0), dir=(0, 1, 0), **sc),
+             "LOT": dict(kind="series", at=(0.0, -H / 2 + 6.0, 40.0), dir=(0, -1, 0), **sc),
+             "NIN": dict(kind="series", at=(4.0, H / 2 - 6.0, 40.0), dir=(0, 1, 0), **sc),
+             "NOT": dict(kind="series", at=(4.0, -H / 2 + 6.0, 40.0), dir=(0, -1, 0), **sc),
+             "ctrl": dict(kind="signal_in", connector="screw-box", max_a=2.0, at=(-4.0, H / 2 - 6.0, 46.0), dir=(0, 1, 0), conductors=2)}
+    ratings = {"contact_a": 25.0, "volts": 250.0, "resistance_ohm": 0.0, "supply_w": 2.2, "coil_v": 120.0}
+    sources = {"contact_a": "Finder 22 series data sheet S22EN p.2 (vendor_docs/Finder_22-series_datasheet.pdf): 22.32, rated current 25 A, "
+                            "AC-1 6250 VA per pole at 250 V",
+               "supply_w": "S22EN: rated coil power 2 VA / 2.2 W", "coil_v": "order code .120: 120 V AC/DC coil",
+               "volts": "S22EN: 250 V AC contacts", "resistance_ohm": "contact resistance neglected"}
+    detail, model = _step_model("Finder_22.32_2NO", "Finder's STEP of the 22.32 2NO (Instinct REQ-006; 88.8 high as on p.14)",
+                                rot=(90, 0, 90), pos=(5.25, 17.425, 0.0))
+    model["protrusions"] = {"zmin": (5.0, "the rail clip, inside the DIN rail's channel")}
+    from .electrical import _ots
+
+    rp = {"maker": "Finder", "mpn": "22.32.0.120.4320", "sellers": [{"name": "Digi-Key", "part_number": "22.32.0.120.4320", "checked": CHECKED,
+                                                                    "note": "$46.34, 205 in stock (V12_PLAN)"}],
+          "datasheet": "vendor_docs/Finder_22-series_datasheet.pdf",
+          "ratings_source": {f"electrical.{k}": "Finder S22EN data sheet" for k in ratings}}
+    st = Stock(body, "CONTACTOR-FINDER-22.32.0.120.4320", "Finder 22.32 25 A 2-pole contactor, 120 V coil (mains switching)", 0.12,
+               material="abs", detail=detail, model=model,
+               ratings={"electrical": {"kind": "relay", "ports": ports, "ratings": ratings, "sources": sources,
+                                       "product": _ots("Finder 22.32.0.120.4320 modular contactor", "Finder", "22.32.0.120.4320", "module",
+                                                       "snap on the DIN rail; ferrules on every conductor"),
+                                       "params": {"through": {"LIN": "LOT", "LOT": "LIN", "NIN": "NOT", "NOT": "NIN"}, "cuts": "psu",
+                                                  "switched_by": "host", "host_pin": "gpiochip0/gpio26"}}},
+               interfaces={"rail_width": W, **_ports(ports)}, cost_usd=46.34, real_part=rp)
+    return st
+
+
+@part
+def relay_phoenix_1119897() -> Stock:
+    """Phoenix Contact PLC-RSC-5DC/21 (1119897) interface relay: 5 V DC coil (38 mA), 1 changeover 6 A, 6.2 wide x 80 high x 94 deep
+    on 35 mm DIN rail. Switches the contactor's 120 V coil; its own coil is driven from a Pi GPIO by a PN2222A (1 kOhm base). Local
+    frame: rail clip on Z=0, 6.2 along X, 80 along Y, up +Z."""
+    W, H, D = 6.1, 80.0, 92.6
+    detail, model = _step_model("Phoenix_1119897", "Phoenix Contact STEP of PLC-RSC-5DC/21 (Instinct REQ-008)", pos=(-3.05, -40.0, 0.0))
+    return Stock(Pos(0, 0, D / 2) * Box(W, H, D), "RELAY-PHOENIX-1119897", "Phoenix Contact PLC-RSC-5DC/21 interface relay (5 V DC coil)",
+                 0.035, material="abs", detail=detail, model=model, cost_usd=17.30,
+                 ratings={"coil_v": 5.0, "coil_ma": 38.0, "contact_a": 6.0},
+                 interfaces={"rail_width": W},
+                 real_part={"maker": "Phoenix Contact", "mpn": "1119897 (PLC-RSC- 5DC/21)",
+                            "sellers": [{"name": "Digi-Key", "part_number": "1119897", "checked": CHECKED, "note": "$17.30, 1,407 in stock"}],
+                            "datasheet": "vendor_docs/Phoenix_1119897_PLC-RSC-5DC-21_datasheet.pdf",
+                            "ratings_source": {"coil_v": "data sheet: nominal input 5 V DC", "coil_ma": "data sheet: 38 mA typical",
+                                               "contact_a": "data sheet: limiting continuous current 6 A"}},
+                 source={"level": "vendor", "vendor": "Phoenix Contact", "part": "1119897", "url": "vendor_docs/Phoenix_1119897_PLC-RSC-5DC-21_datasheet.pdf",
+                         "retrieved": CHECKED, "unverified_fields": [], "file": "vendor_docs/Phoenix_1119897_PLC-RSC-5DC-21_datasheet.pdf"})
+
+
+@part
+def din_rail_wago(length: float = 100.0) -> Stock:
+    """WAGO 210-112 steel carrier rail, EN 60715 35 x 7.5, 1 mm, slotted, sold 2 m: CUT TO LENGTH BY THE BUILDER (hacksaw, deburr;
+    the one purchased part cut on the bench, like the extrusions Misumi cuts). Local frame: along X centred, base on Z=0, top Z=7.5."""
+    t, w, h = 1.0, 35.0, 7.5
+    sec = (Pos(0, 0, t / 2) * Box(length, 27.0 - 2 * t + 2 * t, t) + Pos(0, 27.0 / 2 - t / 2, h / 2) * Box(length, t, h)
+           + Pos(0, -27.0 / 2 + t / 2, h / 2) * Box(length, t, h) + Pos(0, (27.0 + w) / 4, h - t / 2) * Box(length, (w - 27.0) / 2, t)
+           + Pos(0, -(27.0 + w) / 4, h - t / 2) * Box(length, (w - 27.0) / 2, t))
+    holes = [(x, 0.0, 0.0) for x in (-length / 2 + 12.5, length / 2 - 12.5)]
+    for x, y, _ in holes:
+        sec -= Pos(x, y, t / 2) * Box(15.0, 5.2, t) + Pos(x - 7.5, y, t / 2) * Cylinder(2.6, t) + Pos(x + 7.5, y, t / 2) * Cylinder(2.6, t)
+    dwg = "vendor_docs/WAGO_210-112_datasheet.pdf"
+    return Stock(sec, f"DIN-RAIL-WAGO-210-112-{int(length)}", f"WAGO 210-112 DIN rail 35 x 7.5, cut to {length:g} mm", 0.0005 * length,
+                 material="steel", cost_usd=8.0 * length / 2000.0 + 0.5,
+                 interfaces={"slots": holes, "top_z": h},
+                 model={"kind": "generated to standard", "remade_from": dwg, "no_auto_features": True,
+                        "source": f"re-made from WAGO's dimensioned drawing ({dwg}): 35 x 7.5 top hat, 1 mm, slots 5.2 x 15 on 25 mm "
+                                  f"(slot positions after cutting are the builder's)"},
+                 real_part={"maker": "WAGO", "mpn": "210-112", "sellers": [{"name": "Newark", "part_number": "WAGO 210-112", "checked": CHECKED,
+                                                                          "note": "Digi-Key backorder; Newark stocks it (REQ-003)"}],
+                            "stock_size": "2 m, cut to length by the builder", "datasheet": dwg})
+
+
+@part
+def din_endstop_wago() -> Stock:
+    """WAGO 249-117 screwless end stop for 35 mm rail, 10 wide x 44 high x 35 deep. Local frame: on the rail top (Z=0), 10 along X."""
+    dwg = "vendor_docs/WAGO_249-117_datasheet.pdf"
+    return Stock(Pos(0, 0, 35.0 / 2) * Box(10.0, 44.0, 35.0), "DIN-ENDSTOP-WAGO-249-117", "WAGO 249-117 screwless end stop", 0.006,
+                 material="nylon_pa12", cost_usd=1.0,
+                 model={"kind": "generated to standard", "remade_from": dwg, "no_auto_features": True,
+                        "source": f"envelope re-made from WAGO's dimensioned drawing ({dwg}): 10 x 44 x 35"},
+                 real_part={"maker": "WAGO", "mpn": "249-117", "sellers": [{"name": "Digi-Key", "part_number": "WAGO 249-117", "checked": CHECKED}],
+                            "datasheet": dwg})
+
+
+# ------------------------------------------------------------------ feedback hardware (stage 3) and the probe
+@part
+def probe_eddy_duo() -> Stock:
+    """BIGTREETECH Eddy Duo (LDC1612 + RP2040, coil thermistor), USB to the Pi 5. Body 18.1 x 33.8 x 15.3 (18.3 at the cable boss),
+    2 x dia 3.15 holes 10.5 apart, 13.9 from the top (BTT dimensioned drawing). Local frame: coil face (the bottom) on Z=0 looking
+    down, centre of the coil at the origin; holes along X on the face Y = +9.05 (the mounting face, towards +Y)."""
+    W, L, Hh = 18.1, 33.8, 15.3
+    body = Pos(0, 0, L / 2) * Box(W, Hh, L)
+    holes = [(x, Hh / 2, L - 13.9) for x in (-5.25, 5.25)]
+    for x, y, z in holes:
+        body -= Pos(x, 0, z) * Rot(90, 0, 0) * Cylinder(3.15 / 2, Hh)
+    from .electrical import inductive_probe_template
+
+    tpl = inductive_probe_template(4.0, 4.0, "npn_no", (5.0, 5.0), internal_pullup=False)
+    tpl["ratings"].update({"max_ambient_c": 60.0, "repeatability_mm": 0.001, "switching_distance_tolerance_frac": 0.10})
+    tpl["sources"].update({"max_ambient_c": "BTT Eddy manual (vendor_docs/BTT_Eddy_Series_User_Manual_20250507.pdf): 60 degC",
+                           "switching_distance_steel_mm": "Klipper probe_eddy_current homes at a calibrated height; 4 mm stands for the "
+                                                          "calibrated range (z_offset set by PROBE_EDDY_CURRENT_CALIBRATE): ASSUMED"})
+    tpl["product"] = {"product": "BIGTREETECH Eddy Duo", "vendor": "BIGTREETECH", "part_number": "Eddy Duo", "form": "module",
+                      "off_the_shelf": True, "custom_pcb": False, "builder_work": "high-flex 4-core USB lead to the Pi 5"}
+    tpl["params"] = {"interface": "usb", "usb_host": "Pi 5"}
+    return Stock(body, "PROBE-BTT-EDDY-DUO", "BIGTREETECH Eddy Duo eddy-current bed probe (USB)", 0.012, material="abs", cost_usd=38.99,
+                 ratings={"electrical": tpl, "max_ambient_c": 60.0},
+                 interfaces={"sensing_face": [(0.0, 0.0, 0.0)], "mount_holes_m3": holes, **_ports(tpl["ports"])},
+                 model={"kind": "generated to standard", "remade_from": "vendor_docs/BTT_Eddy_dimensions.jpg (BTT dimensioned drawing)",
+                        "no_auto_features": True,
+                        "source": "re-made from BTT's dimensioned drawing: 18.1 x 33.8 x 15.3, holes 2 x 3.15 on 10.5, 13.9 from the top; "
+                                  "BTT's 48 MB STEP is staged (vendor_cad/staging/BTT_EDDY.STEP.gz), not used for display"},
+                 real_part={"maker": "BIGTREETECH", "mpn": "Eddy Duo", "sellers": [{"name": "BIQU US store (us.biqu.equipment)", "checked": CHECKED,
+                                                                                   "note": "$38.99 (search); variant, stock and ship-from to confirm"}],
+                            "sold_by_maker": True, "datasheet": "vendor_docs/BTT_Eddy_Series_User_Manual_20250507.pdf",
+                            "replace_with": "confirm the BIQU listing; the switching-distance stand-in is Klipper's calibrated height"})
+
+
+def _simple(sku, desc, shape, mass, cost, rp, model, ratings=None, interfaces=None, material="abs"):
+    return Stock(shape, sku, desc, mass, material=material, cost_usd=cost, ratings=ratings or {}, interfaces=interfaces or {},
+                 model=model, real_part=rp)
+
+
+@part
+def cam_arducam_b0454() -> Stock:
+    """Arducam B0454 USB UVC camera (OV5648, M12 x 0.5 lens holder), 38 x 38 board, holes 28 x 28 (dia 2.8) and 34 x 34 (dia 2.4),
+    lens centred; -20 to 70 degC. Local frame: board centred, its back on Z=0, lens holder up +Z (optical axis +Z)."""
+    s = Pos(0, 0, 0.8) * Box(38.0, 38.0, 1.6) + Pos(0, 0, 1.6 + 11.45) * Cylinder(8.7, 22.9)
+    holes = [(x, y, 0.0) for x in (-14.0, 14.0) for y in (-14.0, 14.0)]
+    return _simple("CAM-ARDUCAM-B0454", "Arducam B0454 USB nozzle camera (M12 mount)", s, 0.02, 38.99,
+                   {"maker": "Arducam", "mpn": "B0454", "sellers": [{"name": "UCTRONICS (Arducam's store)", "checked": CHECKED,
+                                                                     "note": "from $38.99; ship origin and cost to confirm"}],
+                    "sold_by_maker": True, "datasheet": "vendor_docs/Arducam_B0454_datasheet.pdf",
+                    "ratings_source": {"max_ambient_c": "B0454 data sheet: -20 to 70 degC"}},
+                   {"kind": "generated to standard", "remade_from": "vendor_docs/Arducam_B0454_datasheet.pdf (overall dimension and lens diagrams)",
+                    "no_auto_features": True, "source": "board 38 x 38, holes 28 x 28 / 34 x 34, holder dia 17.4 x 22.9 from Arducam's drawing"},
+                   ratings={"max_ambient_c": 70.0}, interfaces={"mount_holes_m2.5": holes})
+
+
+@part
+def lens_cil062() -> Stock:
+    """Commonlands CIL062-F4.0-M12A650 M12 lens, 6.2 mm F4.0, 650 nm IR cut. Local frame: thread axis Z, flange at Z=0."""
+    return _simple("LENS-COMMONLANDS-CIL062-F4.0", "Commonlands CIL062-F4.0-M12A650 lens", Pos(0, 0, 8.0) * Cylinder(7.0, 16.0), 0.006, 23.0,
+                   {"maker": "Commonlands", "mpn": "CIL062-F4.0-M12A650", "sellers": [{"name": "Digi-Key Marketplace",
+                                                                                      "part_number": "4946-CIL062-F4.0-M12A650-ND", "checked": CHECKED}],
+                    "datasheet": "vendor_docs/Commonlands_CIL062-F4.0-M12A650_drawing.pdf",
+                    "replace_with": "the lens drawing's outline (envelope only so far)"},
+                   {"kind": "proxy", "source": "dia 14 x 16 envelope (drawing not transcribed)", "state": "stand-in"})
+
+
+@part
+def picam3() -> Stock:
+    """Raspberry Pi Camera Module 3 (SC1223), 25 x 23.862 board, depth 11.3 (RPi drawing), 0-50 degC. Local frame: board back on Z=0,
+    lens up +Z, centred on the board; holes 2.2 on 21 x 12.5 (RPi drawing)."""
+    s = Pos(0, 0, 0.5) * Box(25.0, 23.862, 1.0) + Pos(0, 2.0, 1.0 + 5.15) * Box(8.5, 8.5, 10.3)
+    holes = [(x, y, 0.0) for x in (-10.5, 10.5) for y in (-23.862 / 2 + 2.0, -23.862 / 2 + 14.5)]
+    return _simple("CAM-RPI-CM3-SC1223", "Raspberry Pi Camera Module 3 (overview / top-down)", s, 0.004, 25.0,
+                   {"maker": "Raspberry Pi Ltd", "mpn": "SC1223", "sellers": [{"name": "Digi-Key", "part_number": "SC1223", "checked": CHECKED,
+                                                                               "note": "$25.00, 1,231 in stock"}],
+                    "datasheet": "vendor_docs/RaspberryPi_Camera-Module-3_std_mechanical_drawing.pdf",
+                    "ratings_source": {"max_ambient_c": "product brief 0-50 degC"}},
+                   {"kind": "generated to standard", "remade_from": "vendor_docs/RaspberryPi_Camera-Module-3_std_mechanical_drawing.pdf",
+                    "no_auto_features": True, "source": "25 x 23.862 board, 11.3 deep, holes from Raspberry Pi's mechanical drawing (envelope)"},
+                   ratings={"max_ambient_c": 50.0}, interfaces={"mount_holes_m2": holes})
+
+
+@part
+def laser_vlm520() -> Stock:
+    """Quarton VLM-520-56 LPO-D30-F10 green line laser, 520 nm, 30 degree fan, Class 1M, 3-6 V 80 mA, dia 10 mm brass body (case may
+    be live: insulating clamp). Local frame: axis +Z = the beam, front face on Z=0, body towards -Z. Body length not read (30 mm
+    assumed: geometry pending)."""
+    return _simple("LASER-QUARTON-VLM-520-56-LPO-D30-F10", "Quarton VLM-520-56 LPO-D30-F10 green line laser (Class 1M)",
+                   Pos(0, 0, -15.0) * Cylinder(5.0, 30.0), 0.01, 98.40,
+                   {"maker": "Quarton", "mpn": "VLM-520-56 LPO-D30-F10", "sellers": [{"name": "Digi-Key", "part_number": "100-VLM-520-56LPO-D30-F10-ND",
+                                                                                     "checked": CHECKED, "note": "$98.40, 3 in stock; 4-week maker lead after"}],
+                    "replace_with": "Quarton's VLM-520-56 30 degree datasheet (body length, line width table)"},
+                   {"kind": "proxy", "source": "dia 10 x 30 (length assumed)", "state": "stand-in"}, material="brass")
+
+
+@part
+def adxl345_btt() -> Stock:
+    """BIGTREETECH ADXL345 V2.0 USB accelerometer board: PCB 33.25 x 15.50 x 0.35 mm... (BTT STEP), two dia 3.2 holes 15.5 apart.
+    Local frame: PCB centred, underside on Z=0, holes along X."""
+    s = Pos(0, 0, 0.8) * Box(33.25, 15.5, 1.6) + Pos(10.0, 0, 1.6 + 1.3) * Box(9.0, 9.0, 2.6)
+    holes = [(x, -15.5 / 2 + 2.5, 0.0) for x in (-7.75, 7.75)]
+    return _simple("ADXL345-BTT-V2", "BIGTREETECH ADXL345 V2.0 USB accelerometer", s, 0.004, 9.25,
+                   {"maker": "BIGTREETECH", "mpn": "ADXL345 V2.0.1", "sellers": [{"name": "biqu.equipment (BTT store)", "checked": CHECKED,
+                                                                                  "note": "$9.25, in stock (REQ-003)"}],
+                    "sold_by_maker": True, "datasheet": "vendor_docs/BTT_ADXL345-V2.0_manual.pdf"},
+                   {"kind": "generated to standard", "remade_from": "BTT ADXL345 V2.0 STEP (vendor_cad/staging/instinct_REQ-003, measured: PCB 33.25 x 15.50, "
+                                                                    "holes 3.2 on 15.5 at y 2.5)",
+                    "no_auto_features": True, "source": "PCB outline and holes measured on BTT's STEP (38.7 MB, not used for display)"},
+                   interfaces={"mount_holes_m3": holes})
+
+
+@part
+def sfs_v2() -> Stock:
+    """BIGTREETECH SFS V2.0 smart filament (motion) sensor. Envelope from BTT's STEP (staged, provenance_2026-11-19); not transcribed
+    here: 40 x 28 x 26 assumed (geometry pending). Local frame: filament axis along Z, centred."""
+    return _simple("SFS-BTT-V2", "BIGTREETECH SFS V2.0 filament motion sensor", Box(40.0, 28.0, 26.0), 0.025, 12.0,
+                   {"maker": "BIGTREETECH", "mpn": "SFS V2.0", "sellers": [{"name": "biqu.equipment (BTT store)", "checked": CHECKED}],
+                    "sold_by_maker": True, "datasheet": "vendor_docs/BTT_SFS_V2.0_user_manual_20231123.pdf",
+                    "replace_with": "the outline from BTT's STEP (vendor_cad/staging/provenance_2026-11-19/BTT_SFS_V2.0_Model.step.gz)"},
+                   {"kind": "proxy", "source": "assumed envelope", "state": "stand-in"})
+
+
+@part
+def cob_led(length: float = 50.0) -> Stock:
+    """Inspired LED 24V-COB-4000K-12M flexible COB strip segment, 8 mm wide, cut at 50 mm marks (1.97 in), 3.15 W/ft, CRI 91. Local
+    frame: along X centred, back on Z=0, light up +Z."""
+    return _simple(f"LED-COB-INSPIRED-24V-4000K-{int(length)}", f"Inspired LED 24 V COB strip, {length:g} mm segment", Pos(0, 0, 1.0) * Box(length, 8.0, 2.0),
+                   0.002, 1.23, {"maker": "Inspired LED", "mpn": "24V-COB-4000K-12M", "sellers": [{"name": "Digi-Key", "part_number": "1647-24V-COB-4000K-12MCT-ND",
+                                                                                                 "checked": CHECKED}],
+                                 "datasheet": "vendor_docs/InspiredLED_24V-COB_flex_spec.pdf", "stock_size": "cut at the strip's 50 mm cut marks"},
+                   {"kind": "generated to standard", "remade_from": "vendor_docs/InspiredLED_24V-COB_flex_spec.pdf", "no_auto_features": True,
+                    "source": "8 mm wide flex strip, cut points every 1.97 in (maker's spec)"}, ratings={"watts_per_m": 10.3})
+
+
+# ------------------------------------------------------------------ StepperOnline 17E19S1684AB4-330RA from its drawing A4003
+A4003 = "vendor_docs/StepperOnline_17E19S1684AB4-330RA_Full_Datasheet.pdf (drawing A4003 rev 0; mechloop/parts/vendor/stepperonline_17e19_ab4.json datasheet_drawing)"
+SO_SELLER = {"name": "StepperOnline (OMC, US warehouse)", "part_number": "17E19S1684AB4-330RA", "checked": CHECKED,
+             "note": "maker direct; price $ from the product page (stepperonline_17e19_ab4.json)"}
+
+
+@part
+def leadscrew_nut_pom_a4003() -> Stock:
+    """The POM anti-backlash nut supplied on the 17E19S1684AB4-330RA, re-made from StepperOnline's drawing A4003: square flange
+    26 +/-0.1 (corners within dia 35), 5 thick, 4 x M4 on an 18.5 square; barrel dia 18, 16 long, a 2 mm gap, then the threaded
+    preload section dia 18; 33 max overall; Tr8x2. Local frame as leadscrew_nut_pom_ab4: axis Z, the flange's flat face at Z=0, the
+    flange below to Z=-5, the barrel below to Z=-33. Bought with the motor."""
+    fw, ft, bd, L = 26.0, 5.0, 18.0, 33.0
+    shape = (Pos(0, 0, -ft / 2) * Box(fw, fw, ft) + Pos(0, 0, -ft - 8.0) * Cylinder(bd / 2, 16.0)
+             + Pos(0, 0, -(ft + 18.0 + (L - ft - 18.0) / 2)) * Cylinder(bd / 2, L - ft - 18.0) + Pos(0, 0, -(ft + 17.0)) * Cylinder(4.5, 2.0))
+    shape -= Pos(0, 0, -L / 2) * Cylinder(4.0, L)
+    h = 18.5 / 2
+    holes = [(sx * h, sy * h, 0.0) for sx in (-1, 1) for sy in (-1, 1)]
+    for x, y, _ in holes:
+        shape -= Pos(x, y, -ft / 2) * Cylinder(2.0, ft)
+    vol = float(shape.volume)
+    return Stock(shape, "NUT-T8x2-POM-AB-17E19S1684AB4-A4003", "POM anti-backlash nut Tr8x2 (supplied with the 17E19S1684AB4-330RA; drawing A4003)",
+                 round(vol * 1.41e-6, 4), material="abs", cost_usd=0.0, detail=shape,
+                 model={"kind": "generated to standard", "remade_from": A4003, "no_auto_features": True,
+                        "source": f"re-made from {A4003}: every outer dimension on the drawing; thread and spring internals are not dimensioned"},
+                 interfaces={"flange_width": fw, "flange_thickness": ft, "barrel_dia": bd, "barrel_length": L - ft, "mount_holes_m4": holes,
+                             "hole_dia": 4.0, "flange_dia": fw},
+                 ratings={"material_as_seen": "POM (acetal)", "anti_backlash": True, "bought_with": "17E19S1684AB4-330RA"},
+                 real_part={"maker": "StepperOnline (OMC)", "mpn": "supplied with 17E19S1684AB4-330RA", "sellers": [SO_SELLER],
+                            "datasheet": A4003},
+                 source={"level": "vendor", "vendor": "StepperOnline", "part": "17E19S1684AB4-330RA nut", "url": A4003, "retrieved": CHECKED,
+                         "unverified_fields": [], "file": "mechloop/parts/vendor/stepperonline_17e19_ab4.json"})
+
+
+def _a4003_retag(st: Stock, sku: str, desc: str, sources: dict) -> Stock:
+    rp = {"maker": "StepperOnline (OMC)", "mpn": "17E19S1684AB4-330RA", "sellers": [SO_SELLER], "datasheet": A4003,
+          "ratings_source": sources,
+          "replace_with": "StepperOnline: rotor inertia and screw efficiency (not on drawing A4003)"}
+    m = {**st.model, "remade_from": A4003}
+    m.pop("state", None)
+    return dataclasses.replace(st, sku=sku, description=desc, real_part=rp, model=m)
+
+
+@part
+def leadscrew_motor_a4003() -> Stock:
+    """The 17E19S1684AB4-330RA motor body, its geometry checked against drawing A4003 (42.3 max square, 48 max long, 4 x M3 4.5 deep on
+    31 +/-0.1, pilot 22 x 2, JST PH 6-pin connector housing 16 x 11 at 6.5); electrical figures from A4003 (1.68 A, 1.65 ohm, 2.8 mH,
+    0.44 N.m). Rotor inertia and screw efficiency are NOT on the drawing (sister-model / typical figures, flagged)."""
+    from .batch7 import leadscrew_motor_17e19_ab4
+
+    st = leadscrew_motor_17e19_ab4()
+    src = {k: "drawing A4003" for k in ("holding_torque_nmm", "rated_current_a", "phase_resistance_ohm", "phase_inductance_mh", "lead_mm")}
+    return _a4003_retag(st, "MOTOR-17E19S1684AB4-330RA", "StepperOnline 17E19S1684AB4-330RA lead-screw stepper (drawing A4003)", src)
+
+
+@part
+def leadscrew_screw_a4003(length: float = 328.0) -> Stock:
+    """The motor's integral Tr8x2 screw, 330 +/-1 from the mounting face per drawing A4003 (328 drawn above the face, inside the
+    tolerance band of the sister model's STEP figure)."""
+    from .batch7 import leadscrew_screw_17e19_ab4
+
+    st = leadscrew_screw_17e19_ab4(length)
+    return _a4003_retag(st, "TR8x2-INTEGRAL-17E19S1684AB4-330RA", st.description, {"lead_mm": "drawing A4003: Tr8x2"})

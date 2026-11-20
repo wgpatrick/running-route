@@ -403,10 +403,14 @@ class Design:
         kind = str(self.joins.get(frozenset((a, b)), "")).strip().lower()
         return kind.startswith(SLIDING_JOIN_PREFIXES)
 
-    def bom_extra(self, sku: str, qty: int = 1, unit_cost_usd: float | None = None, real_part: dict | None = None) -> None:
-        """A bought item with no geometry. real_part: the orderable product (maker, mpn, sellers ...; practice DG-07)."""
+    def bom_extra(self, sku: str, qty: int = 1, unit_cost_usd: float | None = None, real_part: dict | None = None,
+                  stage: int | None = None) -> None:
+        """A bought item with no geometry. real_part: the orderable product (maker, mpn, sellers ...; practice DG-07).
+        stage: the build stage it is first needed at (staged Build 1: 1 frame/bay/bed/Z, 2 gantry/toolhead, 3 feedback)."""
         e = self.bom_extras.setdefault(sku, {"qty": 0, "unit_cost_usd": unit_cost_usd})
         e["qty"] += qty
+        if stage is not None and (e.get("stage") is None or stage < e["stage"]):
+            e["stage"] = int(stage)
         if real_part:
             e["real_part"] = dict(real_part)
 

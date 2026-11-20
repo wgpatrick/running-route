@@ -115,7 +115,19 @@ def test_code_manifest_records_what_ran_and_what_it_read(monkeypatch):
     assert "mechloop/verifiers/geometry.py" in m and "mechloop/model.py" in m
     assert "mechloop/data/real_parts.json" in m                       # read while recording
     assert "mechloop/verifiers/fea.py" not in m                       # did not run: an edit there changes nothing here
-    assert not any(k.startswith("mechloop/sourcing/") or k.startswith("mechloop/data/sourcing/") for k in m)
+    # in a fresh process (here other tests may already have had shared helpers read other data): the sourcing code
+    # and data, which other agents edit all the time, are not what a geometry check rests on
+    import subprocess
+    import sys
+
+    code = ("import sys; sys.path.insert(0, 'tests'); from test_incremental import _synthetic; "
+            "from mechloop.incremental import coderec; from mechloop.verifiers.geometry import verify_geometry; "
+            "d = _synthetic(); rec = coderec.Recording(); rec.__enter__(); verify_geometry(d); rec.__exit__(); "
+            "print(sorted(rec.manifest()['files']))")
+    out = subprocess.run([sys.executable, "-c", code], cwd=ROOT, capture_output=True, text=True, timeout=300).stdout
+    fresh = eval(out.strip().splitlines()[-1])
+    assert "mechloop/verifiers/geometry.py" in fresh
+    assert not any(k.startswith("mechloop/sourcing/") or k.startswith("mechloop/data/sourcing/") for k in fresh)
     assert coderec.still_valid(man) == (True, "")
     orig = coderec.file_hash
     monkeypatch.setattr(coderec, "file_hash", lambda p: "edited" if p.endswith("verifiers/geometry.py") else orig(p))
