@@ -142,8 +142,10 @@ def run(data: dict, finder, cfg: dict | None = None, builds: int | None = None, 
         "not_api_verified_cost_usd": round(sum(r["cost_usd"] or 0 for r in lines if not r["api_verified"]), 2),
         "fabricated_cost_usd": fab_cost, "total_cost_usd": round(cost + fab_cost, 2),
         "flags": {f: flags[f] for f in FLAG_ORDER if flags.get(f)},
-        "longest_leads": [{"id": i["id"], "kind": i["kind"], "lead_business_days": i["lead_business_days"], "arrival": i["arrival"]}
-                          for i in sorted(sched["items"], key=lambda i: -i["lead_business_days"])[:10]],
+        "longest_leads": [{"id": i["id"], "kind": i["kind"], "lead_business_days": i["lead_business_days"], "arrival": i["arrival"],
+                           "basis": "planning default" if (i["lead_unknown"] or "no_distributor" in i["flags"]) else "distributor / shop figure"}
+                          for i in sorted(sched["items"], key=lambda i: (-i["lead_business_days"], i["lead_unknown"]))[:12]],
+        "lead_unknown_items": sum(1 for i in sched["items"] if i["lead_unknown"]),
         "critical_path": sched["critical_path"], "final_assembly": sched["final_assembly"],
         "lookups": dict(getattr(finder, "stats", {})), "offline": bool(getattr(finder, "offline", False)),
         "generated": _dt.datetime.now().isoformat(timespec="seconds"), "config": {k: cfg[k] for k in (
@@ -200,8 +202,9 @@ def markdown(rep: dict) -> tuple[str, str]:
          "from the catalogue / planning defaults, not API-verified), not_found (MPN listed nowhere), placeholder (no MPN: DG-07 error), "
          "design_change (the orderable part is not the one drawn), moq_excess (only sold in a quantity over 10 x the need: not counted in the "
          "cost, the catalogue estimate stands).", ""]
-    T += ["## Longest leads", "", _t(["Item", "Kind", "Lead (business days)", "Arrives"],
-                                      [[x["id"], x["kind"], x["lead_business_days"], x["arrival"]] for x in s["longest_leads"]]), ""]
+    T += ["## Longest leads", "", _t(["Item", "Kind", "Lead (business days)", "Basis", "Arrives"],
+                                      [[x["id"], x["kind"], x["lead_business_days"], x["basis"], x["arrival"]] for x in s["longest_leads"]]), "",
+          f"{s['lead_unknown_items']} item(s) have no lead time (placeholders): the schedule gives each the planning default.", ""]
     rows = []
     for r in sorted(lines, key=lambda r: (min([FLAG_ORDER.index(f) for f in r["flags"] if f in FLAG_ORDER] or [99]), r["sku"])):
         b = best_text(r)

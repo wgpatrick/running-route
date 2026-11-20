@@ -19,4 +19,4 @@ include = ["mechloop*"]
 testpaths = ["tests"]
 
 [tool.setuptools.package-data]
-mechloop = ["parts/vendor/*.json", "shops/*.json", "data/supplier_rules/*.json"]
+mechloop = ["parts/vendor/*.json", "shops/*.json", "data/supplier_rules/*.json", "data/sourcing/*.json"]

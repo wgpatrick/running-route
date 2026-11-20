@@ -285,7 +285,7 @@ def calibrate(gray: np.ndarray, dpi: float, pitch: float = TARGET_PITCH_MM, dot:
 # --------------------------------------------------------------------------------------------- synthetic scans
 def render_scan(profile: Profile, dpi: float, *, rotation_deg: float = 0.0, offset_mm=(15.0, 15.0), scale=(1.0, 1.0),
                 mirror: bool = False, blur_px: float = 1.0, noise: float = 3.0, part_level: int = 45, bg_level: int = 225,
-                target: dict | None = None, margin_mm: float = 15.0, supersample: int = 2, seed: int = 0) -> np.ndarray:
+                target: dict | None = None, margin_mm: float = 15.0, supersample: int = 3, seed: int = 0) -> np.ndarray:
     """A synthetic scan of `profile` (mm) on the glass: rotated, placed, mirrored (scanned face down), with the scanner's
     scale error `scale` (true px per mm / nominal, along image x and y), Gaussian blur and noise. `target` =
     {"cols", "rows", "pitch", "dot", "at": (x, y) mm} draws calibration dots beside the part, same scale error."""
@@ -311,29 +311,40 @@ def render_scan(profile: Profile, dpi: float, *, rotation_deg: float = 0.0, offs
         ext = np.maximum(ext, [tx + (target["cols"] - 1) * target["pitch"] + margin_mm, ty + (target["rows"] - 1) * target["pitch"] + margin_mm])
     W, H = int(math.ceil(ext[0] * ppm * scale[0])), int(math.ceil(ext[1] * ppm * scale[1]))
     ss = supersample
-    SH = 4                                            # fractional bits for cv2 drawing
+    SH = 8                                            # fractional bits for cv2 drawing
+    # cv2.fillPoly fills every pixel the polygon touches: about 0.5 px too wide on each side for straight edges and 0.6 px
+    # for circles (measured over random placements). Each shape is shrunk by that much at the drawing resolution, so the
+    # synthetic scan is not biased; the remaining error is a few hundredths of a pixel after downsampling.
+    px_mm = 1.0 / (ppm * ss * float(np.mean(scale)))
+    e_poly, e_circ = 0.5 * px_mm, 0.6 * px_mm
 
     def to_px(p, shift=shift):
-        q = (p + shift) * ppm * np.asarray(scale) * ss
-        q[:, 1] = H * ss - q[:, 1]                    # image rows run down; mm y runs up
-        return np.round(q * (1 << SH)).astype(np.int32)
-    img = np.full((H * ss, W * ss), bg_level, np.uint8)
-    cv2.fillPoly(img, [to_px(place(profile.outline))], part_level, lineType=cv2.LINE_AA, shift=SH)
-    for c in profile.cutouts:
-        cv2.fillPoly(img, [to_px(place(c))], bg_level, lineType=cv2.LINE_AA, shift=SH)
-    for c in profile.circles:
-        n = max(64, int(c["d"] * ppm * 3))
+        q = (p + shift) * ppm * np.asarray(scale)
+        q[:, 1] = H - q[:, 1]                         # image rows run down; mm y runs up
+        q = q * ss + 0.5 * (ss - 1)                   # pixel centres of the fine grid against the coarse one
+        return np.round(q * (1 << SH)).astype(np.int64).astype(np.int32)
+
+    def shrunk(poly):
+        g = Polygon(poly).buffer(-e_poly, join_style=2)
+        return np.asarray(g.exterior.coords)[:-1] if not g.is_empty else np.asarray(poly)
+
+    def ring_of(c, d, n):
         a = np.linspace(0, 2 * math.pi, n, endpoint=False)
-        ring = np.c_[c["center"][0] + 0.5 * c["d"] * np.cos(a), c["center"][1] + 0.5 * c["d"] * np.sin(a)]
-        cv2.fillPoly(img, [to_px(place(ring))], bg_level, lineType=cv2.LINE_AA, shift=SH)
+        return np.c_[c[0] + (0.5 * d - e_circ) * np.cos(a), c[1] + (0.5 * d - e_circ) * np.sin(a)]
+    img = np.full((H * ss, W * ss), bg_level, np.uint8)
+    cv2.fillPoly(img, [to_px(shrunk(place(profile.outline)))], part_level, shift=SH)
+    for c in profile.cutouts:
+        cv2.fillPoly(img, [to_px(shrunk(place(c)))], bg_level, shift=SH)
+    for c in profile.circles:
+        n = max(96, int(c["d"] * ppm * ss * 2))
+        cen = place(np.array([c["center"]]))[0]
+        cv2.fillPoly(img, [to_px(ring_of(cen, c["d"], n))], bg_level, shift=SH)
     if target:
         tx, ty = target["at"]
         for i in range(target["cols"]):
             for j in range(target["rows"]):
                 cpt = np.array([tx + i * target["pitch"], ty + j * target["pitch"]])
-                a = np.linspace(0, 2 * math.pi, 48, endpoint=False)
-                ring = cpt + 0.5 * target["dot"] * np.c_[np.cos(a), np.sin(a)]
-                cv2.fillPoly(img, [to_px(ring, np.zeros(2))], 20, lineType=cv2.LINE_AA, shift=SH)
+                cv2.fillPoly(img, [to_px(ring_of(cpt, target["dot"], 96), np.zeros(2))], 20, shift=SH)
     if ss > 1:
         img = cv2.resize(img, (W, H), interpolation=cv2.INTER_AREA)
     if blur_px > 0:
@@ -545,13 +556,14 @@ def register(meas_outline, meas_hc, meas_hd, prof: Profile, iters: int = 30):
         dth, dt = sol[0], sol[1:]
         Rd = np.array([[math.cos(dth), -math.sin(dth)], [math.sin(dth), math.cos(dth)]])
         R, t = Rd @ R, Rd @ t + dt
-        if abs(dth) < 1e-9 and np.linalg.norm(dt) < 1e-7:
+        if it >= 5 and abs(dth) < 1e-9 and np.linalg.norm(dt) < 1e-7:      # trimming starts at iteration 3
             break
     q = mo_all @ R.T + t
     dist, idx = tree.query(q)
     r_o = np.einsum("ij,ij->i", q - nom_pts[idx], nom_nrm[idx])
     return {"R": R, "t": t, "mirror": mirror, "M": M, "pairs": _match_holes(hc, meas_hd, nom_c, nom_d, R, t),
-            "outline_rms": float(np.sqrt(np.mean(r_o[keep_o] ** 2))), "outline_resid": r_o, "outline_mm": q}
+            "outline_rms": float(np.sqrt(np.mean(r_o[keep_o] ** 2))), "outline_resid": r_o, "outline_mm": q,
+            "nominal_at": nom_pts[idx], "normal_at": nom_nrm[idx], "keep": keep_o}
 
 
 def _straight_edges(poly: np.ndarray, min_len: float = 4.0):
@@ -594,11 +606,14 @@ def measure(image, dxf, dpi: float, *, calibration: Calibration | str | None = "
     o_sub = _subpixel(gray, outline_px, level)
     h_sub = [_subpixel(gray, h, level) for h in holes_px]
     o_mm = cal.to_mm(o_sub)
+    from shapely.geometry import Polygon
+
     hole_fits, cut_meas = [], []
     for h in h_sub:
         hm = cal.to_mm(h)
         cx, cy, r, rms = _circle_fit(hm)
-        if rms < max(0.02 * r, 0.015) and len(hm) >= 12:
+        area = abs(Polygon(hm).area)
+        if rms < max(0.02 * r, 0.015) and len(hm) >= 12 and abs(area / (math.pi * r * r) - 1.0) < 0.05:
             hole_fits.append({"center": np.array([cx, cy]), "d": 2 * r, "rms": rms, "pts": hm})
         else:
             cut_meas.append(hm)
@@ -623,7 +638,6 @@ def measure(image, dxf, dpi: float, *, calibration: Calibration | str | None = "
         holes_out.append(row)
     holes_out.sort(key=lambda r: r.get("dxf_index", 1e9))
     # cut-outs: centroid and area against the nearest nominal cut-out
-    from shapely.geometry import Polygon
     cuts = []
     for cm in cut_meas:
         pm = Polygon(tf(cm)).buffer(0)
@@ -657,10 +671,21 @@ def measure(image, dxf, dpi: float, *, calibration: Calibration | str | None = "
         edges.append({"edge": k, "from": a.round(3).tolist(), "to": b.round(3).tolist(), "length": round(L, 3),
                       "offset_mean": round(float(np.mean(off[sel])), 4), "offset_sd": round(float(np.std(off[sel])), 4),
                       "straightness": round(float(np.ptp(off[sel])), 4), "n": int(sel.sum()), "mid": mid.round(3).tolist()})
+    # overall size: nominal extent + the median outward offset of the measured points on each extreme face (robust to
+    # stray edge points, which a plain max - min would pick up)
     lo_n, hi_n = prof.outline.min(0), prof.outline.max(0)
-    lo_m, hi_m = q.min(0), q.max(0)
-    overall = {"nominal": (hi_n - lo_n).round(4).tolist(), "measured": (hi_m - lo_m).round(4).tolist(),
-               "error": ((hi_m - lo_m) - (hi_n - lo_n)).round(4).tolist()}
+    na, nn, keep = reg["nominal_at"], reg["normal_at"], reg["keep"]
+    err = []
+    for k in (0, 1):
+        sel_hi = keep & (na[:, k] > hi_n[k] - 0.05) & (nn[:, k] > 0.9)
+        sel_lo = keep & (na[:, k] < lo_n[k] + 0.05) & (nn[:, k] < -0.9)
+        if sel_hi.sum() >= 5 and sel_lo.sum() >= 5:
+            err.append(float(np.median(r_o[sel_hi]) + np.median(r_o[sel_lo])))
+        else:                       # no straight face at the extreme (round part): plain extents
+            err.append(float(np.ptp(q[keep][:, k]) - (hi_n[k] - lo_n[k])))
+    err = np.array(err)
+    overall = {"nominal": (hi_n - lo_n).round(4).tolist(), "measured": (hi_n - lo_n + err).round(4).tolist(), "error": err.round(4).tolist(),
+               "method": "nominal extent + median offset of the measured outline on the two extreme faces"}
     ang = math.degrees(math.atan2(R[1, 0], R[0, 0]))
     res = ScanResult(calibration=asdict(cal), transform={"rotation_deg": round(ang, 4), "t_mm": t.round(4).tolist(), "mirrored": bool(reg["mirror"]),
                                                          "note": "measured (scanner mm, mirrored first if scanned face down) -> DXF mm"},

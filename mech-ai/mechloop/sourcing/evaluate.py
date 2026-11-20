@@ -134,7 +134,7 @@ def evaluate_line(line: dict, finder, cfg: dict | None = None, builds: int | Non
     if res["placeholder"]:
         flags.add("placeholder")
         hd = cfg["no_distributor_houses"]["unknown"]
-        out.update(cost_usd=old, lead_business_days=hd["business_days"], lead_basis=hd["basis"])
+        out.update(cost_usd=old, lead_business_days=None, lead_basis="no seller identified; the schedule uses " + hd["basis"])
         out["flags"] = sorted(flags)
         return out
     if res["design_change"]:

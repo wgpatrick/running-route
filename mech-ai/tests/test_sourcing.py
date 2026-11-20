@@ -307,3 +307,36 @@ def test_live_d2f01l_at_all_distributors(tmp_path):
     r = f.find("D2F-01L", "Omron")
     assert r["Digi-Key"]["status"] == "ok" and r["Mouser"]["status"] == "ok"
     assert any(o.stock > 0 for v in r.values() for o in v["offers"])
+
+
+def test_reel_only_obsolete_part_is_not_counted_and_alternates_are_priced(tmp_path):
+    reel = Offer("Digi-Key", "497-2406-ND", "PN2222A", "ST", stock=0, moq=20000, price_breaks=[[20000, 0.04133]], status="obsolete",
+                 status_text="Obsolete")
+    alt = Offer("Mouser", "512-PN2222ATA", "PN2222ATA", "onsemi", stock=23202, price_breaks=[[1, 0.32]], status="active")
+
+    class FC:
+        def __init__(self, name):
+            self.name = name
+
+        def lookup(self, mpn, maker=None, match="exact"):
+            o = {"PN2222A": {"Digi-Key": [reel]}, "PN2222ATA": {"Mouser": [alt]}}.get(mpn, {}).get(self.name, [])
+            return ("ok" if o else "not_found"), o
+    f = Finder(clients=[FC(n) for n in ("Digi-Key", "Mouser")], cache=Cache(tmp_path))
+    r = evaluate_line({"sku": "TRANSISTOR-PN2222A", "qty": 1, "items": [{"maker": "ST", "mpn": "PN2222A"}],
+                       "alternates": [{"maker": "onsemi", "mpn": "PN2222ATA"}]}, f)
+    assert {"moq_excess", "not_active", "out_of_stock"} <= set(r["flags"]) and r["cost_usd"] is None and not r["api_verified"]
+    assert r["alternate_parts"][0]["distributor_pn"] == "512-PN2222ATA" and r["alternate_parts"][0]["flags"] == ["single_source"]
+
+
+def test_build_package_sourcing_cells():
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("build_package", Path(__file__).resolve().parents[1] / "tools" / "build_package.py")
+    bp = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(bp)
+    cell = bp._sourcing_cell({"price": 2.88, "distributor": "Digi-Key", "stock": "79,863", "lead": 3, "flags": ["single_source"]})
+    assert cell == "$2.88 Digi-Key, stock 79,863; lead 3 bd; single_source"
+    assert bp._sourcing_cell(None) == "not in the sourcing report"
+    assert bp._sourcing_csv({"price": 1.234, "distributor": "Mouser", "distributor_pn": "653-X x2", "stock": "5", "lead": 3, "flags": []}) == \
+        [1.23, "Mouser", "653-X x2", "5", 3, ""]
+    assert bp._sourcing_columns("no-such-design-xyz") == {}
