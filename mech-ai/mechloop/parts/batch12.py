@@ -951,3 +951,14 @@ def din_rail_phoenix(length: float = 100.0) -> Stock:
                  model=model, detail=detail,
                  real_part={"maker": "Phoenix Contact", "mpn": "0801733", "sellers": [{**DK, "part_number": "0801733"}],
                             "stock_size": "2 m, cut to length by the builder", "datasheet": PHOENIX_NS35})
+
+
+@part
+def foot_levelling_m5_placeholder() -> Stock:
+    """PLACEHOLDER (owner, 2026-11-20; maker CAD via Instinct REQ-017): a levelling foot with an M5 stud and a firm rubber pad,
+    drawn as a 25 x 8 mm pad-and-base disc and a 10 mm stud. Local frame: the base's top face on Z=0, stud up +Z, pad down."""
+    s = Pos(0, 0, -4.0) * Cylinder(12.5, 8.0) + Pos(0, 0, 5.0) * Cylinder(2.5, 10.0)
+    return Stock(s, "FOOT-LEVELLING-M5", "Levelling foot, M5 stud, firm rubber pad (placeholder: product pending REQ-017)", 0.02,
+                 material="steel", cost_usd=3.0, ratings={"approximate": True},
+                 interfaces={"stud": "M5", "stud_length": 10.0, "pad_d": 25.0},
+                 model={"kind": "proxy", "state": "stand-in", "source": "placeholder outline: no product chosen yet (REQ-017)"})

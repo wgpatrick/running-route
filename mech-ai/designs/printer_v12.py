@@ -140,7 +140,7 @@ from mechloop.parts.hardware import WASHER, spacer_round
 from mechloop.parts.probes import add_probe_nuts, probe_omron_e2e
 from mechloop.parts.toolhead import extruder_roto, hotend_revo
 from mechloop.shops import assign
-from mechloop.parts.batch12 import (tnut_hntp5, add_bracket_misumi, adxl345_btt, cam_arducam_b0454, cob_led, contactor_finder_2232, din_endstop_wago,
+from mechloop.parts.batch12 import (tnut_hntp5, foot_levelling_m5_placeholder, add_bracket_misumi, adxl345_btt, cam_arducam_b0454, cob_led, contactor_finder_2232, din_endstop_wago,
                                     din_rail_wago, heater_hydra_sq1451144, hiwin_mgn12_rail, hiwin_mgn12h_block, laser_vlm520, lens_cil062,
                                     leadscrew_motor_a4003, leadscrew_nut_pom_a4003, leadscrew_screw_a4003, picam3, pi5_host, probe_eddy_duo,
                                     relay_phoenix_1119897, sfs_v2, spacer_harwin, thermostat_cs7,
@@ -1889,7 +1889,31 @@ def build() -> Design:
     return finish_build(d, zs, bed_own, mounts, mount_parts)
 
 
+FOOT_GAP = 5.0          # v12 (owner): levelling feet, the base 5 mm below the bottom rails (5 to 10 mm of adjustment on the stud)
+
+
+def add_feet(d):
+    """v12 (owner, 2026-11-20): four levelling feet under the bottom side rails at the frame's corners, each on an M5 stud into a
+    drop-in T-nut in the rail's BOTTOM slot (the outer side faces stay free for a bolt-on enclosure). PLACEHOLDER parts until
+    REQ-017 names the product."""
+    from mechloop.parts.tslot import tnut_2020
+    for sx, n in ((-1, "left"), (1, "right")):
+        for sy in (-1, 1):
+            y = (FY / 2 - 10) if sy > 0 else FRONT_Y
+            y -= sy * 25.0                               # 25 mm in from the post's centre, clear of the corner bracket's T-nut
+            nm = f"foot_{n}_{'f' if sy < 0 else 'b'}"
+            place(d, nm, foot_levelling_m5_placeholder(), Location((sx * RAIL_X, y, -FOOT_GAP)))
+            slot = d.get(f"frame_bot_{n}").meta["interfaces"]["slot"]
+            tn = place(d, f"{nm}_tnut", tnut_2020("M5"), Location(Plane(origin=(sx * RAIL_X, y, slot["lip"]), x_dir=(0, 1, 0), z_dir=(0, 0, -1))))
+            d.allow_overlap(nm, f"frame_bot_{n}")
+            d.allow_overlap(nm, tn.name)
+            d.allow_overlap(tn.name, f"frame_bot_{n}")
+            d.join(nm, tn.name, "the foot's stud threads into the T-nut")
+            d.join(tn.name, f"frame_bot_{n}", "drop-in T-nut in the bottom slot")
+
+
 def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
+    add_feet(d)
     # ================= electronics bay: tray across the bottom rails =============
     tray = Pos(0, (TRAY_Y0 + TRAY_Y1) / 2, 20 + T_TRAY / 2) * Box(FX, TRAY_Y1 - TRAY_Y0, T_TRAY)
     grp = ["electronics_tray"]
@@ -2824,7 +2848,7 @@ def add_feedback_hardware(d):
 STAGE_RULES = [  # (stage, name prefixes): first match wins; screws, nuts, washers and T-nuts are named after what they fix
     (3, ("cam_", "led_", "sfs_", "filament_sensor", "adxl", "sensor_plate")),
     (2, ("y_", "x_", "tool_", "extruder", "hotend", "part_", "beam_bolt", "bed_probe", "eddy", "probe_mount")),
-    (1, ("frame_", "post_", "bracket_", "brkt_up_", "upright_", "z_", "sq_", "carriage_plate", "nut_", "bed", "leadscrew", "electronics",
+    (1, ("frame_", "foot_", "post_", "bracket_", "brkt_up_", "upright_", "z_", "sq_", "carriage_plate", "nut_", "bed", "leadscrew", "electronics",
          "psu", "control_board", "host", "inlet", "mains_", "earth", "tray", "din_", "iface_", "z_mount")),
 ]
 
