@@ -2413,8 +2413,11 @@ def add_requirements(d, zs):
             f"{flat:.4f} mm; limit {FLAT_AFTER_PROBING:g}. A light first-layer print (well under the 1 kg of (c)) adds less than (c)'s figure")
     d.requirements.append(Requirement(f"v11 (b): change after probing during the first layers (heat growth at 80 degC) <= {FLAT_AFTER_PROBING:g} mm", after_probing))
     d.requirements.append(Requirement(f"v11 (c): sag under a full 1 kg print at the worst corner <= {SAG_1KG_CORNER:g} mm (screw-only bound; sanity)", lambda dd, m: (
-        (pw := m["fea"]["bed_support"]["print_weight"])["judged_mm"] <= SAG_1KG_CORNER + 1e-9,
-        f"{pw['judged_mm']:.4f} mm at {pw.get('worst_point')} (v10.1, 12.7 mm plate: 0.0119)")))
+        (pw := m["fea"]["bed_support"]["print_weight"])["judged_mm"] <= SAG_1KG_CORNER + 1e-9
+        and m["fea"]["bed_support"].get("flexure", {}).get("evaluated", False),
+        f"{pw['judged_mm']:.4f} mm at {pw.get('worst_point')} (v10.1, 12.7 mm plate: 0.0119)"
+        + ("" if m["fea"]["bed_support"].get("flexure", {}).get("evaluated", False) else
+           "; NOT EVALUATED: the bed-support flexure FEA did not run, so this is the guides' and nuts' compliance only"))))
     def nuts_held(dd, m):
         bs = m["fea"]["bed_support"]
         lv = bs["nut_seating_and_lead_error"]["levels"][2]
