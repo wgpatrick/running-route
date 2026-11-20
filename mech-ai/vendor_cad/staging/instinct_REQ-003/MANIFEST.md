@@ -11,3 +11,6 @@ Cross-deliveries under REQ-002 that serve REQ-003 items (see ../instinct_REQ-002
   number or price yet.
 All other REQ-003 items (heater, PEI kit, Misumi pulley / idler, ADXL345, nozzle camera, COB strip, DIN rail,
 PEM S-M3-0) are outstanding.
+
+2026-11-20 batch 4 re-check (about 02:20Z): the REQ-003 results folder is still empty. The requests folder now also has
+REQ-005 (rails addendum, HIWIN / Helix) and REQ-006 (corrections from REQ-002), with no results folders for them yet.

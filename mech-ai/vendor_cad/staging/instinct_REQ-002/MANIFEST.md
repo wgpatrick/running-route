@@ -121,3 +121,32 @@ CAD + R30-6700594 / 694 / 894. 19 RAF CAD for 5.5 / 6.1 / 9.725 / 13.2 / 40 mm. 
    whether 22.32 is still wanted before asking for the right file.
 5. FUSE-5x20-T8A maps to Schurter 0001.2513. The Littelfuse 218 datasheet (0218008.MXP, 5x20 T8A time-lag) is a valid
    alternate, so there is no conflict.
+
+## Second delivery (ingested 2026-11-20, batch 4)
+
+New in the Drive folder since the first delivery: the two Accu STEPs (02:10Z), the Keenovo page PDF (02:06Z), the HIWIN
+general catalogue (02:01Z), and a RESULT.md revision of 02:11:31Z. `RESULT_instinct_REQ-002_2026-11-20.md` is now that
+revision (sha256 f5425eff6fc3083e4c7f4000eda9168f5687e633bf4847e832caf42582f46e8f). Changes vs 01:51Z: items 22 (Accu)
+and 25 (Keenovo) marked DONE; item 2 notes the HIWIN catalogue; item 3 says the 3dfindit route is exhausted. RESULT.md
+says the Accu account was created with the owner's approval (relayed via main); not verified here.
+
+### STEP files staged here
+
+| REQ item | Part | Maker | MPN | File | sha256 | Solids | Valid | BBox (mm) | Drawing check | Result | Catalogue SKU | Price |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 22 | Large flat washer M3, ISO 7093-1, A2 | Accu | HPLW-M3-A2 | HPLW-M3-A2.step (delivered as HPLW-M3-A2__step.stp; header name 406212-HPLW-M3-A2.stp, Autodesk export 2023-11-23, PRODUCT "HPW SCRIPT v4") | 7d1aee09df083a1959cbd9610e3cf88d88760cf890aefe059ff99e51e3d328f3 | 1 (4 faces: 2 planes, 2 cylinders) | yes | 9.000 x 9.000 x **0.800** | Drawing (`supplier_2026-11-19/_DEVIATIONS/WASHER-M3-LARGE.pdf`, `accu_iso7093.json`): OD 9 (+0/-0.36), ID 3.2 (+0.18/-0), T 0.9 (+0/-0.2). Model OD 9.000, ID 3.200: match at nominal. **T 0.800 = middle of the tolerance band** (0.7 to 0.9), not nominal 0.9. Volume 44.46 mm3; at 7.93 g/cm3 = 35.3 g/100 vs drawing 35 g/100 (consistent with the mean thickness) | PASS (within tolerance). The mechloop re-make `washer_flat("M3","large")` is 9 x 3.2 x **0.9** (50.02 mm3); differs by 0.1 in thickness only | WASHER-M3-LARGE | not given |
+| 22 | Large flat washer M4, ISO 7093-1, A2 | Accu | HPLW-M4-A2 | HPLW-M4-A2.step (header 406216-HPLW-M4-A2.stp) | f354dade12d1e75009719e3328c0ee8c1df3ba94eba0960d56fabe2ecb2311e4 | 1 (4 faces) | yes | 12.000 x 12.000 x **1.000** | Drawing (`WASHER-M4-LARGE.pdf`): OD 12 (+0/-0.43), ID 4.3 (+0.18/-0), T 1.1 (+0/-0.2). OD 12.000, ID 4.300: match. **T 1.000 = mid-tolerance** (0.9 to 1.1). 98.58 mm3 = 78.2 g/100 vs drawing 77 | PASS (within tolerance). mechloop re-make is 12 x 4.3 x **1.1** (108.43 mm3) | WASHER-M4-LARGE | not given |
+
+Both models sit Z = 0 up, centred on the Z axis, units mm. Whether the re-make should keep nominal T (0.9 / 1.1) or
+switch to Accu's model thickness (0.8 / 1.0) is an owner decision; both are inside the drawing tolerance.
+
+### Documents
+
+| REQ item | File in vendor_docs | Delivered as | sha256 | Content / checks |
+|---|---|---|---|---|
+| 25 | Keenovo_silicone-heater_page_2026-11-20.pdf | KeenovoCustomHeater__page.pdf | 58dc5d2c5608abe43dd1f4af7858ba95fc1c95a251ff0dae800aeaabf6b4d042 | 1 p, Chrome print-to-PDF (Skia) of keenovo.com/products/silicone-heater.html, 2026-11-20 02:06Z. Only /URI link annotations (70); no JavaScript, actions or embedded files. A web-page print, not a datasheet |
+
+Not downloaded: **HIWIN_MG__catalog.pdf** (Drive 1H1QRkmweOT_9K32k8YR2vPTLhxjjVgzh, 17,883,962 bytes). It is over the Drive
+connector's 10 MB download limit. It has the same size as REQ-004's HIWIN_LinearGuideway__catalog.pdf and is very likely
+the same file, but Drive gives no checksum, so the sha256 dedupe could not be done. It is not the same as the HIWIN PDFs
+already in vendor_docs (641,029 and 826,601 bytes). Needs a manual download if wanted.

@@ -1,5 +1,5 @@
 # RESULT — REQ-002: supplier CAD and datasheets, batch 3 (full list)
-STATUS: partial (2026-11-19 ~5:55 PM PST — items 4, 5, 13, 14, 17, 20, 23 complete; 9/10/11/15/18/19/21 partial; 1/12/16 blocked-exhausted; 6 awaiting PEM approval; 22 awaiting owner decision)
+STATUS: partial (2026-11-19 ~6:10 PM PST — items 4, 5, 13, 14, 17, 20, 22, 23, 25 complete; 9/10/11/15/18/19/21 partial; 1/12/16 blocked-exhausted; 6 awaiting PEM approval)
 
 Naming: `<MPN>__<what>.<ext>`, files unchanged as downloaded. Prices are McMaster pack prices as shown, USD.
 
@@ -72,8 +72,9 @@ Naming: `<MPN>__<what>.<ext>`, files unchanged as downloaded. Prices are McMaste
 - Page specs captured: $2.20 each, backordered 4-6 weeks, music wire, closed ends, 0.8 N/mm rate.
 - Drawing PDF + max operating temp not published on the product page; check century spring catalog PDF next.
 
-## 22. Accu HPLW-M3-A2 / HPLW-M4-A2 — awaiting owner decision
-- CAD downloads are gated behind a free accu.com account; no account exists. Standing rule: report before creating new accounts. Main has asked Will; do not create until approved.
+## 22. Accu HPLW-M3-A2 / HPLW-M4-A2 — DONE
+- Owner approved creating a free Accu account (2026-11-19, via main). Account created as Will Patrick / wgpatrick@gmail.com (personal use, no marketing opt-in), email verified same day.
+- HPLW-M3-A2__step.stp and HPLW-M4-A2__step.stp (ISO-10303-21 verified) — accu-components.com/us product pages 406212 / 406216, official CAD API. Note: Accu caps CAD downloads at 20/day; 19-20 remain today.
 
 ## Blocked-exhausted (site refuses automated access; labeled, no further retries)
 - 1. StepperOnline 17E19S1684AB4-330RA datasheet: Cloudflare challenge loops on files.omc-stepperonline.com, including in the cloud browser (product page: omc-stepperonline.com product_id=5186)
@@ -81,13 +82,15 @@ Naming: `<MPN>__<what>.<ext>`, files unchanged as downloaded. Prices are McMaste
 - 16. Phoenix Contact 1119897: Akamai "Access Denied" on phoenixcontact.com, 2 bounded browser attempts
 - 15. Finder IB2232EN-1 (see item 15 above)
 
+## 25. Keenovo — DONE
+- KeenovoCustomHeater__page.pdf — the REQ's URL (custom-silicone-heaters.html) 404s; the live page is https://www.keenovo.com/products/silicone-heater.html, saved via headless Chrome print-to-PDF and visually verified: full silicone rubber heater data sheet (structure, 0-400V, -50 to +260 C, max power density 2.5 W/sq.cm, standard thickness 1.5 mm). No quote requested.
+
 ## Not yet started
-- 2. HIWIN MGNR12R300 / MGNR12R220 / MGN12H CAD + MG catalogue
-- 3. Misumi HBLFSN5 bracket; GPA20GT2090-B-P5 / -A-N5 pulley+idler (3dfindit route proven)
+- 2. HIWIN MGNR12R300 / MGNR12R220 / MGN12H CAD (STEP) — MG catalogue delivered: HIWIN_MG__catalog.pdf (official hiwin.com linear guideway catalog, covers MGN12/MGN12H, verified 16 MGN12 mentions)
+- 3. Misumi HBLFSN5 bracket; GPA20GT2090-B-P5 / -A-N5 pulley+idler (3dfindit route now EXHAUSTED — viewer hangs cloud-browser renderer; needs a different official route or retry after new signal)
 - 6. PEM S-M3-1ZI + S-M3-0ZI: waiting on PEM account approval (registered 2026-11-19, review pending, activation email watched)
 - 7. Omron D2F-01L STEP (TraceParts via Digi-Key)
 - 24. PEI spring-steel sheet kit research (two real products, pages as PDF)
-- 25. Keenovo custom silicone heater page save (REQ URL 404s; live page is keenovo.com/products/silicone-heater.html — save as KeenovoCustomHeater__page.pdf)
 
 ## Overlap note
 - 8. Omron E2B-M12KS04-WP-C1: already delivered in REQ-001 results (overlap)

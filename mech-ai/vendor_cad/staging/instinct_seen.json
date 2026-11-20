@@ -123,15 +123,15 @@
  "other_folders": {
   "1RI-CdoBbH9t_4mt2fioLIT-op7WBFLYL": {
    "folder": "mechloop handoff/results/REQ-002-supplier-cad-batch-3-full",
-   "last_checked": "2026-11-20T01:58:30Z",
+   "last_checked": "2026-11-20T02:20:00Z",
    "staged_in": "vendor_cad/staging/instinct_REQ-002",
-   "result_status": "partial (Instinct still working; items 4/5/13/14/17/20/23 done per RESULT.md)",
+   "result_status": "partial (02:11Z: items 4/5/13/14/17/20/22/23/25 done per RESULT.md)",
    "files": {
     "1ZZvUG19Du_tvAZpS9QN26cESMFvC710B": {
      "title": "RESULT.md",
-     "modifiedTime": "2026-11-20T01:51:45.273Z",
-     "size": 8146,
-     "note": "re-downloaded at the 01:51:45Z revision; the 01:29:57Z revision was also read"
+     "modifiedTime": "2026-11-20T02:11:31.684Z",
+     "size": 8804,
+     "note": "re-downloaded at the 02:11:31Z revision (batch 4)"
     },
     "1r9VLS8FEXUIRw246czgXSo3UNRJamtWq": {
      "title": "90370A201__drawing.pdf",
@@ -398,25 +398,47 @@
      "title": "22.32__datasheet.pdf",
      "modifiedTime": "2026-11-20T01:14:38.697Z",
      "size": 3661031
+    },
+    "1EaxdIJmEIQO74983qX9_4gocx5C7iqN0": {
+     "title": "HPLW-M3-A2__step.stp",
+     "modifiedTime": "2026-11-20T02:10:37.297Z",
+     "size": 6914
+    },
+    "1I9kUSmpc7au3XVwLyw3zLPPkS-ihqV5E": {
+     "title": "HPLW-M4-A2__step.stp",
+     "modifiedTime": "2026-11-20T02:10:39.247Z",
+     "size": 6909
+    },
+    "1i2UNFCF3_LtTAykJZpPatwpXfMadp-vR": {
+     "title": "KeenovoCustomHeater__page.pdf",
+     "modifiedTime": "2026-11-20T02:06:10.996Z",
+     "size": 139362
+    },
+    "1H1QRkmweOT_9K32k8YR2vPTLhxjjVgzh": {
+     "title": "HIWIN_MG__catalog.pdf",
+     "modifiedTime": "2026-11-20T02:01:48.421Z",
+     "size": 17883962,
+     "note": "NOT downloaded: over the Drive connector 10 MB limit; same size as REQ-004 HIWIN_LinearGuideway__catalog.pdf"
     }
    }
   },
   "1s3685ayrJbVVh85GEsWXSuDuLJB_npFE": {
    "folder": "mechloop handoff/results/REQ-003-build1-additions",
-   "last_checked": "2026-11-20T01:58:30Z",
+   "last_checked": "2026-11-20T02:20:00Z",
    "result_status": "empty folder",
    "files": {}
   },
   "1kA7gZ9hvMN84ooDXTnAgeoRObBQE0Tg0": {
    "folder": "mechloop handoff/results/REQ-004-linear-rail-alternatives",
-   "last_checked": "2026-11-20T01:58:30Z",
+   "last_checked": "2026-11-20T02:20:00Z",
    "staged_in": "vendor_cad/staging/instinct_REQ-004",
-   "result_status": "partial (price table mostly pending)",
+   "result_status": "partial (full candidate table + provisional shortlist; no STEP)",
    "files": {
     "14IiM0CvyDN2qWlpJ3A1QhuC1JQiO7VdS": {
      "title": "RESULT.md",
-     "modifiedTime": "2026-11-20T01:52:01.580Z",
-     "size": 4796
+     "modifiedTime": "2026-11-20T02:12:39.938Z",
+     "size": 9898,
+     "note": "re-downloaded at the 02:12:39Z revision (batch 4)"
     },
     "1CsVQVhnvErxtYwQrLP3_XbEw3dCOxbDz": {
      "title": "LDO_MGN12H__drawing.pdf",
@@ -452,9 +474,34 @@
      "title": "CPC_MiniatureGuides__catalog.pdf",
      "modifiedTime": "2026-11-20T01:57:39.299Z",
      "size": 5052498
+    },
+    "1tTzZKMOUw4zNbuCRhpfgdzmVF6NdB4KJ": {
+     "title": "THK_SRS__catalog.pdf",
+     "modifiedTime": "2026-11-20T02:02:00.918Z",
+     "size": 779970
+    },
+    "1o7llYwkcqUEEEDX-NcDycJxqwqw2X1ac": {
+     "title": "NSK_PU_PE__datasheet.pdf",
+     "modifiedTime": "2026-11-20T02:01:59.820Z",
+     "size": 3566765,
+     "note": "not copied: same sha256 as vendor_docs/NSK_PU-PE_miniature_E3327e.pdf"
+    },
+    "1tes9dKwSdToGkvQj_JneN1rjWZ2MNjMe": {
+     "title": "HIWIN_LinearGuideway__catalog.pdf",
+     "modifiedTime": "2026-11-20T02:01:46.805Z",
+     "size": 17883962,
+     "note": "NOT downloaded: over the Drive connector 10 MB limit"
+    },
+    "1wf9psuDU7OkiMsGvFGNxdmMLXmBSo7eV": {
+     "title": "PMI_LinearGuideways__catalog.pdf",
+     "modifiedTime": "2026-11-20T02:05:49.776Z",
+     "size": 14262623,
+     "note": "NOT downloaded: over the Drive connector 10 MB limit"
     }
    }
   }
  },
- "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..004 (added 2026-11-20 batch 3 ingest)."
+ "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..004 (added 2026-11-20 batch 3 ingest).",
+ "last_checked_all": "2026-11-20T02:20:00Z",
+ "_note_not_downloaded": "Files with 'NOT downloaded' notes are recorded as seen but were never fetched; retry them if a larger download route exists."
 }
