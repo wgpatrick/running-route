@@ -2737,7 +2737,7 @@ def add_soak_case(d, zs, posts, carrier, zcars, nplates, on_rail, on_nut):
 
 # ---- feedback hardware on the frame (stage 3) ------------------------------------------------------------------------------------
 def add_feedback_hardware(d):
-    """Overview and top-down Pi Camera Module 3s on printed brackets on the top front / back rails, the BTT SFS V2 on the left top rail,
+    """Overview and top-down Pi Camera Module 3s on printed brackets on the top front / back rails, the BTT SFS V2 on the top back rail's rear face,
     the overview COB strip in two printed clips on the top front rail. The nozzle camera, its lens, the line laser, the two nozzle LED
     segments and the toolhead ADXL345 are BOM lines in v12: their toolhead bracket is not drawn
     (open item: the Eddy fills the rear view; docs/PRINTER_V12.md)."""
