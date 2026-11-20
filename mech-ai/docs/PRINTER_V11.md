@@ -89,8 +89,21 @@ is 192 x 205 mm between them, 95.6 % of the print area.
 | (b) change after probing | the whole heat growth from cold to 80 degC (bed 60 K above the frame, carrier 15 K: the thermal case), as if the bed were probed before it grew at all: the larger of the nozzle-gap change and the plate's bow | {{FLAT_B_DETAIL}} | 0.1 |
 | (c) 1 kg at the worst corner | the bed-support FEA, screw-only bound | {{FLAT_C_DETAIL}} | 0.2 |
 
-**(b) binds.** It hardly depends on the plate: most of it is the studs, springs and carrier warming. (a) and (c) are far inside
-their limits at 6.35 mm, which is the thinnest stock MIC-6, so 6.35 mm is the choice. The levelling points, the springs'
+**(b) fails, by 0.001 mm.** On the final code the nozzle-gap change in the thermal case is **-0.101 mm** against the 0.1 mm
+limit (the FEA verifier's `thermal_gap_change` and the (b) requirement, both errors). At 20:03 on 2026-11-19, before the nut
+plates were enlarged for SendCutSend's web minimum (section G), it was -0.090 mm; nothing else in the bed, carrier or thermal
+case changed between the two runs, and the mesh (490 k / 483 k nodes) moved the magnet contact's locating node by 3 mm, so
+part of the 0.011 mm may be mesh. Either way there is no margin. It hardly depends on the plate: most of it is the studs,
+springs and carrier warming. (a) and (c) are far inside their limits at 6.35 mm, which is the thinnest stock MIC-6, so
+6.35 mm stays.
+
+The figure is a bound computed as if the bed were probed cold and then heated through (judgement call 3): a printer probed
+after its bed has soaked at temperature sees only the carrier's slower warming. Fixes for v11.1, for the owner to choose:
+(1) make "heat the bed, soak, then probe" the commissioning and start-of-print procedure (a start G-code macro), and recompute
+(b) as the carrier's warming after the soak (which needs a transient thermal case the checks do not have); (2) shorten or
+stiffen the thermal path: shorter stud stacks under the plate (they are at 30 K), or a nut plate whose seat sits closer to
+the carrier member it hangs from, then re-run the thermal case; (3) the owner relaxes (b) to, say, 0.12 mm. Not changed in
+v11: the limit is the owner's. The levelling points, the springs'
 preload margin ({{PRELOAD}}) and the tilt allowance ({{TILT}}) are kept and pass.
 
 **The flatness figure.** The brief gives "MIC-6 ~0.13 mm per McMaster listing; check". McMaster's page could not be read from
@@ -216,6 +229,47 @@ jam nuts. The Roto's PEM nuts are S-M3-0 (SendCutSend's stock).
 | ServoCity GT2 pulley | not used: it is for 6 mm belt; the 9 and 12 mm pulleys keep their stand-ins |
 
 Each is recorded in `vendor_cad/SOURCES.md`.
+
+### G. Supplier sheet-metal rules (the new manufacture check)
+
+The manufacture verifier now judges every sheet part against the published design rules of six sheet suppliers
+(`mechloop/data/supplier_rules/`, `mechloop/verifiers/dfm_supplier.py`, `docs/SUPPLIER_RULES.md`): a rule the supplier
+states as a requirement is an error, one it phrases as a recommendation a warning. v11 has **30 sheet parts, all assigned to
+SendCutSend** (no machined part). Result on the final code: {{SUPPLIER}}.
+
+| Supplier | Assigned | v11's 30 sheet parts against its published rules |
+|---|---|---|
+| SendCutSend | all 30 | **0 requirement failures.** 4 parts pass every rule (the three carriage plates and the deck), 1 passes with no published hole-to-edge rule for its stock (the bed plate), 25 miss 1 to 4 recommendations: **56 warnings**, all on the cut: hole edge to part edge (41: SendCutSend's "1.5 to 2 x thickness" and "1 x hole diameter" advice, e.g. nut plates 5 mm against 14.3 mm for 9.525 mm stock, electronics tray 2.25 mm, Z motor plates 4.78 mm), holes smaller than the thickness (8: the nut plates' and Z motor plates' 3.4 to 4.8 mm holes in 6.35 / 9.525 mm plate), slot to edge (5: Y plates, X and Y motor mounts), one hole 3.14 mm from the probe bracket's bend (SendCutSend's die-width figure asks 6 mm), and the probe bracket's share of bend meeting the minimum flange |
+| OSH Cut | none | all 30 pass what OSH Cut publishes; it publishes no hole-size or hole-to-edge rule for most of these stocks (its app is blocked by robots.txt) |
+| Protolabs | none | 24 pass (10 with recommendations missed); **6 fail one requirement each: the three nut plates and the three nut keepers** |
+| Xometry | none | all 30 pass; 25 miss 1 to 5 recommendations |
+| Fictiv | none | all 30 pass; 22 miss 1 to 3 recommendations |
+| Hubs | none | all 30 pass; 16 miss 1 to 3 recommendations |
+| Fabworks | none | 2 pass (the two bent parts, 1 recommendation missed each); for the other 28 it publishes no rule for the material and thickness |
+
+Before this check ran, SendCutSend's shop profile had stopped the 20:03 verify on four parts (`shop_web_below_minimum`: the
+three nut plates had 3.25 mm between a hole and the edge, 4.76 asked; the electronics tray 1.25, 1.59 asked). The nut plates
+were made 3.5 mm longer and 2 mm deeper beyond the nut (half length 27.75, reach 23.5 mm), the keepers 2 mm wider, and the
+belt bracket's holes moved 0.25 mm off the bend (6.1 mm from it: SendCutSend's die width); the Roto's PEM nuts became S-M3-0,
+the size SendCutSend installs. The bigger nut plates are what moved limit (b) over its line (below).
+SendCutSend's recommendations were not all followed: holding 1.5 to 2 x thickness from the edge on 9.525 mm plate would grow
+every nut plate by about 20 mm, and the rear one already reaches 57 mm out through the back wall. Question 8.
+
+### H. Purchased parts against the new DG-07 rule
+
+A practice rule added during this work (DG-07, `mechloop/verifiers/purchased.py`, owner's key rule for v11.1) requires every
+purchased part to be a real, orderable product (maker, part number, seller), with the maker's CAD or a faithful re-make and a
+maker's source for every rating a check reads. It is an error unless a design is marked exploratory, and v11 is not (the
+coordinator's instruction: v11 is not the build candidate; the replacements are v11.1's work, `docs/V11_1_PLAN.md`). On v11
+it gives **{{DG07}}**:
+
+| Category | SKUs (pieces) | Examples |
+|---|---|---|
+| Not pinned to a real product (`purchased_part_not_real`) | 77 (241 drawn pieces, plus BOM-only lines: wire, connectors, cable ties, fuses, belts, TMC2209 drivers, sock, thread locker) | extrusions (no seller recorded although Misumi cuts them), corner brackets, flanged button heads, rails and blocks (no seller), motors, pulleys and idlers, spacers, the PEI sheet and its magnetic base, the heater, the POM nut, the E2B probe (no seller recorded), the Octopus |
+| Geometry a stand-in (`purchased_geometry_not_sourced`) | 41 (212) | flanged button heads, corner brackets, pulleys, spacers, M5 x 16 / x 65 / M3 x 25 / M2.5 x 20 screws, MGN rails and blocks, the POM nut, the PEM S-M3-0, the probe's nuts, heater, magnetic base, sheet |
+| A rating a check reads has no maker's source (`purchased_rating_not_sourced`) | 20 (43) | pulley pitch diameter and teeth, the Octopus's driver ratings, the Roto's motor figures, the E2B's repeatability and drift-rated-to figures (assumed in the catalogue), the PSU, the POM nut |
+
+The Delta blower is not among them; the E2B now fails only on "no seller" and on ratings the data sheet does not give.
 
 ## v10.1 against v11
 
