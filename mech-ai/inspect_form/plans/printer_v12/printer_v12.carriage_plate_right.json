@@ -1,0 +1,1326 @@
+{
+ "schema": "mechloop.inspection_plan/1",
+ "part": "carriage_plate_right",
+ "part_id": "printer_v12.carriage_plate_right",
+ "revision": "printer_v12",
+ "generated": "2026-11-20T20:16:27",
+ "process": "sheet",
+ "form": "flat",
+ "material": "al6061",
+ "thickness_mm": 1.6,
+ "shop": "sendcutsend",
+ "shop_name": "SendCutSend",
+ "source": {
+  "design": "designs/printer_v12.py",
+  "component": "carriage_plate_right"
+ },
+ "dxf": "out/printer_v12/dxf/carriage_plate_right.dxf",
+ "frame": {
+  "note": "drawing frame: origin at the part's bounding-box corner; Z = sheet normal (flat) or the smallest extent; X the longer of the other two. Datum C = the x = 0 edge, B = the y = 0 edge, A = the z = 0 face.",
+  "R_world_to_local": [
+   [
+    0.0,
+    -0.0,
+    1.0
+   ],
+   [
+    0.0,
+    -1.0,
+    -0.0
+   ],
+   [
+    1.0,
+    0.0,
+    -0.0
+   ]
+  ],
+  "offset": [
+   67.78499999999997,
+   7.0,
+   135.4
+  ]
+ },
+ "size_mm": [
+  97.4,
+  50.0,
+  1.5999999999999943
+ ],
+ "tolerances": {
+  "cut": {
+   "pm": 0.127,
+   "unit": "mm",
+   "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+   "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+   "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+   "published": true
+  },
+  "hole": {
+   "pm": 0.127,
+   "unit": "mm",
+   "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+   "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+   "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+   "published": true
+  },
+  "bend_edge": {
+   "pm": 0.381,
+   "unit": "mm",
+   "source": "SendCutSend published (sendcutsend.bend.tolerance_edge)",
+   "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+   "url": "https://sendcutsend.com/services/cnc-bending/",
+   "published": true
+  },
+  "bend_angle_deg": {
+   "pm": 1.0,
+   "unit": "deg",
+   "source": "SendCutSend published (sendcutsend.bend.tolerance_angle)",
+   "quote": "Bends up to 24\u2033: +/- 1\u00b0",
+   "url": "https://sendcutsend.com/services/cnc-bending/",
+   "published": true
+  },
+  "flat": {
+   "pm": 0.2,
+   "unit": "mm",
+   "published": false,
+   "source": "mechloop class value (tolerance/process.py sheet flat, 2 standard deviations); SendCutSend publishes none for this"
+  },
+  "general": {
+   "pm": 0.127,
+   "unit": "mm",
+   "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+   "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+   "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+   "published": true
+  }
+ },
+ "holes": [
+  {
+   "id": "H4",
+   "center": [
+    13.700000000000003,
+    15.0,
+    0.799999999999983
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "d": 3.4,
+   "round": true,
+   "through": true,
+   "interfaces": [
+    {
+     "kind": "fastener",
+     "name": "z_carriage_right_screw_1",
+     "sku": "SHCS-M3x5",
+     "size": "M3",
+     "d": 3.0,
+     "mates": [
+      "z_carriage_right"
+     ]
+    }
+   ],
+   "edge_web": 12.0,
+   "to_bend": []
+  },
+  {
+   "id": "H5",
+   "center": [
+    33.7,
+    15.0,
+    0.799999999999983
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "d": 3.4,
+   "round": true,
+   "through": true,
+   "interfaces": [
+    {
+     "kind": "fastener",
+     "name": "z_carriage_right_screw_3",
+     "sku": "SHCS-M3x5",
+     "size": "M3",
+     "d": 3.0,
+     "mates": [
+      "z_carriage_right"
+     ]
+    }
+   ],
+   "edge_web": 12.734,
+   "to_bend": []
+  },
+  {
+   "id": "H2",
+   "center": [
+    13.700000000000003,
+    35.0,
+    0.799999999999983
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "d": 3.4,
+   "round": true,
+   "through": true,
+   "interfaces": [
+    {
+     "kind": "fastener",
+     "name": "z_carriage_right_screw_0",
+     "sku": "SHCS-M3x5",
+     "size": "M3",
+     "d": 3.0,
+     "mates": [
+      "z_carriage_right"
+     ]
+    }
+   ],
+   "edge_web": 12.0,
+   "to_bend": []
+  },
+  {
+   "id": "H3",
+   "center": [
+    33.7,
+    35.0,
+    0.799999999999983
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "d": 3.4,
+   "round": true,
+   "through": true,
+   "interfaces": [
+    {
+     "kind": "fastener",
+     "name": "z_carriage_right_screw_2",
+     "sku": "SHCS-M3x5",
+     "size": "M3",
+     "d": 3.0,
+     "mates": [
+      "z_carriage_right"
+     ]
+    }
+   ],
+   "edge_web": 12.734,
+   "to_bend": []
+  },
+  {
+   "id": "H6",
+   "center": [
+    87.4,
+    9.0,
+    0.799999999999983
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "d": 5.5,
+   "round": true,
+   "through": true,
+   "interfaces": [
+    {
+     "kind": "fastener",
+     "name": "carriage_plate_right_bolt_0",
+     "sku": "SHCS-M5x8",
+     "size": "M5",
+     "d": 5.0,
+     "mates": [
+      "sq_right"
+     ]
+    }
+   ],
+   "edge_web": 6.25,
+   "to_bend": []
+  },
+  {
+   "id": "H1",
+   "center": [
+    87.4,
+    41.0,
+    0.799999999999983
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "d": 5.5,
+   "round": true,
+   "through": true,
+   "interfaces": [
+    {
+     "kind": "fastener",
+     "name": "carriage_plate_right_bolt_1",
+     "sku": "SHCS-M5x8",
+     "size": "M5",
+     "d": 5.0,
+     "mates": [
+      "sq_right"
+     ]
+    }
+   ],
+   "edge_web": 6.25,
+   "to_bend": []
+  }
+ ],
+ "bends": [],
+ "predictions": [],
+ "dimensions": [
+  {
+   "key": "H1-H6.pitch",
+   "kind": "hole_pitch",
+   "label": "Pitch H1 to H6 (pattern for sq_right)",
+   "nominal": 32.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 32.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: centre-to-centre from the fitted circles (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "screws of sq_right pass through both holes: the pattern must match sq_right's"
+   ],
+   "score": 90.0,
+   "at": [
+    87.4,
+    25.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H1",
+    "H6"
+   ],
+   "id": 1
+  },
+  {
+   "key": "H2-H3.pitch",
+   "kind": "hole_pitch",
+   "label": "Pitch H2 to H3 (pattern for z_carriage_right)",
+   "nominal": 20.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 20.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: centre-to-centre from the fitted circles (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "screws of z_carriage_right pass through both holes: the pattern must match z_carriage_right's"
+   ],
+   "score": 90.0,
+   "at": [
+    23.7,
+    35.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H2",
+    "H3"
+   ],
+   "id": 2
+  },
+  {
+   "key": "H3-H4.pitch",
+   "kind": "hole_pitch",
+   "label": "Pitch H3 to H4 (pattern for z_carriage_right)",
+   "nominal": 28.2843,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 28.2843,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: centre-to-centre from the fitted circles (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "screws of z_carriage_right pass through both holes: the pattern must match z_carriage_right's"
+   ],
+   "score": 90.0,
+   "at": [
+    23.7,
+    25.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H3",
+    "H4"
+   ],
+   "id": 3
+  },
+  {
+   "key": "H4-H5.pitch",
+   "kind": "hole_pitch",
+   "label": "Pitch H4 to H5 (pattern for z_carriage_right)",
+   "nominal": 20.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 20.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: centre-to-centre from the fitted circles (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "screws of z_carriage_right pass through both holes: the pattern must match z_carriage_right's"
+   ],
+   "score": 90.0,
+   "at": [
+    23.7,
+    15.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H4",
+    "H5"
+   ],
+   "id": 4
+  },
+  {
+   "key": "H1.dia",
+   "kind": "hole_diameter",
+   "label": "Hole H1 diameter (M5 fastener)",
+   "nominal": 5.5,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 5.5,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws, two readings 90 degrees apart (record the mean; note ovality).",
+    "alternates": []
+   },
+   "depends": [
+    "carriage_plate_right_bolt_1 (SHCS-M5x8) clamps sq_right"
+   ],
+   "score": 70.0,
+   "at": [
+    87.4,
+    41.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H1"
+   ],
+   "fit": "clearance for M5: 0.50 mm over the screw; the screw passes while the hole is above 5.05 mm",
+   "id": 5
+  },
+  {
+   "key": "H2.dia",
+   "kind": "hole_diameter",
+   "label": "Hole H2 diameter (M3 fastener)",
+   "nominal": 3.4,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 3.4,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws, two readings 90 degrees apart (record the mean; note ovality).",
+    "alternates": []
+   },
+   "depends": [
+    "z_carriage_right_screw_0 (SHCS-M3x5) clamps z_carriage_right"
+   ],
+   "score": 70.0,
+   "at": [
+    13.7,
+    35.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H2"
+   ],
+   "fit": "clearance for M3: 0.40 mm over the screw; the screw passes while the hole is above 3.05 mm",
+   "id": 6
+  },
+  {
+   "key": "H3.dia",
+   "kind": "hole_diameter",
+   "label": "Hole H3 diameter (M3 fastener)",
+   "nominal": 3.4,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 3.4,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws, two readings 90 degrees apart (record the mean; note ovality).",
+    "alternates": []
+   },
+   "depends": [
+    "z_carriage_right_screw_2 (SHCS-M3x5) clamps z_carriage_right"
+   ],
+   "score": 70.0,
+   "at": [
+    33.7,
+    35.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H3"
+   ],
+   "fit": "clearance for M3: 0.40 mm over the screw; the screw passes while the hole is above 3.05 mm",
+   "id": 7
+  },
+  {
+   "key": "H4.dia",
+   "kind": "hole_diameter",
+   "label": "Hole H4 diameter (M3 fastener)",
+   "nominal": 3.4,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 3.4,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws, two readings 90 degrees apart (record the mean; note ovality).",
+    "alternates": []
+   },
+   "depends": [
+    "z_carriage_right_screw_1 (SHCS-M3x5) clamps z_carriage_right"
+   ],
+   "score": 70.0,
+   "at": [
+    13.7,
+    15.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H4"
+   ],
+   "fit": "clearance for M3: 0.40 mm over the screw; the screw passes while the hole is above 3.05 mm",
+   "id": 8
+  },
+  {
+   "key": "H5.dia",
+   "kind": "hole_diameter",
+   "label": "Hole H5 diameter (M3 fastener)",
+   "nominal": 3.4,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 3.4,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws, two readings 90 degrees apart (record the mean; note ovality).",
+    "alternates": []
+   },
+   "depends": [
+    "z_carriage_right_screw_3 (SHCS-M3x5) clamps z_carriage_right"
+   ],
+   "score": 70.0,
+   "at": [
+    33.7,
+    15.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H5"
+   ],
+   "fit": "clearance for M3: 0.40 mm over the screw; the screw passes while the hole is above 3.05 mm",
+   "id": 9
+  },
+  {
+   "key": "H6.dia",
+   "kind": "hole_diameter",
+   "label": "Hole H6 diameter (M5 fastener)",
+   "nominal": 5.5,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 5.5,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws, two readings 90 degrees apart (record the mean; note ovality).",
+    "alternates": []
+   },
+   "depends": [
+    "carriage_plate_right_bolt_0 (SHCS-M5x8) clamps sq_right"
+   ],
+   "score": 70.0,
+   "at": [
+    87.4,
+    9.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H6"
+   ],
+   "fit": "clearance for M5: 0.50 mm over the screw; the screw passes while the hole is above 5.05 mm",
+   "id": 10
+  },
+  {
+   "key": "H1.x",
+   "kind": "hole_position",
+   "label": "Hole H1 centre X from datum C (x = 0 edge)",
+   "nominal": 87.4,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 87.4,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "carriage_plate_right_bolt_1 (SHCS-M5x8) clamps sq_right"
+   ],
+   "score": 60.0,
+   "at": [
+    87.4,
+    41.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H1"
+   ],
+   "id": 11
+  },
+  {
+   "key": "H2.x",
+   "kind": "hole_position",
+   "label": "Hole H2 centre X from datum C (x = 0 edge)",
+   "nominal": 13.7,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 13.7,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "z_carriage_right_screw_0 (SHCS-M3x5) clamps z_carriage_right"
+   ],
+   "score": 60.0,
+   "at": [
+    13.7,
+    35.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H2"
+   ],
+   "id": 12
+  },
+  {
+   "key": "H3.x",
+   "kind": "hole_position",
+   "label": "Hole H3 centre X from datum C (x = 0 edge)",
+   "nominal": 33.7,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 33.7,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "z_carriage_right_screw_2 (SHCS-M3x5) clamps z_carriage_right"
+   ],
+   "score": 60.0,
+   "at": [
+    33.7,
+    35.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H3"
+   ],
+   "id": 13
+  },
+  {
+   "key": "H4.x",
+   "kind": "hole_position",
+   "label": "Hole H4 centre X from datum C (x = 0 edge)",
+   "nominal": 13.7,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 13.7,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "z_carriage_right_screw_1 (SHCS-M3x5) clamps z_carriage_right"
+   ],
+   "score": 60.0,
+   "at": [
+    13.7,
+    15.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H4"
+   ],
+   "id": 14
+  },
+  {
+   "key": "H5.x",
+   "kind": "hole_position",
+   "label": "Hole H5 centre X from datum C (x = 0 edge)",
+   "nominal": 33.7,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 33.7,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "z_carriage_right_screw_3 (SHCS-M3x5) clamps z_carriage_right"
+   ],
+   "score": 60.0,
+   "at": [
+    33.7,
+    15.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H5"
+   ],
+   "id": 15
+  },
+  {
+   "key": "H6.x",
+   "kind": "hole_position",
+   "label": "Hole H6 centre X from datum C (x = 0 edge)",
+   "nominal": 87.4,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 87.4,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "carriage_plate_right_bolt_0 (SHCS-M5x8) clamps sq_right"
+   ],
+   "score": 60.0,
+   "at": [
+    87.4,
+    9.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H6"
+   ],
+   "id": 16
+  },
+  {
+   "key": "H1.y",
+   "kind": "hole_position",
+   "label": "Hole H1 centre Y from datum B (y = 0 edge)",
+   "nominal": 41.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 41.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "carriage_plate_right_bolt_1 (SHCS-M5x8) clamps sq_right"
+   ],
+   "score": 59.5,
+   "at": [
+    87.4,
+    41.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H1"
+   ],
+   "id": 17
+  },
+  {
+   "key": "H2.y",
+   "kind": "hole_position",
+   "label": "Hole H2 centre Y from datum B (y = 0 edge)",
+   "nominal": 35.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 35.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "z_carriage_right_screw_0 (SHCS-M3x5) clamps z_carriage_right"
+   ],
+   "score": 59.5,
+   "at": [
+    13.7,
+    35.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H2"
+   ],
+   "id": 18
+  },
+  {
+   "key": "H3.y",
+   "kind": "hole_position",
+   "label": "Hole H3 centre Y from datum B (y = 0 edge)",
+   "nominal": 35.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 35.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "z_carriage_right_screw_2 (SHCS-M3x5) clamps z_carriage_right"
+   ],
+   "score": 59.5,
+   "at": [
+    33.7,
+    35.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H3"
+   ],
+   "id": 19
+  },
+  {
+   "key": "H4.y",
+   "kind": "hole_position",
+   "label": "Hole H4 centre Y from datum B (y = 0 edge)",
+   "nominal": 15.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 15.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "z_carriage_right_screw_1 (SHCS-M3x5) clamps z_carriage_right"
+   ],
+   "score": 59.5,
+   "at": [
+    13.7,
+    15.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H4"
+   ],
+   "id": 20
+  },
+  {
+   "key": "H5.y",
+   "kind": "hole_position",
+   "label": "Hole H5 centre Y from datum B (y = 0 edge)",
+   "nominal": 15.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 15.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "z_carriage_right_screw_3 (SHCS-M3x5) clamps z_carriage_right"
+   ],
+   "score": 59.5,
+   "at": [
+    33.7,
+    15.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H5"
+   ],
+   "id": 21
+  },
+  {
+   "key": "H6.y",
+   "kind": "hole_position",
+   "label": "Hole H6 centre Y from datum B (y = 0 edge)",
+   "nominal": 9.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 9.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "carriage_plate_right_bolt_0 (SHCS-M5x8) clamps sq_right"
+   ],
+   "score": 59.5,
+   "at": [
+    87.4,
+    9.0,
+    0.8
+   ],
+   "view": "plan",
+   "features": [
+    "H6"
+   ],
+   "id": 22
+  },
+  {
+   "key": "overall.X",
+   "kind": "overall",
+   "label": "Overall size along X",
+   "nominal": 97.4,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 97.4,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: extent of the registered outline.",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 50.0,
+   "at": [
+    48.7,
+    0.0,
+    0.8
+   ],
+   "view": "plan",
+   "id": 23
+  },
+  {
+   "key": "overall.Y",
+   "kind": "overall",
+   "label": "Overall size along Y",
+   "nominal": 50.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al6061.1.600mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALU6061-063 6061 T6 Aluminum 0.063: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 50.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: extent of the registered outline.",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 49.0,
+   "at": [
+    0.0,
+    25.0,
+    0.8
+   ],
+   "view": "plan",
+   "id": 24
+  },
+  {
+   "key": "flatness",
+   "kind": "flatness",
+   "label": "Flatness (largest gap under a corner with the opposite corner pressed down)",
+   "nominal": 0.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.2,
+    "unit": "mm",
+    "published": false,
+    "source": "mechloop class value (tolerance/process.py sheet flat, 2 standard deviations); SendCutSend publishes none for this"
+   },
+   "predicted": {
+    "value": 0.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "feeler",
+    "how": "Lay the part on the scanner glass (or a known-flat surface), press lightly at each corner in turn and slide feeler leaves under the opposite corner; record the largest leaf that enters.",
+    "alternates": []
+   },
+   "depends": [
+    "general"
+   ],
+   "score": 45.0,
+   "at": [
+    48.7,
+    25.0,
+    0.8
+   ],
+   "view": "plan",
+   "id": 25
+  },
+  {
+   "key": "thickness",
+   "kind": "thickness",
+   "label": "Stock thickness",
+   "nominal": 1.6,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.1,
+    "unit": "mm",
+    "published": false,
+    "source": "typical stock thickness tolerance (not a shop figure: the shop does not cut it)"
+   },
+   "predicted": {
+    "value": 1.6,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers outside jaws (micrometer if available) at three places away from holes and bends; record the mean.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 20.0,
+   "at": [
+    87.66,
+    25.0,
+    0.0
+   ],
+   "view": "plan",
+   "id": 26
+  }
+ ],
+ "dimensions_not_listed": 0,
+ "scanner": {
+  "suitable": true,
+  "note": "Flat part: scan it on the glass with the calibration target (mechloop.inspect.scan); the scan measures every hole, the outline and overall size against the DXF."
+ },
+ "drawing": "printer_v12.carriage_plate_right.svg"
+}

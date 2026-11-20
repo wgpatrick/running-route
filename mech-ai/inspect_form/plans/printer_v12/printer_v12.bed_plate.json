@@ -1,0 +1,1018 @@
+{
+ "schema": "mechloop.inspection_plan/1",
+ "part": "bed_plate",
+ "part_id": "printer_v12.bed_plate",
+ "revision": "printer_v12",
+ "generated": "2026-11-20T20:16:29",
+ "process": "sheet",
+ "form": "flat",
+ "material": "al_mic6",
+ "thickness_mm": 6.35,
+ "shop": "sendcutsend",
+ "shop_name": "SendCutSend",
+ "source": {
+  "design": "designs/printer_v12.py",
+  "component": "bed_plate"
+ },
+ "dxf": null,
+ "frame": {
+  "note": "drawing frame: origin at the part's bounding-box corner; Z = sheet normal (flat) or the smallest extent; X the longer of the other two. Datum C = the x = 0 edge, B = the y = 0 edge, A = the z = 0 face.",
+  "R_world_to_local": [
+   [
+    1.0,
+    0.0,
+    -0.0
+   ],
+   [
+    -0.0,
+    1.0,
+    0.0
+   ],
+   [
+    0.0,
+    0.0,
+    1.0
+   ]
+  ],
+  "offset": [
+   -135.5,
+   -115.5,
+   185.35999999999996
+  ]
+ },
+ "size_mm": [
+  240.0,
+  240.0,
+  6.349999999999994
+ ],
+ "tolerances": {
+  "cut": {
+   "pm": 0.127,
+   "unit": "mm",
+   "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al_mic6.6.350mm)",
+   "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALUMIC6-250 MIC6 Cast Aluminum Plate 0.250: cutting_specs.cut_tolerance = \"0.005\"",
+   "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+   "published": true
+  },
+  "hole": {
+   "pm": 0.127,
+   "unit": "mm",
+   "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al_mic6.6.350mm)",
+   "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALUMIC6-250 MIC6 Cast Aluminum Plate 0.250: cutting_specs.cut_tolerance = \"0.005\"",
+   "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+   "published": true
+  },
+  "bend_edge": {
+   "pm": 0.381,
+   "unit": "mm",
+   "source": "SendCutSend published (sendcutsend.bend.tolerance_edge)",
+   "quote": "Bend-to-edge tolerance: +/- 0.015\u2033 (each additional bend adds at least 0.015\u2033)",
+   "url": "https://sendcutsend.com/services/cnc-bending/",
+   "published": true
+  },
+  "bend_angle_deg": {
+   "pm": 1.0,
+   "unit": "deg",
+   "source": "SendCutSend published (sendcutsend.bend.tolerance_angle)",
+   "quote": "Bends up to 24\u2033: +/- 1\u00b0",
+   "url": "https://sendcutsend.com/services/cnc-bending/",
+   "published": true
+  },
+  "flat": {
+   "pm": 0.2,
+   "unit": "mm",
+   "published": false,
+   "source": "mechloop class value (tolerance/process.py sheet flat, 2 standard deviations); SendCutSend publishes none for this"
+  },
+  "general": {
+   "pm": 0.127,
+   "unit": "mm",
+   "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al_mic6.6.350mm)",
+   "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALUMIC6-250 MIC6 Cast Aluminum Plate 0.250: cutting_specs.cut_tolerance = \"0.005\"",
+   "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+   "published": true
+  }
+ },
+ "holes": [
+  {
+   "id": "H2",
+   "center": [
+    49.5,
+    8.0,
+    2.0600000000000023
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "d": 4.5,
+   "round": true,
+   "through": true,
+   "interfaces": [
+    {
+     "kind": "fastener",
+     "name": "bed_stud_0",
+     "sku": "FHCS-M4x40",
+     "size": "M4",
+     "d": 4.0,
+     "mates": [
+      "bed_thumb_0",
+      "z_deck"
+     ]
+    }
+   ],
+   "edge_web": null,
+   "to_bend": []
+  },
+  {
+   "id": "H3",
+   "center": [
+    221.5,
+    8.0,
+    2.0600000000000023
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "d": 4.5,
+   "round": true,
+   "through": true,
+   "interfaces": [
+    {
+     "kind": "fastener",
+     "name": "bed_stud_1",
+     "sku": "FHCS-M4x40",
+     "size": "M4",
+     "d": 4.0,
+     "mates": [
+      "bed_thumb_1",
+      "z_deck"
+     ]
+    }
+   ],
+   "edge_web": null,
+   "to_bend": []
+  },
+  {
+   "id": "H1",
+   "center": [
+    120.0,
+    232.0,
+    2.0600000000000023
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "d": 4.5,
+   "round": true,
+   "through": true,
+   "interfaces": [
+    {
+     "kind": "fastener",
+     "name": "bed_stud_2",
+     "sku": "FHCS-M4x40",
+     "size": "M4",
+     "d": 4.0,
+     "mates": [
+      "bed_thumb_2",
+      "z_deck"
+     ]
+    }
+   ],
+   "edge_web": null,
+   "to_bend": []
+  },
+  {
+   "id": "C5",
+   "center": [
+    49.5,
+    8.0,
+    3.1700000000000443
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "d": 8.957,
+   "round": false,
+   "through": true,
+   "interfaces": [],
+   "edge_web": 3.52,
+   "to_bend": []
+  },
+  {
+   "id": "C6",
+   "center": [
+    221.5,
+    8.0,
+    3.1700000000000443
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "d": 8.957,
+   "round": false,
+   "through": true,
+   "interfaces": [],
+   "edge_web": 3.52,
+   "to_bend": []
+  },
+  {
+   "id": "C4",
+   "center": [
+    120.0,
+    232.0,
+    3.1700000000000443
+   ],
+   "axis": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "d": 8.957,
+   "round": false,
+   "through": true,
+   "interfaces": [],
+   "edge_web": 3.52,
+   "to_bend": []
+  }
+ ],
+ "bends": [],
+ "predictions": [
+  {
+   "code": "secondary_op_countersink",
+   "severity": "warning",
+   "rule": "sheet.countersink_min_thickness_mm",
+   "finding": "bed_plate: 3 countersink(s): a second operation after cutting (model plain through holes in the cut file)."
+  },
+  {
+   "code": "hole_too_close_to_edge",
+   "severity": "warning",
+   "rule": "sheet.hole_to_edge_t_ratio",
+   "finding": "bed_plate: 3 hole(s) with less than 6.35 mm of material to the edge (least 3.52 mm at [-86.0, -107.5, 188.53]): the web overheats and distorts, and tears if the part is bent or loaded."
+  }
+ ],
+ "dimensions": [
+  {
+   "key": "H1-H2.pitch",
+   "kind": "hole_pitch",
+   "label": "Pitch H1 to H2 (pattern for z_deck)",
+   "nominal": 234.8324,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al_mic6.6.350mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALUMIC6-250 MIC6 Cast Aluminum Plate 0.250: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 234.8324,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: centre-to-centre from the fitted circles (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "screws of z_deck pass through both holes: the pattern must match z_deck's"
+   ],
+   "score": 90.0,
+   "at": [
+    84.75,
+    120.0,
+    2.06
+   ],
+   "view": "plan",
+   "features": [
+    "H1",
+    "H2"
+   ],
+   "id": 1
+  },
+  {
+   "key": "H2-H3.pitch",
+   "kind": "hole_pitch",
+   "label": "Pitch H2 to H3 (pattern for z_deck)",
+   "nominal": 172.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al_mic6.6.350mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALUMIC6-250 MIC6 Cast Aluminum Plate 0.250: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 172.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: centre-to-centre from the fitted circles (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "screws of z_deck pass through both holes: the pattern must match z_deck's"
+   ],
+   "score": 90.0,
+   "at": [
+    135.5,
+    8.0,
+    2.06
+   ],
+   "view": "plan",
+   "features": [
+    "H2",
+    "H3"
+   ],
+   "id": 2
+  },
+  {
+   "key": "H1.dia",
+   "kind": "hole_diameter",
+   "label": "Hole H1 diameter (M4 fastener)",
+   "nominal": 4.5,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al_mic6.6.350mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALUMIC6-250 MIC6 Cast Aluminum Plate 0.250: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 4.5,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "hole_too_close_to_edge",
+      "severity": "warning",
+      "rule": "sheet.hole_to_edge_t_ratio",
+      "finding": "bed_plate: 3 hole(s) with less than 6.35 mm of material to the edge (least 3.52 mm at [-86.0, -107.5, 188.53]): the web overheats and distorts, and tears if the part is bent or loaded."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws, two readings 90 degrees apart (record the mean; note ovality).",
+    "alternates": []
+   },
+   "depends": [
+    "bed_stud_2 (FHCS-M4x40) clamps bed_thumb_2, z_deck"
+   ],
+   "score": 85.0,
+   "at": [
+    120.0,
+    232.0,
+    2.06
+   ],
+   "view": "plan",
+   "features": [
+    "H1"
+   ],
+   "fit": "clearance for M4: 0.50 mm over the screw; the screw passes while the hole is above 4.05 mm",
+   "id": 3
+  },
+  {
+   "key": "H2.dia",
+   "kind": "hole_diameter",
+   "label": "Hole H2 diameter (M4 fastener)",
+   "nominal": 4.5,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al_mic6.6.350mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALUMIC6-250 MIC6 Cast Aluminum Plate 0.250: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 4.5,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "hole_too_close_to_edge",
+      "severity": "warning",
+      "rule": "sheet.hole_to_edge_t_ratio",
+      "finding": "bed_plate: 3 hole(s) with less than 6.35 mm of material to the edge (least 3.52 mm at [-86.0, -107.5, 188.53]): the web overheats and distorts, and tears if the part is bent or loaded."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws, two readings 90 degrees apart (record the mean; note ovality).",
+    "alternates": []
+   },
+   "depends": [
+    "bed_stud_0 (FHCS-M4x40) clamps bed_thumb_0, z_deck"
+   ],
+   "score": 85.0,
+   "at": [
+    49.5,
+    8.0,
+    2.06
+   ],
+   "view": "plan",
+   "features": [
+    "H2"
+   ],
+   "fit": "clearance for M4: 0.50 mm over the screw; the screw passes while the hole is above 4.05 mm",
+   "id": 4
+  },
+  {
+   "key": "H3.dia",
+   "kind": "hole_diameter",
+   "label": "Hole H3 diameter (M4 fastener)",
+   "nominal": 4.5,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al_mic6.6.350mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALUMIC6-250 MIC6 Cast Aluminum Plate 0.250: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 4.5,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "hole_too_close_to_edge",
+      "severity": "warning",
+      "rule": "sheet.hole_to_edge_t_ratio",
+      "finding": "bed_plate: 3 hole(s) with less than 6.35 mm of material to the edge (least 3.52 mm at [-86.0, -107.5, 188.53]): the web overheats and distorts, and tears if the part is bent or loaded."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers inside jaws, two readings 90 degrees apart (record the mean; note ovality).",
+    "alternates": []
+   },
+   "depends": [
+    "bed_stud_1 (FHCS-M4x40) clamps bed_thumb_1, z_deck"
+   ],
+   "score": 85.0,
+   "at": [
+    221.5,
+    8.0,
+    2.06
+   ],
+   "view": "plan",
+   "features": [
+    "H3"
+   ],
+   "fit": "clearance for M4: 0.50 mm over the screw; the screw passes while the hole is above 4.05 mm",
+   "id": 5
+  },
+  {
+   "key": "C4.width",
+   "kind": "slot_width",
+   "label": "Cut-out C4 width",
+   "nominal": 8.957,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al_mic6.6.350mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALUMIC6-250 MIC6 Cast Aluminum Plate 0.250: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 8.957,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "hole_too_close_to_edge",
+      "severity": "warning",
+      "rule": "sheet.hole_to_edge_t_ratio",
+      "finding": "bed_plate: 3 hole(s) with less than 6.35 mm of material to the edge (least 3.52 mm at [-86.0, -107.5, 188.53]): the web overheats and distorts, and tears if the part is bent or loaded."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: slot width from the outline; or a feeler gauge stack that just enters.",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 70.0,
+   "at": [
+    120.0,
+    232.0,
+    3.17
+   ],
+   "view": "plan",
+   "features": [
+    "C4"
+   ],
+   "id": 6
+  },
+  {
+   "key": "C5.width",
+   "kind": "slot_width",
+   "label": "Cut-out C5 width",
+   "nominal": 8.957,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al_mic6.6.350mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALUMIC6-250 MIC6 Cast Aluminum Plate 0.250: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 8.957,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "hole_too_close_to_edge",
+      "severity": "warning",
+      "rule": "sheet.hole_to_edge_t_ratio",
+      "finding": "bed_plate: 3 hole(s) with less than 6.35 mm of material to the edge (least 3.52 mm at [-86.0, -107.5, 188.53]): the web overheats and distorts, and tears if the part is bent or loaded."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: slot width from the outline; or a feeler gauge stack that just enters.",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 70.0,
+   "at": [
+    49.5,
+    8.0,
+    3.17
+   ],
+   "view": "plan",
+   "features": [
+    "C5"
+   ],
+   "id": 7
+  },
+  {
+   "key": "C6.width",
+   "kind": "slot_width",
+   "label": "Cut-out C6 width",
+   "nominal": 8.957,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al_mic6.6.350mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALUMIC6-250 MIC6 Cast Aluminum Plate 0.250: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 8.957,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": [
+     {
+      "code": "hole_too_close_to_edge",
+      "severity": "warning",
+      "rule": "sheet.hole_to_edge_t_ratio",
+      "finding": "bed_plate: 3 hole(s) with less than 6.35 mm of material to the edge (least 3.52 mm at [-86.0, -107.5, 188.53]): the web overheats and distorts, and tears if the part is bent or loaded."
+     }
+    ]
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: slot width from the outline; or a feeler gauge stack that just enters.",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 70.0,
+   "at": [
+    221.5,
+    8.0,
+    3.17
+   ],
+   "view": "plan",
+   "features": [
+    "C6"
+   ],
+   "id": 8
+  },
+  {
+   "key": "flatness",
+   "kind": "flatness",
+   "label": "Flatness (largest gap under a corner with the opposite corner pressed down)",
+   "nominal": 0.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.2,
+    "unit": "mm",
+    "published": false,
+    "source": "mechloop class value (tolerance/process.py sheet flat, 2 standard deviations); SendCutSend publishes none for this"
+   },
+   "predicted": {
+    "value": 0.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "feeler",
+    "how": "Lay the part on the scanner glass (or a known-flat surface), press lightly at each corner in turn and slide feeler leaves under the opposite corner; record the largest leaf that enters.",
+    "alternates": []
+   },
+   "depends": [
+    "mating face"
+   ],
+   "score": 65.0,
+   "at": [
+    120.0,
+    120.0,
+    3.175
+   ],
+   "view": "plan",
+   "id": 9
+  },
+  {
+   "key": "H1.x",
+   "kind": "hole_position",
+   "label": "Hole H1 centre X from datum C (x = 0 edge)",
+   "nominal": 120.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al_mic6.6.350mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALUMIC6-250 MIC6 Cast Aluminum Plate 0.250: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 120.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "bed_stud_2 (FHCS-M4x40) clamps bed_thumb_2, z_deck"
+   ],
+   "score": 60.0,
+   "at": [
+    120.0,
+    232.0,
+    2.06
+   ],
+   "view": "plan",
+   "features": [
+    "H1"
+   ],
+   "id": 10
+  },
+  {
+   "key": "H2.x",
+   "kind": "hole_position",
+   "label": "Hole H2 centre X from datum C (x = 0 edge)",
+   "nominal": 49.5,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al_mic6.6.350mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALUMIC6-250 MIC6 Cast Aluminum Plate 0.250: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 49.5,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "bed_stud_0 (FHCS-M4x40) clamps bed_thumb_0, z_deck"
+   ],
+   "score": 60.0,
+   "at": [
+    49.5,
+    8.0,
+    2.06
+   ],
+   "view": "plan",
+   "features": [
+    "H2"
+   ],
+   "id": 11
+  },
+  {
+   "key": "H3.x",
+   "kind": "hole_position",
+   "label": "Hole H3 centre X from datum C (x = 0 edge)",
+   "nominal": 221.5,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al_mic6.6.350mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALUMIC6-250 MIC6 Cast Aluminum Plate 0.250: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 221.5,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "bed_stud_1 (FHCS-M4x40) clamps bed_thumb_1, z_deck"
+   ],
+   "score": 60.0,
+   "at": [
+    221.5,
+    8.0,
+    2.06
+   ],
+   "view": "plan",
+   "features": [
+    "H3"
+   ],
+   "id": 12
+  },
+  {
+   "key": "H1.y",
+   "kind": "hole_position",
+   "label": "Hole H1 centre Y from datum B (y = 0 edge)",
+   "nominal": 232.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al_mic6.6.350mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALUMIC6-250 MIC6 Cast Aluminum Plate 0.250: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 232.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "bed_stud_2 (FHCS-M4x40) clamps bed_thumb_2, z_deck"
+   ],
+   "score": 59.5,
+   "at": [
+    120.0,
+    232.0,
+    2.06
+   ],
+   "view": "plan",
+   "features": [
+    "H1"
+   ],
+   "id": 13
+  },
+  {
+   "key": "H2.y",
+   "kind": "hole_position",
+   "label": "Hole H2 centre Y from datum B (y = 0 edge)",
+   "nominal": 8.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al_mic6.6.350mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALUMIC6-250 MIC6 Cast Aluminum Plate 0.250: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 8.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "bed_stud_0 (FHCS-M4x40) clamps bed_thumb_0, z_deck"
+   ],
+   "score": 59.5,
+   "at": [
+    49.5,
+    8.0,
+    2.06
+   ],
+   "view": "plan",
+   "features": [
+    "H2"
+   ],
+   "id": 14
+  },
+  {
+   "key": "H3.y",
+   "kind": "hole_position",
+   "label": "Hole H3 centre Y from datum B (y = 0 edge)",
+   "nominal": 8.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al_mic6.6.350mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALUMIC6-250 MIC6 Cast Aluminum Plate 0.250: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 8.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: hole centre against the registered outline (scan.py).",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [
+    "bed_stud_1 (FHCS-M4x40) clamps bed_thumb_1, z_deck"
+   ],
+   "score": 59.5,
+   "at": [
+    221.5,
+    8.0,
+    2.06
+   ],
+   "view": "plan",
+   "features": [
+    "H3"
+   ],
+   "id": 15
+  },
+  {
+   "key": "overall.X",
+   "kind": "overall",
+   "label": "Overall size along X",
+   "nominal": 240.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al_mic6.6.350mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALUMIC6-250 MIC6 Cast Aluminum Plate 0.250: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 240.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: extent of the registered outline.",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 50.0,
+   "at": [
+    120.0,
+    0.0,
+    3.175
+   ],
+   "view": "plan",
+   "id": 16
+  },
+  {
+   "key": "overall.Y",
+   "kind": "overall",
+   "label": "Overall size along Y",
+   "nominal": 240.0,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.127,
+    "unit": "mm",
+    "source": "SendCutSend published (sendcutsend.specs.cut_tolerance.al_mic6.6.350mm)",
+    "quote": "sendcutsend-specs.json (generated 2026-11-05T21:51:55.112063Z), ALUMIC6-250 MIC6 Cast Aluminum Plate 0.250: cutting_specs.cut_tolerance = \"0.005\"",
+    "url": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "published": true
+   },
+   "predicted": {
+    "value": 240.0,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "scanner",
+    "how": "Scanner: extent of the registered outline.",
+    "alternates": [
+     "calipers"
+    ]
+   },
+   "depends": [],
+   "score": 49.0,
+   "at": [
+    0.0,
+    120.0,
+    3.175
+   ],
+   "view": "plan",
+   "id": 17
+  },
+  {
+   "key": "thickness",
+   "kind": "thickness",
+   "label": "Stock thickness",
+   "nominal": 6.35,
+   "unit": "mm",
+   "tol": {
+    "pm": 0.1,
+    "unit": "mm",
+    "published": false,
+    "source": "typical stock thickness tolerance (not a shop figure: the shop does not cut it)"
+   },
+   "predicted": {
+    "value": 6.35,
+    "basis": "as modelled (no model predicts a departure)",
+    "findings": []
+   },
+   "method": {
+    "instrument": "calipers",
+    "how": "Calipers outside jaws (micrometer if available) at three places away from holes and bends; record the mean.",
+    "alternates": []
+   },
+   "depends": [],
+   "score": 20.0,
+   "at": [
+    216.0,
+    120.0,
+    0.0
+   ],
+   "view": "plan",
+   "id": 18
+  }
+ ],
+ "dimensions_not_listed": 0,
+ "scanner": {
+  "suitable": true,
+  "note": "Flat part: scan it on the glass with the calibration target (mechloop.inspect.scan); the scan measures every hole, the outline and overall size against the DXF."
+ },
+ "drawing": "printer_v12.bed_plate.svg"
+}

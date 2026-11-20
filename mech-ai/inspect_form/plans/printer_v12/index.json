@@ -1,0 +1,82 @@
+[
+ {
+  "part_id": "printer_v12.carriage_plate_left",
+  "json": "inspect_form/plans/printer_v12/printer_v12.carriage_plate_left.json",
+  "svg": "inspect_form/plans/printer_v12/printer_v12.carriage_plate_left.svg"
+ },
+ {
+  "part_id": "printer_v12.carriage_plate_right",
+  "json": "inspect_form/plans/printer_v12/printer_v12.carriage_plate_right.json",
+  "svg": "inspect_form/plans/printer_v12/printer_v12.carriage_plate_right.svg"
+ },
+ {
+  "part_id": "printer_v12.carriage_plate_rear",
+  "json": "inspect_form/plans/printer_v12/printer_v12.carriage_plate_rear.json",
+  "svg": "inspect_form/plans/printer_v12/printer_v12.carriage_plate_rear.svg"
+ },
+ {
+  "part_id": "printer_v12.z_deck",
+  "json": "inspect_form/plans/printer_v12/printer_v12.z_deck.json",
+  "svg": "inspect_form/plans/printer_v12/printer_v12.z_deck.svg"
+ },
+ {
+  "part_id": "printer_v12.nut_plate",
+  "json": "inspect_form/plans/printer_v12/printer_v12.nut_plate.json",
+  "svg": "inspect_form/plans/printer_v12/printer_v12.nut_plate.svg"
+ },
+ {
+  "part_id": "printer_v12.nut_keeper",
+  "json": "inspect_form/plans/printer_v12/printer_v12.nut_keeper.json",
+  "svg": "inspect_form/plans/printer_v12/printer_v12.nut_keeper.svg"
+ },
+ {
+  "part_id": "printer_v12.nut_plate_fl",
+  "json": "inspect_form/plans/printer_v12/printer_v12.nut_plate_fl.json",
+  "svg": "inspect_form/plans/printer_v12/printer_v12.nut_plate_fl.svg"
+ },
+ {
+  "part_id": "printer_v12.nut_keeper_fl",
+  "json": "inspect_form/plans/printer_v12/printer_v12.nut_keeper_fl.json",
+  "svg": "inspect_form/plans/printer_v12/printer_v12.nut_keeper_fl.svg"
+ },
+ {
+  "part_id": "printer_v12.nut_plate_fr",
+  "json": "inspect_form/plans/printer_v12/printer_v12.nut_plate_fr.json",
+  "svg": "inspect_form/plans/printer_v12/printer_v12.nut_plate_fr.svg"
+ },
+ {
+  "part_id": "printer_v12.nut_keeper_fr",
+  "json": "inspect_form/plans/printer_v12/printer_v12.nut_keeper_fr.json",
+  "svg": "inspect_form/plans/printer_v12/printer_v12.nut_keeper_fr.svg"
+ },
+ {
+  "part_id": "printer_v12.bed_plate",
+  "json": "inspect_form/plans/printer_v12/printer_v12.bed_plate.json",
+  "svg": "inspect_form/plans/printer_v12/printer_v12.bed_plate.svg"
+ },
+ {
+  "part_id": "printer_v12.z_motor_plate",
+  "json": "inspect_form/plans/printer_v12/printer_v12.z_motor_plate.json",
+  "svg": "inspect_form/plans/printer_v12/printer_v12.z_motor_plate.svg"
+ },
+ {
+  "part_id": "printer_v12.z_motor_plate_fl",
+  "json": "inspect_form/plans/printer_v12/printer_v12.z_motor_plate_fl.json",
+  "svg": "inspect_form/plans/printer_v12/printer_v12.z_motor_plate_fl.svg"
+ },
+ {
+  "part_id": "printer_v12.z_motor_plate_fr",
+  "json": "inspect_form/plans/printer_v12/printer_v12.z_motor_plate_fr.json",
+  "svg": "inspect_form/plans/printer_v12/printer_v12.z_motor_plate_fr.svg"
+ },
+ {
+  "part_id": "printer_v12.electronics_tray",
+  "json": "inspect_form/plans/printer_v12/printer_v12.electronics_tray.json",
+  "svg": "inspect_form/plans/printer_v12/printer_v12.electronics_tray.svg"
+ },
+ {
+  "part_id": "printer_v12.inlet_panel",
+  "json": "inspect_form/plans/printer_v12/printer_v12.inlet_panel.json",
+  "svg": "inspect_form/plans/printer_v12/printer_v12.inlet_panel.svg"
+ }
+]
