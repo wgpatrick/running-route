@@ -1,7 +1,7 @@
 {
  "folder_id": "1ZtlzfkmX-Yz92soEepnPbyNiPK0uQ43v",
  "folder": "mechloop handoff/results/REQ-001-supplier-cad-batch-3",
- "last_checked": "2026-11-20T07:20:00Z",
+ "last_checked": "2026-11-20T14:20:00Z",
  "result_status": "partial (Misumi delivered and staged in instinct_REQ-001b; PEM S-M3-0 not fulfilled, owner decision pending)",
  "files": {
   "1vwRHKJkIJW3gaI138gcNPCUbF5RF8TUX": {
@@ -820,15 +820,15 @@
   },
   "1W3K9YtzrWAnS2H6KbsBgHhr6L_M__EcD": {
    "folder": "mechloop handoff/results/REQ-008-priority-queue",
-   "last_checked": "2026-11-20T07:20:00Z",
+   "last_checked": "2026-11-20T14:20:00Z",
    "staged_in": "vendor_cad/staging/instinct_REQ-008",
-   "result_status": "partial (06:30Z: items 1, 3, 4, 12 resolved; REQ-008b item 3 DD11.0124.1111 delivered, items 4/5 no action)",
+   "result_status": "partial (07:22Z: items 1, 2, 3, 12, 16 delivered; item 14 pulley delivered, idler not available; item 4 blocked)",
    "files": {
     "1sj3kBNRTE9p_aGhdKOtaj0Fow2kYnAf-": {
      "title": "RESULT.md",
-     "modifiedTime": "2026-11-20T06:30:10.483Z",
-     "size": 5502,
-     "note": "revised 06:30Z (batch 8, adds REQ-008b section); staged copy overwritten, sha256 8ed3ec95...; 05:33Z was 150fc3d2..., 03:29Z a307c60b..."
+     "modifiedTime": "2026-11-20T07:22:27.287Z",
+     "size": 7516,
+     "note": "revised 07:22Z (batch 10: items 2/14/16 updated); staged copy overwritten, sha256 95a01a7e...; 06:30Z was 8ed3ec95..., 05:33Z 150fc3d2..., 03:29Z a307c60b..."
     },
     "1BqZSA4BMbvxczYMxDruGG7CZOZOK7Gmh": {
      "title": "DD11.0114.1111__cad.step",
@@ -895,6 +895,24 @@
      "modifiedTime": "2026-11-20T06:29:34.547Z",
      "size": 450651,
      "note": "not copied: same sha256 (1db97cff...) as vendor_docs/INLET-C14-SW-FUSE-T8A_datasheet.pdf"
+    },
+    "1Bv5ga8Kff1OdYiA7WFj4PDWUNfX7fK-f": {
+     "title": "GPA20GT2090-A-H5__cad.step",
+     "modifiedTime": "2026-11-20T07:19:08.652Z",
+     "size": 242830,
+     "note": "staged as instinct_REQ-008/Misumi_GPA20GT2090-A-H5_2GT-20T-9mm_H5.step (3 valid solids, dims match catalogue, H bore no set screw)"
+    },
+    "1uljkb1-LPG0Vcl1MSgSxiyBE2d9WvqQx": {
+     "title": "GPA20GT2090-A-H5__drawing.pdf",
+     "modifiedTime": "2026-11-20T07:19:08.757Z",
+     "size": 491898,
+     "note": "vendor_docs/Misumi_GPA_GT2090_2GT_high-torque_pulley_2019US_p1340.pdf (series catalogue page, not per-part)"
+    },
+    "1lom8oZFer03VEb6A_j-FykioO2TrJcNh": {
+     "title": "TMC2209__datasheet.pdf",
+     "modifiedTime": "2026-11-20T07:22:22.646Z",
+     "size": 1629829,
+     "note": "rev 1.08 (older than owner-supplied vendor_docs/ADI_TMC2209_datasheet_rev1.09.pdf); kept as vendor_docs/ADI_TMC2209_datasheet_rev1.08_digikey-copy_OLDER.pdf"
     }
    }
   },
@@ -963,9 +981,23 @@
     }
    },
    "last_checked": "2026-11-20T07:20:00Z"
+  },
+  "1RSn4een7VDFnwBik_X16-DVTen4bA-v1": {
+   "folder": "mechloop handoff/results/REQ-012-pcbway-rp03-2.5mm",
+   "last_checked": "2026-11-20T14:20:00Z",
+   "staged_in": "vendor_cad/staging/instinct_REQ-012",
+   "result_status": "partial (RP03 2.5 mm re-uploaded to C-CN24W734350A, \"Being reviewed\"; DFM result and qty-10 price pending)",
+   "files": {
+    "14fsBt-s7I1wpItpQDbqzgd86_Y5wGVHX": {
+     "title": "RESULT.md",
+     "modifiedTime": "2026-11-20T07:52:49.849Z",
+     "size": 2039,
+     "note": "staged as instinct_REQ-012/RESULT_instinct_REQ-012_2026-11-20.md, sha256 55227ede..."
+    }
+   }
   }
  },
- "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..008 (REQ-005..008 added 2026-11-20 batch 5). Batch 6 (2026-11-20 05:20Z): 7 new files + RESULT.md revision in REQ-005; nothing else new (154 files, 2 pages). Batch 7 (2026-11-20 06:20Z): 9 new files + RESULT.md revision in REQ-008; nothing else new (169 items incl. 8 folders, 3 pages). Batch 8 (2026-11-20 06:45Z): 2 new files + RESULT.md revision in REQ-008; new REQ-009 folder (RESULT.md only); new REQ-010 folder empty. Search: created or modified after 05:30Z under results, plus listing of the new folders. Batch 9 (2026-11-20 07:20Z): 5 new files in REQ-010; new NOTE-pcbway-review-status folder (RESULT.md only). Search: created or modified after 06:30Z under results (6 files + 2 folders).",
+ "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..008 (REQ-005..008 added 2026-11-20 batch 5). Batch 6 (2026-11-20 05:20Z): 7 new files + RESULT.md revision in REQ-005; nothing else new (154 files, 2 pages). Batch 7 (2026-11-20 06:20Z): 9 new files + RESULT.md revision in REQ-008; nothing else new (169 items incl. 8 folders, 3 pages). Batch 8 (2026-11-20 06:45Z): 2 new files + RESULT.md revision in REQ-008; new REQ-009 folder (RESULT.md only); new REQ-010 folder empty. Search: created or modified after 05:30Z under results, plus listing of the new folders. Batch 9 (2026-11-20 07:20Z): 5 new files in REQ-010; new NOTE-pcbway-review-status folder (RESULT.md only). Search: created or modified after 06:30Z under results (6 files + 2 folders). Batch 10 (2026-11-20 14:20Z): 3 new files + RESULT.md revision (07:22Z) in REQ-008; new REQ-012 folder (RESULT.md only). Only the five named file ids were fetched; no full search of results this batch.",
  "last_checked_all": "2026-11-20T07:20:00Z",
  "_note_not_downloaded": "Files with 'NOT downloaded' notes are recorded as seen but were never fetched; retry them if a larger download route exists."
 }
