@@ -28,7 +28,7 @@ from pathlib import Path
 
 from .codehash import code_hash
 from .deps import ALL_FIELDS, DEPS
-from .fingerprint import FP_VERSION, Fingerprints, design_field_names, digest, is_unstable, value_fp
+from .fingerprint import FP_VERSION, Fingerprints, digest, is_unstable, value_fp
 
 KEEP_PER_VERIFIER = 4       # newest entries kept per verifier / per case directory
 
@@ -125,7 +125,8 @@ def verifier_key(name: str, fps: Fingerprints, design, upstream_metrics: dict | 
     if d.granularity == "always":
         return None, "always re-run (cheap; reads the results of the others)"
     parts = fps.parts_digest() if d.parts == "all" else "no-parts"
-    fields = design_field_names(design) if d.fields == ALL_FIELDS else list(d.fields)
+    # "all fields" is the set fingerprinted at the start of the run (not whatever the design holds by now)
+    fields = list(fps.fields) if d.fields == ALL_FIELDS else list(d.fields)
     fd = fps.fields_digest(fields)
     up = value_fp({u: (upstream_metrics or {}).get(u) for u in d.upstream}) if d.upstream else "no-upstream"
     for what, v in (("parts", parts), ("fields", fd), ("upstream metrics", up)):

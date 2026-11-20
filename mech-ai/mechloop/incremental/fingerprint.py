@@ -121,7 +121,8 @@ def _callable(fn, depth: int, seen: set):
             return ["callable_obj", type(fn).__qualname__, canon(vars(fn), depth + 1, seen)]
         raise Unstable(f"callable without code: {fn!r}")
     mod = getattr(fn, "__module__", "") or ""
-    out = ["fn", mod, fn.__qualname__, _code(co, depth, seen),
+    # a design script is loaded as module "design_<file stem>": the file's name is not part of what the function does
+    out = ["fn", "design" if mod.startswith("design_") else mod, fn.__qualname__, _code(co, depth, seen),
            canon(fn.__defaults__, depth + 1, seen), canon(fn.__kwdefaults__, depth + 1, seen)]
     if fn.__closure__:
         cells = []
