@@ -1,0 +1,92 @@
+{
+ "folder_id": "1ZtlzfkmX-Yz92soEepnPbyNiPK0uQ43v",
+ "folder": "mechloop handoff/results/REQ-001-supplier-cad-batch-3",
+ "last_checked": "2026-11-20T00:41:09Z",
+ "result_status": "partial (Misumi pending, PEM blocked)",
+ "files": {
+  "1qGicnMheu4PMkvryH7cUO5eCvComTrGy": {
+   "title": "RESULT.md",
+   "modifiedTime": "2026-11-20T00:31:30.187Z"
+  },
+  "1vwRHKJkIJW3gaI138gcNPCUbF5RF8TUX": {
+   "title": "91290A139.pdf",
+   "modifiedTime": "2026-11-20T00:30:24.080Z"
+  },
+  "1oRw_xoeLNExLJWHpt3N2pwlDrHDTUZ0e": {
+   "title": "91106A126.pdf",
+   "modifiedTime": "2026-11-20T00:30:21.324Z"
+  },
+  "1UtjWHO5Svm8cyewfmhkSzqgqjxEXOZVo": {
+   "title": "93925A260.pdf",
+   "modifiedTime": "2026-11-20T00:30:34.567Z"
+  },
+  "1q1oxfj24Qw-IL_EfEzz5P_Vv-CXic2fi": {
+   "title": "92137A412.pdf",
+   "modifiedTime": "2026-11-20T00:30:29.252Z"
+  },
+  "1o5qg9tzeWA5YmyrjvBn1pdOzuzwzp5xQ": {
+   "title": "E2B-M12KS04-WP-C1_datasheet.pdf",
+   "modifiedTime": "2026-11-20T00:30:42.543Z"
+  },
+  "1-cu9ybKIQxuNUATLI3g1taMCJol1zDGZ": {
+   "title": "E2B-M12KS04-WP-C1_STEP.zip",
+   "modifiedTime": "2026-11-20T00:30:38.753Z"
+  },
+  "1GDooS-jXc2BIrCE2abTg6Pql7LAiylSG": {
+   "title": "93925A420.pdf",
+   "modifiedTime": "2026-11-20T00:30:37.524Z"
+  },
+  "1GaEuFC5tAxugq5rTVSLFUGEQ0UXx4dLv": {
+   "title": "93925A420.step",
+   "modifiedTime": "2026-11-20T00:30:35.736Z"
+  },
+  "1dfWOk-qjUFVDHH99G6f3KVdWqu69jyvM": {
+   "title": "93925A260.step",
+   "modifiedTime": "2026-11-20T00:30:33.322Z"
+  },
+  "149gmDdCZXN3iNVZ_5sNAGaCX0chppqI1": {
+   "title": "92137A414.pdf",
+   "modifiedTime": "2026-11-20T00:30:31.802Z"
+  },
+  "14r32ADND5MWVy3gpO3Pvxahjqz2_Y-2w": {
+   "title": "92137A414.step",
+   "modifiedTime": "2026-11-20T00:30:30.708Z"
+  },
+  "1tZGI9TgU7qzTVw_8TfhumQ8yiyppb08M": {
+   "title": "92137A412.step",
+   "modifiedTime": "2026-11-20T00:30:27.894Z"
+  },
+  "1lsStF5pR_zfTeAqw9-eSSNrUgspPkVAO": {
+   "title": "91290A221.pdf",
+   "modifiedTime": "2026-11-20T00:30:26.483Z"
+  },
+  "1Qkb-0nMYxk14QJHV8hMezGDD575xcMnw": {
+   "title": "91290A221.step",
+   "modifiedTime": "2026-11-20T00:30:25.258Z"
+  },
+  "1q0I_u8i0dHrar0XwbDh2Vb5HaZdy-5Q8": {
+   "title": "91290A139.step",
+   "modifiedTime": "2026-11-20T00:30:22.716Z"
+  },
+  "1BE4-rcihV7Dg9YaGoxtdN_UAWjNA-CO7": {
+   "title": "91106A126.step",
+   "modifiedTime": "2026-11-20T00:30:20.111Z"
+  },
+  "1VOqzh6BxWnPp9dPDpXzqA731xyz9cBBL": {
+   "title": "91100A130.pdf",
+   "modifiedTime": "2026-11-20T00:30:18.257Z"
+  },
+  "1HZb0cVhKeAjXsZGuYojrsmVd4mrNLpsN": {
+   "title": "91100A130.step",
+   "modifiedTime": "2026-11-20T00:30:17.107Z"
+  },
+  "1AB46A9AuD90OUj9wxhMo_df1PWUlRyVh": {
+   "title": "91100A120.pdf",
+   "modifiedTime": "2026-11-20T00:30:15.867Z"
+  },
+  "11IQYSh9vKKSjzajHqHI8yjZFP_cRuQ0t": {
+   "title": "91100A120.step",
+   "modifiedTime": "2026-11-20T00:30:14.325Z"
+  }
+ }
+}
