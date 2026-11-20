@@ -998,9 +998,9 @@
   },
   "15LKAJDQN7rX38zy_DSCVmA9h3BzBjwIv": {
    "folder": "mechloop handoff/results/REQ-013-build1-queue-refresh",
-   "last_checked": "2026-11-20T17:15:00Z",
+   "last_checked": "2026-11-20T18:15:00Z",
    "staged_in": "vendor_cad/staging/instinct_REQ-013",
-   "result_status": "partial (17:10Z: P1 1,2,4,5,6,7 done per Instinct, item 3 facts only; item 8 researched but no US-stock 24V heater / one stocked PEI; 9 datasheet only, STEPs held on TraceParts; 10 datasheets delivered, LED/channel price not captured; 11 needs address; 12 unavailable; REQ-013b: GPA32 A-P5 + McMaster 3684N13 delivered)",
+   "result_status": "partial (17:58Z: LED DigiKey price/stock captured; KLUS channel price still blocked; PEI 2nd candidate West3D 235x235; Molex/Phoenix STEP delivered under REQ-015; JST held; 11 awaits address; 12 held; no REQ-016/belt-seller/RP04 content)",
    "files": {
     "11zPs7IGKw2-44Di7ERwitIclD__sz6sQ": {
      "title": "RESULT.md",
@@ -1178,6 +1178,12 @@
      "title": "24V-COB-4000K__datasheet.pdf",
      "size": 312523,
      "note": "byte-identical to vendor_docs/InspiredLED_24V-COB_flex_spec.pdf (2b0101b9...); not copied"
+    },
+    "1FMLBrT-r_GLRrJgE0m_rtRU8F2o5_2RT": {
+     "title": "RESULT.md",
+     "modifiedTime": "2026-11-20T17:58Z",
+     "size": 17305,
+     "note": "new file id; staged as instinct_REQ-013/RESULT_instinct_REQ-013_2026-11-20_1758Z.md, sha256 51d20fc2...; modifiedTime per caller (17:58Z), not read from Drive metadata"
     }
    }
   },
@@ -1212,9 +1218,32 @@
      "note": "new file id; staged as instinct_REQ-014/RESULT_instinct_REQ-014_2026-11-20_1556Z.md, sha256 69347ed5...; earlier id 1o3MX... not re-checked (folder not listed in batch 12)"
     }
    }
+  },
+  "1VCBDeYJwDDkOHQIvsY4zNF4tm7ejUW7f": {
+   "files": {
+    "1TxwVop47Q3ucqMQbzZ-kYx1lG6qQXMLD": {
+     "title": "39-01-2020__cad.step",
+     "size": 108730,
+     "note": "staged as instinct_REQ-015/Molex_39-01-2020.step, sha256 014d90a1...; 1 valid solid 5.4x19.6x14.4, simplified envelope (no terminal cavities); CADENAS order 22026112018464072700088d0b6156e"
+    },
+    "1x5W4YSOZ2vpmiPrTn1tOagMVOJ9drbMc": {
+     "title": "0801733__cad.step",
+     "size": 521901,
+     "note": "staged as instinct_REQ-015/Phoenix_0801733_NS35-7.5-PERF-2000.step, sha256 41c4b189...; 1 valid solid 2000x35x7.5, 79 slots 15x6.2 @25, 1.0 thick; CADENAS order 22026112018380171964729d0b6156e"
+    },
+    "1Y8-NoBsgMS3-yeS80KYyyU-RJ4gckQij": {
+     "title": "RESULT.md",
+     "size": 3175,
+     "note": "staged as instinct_REQ-015/RESULT_instinct_REQ-015_2026-11-20.md, sha256 b7adcdf5..."
+    }
+   },
+   "folder": "mechloop handoff/results/REQ-015-jst-molex-phoenix-step",
+   "last_checked": "2026-11-20T18:15:00Z",
+   "result_status": "partial (items 2 Molex + 3 Phoenix STEP delivered via existing 3dfindit/CADENAS account; item 1 JST XH held on licence + personal-data form)",
+   "staged_in": "vendor_cad/staging/instinct_REQ-015"
   }
  },
- "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..008 (REQ-005..008 added 2026-11-20 batch 5). Batch 6 (2026-11-20 05:20Z): 7 new files + RESULT.md revision in REQ-005; nothing else new (154 files, 2 pages). Batch 7 (2026-11-20 06:20Z): 9 new files + RESULT.md revision in REQ-008; nothing else new (169 items incl. 8 folders, 3 pages). Batch 8 (2026-11-20 06:45Z): 2 new files + RESULT.md revision in REQ-008; new REQ-009 folder (RESULT.md only); new REQ-010 folder empty. Search: created or modified after 05:30Z under results, plus listing of the new folders. Batch 9 (2026-11-20 07:20Z): 5 new files in REQ-010; new NOTE-pcbway-review-status folder (RESULT.md only). Search: created or modified after 06:30Z under results (6 files + 2 folders). Batch 10 (2026-11-20 14:20Z): 3 new files + RESULT.md revision (07:22Z) in REQ-008; new REQ-012 folder (RESULT.md only). Only the five named file ids were fetched; no full search of results this batch. Batch 11 (2026-11-20 15:15Z): new REQ-013 folder (22 files + RESULT.md) and REQ-014 folder (RESULT.md only); only the named file ids plus a listing of these two folders; no full search of results this batch. Batch 12 (2026-11-20 16:15Z): 3 new files in REQ-014 (S-M3-0ZI STEP + drawing, RESULT.md new id) and 4 in REQ-013 (RESULT.md new id + 3 PDFs); only the named file ids fetched; no folder listing or full search. BTT ADXL345 V2.0 STEP fetched from GitHub master: byte-identical to the instinct_REQ-003 zip content, not re-staged.",
+ "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..008 (REQ-005..008 added 2026-11-20 batch 5). Batch 6 (2026-11-20 05:20Z): 7 new files + RESULT.md revision in REQ-005; nothing else new (154 files, 2 pages). Batch 7 (2026-11-20 06:20Z): 9 new files + RESULT.md revision in REQ-008; nothing else new (169 items incl. 8 folders, 3 pages). Batch 8 (2026-11-20 06:45Z): 2 new files + RESULT.md revision in REQ-008; new REQ-009 folder (RESULT.md only); new REQ-010 folder empty. Search: created or modified after 05:30Z under results, plus listing of the new folders. Batch 9 (2026-11-20 07:20Z): 5 new files in REQ-010; new NOTE-pcbway-review-status folder (RESULT.md only). Search: created or modified after 06:30Z under results (6 files + 2 folders). Batch 10 (2026-11-20 14:20Z): 3 new files + RESULT.md revision (07:22Z) in REQ-008; new REQ-012 folder (RESULT.md only). Only the five named file ids were fetched; no full search of results this batch. Batch 11 (2026-11-20 15:15Z): new REQ-013 folder (22 files + RESULT.md) and REQ-014 folder (RESULT.md only); only the named file ids plus a listing of these two folders; no full search of results this batch. Batch 12 (2026-11-20 16:15Z): 3 new files in REQ-014 (S-M3-0ZI STEP + drawing, RESULT.md new id) and 4 in REQ-013 (RESULT.md new id + 3 PDFs); only the named file ids fetched; no folder listing or full search. BTT ADXL345 V2.0 STEP fetched from GitHub master: byte-identical to the instinct_REQ-003 zip content, not re-staged. Batch 14 (2026-11-20 18:15Z): new REQ-015 folder (Molex + Phoenix STEP, RESULT.md) and REQ-013 RESULT.md new id (17:58Z); only the named file ids fetched; no folder listing or full search.",
  "last_checked_all": "2026-11-20T07:20:00Z",
  "_note_not_downloaded": "Files with 'NOT downloaded' notes are recorded as seen but were never fetched; retry them if a larger download route exists."
 }

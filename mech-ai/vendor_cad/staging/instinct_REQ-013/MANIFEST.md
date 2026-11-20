@@ -210,3 +210,21 @@ any of them**. The only actions are /URI links (phoenixcontact.com product page;
 4. Instinct says the Phoenix captcha flow auto-solved and downloaded files into the remote browser. Nothing was registered and
    no terms were accepted, per Instinct.
 5. The Keenovo part page is on keenovo.ru, not keenovo.com, and the 24 V part has no US stock.
+
+## 2026-11-20 batch 14 (ingested about 18:15Z)
+
+| Delivered as (Drive id, modified, size) | Staged as | sha256 |
+|---|---|---|
+| RESULT.md (1FMLBrT-r_GLRrJgE0m_rtRU8F2o5_2RT, 17:58Z per caller, 17,305 B) | RESULT_instinct_REQ-013_2026-11-20_1758Z.md | 51d20fc23c8c93e0302ed273ac56142ca7ff14017fc6c64d99a378a6c13b9e92 |
+
+### RESULT.md, 17:58Z against 17:10Z
+- Item 10 LED: DigiKey price and stock are now captured. Cut tape 1647-24V-COB-4000K-12MCT-ND costs $1.23 per 1.97 in segment
+  (qty 240: $295.00); 3,261 are in stock; reels have a 6-week lead time. The KLUS channel is still without a price. PDS-4-ALU is
+  not at DigiKey, superbrightleds.com bot-blocked the browser twice, and klusdesign.com shows no price. The earlier "PDS-4 Plus"
+  stock claim has been dropped (this resolves batch 13 flag 1).
+- Item 8 PEI: a second candidate was added, the West3D High Performance Black PEI with high-temp magnetic backing. It is
+  235x235 (220 not offered), $39.99, in stock, and the page gives no magnet temperature rating. Fulament now serves Amazon storefront
+  content. The heater is unchanged: Keenovo 24 V has no US stock.
+- Item 9 open line: the Molex and Phoenix STEPs are now "DELIVERED under REQ-015" (see instinct_REQ-015). JST XH is still on approval hold.
+- Open list: item 11 is "awaits address", and item 12 (PCBWay) is on approval/scope hold. Neither is new work.
+- **Not in this RESULT:** anything about REQ-016 (heater), new belt sellers, or RP04. LL2MR09 text is unchanged.
