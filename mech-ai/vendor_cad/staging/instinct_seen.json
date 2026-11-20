@@ -119,5 +119,342 @@
    "modifiedTime": "2026-11-20T00:31:30.187Z",
    "note": "earlier RESULT.md, no longer in the folder; replaced by 1fejF-rYkvSkkPuPXiRLh15wT455zHyRW"
   }
- }
+ },
+ "other_folders": {
+  "1RI-CdoBbH9t_4mt2fioLIT-op7WBFLYL": {
+   "folder": "mechloop handoff/results/REQ-002-supplier-cad-batch-3-full",
+   "last_checked": "2026-11-20T01:58:30Z",
+   "staged_in": "vendor_cad/staging/instinct_REQ-002",
+   "result_status": "partial (Instinct still working; items 4/5/13/14/17/20/23 done per RESULT.md)",
+   "files": {
+    "1ZZvUG19Du_tvAZpS9QN26cESMFvC710B": {
+     "title": "RESULT.md",
+     "modifiedTime": "2026-11-20T01:51:45.273Z",
+     "size": 8146,
+     "note": "re-downloaded at the 01:51:45Z revision; the 01:29:57Z revision was also read"
+    },
+    "1r9VLS8FEXUIRw246czgXSo3UNRJamtWq": {
+     "title": "90370A201__drawing.pdf",
+     "modifiedTime": "2026-11-20T01:26:05.751Z",
+     "size": 98872
+    },
+    "1vEeXJAkndHb4vBQLDPAjFBW8sFd-t_js": {
+     "title": "RaspberryPi5__mechanical-drawing.pdf",
+     "modifiedTime": "2026-11-20T01:14:49.569Z",
+     "size": 174949
+    },
+    "1tUieyWNvWyzlfYH_nxEx_aAA-l9h9gQA": {
+     "title": "PiCameraModule3__schematic.pdf",
+     "modifiedTime": "2026-11-20T01:33:46.185Z",
+     "size": 264744
+    },
+    "1CFrwYkYvGnZvoWcpA5QTIQjg2BFR1Lzb": {
+     "title": "RAF__catalog.pdf",
+     "modifiedTime": "2026-11-20T01:14:48.184Z",
+     "size": 235612
+    },
+    "1uo_qdaRFO46iL7ka10wWDORgwPwxdCTI": {
+     "title": "MIC-6__datasheet.pdf",
+     "modifiedTime": "2026-11-20T01:36:41.416Z",
+     "size": 914173
+    },
+    "1FLO8hhzMgNr2VYgjXU93pJhclPnlT2AZ": {
+     "title": "Loctite243__tds.pdf",
+     "modifiedTime": "2026-11-20T01:35:42.811Z",
+     "size": 895678
+    },
+    "17u5C1fDI8QQq5oeooEt3tUPmyD2nmEpz": {
+     "title": "PLT1M-C__step.stp",
+     "modifiedTime": "2026-11-20T01:35:41.617Z",
+     "size": 246140
+    },
+    "1F0xrT9YGzXfVndXef52r3Wf_uQy1cGOj": {
+     "title": "PLT1M-C__drawing.pdf",
+     "modifiedTime": "2026-11-20T01:35:40.432Z",
+     "size": 121029
+    },
+    "1PORnNHedLCNyM9obN1GFnfDnIzrIFkfK": {
+     "title": "PowerGripGT2__design-manual.pdf",
+     "modifiedTime": "2026-11-20T01:34:47.071Z",
+     "size": 4246471
+    },
+    "1YFYG78jhmzgqGC0rSX2ilmsmH7eHmnXQ": {
+     "title": "PiCameraModule3__step.zip",
+     "modifiedTime": "2026-11-20T01:33:45.277Z",
+     "size": 9971996
+    },
+    "1kxpxQ7DC2HTs9Cv4SbkHyZbZOwAppHHF": {
+     "title": "PiCameraModule3-wide__mechanical-drawing.pdf",
+     "modifiedTime": "2026-11-20T01:33:43.462Z",
+     "size": 946851
+    },
+    "1dcus9Th10RNBM0CiNElf1sS22_xDiEFQ": {
+     "title": "PiCameraModule3-std__mechanical-drawing.pdf",
+     "modifiedTime": "2026-11-20T01:33:42.275Z",
+     "size": 949985
+    },
+    "1809z7bYZn60khUO_H_qM-XzgsHafExSQ": {
+     "title": "PiCameraCable200mm__drawing.pdf",
+     "modifiedTime": "2026-11-20T01:33:41.159Z",
+     "size": 53662
+    },
+    "1CgeSMWyJqh1K8Ks6g1rluBQ2FDNynjPT": {
+     "title": "PiCameraModule3__product-brief.pdf",
+     "modifiedTime": "2026-11-20T01:33:40.110Z",
+     "size": 1244344
+    },
+    "1PNEwz4eu_nRxwh8Td7mJCFsQbVk11B1Y": {
+     "title": "PiHQCamera__schematics.pdf",
+     "modifiedTime": "2026-11-20T01:33:39.009Z",
+     "size": 316408
+    },
+    "1ZuSmmAsfqFRKLeIKVMoBOAvpw0AZghc9": {
+     "title": "PiHQCamera-M12__mechanical-drawing.pdf",
+     "modifiedTime": "2026-11-20T01:33:37.686Z",
+     "size": 673300
+    },
+    "1gxm7GMQA1w36Hqh8nCDqzZ3meFQ-hD16": {
+     "title": "PiHQCamera-CS__mechanical-drawing.pdf",
+     "modifiedTime": "2026-11-20T01:33:36.497Z",
+     "size": 524806
+    },
+    "1A0ZEyWinCd6E7QWohFM6OhXJV55TrWT9": {
+     "title": "CF880__datasheet.pdf",
+     "modifiedTime": "2026-11-20T01:31:54.845Z",
+     "size": 1096659
+    },
+    "1vYBW-Ki9gnBfFcTqJpe0fx-aaO6B5gmb": {
+     "title": "R30-6200614__datasheet.pdf",
+     "modifiedTime": "2026-11-20T01:31:01.377Z",
+     "size": 48081
+    },
+    "1T1LWNPYg5Vg1raPWsqUyoljhBRwe0GFK": {
+     "title": "39-01-2020__drawing.pdf",
+     "modifiedTime": "2026-11-20T01:29:51.446Z",
+     "size": 201853
+    },
+    "1X3F-vBHrTnidlowkK2p30-epSSzpc1QL": {
+     "title": "43020-0200__drawing.pdf",
+     "modifiedTime": "2026-11-20T01:29:06.186Z",
+     "size": 189439
+    },
+    "1dz91JJB1fmv1qcVZLle8tSLKzrovSlbf": {
+     "title": "43020-0200__step.zip",
+     "modifiedTime": "2026-11-20T01:29:04.902Z",
+     "size": 22206
+    },
+    "1360aw4KcW3cnnOaoqnuyO9Syc05_9jHW": {
+     "title": "43031-0001__drawing.pdf",
+     "modifiedTime": "2026-11-20T01:29:03.284Z",
+     "size": 299659
+    },
+    "1HVvJT_5QmFfKAe1Lsy7yWON06w2HqQem": {
+     "title": "43030-0001__drawing.pdf",
+     "modifiedTime": "2026-11-20T01:29:01.516Z",
+     "size": 632077
+    },
+    "1ra2PLQprh1wu_zTqllmTNJ6EouIZxCjt": {
+     "title": "43025-0200__drawing.pdf",
+     "modifiedTime": "2026-11-20T01:28:59.817Z",
+     "size": 201161
+    },
+    "1WxpAv7KwlP9zcuWEYX27rGsZQihsBks6": {
+     "title": "43025-0200__step.zip",
+     "modifiedTime": "2026-11-20T01:28:58.449Z",
+     "size": 16181
+    },
+    "1l5bCc38jpC3UIjxDVBWqXquekmd3qeRK": {
+     "title": "218__datasheet.pdf",
+     "modifiedTime": "2026-11-20T01:28:08.597Z",
+     "size": 752754
+    },
+    "1iYz01S3vCp7nw0UMH4pXylUM7xC7yLo-": {
+     "title": "297__datasheet.pdf",
+     "modifiedTime": "2026-11-20T01:27:57.004Z",
+     "size": 366235
+    },
+    "1SeHqWIPttTl5GflrLxklsDRtHum0jNt9": {
+     "title": "91166A180__drawing.pdf",
+     "modifiedTime": "2026-11-20T01:26:12.152Z",
+     "size": 106887
+    },
+    "1qAC8sxepxyLBpwycYyb1tpOzYQN4DHs4": {
+     "title": "91166A180__step.step",
+     "modifiedTime": "2026-11-20T01:26:10.717Z",
+     "size": 234904
+    },
+    "1zIqWcvpKWSv4Op7EY_zkakfpEbuWPFT8": {
+     "title": "90128A208__drawing.pdf",
+     "modifiedTime": "2026-11-20T01:26:09.396Z",
+     "size": 220551
+    },
+    "1LgWRIYbEi2oNMtjBNoikQb0O4SV1c6wt": {
+     "title": "90128A208__step.step",
+     "modifiedTime": "2026-11-20T01:26:07.914Z",
+     "size": 9052924
+    },
+    "1oBm_hw-PaYg6afjT1S2tvd-rt0-jIvZs": {
+     "title": "90370A201__step.step",
+     "modifiedTime": "2026-11-20T01:26:04.468Z",
+     "size": 350475
+    },
+    "1y-PD-qiOgilDCiDsb5L7RTIQDJr7lZeI": {
+     "title": "91290A270__drawing.pdf",
+     "modifiedTime": "2026-11-20T01:26:02.629Z",
+     "size": 152211
+    },
+    "1ULUBr_SFwpBcIZXzO9BYYWuZgYD3ok68": {
+     "title": "91290A270__step.step",
+     "modifiedTime": "2026-11-20T01:26:00.538Z",
+     "size": 2128014
+    },
+    "1Q0xCoV2JzsrqEqQxXMg7O4EFKkhyZBrN": {
+     "title": "91290A232__drawing.pdf",
+     "modifiedTime": "2026-11-20T01:25:58.836Z",
+     "size": 155389
+    },
+    "1nzrrzGywybb1nyuk1BkS3mHGt6w5UxvR": {
+     "title": "91290A232__step.step",
+     "modifiedTime": "2026-11-20T01:25:54.695Z",
+     "size": 1853671
+    },
+    "1v6oE1cCm-oxQkk8sm8_rD7vBQ33O2lkD": {
+     "title": "91290A125__drawing.pdf",
+     "modifiedTime": "2026-11-20T01:25:53.121Z",
+     "size": 162954
+    },
+    "1pOOjvtH70ipuh7tznmtZP7RT68lYcGDy": {
+     "title": "91290A125__step.step",
+     "modifiedTime": "2026-11-20T01:25:51.600Z",
+     "size": 2147256
+    },
+    "1wsutxjE9ZqKhlbhDsg8mTZ0fFUmo5j_0": {
+     "title": "91290A108__drawing.pdf",
+     "modifiedTime": "2026-11-20T01:25:49.703Z",
+     "size": 139673
+    },
+    "1eF11Jm7HuPKvNaEMyufRLl6QB5vB9A5P": {
+     "title": "91290A108__step.step",
+     "modifiedTime": "2026-11-20T01:25:47.592Z",
+     "size": 1381378
+    },
+    "12PwJuI30LkFS_XdSiw8su7dUU8OxcV5p": {
+     "title": "91290A049__drawing.pdf",
+     "modifiedTime": "2026-11-20T01:25:46.062Z",
+     "size": 135766
+    },
+    "1f3WSlZYYZVy4nPrpVhRmNvahUYP6a3Tm": {
+     "title": "91290A049__step.step",
+     "modifiedTime": "2026-11-20T01:25:44.610Z",
+     "size": 1508255
+    },
+    "1L7aovWmm4hQD-HvERZywt_98eD8pLi9P": {
+     "title": "91290A221__drawing.pdf",
+     "modifiedTime": "2026-11-20T01:25:42.808Z",
+     "size": 134550
+    },
+    "1_W6Tcxqq6NJupllXulyePv0wpvkaG8YQ": {
+     "title": "91290A221__step.step",
+     "modifiedTime": "2026-11-20T01:25:41.225Z",
+     "size": 1504336
+    },
+    "1-M6tG1YTNsOmxGq8OUAe3P9prmeBa0I7": {
+     "title": "XH__datasheet.pdf",
+     "modifiedTime": "2026-11-20T01:14:50.864Z",
+     "size": 175724
+    },
+    "1o0I8Kb9JS26hJ9Q4HH39LAEFaQ1wdwF_": {
+     "title": "PiHQCamera__product-brief.pdf",
+     "modifiedTime": "2026-11-20T01:14:46.783Z",
+     "size": 827678
+    },
+    "1Km9vGjcEG4SGHLIXRHyS7qqksrsuST6J": {
+     "title": "PiActiveCooler__product-brief.pdf",
+     "modifiedTime": "2026-11-20T01:14:45.299Z",
+     "size": 1509055
+    },
+    "1HbxWFqmuI3hsMerSMuAqqGv08GSM3sLt": {
+     "title": "Pi27W-PSU__product-brief.pdf",
+     "modifiedTime": "2026-11-20T01:14:44.090Z",
+     "size": 1233433
+    },
+    "1CPD3PZf8Kjexj_4QwS5YMPXOpPxlbSgi": {
+     "title": "DD11.0114.1111__datasheet.pdf",
+     "modifiedTime": "2026-11-20T01:14:42.923Z",
+     "size": 450651
+    },
+    "18sEM1pqteFtqP9LNAAZcL_5O1FeBsTxG": {
+     "title": "BAT85S__datasheet.pdf",
+     "modifiedTime": "2026-11-20T01:14:41.458Z",
+     "size": 91557
+    },
+    "1w3TyDm9UrTMCNOcO7Lp1jkhdhZJTxyi-": {
+     "title": "22.32__step.stp",
+     "modifiedTime": "2026-11-20T01:14:40.103Z",
+     "size": 3945793,
+     "note": "not staged: content is the Finder 022.3x auxiliary contact block, not 22.32"
+    },
+    "1S5WhQt3MJ5AJZFw765WqJ2-JRW5cjU4b": {
+     "title": "22.32__datasheet.pdf",
+     "modifiedTime": "2026-11-20T01:14:38.697Z",
+     "size": 3661031
+    }
+   }
+  },
+  "1s3685ayrJbVVh85GEsWXSuDuLJB_npFE": {
+   "folder": "mechloop handoff/results/REQ-003-build1-additions",
+   "last_checked": "2026-11-20T01:58:30Z",
+   "result_status": "empty folder",
+   "files": {}
+  },
+  "1kA7gZ9hvMN84ooDXTnAgeoRObBQE0Tg0": {
+   "folder": "mechloop handoff/results/REQ-004-linear-rail-alternatives",
+   "last_checked": "2026-11-20T01:58:30Z",
+   "staged_in": "vendor_cad/staging/instinct_REQ-004",
+   "result_status": "partial (price table mostly pending)",
+   "files": {
+    "14IiM0CvyDN2qWlpJ3A1QhuC1JQiO7VdS": {
+     "title": "RESULT.md",
+     "modifiedTime": "2026-11-20T01:52:01.580Z",
+     "size": 4796
+    },
+    "1CsVQVhnvErxtYwQrLP3_XbEw3dCOxbDz": {
+     "title": "LDO_MGN12H__drawing.pdf",
+     "modifiedTime": "2026-11-20T01:49:53.407Z",
+     "size": 237171
+    },
+    "1aUN-A4BBltUOiOdnNR7yVYvCx2cM3bVc": {
+     "title": "TBI_LinearGuide__catalog.pdf",
+     "modifiedTime": "2026-11-20T01:49:52.146Z",
+     "size": 3521727
+    },
+    "1j1DTQUwsO9D5uKyhp_IV-_1AX2kvkyr1": {
+     "title": "IKO_LWL__datasheet.pdf",
+     "modifiedTime": "2026-11-20T01:49:50.625Z",
+     "size": 82515
+    },
+    "1USudnWIUVO03vcILGO_1E07jBuQqwh2B": {
+     "title": "RobotDigg_MGN__drawing.jpg",
+     "modifiedTime": "2026-11-20T01:57:34.330Z",
+     "size": 1288722
+    },
+    "1okLUDgRJDVQh3FZgNAcvoTYHAqDt52_m": {
+     "title": "RobotDigg_MGN12C__cad.stl",
+     "modifiedTime": "2026-11-20T01:57:36.356Z",
+     "size": 1864384
+    },
+    "1nLhcWPPMHDSD7lfzsgsLEAqElCGcxKJr": {
+     "title": "RobotDigg_MGN-rail__cad.stl",
+     "modifiedTime": "2026-11-20T01:57:37.832Z",
+     "size": 5894884
+    },
+    "1x1ESZ16r61U9q4ILeUl3p3gd4CSfi7Mz": {
+     "title": "CPC_MiniatureGuides__catalog.pdf",
+     "modifiedTime": "2026-11-20T01:57:39.299Z",
+     "size": 5052498
+    }
+   }
+  }
+ },
+ "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..004 (added 2026-11-20 batch 3 ingest)."
 }
