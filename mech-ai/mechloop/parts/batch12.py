@@ -562,6 +562,7 @@ def probe_eddy_duo() -> Stock:
                  real_part={"maker": "BIGTREETECH", "mpn": "Eddy Duo", "sellers": [{"name": "BIQU US store (us.biqu.equipment)", "checked": CHECKED,
                                                                                    "note": "$38.99 (search); variant, stock and ship-from to confirm"}],
                             "sold_by_maker": True, "datasheet": "vendor_docs/BTT_Eddy_Series_User_Manual_20250507.pdf",
+                            "ratings_source": {"max_ambient_c": "BTT Eddy manual 1: operating temperature <= 60 degC ambient"},
                             "replace_with": "confirm the BIQU listing; the switching-distance stand-in is Klipper's calibrated height"})
 
 
