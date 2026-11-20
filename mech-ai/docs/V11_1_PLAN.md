@@ -70,3 +70,6 @@ stock and lead time before ordering.
 - Reference sheet parts: SendCutSend preferred over PCBWay; PCBWay RP03 not paid. SendCutSend cart for RP03/RP04 (REQ-014).
 - WayKen: modified RP01 (R3 pocket corners, R1 slot corners) accepted; quote requested.
 - Fictiv: not added to the RFQ batch. Digital-twin fidelity work: later, after the v12 gate.
+- PEM nut: switch to the zinc-plated S-M3-0ZI (same geometry); CAD requested from PEM/McMaster via Instinct (owner, 2026-11-20).
+- SendCutSend RP04 (flat 6061 plate) order: sent to Instinct by the owner (2026-11-20). First real part for the measure loop.
+- Drive pulleys: McMaster 3684N13 (20T GT2, 5 mm bore, two M4 set screws, $5.99); fallback Misumi GPA32GT2090-A-P5.
