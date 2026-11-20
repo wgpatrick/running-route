@@ -70,3 +70,7 @@ Inlet stock problem (2026-11-20): DD11.0124.1111 (2-pole) is not stocked, 16-wee
 Instinct, unverified). Proposed: DD11.0114.1111 (1-pole, in stock) with the 1-pole drawer 4301.1405 and one fuse in the live
 conductor (normal for US 120 V equipment with a grounded, polarised NEMA 5-15 plug); 2-pole only if a stocked 2-pole inlet
 is found. Owner to confirm.
+
+Decision (owner deferred to the design agent, 2026-11-20): 1-pole. DD11.0114.1111 (Digi-Key 2,557 in stock, $17.62) with
+fuse drawer 4301.1405 (1-pole fingergrip, 11,250 in stock, $3.57) and one Schurter SPT fuse in the live conductor
+(0001.2513 T8A at 120 V; 0001.2511 T5A at 230 V); one spare fuse. Update mpn_map.json / v12_electronics.json accordingly.
