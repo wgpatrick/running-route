@@ -55,3 +55,15 @@ def test_stage_of_inherits_from_the_screw():
     d.add("a", __import__("build123d").Box(1, 1, 1), meta={"build_stage": 1})
     c = d.add("b", __import__("build123d").Box(1, 1, 1), meta={"screw": "a"})
     assert stage_of(c, d) == 1
+
+
+def test_connector_remakes_match_their_drawings():
+    from mechloop.parts import batch12 as b, vendor_cad as vc
+    for n, length in ((2, 7.3), (3, 9.8), (4, 12.3)):           # JST XH p.4 table, dimension B
+        st = b.jst_xhp_housing(n)
+        assert abs(st.shape.bounding_box().size.X - length) < 1e-6
+        assert vc.model_state(st.model) == "faithful re-make"
+    hb = b.jst_xh_header(4).shape.bounding_box()                   # p.5: B 12.4, 7 above the board, posts 3.4 below
+    assert abs(hb.size.X - 12.4) < 1e-6 and abs(hb.max.Z - 7.0) < 1e-6 and abs(hb.min.Z + 3.4) < 1e-6
+    mb = b.molex_minifit_39_01_2020().shape.bounding_box()         # SD-5557-003: 5.40 x 10.6 x 19.6 (2 circuits)
+    assert (round(mb.size.X, 2), round(mb.size.Y, 2), round(mb.size.Z, 2)) == (5.4, 10.6, 19.6)

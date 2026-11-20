@@ -813,3 +813,95 @@ def idler_misumi_agtfw30() -> Stock:
                                                                  ("pitch_diameter_mm", "teeth", "belt_pitch_mm", "belt_width_mm")}},
                  source={"level": "vendor", "vendor": "MISUMI", "part": "AGTFW30-GT2090-5", "url": dwg, "retrieved": CHECKED, "unverified_fields": [],
                          "file": dwg})
+
+
+# ---- connectors and DIN rail re-made from the makers' public drawings (owner, 2026-11-20: JST / Molex / Phoenix CAD sits behind
+# licence or sign-up forms, so these are faithful re-makes; every modelled dimension is the drawing's) ------------------------------
+JST_XH = "vendor_docs/JST_XH_datasheet.pdf"
+MOLEX_5557 = "vendor_docs/Molex_39-01-2020_drawing.pdf"
+PHOENIX_NS35 = "vendor_docs/Phoenix_0801733_NS35-7.5-PERF_datasheet.pdf"
+DK = {"name": "Digi-Key", "catalogue": True, "checked": CHECKED}
+
+
+def _remake(dwg, what):
+    return {"kind": "generated to standard", "remade_from": dwg, "no_auto_features": True, "source": f"re-made from {dwg}: {what}"}
+
+
+@part
+def jst_xhp_housing(n: int = 2) -> Stock:
+    """JST XHP-n crimp housing (PA 6), 2.5 mm pitch. JST XH datasheet p.4: length B = 2.5 (n - 1) + 4.8 (XHP-2 7.3, -3 9.8, -4 12.3),
+    height 7.5 (+0.25 lock), depth 5.7. Local frame: mating face on Z=0, wires out +Z, circuits along X centred."""
+    if n not in (2, 3, 4):
+        raise ValueError("XHP-2, -3 or -4")
+    b = 2.5 * (n - 1) + 4.8
+    s = Pos(0, 0, 7.5 / 2) * Box(b, 5.7, 7.5) + Pos(0, 5.7 / 2 + 0.125, 7.5 / 2) * Box(2.5, 0.25, 3.0)
+    for i in range(n):
+        s -= Pos((i - (n - 1) / 2) * 2.5, 0, 7.5 / 2) * Box(1.6, 1.6, 7.5)
+    return _simple(f"JST-XHP-{n}", f"JST XHP-{n} housing, 2.5 mm pitch", s, 0.0002 * n, 0.1,
+                   {"maker": "JST", "mpn": f"XHP-{n}", "sellers": [{**DK, "part_number": f"XHP-{n}"}],
+                    "datasheet": JST_XH},
+                   _remake(JST_XH, f"p.4 housing table: B {b:g}, height 7.5 + 0.25, depth 5.7; cavities 2.5 pitch (1.6 square drawn)"),
+                   interfaces={"pitch": 2.5, "circuits": n}, material="nylon")
+
+
+@part
+def jst_xh_header(n: int = 2) -> Stock:
+    """JST B<n>B-XH-A top-entry header (PA 66 wafer, tin-plated posts). JST XH datasheet p.5: B = 2.5 (n - 1) + 4.9 (B2B 7.4, B3B 9.9,
+    B4B 12.4), depth 5.75, 7 above the board, posts 0.64 square 3.4 below, row 2.35 from the back; PCB holes dia 1.0 (2 circuits) /
+    0.9 (3 or more), p.2. Local frame: board top Z=0, circuits along X centred, back face at Y=+5.75/2."""
+    if n not in (2, 3, 4):
+        raise ValueError("B2B, B3B or B4B")
+    b = 2.5 * (n - 1) + 4.9
+    shell = Pos(0, 0, 3.5) * Box(b, 5.75, 7.0) - Pos(0, -0.6, 4.0) * Box(b - 1.6, 4.55 - 0.4, 6.0)
+    yp = 5.75 / 2 - 2.35
+    for i in range(n):
+        shell += Pos((i - (n - 1) / 2) * 2.5, yp, (6.5 - 3.4) / 2) * Box(0.64, 0.64, 6.5 + 3.4)        # posts 3.4 below the board
+    holes = [((i - (n - 1) / 2) * 2.5, yp, 0.0) for i in range(n)]
+    return _simple(f"JST-B{n}B-XH-A", f"JST B{n}B-XH-A header, top entry", shell, 0.0003 * n, 0.12,
+                   {"maker": "JST", "mpn": f"B{n}B-XH-A", "sellers": [{**DK, "part_number": f"B{n}B-XH-A"}], "datasheet": JST_XH},
+                   _remake(JST_XH, f"p.5 top-entry header: B {b:g}, 5.75 deep, 7 high, posts 0.64 sq x 3.4 below at 2.35 from the back"),
+                   interfaces={"pcb_holes": holes, "pcb_hole_d": 1.0 if n == 2 else 0.9, "pitch": 2.5}, material="nylon")
+
+
+@part
+def jst_sxh_contact() -> Stock:
+    """JST SXH-001T-P0.6 crimp contact (phosphor bronze, tin), AWG 28-22, insulation 0.9-1.9: shape B, 6.1 long, 1.95 wide, 2.4 high
+    (JST XH datasheet p.3). Drawn as its envelope. Local frame: mating end at Z=0, crimp towards +Z."""
+    s = Pos(0, 0, 6.1 / 2) * Box(1.95, 2.4, 6.1)
+    return _simple("JST-SXH-001T-P0.6", "JST SXH-001T-P0.6 crimp contact", s, 0.00005, 0.03,
+                   {"maker": "JST", "mpn": "SXH-001T-P0.6", "sellers": [{**DK, "part_number": "SXH-001T-P0.6"}], "datasheet": JST_XH},
+                   _remake(JST_XH, "p.3 contact shape B: 6.1 x 1.95 x 2.4 envelope"), material="brass")
+
+
+@part
+def molex_minifit_39_01_2020() -> Stock:
+    """Molex 39-01-2020 Mini-Fit Jr. receptacle housing, 2 circuits, dual row (nylon 6/6). Drawing SD-5557-003: width A 5.40 (2 ckt),
+    9.6 across the rows (4.20 pitch), 10.6 with the latch, 19.6 long; latch 3.0 wide, 1.0 proud over 8.5. Local frame: mating face on
+    Z=0, wires out +Z, the rows along Y, latch on +Y."""
+    s = Pos(0, 0, 19.6 / 2) * Box(5.4, 9.6, 19.6) + Pos(0, 9.6 / 2 + 0.5, 6.3 + 8.5 / 2) * Box(3.0, 1.0, 8.5)
+    for y in (-2.1, 2.1):
+        s -= Pos(0, y, 19.6 / 2) * Box(3.6, 3.6, 19.6)
+    return _simple("MOLEX-39-01-2020", "Molex 39-01-2020 Mini-Fit Jr. receptacle housing, 2 circuits", s, 0.0006, 0.27,
+                   {"maker": "Molex", "mpn": "39-01-2020", "sellers": [{**DK, "part_number": "39-01-2020"}], "datasheet": MOLEX_5557},
+                   _remake(MOLEX_5557, "SD-5557-003 sheet 1: A 5.40, 9.6 / 10.6, 19.6, latch 3.0 x 1.0 x 8.5, cavities 4.20 pitch (3.6 drawn)"),
+                   material="nylon")
+
+
+@part
+def din_rail_phoenix(length: float = 100.0) -> Stock:
+    """Phoenix Contact 0801733 NS 35/7,5 PERF steel rail (EN 60715), sold 2 m, cut to length by the builder. Datasheet drawing: 35 wide,
+    27 between the walls, 7.5 high, 1 thick, slots 15 x 6.2 on 25 mm. Local frame: along X centred, base on Z=0."""
+    t, w, h = 1.0, 35.0, 7.5
+    sec = (Pos(0, 0, t / 2) * Box(length, 27.0, t) + Pos(0, 27.0 / 2 - t / 2, h / 2) * Box(length, t, h)
+           + Pos(0, -27.0 / 2 + t / 2, h / 2) * Box(length, t, h) + Pos(0, (27.0 + w) / 4, h - t / 2) * Box(length, (w - 27.0) / 2, t)
+           + Pos(0, -(27.0 + w) / 4, h - t / 2) * Box(length, (w - 27.0) / 2, t))
+    n = int((length - 15.0) // 25.0) + 1
+    xs = [(i - (n - 1) / 2) * 25.0 for i in range(n)]
+    for x in xs:
+        sec -= Pos(x, 0, t / 2) * (Box(15.0 - 6.2, 6.2, t) + Pos(-(15.0 - 6.2) / 2, 0, 0) * Cylinder(3.1, t)
+                                   + Pos((15.0 - 6.2) / 2, 0, 0) * Cylinder(3.1, t))
+    return Stock(sec, f"DIN-RAIL-PHOENIX-0801733-{int(length)}", f"Phoenix 0801733 NS 35/7,5 PERF rail, cut to {length:g} mm",
+                 0.0005 * length, material="steel", cost_usd=12.0 * length / 2000.0 + 0.5, interfaces={"slots": [(x, 0.0, 0.0) for x in xs], "top_z": h},
+                 model=_remake(PHOENIX_NS35, "35 / 27 / 7.5 / 1, slots 15 x 6.2 on 25"),
+                 real_part={"maker": "Phoenix Contact", "mpn": "0801733", "sellers": [{**DK, "part_number": "0801733"}],
+                            "stock_size": "2 m, cut to length by the builder", "datasheet": PHOENIX_NS35})
