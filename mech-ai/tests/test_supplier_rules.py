@@ -3,6 +3,8 @@ verifiers/dfm_supplier.py).
 
 Small synthetic parts that pass or fail named rules of SendCutSend, Protolabs, Hubs, Xometry and Fictiv, and a check
 that every rule in the data carries its page, the page's words and the retrieval date."""
+import csv
+from pathlib import Path
 from urllib.parse import urlparse
 
 import pytest
@@ -13,7 +15,7 @@ from mechloop.shops import supplier_rules as SR
 from mechloop.verifiers.manufacture import verify_manufacture
 
 HOSTS = {"sendcutsend": {"sendcutsend.com", "app.sendcutsend.com"}, "oshcut": {"www.oshcut.com"}, "protolabs": {"www.protolabs.com"},
-         "xometry": {"www.xometry.com"}, "fictiv": {"www.fictiv.com"}, "hubs": {"www.hubs.com"}}
+         "xometry": {"www.xometry.com"}, "fictiv": {"www.fictiv.com"}, "hubs": {"www.hubs.com"}, "fabworks": {"www.fabworks.com"}}
 
 
 # ------------------------------------------------------------------------------------------- data
@@ -214,3 +216,103 @@ def test_shop_assignment_defaults():
     assert SR.shop_for(a, d, "sheet") == "sendcutsend" and SR.shop_for(b, d, "machined") == "xometry" and SR.shop_for(c, d, "sheet") == "oshcut"
     d.manufacturing = {"shop": "generic"}                  # no rule file: the process default stands
     assert SR.shop_for(a, d, "sheet") == "sendcutsend"
+
+
+
+# ------------------------------------------------------------------- supplier benchmark (reference parts batch 01)
+ROOT = Path(__file__).resolve().parents[1]
+BATCH = ROOT / "reference_parts" / "batch01"
+
+
+def test_hand_collected_rules_quote_their_benchmark_row():
+    rows = list(csv.DictReader(open(BATCH / "results" / "web_benchmark_2026-11-19.csv", encoding="utf-8", newline="")))
+    site = {"sendcutsend": "SendCutSend", "oshcut": "OSH Cut", "fabworks": "Fabworks"}
+    hand = [r for r in SR.all_rules() if r.get("hand_collected")]
+    assert {r["supplier"] for r in hand} == set(site) and len(hand) >= 7
+    norm = lambda x: " ".join(x.split())  # noqa: E731
+    for r in hand:
+        assert r["source"] == "owner's agent quote page, 2026-11-19" and r["quote_kind"] == "quote_page", r["id"]
+        assert (ROOT / r["source_file"]).exists()
+        row = rows[r["source_row"] - 2]                  # line number in the file; the header is line 1
+        assert row["site"] == site[r["supplier"]] and norm(r["quote"]) in norm(row["dfm_messages"]), r["id"]
+        if r.get("data_points") == 1:
+            assert "one" in r["note"].lower(), r["id"]   # a rule from one part says so
+    assert set(SR.load()["fabworks"]["rules"][i]["rule"] for i in range(2)) == {"flange_min", "feature_to_bend"}
+
+
+def test_sendcutsend_flat_and_formed_flange_are_one_requirement():
+    # quote page .254" = specs min_flange_length_before_bend (flat, from the bend line); specs .326" = formed, from the apex.
+    # bend line = apex length - BD / 2; BD from SendCutSend's radius .032" and K .37 at 90 degrees = .1414" (specs file: .142")
+    bd = SR.bend_deduction("sendcutsend", "al5052", 2.286, 90.0)
+    assert bd == pytest.approx(0.142 * 25.4, abs=0.03)
+    rules = {r["id"]: r for r in SR.all_rules()}
+    flat, formed = rules["sendcutsend.bend.flange_min_flat.al5052.2.286mm"], rules["sendcutsend.bend.flange_min_formed.al5052.2.286mm"]
+    assert flat.get("evaluate", True) and flat["reference"] == "bend_line_flat" and flat["same_requirement_as"] == formed["id"]
+    assert formed["value_mm"] - bd / 2 == pytest.approx(flat["value_mm"], abs=0.05)
+    q = rules["sendcutsend.quote.flange_min_flat.al5052.2.286mm"]
+    assert q["value_mm"] == pytest.approx(6.452, abs=0.001) and q["duplicate_of"] == flat["id"]
+    # a flange just over the formed minimum passes both; one between the flat figure and the formed figure (as an apex length) fails both
+    def res(length):
+        feat = bent_feat(thickness_mm=2.286, bends=[{"radius": 0.813, "angle": 90.0, "length": 50.0,
+                                                     "flanges": [{"length": length, "profile": [length] * 10}]}])
+        return {x["rule"]["id"]: x["status"] for x in SR.evaluate(feat, "sendcutsend") if x["rule"]["id"] in (flat["id"], formed["id"])}
+    assert set(res(8.4).values()) == {"pass"} and set(res(7.0).values()) == {"fail"}
+
+
+def test_sendcutsend_hole_to_edge_is_review_required_not_a_refusal():
+    rules = {r["id"]: r for r in SR.all_rules()}
+    for rid, r in rules.items():
+        if rid.startswith("sendcutsend.specs.min_hole_to_edge."):
+            assert r["severity"] == "warning" and "review" in r["outcome"] and "not a refusal" in r["outcome"]
+        if rid.startswith("sendcutsend.specs.min_bridge."):
+            assert r["between"] == "cut_features"
+
+
+@pytest.fixture(scope="module")
+def rp03():
+    from mechloop.verifiers.dfm_supplier import check_file
+
+    out = {}
+    for shop in ("sendcutsend", "fabworks"):
+        r = check_file(BATCH / "RP03_sheet_channel.step", "al5052", shop=shop, thickness_mm=2.286)
+        out[shop] = r
+    return out
+
+
+def _rules(r):
+    return {f.data["rule"]: f for f in r.findings if f.code == "supplier_rule"}
+
+
+def test_rp03_matches_what_sendcutsend_and_fabworks_flagged(rp03):
+    # SendCutSend's quote page: bend-radius warning (0.09" against .032": "will impact the finished dimensions") and a minimum-flange error
+    scs = rp03["sendcutsend"]
+    assert not [f for f in scs.findings if f.code == "declared_thickness_differs"]
+    f = _rules(scs)
+    rad = f["sendcutsend.bend.radius.al5052.2.286mm"]
+    assert rad.severity == "warning" and "finished dimensions" in rad.message and "+/- 0.15" in rad.message
+    differs = next(x for x in scs.findings if x.code == "bend_radius_differs")
+    assert differs.severity == "warning" and "finished dimensions" in differs.message and "0.15 mm" in differs.message
+    fl = f["sendcutsend.bend.flange_min_formed.al5052.2.286mm"]
+    assert fl.severity == "error" and fl.data["value"] == pytest.approx(6.0, abs=0.05)
+    assert "sendcutsend.bend.flange_min_flat.al5052.2.286mm" in fl.message       # the flat figure is told in the same finding
+    assert "sendcutsend.bend.flange_min_flat.al5052.2.286mm" not in f            # not a second finding
+    # Fabworks' quote page: flange error (0.367") and a hole-near-bend warning (move the cut-out 0.138" further)
+    fab = _rules(rp03["fabworks"])
+    assert fab["fabworks.quote.flange_min.al5052.2.286mm"].severity == "error"
+    assert fab["fabworks.quote.flange_min.al5052.2.286mm"].data["limit"] == pytest.approx(9.322, abs=0.01)
+    h = fab["fabworks.quote.hole_to_bend.al5052.2.286mm"]
+    assert h.severity == "warning" and h.data["value"] == pytest.approx(1.5, abs=0.05) and h.data["limit"] == pytest.approx(5.005, abs=0.01)
+
+
+def test_rp04_sendcutsend_review_and_oshcut_recommendations():
+    from mechloop.verifiers.dfm_supplier import check_file
+
+    r = check_file(BATCH / "RP04_laser_plate.step", "al6061", shop="sendcutsend", thickness_mm=3.175)
+    f = _rules(r)
+    e = f["sendcutsend.specs.min_hole_to_edge.al6061.3.175mm"]
+    assert e.severity == "warning" and "review required" in e.message.lower() and e.data["value"] == pytest.approx(0.8, abs=0.01)
+    assert not [x for x in f.values() if x.severity == "error"]                    # the quote page refused nothing
+    assert "sendcutsend.specs.min_bridge.al6061.3.175mm" not in f                  # the 0.8 mm web is to the edge, not a bridge
+    o = _rules(check_file(BATCH / "RP04_laser_plate.step", "al6061", shop="oshcut"))
+    assert {"oshcut.quote.small_gaps.al6061.3.175mm", "oshcut.quote.narrow_features.al6061.3.175mm"} <= set(o)
+    assert all(x.severity == "warning" for k, x in o.items() if k.startswith("oshcut.quote."))

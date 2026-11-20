@@ -29,7 +29,7 @@ PROCESS_GROUPS = {"sheet": ("laser_cut", "bend", "hardware", "tap", "countersink
 MEASURED = {
     "hole_min", "slot_min", "notch_min", "web_min", "hole_edge_web", "slot_edge_web", "hole_hole_web", "tab_min", "cut_away_max",
     "part_min_size", "part_max_size", "thickness_min", "thickness_max", "thickness_range",
-    "bend_offered", "bend_radius", "bend_radius_min", "bend_radius_range", "flange_min", "flange_support_min", "feature_to_bend",
+    "bend_offered", "bend_radius", "bend_radius_min", "bend_radius_range", "flange_min", "flange_min_flat", "flange_support_min", "feature_to_bend",
     "bend_length_max", "bend_angle_max", "bend_angle_min", "bend_part_min_size", "bend_part_max_size", "bend_material_review",
     "pem_sheet_min", "pem_sheet_max", "pem_sheet_range_al", "pem_center_to_edge", "pem_center_to_bend", "pem_center_to_center",
     "tap_offered", "tap_metric_range", "tap_hole_to_edge", "countersink_offered",
@@ -159,6 +159,24 @@ def _k_factor(supplier: str, material: str, t: float) -> float | None:
     return float(ks[0]["value"]) if ks else None
 
 
+def _shop_radius(supplier: str, material: str, t: float) -> float | None:
+    """The one inside bend radius a supplier forms this stock at (its evaluated `bend_radius` rule), or None."""
+    rs = [r for r in applicable(supplier, material, t, kinds={"bend_radius"}) if r.get("evaluate") is not False and not r.get("duplicate_of")
+          and isinstance(r.get("value_mm"), (int, float))]
+    return float(rs[0]["value_mm"]) if rs else None
+
+
+def bend_deduction(supplier: str, material: str, t: float, angle: float) -> float | None:
+    """The supplier's bend deduction (mm) at this angle: 2 x outside setback - bend allowance, from its own bend radius and K-factor
+    (BD = 2 (r + t) tan(a / 2) - (r + K t) a). For SendCutSend 5052 .090" at 90 degrees: 3.59 mm (.1414"; the specs file prints .142").
+    None when the supplier publishes no radius or K-factor for the stock."""
+    r, k = _shop_radius(supplier, material, t), _k_factor(supplier, material, t)
+    if r is None or k is None or not (0.0 < angle < 179.0):
+        return None
+    a = math.radians(angle)
+    return 2.0 * (r + t) * math.tan(a / 2.0) - (r + k * t) * a
+
+
 def _flange_limit(supplier: str, material: str, t: float, r: float) -> tuple[float, dict] | None:
     """The supplier's governing minimum flange length (largest error-level limit) for this stock and radius."""
     best = None
@@ -262,6 +280,8 @@ def _one(rule: dict, feat: dict, supplier: str) -> dict | None:
         return ({"status": "pass", "measured": None, "limit": lim_t, "detail": f"no slot, and no notch narrower than {feat['notch_probe_mm']:g} mm"}
                 if lim_t <= feat["notch_probe_mm"] + 1e-6 else {"status": "not_evaluated", "detail": "limit above the notch probe width"})
     if kind == "web_min":
+        if rule.get("between") == "cut_features":      # a bridge between two cut features; the edge has its own rule
+            return worst(holes, lambda h: h.get("web"), lambda h: lim_t, "material between two cut features")
         return worst(holes, lambda h: _min(h.get("edge_web"), h.get("web")), lambda h: lim_t, "material between cut features or to the edge")
     if kind == "hole_edge_web":
         return worst([h for h in holes if h.get("round")], lambda h: h.get("edge_web"), lambda h: limit(rule, t, d=h["d"]), "hole edge to outer edge")
@@ -309,6 +329,18 @@ def _one(rule: dict, feat: dict, supplier: str) -> dict | None:
     if kind == "flange_min":
         fl = [dict(f, at=f.get("at"), r=b["radius"]) for b in bends for f in b.get("flanges", ())]
         return worst(fl, lambda f: f["length"], lambda f: limit(rule, t, r=f["r"]), "formed flange length")
+    if kind == "flange_min_flat":
+        # flat-pattern flange from the bend line = formed length from the apex - half the supplier's bend deduction (see the rule's note)
+        rows = []
+        for b in bends:
+            bd = bend_deduction(supplier, feat["material"], t, b["angle"])
+            if bd is None:
+                continue
+            for f in b.get("flanges", ()):
+                rows.append({"v": f["length"] - bd / 2.0, "at": f.get("at")})
+        if not rows:
+            return {"status": "not_evaluated", "detail": "no bend radius or K-factor published for this stock: the flat flange cannot be derived"} if bends else None
+        return worst(rows, lambda x: x["v"], lambda x: lim_t, "flat-pattern flange length from the bend line")
     if kind == "flange_support_min":
         rows = []
         for b in bends:

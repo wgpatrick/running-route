@@ -393,6 +393,7 @@ KIND_TEXT = {
     "part_max_size": "flat part size (maximum)", "thickness_min": "sheet thickness (minimum)", "thickness_max": "sheet thickness (maximum)",
     "thickness_range": "sheet thickness range", "bend_offered": "bending offered at this thickness", "bend_radius": "inside bend radius (the only one offered)",
     "bend_radius_min": "inside bend radius (minimum)", "bend_radius_range": "inside bend radius (tooling range)", "flange_min": "formed flange length",
+    "flange_min_flat": "flat-pattern flange length from the bend line",
     "flange_support_min": "share of the bend meeting the minimum flange", "feature_to_bend": "hole or cut-out to bend",
     "bend_length_max": "bend length", "bend_angle_max": "bend angle", "bend_angle_min": "bend angle (minimum)", "bend_part_min_size": "flat blank size for bending (minimum)",
     "bend_part_max_size": "flat blank size for bending (maximum)", "bend_material_review": "bent 6061-T6",
@@ -435,6 +436,12 @@ def check_part(r, design, c, row: dict, sm, frame, cyls, holes) -> None:
     mine = verdicts[shop]
     sname = SR.name_of(shop)
     pem_notes = set()
+    failed = {x["rule"]["id"]: x for x in mine["results"] if x["status"] == "fail"}
+    also = {}            # a failed rule that states the same requirement as another failed one is told in that one's finding
+    for x in failed.values():
+        same = x["rule"].get("same_requirement_as")
+        if same in failed:
+            also.setdefault(same, []).append(x)
     for res in mine["results"]:
         rule = res["rule"]
         if rule["rule"].startswith("pem_") and rule.get("hardware"):
@@ -444,13 +451,20 @@ def check_part(r, design, c, row: dict, sm, frame, cyls, holes) -> None:
                     pem_notes.add(note)
         if res["status"] != "fail" or rule["severity"] == "info":
             continue
+        if rule.get("same_requirement_as") in failed:
+            continue
         unit = "" if rule["rule"] in ("cut_away_max", "flange_support_min", "bend_offered", "tap_offered", "tap_metric_range", "countersink_offered",
                                       "cnc_thread_range", "cnc_thread_callout", "bend_material_review") else " mm"
         if rule["rule"] in ("bend_angle_max", "bend_angle_min"):
             unit = " deg"
         cnt = f" ({res['count']} of {res['of']})" if res.get("of", 1) > 1 else ""
+        tol = f" +/- {rule['tolerance_mm']:g}" if rule["comparison"] == "==" and rule.get("tolerance_mm") else ""
+        same = "".join(f" Same requirement in the flat pattern ({o['rule']['id']}): {KIND_TEXT.get(o['rule']['rule'], o['rule']['rule'])} "
+                       f"{_fmt(o.get('measured'))}{unit}, limit {o['rule']['comparison']} {_fmt(o.get('limit'))}{unit}." for o in also.get(rule["id"], []))
+        outcome = f" {rule['outcome'][0].upper()}{rule['outcome'][1:]}." if rule.get("outcome") else ""
         msg = (f"{c.name}: {sname} rule {rule['id']}: {KIND_TEXT.get(rule['rule'], rule['rule'])} {_fmt(res.get('measured'))}{unit}{cnt}, "
-               f"limit {rule['comparison']} {_fmt(res.get('limit'))}{unit} ({rule['severity']}: the supplier's words: \"{rule['quote'][:160]}\").")
+               f"limit {rule['comparison']} {_fmt(res.get('limit'))}{tol}{unit} ({rule['severity']}: the supplier's words: \"{rule['quote'][:160]}\")."
+               f"{outcome}{same}")
         r.add(rule["severity"], "supplier_rule", msg, part=c.name, supplier=shop, rule=rule["id"], rule_kind=rule["rule"],
               value=res.get("measured"), limit=res.get("limit"), comparison=rule["comparison"], count=res.get("count"),
               at=res.get("at") or None, source=rule["source_url"], quote=rule["quote"], retrieved=rule["retrieved"],
@@ -468,3 +482,27 @@ def check_part(r, design, c, row: dict, sm, frame, cyls, holes) -> None:
           f"Passes the published rules of: {', '.join(passing) or 'none'}.",
           part=c.name, supplier=shop, by_supplier={s: {"verdict": v["verdict"], **v["summary"], "no_published_rule": v["missing"]} for s, v in verdicts.items()},
           not_evaluated=gaps)
+
+
+# ------------------------------------------------------------------------------------- a part from a file
+def check_file(path, material: str, process: str = "sheet", shop: str | None = None, thickness_mm: float | None = None,
+               name: str = "part"):
+    """Run the manufacture checks (process rules, shop profile, the assigned supplier's published rules) on one part read from a
+    STEP file, with its material, process, shop and (for sheet) stock thickness declared as a supplier's quote page would ask for
+    them. Used for reference parts (reference_parts/) and parts that are not in a design. Returns the VerifierResult; a declared
+    thickness that the geometry does not have is an error (`declared_thickness_differs`)."""
+    from build123d import import_step
+
+    from ..model import Design
+    from .manufacture import verify_manufacture
+
+    shape = import_step(str(path))
+    d = Design(f"file:{getattr(path, 'name', str(path))}")
+    d.add(name, shape, material=material, process=process, meta={"dfm": {"shop": shop}} if shop else {})
+    r = verify_manufacture(d)
+    row = (r.metrics.get("parts") or {}).get(name) or {}
+    t = row.get("thickness_mm")
+    if thickness_mm is not None and t is not None and abs(float(t) - float(thickness_mm)) > SR.T_TOL:
+        r.add("error", "declared_thickness_differs", f"{name}: declared {thickness_mm:g} mm stock, the geometry is {float(t):g} mm thick.",
+              part=name, value=float(t), limit=float(thickness_mm))
+    return r

@@ -54,7 +54,13 @@ URL = {
     "fictiv_spec_cnc": "https://www.fictiv.com/specifications/cnc-machining",
     "hubs_sm_basic": "https://www.hubs.com/guides/sheet-metal-fabrication/",
     "scs_specs": "https://app.sendcutsend.com/sendcutsend-specs.json",
+    "scs_home": "https://sendcutsend.com/",
+    "osh_home": "https://www.oshcut.com/",
+    "fab_home": "https://www.fabworks.com/",
 }
+BENCH_FILE = Path(__file__).resolve().parents[1] / "reference_parts" / "batch01" / "results" / "web_benchmark_2026-11-19.csv"
+BENCH = {i + 2: row for i, row in enumerate(__import__("csv").DictReader(open(BENCH_FILE, encoding="utf-8", newline="")))}   # line number -> row
+BENCH_SITE = {"sendcutsend": "SendCutSend", "oshcut": "OSH Cut", "fabworks": "Fabworks"}
 SPECS = json.loads((SCR / "dfm_sources" / "app" / "scs_sendcutsend-specs.json").read_text(encoding="utf-8"))
 
 _TEXT = {}
@@ -116,6 +122,9 @@ def add(supplier, rid, *, process, rule, page, quote, quote_kind="text", materia
         sku, section, field, val = cells
         m = next(x for x in SPECS["materials"] if x["sku"] == sku)
         assert str(m[section][field]) == val, (rid, sku, section, field, val)
+    elif quote_kind == "quote_page":
+        row = BENCH[cells[0]]
+        assert row["site"] == BENCH_SITE[supplier] and norm(quote) in norm(row["dfm_messages"]), (rid, cells, quote[:80])
     elif quote_kind == "text":
         assert norm(quote) in text(page), (supplier, rid, page, quote[:80])
     else:
@@ -271,7 +280,9 @@ for row in bc[1:]:
     add(SCS, f"bend.radius.{key}.{tkey(tmm)}", rule="bend_radius", cells=[thk, rad], quote=f"{hdr}, {cur} {thk}: Effective Bend Radius @ 90° {rad}",
         value_mm=inch(rad), value_as_published=norm(rad), comparison="==", tolerance_mm=0.15, severity="warning", phrasing="the only radius offered",
         measured="modelled inside bend radius", **base,
-        note="See this file's notes.bend_radius.")
+        outcome="SendCutSend forms the bend at its own radius, which will change the finished dimensions (its quote page: "
+                "'This will impact the finished dimensions of your parts')",
+        note="See this file's notes.bend_radius. A modelled radius within tolerance_mm (0.15 mm) of this one is taken as this one.")
     add(SCS, f"bend.k_factor.{key}.{tkey(tmm)}", rule="k_factor", cells=[thk, kf], quote=f"{hdr}, {cur} {thk}: K Factor {kf}",
         value=float(kf), unit="ratio", comparison="info", severity="info", **base)
     add(SCS, f"bend.die_width.{key}.{tkey(tmm)}", rule="feature_to_bend", cells=[thk, die],
@@ -287,6 +298,19 @@ for row in bc[1:]:
     add(SCS, f"bend.relief_depth.{key}.{tkey(tmm)}", rule="relief_depth_min", cells=[thk, rdep], quote=f"{hdr}, {cur} {thk}: Bend Relief Depth {rdep}",
         value_mm=inch(rdep), value_as_published=norm(rdep), comparison=">=", severity="warning", phrasing="suggested", evaluate=False,
         note="Relief geometry is not extracted by mechloop (gap).", **base)
+
+# Where SendCutSend measures its two minimum-flange figures (resolved 2026-11-20 from its own pages; see the benchmark,
+# reference_parts/batch01/results/RESULTS.md, where the quote page cited .254" and the specs file .326" for 5052 .090").
+FLAT_FLANGE_NOTE = (
+    "Same requirement as the formed figure, measured in the flat pattern. SendCutSend's definitions: bending guidelines "
+    "(https://sendcutsend.com/services/cnc-bending/) 'Flange length is measured from the bend line to the flange's outer edge'; "
+    "bend deformation guideline (https://sendcutsend.com/guidelines/bend-deformation/) 'the minimum flat flange length (before bending) "
+    "and minimum overall dimension (formed flange length)'; bending calculator 'Formed flange lengths should always be measured from the "
+    "apex of the bend' and its worked example places the bend lines 3.903\" from the edge for a 4\" outside flange with a .194\" bend "
+    "deduction, i.e. bend line = formed (apex) length - half the bend deduction. Check on the specs file: for 49 of 56 bendable "
+    "metal stocks min_flange_length_after_bend - bend_deduction / 2 = min_flange_length_before_bend within .0035\" (5052 .090\": "
+    ".326 - .142 / 2 = .255 against .254). The quote engine cites the flat figure (5052 .090\": .254\" on the quote page, "
+    "benchmark 2026-11-19).")
 
 # ---- bending: processing min/max table (part size, radius, max bend length, flat and formed flange)
 for mat, cells in walk(tables("scs_minmax")[1]):
@@ -308,7 +332,10 @@ for mat, cells in walk(tables("scs_minmax")[1]):
         value_mm=inch(maxlen), value_as_published=norm(maxlen), comparison="<=", severity="error", measured="length of each bend", **base)
     add(SCS, f"bend.flange_min_flat.{key}.{tkey(tmm)}", rule="flange_min_flat", cells=[thk, flat],
         quote=f"{hdr}, {mat} {thk}: Min Flange Length (Before Bend/Flat Pattern) {flat}", value_mm=inch(flat), value_as_published=norm(flat),
-        comparison=">=", severity="error", evaluate=False, note="The page does not say where the flat flange length is measured from; not evaluated (the formed figure is).", **base)
+        comparison=">=", severity="error", reference="bend_line_flat", same_requirement_as=f"sendcutsend.bend.flange_min_formed.{key}.{tkey(tmm)}",
+        measured="flat-pattern flange length from the bend line to the flange's edge = formed length from the apex minus half the supplier's bend "
+                 "deduction (bend deduction from its bend radius and K-factor at the bend's angle)",
+        note=FLAT_FLANGE_NOTE, **base)
     add(SCS, f"bend.flange_min_formed_minmax.{key}.{tkey(tmm)}", rule="flange_min", cells=[thk, formed],
         quote=f"{hdr}, {mat} {thk}: Min Flange Length (After Bend) 90° or less (obtuse) {formed}", value_mm=inch(formed), value_as_published=norm(formed),
         comparison=">=", severity="error", measured="formed flange length from the apex (outside mould line) of the bend", evaluate=False,
@@ -496,8 +523,17 @@ for m in SPECS["materials"]:
     c = "cutting_specs"
     spec("min_hole", c, "min_hole_size", "hole_min", ">=", "error", process="laser_cut", measured="smallest hole or cut-out",
          note="Per-stock figure from SendCutSend's engineering specs; it supersedes the 50 %-of-thickness guideline for this stock (the file says these sources are updated more often than the documentation).")
-    spec("min_bridge", c, "min_bridge_size", "web_min", ">=", "error", process="laser_cut", measured="least material between cut features or to the edge")
-    spec("min_hole_to_edge", c, "min_hole_to_edge", "hole_edge_web", ">=", "error", process="laser_cut", measured="material between a hole's edge and the outer edge")
+    spec("min_bridge", c, "min_bridge_size", "web_min", ">=", "error", process="laser_cut", measured="least material between two cut features",
+         between="cut_features",
+         note="Bridge = material between two cut features, not to the outer edge: the file gives min_hole_to_edge separately (and smaller, e.g. "
+              ".038\" against a .044\" bridge in 6061 .125\"), and the quote page raised only the hole-to-edge review for RP04's 0.8 mm hole-to-edge "
+              "web (benchmark 2026-11-19).")
+    spec("min_hole_to_edge", c, "min_hole_to_edge", "hole_edge_web", ">=", "warning", process="laser_cut", measured="material between a hole's edge and the outer edge",
+         phrasing="review required for instant quoting (not a refusal)",
+         outcome="order review required: below this the part is not instant-quoted, it goes to SendCutSend's review (not a refusal)",
+         note="Severity from the quote page (benchmark 2026-11-19, RP04 in 6061 .125\"): 'Review Required: Hole-to-Edge Bridging | Order review "
+              "required due to hole to edge distance | The minimum hole to edge distance for instant quoting in this material is 0.97 mm', "
+              "and the quote was not blocked. See sendcutsend.quote.hole_edge_review.al6061.3.175mm.")
     spec("cut_tolerance", c, "cut_tolerance", "tolerance_cut", "info", "info", process="laser_cut")
     spec("min_part", c, "min_part_size", "part_min_size", ">=", "error", conv="pair", process="laser_cut", evaluate=False,
          duplicate_of=f"sendcutsend.cut.part_min.{key}.{tkey(tmm)}", note="Cross-check of the min/max chart.")
@@ -797,6 +833,79 @@ for rid, rule, q, formula, extra in (
     kw.update(extra)
     add(HU, rid, **kw)
 
+# =============================================================================== hand-collected (quote pages)
+# What the suppliers' instant-quote pages said about reference parts batch 01 (reference_parts/batch01), read by the owner's
+# agent on 2026-11-19 at customer pace (no orders): reference_parts/batch01/results/web_benchmark_2026-11-19.csv. Each rule names
+# the CSV row (line number in the file, header = line 1) and quotes the page's message as recorded there; the quote is checked
+# against that row. A rule derived from one part is marked data_points = 1 and says how far the data supports it.
+HAND = dict(source="owner's agent quote page, 2026-11-19", collected_by="owner's agent", quote_kind="quote_page", hand_collected=True,
+            source_file="reference_parts/batch01/results/web_benchmark_2026-11-19.csv",
+            source_url_note="site home: the quote page is a session page whose URL was not recorded")
+FAB = "fabworks"
+add(SCS, "quote.flange_min_flat.al5052.2.286mm", process="bend", rule="flange_min_flat", page="scs_home", cells=[4], **HAND, source_row=4,
+    quote="Bend Minimum Flange Contact Error | Some flanges on your part are too short to be bent properly. 5052 H32 Aluminum (.090\") requires a "
+          "minimum flange length of at least 0.254\".",
+    material="al5052", material_as_published="5052-H32 Aluminum 0.090\" (2.3mm)", thickness_mm=2.286, thickness_as_published='.090"',
+    value_mm=round(0.254 * IN, 3), value_as_published='0.254"', comparison=">=", severity="error", phrasing="error: blocks the finishing step",
+    reference="bend_line_flat", measured="flat-pattern flange length from the bend line (see the min/max page's flat figure)",
+    duplicate_of="sendcutsend.bend.flange_min_flat.al5052.2.286mm", benchmark_part="RP03",
+    note="The quote engine's figure is the flat (before-bend) minimum from the bend line (" + "specs file min_flange_length_before_bend = .254\"; "
+         "the min/max page prints .255\"), not the formed .326\" from the apex: the two are one requirement (see the flat rule's note).")
+add(SCS, "quote.bend_radius.al5052.2.286mm", process="bend", rule="bend_radius", page="scs_home", cells=[4], **HAND, source_row=4,
+    quote="Bend Radius Warning | The bend radius for your part (0.09\") does not match the SCS bend radius for this material (0.032\"). This will "
+          "impact the finished dimensions of your parts.",
+    material="al5052", material_as_published="5052-H32 Aluminum 0.090\" (2.3mm)", thickness_mm=2.286, thickness_as_published='.090"',
+    value_mm=round(0.032 * IN, 3), value_as_published='0.032"', comparison="==", tolerance_mm=0.15, severity="warning", phrasing="warning",
+    duplicate_of="sendcutsend.bend.radius.al5052.2.286mm", benchmark_part="RP03",
+    note="Confirms the bending calculator's radius and that a different modelled radius is a warning, not a refusal.")
+add(SCS, "quote.hole_edge_review.al6061.3.175mm", process="laser_cut", rule="hole_edge_web", page="scs_home", cells=[2], **HAND, source_row=2,
+    quote="Review Required: Hole-to-Edge Bridging | Order review required due to hole to edge distance | The minimum hole to edge distance for "
+          "instant quoting in this material is 0.97 mm.",
+    material="al6061", material_as_published="6061-T6 Aluminum 0.125\" (3.2mm)", thickness_mm=3.175, thickness_as_published='0.125"',
+    value_mm=0.97, value_as_published="0.97 mm", comparison=">=", severity="warning", phrasing="review required for instant quoting (not a refusal)",
+    outcome="order review required (not a refusal)", duplicate_of="sendcutsend.specs.min_hole_to_edge.al6061.3.175mm", benchmark_part="RP04",
+    note="The quote was not blocked ('order review happens at order time, does not block quote'). Matches the specs file's .038\" (0.965 mm).")
+add(OSH, "quote.small_gaps.al6061.3.175mm", process="laser_cut", rule="web_min", page="osh_home", cells=[6], **HAND, source_row=6,
+    quote="Small gaps - Your drawing contains 1 area that is more narrow than recommended for the selected material. We can still cut your part, "
+          "but narrow regions may cause excessive heat buildup and affect the edge quality.",
+    material="al6061", material_as_published="0.125\" (1/8\") Aluminum 6061 T6", thickness_mm=3.175, thickness_as_published='0.125"',
+    value_mm=0.81, comparison=">=", severity="warning", phrasing="recommendation ('We can still cut your part')",
+    measured="least material between cut features or to the edge", data_points=1, bracket_mm=[0.8, 4.5], benchmark_part="RP04",
+    note="Derived from one part only (RP04): OSH Cut flagged one area and gave no figure. RP04's narrowest webs are 0.80 mm (hole to edge) "
+         "and then 4.5 mm (not flagged), so the threshold lies in (0.80, 4.5] mm; the limit used flags only what OSH Cut flagged (0.80 mm and "
+         "under). Which RP04 feature this message and the 'narrow features' one refer to was not said (the 0.8 mm web, the 1.0 mm slot or the "
+         "sharp corner).")
+add(OSH, "quote.narrow_features.al6061.3.175mm", process="laser_cut", rule="slot_min", page="osh_home", cells=[6], **HAND, source_row=6,
+    quote="Narrow features - Your drawing contains 1 narrow or sharp area. We can still cut your part, but narrow and sharp features may cause "
+          "excessive heating, which can reduce edge quality or burn away the material in the area.",
+    material="al6061", material_as_published="0.125\" (1/8\") Aluminum 6061 T6", thickness_mm=3.175, thickness_as_published='0.125"',
+    value_mm=1.01, comparison=">=", severity="warning", phrasing="recommendation ('We can still cut your part')",
+    measured="width of a slot or notch (round holes are not judged: RP04's 1.2 mm hole was not flagged)", data_points=1, bracket_mm=[1.0, 7.03],
+    benchmark_part="RP04",
+    note="Derived from one part only (RP04): one area flagged, no figure given. RP04's slots are 1.0 mm (candidate) and 7.03 mm (not flagged), so "
+         "a slot threshold lies in (1.0, 7.03] mm; the limit used flags 1.0 mm and under. The message may instead refer to the sharp inside corner "
+         "(not measured by mechloop) or the 0.8 mm web.")
+add(FAB, "quote.flange_min.al5052.2.286mm", process="bend", rule="flange_min", page="fab_home", cells=[9], **HAND, source_row=9,
+    quote="ERROR (Fix before ordering): Flange too short | Bending, 1 bend | This flange is too short to bend: it needs to be at least 0.367″ at this "
+          "thickness. Lengthen it, or choose a thinner sheet.",
+    material="al5052", material_as_published="Aluminum 5052-H32 0.090″ (2.29mm auto-matched)", thickness_mm=2.286, thickness_as_published='0.090"',
+    value_mm=round(0.367 * IN, 3), value_as_published='0.367"', comparison=">=", severity="error", phrasing="error: blocks checkout",
+    measured="formed flange length from the apex (outside mould line) of the bend", data_points=1, benchmark_part="RP03",
+    note="One data point (RP03, whose 6.0 mm outside flange fails under any definition). Fabworks does not say where it measures; the formed "
+         "length from the apex is used, the longest of the three usual measures, so passing this rule is not proof Fabworks accepts the flange. "
+         "0.367\" equals SendCutSend's flat minimum for .125\" stock (die .630\"), which suggests a wider die than SendCutSend's for .090\".")
+add(FAB, "quote.hole_to_bend.al5052.2.286mm", process="bend", rule="feature_to_bend", page="fab_home", cells=[9], **HAND, source_row=9,
+    quote="WARNING (Worth a look): Major deformation | Bending, 1 bend | Major deformation: this bend will deform the part near a cutout or edge, "
+          "because the sheet isn’t supported there while it bends. To avoid it, move the cutout or edge 0.138″ further from the bend.",
+    material="al5052", material_as_published="Aluminum 5052-H32 0.090″ (2.29mm auto-matched)", thickness_mm=2.286, thickness_as_published='0.090"',
+    value_mm=round(1.5 + 0.138 * IN, 3), value_as_published="RP03's 1.5 mm + 0.138\"", comparison=">=", severity="warning", phrasing="warning ('Worth a look')",
+    reference="bend_tangent", measured="formed distance from the bend's tangent line to the nearest edge of a hole or cut-out in the flange",
+    data_points=1, benchmark_part="RP03",
+    note="Derived from one data point: RP03's 5.5 mm hole edge is 1.5 mm from the bend tangent (reference_parts/batch01/MANIFEST.md) and Fabworks "
+         "asked for 0.138\" (3.505 mm) more, so about 5.0 mm from the tangent at 5052 .090\" with a 2.29 mm inside radius. Whether the figure "
+         "scales with thickness, radius or cut-out size, and whether Fabworks measures from the tangent, the bend line or the die line, is not "
+         "known; edges near a bend (not only cut-outs) are covered by Fabworks' message but not measured here.")
+
 # =============================================================================== cross-check duplicates
 for r in list(RULES.values()):
     dup = r.get("duplicate_of")
@@ -824,6 +933,9 @@ SUPPLIERS = {
     "xometry": {"name": "Xometry", "processes": ["laser_cut", "bend", "countersink", "cnc_milling"], "home": "https://www.xometry.com/"},
     "fictiv": {"name": "Fictiv", "processes": ["laser_cut", "bend", "hardware", "cnc_milling"], "home": "https://www.fictiv.com/"},
     "hubs": {"name": "Hubs (Protolabs Network)", "processes": ["laser_cut", "bend"], "home": "https://www.hubs.com/"},
+    "fabworks": {"name": "Fabworks", "processes": ["laser_cut", "bend"], "home": "https://www.fabworks.com/",
+                 "how_read": "Hand-collected: messages the instant-quote page showed for reference parts batch 01, recorded by the owner's agent on "
+                             "2026-11-19 (reference_parts/batch01/results/web_benchmark_2026-11-19.csv). No published design guide was read."},
 }
 NOTES = {"sendcutsend": {"bend_radius": "Bending guidelines (https://sendcutsend.com/services/cnc-bending/): 'Bend radius and K factor are set per material thickness. Design your parts using our specs so they form as expected, we don't offer custom bend radii.' A part modelled at another radius is formed at this one, so its flanges move: a warning, not a refusal."}}
 NOT_READ = json.loads((SCR / "dfmtools" / "not_read.json").read_text())
@@ -832,7 +944,9 @@ for sup, meta in SUPPLIERS.items():
     rules = [r for r in RULES.values() if r["supplier"] == sup]
     doc = {"schema": "mechloop.supplier_rules/1", "version": "2026-11-19.1", "supplier": sup, "name": meta["name"], "home": meta["home"],
            "retrieved": DATE, "processes": meta["processes"],
-           "how_read": "Plain HTTPS page fetch, no account, no quote; figures copied as published. Prose quotes are verbatim; 'table_row' quotes name the table, row and cells.",
+           "how_read": meta.get("how_read") or "Plain HTTPS page fetch, no account, no quote; figures copied as published. Prose quotes are verbatim; 'table_row' quotes name the table, row and cells."
+                       + (" Rules with quote_kind 'quote_page' are hand-collected from the instant-quote page (see each rule's source and source_row)."
+                          if any(r.get("hand_collected") for r in rules) else ""),
            "not_read": NOT_READ.get(sup, []), "notes": NOTES.get(sup, {}), "rules": rules}
     (OUT / f"{sup}.json").write_text(json.dumps(doc, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     print(sup, len(rules))

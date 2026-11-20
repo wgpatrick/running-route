@@ -25,6 +25,10 @@ from . import dfm_geom as G
 from .dfm_rules import SOURCES, Limits
 
 METHODS = ("laser", "waterjet", "router")
+# A modelled inside bend radius within this of the shop's one radius is taken as that radius (the same tolerance as the supplier
+# rules' `tolerance_mm` on SendCutSend's bend_radius rows); further apart, the shop forms its own radius and the finished
+# dimensions change (SendCutSend's quote page, benchmark 2026-11-19: "This will impact the finished dimensions of your parts").
+BEND_RADIUS_TOL_MM = 0.15
 
 
 # -------------------------------------------------------------------------------------- the plate
@@ -534,7 +538,7 @@ def check_bent(r, c, shape, bent: dict, sm, holes: list, lim: Limits) -> dict:
         if rin > lim("sheet.bend_radius_max_t_ratio") * t:
             wide.append((rin, G.xyz(b["inside"].mid)))
         if shop_row:
-            if abs(rin - shop_row[0]) > 0.15:
+            if abs(rin - shop_row[0]) > BEND_RADIUS_TOL_MM:
                 differs.append((rin, G.xyz(b["inside"].mid)))
             if b["length"] > shop_row[1] + 1e-6:
                 long_bend.append((b["length"], G.xyz(b["inside"].mid)))
@@ -592,7 +596,8 @@ def check_bent(r, c, shape, bent: dict, sm, holes: list, lim: Limits) -> dict:
     if differs:
         v = differs[0]
         add("warning", "bend_radius_differs", f"{len(differs)} bend(s) modelled at {v[0]:.2f} mm inside radius; {lim.shop_name} forms {near:g} mm "
-            f"{c.material} at {shop_row[0]:g} mm and offers no other radius, so flange positions will move.", value=v[0], limit=shop_row[0],
+            f"{c.material} at {shop_row[0]:g} mm and offers no other radius (radii more than {BEND_RADIUS_TOL_MM:g} mm apart are taken as different): "
+            f"this will change the finished dimensions of the part (flange positions move).", value=v[0], limit=shop_row[0], tolerance_mm=BEND_RADIUS_TOL_MM,
             source="https://sendcutsend.com/materials/processing-min-max/", at=[x[1] for x in differs[:6]],
             hint=f"Model the bends at {shop_row[0]:g} mm.")
     if long_bend:
