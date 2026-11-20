@@ -124,3 +124,8 @@ Links from Digi-Key's product media (API v4), downloaded from the maker's own si
 | `inbox/NUT-M2.step` | McMaster 91828A111 hex nut M2 18-8, DIN 934 height (1.6) | `staging/instinct_REQ-006/91828A111.step` | 2026-11-20 | as above | vendor (McMaster) |
 | `inbox/Finder_22.32_2NO.step` | Finder 22.32.0.120.4320 contactor (2232_xx20, 88.8 high) | `staging/instinct_REQ-006/Finder_22.32_2NO_2232_xx20.stp` | 2026-11-20 | Finder's published CAD | vendor (Finder) |
 | `inbox/Phoenix_1119897.step` | Phoenix Contact PLC-RSC- 5DC/21 (1119897) | `staging/instinct_REQ-008/Phoenix_1119897_PLC-RSC-5DC-21.stp` | 2026-11-20 | Phoenix's published CAD | vendor (Phoenix Contact) |
+| `inbox/HBLFSN5.step` | MISUMI HBLFSN5 tabbed bracket 30 x 30 (holes 10.5 / 18 and 18) | `staging/instinct_REQ-013/Misumi_HBLFSN5.step` (checks in that MANIFEST) | 2026-11-20 | catalogue download | vendor (MISUMI) |
+| `inbox/HNTP5-5.step` | MISUMI HNTP5-5 post-assembly spring nut | `staging/instinct_REQ-013/Misumi_HNTP5-5.step` | 2026-11-20 | catalogue download | vendor (MISUMI) |
+| `inbox/CBM5-10.step` | MISUMI CBM5-10 socket head cap screw M5 x 10 (the -SEP set's screw) | `staging/instinct_REQ-013/Misumi_CBM5-10.step` | 2026-11-20 | catalogue download | vendor (MISUMI) |
+| `inbox/GT2-20T-B5-W9.step` | McMaster-Carr 3684N13 GT2 pulley 20T, 9 mm, 5 mm bore, two M4 set screws (`batch12.pulley_mcmaster_3684n13`) | `staging/instinct_REQ-013/McMaster_3684N13.step` | 2026-11-20 | McMaster download for the owner | vendor (McMaster) |
+| `inbox/GT2-IDLER-30T-B5-W9.step` | MISUMI AGTFW30-GT2090-5 toothed idler 30T (`batch12.idler_misumi_agtfw30`) | `staging/instinct_REQ-013/Misumi_AGTFW30-GT2090-5.step` | 2026-11-20 | catalogue download | vendor (MISUMI) |
