@@ -59,3 +59,14 @@ stock and lead time before ordering.
 - No alteration C (cover taps) needed.
 - Source: Misumi catalogue pages supplied by the owner (dimension drawing, materials, specifications, alterations).
   CAD to collect: HBLFSN5, HNTP5-5, CBM5-10 (HBLFSNF5 STEP already staged, vendor_cad/staging/instinct_REQ-001b/).
+
+## Owner decisions (2026-11-20, later)
+
+- Idlers: Misumi AGTFW30-GT2090-5 (30T 2GT, 9 mm, 5 mm bore, bearings both sides). Misumi has no 20T 9 mm 5 mm-bore idler.
+- Drive pulleys: GPA20GT2090-A-H5 (delivered, matches Misumi's drawing) has a plain H bore with no set screw, so it can't go
+  on the motor shaft. Misumi's set-screw (P) bore starts at 24T: plan GPA24GT2090-A-P5, unless a 20T two-set-screw pulley
+  from another maker with CAD turns up (REQ-013b).
+- PEM S-M3-0 CAD: via Bossard (REQ-014).
+- Reference sheet parts: SendCutSend preferred over PCBWay; PCBWay RP03 not paid. SendCutSend cart for RP03/RP04 (REQ-014).
+- WayKen: modified RP01 (R3 pocket corners, R1 slot corners) accepted; quote requested.
+- Fictiv: not added to the RFQ batch. Digital-twin fidelity work: later, after the v12 gate.
