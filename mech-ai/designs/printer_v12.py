@@ -1863,6 +1863,9 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
         place(d, f"din_end_{k_}", din_endstop_wago(), Location((xs, DIN_Y, zr + 7.5)))
         d.join(f"din_end_{k_}", "din_rail", "snapped on the rail")
     d.join("psu_relay", "din_rail", "snapped on the rail")
+    # the Finder's STEP clip sits inside the rail's channel and its housing against its neighbours by design (DIN modules butt)
+    for o_ in ("din_rail", "iface_relay", "din_end_0", "din_end_1"):
+        d.allow_overlap("psu_relay", o_, max_volume=500.0)
     d.join("iface_relay", "din_rail", "snapped on the rail")
     din_bolts = [(DIN_X0 + 12.5, DIN_Y), (DIN_X1 - 12.5, DIN_Y)]
     grp += ["din_rail", "psu_relay", "iface_relay", "din_end_0", "din_end_1"]
@@ -1912,6 +1915,11 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
         bolt_nut(d, f"din_rail_bolt_{i}", "M3", 10, (x, y, Z_TRAY + 1.0), (0, 0, -1), "world", ("din_rail", "electronics_tray"),
                  nut_at=(x, y, 20.0), large=True)
         grp += [f"din_rail_bolt_{i}", f"din_rail_bolt_{i}_washer", f"din_rail_bolt_{i}_nwasher", f"din_rail_bolt_{i}_nut"]
+        # the head lies in the rail's 7.5 mm channel (top 4 mm above the tray), under the contactor / relay, whose clip hooks the rail's
+        # edges: their simulation solids clear it; the Finder STEP's clip detail is not booleaned against it (an OCCT boolean of
+        # that file with a threaded McMaster screw does not finish)
+        for o_ in ("psu_relay", "iface_relay"):
+            d.allow_overlap(o_, f"din_rail_bolt_{i}", max_volume=1.0)
     d.subassemblies["electronics"] = grp
     # mains inlet on a 2.54 mm panel (the DD11's own 2.75 mm web between cut-out and screw holes meets a one-thickness
     # web only at 2.5 mm or thinner), its rear covered by a printed hood screwed through the panel
