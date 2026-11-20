@@ -1,0 +1,35 @@
+igus drylin T miniature, size 12 (rail TS-04-12, carriages TW-04-12 and TWE-04-12)
+Read 2026-11-20 from www.igus.com product pages (plain fetch; robots.txt allows /product/; no ClaudeBot rule).
+This is a transcription of what the static pages carry. The dimensioned drawings (PNG on igus.widen.net) and the
+"Downloads" / "Download CAD data" assets could NOT be fetched (igus.widen.net refused by the session's network proxy).
+Not a substitute for the maker's datasheet: the owner's browser agent must fetch the drawing and CAD (see docs/RAIL_OPTIONS.md).
+
+Pages
+- https://www.igus.com/product/drylin_TS_04?artNr=TS-04-12      (rail; the static page renders TS-04-07 as the current item)
+- https://www.igus.com/product/drylin_TW_04?artNr=TW-04-12      (carriage; renders TW-04-07)
+- https://www.igus.com/product/drylin_TWE_04?artNr=TWE-04-12    (adjustable-clearance carriage; renders TWE-04-12)
+
+Maker statements (verbatim, from the pages' bullet lists)
+- Rail TS-04: "Hard anodized aluminum"; "Sizes 07/09/12/15mm (mounting-base width)"; "Available up to 2000mm lengths";
+  "No cutting charge for standard lengths and tolerances"; "Assembled rail and carriages are dimensionally interchangeable
+  with recirculating ball bearing guides". Min. length 100 mm, max. length 2000 mm. Order type: length (sold cut to
+  length by igus). Variants: TS-04-12 (standard drilling pattern), TS-04-12-UNGEBOHRT (no holes).
+- Carriage TW-04: "For drylin Miniature guide rails 07/09/12/15mm (mounting-base width)"; "Zinc carriage with iglide J or
+  J200 liner material (size-dependent)"; "Assembled rail and carriages are dimensionally interchangeable with recirculating
+  ball bearing guides". TW-04-12: A (carriage width) = 27 mm. Variants TW-04-12, -LLY, -LLZ (liner options).
+- Carriage TWE-04: "For drylin Miniature guide rails sizes 12mm and 15mm"; "Black zinc carriage with iglide J liner";
+  "For reducing or increasing the clearance between the carriage and guide rail" (height and lateral clearance set with a
+  3 mm screwdriver). TWE-04-12: A = 27 mm; shipping weight 0.03791 kg.
+
+Prices in the pages' JSON (USD, igus US store, 2026-11-20)
+- TWE-04-12: qty 1: 46.29; 10: 45.37; 25: 45.62; 50: 44.72; 100: 39.16; 200: 38.38 (per piece).
+- TW-04-12: lowest_price (qty 1000) 10.48. The qty-1 ladder on the page is for TW-04-07: 17.42 (qty 1) ... 7.91 (qty 1000);
+  TW-04-12 qty-1 price not in the static page (estimate by ratio ~23 USD, NOT a quote).
+- TS-04-12: lowest_price 81.16 with unit "ft" at the 1000 threshold. The qty ladder on the page is for TS-04-07 (unit "ft"):
+  106.92 (from 0) ... 67.64 (1000). TS-04-12 qty-1 price per unit not in the static page (ratio estimate ~128 USD per
+  unit; the unit label "ft" looks doubtful). Owner's agent to read the price for 250 / 300 mm on the configurator.
+- Ships: "Generally ships within 5 working days" (all three).
+
+Not on the pages (needed from the datasheet/drawing): rail height, hole pitch and screw size, end distance, carriage length,
+height H, hole pattern, load ratings, clearance. A distributor (RS) lists TW-04-12 static load 0.96 kN (search snippet, not
+the maker). Distributor APIs (Digi-Key, Mouser, Newark, Farnell) returned not_found for TS-04-12, TW-04-12 and TWE-04-12.
