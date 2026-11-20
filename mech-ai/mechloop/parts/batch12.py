@@ -993,3 +993,22 @@ def ptfe_coupler_placeholder() -> Stock:
     return Stock(s, "PTFE-COUPLER-4MM", "push-fit coupler for 4 mm PTFE (placeholder)", 0.003, material="brass", cost_usd=2.0,
                  ratings={"approximate": True},
                  model={"kind": "proxy", "state": "stand-in", "source": "placeholder envelope (REQ-018)"})
+
+
+NFJN_PAGE = "vendor_docs/Misumi_NFJN_leveling-mounts_2019US_p3166-3167.pdf"
+
+
+@part
+def foot_misumi_nfjn5_30() -> Stock:
+    """MISUMI NFJN5-30 levelling mount ('Standard'): M5 x 30 screw on a 30 mm swivel foot, all metal (1018 steel, trivalent chromate),
+    L 40.5, allowable vertical load 1.5 kN, 15 g (catalogue p.3166). Display model: MISUMI's STEP (solid, simplified; its mass is
+    overridden by the catalogue's 15 g). Local frame: the foot's base on Z=0, screw up +Z (tip at Z=40.5)."""
+    s = Pos(0, 0, 3.5) * Cylinder(15.0, 7.0) + Pos(0, 0, 7.0 + 33.5 / 2) * Cylinder(2.5, 33.5)
+    return Stock(s, "NFJN5-30", "MISUMI NFJN5-30 levelling mount, M5 x 30, 30 mm swivel foot", 0.015, material="steel", cost_usd=4.32,
+                 ratings={"allowable_vertical_load_n": 1500.0},
+                 interfaces={"screw": "M5", "screw_length": 30.0, "overall": 40.5, "foot_d": 30.0},
+                 model={"inbox": ["NFJN5-30"], "no_auto_features": True,
+                        "tolerance": {"volume_ratio": (0.6, 1.7), "mass_ratio": (0.2, 3.0)}},
+                 real_part={"maker": "MISUMI", "mpn": "NFJN5-30", "sellers": [{"name": "MISUMI USA", "part_number": "NFJN5-30", "catalogue": True,
+                                                                             "checked": CHECKED, "note": "$4.32 each, ships Nov 24 (REQ-017)"}],
+                            "datasheet": NFJN_PAGE, "ratings_source": {"allowable_vertical_load_n": "MISUMI p.3166 table: NFJN5-30 1.5 kN"}})

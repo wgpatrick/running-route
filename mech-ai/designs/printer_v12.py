@@ -140,7 +140,7 @@ from mechloop.parts.hardware import WASHER, spacer_round
 from mechloop.parts.probes import add_probe_nuts, probe_omron_e2e
 from mechloop.parts.toolhead import extruder_roto, hotend_revo
 from mechloop.shops import assign
-from mechloop.parts.batch12 import (tnut_hntp5, foot_levelling_m5_placeholder, spool_1kg_placeholder, spacer_tube_m8_placeholder, ptfe_coupler_placeholder, add_bracket_misumi, adxl345_btt, cam_arducam_b0454, cob_led, contactor_finder_2232, din_endstop_wago,
+from mechloop.parts.batch12 import (tnut_hntp5, foot_misumi_nfjn5_30, spool_1kg_placeholder, spacer_tube_m8_placeholder, ptfe_coupler_placeholder, add_bracket_misumi, adxl345_btt, cam_arducam_b0454, cob_led, contactor_finder_2232, din_endstop_wago,
                                     din_rail_wago, heater_hydra_sq1451144, hiwin_mgn12_rail, hiwin_mgn12h_block, laser_vlm520, lens_cil062,
                                     leadscrew_motor_a4003, leadscrew_nut_pom_a4003, leadscrew_screw_a4003, picam3, pi5_host, probe_eddy_duo,
                                     relay_phoenix_1119897, sfs_v2, spacer_harwin, thermostat_cs7,
@@ -153,7 +153,7 @@ PAYLOAD_KG = 1.0
 V_XY, A_XY = 250.0, 4000.0
 V_Z, A_Z = 12.0, 200.0
 MARGIN = 3.0
-ENVELOPE = (420.0, 515.0, 495.0)    # v12: with the owner's rear spool (Y) and levelling feet (Z), 2026-11-20; the machine without them is held to 420 x 420 x 480 by a requirement
+ENVELOPE = (420.0, 515.0, 515.0)    # v12: with the owner's rear spool (Y) and levelling feet (Z), 2026-11-20; the machine without them is held to 420 x 420 x 480 by a requirement
 MAX_TOOLHEAD_KG, MIN_BELT_IN_PLANE = 0.45, 0.98   # v12 (owner, Q9): toolhead under 0.45 kg with the new sensors
 
 # ---- electrical choices -----------------------------------------------------------
@@ -1889,26 +1889,31 @@ def build() -> Design:
     return finish_build(d, zs, bed_own, mounts, mount_parts)
 
 
-FOOT_GAP = 5.0          # v12 (owner): levelling feet, the base 5 mm below the bottom rails (5 to 10 mm of adjustment on the stud)
+FOOT_SCREW_IN = 5.0     # v12: the NFJN5-30's screw reaches 5 mm into the bottom rail (into a drop-in T-nut; 0.5 mm off the slot floor)
 
 
 def add_feet(d):
-    """v12 (owner, 2026-11-20): four levelling feet under the bottom side rails at the frame's corners, each on an M5 stud into a
-    drop-in T-nut in the rail's BOTTOM slot (the outer side faces stay free for a bolt-on enclosure). PLACEHOLDER parts until
-    REQ-017 names the product."""
+    """v12 (owner, 2026-11-20, pending confirmation): four MISUMI NFJN5-30 levelling mounts under the frame's corners. The corners
+    are on the bottom SIDE RAILS (horizontal: the posts stand on them), so there is no downward end tap: each mount's M5 screw goes
+    into a drop-in T-nut (MISUMI HNTAJ5) in the rail's BOTTOM slot, 25 mm in from the post, locked by a DIN 934 nut against the
+    rail's underside. The outer side faces stay free for a bolt-on enclosure. Frame 35.5 mm above the floor (5 to 10 mm of
+    levelling either way on the screw)."""
     from mechloop.parts.tslot import tnut_2020
+    foot = foot_misumi_nfjn5_30()
     for sx, n in ((-1, "left"), (1, "right")):
         for sy in (-1, 1):
             y = (FY / 2 - 10) if sy > 0 else FRONT_Y
-            y -= sy * 25.0                               # 25 mm in from the post's centre, clear of the corner bracket's T-nut
+            y -= sy * 25.0
             nm = f"foot_{n}_{'f' if sy < 0 else 'b'}"
-            place(d, nm, foot_levelling_m5_placeholder(), Location((sx * RAIL_X, y, -FOOT_GAP)))
+            place(d, nm, foot, Location((sx * RAIL_X, y, FOOT_SCREW_IN - 40.5)))
             slot = d.get(f"frame_bot_{n}").meta["interfaces"]["slot"]
             tn = place(d, f"{nm}_tnut", tnut_2020("M5"), Location(Plane(origin=(sx * RAIL_X, y, slot["lip"]), x_dir=(0, 1, 0), z_dir=(0, 0, -1))))
-            d.allow_overlap(nm, f"frame_bot_{n}")
-            d.allow_overlap(nm, tn.name)
+            add_nut(d, f"{nm}_nut", "M5", at=(sx * RAIL_X, y, 0.0), direction=(0, 0, -1), standard="din934")
+            for o_ in (f"frame_bot_{n}", tn.name, f"{nm}_nut"):
+                d.allow_overlap(nm, o_)
             d.allow_overlap(tn.name, f"frame_bot_{n}")
-            d.join(nm, tn.name, "the foot's stud threads into the T-nut")
+            d.join(nm, tn.name, "the mount's M5 screw in the T-nut")
+            d.join(f"{nm}_nut", f"frame_bot_{n}", "jam nut against the rail's underside")
             d.join(tn.name, f"frame_bot_{n}", "drop-in T-nut in the bottom slot")
 
 
@@ -2612,7 +2617,7 @@ def add_requirements(d, zs):
         allb = bbox_of([c.shape for c in dd.components])
         return all(a_ <= b_ + 1e-6 for a_, b_ in zip(size, (420.0, 420.0, 480.0))), (
             f"machine without the spool holder and the feet: {size[0]:g} x {size[1]:g} x {size[2]:g} mm (owner's envelope 420 x 420 x 480); with the rear "
-            f"spool and the feet: {(allb[1] - allb[0]).round(1).tolist()} (owner's requests: spool at the rear, outside the enclosure's panel planes; feet 13 mm under the frame)")
+            f"spool and the feet: {(allb[1] - allb[0]).round(1).tolist()} (owner's requests: spool at the rear, outside the enclosure's panel planes; NFJN5-30 feet, frame 35.5 mm above the floor)")
     d.requirements.append(Requirement("the machine stays in the owner's 420 x 420 x 480 envelope; the rear spool holder and the feet are reported", machine_envelope))
 
     def ptfe_route(dd, m):

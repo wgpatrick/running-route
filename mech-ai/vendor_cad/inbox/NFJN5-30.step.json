@@ -1,0 +1,3 @@
+{"rot": [90, 0, 0], "pos": [0, 0, 0], "keep": "largest",
+ "source": "MISUMI's STEP of the NFJN5-30 levelling mount (us.misumi-ec.com, Instinct REQ-017), body only",
+ "note": "the file's axis is +Y with the foot's base at Y=0: turned so the screw points +Z; its two loose hex nuts are left out (one is drawn as a catalogue DIN 934 nut where it is used)"}
