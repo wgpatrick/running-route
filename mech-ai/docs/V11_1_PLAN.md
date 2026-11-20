@@ -75,3 +75,7 @@ stock and lead time before ordering.
 - Drive pulleys: McMaster 3684N13 (20T GT2, 5 mm bore, two M4 set screws, $5.99); fallback Misumi GPA32GT2090-A-P5.
 - JST XH connectors: drawn as faithful re-makes from JST's public datasheet (owner, 2026-11-20); JST's CAD needs a licence and
   personal-data form. Same for Molex 39-01-2020 and Phoenix NS 35/7.5 (STEPs behind TraceParts sign-up).
+- Bed heater (owner deferred to the design agent, 2026-11-20): stay at 24 V, driven from the Octopus HB output; no mains on the
+  moving bed. Keenovo 200 x 200 mm 24 V 200 W pad (NTC 100K, 3M adhesive), part number and US shipping being confirmed
+  (REQ-016), with a US-stocked 24 V alternative as fallback. The 120 V AC pads stocked in the US were rejected: mains on the
+  moving bed would need a solid-state relay, more insulation and a re-done bed wiring safety case.
