@@ -1,7 +1,7 @@
 {
  "folder_id": "1ZtlzfkmX-Yz92soEepnPbyNiPK0uQ43v",
  "folder": "mechloop handoff/results/REQ-001-supplier-cad-batch-3",
- "last_checked": "2026-11-20T15:15:00Z",
+ "last_checked": "2026-11-20T16:15:00Z",
  "result_status": "partial (Misumi delivered and staged in instinct_REQ-001b; PEM S-M3-0 not fulfilled, owner decision pending)",
  "files": {
   "1vwRHKJkIJW3gaI138gcNPCUbF5RF8TUX": {
@@ -998,9 +998,9 @@
   },
   "15LKAJDQN7rX38zy_DSCVmA9h3BzBjwIv": {
    "folder": "mechloop handoff/results/REQ-013-build1-queue-refresh",
-   "last_checked": "2026-11-20T15:15:00Z",
+   "last_checked": "2026-11-20T16:15:00Z",
    "staged_in": "vendor_cad/staging/instinct_REQ-013",
-   "result_status": "partial (P1 items 1, 2, 4, 6, 7 delivered; item 3 facts only; item 5 store price only; P2 8-11 pending; REQ-013b: GPA32 A-P5 + McMaster 3684N13 delivered)",
+   "result_status": "partial (P1 1, 2, 4, 5, 6, 7 done per Instinct, item 3 facts only; P2 9-11 partial, 8 not started; 12 unavailable; REQ-013b: GPA32 A-P5 + McMaster 3684N13 delivered)",
    "files": {
     "11zPs7IGKw2-44Di7ERwitIclD__sz6sQ": {
      "title": "RESULT.md",
@@ -1133,25 +1133,67 @@
      "modifiedTime": "2026-11-20T14:32:08.249Z",
      "size": 850668,
      "note": "duplicate of vendor_docs/ENDSTOP-MICRO_datasheet.pdf; not copied (owner-password encrypted, joboptions attachment)"
+    },
+    "1Mz6RgneOs-56AsUrBrxJvua1exKPuwvf": {
+     "title": "RESULT.md",
+     "modifiedTime": "2026-11-20T15:50:42.988Z",
+     "size": 11198,
+     "note": "new file id; staged as instinct_REQ-013/RESULT_instinct_REQ-013_2026-11-20_1550Z.md, sha256 3c717a1c...; earlier id 11zPs... not re-checked (folder not listed in batch 12)"
+    },
+    "1tUfLo3vKrz2DQeTLmzWDruqadlq7snRY": {
+     "title": "39-01-2020__drawing.pdf",
+     "modifiedTime": "2026-11-20T15:46:38.132Z",
+     "size": 201853,
+     "note": "byte-identical to vendor_docs/Molex_39-01-2020_drawing.pdf; not copied"
+    },
+    "1vQQxaNUP2wW9YaDR-InKrA63_RItCs65": {
+     "title": "ADXL345__drawing.pdf",
+     "modifiedTime": "2026-11-20T15:45:01.346Z",
+     "size": 218804,
+     "note": "not copied: Altium bookmark JavaScript; same sha256 (8a412937...) as the drawing rejected under instinct_REQ-003"
+    },
+    "1od93b3guxet2MzgxMI_L32oKsSR6n1B-": {
+     "title": "LL2MR09__datasheet.pdf",
+     "modifiedTime": "2026-11-20T15:44:22.741Z",
+     "size": 184552,
+     "note": "vendor_docs/Gates_LPP-manual_2mm-GT3_long-length_extract_for_LL2MR09.pdf; extract names 2MGT/GT3, not LL2MR09"
     }
    }
   },
   "1q3mYOgMuesTlqiKL3pHd0fxZDrbDfdLU": {
    "folder": "mechloop handoff/results/REQ-014-bossard-pem-and-sendcutsend-cart",
-   "last_checked": "2026-11-20T15:15:00Z",
+   "last_checked": "2026-11-20T16:15:00Z",
    "staged_in": "vendor_cad/staging/instinct_REQ-014",
-   "result_status": "partial (item 1 Bossard PEM blocked, no CAD; items 2-3 from existing batch01 records, no new submissions)",
+   "result_status": "partial (item 1 resolved per Instinct via owner-approved S-M3-0ZI, approval unverified; McMaster 95185A520 STEP + drawing delivered and staged; items 2-3 from existing batch01 records; SendCutSend shipping unknown)",
    "files": {
     "1o3MXYPd8IoYfY1XjdygDAofhF46ZVrjF": {
      "title": "RESULT.md",
      "modifiedTime": "2026-11-20T15:10:42.649Z",
      "size": 5996,
      "note": "staged as instinct_REQ-014/RESULT_instinct_REQ-014_2026-11-20.md, sha256 493f4128..."
+    },
+    "1gDZObejlT0rxwMj5M6IW0Bja3ZPzYifo": {
+     "title": "S-M3-0ZI__cad.step",
+     "modifiedTime": "2026-11-20T15:56:14.575Z",
+     "size": 765355,
+     "note": "staged as McMaster_95185A520_PEM-S-M3-0ZI.step; 1 valid solid, 6.35 x 6.35 x 2.27, matches S-M3-0 dims"
+    },
+    "1FavqgaxpsqPUehM56AnHJiuG45Dl_Mb-": {
+     "title": "S-M3-0ZI__drawing.pdf",
+     "modifiedTime": "2026-11-20T15:56:15.745Z",
+     "size": 102125,
+     "note": "vendor_docs/McMaster_95185A520_PEM-S-M3-0ZI_drawing.pdf"
+    },
+    "1o8MTud_uP3sb3cvOxEXmnpdfu2fT3UvU": {
+     "title": "RESULT.md",
+     "modifiedTime": "2026-11-20T15:56:28.881Z",
+     "size": 6009,
+     "note": "new file id; staged as instinct_REQ-014/RESULT_instinct_REQ-014_2026-11-20_1556Z.md, sha256 69347ed5...; earlier id 1o3MX... not re-checked (folder not listed in batch 12)"
     }
    }
   }
  },
- "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..008 (REQ-005..008 added 2026-11-20 batch 5). Batch 6 (2026-11-20 05:20Z): 7 new files + RESULT.md revision in REQ-005; nothing else new (154 files, 2 pages). Batch 7 (2026-11-20 06:20Z): 9 new files + RESULT.md revision in REQ-008; nothing else new (169 items incl. 8 folders, 3 pages). Batch 8 (2026-11-20 06:45Z): 2 new files + RESULT.md revision in REQ-008; new REQ-009 folder (RESULT.md only); new REQ-010 folder empty. Search: created or modified after 05:30Z under results, plus listing of the new folders. Batch 9 (2026-11-20 07:20Z): 5 new files in REQ-010; new NOTE-pcbway-review-status folder (RESULT.md only). Search: created or modified after 06:30Z under results (6 files + 2 folders). Batch 10 (2026-11-20 14:20Z): 3 new files + RESULT.md revision (07:22Z) in REQ-008; new REQ-012 folder (RESULT.md only). Only the five named file ids were fetched; no full search of results this batch. Batch 11 (2026-11-20 15:15Z): new REQ-013 folder (22 files + RESULT.md) and REQ-014 folder (RESULT.md only); only the named file ids plus a listing of these two folders; no full search of results this batch.",
+ "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..008 (REQ-005..008 added 2026-11-20 batch 5). Batch 6 (2026-11-20 05:20Z): 7 new files + RESULT.md revision in REQ-005; nothing else new (154 files, 2 pages). Batch 7 (2026-11-20 06:20Z): 9 new files + RESULT.md revision in REQ-008; nothing else new (169 items incl. 8 folders, 3 pages). Batch 8 (2026-11-20 06:45Z): 2 new files + RESULT.md revision in REQ-008; new REQ-009 folder (RESULT.md only); new REQ-010 folder empty. Search: created or modified after 05:30Z under results, plus listing of the new folders. Batch 9 (2026-11-20 07:20Z): 5 new files in REQ-010; new NOTE-pcbway-review-status folder (RESULT.md only). Search: created or modified after 06:30Z under results (6 files + 2 folders). Batch 10 (2026-11-20 14:20Z): 3 new files + RESULT.md revision (07:22Z) in REQ-008; new REQ-012 folder (RESULT.md only). Only the five named file ids were fetched; no full search of results this batch. Batch 11 (2026-11-20 15:15Z): new REQ-013 folder (22 files + RESULT.md) and REQ-014 folder (RESULT.md only); only the named file ids plus a listing of these two folders; no full search of results this batch. Batch 12 (2026-11-20 16:15Z): 3 new files in REQ-014 (S-M3-0ZI STEP + drawing, RESULT.md new id) and 4 in REQ-013 (RESULT.md new id + 3 PDFs); only the named file ids fetched; no folder listing or full search. BTT ADXL345 V2.0 STEP fetched from GitHub master: byte-identical to the instinct_REQ-003 zip content, not re-staged.",
  "last_checked_all": "2026-11-20T07:20:00Z",
  "_note_not_downloaded": "Files with 'NOT downloaded' notes are recorded as seen but were never fetched; retry them if a larger download route exists."
 }

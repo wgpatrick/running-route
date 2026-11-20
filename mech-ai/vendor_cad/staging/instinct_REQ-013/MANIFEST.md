@@ -97,3 +97,54 @@ an Adobe Distiller settings text, which is harmless. That PDF was not copied any
 5. 7 of 13 documents duplicate files already in vendor_docs.
 6. D2F-01L PDF: owner-password encryption and a Distiller joboptions attachment (harmless; not copied).
 7. Pi 5 STEP blocked by the proxy.
+
+## 2026-11-20 batch 12 (ingested about 16:15Z)
+
+Four new files in the REQ-013 folder (15LKAJDQN7rX38zy_DSCVmA9h3BzBjwIv), fetched by Drive id only (folder not re-listed).
+Untrusted data; nothing to `vendor_cad/inbox/`; nothing committed. Same PDF checks (raw and inflated-stream scan plus a pypdf
+walk).
+
+| Delivered as (Drive id, modified, size) | Disposition | sha256 |
+|---|---|---|
+| RESULT.md (1Mz6RgneOs-56AsUrBrxJvua1exKPuwvf, new file id, 2026-11-20T15:50:42.988Z, 11,198 B) | staged as RESULT_instinct_REQ-013_2026-11-20_1550Z.md | 3c717a1cd1bf158e7eb209d0029dfff4512aaadda9b6d9ae2899000b2b74950a |
+| 39-01-2020__drawing.pdf (1tUfLo3vKrz2DQeTLmzWDruqadlq7snRY, 15:46:38.132Z, 201,853 B) | **byte-identical** to vendor_docs/Molex_39-01-2020_drawing.pdf; not copied | 006bb06a775c0100f3184a02d0aa9e6cc09caf77630144b19a7b5f15ae5b2386 |
+| ADXL345__drawing.pdf (1vQQxaNUP2wW9YaDR-InKrA63_RItCs65, 15:45:01.346Z, 218,804 B) | **not copied**: contains JavaScript (see below) | 8a4129376ddb017c14b56c1bfd1fed67e4ecfd38ef93e9a7ce66a7a3eff81811 |
+| LL2MR09__datasheet.pdf (1od93b3guxet2MzgxMI_L32oKsSR6n1B-, 15:44:22.741Z, 184,552 B) | vendor_docs/Gates_LPP-manual_2mm-GT3_long-length_extract_for_LL2MR09.pdf | 694d76e7a020f73bcdbb6401aec6c0bd18b4de9580ce33498bcf892724436423 |
+
+RESULT.md changes against the 15:10Z version: item 5 is now DONE (adds US resellers: TH3D $34.99, in stock; Fabreeko $26.99,
+out of stock). P2 items 9, 10 and 11 are PARTIAL:
+- item 9: the Molex drawing. JST XH CAD sits behind a licence and personal-data form, which was not accepted. Century Spring
+  DJ-8X20YCS page specs (max about 440 F). Phoenix NS 35/7.5 confirmed, but its STEP and datasheet are behind TraceParts or a
+  captcha.
+- item 10: the Gates extract, the ADXL345 drawing, and the ADXL345 STEP noted as 38.7 MB. The COB strip is not started.
+- item 11: Arducam shipping policy only, no $ cost.
+Item 12 (PCBWay qty-10 price) is still unavailable. These are Instinct's statements, as stated.
+
+Checks:
+- **ADXL345 drawing**: same sha256 as the BTT-ADXL345-V2.0__drawing.pdf already rejected under instinct_REQ-003. It is an
+  Altium / llPDFLib export with a document /Names JavaScript tree (`_FindWord`, `_HighlightRect`) and 432 bookmark
+  `_FindWord(n, "REF")` actions. There is no OpenAction, AA, Launch, URI or embedded file. The script is benign but fails the
+  no-JavaScript rule, so it stays only in the scratch dir. Rendered for viewing only: 28.25 / 20.50 / 15.50 / 2.50 dimensions,
+  board height 15.50.
+- **Gates extract**: 4 pages of the Light Power and Precision Drive Design Manual (InDesign 2014, modified 2020). No JavaScript,
+  actions or embedded files. The pages cover the 2mm GT3 width table (9 mm multiplier 1.64), long-length belting (LL2MGT09:
+  9 mm, 190 lb, 50 ft minimum) and tolerances (long-length width +0.8 / -1.2 mm). It is apparently a page subset of
+  vendor_docs/Gates_GT2_design_manual.pdf (same title; 112 p). **The code "LL2MR09" / "2MR" does not appear in the extract**,
+  which uses the older 2MGT / GT3 naming. The LL2MR09 page itself is vendor_docs/Gates_LL2MR09_page_2026-11-20.pdf.
+- **Molex drawing**: 2 p, pdftk / iText. No JavaScript, actions or embedded files.
+
+### BTT ADXL345 V2.0 STEP, fetched directly
+
+https://raw.githubusercontent.com/bigtreetech/ADXL345/master/3D/BIGTREETECH%20ADXL345%20V2.0.step returned HTTP 200 with
+38,703,630 B. `/main/` returned 404. sha256 bd7c069e0e9506b13ecbeb22e8e79006ae3a1bc49f61c89460195afad9ffa76b is
+**byte-identical** to the STEP inside the already staged `../instinct_REQ-003/BTT-ADXL345-V2.0__step.zip`, which confirms that
+zip's provenance. gzip -9 would be 6,039,257 B (under 15 MB), but it was **not staged** because it duplicates the REQ-003 zip.
+The scratch copy is at scratchpad `ingest_b12/_fetch_adxl345/BIGTREETECH_ADXL345_V2.0.step`. build123d: 735 solids, all valid;
+bbox 34.68 x 16.56 x 4.27 (USB-C overhang); volume 406.97 mm3. Against the drawing, the board height 15.50 **matches** (PCB
+solid 33.25 x 15.50, per REQ-003). The drawing's 28.25 / 20.50 / 2.50 are feature positions; the board length is not
+dimensioned. Result: PASS (reference CAD).
+
+### Flags
+1. Item 013b-2 in RESULT.md still says 3684N13 has ONE set screw. The staged STEP has two (see the batch 11 flag).
+2. The Gates extract does not name LL2MR09 / 2MR (see above).
+3. The ADXL345 drawing was re-delivered unchanged with JavaScript. A JavaScript-free copy is still needed if the drawing is wanted.
