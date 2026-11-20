@@ -59,3 +59,20 @@ Not downloaded (over the Drive connector's 10 MB limit; manual download needed i
 Flag: RESULT.md lists LDO preload/accuracy as "Precision H per reseller listing (verify)". The LDO drawing staged in the
 first delivery (`vendor_docs/LDO_MGN12H-C_rail_drawing.pdf`) says accuracy class C (±40 µm) and light clearance (4 µm
 max), not preload. The drawing should take precedence.
+
+## Third delivery (ingested 2026-11-20, batch 5)
+
+New in the Drive folder: igus_NS-01-27__datasheet.pdf and igus_NW-01-27__datasheet.pdf (02:25Z) and a RESULT.md revision of
+02:47:03Z. `RESULT_instinct_REQ-004_2026-11-20.md` is now that revision (sha256
+99896d5175b46f55513375677df2624263bb365078efecfc389d8f3c1b4d0873d). Changes vs 02:12Z: status says research finished, no official
+STEP for any brand; PMI MSC12LM row gains C 3.77 kN / C0 5.72 kN, preload FZ / FC / F0, accuracy N or H; the two igus files
+are listed. Shortlist unchanged (1 LDO, 2 RobotDigg, 3 CPC MR12; CPC long block still unpriced). No STEP.
+
+| REQ item | File in vendor_docs | Delivered as | sha256 | Content / checks |
+|---|---|---|---|---|
+| (igus) | igus_drylin-N_NS-01-27_datasheet.pdf | igus_NS-01-27__datasheet.pdf | 3b82ef399f8f5281f9f6562b0f6c157b2ff67b4ed6a191b00af53a33e983cd40 | 1 p, drylin N low-profile guide rail size 27 (not a 12 mm profile rail) |
+| (igus) | igus_drylin-N_NW-01-27_datasheet.pdf | igus_NW-01-27__datasheet.pdf | 8b86f8a0550a1aaa5797086da279862550557f9731d24725e71d56c73f820c07 | 2 p, NW-01-27 carriage, iglidur J slider |
+
+Both: no JavaScript, actions or embedded files; not encrypted. The CPC / Helix size-12 comparison against MGN12H is in
+../instinct_REQ-005/MANIFEST.md. Correction: RESULT.md's "V0N = standard preload" is wrong per both catalogues
+(V0 = clearance, N = normal accuracy).

@@ -88,6 +88,13 @@ def test_callable_fingerprints_see_code_and_closures():
     assert value_fp(pred(1.0)) != value_fp(pred(2.0))
     assert value_fp(lambda f: f.area > 5) != value_fp(lambda f: f.area > 6)
 
+    fns = []
+    for mod in ("design_printer_a", "design_printer_b"):     # the design file's name is not part of a predicate
+        g = {"__name__": mod, "H": 3.0}
+        exec("def pred(f):\n    return f.center().Z < H\n", g)
+        fns.append(g["pred"])
+    assert value_fp(fns[0]) == value_fp(fns[1])
+
     import threading
 
     assert value_fp({"x": threading.Lock()}).startswith("unstable:")     # no stable form: whatever reads it re-runs

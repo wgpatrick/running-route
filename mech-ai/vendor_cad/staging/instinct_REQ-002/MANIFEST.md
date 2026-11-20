@@ -150,3 +150,23 @@ Not downloaded: **HIWIN_MG__catalog.pdf** (Drive 1H1QRkmweOT_9K32k8YR2vPTLhxjjVg
 connector's 10 MB download limit. It has the same size as REQ-004's HIWIN_LinearGuideway__catalog.pdf and is very likely
 the same file, but Drive gives no checksum, so the sha256 dedupe could not be done. It is not the same as the HIWIN PDFs
 already in vendor_docs (641,029 and 826,601 bytes). Needs a manual download if wanted.
+
+## Third delivery (ingested 2026-11-20, batch 5)
+
+New in the Drive folder since batch 4: Omron_D2F-01L__datasheet.pdf (02:27Z), DJ-8X20YCS__drawing.pdf (02:33Z), the two
+Wham Bam pages (02:36Z), and a RESULT.md revision of 02:47:02Z. `RESULT_instinct_REQ-002_2026-11-20.md` is now that revision
+(sha256 9532ba197ea779725909aa2d5d71c37daa34df49bb0595dfedb1c2a0ce933de2). Changes vs 02:11Z: status re-stated (11 of 25 met:
+4, 5, 8, 13, 14, 17, 20, 21, 22, 23, 25); item 21 Century Spring now DONE (catalogue pages, chrome alloy, max about 440 °F);
+item 7 Omron datasheet delivered, STEP still gated (Digi-Key CAD click-through terms left unaccepted, TraceParts key pending);
+item 24 PEI kit partial (Wham Bam only). No STEP files in this delivery. No PDF has JavaScript, actions or embedded files
+(Wham Bam plate page: the raw-byte "/JS" and "/AA" are inside compressed data; the pypdf walk is clean).
+
+| REQ item | File in vendor_docs | Delivered as | sha256 | Content / checks |
+|---|---|---|---|---|
+| 21 | CenturySpring_DJ-8X20YCS_catalog_p460_p475.pdf | DJ-8X20YCS__drawing.pdf | a60a0ff87bb233d3a7596f20895a31dcc3ef1f46613d0f9b5ffff858cd05e432 | 2 p from the Century Spring 2021 catalogue. p.460: max service temperature for chrome-alloy about 440 °F (227 °C). p.475 row DJ-8X20Y: free length 20, **rate 0.78 kgf/mm (7.6 N/mm)**, max operating (50 %): load 8.0 kgf at 10.0 mm deflection (RESULT.md reads this as "max deflection 8.0 mm"; the 8.0 is the load column) |
+| 24 | WhamBam_PEI-plate-220_page_2026-11-20.pdf | WhamBam_PEI-plate-220__page.pdf | 3fa04bcb2dbd43acec2bed09a9ecc0c34e79c6ed2dc666db4b605a7da1b9ae9c | 6 p page print. RESULT.md: $35, sold out, 0.4 mm spring steel, 0.12 mm ULTEM PEI per side |
+| 24 | WhamBam_magnetic-base-220_page_2026-11-20.pdf | WhamBam_magnetic-base-220__page.pdf | b4384432ec436dc87d085213b911645466421d86510cffe16d7a26996715d820 | 6 p. RESULT.md: 1 mm, 3M adhesive, rated 150 °C continual |
+
+Not copied (same bytes already in vendor_docs): Omron_D2F-01L__datasheet.pdf (d3f2ed08...) =
+`vendor_docs/ENDSTOP-MICRO_datasheet.pdf` (6 p, permission-encrypted; its only embedded file is an Adobe Distiller
+`.joboptions` settings text, 3.9 kB; only action is `/OpenAction /GoTo /Fit`).
