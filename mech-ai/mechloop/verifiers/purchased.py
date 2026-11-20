@@ -98,7 +98,7 @@ def _record(c) -> dict:
 
 
 def _real_maker(m) -> bool:
-    s = str(m or "").strip().lower()
+    s = str(m or "").split(" (")[0].strip().lower()        # "Pololu Corporation (brand: generic)": the maker is Pololu
     return bool(s) and not s.startswith(NOT_A_MAKER) and "commodity" not in s and "generic" not in s
 
 
@@ -119,7 +119,8 @@ def maker_of(c) -> tuple[str | None, str | None]:
         v = c.ratings.get(k)
         if not pn and isinstance(v, str) and v.strip():
             pn = v
-            maker = maker or v.split()[0]
+            if len(v.split()) > 1:                           # "MISUMI HNTAJ5-5": maker first; a bare number names no maker
+                maker = maker or v.split()[0]
     if src.get("level") == "standard" and not prod.get("part_number"):
         maker, pn = None, None
     maker, pn = rp.get("maker") or maker, rp.get("mpn") or pn

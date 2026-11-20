@@ -1,0 +1,3 @@
+{"keep": "largest", "rot": [180, 0, 0], "pos": [0, 0, 0],
+ "source": "OMRON's own STEP of the E2B-M12KS04-WP-C1 (download.ia.omron.com, collected 2026-11-19, staged in vendor_cad/staging/instinct_REQ-001/): the body solid; the file's two nuts are left out because the design places the sensor's nuts as their own parts (add_probe_nuts)",
+ "note": "supplier file: sensing face on Z=0, body along +Z (file turned 180 degrees about X); 47 mm body plus a 4 mm cable stub 10 mm long; the two nut solids in the file are not used"}

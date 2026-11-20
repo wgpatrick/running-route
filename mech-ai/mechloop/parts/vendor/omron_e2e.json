@@ -440,13 +440,16 @@
     "head_dia": 12.0,
     "head_length": 0.0,
     "threaded_length": 30.0,
-    "body_length": 39.1,
-    "cable_protector": 7.9,
+    "body_length": 37.9,
+    "rear_body_dia": 10.2,
+    "cable_protector": 9.1,
+    "cable_protector_dia": 8.2,
+    "cable_stub": [4.0, 10.0],
     "nut_across_flats": 17.0,
     "nut_over_corners": 19.6,
     "nut_thickness": 4.0,
     "washer": 1.0,
-    "status": "p.15 (E2B-M12KS04-WP): overall 47, thread 30 from the face, 7.9 rear part, nuts 17 across flats x 4, M12 x 1, mounting hole 12.5 +0.5. NOT dimensioned there (assumed): the rear body's diameter, the nuts' across-corners, the toothed washer's thickness: a STAND-IN, not a faithful re-make"
+    "status": "OMRON data sheet D116-E1-02 p.14 (printed; p.15 of vendor_docs/omron_E2B_datasheet_en.pdf), checked against OMRON's STEP (vendor_cad/inbox/E2B-M12KS04-WP-C1.step): overall 47 = M12 x 1 thread 30 from the face + rear body 7.9 at dia 10.2 + cable protector 9.1 at dia 8.2; then a 4 mm cable stub 10 long in the STEP; nuts 17 across flats (19.63 across corners) x 4; mounting hole 12.5 +0.5. Until 2026-11-20 this record split it as 39.1 at dia 12 + 7.9 (same 47 overall): corrected. The toothed washer's thickness (1.0) is not dimensioned (assumed)"
    },
    "surrounding_metal_mm": {
     "l": 2.4,

@@ -57,10 +57,14 @@ def probe_omron_e2e(model: str = "E2E-X5ME1", clamp: tuple | None = None, nuts: 
     z_thread0 = b["head_length"]
     z_thread1 = z_thread0 + b["threaded_length"]
     z_body1 = z_thread0 + b["body_length"]          # head taken as in front of the drawing's body length (the longer reading)
-    shape = Pos(0, 0, (z_thread0 + z_body1) / 2) * Cylinder(dia / 2, z_body1 - z_thread0)
+    if b.get("rear_body_dia"):      # v11 (E2B): the thread, then a narrower rear body (OMRON D116-E1-02 p.14 and its STEP)
+        shape = Pos(0, 0, (z_thread0 + z_thread1) / 2) * Cylinder(dia / 2, z_thread1 - z_thread0)
+        shape += Pos(0, 0, (z_thread1 + z_body1) / 2) * Cylinder(b["rear_body_dia"] / 2, z_body1 - z_thread1)
+    else:
+        shape = Pos(0, 0, (z_thread0 + z_body1) / 2) * Cylinder(dia / 2, z_body1 - z_thread0)
     if b["head_length"] > 0:
         shape += Pos(0, 0, z_thread0 / 2) * Cylinder(b["head_dia"] / 2, z_thread0)
-    shape += Pos(0, 0, z_body1 + b["cable_protector"] / 2) * Cylinder(dia / 2 - 2.0, b["cable_protector"])
+    shape += Pos(0, 0, z_body1 + b["cable_protector"] / 2) * Cylinder(b.get("cable_protector_dia", dia - 4.0) / 2, b["cable_protector"])
     nut_r, nut_t, wash = b["nut_across_flats"] / 2, b["nut_thickness"], b["washer"]
     if clamp is not None:
         z_lo, z_hi = float(clamp[0]), float(clamp[1])
@@ -134,7 +138,9 @@ def probe_omron_e2e(model: str = "E2E-X5ME1", clamp: tuple | None = None, nuts: 
                  cost_usd=float(v.get("price_usd", 25.0)),
                  # v11: OMRON's own STEP (vendor_cad/inbox/PROBE-OMRON-E2E-X5ME1.step) is 3 mm longer at the cable end than
                  # this solid's reading of the drawing; the face, the thread and the diameters agree
-                 model={"protrusions": {"zmax": (3.2, "OMRON's STEP: the cable protector ends 3 mm further than the catalogue's reading of the drawing")},
+                 model={"protrusions": {"zmax": ((b["cable_stub"][1] + 0.2, "OMRON's STEP: a 4 mm cable stub 10 mm long beyond the 47 mm body (the cable itself is not part of the solid)")
+                                                 if b.get("cable_stub") else
+                                                 (3.2, "OMRON's STEP: the cable protector ends 3 mm further than the catalogue's reading of the drawing"))},
                         "inbox": [model]},     # v11: a file named after the bare model (E2B-M12KS04-WP-C1.step) is picked up too
                  source=_source("omron_e2e", "partial", f"{model} 2M",
                                 unverified=("mass_kg", "switching_distance_aluminium_mm", "repeatability_mm", "overall length"),
