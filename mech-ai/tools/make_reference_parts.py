@@ -50,9 +50,9 @@ def rp02_cnc_plate_clean():
     return p.part
 
 
-def rp03_sheet_channel():
+def rp03_sheet_channel(t_mm: float | None = None):
     """5052-H32 0.090 in channel: one flange too short and one hole too close to a bend."""
-    t = 0.090 * IN            # 2.286 mm
+    t = 0.090 * IN if t_mm is None else t_mm   # 2.286 mm (0.090 in) by default
     r = t                     # inside bend radius about 1 x t
     w, h_long, h_short, depth = 60.0, 25.0, 6.0, 40.0
     # U channel: left flange 25 mm tall, right flange 6 mm tall (both outside), bends filleted

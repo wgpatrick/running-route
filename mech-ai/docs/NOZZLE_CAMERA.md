@@ -198,3 +198,12 @@ Save each file to `vendor_docs/` with the maker prefix shown, and the STEP files
   link), `vendor_docs/Arducam_B0454_page_2026-11-20.pdf` (UCTRONICS page with the B045401 / B0454-1 spec table),
   `vendor_docs/Arducam_B0506_datasheet.pdf`, `vendor_docs/RaspberryPi_Camera-Module-3_product_brief.pdf`,
   `vendor_docs/InspiredLED_24V-COB_flex_spec.pdf`.
+
+## Update 2026-11-20 (Instinct REQ-010)
+
+Arducam publishes no datasheet, drawing or STEP for the B045401 (Digi-Key's "B045401 datasheet" is the B0454's, byte for
+byte). Primary camera is now the Arducam B0454 (USB UVC, OV5648, 38 x 38 mm board, M12 lens, -20..70 °C; datasheet and STEP
+in hand) with the Commonlands CIL062-F4.0 lens. Its "fixed focus 300 cm to infinity" is the factory lens setting; close
+focus comes from screwing the M12 lens out (~0.16 mm for the stock lens at 30 mm). Bench-check before relying on it that the
+lens is not glued and the holder has the thread travel. Arducam's STEP lacks the 34 x 34 corner holes (4 x dia 2.4) shown
+on the drawing: add them from the drawing. Fallback: B0292 (stated focus 40 mm to infinity, autofocus, not M12).
