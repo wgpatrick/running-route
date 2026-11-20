@@ -49,3 +49,12 @@ the HQ Camera (SC1220) is out of stock at Digi-Key with a 26-week factory lead, 
 - Merge the duplicate THREADLOCKER-MEDIUM BOM line (one bottle: Henkel 1329837, Loctite 243 10 ml).
 - Braided sleeve: the distributors list only a 200 ft spool (Techflex PTN0.25BK200, ~$44); look for a short length from a
   US seller with the maker's datasheet before ordering.
+
+## Height sensing (owner, 2026-11-20; docs/HEIGHT_SENSING.md)
+
+- Bed probe: BTT Eddy Duo (eddy current, mainline Klipper [probe_eddy_current], coil thermistor) replaces the Omron E2B;
+  new printed mount 2-3 mm above the nozzle tip with clearance to aluminium; re-run the probe temperature check against its
+  60 °C rating.
+- Line laser for camera triangulation: Quarton VLM-520-56 LPO-D30-F10 (520 nm, 30° fan, Class 1M). Owner accepts Class 1M
+  with controls: off by default, switched on only by the measurement macro for a few seconds, maker's warning label on the
+  toolhead, insulating printed clamp (case may be live). Mount beside the hotend, out of the heater plume and cooling jet.
