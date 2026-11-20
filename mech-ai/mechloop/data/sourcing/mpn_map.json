@@ -28,17 +28,35 @@
     {
      "maker": "Schurter",
      "mpn": "0001.2513",
-     "qty_per": 1
+     "qty_per": 1.0,
+     "unit": "each",
+     "note": "SPT 5x20 ceramic time-lag T8A 250 VAC",
+     "distributor": "Mouser",
+     "distributor_pn": "693-0001-2513",
+     "order_qty": 2,
+     "unit_price_usd": 0.91,
+     "ext_usd": 1.82,
+     "stock": 6954,
+     "url": "https://www.mouser.com/ProductDetail/Schurter/0001.2513"
     }
    ],
-   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (FUSE-5x20-T8A row); docs/V12_PLAN.md, Electronics (inlet)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them; earlier pin: docs/PROVENANCE_AUDIT.md, Real-part replacements (FUSE-5x20-T8A row); docs/V12_PLAN.md, Electronics (inlet)",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.schurter.com/en/datasheet/typ_SPT_5x20.pdf",
+   "basis": "V12 plan: SPT ceramic for breaking capacity (Digi-Key 486-1767-ND 1.09, 41439 in stock)",
+   "build_qty": {
+    "bom_qty": 2,
+    "basis": "BOM v10_1: one fitted, one spare",
+    "cost_usd": 1.82
+   },
    "alternates": [
     {
      "maker": "Littelfuse",
      "mpn": "0218008.MXP",
      "note": "glass T8A (audit)"
     }
-   ]
+   ],
+   "cad": "Schurter STEP/IGS (Digi-Key media)"
   },
   "INLET-C14-SW-FUSE-T8A": {
    "kind": "distributor",
@@ -64,17 +82,41 @@
     {
      "maker": "Vishay",
      "mpn": "BAT85S-TAP",
-     "qty_per": 1
+     "qty_per": 2.0,
+     "unit": "each",
+     "note": "DO-35 (DO-204AH) axial, ammo pack cut tape",
+     "distributor": "Digi-Key",
+     "distributor_pn": "BAT85S-TAPCT-ND",
+     "pack": "cut tape",
+     "order_qty": 2,
+     "unit_price_usd": 0.5,
+     "ext_usd": 1.0,
+     "stock": 27916,
+     "url": "https://www.digikey.com/en/products/detail/BAT85S-TAPCT-ND"
     }
    ],
-   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (DIODE-BAT85 row)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them; earlier pin: docs/PROVENANCE_AUDIT.md, Real-part replacements (DIODE-BAT85 row)",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.vishay.com/docs/85513/bat85s.pdf",
+   "basis": "Vishay BAT85S as pinned in the audit; axial suits an in-lead splice",
+   "build_qty": {
+    "bom_qty": 1,
+    "basis": "BOM v10_1: one in the probe signal lead; one spare",
+    "cost_usd": 1.0
+   },
    "alternates": [
+    {
+     "maker": "Vishay",
+     "mpn": "BAT85S-TR",
+     "note": "same diode on tape-and-reel, Digi-Key BAT85SCT-ND 0.50, 31958 in stock"
+    },
     {
      "maker": "Nexperia",
      "mpn": "BAT85,133",
-     "note": "DO-34, no stock shown (audit)"
+     "note": "DO-34 (audit)"
     }
-   ]
+   ],
+   "cad": "Ultra Librarian (Digi-Key media)"
   },
   "ENDSTOP-MICRO": {
    "kind": "distributor",
@@ -92,50 +134,173 @@
    "items": [
     {
      "maker": "JST",
-     "mpn": "SXH-001T-P0.6",
-     "qty_per": 1,
-     "note": "one crimp contact per wire end (the BOM line counts wire ends)"
+     "mpn": "XHP-4",
+     "qty_per": 0.5357,
+     "unit": "each",
+     "note": "4-way housing (13 + 2 spare)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "455-2267-ND",
+     "order_qty": 15,
+     "unit_price_usd": 0.065,
+     "ext_usd": 0.98,
+     "stock": 73533,
+     "url": "https://www.digikey.com/en/products/detail/455-2267-ND"
+    },
+    {
+     "maker": "JST",
+     "mpn": "XHP-3",
+     "qty_per": 0.3571,
+     "unit": "each",
+     "note": "3-way housing (8 + 2)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "455-2219-ND",
+     "order_qty": 10,
+     "unit_price_usd": 0.065,
+     "ext_usd": 0.65,
+     "stock": 126302,
+     "url": "https://www.digikey.com/en/products/detail/455-2219-ND"
     },
     {
      "maker": "JST",
      "mpn": "XHP-2",
-     "qty_per": 0.5,
-     "note": "housing: the design does not say how many ways per connector; 2-way assumed, 1 housing per 2 ends"
+     "qty_per": 0.3571,
+     "unit": "each",
+     "note": "2-way housing (7 + 3)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "455-2266-ND",
+     "order_qty": 10,
+     "unit_price_usd": 0.059,
+     "ext_usd": 0.59,
+     "stock": 186027,
+     "url": "https://www.digikey.com/en/products/detail/455-2266-ND"
+    },
+    {
+     "maker": "JST",
+     "mpn": "SXH-001T-P0.6",
+     "qty_per": 3.5714,
+     "unit": "each",
+     "note": "crimp contact 22-28 AWG; bag of 100 (89 + spares)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "455-1135-100-ND",
+     "pack": "bag of 100",
+     "order_qty": 100,
+     "unit_price_usd": 0.0471,
+     "ext_usd": 4.71,
+     "stock": 9800,
+     "url": "https://www.digikey.com/en/products/detail/455-1135-100-ND"
     }
    ],
-   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (CONN-JST-XH row)",
-   "note": "housing ways per connector are not in the design; XHP-3 / XHP-4 and headers B2B-XH-A / B4B-XH-A as the wiring needs"
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them; earlier pin: docs/PROVENANCE_AUDIT.md, Real-part replacements (CONN-JST-XH row)",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.jst-mfg.com/product/pdf/eng/eXH.pdf",
+   "basis": "genuine JST XH (the Octopus headers are XH); contacts from the 100-piece bag instead of the 8000 reel",
+   "build_qty": {
+    "bom_qty": 28,
+    "basis": "wiring.csv v10_1 JST-XH ends (the generator counts one per connector end): 4-way x13, 3-way x8, 2-way x6, 1-way x1 (probe 24 V, put in a 2-way); 89 contacts",
+    "cost_usd": 6.93
+   },
+   "note": "headers B2B/B3B/B4B-XH-A only where a device-side board is made (DESIGN DECISION: motors, fans, endstops come with their own leads/terminals; the relay module has its own header). If wanted: B4B-XH-A x6 (455-B4B-XH-A-ND 0.17), B3B-XH-A x3 (455-2248-ND 0.13), B2B-XH-A x3 (455-B2B-XH-A-ND 0.10): 1.71",
+   "alternates": [
+    {
+     "maker": "JST",
+     "mpn": "B4B-XH-A / B3B-XH-A / B2B-XH-A",
+     "note": "PCB headers, Digi-Key 455-B4B-XH-A-ND / 455-2248-ND / 455-B2B-XH-A-ND"
+    },
+    {
+     "maker": "JST",
+     "mpn": "SXH-001T-P0.6",
+     "note": "Mouser 306-SXH-001T-P0.6 sold singly (0.041 at 25+)"
+    }
+   ],
+   "cad": "XHP-2 STEP on Digi-Key; XHP-3/4 and SXH via SnapEDA (Digi-Key media)"
   },
   "CONN-MOLEX-MICROFIT": {
    "kind": "distributor",
    "items": [
     {
      "maker": "Molex",
-     "mpn": "43025-0200",
-     "qty_per": 1,
-     "note": "receptacle housing 2-way"
-    },
-    {
-     "maker": "Molex",
-     "mpn": "43030-0001",
-     "qty_per": 2,
-     "note": "female crimp"
-    },
-    {
-     "maker": "Molex",
-     "mpn": "43020-0200",
-     "qty_per": 1,
-     "note": "plug housing 2-way (hotend heater, v12 plan)"
+     "mpn": "43020-0400",
+     "qty_per": 0.3333,
+     "unit": "each",
+     "note": "4-way plug housing for the Roto motor lead",
+     "distributor": "Digi-Key",
+     "distributor_pn": "WM1778-ND",
+     "order_qty": 1,
+     "unit_price_usd": 0.67,
+     "ext_usd": 0.67,
+     "stock": 28247,
+     "url": "https://www.digikey.com/en/products/detail/WM1778-ND"
     },
     {
      "maker": "Molex",
      "mpn": "43031-0001",
-     "qty_per": 2,
-     "note": "male crimp"
+     "qty_per": 3.3333,
+     "unit": "each",
+     "note": "male crimp 20-24 AWG, cut tape",
+     "distributor": "Digi-Key",
+     "distributor_pn": "WM1841CT-ND",
+     "pack": "cut tape",
+     "order_qty": 10,
+     "unit_price_usd": 0.078,
+     "ext_usd": 0.78,
+     "stock": 419791,
+     "url": "https://www.digikey.com/en/products/detail/WM1841CT-ND"
+    },
+    {
+     "maker": "Molex",
+     "mpn": "43025-0200",
+     "qty_per": 0.6667,
+     "unit": "each",
+     "note": "2-way receptacle (both genders bought until E3D's lead gender is seen)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "WM1783-ND",
+     "order_qty": 2,
+     "unit_price_usd": 0.36,
+     "ext_usd": 0.72,
+     "stock": 208477,
+     "url": "https://www.digikey.com/en/products/detail/WM1783-ND"
+    },
+    {
+     "maker": "Molex",
+     "mpn": "43020-0200",
+     "qty_per": 0.6667,
+     "unit": "each",
+     "note": "2-way plug",
+     "distributor": "Digi-Key",
+     "distributor_pn": "WM1777-ND",
+     "order_qty": 2,
+     "unit_price_usd": 0.32,
+     "ext_usd": 0.64,
+     "stock": 17309,
+     "url": "https://www.digikey.com/en/products/detail/WM1777-ND"
+    },
+    {
+     "maker": "Molex",
+     "mpn": "43030-0001",
+     "qty_per": 3.3333,
+     "unit": "each",
+     "note": "female crimp 20-24 AWG, cut tape",
+     "distributor": "Digi-Key",
+     "distributor_pn": "WM1837CT-ND",
+     "pack": "cut tape",
+     "order_qty": 10,
+     "unit_price_usd": 0.075,
+     "ext_usd": 0.75,
+     "stock": 1334160,
+     "url": "https://www.digikey.com/en/products/detail/WM1837CT-ND"
     }
    ],
-   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (CONN-MOLEX-MICROFIT row); docs/V12_PLAN.md, Electronics (other connectors)",
-   "note": "one mated 2-way pair per BOM count"
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them; earlier pin: docs/PROVENANCE_AUDIT.md, Real-part replacements (CONN-MOLEX-MICROFIT row); docs/V12_PLAN.md, Electronics (other connectors)",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.molex.com/pdm_docs/sd/430250200_sd.pdf",
+   "basis": "Micro-Fit 3.0 as E3D uses; the 4-way gender follows E3D's motor-wiring note (43025-0400 on the motor), the 2-way gender is confirmed on arrival",
+   "build_qty": {
+    "bom_qty": 3,
+    "basis": "wiring.csv v10_1: extruder motor (4-way: mates the Roto lead's 43025-0400, e3d_roto.json), hotend heater and thermistor (2-way each; E3D does not state the gender on its leads)",
+    "cost_usd": 3.56
+   },
+   "note": "26 AWG thermistor wire is below the 43030/43031 range (20-24 AWG per Molex): fold the strip back or use a 24 AWG pigtail; confirm the Revo leads' gender",
+   "cad": "Molex STEP per part (Digi-Key media)"
   },
   "CONN-FASTON-4.8": {
    "kind": "distributor",
@@ -143,29 +308,122 @@
     {
      "maker": "TE Connectivity",
      "mpn": "2-520182-2",
-     "qty_per": 1
+     "qty_per": 1.0,
+     "unit": "each",
+     "note": "FASTON 187 fully insulated receptacle 22-18 AWG",
+     "distributor": "Digi-Key",
+     "distributor_pn": "A27804-ND",
+     "order_qty": 4,
+     "unit_price_usd": 0.35,
+     "ext_usd": 1.4,
+     "stock": 119251,
+     "url": "https://www.digikey.com/en/products/detail/A27804-ND"
+    },
+    {
+     "maker": "Panduit",
+     "mpn": "DNF14-187FIB-C",
+     "qty_per": 0.25,
+     "unit": "each",
+     "note": "0.187 fully insulated receptacle 16-14 AWG for the earth-to-frame lead (pack 'C' sold singly)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "298-11930-ND",
+     "order_qty": 1,
+     "unit_price_usd": 1.53,
+     "ext_usd": 1.53,
+     "stock": 148,
+     "url": "https://www.digikey.com/en/products/detail/298-11930-ND"
     }
    ],
-   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (CONN-FASTON-4.8 row)"
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them; earlier pin: docs/PROVENANCE_AUDIT.md, Real-part replacements (CONN-FASTON-4.8 row)",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=1-1773948-3_Ultra-Fast",
+   "basis": "TE Ultra-Fast fully insulated, 4.8 mm (0.187) tab size of the DD11 inlet; 22-18 AWG range matches the mains wire",
+   "build_qty": {
+    "bom_qty": 4,
+    "basis": "wiring.csv v10_1 inlet tabs: L, N, PE-to-supply (18 AWG) + earth-to-frame (13 AWG -> 14 AWG); one spare 18 AWG",
+    "cost_usd": 2.93
+   },
+   "note": "DESIGN DECISION: the inlet PE tab carries two conductors (earth to supply + earth to frame); one FASTON per tab - use a piggy-back receptacle or take PE to a frame stud and bond the supply FG from the stud",
+   "cad": "TE STEP + DXF (Digi-Key media; staged earlier)"
   },
   "CONN-FERRULE": {
    "kind": "distributor",
    "items": [
     {
      "maker": "Phoenix Contact",
-     "mpn": "3200519",
-     "qty_per": 1
-    }
-   ],
-   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (CONN-FERRULE row)",
-   "note": "0.75 mm2 gray; 3200014 (0.5 mm2 white) for thinner wire",
-   "alternates": [
+     "mpn": "3200043",
+     "qty_per": 0.6818,
+     "unit": "each",
+     "note": "AI 1,5-8 BK for 16 AWG (1.31 mm2)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "277-2190-ND",
+     "order_qty": 15,
+     "unit_price_usd": 0.18,
+     "ext_usd": 2.7,
+     "stock": 147822,
+     "url": "https://www.digikey.com/en/products/detail/277-2190-ND"
+    },
+    {
+     "maker": "Phoenix Contact",
+     "mpn": "3200030",
+     "qty_per": 0.4545,
+     "unit": "each",
+     "note": "AI 1-8 RD for 18 AWG (0.82 mm2)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "277-2188-ND",
+     "order_qty": 10,
+     "unit_price_usd": 0.18,
+     "ext_usd": 1.8,
+     "stock": 203735,
+     "url": "https://www.digikey.com/en/products/detail/277-2188-ND"
+    },
     {
      "maker": "Phoenix Contact",
      "mpn": "3200014",
-     "note": "0.5 mm2 white"
+     "qty_per": 0.2273,
+     "unit": "each",
+     "note": "AI 0,5-8 WH for 20 AWG",
+     "distributor": "Digi-Key",
+     "distributor_pn": "277-2185-ND",
+     "order_qty": 5,
+     "unit_price_usd": 0.18,
+     "ext_usd": 0.9,
+     "stock": 256949,
+     "url": "https://www.digikey.com/en/products/detail/277-2185-ND"
+    },
+    {
+     "maker": "Phoenix Contact",
+     "mpn": "3203011",
+     "qty_per": 0.1364,
+     "unit": "each",
+     "note": "26 AWG grey (AI 0,14 class) for the probe 24 V lead at the PSU",
+     "distributor": "Digi-Key",
+     "distributor_pn": "277-7433-ND",
+     "order_qty": 3,
+     "unit_price_usd": 0.38,
+     "ext_usd": 1.14,
+     "stock": 27859,
+     "url": "https://www.digikey.com/en/products/detail/277-7433-ND"
     }
-   ]
+   ],
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them; earlier pin: docs/PROVENANCE_AUDIT.md, Real-part replacements (CONN-FERRULE row)",
+   "checked": "2026-11-20",
+   "datasheet": "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/1173/AI.pdf",
+   "basis": "Phoenix AI insulated bootlace ferrules, DIN 46228-4 colours, one size per conductor gauge; Digi-Key sells them singly",
+   "build_qty": {
+    "bom_qty": 22,
+    "basis": "wiring.csv v10_1 screw-terminal ends by gauge: 16 AWG x12, 18 AWG x7, 20 AWG x2, 26 AWG x1; ordered with spares",
+    "cost_usd": 6.54
+   },
+   "alternates": [
+    {
+     "maker": "Phoenix Contact",
+     "mpn": "3200519",
+     "note": "AI 0,75-8 GY (the earlier single pin); 18 AWG (0.82 mm2) is over 0.75 mm2, so AI 1-8 RD is used"
+    }
+   ],
+   "cad": "TraceParts STEP per part (Digi-Key media)",
+   "note": "0.75 mm2 gray; 3200014 (0.5 mm2 white) for thinner wire"
   },
   "CABLE-TIE-100MM": {
    "kind": "distributor",
@@ -173,22 +431,72 @@
     {
      "maker": "Panduit",
      "mpn": "PLT1M-C",
-     "qty_per": 1
+     "qty_per": 1.0,
+     "unit": "each",
+     "note": "Pan-Ty 99 mm (3.9 in), 18 lb, natural nylon 6.6; Panduit pack C = bag of 100, Digi-Key sells singly",
+     "distributor": "Digi-Key",
+     "distributor_pn": "298-1020-ND",
+     "pack": "priced per tie",
+     "order_qty": 106,
+     "unit_price_usd": 0.2123,
+     "ext_usd": 22.5,
+     "stock": 285661,
+     "url": "https://www.digikey.com/en/products/detail/298-1020-ND"
     }
    ],
-   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (CABLE-TIE-100MM row)"
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them; earlier pin: docs/PROVENANCE_AUDIT.md, Real-part replacements (CABLE-TIE-100MM row)",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.mouser.com/datasheet/3/506/1/110198548.pdf",
+   "basis": "Panduit PLT1M-C as pinned before; price unit confirmed per tie at Digi-Key (Mouser 644-PLT1M-C: minimum 100, 0.212 per tie)",
+   "build_qty": {
+    "bom_qty": 106,
+    "basis": "BOM v10_1: 106 ties",
+    "cost_usd": 22.5
+   },
+   "alternates": [
+    {
+     "maker": "Panduit",
+     "mpn": "PLT1M-M",
+     "note": "bag of 1000, Digi-Key 298-1021-ND 0.05956/tie (59.56 per bag) - cheaper per tie, more than needed"
+    }
+   ]
   },
   "THREADLOCKER-MEDIUM": {
    "kind": "distributor",
    "items": [
     {
-     "maker": "Henkel / Loctite",
+     "maker": "Henkel (Loctite)",
      "mpn": "1329837",
-     "qty_per": 1,
-     "note": "Loctite 243, 10 ml"
+     "qty_per": 1.0,
+     "unit": "each",
+     "note": "Loctite 243, 10 ml bottle, blue medium strength",
+     "distributor": "Newark",
+     "distributor_pn": "80R9545",
+     "pack": "10 ml bottle",
+     "order_qty": 1,
+     "unit_price_usd": 23.41,
+     "ext_usd": 23.41,
+     "stock": 26,
+     "url": "https://www.newark.com/80R9545"
     }
    ],
-   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (THREADLOCKER-MEDIUM row)"
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them; earlier pin: docs/PROVENANCE_AUDIT.md, Real-part replacements (THREADLOCKER-MEDIUM row)",
+   "checked": "2026-11-20",
+   "datasheet": "http://www.farnell.com/datasheets/4159804.pdf",
+   "basis": "Henkel IDH 1329837 = Loctite 243 10 ml (element14 attributes: Product Range LOCTITE 243, Volume 10 ml); Digi-Key lists it only on its Marketplace (2275-1329837-ND, 5 minimum)",
+   "build_qty": {
+    "bom_qty": 1,
+    "basis": "BOM v10_1: one bottle (the line appears twice in the BOM: THREADLOCKER-MEDIUM and its annotated duplicate - buy ONE)",
+    "cost_usd": 23.41
+   },
+   "note": "duplicate BOM line: 'THREADLOCKER-MEDIUM' and 'THREADLOCKER-MEDIUM (Loctite 243 class: ...)' are the same bottle; the design should merge them",
+   "alternates": [
+    {
+     "maker": "Henkel (Loctite)",
+     "mpn": "1330255",
+     "note": "Loctite 243 0.5 ml capsule, Newark 80R9546 4.55 (too small for the joints listed)"
+    }
+   ]
   },
   "WIRE-AWG20-SILICONE-M": {
    "kind": "distributor",
@@ -196,26 +504,110 @@
     {
      "maker": "CNC Tech",
      "mpn": "3239-20-1-0500-001-1-TS",
-     "qty_per": 3.2808,
+     "qty_per": 1.5,
      "unit": "ft",
-     "note": "20 AWG silicone, sold per foot; colour by the -00x field"
+     "note": "black",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-3239-20-1-0500-001-1-TS-DS-ND",
+     "pack": "cut to length (Digi-Spool, per foot)",
+     "order_qty": 6,
+     "unit_price_usd": 1.026,
+     "ext_usd": 6.16,
+     "stock": 37893,
+     "url": "https://www.digikey.com/en/products/detail/1175-3239-20-1-0500-001-1-TS-DS-ND"
+    },
+    {
+     "maker": "CNC Tech",
+     "mpn": "3239-20-1-0500-002-1-TS",
+     "qty_per": 1.5,
+     "unit": "ft",
+     "note": "white",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-3239-20-1-0500-002-1-TS-DS-ND",
+     "pack": "cut to length (Digi-Spool, per foot)",
+     "order_qty": 6,
+     "unit_price_usd": 1.026,
+     "ext_usd": 6.16,
+     "stock": 1024,
+     "url": "https://www.digikey.com/en/products/detail/1175-3239-20-1-0500-002-1-TS-DS-ND"
     }
    ],
-   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (WIRE row: CNC Tech 3239-20); exact MPN: Digi-Key v4 keyword search 2026-11-20 (sourcing module set-up): exact spelling of the orderable MPN"
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them; earlier pin: docs/PROVENANCE_AUDIT.md, Real-part replacements (WIRE row: CNC Tech 3239-20); exact MPN: Digi-Key v4 keyword search 2026-11-20 (sourcing module set-up): exact spelling of the orderable MPN",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.cnctech.us/pdfs/3239-XX-1-0500-0XX-1-TS.pdf",
+   "basis": "UL3239 silicone, 200 degC, fine strand (flexes with the toolhead), sold per foot",
+   "build_qty": {
+    "bom_qty": 4,
+    "basis": "wiring.csv v10_1: hotend heater 1.57 m x2 = 3.14 m -> 6 ft per colour (flexing toolhead run: fine-strand silicone)",
+    "cost_usd": 12.32
+   }
   },
   "WIRE-AWG16-SILICONE-M": {
    "kind": "distributor",
    "items": [
     {
+     "maker": "CNC Tech",
+     "mpn": "3239-16-1-0500-001-1-TS",
+     "qty_per": 1.0,
+     "unit": "ft",
+     "note": "black (0 V)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-3239-16-1-0500-001-1-TS-DS-ND",
+     "pack": "cut to length (Digi-Spool, per foot)",
+     "order_qty": 2,
+     "unit_price_usd": 1.64,
+     "ext_usd": 3.28,
+     "stock": 654,
+     "url": "https://www.digikey.com/en/products/detail/1175-3239-16-1-0500-001-1-TS-DS-ND"
+    },
+    {
+     "maker": "CNC Tech",
+     "mpn": "3239-16-1-0500-004-1-TS",
+     "qty_per": 1.0,
+     "unit": "ft",
+     "note": "red (+24 V)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-3239-16-1-0500-004-1-TS-DS-ND",
+     "pack": "cut to length (Digi-Spool, per foot)",
+     "order_qty": 2,
+     "unit_price_usd": 2.69,
+     "ext_usd": 5.38,
+     "stock": 146,
+     "url": "https://www.digikey.com/en/products/detail/1175-3239-16-1-0500-004-1-TS-DS-ND"
+    },
+    {
      "maker": "igus",
      "mpn": "CF880-15-02",
-     "qty_per": 3.2808,
+     "qty_per": 1.5,
      "unit": "ft",
-     "note": "2 x 16 AWG high-flex cable for the moving bed run, per foot"
+     "note": "2 x 16 AWG chainflex for the moving bed run (0.62 m of cable); Digi-Key Marketplace listing",
+     "distributor": "Digi-Key",
+     "distributor_pn": "2389-CF880-15-02-ND",
+     "pack": "per foot",
+     "order_qty": 3,
+     "unit_price_usd": 0.81,
+     "ext_usd": 2.43,
+     "stock": 3981,
+     "url": "https://www.digikey.com/en/products/detail/igus/CF880-15-02/13619682"
     }
    ],
-   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (WIRE row) and docs/V12_PLAN.md, Electronics (bed wiring)",
-   "note": "one 2-core cable replaces the two 16 AWG wires of the bed run",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them; earlier pin: docs/PROVENANCE_AUDIT.md, Real-part replacements (WIRE row) and docs/V12_PLAN.md, Electronics (bed wiring)",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.cnctech.us/pdfs/3239-XX-1-0500-0XX-1-TS.pdf",
+   "basis": "UL3239 silicone 16 AWG per foot for the fixed runs; the flexing bed run in a rated high-flex 2-core cable as V12 plans",
+   "build_qty": {
+    "bom_qty": 2,
+    "basis": "wiring.csv v10_1: 24 V to board 0.2 m x2, bed heater 0.62 m x2 (moving bed run), heater tail 0.09 m x2 = 1.82 m; the bed run in igus CF880 (V12 plan), the fixed runs in single wires, 2 ft per colour",
+    "cost_usd": 11.09
+   },
+   "note": "the bed run becomes one 2-core igus cable (design change, V12 plan); CF880 is a Digi-Key Marketplace item (shipped by the marketplace seller)",
+   "alternates": [
+    {
+     "maker": "igus",
+     "mpn": "CF130-03-02",
+     "note": "flex signal cable named by V12 for the flexing signal runs, Digi-Key 4903-CF130-03-02-DS-ND 1.54/ft, 974 in stock"
+    }
+   ],
    "design_change": true
   },
   "NUT-PEM-S-M3-1": {
@@ -336,11 +728,27 @@
     {
      "maker": "BIGTREETECH",
      "mpn": "TMC2209 V1.3",
-     "qty_per": 1
+     "qty_per": 1.0,
+     "unit": "each",
+     "note": "StepStick module; price is the BOM estimate - the store was not reachable from this session",
+     "distributor": "BIGTREETECH official store (maker direct)",
+     "order_qty": 7,
+     "unit_price_usd": 6.0,
+     "ext_usd": 42.0,
+     "stock": null,
+     "url": "https://biqu.equipment (BTT store)"
     }
    ],
-   "source": "catalogue vendor record (mechloop/parts/vendor/*.json); seller from docs/PROVENANCE_AUDIT.md / docs/V12_PLAN.md",
-   "note": "sold by the maker (BIGTREETECH store / Amazon); no distributor API covers it"
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them; earlier pin: catalogue vendor record (mechloop/parts/vendor/*.json); seller from docs/PROVENANCE_AUDIT.md / docs/V12_PLAN.md",
+   "checked": "2026-11-20",
+   "datasheet": "https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-TMC2209-V1.2/master/manual/TMC2209-V1.2-manual.pdf",
+   "basis": "maker-direct only: BTT's own module; Digi-Key/Mouser list ADI/Trinamic boards (TMC2209-EVAL / BOB), not a StepStick for the Octopus sockets",
+   "build_qty": {
+    "bom_qty": 7,
+    "basis": "BOM v10_1: Octopus sockets X, Y, Y1, Z, Z1, Z2, E",
+    "cost_usd": 42.0
+   },
+   "note": "price, stock and product page not verified (biqu.equipment blocked in this session's network): owner or Instinct to confirm the V1.3 listing"
   },
   "NEMA17-34": {
    "kind": "maker_direct",
@@ -477,8 +885,10 @@
   "SPACER-NYLON-M3-5x3.3x5.5": {
    "kind": "placeholder",
    "items": [],
-   "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (SPACER-NYLON-M3 row)",
-   "replace_with": "Harwin R30-6700594 (5 mm) or R30-6700694 (6 mm): 5.5 is not stock"
+   "source": "Digi-Key v4 keyword search 2026-11-20 (Harwin R30-620 / R30-670, RAF M5 rounds); earlier: docs/PROVENANCE_AUDIT.md, Real-part replacements (SPACER-NYLON-M3 row)",
+   "replace_with": "Harwin R30-6700594 (5 mm, 952-1528-ND 0.69, 21122) or R30-6700694 (6 mm, 952-1529-ND 0.67, 16466): 5.5 mm is not stocked",
+   "design_change": true,
+   "checked": "2026-11-20"
   },
   "HEATER-SIL-230x207-24V-180W": {
    "kind": "placeholder",
@@ -497,6 +907,852 @@
    "items": [],
    "source": "docs/PROVENANCE_AUDIT.md, Real-part replacements (BED-MAGNET row)",
    "replace_with": "a named magnetic PEI kit (maker, size, steel thickness): owner's agent"
+  },
+  "WIRE-AWG18-PVC105-M": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "CNC Tech",
+     "mpn": "1015-18-1-2000-001-1-TS",
+     "qty_per": 2.0,
+     "unit": "ft",
+     "note": "black (L)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-1015-18-1-2000-001-1-TS-DS-ND",
+     "pack": "cut to length (Digi-Spool, per foot)",
+     "order_qty": 2,
+     "unit_price_usd": 0.81,
+     "ext_usd": 1.62,
+     "stock": 1672,
+     "url": "https://www.digikey.com/en/products/detail/1175-1015-18-1-2000-001-1-TS-DS-ND"
+    },
+    {
+     "maker": "CNC Tech",
+     "mpn": "1015-18-1-2000-002-1-TS",
+     "qty_per": 2.0,
+     "unit": "ft",
+     "note": "white (N; US colour - blue is not listed per foot)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-1015-18-1-2000-002-1-TS-DS-ND",
+     "pack": "cut to length (Digi-Spool, per foot)",
+     "order_qty": 2,
+     "unit_price_usd": 0.81,
+     "ext_usd": 1.62,
+     "stock": 4932,
+     "url": "https://www.digikey.com/en/products/detail/1175-1015-18-1-2000-002-1-TS-DS-ND"
+    },
+    {
+     "maker": "LAPP",
+     "mpn": "4180600",
+     "qty_per": 2.0,
+     "unit": "ft",
+     "note": "green/yellow (PE); LAPP OLFLEX multi-standard hook-up wire: confirm the UL 1015 / 105 degC style on the LAPP sheet",
+     "distributor": "Digi-Key",
+     "distributor_pn": "2181-4180600-DS-ND",
+     "pack": "cut to length (Digi-Spool, per foot)",
+     "order_qty": 2,
+     "unit_price_usd": 0.98,
+     "ext_usd": 1.96,
+     "stock": 2874,
+     "url": "https://www.digikey.com/en/products/detail/2181-4180600-DS-ND"
+    }
+   ],
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them",
+   "checked": "2026-11-20",
+   "datasheet": "https://cnctech.us/pdfs/1015-XX-1-2000-0XX-1-TS.pdf",
+   "basis": "UL1015 PVC 105 degC 600 V stranded, sold by the foot (no 100 ft spool for 0.9 m); green/yellow PE from LAPP because CNC Tech's 1015 G/Y is not listed per foot",
+   "build_qty": {
+    "bom_qty": 1,
+    "basis": "wiring.csv v10_1: mains L 0.32 m, N 0.33 m, PE to supply 0.24 m (0.89 m of conductor) -> 2 ft per colour",
+    "cost_usd": 5.2
+   },
+   "alternates": [
+    {
+     "maker": "Alpha Wire",
+     "mpn": "3075 BK005 / 3075 GY005",
+     "note": "UL1015 18 AWG 100 ft spools, Digi-Key A2103B-100-ND 141.04 each (overkill for 0.9 m)"
+    },
+    {
+     "maker": "CNC Tech",
+     "mpn": "3239-18-1-0500-011-1-TS",
+     "note": "silicone 18 AWG G/Y per foot 1.42 (CN105GY-DS-ND)"
+    }
+   ]
+  },
+  "WIRE-AWG13-PVC105-M": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "LAPP",
+     "mpn": "4160500",
+     "qty_per": 100.0,
+     "unit": "ft",
+     "note": "14 AWG green/yellow; Digi-Key bulk, minimum 100 ft, no stock on 2026-11-20 (Mouser 58-4160500: 1000 ft minimum, no stock)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "2181-4160500-ND",
+     "pack": "bulk, 100 ft minimum",
+     "order_qty": 100,
+     "unit_price_usd": 0.7054,
+     "ext_usd": 70.54,
+     "stock": 0,
+     "url": "https://www.digikey.com/en/products/detail/lapp/4160500/25551864"
+    }
+   ],
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.mouser.com/datasheet/3/5935/1/DB4160100EN.pdf",
+   "basis": "no 13 AWG hook-up wire is stocked; 14 AWG (2.08 mm2) is the nearest gauge that the 16-14 AWG FASTON and #10 (M5) ring terminals accept; 12 AWG would not fit the 4.8 mm FASTON",
+   "build_qty": {
+    "bom_qty": 1,
+    "basis": "wiring.csv v10_1: earth to frame 0.15 m; 13 AWG is not a stocked hook-up gauge -> 14 AWG green/yellow",
+    "cost_usd": 70.54
+   },
+   "note": "DESIGN DECISION: the wiring list asks 13 AWG; choose 14 AWG (this pin, 100 ft minimum, back-order) or 16 AWG (LAPP 4160400, per foot, in stock) for the earth-to-frame lead and update WIRE-AWG13 in the design",
+   "alternates": [
+    {
+     "maker": "CNC Tech",
+     "mpn": "3239-14-1-0100-007-1-TS",
+     "note": "14 AWG silicone G/Y, Digi-Key 1175-3239-14-1-0100-007-1-TS-ND, 100 ft minimum, 500 in stock, 1.0501/ft (105.01)"
+    },
+    {
+     "maker": "LAPP",
+     "mpn": "4160400",
+     "note": "16 AWG G/Y per foot 1.17, 3621 in stock (2181-4160400-DS-ND): a downsizing - design decision"
+    }
+   ],
+   "design_change": true
+  },
+  "WIRE-AWG24-PVC-M": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "CNC Tech",
+     "mpn": "1007-24-1-2000-001-1-TS",
+     "qty_per": 0.8846,
+     "unit": "ft",
+     "note": "black (A+)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-1007-24-1-2000-001-1-TS-DS-ND",
+     "pack": "cut to length (Digi-Spool, per foot)",
+     "order_qty": 23,
+     "unit_price_usd": 0.458,
+     "ext_usd": 10.53,
+     "stock": 1801,
+     "url": "https://www.digikey.com/en/products/detail/1175-1007-24-1-2000-001-1-TS-DS-ND"
+    },
+    {
+     "maker": "CNC Tech",
+     "mpn": "1007-24-1-2000-007-1-TS",
+     "qty_per": 0.8846,
+     "unit": "ft",
+     "note": "green (A-)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-1007-24-1-2000-007-1-TS-DS-ND",
+     "pack": "cut to length (Digi-Spool, per foot)",
+     "order_qty": 23,
+     "unit_price_usd": 0.458,
+     "ext_usd": 10.53,
+     "stock": 3633,
+     "url": "https://www.digikey.com/en/products/detail/1175-1007-24-1-2000-007-1-TS-DS-ND"
+    },
+    {
+     "maker": "CNC Tech",
+     "mpn": "1007-24-1-2000-004-1-TS",
+     "qty_per": 0.8846,
+     "unit": "ft",
+     "note": "red (B+)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-1007-24-1-2000-004-1-TS-DS-ND",
+     "pack": "cut to length (Digi-Spool, per foot)",
+     "order_qty": 23,
+     "unit_price_usd": 0.458,
+     "ext_usd": 10.53,
+     "stock": 4766,
+     "url": "https://www.digikey.com/en/products/detail/1175-1007-24-1-2000-004-1-TS-DS-ND"
+    },
+    {
+     "maker": "CNC Tech",
+     "mpn": "1007-24-1-2000-005-1-TS",
+     "qty_per": 0.8846,
+     "unit": "ft",
+     "note": "blue (B-)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-1007-24-1-2000-005-1-TS-DS-ND",
+     "pack": "cut to length (Digi-Spool, per foot)",
+     "order_qty": 23,
+     "unit_price_usd": 0.458,
+     "ext_usd": 10.53,
+     "stock": 4511,
+     "url": "https://www.digikey.com/en/products/detail/1175-1007-24-1-2000-005-1-TS-DS-ND"
+    }
+   ],
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.cnctech.us/pdfs/1007-XX-1-2000-0XX-1-TS.pdf",
+   "basis": "UL1007 PVC 80 degC 300 V stranded 24 AWG per foot, four coil colours",
+   "build_qty": {
+    "bom_qty": 26,
+    "basis": "wiring.csv v10_1: 6 motor runs x 4 conductors = 25.88 m -> 6.5 m per coil colour, 23 ft each",
+    "cost_usd": 42.12
+   },
+   "note": "X motor and left Y motor runs flex with the gantry: V12 plans igus chainflex for flexing runs; UL1007 hook-up wire is not rated for continuous flexing",
+   "alternates": [
+    {
+     "maker": "igus",
+     "mpn": "CF130-03-02",
+     "note": "high-flex alternative for the flexing motor runs (V12 plan)"
+    }
+   ]
+  },
+  "WIRE-AWG26-PVC-M": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "CNC Tech",
+     "mpn": "1569-26-1-0500-001-1-TS",
+     "qty_per": 1.0625,
+     "unit": "ft",
+     "note": "black (0 V)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-1569-26-1-0500-001-1-TS-DS-ND",
+     "pack": "cut to length (Digi-Spool, per foot)",
+     "order_qty": 17,
+     "unit_price_usd": 0.508,
+     "ext_usd": 8.64,
+     "stock": 7059,
+     "url": "https://www.digikey.com/en/products/detail/1175-1569-26-1-0500-001-1-TS-DS-ND"
+    },
+    {
+     "maker": "CNC Tech",
+     "mpn": "1569-26-1-0500-004-1-TS",
+     "qty_per": 1.0625,
+     "unit": "ft",
+     "note": "red (supply)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-1569-26-1-0500-004-1-TS-DS-ND",
+     "pack": "cut to length (Digi-Spool, per foot)",
+     "order_qty": 17,
+     "unit_price_usd": 0.509,
+     "ext_usd": 8.65,
+     "stock": 5238,
+     "url": "https://www.digikey.com/en/products/detail/1175-1569-26-1-0500-004-1-TS-DS-ND"
+    },
+    {
+     "maker": "CNC Tech",
+     "mpn": "1569-26-1-0500-002-1-TS",
+     "qty_per": 1.0625,
+     "unit": "ft",
+     "note": "white (signal)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-1569-26-1-0500-002-1-TS-DS-ND",
+     "pack": "cut to length (Digi-Spool, per foot)",
+     "order_qty": 17,
+     "unit_price_usd": 0.508,
+     "ext_usd": 8.64,
+     "stock": 3088,
+     "url": "https://www.digikey.com/en/products/detail/1175-1569-26-1-0500-002-1-TS-DS-ND"
+    }
+   ],
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them",
+   "checked": "2026-11-20",
+   "datasheet": "https://cnctech.us/pdfs/1569-XX-1-0500-0XX-1-TS.pdf",
+   "basis": "UL1569 PVC 105 degC 300 V 26 AWG per foot (CNC Tech lists no UL1007 26 AWG per foot); exceeds the 'pvc' class",
+   "build_qty": {
+    "bom_qty": 16,
+    "basis": "wiring.csv v10_1: relay control, fans, endstops, host serial = 15.03 m -> 3 colours x 17 ft",
+    "cost_usd": 25.93
+   }
+  },
+  "WIRE-AWG26-SILICONE-M": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "CNC Tech",
+     "mpn": "3132-26-1-0500-001-1-TS",
+     "qty_per": 1.2727,
+     "unit": "ft",
+     "note": "black",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-3132-26-1-0500-001-1-TS-DS-ND",
+     "pack": "cut to length (Digi-Spool, per foot)",
+     "order_qty": 14,
+     "unit_price_usd": 0.606,
+     "ext_usd": 8.48,
+     "stock": 1758,
+     "url": "https://www.digikey.com/en/products/detail/1175-3132-26-1-0500-001-1-TS-DS-ND"
+    },
+    {
+     "maker": "CNC Tech",
+     "mpn": "3132-26-1-0500-005-1-TS",
+     "qty_per": 1.2727,
+     "unit": "ft",
+     "note": "blue",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-3132-26-1-0500-005-1-TS-DS-ND",
+     "pack": "cut to length (Digi-Spool, per foot)",
+     "order_qty": 14,
+     "unit_price_usd": 0.606,
+     "ext_usd": 8.48,
+     "stock": 920,
+     "url": "https://www.digikey.com/en/products/detail/1175-3132-26-1-0500-005-1-TS-DS-ND"
+    },
+    {
+     "maker": "CNC Tech",
+     "mpn": "3132-26-1-0500-004-1-TS",
+     "qty_per": 0.6364,
+     "unit": "ft",
+     "note": "red (probe 24 V)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-3132-26-1-0500-004-1-TS-DS-ND",
+     "pack": "cut to length (Digi-Spool, per foot)",
+     "order_qty": 7,
+     "unit_price_usd": 0.636,
+     "ext_usd": 4.45,
+     "stock": 1186,
+     "url": "https://www.digikey.com/en/products/detail/1175-3132-26-1-0500-004-1-TS-DS-ND"
+    }
+   ],
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them",
+   "checked": "2026-11-20",
+   "datasheet": "CNC Tech 3132 series sheet (Digi-Key media link, mm.digikey.com)",
+   "basis": "UL3132 silicone 26 AWG per foot (CNC Tech 3239 has no 26 AWG)",
+   "build_qty": {
+    "bom_qty": 11,
+    "basis": "wiring.csv v10_1: bed and hotend thermistors, probe signal + 24 V = 10.64 m -> black 14 ft, blue 14 ft, red 7 ft",
+    "cost_usd": 21.41
+   }
+  },
+  "WIRE-AWG14-PVC105-M": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "LAPP",
+     "mpn": "4160500",
+     "qty_per": 3.2808,
+     "unit": "ft",
+     "distributor": "Digi-Key",
+     "distributor_pn": "2181-4160500-ND",
+     "pack": "per foot",
+     "order_qty": 0,
+     "unit_price_usd": 0.7054,
+     "ext_usd": 0.0,
+     "stock": 0,
+     "url": "https://www.digikey.com/en/products/detail/2181-4160500-ND"
+    }
+   ],
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.mouser.com/datasheet/3/5935/1/DB4160100EN.pdf",
+   "basis": "14 AWG G/Y LAPP multi-standard; 100 ft minimum, back-order (no 14 AWG UL1015 per foot found)",
+   "build_qty": {
+    "bom_qty": 0,
+    "basis": "not in the v10_1 BOM (catalogue SKU the wiring generator can emit); order per the design's metres",
+    "cost_usd": null
+   }
+  },
+  "WIRE-AWG16-PVC105-M": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "LAPP",
+     "mpn": "4160400",
+     "qty_per": 3.2808,
+     "unit": "ft",
+     "distributor": "Digi-Key",
+     "distributor_pn": "2181-4160400-DS-ND",
+     "pack": "per foot",
+     "order_qty": 0,
+     "unit_price_usd": 1.17,
+     "ext_usd": 0.0,
+     "stock": 3621,
+     "url": "https://www.digikey.com/en/products/detail/2181-4160400-DS-ND"
+    }
+   ],
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.lapptannehill.com/media/datasheet/lapp/olflex/multi-standard-har-hookup-wire.pdf",
+   "basis": "16 AWG G/Y LAPP multi-standard per foot",
+   "build_qty": {
+    "bom_qty": 0,
+    "basis": "not in the v10_1 BOM (catalogue SKU the wiring generator can emit); order per the design's metres",
+    "cost_usd": null
+   }
+  },
+  "WIRE-AWG13-SILICONE-M": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "CNC Tech",
+     "mpn": "3239-14-1-0100-001-1-TS",
+     "qty_per": 0.032808000000000004,
+     "unit": "spool (100 ft)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-3239-14-1-0100-001-1-TS-ND",
+     "pack": "100 ft spool / ft minimum",
+     "order_qty": 0,
+     "unit_price_usd": 107.14,
+     "ext_usd": 0.0,
+     "stock": 30,
+     "url": "https://www.digikey.com/en/products/detail/1175-3239-14-1-0100-001-1-TS-ND"
+    }
+   ],
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.cnctech.us/pdfs/3239-XX-1-0500-0XX-1-TS.pdf",
+   "basis": "no 13 AWG: 14 AWG UL3239 silicone, 100 ft spool (design change)",
+   "build_qty": {
+    "bom_qty": 0,
+    "basis": "not in the v10_1 BOM (catalogue SKU the wiring generator can emit); order per the design's metres",
+    "cost_usd": null
+   },
+   "design_change": true
+  },
+  "WIRE-AWG14-SILICONE-M": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "CNC Tech",
+     "mpn": "3239-14-1-0100-001-1-TS",
+     "qty_per": 0.032808000000000004,
+     "unit": "spool (100 ft)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-3239-14-1-0100-001-1-TS-ND",
+     "pack": "100 ft spool / ft minimum",
+     "order_qty": 0,
+     "unit_price_usd": 107.14,
+     "ext_usd": 0.0,
+     "stock": 30,
+     "url": "https://www.digikey.com/en/products/detail/1175-3239-14-1-0100-001-1-TS-ND"
+    }
+   ],
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.cnctech.us/pdfs/3239-XX-1-0500-0XX-1-TS.pdf",
+   "basis": "14 AWG UL3239 silicone, 100 ft spool only",
+   "build_qty": {
+    "bom_qty": 0,
+    "basis": "not in the v10_1 BOM (catalogue SKU the wiring generator can emit); order per the design's metres",
+    "cost_usd": null
+   }
+  },
+  "WIRE-AWG18-SILICONE-M": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "CNC Tech",
+     "mpn": "3239-18-1-0500-002-1-TS",
+     "qty_per": 3.2808,
+     "unit": "ft",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-3239-18-1-0500-002-1-TS-DS-ND",
+     "pack": "per foot",
+     "order_qty": 0,
+     "unit_price_usd": 1.42,
+     "ext_usd": 0.0,
+     "stock": 23457,
+     "url": "https://www.digikey.com/en/products/detail/1175-3239-18-1-0500-002-1-TS-DS-ND"
+    }
+   ],
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.cnctech.us/pdfs/3239-XX-1-0500-0XX-1-TS.pdf",
+   "basis": "18 AWG UL3239 silicone per foot (white; G/Y CN105GY-DS-ND)",
+   "build_qty": {
+    "bom_qty": 0,
+    "basis": "not in the v10_1 BOM (catalogue SKU the wiring generator can emit); order per the design's metres",
+    "cost_usd": null
+   }
+  },
+  "WIRE-AWG20-PVC-M": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "CNC Tech",
+     "mpn": "1007-20-1-2000-001-1-TS",
+     "qty_per": 3.2808,
+     "unit": "ft",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-1007-20-1-2000-001-1-TS-DS-ND",
+     "pack": "per foot",
+     "order_qty": 0,
+     "unit_price_usd": 0.65,
+     "ext_usd": 0.0,
+     "stock": 2980,
+     "url": "https://www.digikey.com/en/products/detail/1175-1007-20-1-2000-001-1-TS-DS-ND"
+    }
+   ],
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.cnctech.us/pdfs/1007-XX-1-2000-0XX-1-TS.pdf",
+   "basis": "20 AWG UL1007 per foot",
+   "build_qty": {
+    "bom_qty": 0,
+    "basis": "not in the v10_1 BOM (catalogue SKU the wiring generator can emit); order per the design's metres",
+    "cost_usd": null
+   }
+  },
+  "WIRE-AWG22-PVC-M": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "CNC Tech",
+     "mpn": "1007-22-1-2000-001-1-TS",
+     "qty_per": 3.2808,
+     "unit": "ft",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-1007-22-1-2000-001-1-TS-DS-ND",
+     "pack": "per foot",
+     "order_qty": 0,
+     "unit_price_usd": 0.58,
+     "ext_usd": 0.0,
+     "stock": 12000,
+     "url": "https://www.digikey.com/en/products/detail/1175-1007-22-1-2000-001-1-TS-DS-ND"
+    }
+   ],
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.cnctech.us/pdfs/1007-XX-1-2000-0XX-1-TS.pdf",
+   "basis": "22 AWG UL1007 per foot",
+   "build_qty": {
+    "bom_qty": 0,
+    "basis": "not in the v10_1 BOM (catalogue SKU the wiring generator can emit); order per the design's metres",
+    "cost_usd": null
+   }
+  },
+  "WIRE-AWG22-SILICONE-M": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "CNC Tech",
+     "mpn": "3239-22-1-0500-001-1-TS",
+     "qty_per": 3.2808,
+     "unit": "ft",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-3239-22-1-0500-001-1-TS-DS-ND",
+     "pack": "per foot",
+     "order_qty": 0,
+     "unit_price_usd": 0.99,
+     "ext_usd": 0.0,
+     "stock": 476,
+     "url": "https://www.digikey.com/en/products/detail/1175-3239-22-1-0500-001-1-TS-DS-ND"
+    }
+   ],
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.cnctech.us/pdfs/3239-XX-1-0500-0XX-1-TS.pdf",
+   "basis": "22 AWG UL3239 silicone per foot",
+   "build_qty": {
+    "bom_qty": 0,
+    "basis": "not in the v10_1 BOM (catalogue SKU the wiring generator can emit); order per the design's metres",
+    "cost_usd": null
+   }
+  },
+  "WIRE-AWG24-SILICONE-M": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "CNC Tech",
+     "mpn": "3239-24-1-0500-001-1-TS",
+     "qty_per": 3.2808,
+     "unit": "ft",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1175-3239-24-1-0500-001-1-TS-DS-ND",
+     "pack": "per foot",
+     "order_qty": 0,
+     "unit_price_usd": 0.95,
+     "ext_usd": 0.0,
+     "stock": 39112,
+     "url": "https://www.digikey.com/en/products/detail/1175-3239-24-1-0500-001-1-TS-DS-ND"
+    }
+   ],
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.cnctech.us/pdfs/3239-XX-1-0500-0XX-1-TS.pdf",
+   "basis": "24 AWG UL3239 silicone per foot",
+   "build_qty": {
+    "bom_qty": 0,
+    "basis": "not in the v10_1 BOM (catalogue SKU the wiring generator can emit); order per the design's metres",
+    "cost_usd": null
+   }
+  },
+  "CONN-DUPONT": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Molex",
+     "mpn": "50-57-9405",
+     "qty_per": 0.6667,
+     "unit": "each",
+     "note": "SL 1x5 2.54 mm housing (host serial, Pi pins 2-10 with pin 4 empty)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "WM2903-ND",
+     "order_qty": 2,
+     "unit_price_usd": 0.39,
+     "ext_usd": 0.78,
+     "stock": 49982,
+     "url": "https://www.digikey.com/en/products/detail/WM2903-ND"
+    },
+    {
+     "maker": "Molex",
+     "mpn": "50-57-9402",
+     "qty_per": 0.3333,
+     "unit": "each",
+     "note": "SL 1x2 housing (fan 5 V at the board)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "WM2900-ND",
+     "order_qty": 1,
+     "unit_price_usd": 0.32,
+     "ext_usd": 0.32,
+     "stock": 87761,
+     "url": "https://www.digikey.com/en/products/detail/WM2900-ND"
+    },
+    {
+     "maker": "Molex",
+     "mpn": "16-02-0097",
+     "qty_per": 3.3333,
+     "unit": "each",
+     "note": "SL female crimp 24-30 AWG gold (26 AWG wire)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "WM2513-ND",
+     "order_qty": 10,
+     "unit_price_usd": 0.165,
+     "ext_usd": 1.65,
+     "stock": 161878,
+     "url": "https://www.digikey.com/en/products/detail/WM2513-ND"
+    }
+   ],
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.molex.com/pdm_docs/sd/050579405_sd.pdf",
+   "basis": "Molex SL (C-Grid III) mates 0.64 mm square 2.54 mm pins (Octopus and Pi headers); 24-30 AWG contact fits the 26 AWG wire (16-02-0102 is 22-24 AWG)",
+   "build_qty": {
+    "bom_qty": 3,
+    "basis": "wiring.csv v10_1: host serial + 5 V (4 wires, both ends) and the heat-sink fan's board end (2 wires); Pi GPIO 2/6/8/10 sit in a 5-position row",
+    "cost_usd": 2.75
+   },
+   "alternates": [
+    {
+     "maker": "Harwin",
+     "mpn": "M20-1060500 / M20-1060200 + M20-1180042",
+     "note": "Harwin M20 housings + 22-30 AWG crimp; M20-1060500 out of stock at Digi-Key, Mouser 855-M20-1060500 4955 in stock"
+    }
+   ],
+   "cad": "50-57-9405 / 50-57-9402 STEP (Digi-Key media)"
+  },
+  "CONN-FASTON-6.3": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "TE Connectivity",
+     "mpn": "2-520184-2",
+     "qty_per": 1,
+     "unit": "each",
+     "note": "FASTON 250 fully insulated receptacle 22-18 AWG",
+     "distributor": "Digi-Key",
+     "distributor_pn": "A27817-ND",
+     "order_qty": 0,
+     "unit_price_usd": 0.34,
+     "ext_usd": 0.0,
+     "stock": 166848,
+     "url": "https://www.digikey.com/en/products/detail/A27817-ND"
+    }
+   ],
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=1-1773948-3_Ultra-Fast",
+   "basis": "TE Ultra-Fast fully insulated 6.3 mm (0.250) receptacle, 22-18 AWG",
+   "build_qty": {
+    "bom_qty": 0,
+    "basis": "not in the v10_1 BOM (catalogue SKU)",
+    "cost_usd": null
+   },
+   "alternates": [
+    {
+     "maker": "Panduit",
+     "mpn": "DNF14-250FIB-M",
+     "note": "16-14 AWG 0.250 fully insulated, Digi-Key 298-10278-ND 0.67, 151955 in stock"
+    }
+   ],
+   "cad": "TE STEP/IGS/DXF (Digi-Key media)"
+  },
+  "CONN-RING-M5": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Panduit",
+     "mpn": "PV14-10R-M",
+     "qty_per": 2.0,
+     "unit": "each",
+     "note": "vinyl-insulated ring, 16-14 AWG, #10 stud (fits M5)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "298-10075-ND",
+     "order_qty": 2,
+     "unit_price_usd": 0.31,
+     "ext_usd": 0.62,
+     "stock": 174897,
+     "url": "https://www.digikey.com/en/products/detail/298-10075-ND"
+    }
+   ],
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.panduit.com/content/dam/panduit/en/products/media/2/72/172/1172/111461172.pdf",
+   "basis": "Panduit Pan-Term ring, #10 (5 mm) stud; 13 AWG (2.6 mm2) exceeds its 14 AWG range -> follows the 14 AWG decision",
+   "build_qty": {
+    "bom_qty": 1,
+    "basis": "wiring.csv v10_1: earth to frame at the M5 earth stud (14 AWG after the gauge decision); one spare",
+    "cost_usd": 0.62
+   },
+   "note": "13 AWG does not fit any 16-14 AWG ring; with 12 AWG use Panduit PV10-10R (12-10 AWG)",
+   "design_change": true
+  },
+  "CONN-RING-M4": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Panduit",
+     "mpn": "PV18-8R-MY",
+     "qty_per": 1,
+     "unit": "each",
+     "note": "vinyl-insulated ring 22-18 AWG, #8 stud (M4)",
+     "distributor": "Digi-Key",
+     "distributor_pn": "298-10437-ND",
+     "order_qty": 0,
+     "unit_price_usd": 0.45,
+     "ext_usd": 0.0,
+     "stock": 13525,
+     "url": "https://www.digikey.com/en/products/detail/298-10437-ND"
+    }
+   ],
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them",
+   "checked": "2026-11-20",
+   "datasheet": "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/1154/PV18-xxR%28N%29.pdf",
+   "basis": "Panduit Pan-Term ring for M4 (#8)",
+   "build_qty": {
+    "bom_qty": 0,
+    "basis": "not in the v10_1 BOM (catalogue SKU)",
+    "cost_usd": null
+   },
+   "alternates": [
+    {
+     "maker": "Panduit",
+     "mpn": "PV14-8R-M",
+     "note": "16-14 AWG #8, Digi-Key 298-10305-ND 0.43, 69561 in stock"
+    }
+   ]
+  },
+  "SLEEVE-BRAIDED-8MM-M": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Techflex",
+     "mpn": "PTN0.25BK200",
+     "qty_per": 0.25,
+     "unit": "spool (200 ft)",
+     "note": "Flexo PET 1/4 in nominal (expands to about 7/16 in, 11 mm), black",
+     "distributor": "Digi-Key",
+     "distributor_pn": "1030-PTN0.25BK200-ND",
+     "pack": "200 ft spool",
+     "order_qty": 1,
+     "unit_price_usd": 44.14,
+     "ext_usd": 44.14,
+     "stock": 750,
+     "url": "https://www.digikey.com/en/products/detail/1030-PTN0.25BK200-ND"
+    }
+   ],
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them",
+   "checked": "2026-11-20",
+   "datasheet": "Techflex Flexo PET (PTN) product sheet: techflex.com (not linked by Digi-Key's API record)",
+   "basis": "Techflex Flexo PET, 1/4 in nominal covers an 8 mm bundle; only spool put-ups at the distributor (no per-foot listing)",
+   "build_qty": {
+    "bom_qty": 4,
+    "basis": "BOM v10_1: 4 m of loom (13 ft); the smallest put-up Digi-Key lists is 200 ft",
+    "cost_usd": 44.14
+   },
+   "note": "pays for 200 ft to use 13 ft; a 25 ft put-up exists only at resellers (not API-verified)",
+   "alternates": [
+    {
+     "maker": "Techflex",
+     "mpn": "PTN0.38BK125",
+     "note": "3/8 in nominal, 125 ft, Digi-Key 1030-PTN0.38BK125-ND 44.14, 437 in stock"
+    }
+   ]
+  },
+  "FUSE-5x20-T5A": {
+   "kind": "distributor",
+   "items": [
+    {
+     "maker": "Schurter",
+     "mpn": "0001.2511",
+     "qty_per": 1,
+     "unit": "each",
+     "note": "SPT 5x20 ceramic T5A",
+     "distributor": "Mouser",
+     "distributor_pn": "693-0001.2511",
+     "order_qty": 0,
+     "unit_price_usd": 0.92,
+     "ext_usd": 0.0,
+     "stock": 11497,
+     "url": "https://www.mouser.com/ProductDetail/Schurter/0001.2511"
+    }
+   ],
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them",
+   "checked": "2026-11-20",
+   "datasheet": "https://www.schurter.com/en/datasheet/typ_SPT_5x20.pdf",
+   "basis": "V12 plan (230 V): Digi-Key 486-1785-ND 1.10, 5532 in stock",
+   "build_qty": {
+    "bom_qty": 0,
+    "basis": "V12 plan: the 230 V fuse-link (not in the v10_1 BOM)",
+    "cost_usd": null
+   },
+   "cad": "Schurter STEP/IGS (Digi-Key media)"
+  },
+  "SPACER-AL-M3-6x3.2x4": {
+   "kind": "placeholder",
+   "items": [],
+   "source": "Digi-Key v4 keyword search 2026-11-20 (Harwin R30-620 / R30-670, RAF M5 rounds)",
+   "replace_with": "Harwin R30-6200414 (M3 aluminium round 4 mm, 952-2006-ND 0.50, 10522 in stock; Harwin R30-620 OD is 5 mm per the audit, not 6): design change OD",
+   "design_change": true,
+   "checked": "2026-11-20"
+  },
+  "SPACER-AL-M3-6x3.2x3.6": {
+   "kind": "placeholder",
+   "items": [],
+   "source": "Digi-Key v4 keyword search 2026-11-20 (Harwin R30-620 / R30-670, RAF M5 rounds)",
+   "replace_with": "Harwin R30-6200314 (3 mm, 952-2365-ND 0.50, 9532) or R30-6200414 (4 mm): 3.6 mm is not stocked; OD 5 not 6",
+   "design_change": true,
+   "checked": "2026-11-20"
+  },
+  "SPACER-AL-M2.5-5x2.7x6.55": {
+   "kind": "placeholder",
+   "items": [],
+   "source": "Digi-Key v4 keyword search 2026-11-20 (Harwin R30-620 / R30-670, RAF M5 rounds)",
+   "replace_with": "no M2.5 aluminium round spacer found at 6.55 mm; RAF M0904-A-25-AL series lists 6.9 mm (audit): design change to a stock length",
+   "design_change": true,
+   "checked": "2026-11-20"
+  },
+  "SPACER-AL-M5-10x5.1x54.825": {
+   "kind": "placeholder",
+   "items": [],
+   "source": "Digi-Key v4 keyword search 2026-11-20 (Harwin R30-620 / R30-670, RAF M5 rounds)",
+   "replace_with": "RAF M5 aluminium rounds list 3, 5, 11, 44 mm (Digi-Key: M0633-5-AL-22 44 mm, no stock): 54.825 mm is not stocked - design change (stack two, or make it)",
+   "design_change": true,
+   "checked": "2026-11-20"
+  },
+  "SPACER-AL-M5-10x5.1x58": {
+   "kind": "placeholder",
+   "items": [],
+   "source": "Digi-Key v4 keyword search 2026-11-20 (Harwin R30-620 / R30-670, RAF M5 rounds)",
+   "replace_with": "as 54.825: 58 mm is not stocked (RAF/Harwin); design change",
+   "design_change": true,
+   "checked": "2026-11-20"
+  },
+  "SPACER-AL-M5-10x5.1x9": {
+   "kind": "placeholder",
+   "items": [],
+   "source": "Digi-Key v4 keyword search 2026-11-20 (Harwin R30-620 / R30-670, RAF M5 rounds)",
+   "replace_with": "RAF M0594-5-AL 5 mm / M0592-5-AL 3 mm (no stock on 2026-11-20): 9 mm not stocked; design change",
+   "design_change": true,
+   "checked": "2026-11-20"
   }
  }
 }

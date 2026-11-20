@@ -1,5 +1,657 @@
 {
  "schema": "mechloop.real_parts/1",
  "about": "Purchased parts pinned to a real, orderable product, by SKU (practice rule DG-07, docs/DESIGN_GUIDELINES.md key rule). Each record: maker, mpn (the maker's orderable number at the stock size used), sellers [{name, part_number, url, checked}], sold_by_maker (true when the maker sells it itself), stock_size, datasheet (vendor_docs file + URL), ratings_source {rating: 'datasheet p.N'}, replace_with (for a placeholder: the real part or the search). A design can also give the record on the part: place(..., real_part={...}). Only facts read from the maker's or seller's own page go here; nothing is filled in from memory.",
- "parts": {}
+ "parts": {
+  "WIRE-AWG18-PVC105-M": {
+   "maker": "CNC Tech",
+   "mpn": "1015-18-1-2000-001-1-TS",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "1175-1015-18-1-2000-001-1-TS-DS-ND",
+     "url": "https://www.digikey.com/en/products/detail/1175-1015-18-1-2000-001-1-TS-DS-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "cut to length (Digi-Spool, per foot)",
+   "datasheet": "https://cnctech.us/pdfs/1015-XX-1-2000-0XX-1-TS.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: UL1015 PVC 105 degC 600 V stranded, sold by the foot (no 100 ft spool for 0.9 m); green/yellow PE from LAPP because CNC Tech's 1015 G/Y is not listed per foot",
+   "checked": "2026-11-20"
+  },
+  "WIRE-AWG13-PVC105-M": {
+   "maker": "LAPP",
+   "mpn": "4160500",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "2181-4160500-ND",
+     "url": "https://www.digikey.com/en/products/detail/lapp/4160500/25551864",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "bulk, 100 ft minimum",
+   "datasheet": "https://www.mouser.com/datasheet/3/5935/1/DB4160100EN.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: no 13 AWG hook-up wire is stocked; 14 AWG (2.08 mm2) is the nearest gauge that the 16-14 AWG FASTON and #10 (M5) ring terminals accept; 12 AWG would not fit the 4.8 mm FASTON",
+   "checked": "2026-11-20",
+   "design_change": true,
+   "design_change_note": "DESIGN DECISION: the wiring list asks 13 AWG; choose 14 AWG (this pin, 100 ft minimum, back-order) or 16 AWG (LAPP 4160400, per foot, in stock) for the earth-to-frame lead and update WIRE-AWG13 in the design"
+  },
+  "WIRE-AWG16-SILICONE-M": {
+   "maker": "CNC Tech",
+   "mpn": "3239-16-1-0500-001-1-TS",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "1175-3239-16-1-0500-001-1-TS-DS-ND",
+     "url": "https://www.digikey.com/en/products/detail/1175-3239-16-1-0500-001-1-TS-DS-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "cut to length (Digi-Spool, per foot)",
+   "datasheet": "https://www.cnctech.us/pdfs/3239-XX-1-0500-0XX-1-TS.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: UL3239 silicone 16 AWG per foot for the fixed runs; the flexing bed run in a rated high-flex 2-core cable as V12 plans",
+   "checked": "2026-11-20",
+   "design_change": true,
+   "design_change_note": "the bed run becomes one 2-core igus cable (design change, V12 plan); CF880 is a Digi-Key Marketplace item (shipped by the marketplace seller)"
+  },
+  "WIRE-AWG20-SILICONE-M": {
+   "maker": "CNC Tech",
+   "mpn": "3239-20-1-0500-001-1-TS",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "1175-3239-20-1-0500-001-1-TS-DS-ND",
+     "url": "https://www.digikey.com/en/products/detail/1175-3239-20-1-0500-001-1-TS-DS-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "cut to length (Digi-Spool, per foot)",
+   "datasheet": "https://www.cnctech.us/pdfs/3239-XX-1-0500-0XX-1-TS.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: UL3239 silicone, 200 degC, fine strand (flexes with the toolhead), sold per foot",
+   "checked": "2026-11-20"
+  },
+  "WIRE-AWG24-PVC-M": {
+   "maker": "CNC Tech",
+   "mpn": "1007-24-1-2000-001-1-TS",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "1175-1007-24-1-2000-001-1-TS-DS-ND",
+     "url": "https://www.digikey.com/en/products/detail/1175-1007-24-1-2000-001-1-TS-DS-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "cut to length (Digi-Spool, per foot)",
+   "datasheet": "https://www.cnctech.us/pdfs/1007-XX-1-2000-0XX-1-TS.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: UL1007 PVC 80 degC 300 V stranded 24 AWG per foot, four coil colours",
+   "checked": "2026-11-20"
+  },
+  "WIRE-AWG26-PVC-M": {
+   "maker": "CNC Tech",
+   "mpn": "1569-26-1-0500-001-1-TS",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "1175-1569-26-1-0500-001-1-TS-DS-ND",
+     "url": "https://www.digikey.com/en/products/detail/1175-1569-26-1-0500-001-1-TS-DS-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "cut to length (Digi-Spool, per foot)",
+   "datasheet": "https://cnctech.us/pdfs/1569-XX-1-0500-0XX-1-TS.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: UL1569 PVC 105 degC 300 V 26 AWG per foot (CNC Tech lists no UL1007 26 AWG per foot); exceeds the 'pvc' class",
+   "checked": "2026-11-20"
+  },
+  "WIRE-AWG26-SILICONE-M": {
+   "maker": "CNC Tech",
+   "mpn": "3132-26-1-0500-001-1-TS",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "1175-3132-26-1-0500-001-1-TS-DS-ND",
+     "url": "https://www.digikey.com/en/products/detail/1175-3132-26-1-0500-001-1-TS-DS-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "cut to length (Digi-Spool, per foot)",
+   "datasheet": "CNC Tech 3132 series sheet (Digi-Key media link, mm.digikey.com)",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: UL3132 silicone 26 AWG per foot (CNC Tech 3239 has no 26 AWG)",
+   "checked": "2026-11-20"
+  },
+  "WIRE-AWG14-PVC105-M": {
+   "maker": "LAPP",
+   "mpn": "4160500",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "2181-4160500-ND",
+     "url": "https://www.digikey.com/en/products/detail/2181-4160500-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "per foot",
+   "datasheet": "https://www.mouser.com/datasheet/3/5935/1/DB4160100EN.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: 14 AWG G/Y LAPP multi-standard; 100 ft minimum, back-order (no 14 AWG UL1015 per foot found)",
+   "checked": "2026-11-20"
+  },
+  "WIRE-AWG16-PVC105-M": {
+   "maker": "LAPP",
+   "mpn": "4160400",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "2181-4160400-DS-ND",
+     "url": "https://www.digikey.com/en/products/detail/2181-4160400-DS-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "per foot",
+   "datasheet": "https://www.lapptannehill.com/media/datasheet/lapp/olflex/multi-standard-har-hookup-wire.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: 16 AWG G/Y LAPP multi-standard per foot",
+   "checked": "2026-11-20"
+  },
+  "WIRE-AWG13-SILICONE-M": {
+   "maker": "CNC Tech",
+   "mpn": "3239-14-1-0100-001-1-TS",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "1175-3239-14-1-0100-001-1-TS-ND",
+     "url": "https://www.digikey.com/en/products/detail/1175-3239-14-1-0100-001-1-TS-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "100 ft spool / ft minimum",
+   "datasheet": "https://www.cnctech.us/pdfs/3239-XX-1-0500-0XX-1-TS.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: no 13 AWG: 14 AWG UL3239 silicone, 100 ft spool (design change)",
+   "checked": "2026-11-20",
+   "design_change": true,
+   "design_change_note": ""
+  },
+  "WIRE-AWG14-SILICONE-M": {
+   "maker": "CNC Tech",
+   "mpn": "3239-14-1-0100-001-1-TS",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "1175-3239-14-1-0100-001-1-TS-ND",
+     "url": "https://www.digikey.com/en/products/detail/1175-3239-14-1-0100-001-1-TS-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "100 ft spool / ft minimum",
+   "datasheet": "https://www.cnctech.us/pdfs/3239-XX-1-0500-0XX-1-TS.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: 14 AWG UL3239 silicone, 100 ft spool only",
+   "checked": "2026-11-20"
+  },
+  "WIRE-AWG18-SILICONE-M": {
+   "maker": "CNC Tech",
+   "mpn": "3239-18-1-0500-002-1-TS",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "1175-3239-18-1-0500-002-1-TS-DS-ND",
+     "url": "https://www.digikey.com/en/products/detail/1175-3239-18-1-0500-002-1-TS-DS-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "per foot",
+   "datasheet": "https://www.cnctech.us/pdfs/3239-XX-1-0500-0XX-1-TS.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: 18 AWG UL3239 silicone per foot (white; G/Y CN105GY-DS-ND)",
+   "checked": "2026-11-20"
+  },
+  "WIRE-AWG20-PVC-M": {
+   "maker": "CNC Tech",
+   "mpn": "1007-20-1-2000-001-1-TS",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "1175-1007-20-1-2000-001-1-TS-DS-ND",
+     "url": "https://www.digikey.com/en/products/detail/1175-1007-20-1-2000-001-1-TS-DS-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "per foot",
+   "datasheet": "https://www.cnctech.us/pdfs/1007-XX-1-2000-0XX-1-TS.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: 20 AWG UL1007 per foot",
+   "checked": "2026-11-20"
+  },
+  "WIRE-AWG22-PVC-M": {
+   "maker": "CNC Tech",
+   "mpn": "1007-22-1-2000-001-1-TS",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "1175-1007-22-1-2000-001-1-TS-DS-ND",
+     "url": "https://www.digikey.com/en/products/detail/1175-1007-22-1-2000-001-1-TS-DS-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "per foot",
+   "datasheet": "https://www.cnctech.us/pdfs/1007-XX-1-2000-0XX-1-TS.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: 22 AWG UL1007 per foot",
+   "checked": "2026-11-20"
+  },
+  "WIRE-AWG22-SILICONE-M": {
+   "maker": "CNC Tech",
+   "mpn": "3239-22-1-0500-001-1-TS",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "1175-3239-22-1-0500-001-1-TS-DS-ND",
+     "url": "https://www.digikey.com/en/products/detail/1175-3239-22-1-0500-001-1-TS-DS-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "per foot",
+   "datasheet": "https://www.cnctech.us/pdfs/3239-XX-1-0500-0XX-1-TS.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: 22 AWG UL3239 silicone per foot",
+   "checked": "2026-11-20"
+  },
+  "WIRE-AWG24-SILICONE-M": {
+   "maker": "CNC Tech",
+   "mpn": "3239-24-1-0500-001-1-TS",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "1175-3239-24-1-0500-001-1-TS-DS-ND",
+     "url": "https://www.digikey.com/en/products/detail/1175-3239-24-1-0500-001-1-TS-DS-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "per foot",
+   "datasheet": "https://www.cnctech.us/pdfs/3239-XX-1-0500-0XX-1-TS.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: 24 AWG UL3239 silicone per foot",
+   "checked": "2026-11-20"
+  },
+  "CONN-FERRULE": {
+   "maker": "Phoenix Contact",
+   "mpn": "3200043",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "277-2190-ND",
+     "url": "https://www.digikey.com/en/products/detail/277-2190-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "each",
+   "datasheet": "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/1173/AI.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: Phoenix AI insulated bootlace ferrules, DIN 46228-4 colours, one size per conductor gauge; Digi-Key sells them singly",
+   "checked": "2026-11-20"
+  },
+  "CONN-JST-XH": {
+   "maker": "JST",
+   "mpn": "XHP-4",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "455-2267-ND",
+     "url": "https://www.digikey.com/en/products/detail/455-2267-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "each",
+   "datasheet": "https://www.jst-mfg.com/product/pdf/eng/eXH.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: genuine JST XH (the Octopus headers are XH); contacts from the 100-piece bag instead of the 8000 reel",
+   "checked": "2026-11-20"
+  },
+  "CONN-MOLEX-MICROFIT": {
+   "maker": "Molex",
+   "mpn": "43020-0400",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "WM1778-ND",
+     "url": "https://www.digikey.com/en/products/detail/WM1778-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "each",
+   "datasheet": "https://www.molex.com/pdm_docs/sd/430250200_sd.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: Micro-Fit 3.0 as E3D uses; the 4-way gender follows E3D's motor-wiring note (43025-0400 on the motor), the 2-way gender is confirmed on arrival",
+   "checked": "2026-11-20"
+  },
+  "CONN-DUPONT": {
+   "maker": "Molex",
+   "mpn": "50-57-9405",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "WM2903-ND",
+     "url": "https://www.digikey.com/en/products/detail/WM2903-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "each",
+   "datasheet": "https://www.molex.com/pdm_docs/sd/050579405_sd.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: Molex SL (C-Grid III) mates 0.64 mm square 2.54 mm pins (Octopus and Pi headers); 24-30 AWG contact fits the 26 AWG wire (16-02-0102 is 22-24 AWG)",
+   "checked": "2026-11-20"
+  },
+  "CONN-FASTON-4.8": {
+   "maker": "TE Connectivity",
+   "mpn": "2-520182-2",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "A27804-ND",
+     "url": "https://www.digikey.com/en/products/detail/A27804-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "each",
+   "datasheet": "https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=1-1773948-3_Ultra-Fast",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: TE Ultra-Fast fully insulated, 4.8 mm (0.187) tab size of the DD11 inlet; 22-18 AWG range matches the mains wire",
+   "checked": "2026-11-20"
+  },
+  "CONN-FASTON-6.3": {
+   "maker": "TE Connectivity",
+   "mpn": "2-520184-2",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "A27817-ND",
+     "url": "https://www.digikey.com/en/products/detail/A27817-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "each",
+   "datasheet": "https://www.te.com/commerce/DocumentDelivery/DDEController?Action=srchrtrv&DocNm=1-1773948-3_Ultra-Fast",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: TE Ultra-Fast fully insulated 6.3 mm (0.250) receptacle, 22-18 AWG",
+   "checked": "2026-11-20"
+  },
+  "CONN-RING-M5": {
+   "maker": "Panduit",
+   "mpn": "PV14-10R-M",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "298-10075-ND",
+     "url": "https://www.digikey.com/en/products/detail/298-10075-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "each",
+   "datasheet": "https://www.panduit.com/content/dam/panduit/en/products/media/2/72/172/1172/111461172.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: Panduit Pan-Term ring, #10 (5 mm) stud; 13 AWG (2.6 mm2) exceeds its 14 AWG range -> follows the 14 AWG decision",
+   "checked": "2026-11-20",
+   "design_change": true,
+   "design_change_note": "13 AWG does not fit any 16-14 AWG ring; with 12 AWG use Panduit PV10-10R (12-10 AWG)"
+  },
+  "CONN-RING-M4": {
+   "maker": "Panduit",
+   "mpn": "PV18-8R-MY",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "298-10437-ND",
+     "url": "https://www.digikey.com/en/products/detail/298-10437-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "each",
+   "datasheet": "https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/1154/PV18-xxR%28N%29.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: Panduit Pan-Term ring for M4 (#8)",
+   "checked": "2026-11-20"
+  },
+  "SLEEVE-BRAIDED-8MM-M": {
+   "maker": "Techflex",
+   "mpn": "PTN0.25BK200",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "1030-PTN0.25BK200-ND",
+     "url": "https://www.digikey.com/en/products/detail/1030-PTN0.25BK200-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "200 ft spool",
+   "datasheet": "Techflex Flexo PET (PTN) product sheet: techflex.com (not linked by Digi-Key's API record)",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: Techflex Flexo PET, 1/4 in nominal covers an 8 mm bundle; only spool put-ups at the distributor (no per-foot listing)",
+   "checked": "2026-11-20"
+  },
+  "CABLE-TIE-100MM": {
+   "maker": "Panduit",
+   "mpn": "PLT1M-C",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "298-1020-ND",
+     "url": "https://www.digikey.com/en/products/detail/298-1020-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "priced per tie",
+   "datasheet": "https://www.mouser.com/datasheet/3/506/1/110198548.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: Panduit PLT1M-C as pinned before; price unit confirmed per tie at Digi-Key (Mouser 644-PLT1M-C: minimum 100, 0.212 per tie)",
+   "checked": "2026-11-20"
+  },
+  "FUSE-5x20-T8A": {
+   "maker": "Schurter",
+   "mpn": "0001.2513",
+   "sellers": [
+    {
+     "name": "Mouser",
+     "part_number": "693-0001-2513",
+     "url": "https://www.mouser.com/ProductDetail/Schurter/0001.2513",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "each",
+   "datasheet": "https://www.schurter.com/en/datasheet/typ_SPT_5x20.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: V12 plan: SPT ceramic for breaking capacity (Digi-Key 486-1767-ND 1.09, 41439 in stock)",
+   "checked": "2026-11-20"
+  },
+  "FUSE-5x20-T5A": {
+   "maker": "Schurter",
+   "mpn": "0001.2511",
+   "sellers": [
+    {
+     "name": "Mouser",
+     "part_number": "693-0001.2511",
+     "url": "https://www.mouser.com/ProductDetail/Schurter/0001.2511",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "each",
+   "datasheet": "https://www.schurter.com/en/datasheet/typ_SPT_5x20.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: V12 plan (230 V): Digi-Key 486-1785-ND 1.10, 5532 in stock",
+   "checked": "2026-11-20"
+  },
+  "DIODE-BAT85": {
+   "maker": "Vishay",
+   "mpn": "BAT85S-TAP",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "BAT85S-TAPCT-ND",
+     "url": "https://www.digikey.com/en/products/detail/BAT85S-TAPCT-ND",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "cut tape",
+   "datasheet": "https://www.vishay.com/docs/85513/bat85s.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: Vishay BAT85S as pinned in the audit; axial suits an in-lead splice",
+   "checked": "2026-11-20"
+  },
+  "THREADLOCKER-MEDIUM": {
+   "maker": "Henkel (Loctite)",
+   "mpn": "1329837",
+   "sellers": [
+    {
+     "name": "Newark",
+     "part_number": "80R9545",
+     "url": "https://www.newark.com/80R9545",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "10 ml bottle",
+   "datasheet": "http://www.farnell.com/datasheets/4159804.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: Henkel IDH 1329837 = Loctite 243 10 ml (element14 attributes: Product Range LOCTITE 243, Volume 10 ml); Digi-Key lists it only on its Marketplace (2275-1329837-ND, 5 minimum)",
+   "checked": "2026-11-20"
+  },
+  "DRIVER-BTT-TMC2209": {
+   "maker": "BIGTREETECH",
+   "mpn": "TMC2209 V1.3",
+   "sellers": [
+    {
+     "name": "BIGTREETECH official store (maker direct)",
+     "url": "https://biqu.equipment (BTT store)",
+     "checked": "not re-read: host not reachable from this session"
+    }
+   ],
+   "sold_by_maker": true,
+   "stock_size": "each",
+   "datasheet": "https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-TMC2209-V1.2/master/manual/TMC2209-V1.2-manual.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: maker-direct only: BTT's own module; Digi-Key/Mouser list ADI/Trinamic boards (TMC2209-EVAL / BOB), not a StepStick for the Octopus sockets",
+   "checked": "2026-11-20"
+  },
+  "THREADLOCKER-MEDIUM (Loctite 243 class: Z motor screws and posts, pulley set screws, jack screws, post jam nuts)": {
+   "maker": "Henkel (Loctite)",
+   "mpn": "1329837",
+   "sellers": [
+    {
+     "name": "Newark",
+     "part_number": "80R9545",
+     "url": "https://www.newark.com/80R9545",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": false,
+   "stock_size": "10 ml bottle",
+   "datasheet": "http://www.farnell.com/datasheets/4159804.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: Henkel IDH 1329837 = Loctite 243 10 ml (element14 attributes: Product Range LOCTITE 243, Volume 10 ml); Digi-Key lists it only on its Marketplace (2275-1329837-ND, 5 minimum)",
+   "checked": "2026-11-20",
+   "same_as": "THREADLOCKER-MEDIUM",
+   "note": "same bottle as THREADLOCKER-MEDIUM: duplicate BOM line, order one"
+  },
+  "DRIVER-BTT-TMC2209 (Octopus: X, Y, Y1, Z, Z1, Z2, E)": {
+   "maker": "BIGTREETECH",
+   "mpn": "TMC2209 V1.3",
+   "sellers": [
+    {
+     "name": "BIGTREETECH official store (maker direct)",
+     "url": "https://biqu.equipment (BTT store)",
+     "checked": "not re-read: host not reachable from this session"
+    }
+   ],
+   "sold_by_maker": true,
+   "stock_size": "each",
+   "datasheet": "https://raw.githubusercontent.com/bigtreetech/BIGTREETECH-TMC2209-V1.2/master/manual/TMC2209-V1.2-manual.pdf",
+   "order": "mechloop/data/sourcing/mpn_map.json (every item of this line: colours / housings + crimps / sizes, quantities, prices)",
+   "source": "distributor APIs read 2026-11-20 through mechloop/sourcing (Digi-Key v4 productdetails/keyword, Mouser v1, element14): distributor PN, stock, price breaks and datasheet link as the distributor returned them (2026-11-20); choice basis: maker-direct only: BTT's own module; Digi-Key/Mouser list ADI/Trinamic boards (TMC2209-EVAL / BOB), not a StepStick for the Octopus sockets",
+   "checked": "2026-11-20",
+   "same_as": "DRIVER-BTT-TMC2209"
+  },
+  "SPACER-NYLON-M2.5-4x2.7x4": {
+   "maker": "Pololu Corporation",
+   "mpn": "Pololu 1971",
+   "sold_by_maker": true,
+   "sellers": [
+    {
+     "name": "Pololu",
+     "part_number": "1971",
+     "url": "https://www.pololu.com/product/1971",
+     "checked": "item number from mechloop/parts/vendor/pololu_spacers.json (Pololu category page); price not re-read 2026-11-20"
+    }
+   ],
+   "stock_size": "pack (Pololu sells these spacers in multi-packs)",
+   "source": "mechloop/parts/vendor/pololu_spacers.json; seller = the maker",
+   "checked": "2026-11-20"
+  },
+  "SPACER-NYLON-M3-5x3.3x4": {
+   "maker": "Pololu Corporation",
+   "mpn": "Pololu 1981",
+   "sold_by_maker": true,
+   "sellers": [
+    {
+     "name": "Pololu",
+     "part_number": "1981",
+     "url": "https://www.pololu.com/product/1981",
+     "checked": "item number from mechloop/parts/vendor/pololu_spacers.json (Pololu category page); price not re-read 2026-11-20"
+    }
+   ],
+   "stock_size": "pack (Pololu sells these spacers in multi-packs)",
+   "source": "mechloop/parts/vendor/pololu_spacers.json; seller = the maker",
+   "checked": "2026-11-20"
+  },
+  "SPACER-NYLON-M3-5x3.3x6": {
+   "maker": "Pololu Corporation",
+   "mpn": "Pololu 1982",
+   "sold_by_maker": true,
+   "sellers": [
+    {
+     "name": "Pololu",
+     "part_number": "1982",
+     "url": "https://www.pololu.com/product/1982",
+     "checked": "item number from mechloop/parts/vendor/pololu_spacers.json (Pololu category page); price not re-read 2026-11-20"
+    }
+   ],
+   "stock_size": "pack (Pololu sells these spacers in multi-packs)",
+   "source": "mechloop/parts/vendor/pololu_spacers.json; seller = the maker",
+   "checked": "2026-11-20"
+  }
+ }
 }
