@@ -153,7 +153,7 @@ def bracket_misumi(kind: str = "HBLFSN5") -> Stock:
     hd = 5.3 if kind == "HBLFSN5" else 5.2
     s = _hblf_solid(la, lb)
     holes_a = [18.0]
-    holes_b = [10.0, 18.0] if kind == "HBLFSN5" else [10.0]
+    holes_b = [10.5, 18.0] if kind == "HBLFSN5" else [10.0]   # HBLFSN5: 10.5 / 18.0 per MISUMI's STEP (REQ-013)
     for x in holes_a:
         s -= Pos(x, 2.25, 0) * Rot(90, 0, 0) * Cylinder(hd / 2, 8.0)
     for y in holes_b:
@@ -208,6 +208,27 @@ def tnut_hntp5(flip: bool = False) -> Stock:
                          "unverified_fields": [], "file": "vendor_docs/misumi_2019_US_2716_post_assembly_nuts_HFS5.pdf"})
 
 
+def _cbm5_detail(sc):
+    """The -SEP set's screw is MISUMI CBM5-10 (ISO 4762 M5 x 10, head 8.5 x 5, 4 mm hex: MISUMI's STEP, REQ-013): its own SKU and
+    MISUMI's file as its display model, in place of McMaster's M5 x 10."""
+    from build123d import Location as _L
+    from OCP.gp import gp_Trsf
+
+    from . import shcs
+
+    sc.sku = "CBM5-10"
+    ov = vc.inbox_override(["CBM5-10"], shcs("M5", 10.0).shape)
+    if ov is None:
+        return
+    P = sc.meta.get("placement")
+    tr = gp_Trsf()
+    tr.SetValues(*[P[i][j] for i in range(3) for j in range(4)])
+    sc.detail = ov[0].moved(_L(tr))
+    sc.meta["model"] = {**(sc.meta.get("model") or {}), **ov[1], "source": "MISUMI CBM5-10 STEP (Instinct REQ-013)"}
+    sc.ratings.pop("mcmaster_pn", None)
+    sc.ratings.pop("mcmaster_pn_status", None)
+
+
 def add_bracket_misumi(d, name: str, a: str, b: str, corner, u, v, body: str = "world", kind: str = "HBLFSN5",
                        locking: str | None = None, hole_b: float = 18.0):
     """A MISUMI -SEP tabbed bracket on two slotted extrusions: inside corner at `corner`, leg A along u on part a, leg B along v on
@@ -230,6 +251,7 @@ def add_bracket_misumi(d, name: str, a: str, b: str, corner, u, v, body: str = "
         sc.meta["bracket_leg_of"] = name
         sc.meta["real_part"] = {"maker": "MISUMI", "mpn": "CBM5-10", "sellers": [{"name": "MISUMI USA", "part_number": "CBM5-10 (in the -SEP set)",
                                                                                 "catalogue": True, "checked": CHECKED}]}
+        _cbm5_detail(sc)
         d.join(name, part_name, "m5_tnut")
     return c
 
@@ -715,3 +737,49 @@ def whambam_plate_220() -> Stock:
                  real_part={"maker": "Wham Bam Systems", "mpn": "PEX Flexi Plate 220 x 220", "sellers": [{"name": "whambam3d.com (maker direct, US)",
                                                                                                          "checked": "2026-11-20", "note": "$35.00, SOLD OUT on 2026-11-20"}],
                             "sold_by_maker": True, "datasheet": WB_PLATE, "ratings_source": {"steel_thickness_mm": "maker's page: 0.4 mm"}})
+
+
+# ------------------------------------------------------------------ X / Y drive pulleys and idlers (owner, 2026-11-20)
+@part
+def pulley_mcmaster_3684n13() -> Stock:
+    """McMaster-Carr 3684N13 GT2 timing pulley: 20 teeth, for belts up to 9 mm, 5 mm finished bore, one flange, two M4 set screws 90
+    degrees apart in the hub. Dimensions from McMaster's STEP and drawing (vendor_docs/McMaster_3684N13_drawing.pdf): hub dia 15 x 8,
+    toothed section OD 12.1 x 11, flange dia 15 x 1, 20 overall. Local frame: axis Z, the hub's end at Z=0, the flange at Z 19..20."""
+    pd = 20 * 2.0 / math.pi
+    shape = Pos(0, 0, 4.0) * Cylinder(7.5, 8.0) + Pos(0, 0, 13.5) * Cylinder(6.05, 11.0) + Pos(0, 0, 19.5) * Cylinder(7.5, 1.0)
+    shape -= Pos(0, 0, 10.0) * Cylinder(2.5, 20.0)
+    dwg = "vendor_docs/McMaster_3684N13_drawing.pdf"
+    return Stock(shape, "GT2-20T-B5-W9", "McMaster-Carr 3684N13 GT2 pulley 20T, 9 mm belt, 5 mm bore, two set screws, one flange", 0.012,
+                 material="al6061", cost_usd=5.99,
+                 ratings={"pitch_diameter_mm": pd, "teeth": 20, "belt_pitch_mm": 2.0, "belt_width_mm": 9.0,
+                          "mcmaster_pn": "3684N13", "mcmaster_pn_status": "confirmed: McMaster's STEP and drawing (Instinct REQ-013, 2026-11-20)"},
+                 interfaces={"bore": 5.0, "height": 20.0, "belt_center_z": 13.5, "belt_center": [(0.0, 0.0, 13.5)], "set_screws": "2 x M4, 90 degrees, in the hub"},
+                 model={"tolerance": {"volume_ratio": (0.6, 1.8)}, "no_auto_features": True},
+                 real_part={"maker": "McMaster-Carr", "mpn": "3684N13", "sellers": [{"name": "McMaster-Carr", "part_number": "3684N13", "catalogue": True,
+                                                                                    "checked": CHECKED, "note": "$5.99, in stock (owner)"}],
+                            "datasheet": dwg, "ratings_source": {"pitch_diameter_mm": "GT2 20 teeth, 2 mm pitch (McMaster listing)", "teeth": "McMaster: 20",
+                                                                 "belt_pitch_mm": "McMaster: GT2 2 mm", "belt_width_mm": "McMaster: for 9 mm max belt width"}},
+                 source={"level": "vendor", "vendor": "McMaster-Carr", "part": "3684N13", "url": dwg, "retrieved": CHECKED, "unverified_fields": [],
+                         "file": dwg})
+
+
+@part
+def idler_misumi_agtfw30() -> Stock:
+    """MISUMI AGTFW30-GT2090-5 toothed idler: 30 teeth 2GT, 9 mm belt, 5 mm bore, bearings both sides, two flanges. Dimensions from
+    MISUMI's STEP and catalogue pp.1424-1425: flanges dia 24, toothed section dia 18.5 x 10, 13.3 overall. Local frame: axis Z, one
+    flange's face at Z=0; the belt's centre at Z=6.5."""
+    pd = 30 * 2.0 / math.pi
+    shape = Pos(0, 0, 0.75) * Cylinder(12.0, 1.5) + Pos(0, 0, 6.5) * Cylinder(9.26, 10.0) + Pos(0, 0, 12.4) * Cylinder(12.0, 1.8)
+    shape -= Pos(0, 0, 6.65) * Cylinder(2.5, 13.3)
+    dwg = "vendor_docs/Misumi_AGTFW_flanged-idlers-with-teeth_catalog_p1424-1425.pdf"
+    return Stock(shape, "GT2-IDLER-30T-B5-W9", "MISUMI AGTFW30-GT2090-5 toothed idler 30T, 9 mm belt, 5 mm bore, bearings both sides", 0.025,
+                 material="al6061", cost_usd=41.41,
+                 ratings={"pitch_diameter_mm": pd, "teeth": 30, "belt_pitch_mm": 2.0, "belt_width_mm": 9.0},
+                 interfaces={"bore": 5.0, "height": 13.3, "belt_center_z": 6.5, "belt_center": [(0.0, 0.0, 6.5)], "flange_dia": 24.0},
+                 model={"tolerance": {"volume_ratio": (0.6, 1.8)}, "no_auto_features": True},
+                 real_part={"maker": "MISUMI", "mpn": "AGTFW30-GT2090-5", "sellers": [{"name": "MISUMI USA", "part_number": "AGTFW30-GT2090-5", "catalogue": True,
+                                                                                     "checked": CHECKED, "note": "$41.41 each (owner)"}],
+                            "datasheet": dwg, "ratings_source": {k: "MISUMI catalogue p.1424: AGTFW30, 2GT, 9 mm" for k in
+                                                                 ("pitch_diameter_mm", "teeth", "belt_pitch_mm", "belt_width_mm")}},
+                 source={"level": "vendor", "vendor": "MISUMI", "part": "AGTFW30-GT2090-5", "url": dwg, "retrieved": CHECKED, "unverified_fields": [],
+                         "file": dwg})

@@ -144,7 +144,7 @@ from mechloop.parts.batch12 import (add_bracket_misumi, adxl345_btt, cam_arducam
                                     din_rail_wago, heater_keenovo_200, hiwin_mgn12_rail, hiwin_mgn12h_block, laser_vlm520, lens_cil062,
                                     leadscrew_motor_a4003, leadscrew_nut_pom_a4003, leadscrew_screw_a4003, picam3, pi5_host, probe_eddy_duo,
                                     relay_phoenix_1119897, sfs_v2, spacer_harwin, thermostat_cs7,
-                                    whambam_base_220, whambam_plate_220)
+                                    whambam_base_220, whambam_plate_220, pulley_mcmaster_3684n13, idler_misumi_agtfw30)
 
 # ---- brief ------------------------------------------------------------------------
 PRINT_X, PRINT_Y, PRINT_Z = 186.6, 208.1, 180.0     # v12: Y 6.4 mm less (v11 214.5): the owner's 30T idlers (AGTFW30) are 3.2 mm larger in radius at the front     # v12: X from a 245 mm HIWIN rail (v11 191.6 on a 250 mm rail)
@@ -281,8 +281,9 @@ PULLEY_T, IDLER_T = 20, 30   # v12 (owner, corrected 2026-11-20): McMaster-Carr 
 PR = PULLEY_T * 2.0 / math.pi / 2     # drive pulley pitch radius (6.37)
 PR_I = IDLER_T * 2.0 / math.pi / 2    # idler pitch radius (9.55)
 BWX, BWY = 9.0, 9.0    # v12: 9 mm GT2 (Gates 2MGT stock width) on X and Y
-P_BC = lambda w: 7.0 + (w + 1) / 2
-I_H = lambda w: w + 2.5
+P_BC = lambda w: 13.5        # v12: McMaster 3684N13: the belt's centre 13.5 mm from the hub's end (its STEP)
+I_H = lambda w: 13.3        # v12: MISUMI AGTFW30-GT2090-5: 13.3 mm over its flanges
+I_C = 6.5                     # and the belt's centre 6.5 mm from one flange's face
 SS19, R_SS19 = 1.88, 1.9   # 304 .074, SendCutSend's bend radius
 MT_Y = SS19            # Y motor mounts: 1.88 mm 304 (v11: flat, the bent fin is gone; owner: keep the gauge)
 MT_YI = SS15           # v11: Y idler mounts 1.52 mm 304 (SendCutSend .060; v10.1 1.88): the belt plane, which the idler's stack sets, is
@@ -315,11 +316,11 @@ XD_Z = Z_BEAM + 41.0   # v10: 8 mm higher than v9: the motor and the idler now s
 LUG_Z0 = FZ + 10.0 + 4.0  # v8.2: the X idler mount's lug and the X tension anchor's fin start 4 mm above the flush top front rail
 X_PG = 2.75
 XB_Y = YB0 - 10.0 + X_PG + P_BC(BWX)
-X_SP = XB_Y - I_H(BWX) / 2 - (YB0 - 10.0)
+X_SP = XB_Y - I_C - (YB0 - 10.0)
 Z_XL = XD_Z - PR
 XD_Z_I = Z_XL + PR_I    # v12: the 30T idler's centre, its lower run tangent with the pulley's (the belt ends are clamped on the lower run)
 Y_SP = 2 * W5                      # v8.2: two M5 washers between each Y idler and its mount (BLT-061: 2 mm to the plate; v8.1 one)
-YB_X = FX / 2 + MT_YI + Y_SP + I_H(BWY) / 2     # v11: from the idler plate's thickness (1.52), 0.36 mm nearer the motor face than v10.1
+YB_X = FX / 2 + MT_YI + Y_SP + I_C     # v11: from the idler plate's thickness (1.52), 0.36 mm nearer the motor face than v10.1
 YM_Y = FY / 2 + 24.0
 Z_YA = Z_PLATE + T_YP + 0.7
 Z_YC = Z_YA - PR
@@ -1711,7 +1712,7 @@ def build() -> Design:
                                                                    + Pos(BELT_ADJ, 0, 0) * Cylinder(clearance_hole("M5") / 2, MTM))
     sheet(d, "x_motor_mount", mm, AL, body="ybody")
     place(d, "x_motor", nema17(34), fwd(XM_X, yb_fm, XD_Z), body="ybody")
-    place(d, "x_pulley", gt2_pulley(PULLEY_T, belt_width=BWX), fwd(XM_X, yb_r + X_PG, XD_Z), body="ybody")
+    place(d, "x_pulley", pulley_mcmaster_3684n13(), fwd(XM_X, yb_r + X_PG, XD_Z), body="ybody")
     k = 0
     for x in (-15.5, 15.5):
         for z in (-15.5, 15.5):
@@ -1732,7 +1733,7 @@ def build() -> Design:
         add_screw(d, f"x_idler_mount_bolt_{i}", "M5", 8, at=(x, yb_f, Z_BEAM), direction=(0, 1, 0), body="ybody",
                   threads_into="x_beam", tnut=True, clamps=("x_idler_mount",), washer=True)
     place(d, "x_idler_spacer", spacer_round("M5", X_SP, "aluminium"), fwd(XI_X, yb_r, XD_Z_I), body="ybody")
-    place(d, "x_idler", gt2_idler(IDLER_T, belt_width=BWX), fwd(XI_X, yb_r + X_SP, XD_Z_I), body="ybody")
+    place(d, "x_idler", idler_misumi_agtfw30(), fwd(XI_X, yb_r + X_SP, XD_Z_I), body="ybody")
     add_screw(d, "x_idler_bolt", "M5", 35, at=(XI_X, yb_f, XD_Z_I), direction=(0, 1, 0), body="ybody",
               clamps=("x_idler_mount", "x_idler_spacer"), washer=True)
     add_nut(d, "x_idler_nut", "M5", at=(XI_X, yb_r + X_SP + I_H(BWX), XD_Z_I), direction=(0, 1, 0), body="ybody", screw="x_idler_bolt", standard="din934")      # v10.1: the M5 nut that is bought (McMaster 90591A260, DIN 934, 4.0 mm)
@@ -1778,7 +1779,7 @@ def build() -> Design:
         m -= Pos(xm, YP_C + 10.0, FZ) * Box(MT_Y, 20.0, 6.4)
         sheet(d, f"y_motor_mount{tag}", m, SS)
         place(d, f"y_motor{tag}", nema17(48), Location(Plane(origin=(sg * xf, YM_Y, Z_YC), x_dir=(0, 0, -1), z_dir=(sg, 0, 0))))
-        place(d, f"y_pulley{tag}", gt2_pulley(PULLEY_T, belt_width=BWY),
+        place(d, f"y_pulley{tag}", pulley_mcmaster_3684n13(),
               Location(Plane(origin=(sg * (YB_X + P_BC(BWY)), YM_Y, Z_YC), x_dir=(0, 1, 0), z_dir=(-sg, 0, 0))))
         k = 0
         for y in (-15.5, 15.5):
@@ -1832,8 +1833,8 @@ def build() -> Design:
         for i, y in enumerate(YIM_BOLTS):
             add_screw(d, f"y_idler_mount{tag}_bolt_{i}", "M5", 8, at=(sg * (xf + MT_YI), y, FZ), direction=(-sg, 0, 0),
                       threads_into=rail, tnut=True, clamps=(f"y_idler_mount{tag}",), washer=True)
-        place(d, f"y_idler{tag}", gt2_idler(IDLER_T, belt_width=BWY), side(sg * (YB_X - I_H(BWY) / 2), YI_Y, Z_YC_I, sg))
-        add_screw(d, f"y_idler{tag}_bolt", "M5", 30, at=(sg * (YB_X + I_H(BWY) / 2), YI_Y, Z_YC_I), direction=(-sg, 0, 0),
+        place(d, f"y_idler{tag}", idler_misumi_agtfw30(), side(sg * (YB_X - I_C), YI_Y, Z_YC_I, sg))
+        add_screw(d, f"y_idler{tag}_bolt", "M5", 30, at=(sg * (YB_X - I_C + I_H(BWY)), YI_Y, Z_YC_I), direction=(-sg, 0, 0),
                   clamps=(f"y_idler_mount{tag}",))
         add_washer(d, f"y_idler{tag}_spacer", "M5", (sg * (xf + MT_YI), YI_Y, Z_YC_I), (sg, 0, 0), screw=f"y_idler{tag}_bolt")
         add_washer(d, f"y_idler{tag}_spacer_b", "M5", (sg * (xf + MT_YI + W5), YI_Y, Z_YC_I), (sg, 0, 0), screw=f"y_idler{tag}_bolt")
