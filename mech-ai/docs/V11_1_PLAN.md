@@ -49,3 +49,13 @@ per set with free US shipping, rail 295 mm (HIWIN standard length; E = 10/10). S
 Digi-Key). Design to 295 mm rails (X travel about 5 mm less than the 300 mm plan); Z may use 295 or 245 (rail-only $49.49 +
 block) as the Z travel requires. Use the HIWIN official CAD (REQ-005) with the length changed per HIWIN's E rule. Confirm
 stock and lead time before ordering.
+
+## Frame corner brackets (owner-supplied Misumi pages, 2026-11-20)
+
+- Standard: MISUMI HBLFSN5-SEP (reversal tabbed bracket, 30 x 30 legs, 20 wide, 4.5 thick, 3 x dia 5.3 holes; aluminium
+  casting alloy 383.0, no surface treatment; 15 g; allowable load 1176 N; Misumi lists 2 screws + 2 T-nuts per bracket).
+  -SEP = Misumi's matched set: CBM5-10 screws + HNTP5-5 post-assembly spring nuts (drop-in, per the owner's T-nut rule).
+- Where a 30 mm leg does not fit: HBLFSNF5-SEP (30 x 20 legs, 20 wide, 2 x dia 5.2; 13 g; same load and set).
+- No alteration C (cover taps) needed.
+- Source: Misumi catalogue pages supplied by the owner (dimension drawing, materials, specifications, alterations).
+  CAD to collect: HBLFSN5, HNTP5-5, CBM5-10 (HBLFSNF5 STEP already staged, vendor_cad/staging/instinct_REQ-001b/).
