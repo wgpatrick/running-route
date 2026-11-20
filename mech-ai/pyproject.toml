@@ -6,6 +6,7 @@ requires-python = ">=3.11"
 dependencies = [
   "build123d>=0.13", "bd_warehouse", "gmsh>=4.15", "mujoco>=3.2", "trimesh", "python-fcl",
   "pyvista", "meshio", "numpy", "scipy", "imageio", "pillow",
+  "opencv-python-headless",   # mechloop.inspect.scan: flatbed-scan measurement of flat parts
 ]
 [project.scripts]
 mechloop = "mechloop.cli:main"
