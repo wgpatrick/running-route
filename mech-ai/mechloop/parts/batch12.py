@@ -317,6 +317,35 @@ def heater_keenovo_200() -> Stock:
                           "state": "stand-in"})
 
 
+HYDRA_DWG = "vendor_cad/staging/instinct_REQ-016/ (National Plastic Heater drawing NPHSF365; pending)"
+
+
+@part
+def heater_hydra_sq1451144() -> Stock:
+    """Hydra Research SQ1451144 silicone bed heater (made by National Plastic Heater, drawing NPHSF365): 24 V, 200 W, 210 x 210 mm,
+    adhesive backed, NTC 3950 (R25 not stated: 100 k ASSUMED, unused here: the bed is read by the Semitec 104NT-4), Molex 43640-0401
+    connector on 130 mm leads. Hydra Research, Portland OR, $9.99 (owner, 2026-11-20). Thickness is NOT dimensioned on the drawing:
+    1.5 mm (Keenovo class) ASSUMED until measured. Local frame: as bed_heater_pad (centred, adhesive face on Z=0, leads at -Y)."""
+    from .electrical import bed_heater_pad
+
+    st = bed_heater_pad(210.0, 210.0, 200.0, 24.0)
+    e = st.ratings["electrical"]
+    e["sources"] = {**e["sources"], "watts": "Hydra Research SQ1451144 listing / NPH drawing NPHSF365: 200 W at 24 V",
+                    "volts": "Hydra Research SQ1451144: 24 V",
+                    "ntc": "NTC 3950 per Hydra; R25 not stated: 100 k ASSUMED (the pad's NTC is not wired: Semitec 104NT-4 reads the bed)"}
+    e["product"] = dict(e["product"], vendor="Hydra Research (National Plastic Heater)", part_number="SQ1451144")
+    rp = {"maker": "National Plastic Heater (for Hydra Research)", "mpn": "SQ1451144 (drawing NPHSF365)",
+          "sellers": [{"name": "Hydra Research (Portland, OR)", "part_number": "SQ1451144", "checked": CHECKED,
+                       "note": "$9.99, 6 in stock (owner, 2026-11-20)"}],
+          "stock_size": "210 x 210 mm", "datasheet": HYDRA_DWG,
+          "ratings_source": {"watts": "Hydra / NPHSF365: 200 W", "volts": "Hydra / NPHSF365: 24 V"},
+          "replace_with": "read NPHSF365 when it lands (REQ-016) and measure the thickness; fallback Keenovo SKU 10133 200 x 200"}
+    return _tagged(st, "HEATER-HYDRA-SQ1451144-210x210-24V-200W", "Hydra Research SQ1451144 silicone heater 210 x 210 mm 24 V 200 W", rp,
+                   cost_usd=9.99,
+                   model={"kind": "proxy", "state": "stand-in",
+                          "source": "210 x 210 x 1.5 sheet: outline per Hydra's listing; drawing NPHSF365 not yet read, thickness ASSUMED 1.5"})
+
+
 @part
 def thermostat_cs7() -> Stock:
     """Cantherm CS712025Y: CS-7 bimetal disc thermostat, normally closed, opens at 120 degC (+/-5 typical), resets 20 K lower, rated

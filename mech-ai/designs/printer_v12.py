@@ -11,7 +11,7 @@ What v12 changes against v11:
 2. Belts 9 mm GT2 (Gates 2MGT, LL2MR09) on X and Y; Y pulleys, idlers and belt slots at 9 mm.
 3. Spacers at stock lengths only (Harwin R30); the Z motor posts are turned 6061 standoffs (no stocked M5 round spacer at 55 / 58 mm
    with a maker drawing was found).
-4. Bed: Keenovo 200 x 200 mm 24 V 200 W stock heater on the 232 mm MIC-6 plate (studs clear of it); Wham Bam 220 PEI plate and 1 mm
+4. Bed: Hydra Research SQ1451144 210 x 210 mm 24 V 200 W heater (NPH drawing NPHSF365) on a 240 mm MIC-6 plate (studs clear of it); Wham Bam 220 PEI plate and 1 mm
    magnetic base (150 degC); Cantherm CS712025Y 120 degC thermostat clamped to the plate; Semitec 104NT-4 bed thermistor; the bed on
    the Octopus HB output with a 10 A blade fuse (no external MOSFET).
 5. Limit (b) after a heat soak: probe once the bed has soaked (time from the carrier's thermal time constant); the thermal case
@@ -39,7 +39,7 @@ A. Stock parts only. X rail: a stock HIWIN MGNR12R 250 mm (v10: cut to 288) -> X
    the rear one outboard of the back wall (y 202.5, inside the Y motors' footprint, so the envelope does not grow); motors on
    posts of stacked stock spacers. Their POM anti-backlash nuts (a labelled stand-in: no dimensions published) hang below the
    nut plates, flange up, captive under a keeper. T-slot extrusion is the one purchased part bought cut (Misumi HFS5-2020).
-B. Bed: 220 x 220 PEI sheet (third-party stock size; the print area is 84.9 % of it) on a 232 x 232 x 6.35 mm MIC-6 plate
+B. Bed: 220 x 220 PEI sheet (third-party stock size; the print area is 84.9 % of it) on a 240 x 240 x 6.35 mm MIC-6 plate (v12; v11 232)
    (v10: 12.7), three studs moved to the plate's front and rear edges; three achievable flatness limits replace the 0.02 mm
    sag limit (as installed <= 0.3, change after probing <= 0.1, 1 kg at a corner <= 0.2).
 C. Toolhead: one Delta BFB0524HH 24 V 5015 radial blower behind the Roto (outlet down; owner's later change from the GDSTIME GDB4010) with a short printed duct whose outlet
@@ -141,7 +141,7 @@ from mechloop.parts.probes import add_probe_nuts, probe_omron_e2e
 from mechloop.parts.toolhead import extruder_roto, hotend_revo
 from mechloop.shops import assign
 from mechloop.parts.batch12 import (tnut_hntp5, add_bracket_misumi, adxl345_btt, cam_arducam_b0454, cob_led, contactor_finder_2232, din_endstop_wago,
-                                    din_rail_wago, heater_keenovo_200, hiwin_mgn12_rail, hiwin_mgn12h_block, laser_vlm520, lens_cil062,
+                                    din_rail_wago, heater_hydra_sq1451144, hiwin_mgn12_rail, hiwin_mgn12h_block, laser_vlm520, lens_cil062,
                                     leadscrew_motor_a4003, leadscrew_nut_pom_a4003, leadscrew_screw_a4003, picam3, pi5_host, probe_eddy_duo,
                                     relay_phoenix_1119897, sfs_v2, spacer_harwin, thermostat_cs7,
                                     whambam_base_220, whambam_plate_220, pulley_mcmaster_3684n13, idler_misumi_agtfw30, bracket_misumi)
@@ -157,7 +157,7 @@ ENVELOPE = (420.0, 420.0, 480.0)
 MAX_TOOLHEAD_KG, MIN_BELT_IN_PLANE = 0.45, 0.98   # v12 (owner, Q9): toolhead under 0.45 kg with the new sensors
 
 # ---- electrical choices -----------------------------------------------------------
-BED_W = 200.0          # v12: the Keenovo stock pad, 200 W (8.3 A at 24 V) on the Octopus HB output, 10 A blade fuse          # 180 W pad on the board's own bed output (7.5 A of 8 A allowed), as v7 / v8
+BED_W = 200.0          # v12: the Hydra SQ1451144 pad, 200 W (8.3 A at 24 V) on the Octopus HB output, 10 A blade fuse          # 180 W pad on the board's own bed output (7.5 A of 8 A allowed), as v7 / v8
 BED_MAX_C = 80.0       # v11 (owner): PLA and PETG only, no enclosure, max bed 80 degC; the magnetic base is to be bought rated 120 degC continuous
 PSU_MODEL = "LRS-350-24"
 BED_AWG, BED_INS = 16, "silicone"
@@ -202,11 +202,11 @@ C_NOZ = 15.5           # the nozzle is 15.5 mm to the LEFT of the X guide block'
 NOZ_X = -C_NOZ         # world x of the nozzle at the home pose (the X block at the beam's centre)
 # ---- Z stage (v9 / v10): bed, deck, 2020 square, three rails ------------------------
 SHEET = 220.0          # v11: print sheet (catalogue print_sheet_pei220, a third-party stock size): the 191.6 x 214.5 mm reach is 84.9 % of it
-BED = 232.0            # v11: MIC-6 plate, square: 6 mm of margin round the sheet (the studs' countersinks sit in that margin's band)
+BED = 240.0            # v12: 240 for the 210 mm Hydra pad (studs 2.5 mm clear of it, 8 mm in from the edge); v11: 232, MIC-6 plate, square: 6 mm of margin round the sheet (the studs' countersinks sit in that margin's band)
 T_BED = G64            # v11: 6.35 mm MIC-6 (v10 12.7): the thinnest stock thickness meeting the three flatness limits (requirements)
 MIC6_FLAT_BOUGHT = 0.127   # mm: flatness of the plate as bought, the owner's figure ("MIC-6 ~0.13 mm per McMaster listing"); the
                            # maker's brochure in the repository gives 0.381 mm for 6.35 to 15.9 mm plate (whole cast plate). The
-                           # 0.127 is taken as a receiving-inspection limit on the cut 232 mm piece (docs/PRINTER_V11.md)
+                           # 0.127 is taken as a receiving-inspection limit on the cut 240 mm piece (v11: 232) (docs/PRINTER_V11.md)
 MIC6_FLAT_MAKER = 0.381
 FLAT_AS_INSTALLED, FLAT_AFTER_PROBING, SAG_1KG_CORNER = 0.3, 0.1, 0.2   # v11: the three limits the owner set
 BED_CX = NOZ_X         # centre of sheet and plate in X = centre of the nozzle's reach
@@ -216,7 +216,7 @@ BED_CY = 4.5           # centre of sheet and plate in Y = centre of the gantry's
 BED_Y0, BED_Y1 = BED_CY - BED / 2, BED_CY + BED / 2
 BED_X0, BED_X1 = BED_CX - BED / 2, BED_CX + BED / 2
 W5 = WASHER["normal"]["M5"][2]
-PAD_X, PAD_Y = 200.0, 200.0   # v12: Keenovo's stock 200 x 200 pad, centred on the plate (3.5 mm clear of the studs' washers)   # v11 heater pad (made to size): the print area's full width, and its depth between the front studs' and the rear stud's washers
+PAD_X, PAD_Y = 210.0, 210.0   # v12 (owner, 2026-11-20): Hydra Research SQ1451144 210 x 210 pad, centred (2.5 mm clear of the studs' washers)   # v11 heater pad (made to size): the print area's full width, and its depth between the front studs' and the rear stud's washers
 # guides: one MGN12 rail + one ZF block per wall; a flat plate with a flexure web ties each block to the square
 RAIL_FACE = 13.0       # MGN12H: rail base to the block's mounting face
 T_CP = G16             # carriage plates: 1.6 mm 6061 (the web is the radial flexure)
@@ -244,7 +244,7 @@ GAP = W4 + NUT4 + SPRING_H + W4           # plate underside to deck top: 16.8 mm
 STUD_L = 40.0          # M4 x 40 countersunk: 12 mm in the plate, 16.8 gap, deck, washer, 7 mm into the thumb nut
 CSK_SINK = (CSK["M4"][0] - CSK["M4"][1]) / 2      # 0.72 mm: how far an M4 countersunk head sits below the surface
 LEVEL_RANGE = 1.5      # +/- at each thumb nut (v9 2.0: the spring's 10 mm and the preload margin leave 1.5; the stack-up needs 0.7)
-LEV_X, LEV_Y = 86.0, 108.0                # v11: 108 (v10 109.5): 8 mm inside the 232 mm plate's edges; three studs: front pair at (+/-86, BED_CY - 109.5) beside the square's front member (thumb nuts
+LEV_X, LEV_Y = 86.0, 112.0                # v12: 112 (outside the 210 pad, 8 mm in from the 240 plate's edge); v11: 108 (v10 109.5): 8 mm inside the 232 mm plate's edges; three studs: front pair at (+/-86, BED_CY - 109.5) beside the square's front member (thumb nuts
                                           # clear of its corner brackets), the rear one on the bed's centre line beside the rear member:
                                           # each 11.4 mm from a member's inner face and within 60 mm of a lead-screw nut
 # deck hole per stud (thermal growth of the plate): 0 fitted, 1 slot towards 0, 2 oversize
@@ -1039,7 +1039,7 @@ def add_thermostat(d):
     """v12: the Cantherm CS712025Y bed thermostat (120 degC NC, 10 A at 24 V DC) under the plate, cap face on the plate's underside,
     in series with the heater; bonded with high-temperature silicone adhesive and thermal paste (the owner asked for a clamp: a
     clamp needs two countersunk M3 through the plate, whose McMaster numbers and STEPs are not in hand: open question)."""
-    place(d, "bed_tco", thermostat_cs7(), Location((BED_CX + 107.0, BED_CY + 107.0, Z_BED)), body="zbody")     # the rear-right corner, clear of the pad
+    place(d, "bed_tco", thermostat_cs7(), Location((BED_CX + 111.5, BED_CY + 111.5, Z_BED)), body="zbody")     # the rear-right corner: 1.1 mm off the 210 pad's corner, inside the 240 plate
     d.join("bed_tco", "bed_plate", "bond")
 
 
@@ -1060,7 +1060,7 @@ def build_electrical(d: Design) -> Electrical:
                "z_motor", "z_motor_fl", "z_motor_fr", "extruder", "y_motor", "y_motor_l"):
         device_from(el, d, nm)
     device_from(el, d, "bed_heater", plate="bed_plate")
-    # v12: Semitec 104NT-4-R025H42G on the plate (Klipper has its exact table); the Keenovo pad's own NTC is left unconnected
+    # v12: Semitec 104NT-4-R025H42G on the plate (Klipper has its exact table); the Hydra pad's own NTC (3950, R25 not stated) is left unconnected
     embedded_device(el, d, "bed_heater", "bed_ntc", "thermistor", "ntc", "thermistor", ratings={"max_temp_c": 300.0},
                     sources={"points": "Klipper 'ATC Semitec 104NT-4-R025H42G' (Semitec NT-4 data sheet, vendor_docs/Semitec_NT-4_thermistor_datasheet.pdf)",
                              "max_temp_c": "Semitec NT-4 data sheet: to 300 degC", "tau_s": "assumed 10 s (bonded to the plate; not a data-sheet figure)"},
@@ -1433,7 +1433,7 @@ def build_frame_z():
     place(d, "bed", whambam_plate_220(), Location((BED_CX, BED_CY, Z_BED + T_BED + T_MAG)), body="zbody")
     d.join("bed_magnet", "bed_plate", "bond")
     d.join("bed", "bed_magnet", "magnet")
-    place(d, "bed_heater", heater_keenovo_200(), Location((BED_CX, BED_CY, Z_BED), (0, 0, 180)), body="zbody")
+    place(d, "bed_heater", heater_hydra_sq1451144(), Location((BED_CX, BED_CY, Z_BED), (0, 0, 180)), body="zbody")
     d.join("bed_heater", "bed_plate", "bond")
     add_thermostat(d)
     for nm_, txt in (("bed_heater", f"Silicone heater pad {PAD_X:g} x {PAD_Y:g} mm, adhesive-backed, bonded to bed_plate's underside between the front studs "
