@@ -255,7 +255,7 @@ DECK_FIT, DECK_FREE = 4.3, 5.5
 # rails (x +/-144.5: the screw 1.5 mm from the rail's inner face, outboard of the 276 mm beam's ends and the toolhead's reach)
 # with their motors on the tray over the bottom side rails, and the rear one OUTBOARD of the back wall (y 202.5, its motor
 # beside the bottom back rail inside the Y motors' footprint): the envelope does not grow
-LS_Y = 202.5           # v11: rear lead screw outboard of the back wall (v10: 170, on the bottom back rail)
+LS_Y = 201.6           # v12: 0.9 forward (the 420 mm envelope with the Y idlers 0.7 forward); v11: 202.5, rear lead screw outboard of the back wall (v10: 170, on the bottom back rail)
 FS_X = 144.5           # v11: front lead screws inboard of the side rails (v10: 160, over them)
 FS_Y = -101.0
 NUT_OUT_R = LS_Y - SQ_Y1      # 57.1: the rear nut plate reaches out through the back wall
@@ -401,7 +401,7 @@ PRB_X = NOZ_X          # on the nozzle's X: no X offset
 PRB_DY = 34.5
 PRB_Y = HOT_OFF + PRB_DY
 TY_F = TY                                       # v9: the print area is the whole Y travel; the front PRB_DY of it is beyond the probe
-YI_Y = YB0 - 24.0 - (TY_F + ES_OT) - 10.5      # as v8.1 (same place in the frame as v8.2: the home pose moved, the travel did not)
+YI_Y = YB0 - 24.0 - (TY_F + ES_OT) - 11.2      # v12: 0.7 further forward (0.22 mm to the 30T idler closed in 26% of builds); as v8.1 (same place in the frame as v8.2: the home pose moved, the travel did not)
 # Klipper [z_tilt]: firmware X = world x - NOZ_X + TX (0 at the left end of the nozzle's travel; X homes at the right end), firmware Y = world y - (nozzle's home y) + TY_F
 _FW = lambda x, y: (round(x - NOZ_X + TX, 2), round(y - (YB0 + HOT_OFF) + TY_F, 2))
 Z_TILT = {"z_positions": [_FW(0.0, LS_Y), _FW(-FS_X, FS_Y), _FW(FS_X, FS_Y)],       # rear, front-left, front-right screw
@@ -840,8 +840,8 @@ def tool_plate_rear_shape():
     for x in (-10, 10):
         for z in (-10, 10):
             tp -= Pos(x, (y0 + y1) / 2, Z_BEAM + z) * ycyl(3.25, T_TPR)
-    for x, z in ROTO_HOLES():
-        tp -= Location(Plane(origin=(x, y0, z), z_dir=(0, 1, 0))) * extrude(RegularPolygon(5.65 / 2, 6, major_radius=False), T_TPR)
+    for x, z in ROTO_HOLES():               # v12: round 6.9 pockets for the PEM S-M3-0ZI heads (dia 6.35 x 1.5, McMaster 95185A520)
+        tp -= Pos(x, (y0 + y1) / 2, z) * ycyl(6.9 / 2, T_TPR)
     for x, z in BLK_SCREWS:
         tp -= Location(Plane(origin=(x, y0, Z_BEAM + BRK_Z), z_dir=(0, 1, 0))) * extrude(RegularPolygon(5.65 / 2, 6, major_radius=False), T_TPR)
     for x, z in FC_SCREWS:
@@ -946,6 +946,10 @@ def part_duct_shape(y_noz, bl_y0):
 EDDY_DX = -8.0                                 # v12: the Eddy's coil 8 mm left of the nozzle (clear of the Roto's lower screw head)
 EDDY_H = 2.5                                   # coil face above the nozzle tip (BTT: 2-3 mm; HEIGHT_SENSING 2.5)
 EDDY_HOLDER_T = 8.5                            # printed holder on the Eddy's left (its mounting face), PETG
+EDDY_LEG_Z = 11.5                              # the strip's underside above the tip: the holder bolts' heads and washers clear the
+                                               # Eddy's 5 mm coil band (LDC1612 guidance; v12 first cut 8.5 had them in it)
+EDDY_HOLDER_BASE = 1.5                         # printed floor between the strip and the captured washers and nuts (M3 x 8 bolts)
+EDDY_GAP_Y = 1.5                               # the Eddy's front face behind the L's vertical leg (1.0 closed in 1.2% of builds)
 EDDY_LEG_W = 9.0                               # the L's narrow bent strip under the holder
 EDDY_PLATE_X = (-40.5, 4.5)                    # the L's vertical leg on the Roto's rear face, world x
 
@@ -954,10 +958,10 @@ def eddy_geometry(yb_pm):
     """World positions of the v12 probe: the Eddy turned 90 degrees (holes along X), its front face 1 mm behind the L's vertical leg;
     the printed holder on its left; the L's narrow strip under the holder."""
     x_e = NOZ_X + EDDY_DX
-    y_e = yb_pm + B23 + 1.0 + 18.1 / 2
+    y_e = yb_pm + B23 + EDDY_GAP_Y + 18.1 / 2
     z_face = Z_NOZZLE + EDDY_H
     z_eh = z_face + 33.8 - 13.9
-    z_leg = Z_NOZZLE + 8.5
+    z_leg = Z_NOZZLE + EDDY_LEG_Z
     xh1 = x_e - 15.3 / 2                        # the Eddy's left (mounting) face
     xh0 = xh1 - EDDY_HOLDER_T
     return dict(x_e=x_e, y_e=y_e, z_face=z_face, z_eh=z_eh, z_leg=z_leg, xh0=xh0, xh1=xh1, y0=yb_pm + B23, y1=y_e + 18.1 / 2)
@@ -993,12 +997,12 @@ def eddy_holder_shape(g):
     z0, z1 = g["z_leg"] + B23, g["z_eh"] + 6.5
     s_ = bx(g["xh0"], g["xh1"], g["y0"] + R_B23, g["y1"], z0, z1)           # clear of the strip's bend
     xc = g["xh0"] + 3.75
-    zp0 = z0 + 2.5
+    zp0 = z0 + EDDY_HOLDER_BASE
     for dy in EDDY_HB_DY:
         s_ -= zc(xc, g["y_e"] + dy, z0, zp0, PH3 / 2)
     s_ -= bx(g["xh0"] - 1.0, g["xh0"] + 7.5, g["y_e"] - 7.0, g["y_e"] + 7.0, zp0, zp0 + 3.2)       # the nuts' pocket, open to the left
     for dy in EDDY_HB_DY:                                                                            # the bolts' tips past the nuts
-        s_ -= zc(xc, g["y_e"] + dy, zp0 + 3.2, zp0 + 5.0, PH3 / 2)
+        s_ -= zc(xc, g["y_e"] + dy, zp0 + 3.2, zp0 + 4.5, PH3 / 2)
     for dy in (-5.25, 5.25):
         s_ -= Pos(g["xh0"] + EDDY_HOLDER_T / 2, g["y_e"] + dy, g["z_eh"]) * xcyl(3.7 / 2, EDDY_HOLDER_T)
     return s_
@@ -1606,10 +1610,10 @@ def build() -> Design:
                 "description": "Printed PETG holder for the BTT Eddy Duo: beside the probe's mounting face, on the bracket's bent strip."})
     place(d, "bed_probe", probe_eddy_duo(), Location((x_e, y_e, z_face), (0, 0, 90)), body="xbody")
     xc = g["xh0"] + 3.75
-    zp_e = g["z_leg"] + B23 + 2.5
+    zp_e = g["z_leg"] + B23 + EDDY_HOLDER_BASE
     for i, dy in enumerate(EDDY_HB_DY):
         nm = f"eddy_holder_bolt_{i}"
-        add_screw(d, nm, "M3", 10, at=(xc, y_e + dy, g["z_leg"]), direction=(0, 0, 1), body="xbody", clamps=("probe_mount", "eddy_holder"),
+        add_screw(d, nm, "M3", 8, at=(xc, y_e + dy, g["z_leg"]), direction=(0, 0, 1), body="xbody", clamps=("probe_mount", "eddy_holder"),
                   washer=True, locking="adhesive").meta["torque_nm"] = PRINTED_JOINT_TORQUE
         add_washer(d, f"{nm}_nwasher", "M3", (xc, y_e + dy, zp_e), (0, 0, 1), body="xbody", screw=nm)
         add_nut(d, f"{nm}_nut", "M3", at=(xc, y_e + dy, zp_e + WASHER["normal"]["M3"][2]), direction=(0, 0, 1), body="xbody", screw=nm)
@@ -1807,18 +1811,18 @@ def build() -> Design:
                                                                      z_dir=tuple(np.cross((0, -1, 0), (sg, 0, 0))))))
         foot = np.array([sg * xf, YA_C - 18.0, FZ])                # the 30 mm leg's hole, 18 from the corner
         add_screw(d, f"{ab}_screw_a", "M5", 10, at=tuple(foot + np.array([sg * 4.5, 0, 0])), direction=(-sg, 0, 0), threads_into=rail,
-                  tnut=True, clamps=(ab,))
+                  tnut=True, clamps=(ab,), head="flanged_button")       # low head: clear of the tension screw beside it
         d.get(f"{ab}_screw_a").meta["bracket_leg_of"] = ab
         d.join(ab, rail, "m5_tnut")
         ts = f"y_tension_screw{tag}"
         x_ts = sg * (xf + T_SCREW_V)
         hh = 5.0                                                 # ISO 4762 M5 head height
-        add_screw(d, ts, "M5", 30, at=(x_ts, YP_C - hh, FZ), direction=(0, -1, 0), clamps=(ab,), locking="jam")
+        add_screw(d, ts, "M5", 30, at=(x_ts, YP_C - 1.0 - hh, FZ), direction=(0, -1, 0), clamps=(ab,), locking="jam")   # head on the leg's 1 mm boss
         d.get(ts).meta["torque_nm"] = 0.0
         d.get(ts).meta["note"] = "tension screw: positioned by its two jam nuts on the anchor; its head pushes the motor plate's bracket"
         # it is set by turning its nuts, not driven by its head (which bears on the bracket): no driver-access record for it
         d.fasteners[:] = [f_ for f_ in d.fasteners if f_.name != ts]
-        for side_, y0_, dv in (("rear", YA_C, (0, 1, 0)), ("front", YA_C - 4.5, (0, -1, 0))):
+        for side_, y0_, dv in (("rear", YA_C + 1.0, (0, 1, 0)), ("front", YA_C - 4.5, (0, -1, 0))):     # rear: on the 1 mm boss
             add_washer(d, f"{ts}_{side_}_washer", "M5", (x_ts, y0_, FZ), dv, screw=ts)
             add_nut(d, f"{ts}_{side_}_nut", "M5", at=(x_ts, y0_ + dv[1] * W5, FZ), direction=dv, screw=ts, locking="jam", standard="din934")
             d.join(f"{ts}_{side_}_nut", ab, "jam nut on the anchor's leg, through its washer")
@@ -2525,7 +2529,7 @@ def add_requirements(d, zs):
         hits = [c.name for c in dd.components if c.body == pr.body and c.name != "bed_probe" and not c.name.startswith("eddy_bolt")
                 and c.material in metals and (c.shape & band).volume > 0.1]
         return not hits, (f"BTT Eddy Duo: metal on the toolhead within 5 mm of the coil face's level and 3 mm of its body: {hits or 'none'}; "
-                          f"the aluminium bracket's strip is {8.5 - EDDY_H:.1f} mm above the coil face, under the printed holder beside the probe")
+                          f"the aluminium bracket's strip is {EDDY_LEG_Z - EDDY_H:.1f} mm above the coil face, under the printed holder beside the probe")
     d.requirements.append(Requirement("v12: no metal close round the Eddy's coil (TI LDC1612 layout guidance)", probe_zone))
 
     def probe_temperature(dd, m):
@@ -2757,7 +2761,7 @@ def add_feedback_hardware(d):
     # top-down camera and filament sensor: printed brackets on the top back rail's REAR face (y 180), behind the toolhead's reach at the
     # rear end of Y (the blower passes over the rail's top there); each by two M3 x 10 into T-nuts in the rail's rear slot
     yb = FY / 2                                          # the rail's rear face
-    for nm, xb in (("cam_topdown", -60.0), ("sfs", 30.0)):
+    for nm, xb in (("cam_topdown", -60.0), ("sfs", 40.0)):     # sfs: 40, clear of the rear lead screw (x 0)
         br = bx(xb - 22.0, xb + 22.0, yb, yb + 6.0, FZ - 9.0, FZ + 9.0)
         br -= Pos(xb - 16.0, yb + 3.0, FZ) * ycyl(PH3 / 2, 6.0) + Pos(xb + 16.0, yb + 3.0, FZ) * ycyl(PH3 / 2, 6.0)
         if nm == "sfs":              # a pad between the screws that the sensor sits on
@@ -2775,7 +2779,7 @@ def add_feedback_hardware(d):
     for i, xh in enumerate((-10.5, 10.5)):
         bolt_nut(d, f"cam_topdown_screw_{i}", "M2", 20, (-60.0 + xh, yb + 20.0, FZ + 30.0), (0, -1, 0), "world", ("cam_topdown_mount", "cam_topdown"),
                  nut_at=(-60.0 + xh, yc - 1.0, FZ + 30.0))
-    place(d, "filament_sensor", sfs_v2(), Location((30.0, yb + 10.0 + 30.3 / 2, FZ)))
+    place(d, "filament_sensor", sfs_v2(), Location((40.0, yb + 10.0 + 30.3 / 2, FZ)))
     d.join("filament_sensor", "sfs_mount", "two cable ties round the sensor and the bracket's plate (its own holes face the spool)")
     # overview COB strip in two printed clips on the top front rail's inner face: the clip's plate on the face (screw at the slot), the
     # strip in a channel in front of it below the screw head

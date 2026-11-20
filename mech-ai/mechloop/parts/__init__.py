@@ -767,6 +767,13 @@ def hex_nut(size: str = "M3", standard: str = "iso4032") -> Stock:
         # for that solid); only the SKU, the BOM line and the state differ. Wanted: the supplier's STEP.
         af, h = NUT[size]
         body = extrude(RegularPolygon(af / 2, 6, major_radius=False), h)
+        if (size, dash) == ("M3", "0"):
+            # v12: PEM S-M3-0ZI (McMaster 95185A520) from McMaster's drawing / STEP (vendor_cad/inbox/NUT-PEM-S-M3-0.step):
+            # head 6.35 x 1.50, shank 4.20 x 0.77 (sits in the 4.22 hole), M3 x 0.5. The inbox STEP is the display model.
+            body = Cylinder(6.35 / 2, 1.5, align=(Align.CENTER, Align.CENTER, Align.MIN)) + \
+                Pos(0, 0, -0.77) * Cylinder(4.2 / 2, 0.77, align=(Align.CENTER, Align.CENTER, Align.MIN))
+            body = body - Cylinder(2.5 / 2, 4, align=(Align.CENTER, Align.CENTER, Align.CENTER))
+            af, h = 6.35, 1.5 + 0.77            # head diameter; threaded length = head + shank (McMaster drawing)
         return Stock(body, f"NUT-PEM-S-{size}-{dash}", f"Self-clinching nut {size} in sheet (PEM S-{size}-{dash} class; installed by the sheet supplier)",
                      af * af * 0.866 * h * 7.85e-6 * 0.7, ratings={"approximate": True, "installed_by": "sheet supplier"},
                      interfaces={"across_flats": af, "height": h, "thread_d": SCREW[size][0]}, cost_usd=0.4,

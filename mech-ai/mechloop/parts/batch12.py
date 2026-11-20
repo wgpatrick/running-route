@@ -137,7 +137,16 @@ def _hblf_solid(leg_a: float, leg_b: float):
     tri = extrude(Polygon((0, 0), (leg_a, 0), (0, leg_b), align=None), WEB / 2, both=True)
     for zc in (W / 2 - WEB / 2, -(W / 2 - WEB / 2)):
         s += Pos(0, 0, zc) * tri
-    s += Pos(leg_a / 2 + 2.0, -0.5, 0) * Box(leg_a - 8.0, 1.0, TAB_W) + Pos(-0.5, leg_b / 2 + 2.0, 0) * Box(1.0, leg_b - 8.0, TAB_W)
+    # Tabs (1 mm proud, 6 wide) where MISUMI's own STEPs (REQ-013) have them: the leg-A tabs stop short of the 18 mm hole on both
+    # sides; leg B has small bosses round its hole instead of a tab
+    if leg_b == 20.0:          # HBLFSNF5: leg A tabs 4.29-12.71 and 23.79-26.21; leg B a 5.74 square boss round the hole at 10
+        for a0, a1 in ((4.29, 12.71), (23.79, 26.21)):
+            s += Pos((a0 + a1) / 2, -0.5, 0) * Box(a1 - a0, 1.0, TAB_W)
+        s += Pos(-0.5, 10.0, 0) * Box(1.0, 5.74, 5.74)
+    else:                      # HBLFSN5: leg A tabs 5-11 and 21-24; leg B a dia 6 boss ring round 10
+        for a0, a1 in ((5.0, 11.0), (21.0, 24.0)):
+            s += Pos((a0 + a1) / 2, -0.5, 0) * Box(a1 - a0, 1.0, TAB_W)
+        s += Pos(-0.5, 10.0, 0) * Rot(0, 90, 0) * Cylinder(3.0, 1.0)      # (the STEP's four arcs on a dia 6 ring, taken as the ring)
     return s
 
 
