@@ -952,20 +952,6 @@
    ],
    "sold_by_maker": true
   },
-  "GT2-24T-B5-W9": {
-   "maker": "MISUMI",
-   "mpn": "GPA24GT2090-A-P5",
-   "sellers": [
-    {
-     "name": "MISUMI USA",
-     "part_number": "GPA24GT2090-A-P5",
-     "catalogue": true,
-     "checked": "2026-11-20",
-     "note": "owner decision 2026-11-20: 24T, 9 mm belt, 5 mm bore with set screw (MISUMI P bores start at 24T)"
-    }
-   ],
-   "replace_with": "MISUMI's STEP / series drawing (Instinct REQ-013); a 20T two-set-screw pulley from another maker if REQ-013b finds one"
-  },
   "GT2-IDLER-30T-B5-W9": {
    "maker": "MISUMI",
    "mpn": "AGTFW30-GT2090-5",
@@ -979,6 +965,20 @@
     }
    ],
    "replace_with": "MISUMI's STEP (Instinct REQ-013) or the series drawing"
+  },
+  "GT2-20T-B5-W9": {
+   "maker": "McMaster-Carr",
+   "mpn": "3684N13",
+   "sellers": [
+    {
+     "name": "McMaster-Carr",
+     "part_number": "3684N13",
+     "catalogue": true,
+     "checked": "2026-11-20",
+     "note": "GT2 timing pulley, 20 teeth, 9 mm max belt width, 5 mm finished bore, one set screw, one flange, $5.99, in stock (owner, 2026-11-20)"
+    }
+   ],
+   "replace_with": "McMaster's STEP and drawing (Instinct REQ-013) in vendor_cad/inbox as GT2-20T-B5-W9.step; fallback MISUMI GPA32GT2090-A-P5 (32T) only if a check fails"
   }
  }
 }

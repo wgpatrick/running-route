@@ -277,8 +277,8 @@ Z_RAIL = FZ + 10
 Z_PLATE = Z_RAIL + 13
 T_YP = G48             # Y plates: 4.75 mm 6061 (v8: 3 mm steel)
 Z_BEAM = Z_PLATE - 10.0
-PULLEY_T, IDLER_T = 24, 30   # v12 (owner): MISUMI GPA24GT2090-A-P5 drive pulleys (set-screw bores start at 24T), AGTFW30-GT2090-5 idlers
-PR = PULLEY_T * 2.0 / math.pi / 2     # drive pulley pitch radius (7.64)
+PULLEY_T, IDLER_T = 20, 30   # v12 (owner, corrected 2026-11-20): McMaster-Carr 3684N13 drive pulleys (GT2 20T, 9 mm belt, 5 mm bore, set screw, one flange); MISUMI AGTFW30-GT2090-5 idlers
+PR = PULLEY_T * 2.0 / math.pi / 2     # drive pulley pitch radius (6.37)
 PR_I = IDLER_T * 2.0 / math.pi / 2    # idler pitch radius (9.55)
 BWX, BWY = 9.0, 9.0    # v12: 9 mm GT2 (Gates 2MGT stock width) on X and Y
 P_BC = lambda w: 7.0 + (w + 1) / 2
@@ -308,7 +308,7 @@ ES_OT_X = 1.5          # X over-travel past the working range at each end (the s
 X_CAR_MAX = X_RAIL_L / 2 - 5.0 - X_BLOCK_L / 2        # 116.3: the X block's centre with 5 mm of rail left beyond it
 assert abs(PRINT_X / 2 - (X_CAR_MAX - ES_OT_X)) < 1e-9, 'PRINT_X is the rail-limited working travel'
 X_CLAMP_HW = 15.0      # half width of the belt bracket and clamp on the tool plate
-XM_X = -(X_CAR_MAX + X_CLAMP_HW + 2.5 + 9.3)  # v12: 24T flange          # -141.8: X pulley (flange radius 8) 2.5 mm beyond the clamp at the end of travel
+XM_X = -(X_CAR_MAX + X_CLAMP_HW + 2.5 + 8.0)  # 20T flange          # -141.8: X pulley (flange radius 8) 2.5 mm beyond the clamp at the end of travel
 XI_X = X_CAR_MAX + X_CLAMP_HW + 2.5 + 12.2  # v12: 30T idler flange             # 142.8: X idler (flange radius 9)
 XD_Z = Z_BEAM + 41.0   # v10: 8 mm higher than v9: the motor and the idler now stand outboard of the beam's ends, over the Y plates,
                        # and must clear the Y plates and the heads of the Y blocks' screws
