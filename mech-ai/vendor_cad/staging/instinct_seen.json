@@ -1231,19 +1231,89 @@
      "size": 521901,
      "note": "staged as instinct_REQ-015/Phoenix_0801733_NS35-7.5-PERF-2000.step, sha256 41c4b189...; 1 valid solid 2000x35x7.5, 79 slots 15x6.2 @25, 1.0 thick; CADENAS order 22026112018380171964729d0b6156e"
     },
+    "17pQEfTUBp5cTfuZCZ10qpNZV4VsVqI4s": {
+     "title": "XHP-2__cad.step",
+     "size": 132958,
+     "note": "staged as instinct_REQ-015/JST_XHP-2.step, sha256 ea771cad...; 1 valid solid 7.3x7.75x5.7, matches datasheet"
+    },
+    "1cYg76-vFxVo9wQlbz7YgDofQMQU40L2a": {
+     "title": "XHP-3__cad.step",
+     "size": 171979,
+     "note": "staged as instinct_REQ-015/JST_XHP-3.step, sha256 04536e74...; 1 valid solid 9.8x7.75x5.7, matches datasheet"
+    },
+    "1e79-c7bVUdc-14kQQLpgZdpm7bDGSAGO": {
+     "title": "XHP-4__cad.step",
+     "size": 211340,
+     "note": "staged as instinct_REQ-015/JST_XHP-4.step, sha256 e71354a6...; 1 valid solid 12.3x7.75x5.7, matches datasheet"
+    },
+    "1TcqO5U1hmwOskNB0Zi5-mjv2vrXiZEQL": {
+     "title": "B2B-XH-A__cad.step",
+     "size": 108814,
+     "note": "staged as instinct_REQ-015/JST_B2B-XH-A.step, sha256 8a8a83d1...; 1 valid solid 7.4x10.4x5.75, 2 posts 0.64 sq @2.5, matches"
+    },
+    "1R4cG_qcP4znGZ3p1Az2jkvt_PkvLZtdL": {
+     "title": "B3B-XH-A__cad.step",
+     "size": 150210,
+     "note": "staged as instinct_REQ-015/JST_B3B-XH-A.step, sha256 85e95848...; 1 valid solid 9.9x10.4x5.75, 3 posts 0.64 sq @2.5, matches"
+    },
+    "1bY8utyGMivIL_pnasAKTJyKBI1rDBQ4t": {
+     "title": "B4B-XH-A__cad.step",
+     "size": 181746,
+     "note": "staged as instinct_REQ-015/JST_B4B-XH-A.step, sha256 30e21987...; 1 valid solid 12.4x10.4x5.75, 4 posts 0.64 sq @2.5, matches"
+    },
+    "1AMslGT2H4rd2BGQex7Y8JEXET-yjVvmh": {
+     "title": "SXH-001T-P0.6__datasheet.pdf",
+     "size": 44267,
+     "note": "staged as vendor_docs/JST_SXH-001T-P0.6_contact_drawing.pdf, sha256 10608d1a...; empty-user-password encryption, no active content"
+    },
     "1Y8-NoBsgMS3-yeS80KYyyU-RJ4gckQij": {
      "title": "RESULT.md",
-     "size": 3175,
-     "note": "staged as instinct_REQ-015/RESULT_instinct_REQ-015_2026-11-20.md, sha256 b7adcdf5..."
+     "size": 4959,
+     "note": "18:53Z revision; staged as instinct_REQ-015/RESULT_instinct_REQ-015_2026-11-20_1853Z.md, sha256 65c9932d..."
     }
    },
    "folder": "mechloop handoff/results/REQ-015-jst-molex-phoenix-step",
-   "last_checked": "2026-11-20T18:15:00Z",
-   "result_status": "partial (items 2 Molex + 3 Phoenix STEP delivered via existing 3dfindit/CADENAS account; item 1 JST XH held on licence + personal-data form)",
-   "staged_in": "vendor_cad/staging/instinct_REQ-015"
+   "last_checked": "2026-11-20T19:15:00Z",
+   "result_status": "done per Instinct (JST XH via jst-mfg.com, licence accepted 2026-11-20 on claimed owner approval - not verified; REQ-016 RESULT still lists it as approval hold)",
+   "staged_in": "vendor_cad/staging/instinct_REQ-015",
+   "superseded": {
+    "1Y8-NoBsgMS3-yeS80KYyyU-RJ4gckQij@pre-1853Z": {
+     "title": "RESULT.md",
+     "size": 3175,
+     "note": "staged as instinct_REQ-015/RESULT_instinct_REQ-015_2026-11-20.md, sha256 b7adcdf5...; earlier revision of the same id, replaced by the 18:53Z revision (batch 15)"
+    }
+   }
+  },
+  "1BeMQ4Ht3vBni77XNBWDA79ked_VyUhZp": {
+   "files": {
+    "183Q7dPIe8xFwDFVrOgG49K6GG4SIBV0C": {
+     "title": "RESULT.md",
+     "size": 5230,
+     "note": "staged as instinct_REQ-016/RESULT_instinct_REQ-016_2026-11-20.md, sha256 3360f571..."
+    },
+    "1G36ArzVOjj7EXRrceIaoJuo4NDfuNkTX": {
+     "title": "SQ1451144__datasheet.pdf",
+     "size": 113588,
+     "note": "staged as vendor_docs/NPH_NPHSF365_HydraResearch-SQ1451144_24V-200W-210x210_heater_drawing.pdf, sha256 4e7ec26e...; 210x210, leads 130+/-15, Molex 43640-0401, no thickness"
+    },
+    "1aTs99AqBTZA1cBi123Z91dZdj7fGKhzN": {
+     "title": "10133__datasheet.pdf",
+     "size": 2337635,
+     "note": "staged as vendor_docs/Keenovo_flexible-heaters_users-manual.pdf, sha256 e9ebcb25...; general manual, not part-specific"
+    },
+    "195cPebECjvnD534nL6XgestJgTxU8Djf": {
+     "title": "NTC-100K-RT__datasheet.pdf",
+     "size": 49725,
+     "note": "not staged: byte-identical to vendor_docs/Keenovo_NTC-100K-B3950_R-T_table.pdf (sha256 2d7ae3c0...)"
+    }
+   },
+   "folder": "mechloop handoff/results/REQ-016-bed-heater-24v",
+   "last_checked": "2026-11-20T19:15:00Z",
+   "result_status": "partial (Keenovo 10133 confirmed; Hydra SQ1451144 alternative with NPH drawing; Gulfcoast price/stock not captured)",
+   "staged_in": "vendor_cad/staging/instinct_REQ-016"
   }
  },
- "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..008 (REQ-005..008 added 2026-11-20 batch 5). Batch 6 (2026-11-20 05:20Z): 7 new files + RESULT.md revision in REQ-005; nothing else new (154 files, 2 pages). Batch 7 (2026-11-20 06:20Z): 9 new files + RESULT.md revision in REQ-008; nothing else new (169 items incl. 8 folders, 3 pages). Batch 8 (2026-11-20 06:45Z): 2 new files + RESULT.md revision in REQ-008; new REQ-009 folder (RESULT.md only); new REQ-010 folder empty. Search: created or modified after 05:30Z under results, plus listing of the new folders. Batch 9 (2026-11-20 07:20Z): 5 new files in REQ-010; new NOTE-pcbway-review-status folder (RESULT.md only). Search: created or modified after 06:30Z under results (6 files + 2 folders). Batch 10 (2026-11-20 14:20Z): 3 new files + RESULT.md revision (07:22Z) in REQ-008; new REQ-012 folder (RESULT.md only). Only the five named file ids were fetched; no full search of results this batch. Batch 11 (2026-11-20 15:15Z): new REQ-013 folder (22 files + RESULT.md) and REQ-014 folder (RESULT.md only); only the named file ids plus a listing of these two folders; no full search of results this batch. Batch 12 (2026-11-20 16:15Z): 3 new files in REQ-014 (S-M3-0ZI STEP + drawing, RESULT.md new id) and 4 in REQ-013 (RESULT.md new id + 3 PDFs); only the named file ids fetched; no folder listing or full search. BTT ADXL345 V2.0 STEP fetched from GitHub master: byte-identical to the instinct_REQ-003 zip content, not re-staged. Batch 14 (2026-11-20 18:15Z): new REQ-015 folder (Molex + Phoenix STEP, RESULT.md) and REQ-013 RESULT.md new id (17:58Z); only the named file ids fetched; no folder listing or full search.",
+ "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..008 (REQ-005..008 added 2026-11-20 batch 5). Batch 6 (2026-11-20 05:20Z): 7 new files + RESULT.md revision in REQ-005; nothing else new (154 files, 2 pages). Batch 7 (2026-11-20 06:20Z): 9 new files + RESULT.md revision in REQ-008; nothing else new (169 items incl. 8 folders, 3 pages). Batch 8 (2026-11-20 06:45Z): 2 new files + RESULT.md revision in REQ-008; new REQ-009 folder (RESULT.md only); new REQ-010 folder empty. Search: created or modified after 05:30Z under results, plus listing of the new folders. Batch 9 (2026-11-20 07:20Z): 5 new files in REQ-010; new NOTE-pcbway-review-status folder (RESULT.md only). Search: created or modified after 06:30Z under results (6 files + 2 folders). Batch 10 (2026-11-20 14:20Z): 3 new files + RESULT.md revision (07:22Z) in REQ-008; new REQ-012 folder (RESULT.md only). Only the five named file ids were fetched; no full search of results this batch. Batch 11 (2026-11-20 15:15Z): new REQ-013 folder (22 files + RESULT.md) and REQ-014 folder (RESULT.md only); only the named file ids plus a listing of these two folders; no full search of results this batch. Batch 12 (2026-11-20 16:15Z): 3 new files in REQ-014 (S-M3-0ZI STEP + drawing, RESULT.md new id) and 4 in REQ-013 (RESULT.md new id + 3 PDFs); only the named file ids fetched; no folder listing or full search. BTT ADXL345 V2.0 STEP fetched from GitHub master: byte-identical to the instinct_REQ-003 zip content, not re-staged. Batch 14 (2026-11-20 18:15Z): new REQ-015 folder (Molex + Phoenix STEP, RESULT.md) and REQ-013 RESULT.md new id (17:58Z); only the named file ids fetched; no folder listing or full search. Batch 15 (2026-11-20 19:15Z): 7 new files + RESULT.md revision (18:53Z) in REQ-015 (JST XH STEP x6 + SXH contact PDF); new REQ-016 folder (RESULT.md + 3 PDFs, NTC table a byte-duplicate); only the named file ids fetched; no folder listing or full search.",
  "last_checked_all": "2026-11-20T07:20:00Z",
  "_note_not_downloaded": "Files with 'NOT downloaded' notes are recorded as seen but were never fetched; retry them if a larger download route exists."
 }
