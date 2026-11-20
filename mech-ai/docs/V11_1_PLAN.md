@@ -18,3 +18,13 @@ of the maker's drawing (docs/DESIGN_GUIDELINES.md, key rule), and X travel won b
    (vendor_cad/staging/provenance_2026-11-19/, Instinct's REQ-001 / REQ-002 results).
 7. Placeholders: any purchased part still without maker data is named PLACEHOLDER-... in the BOM, flagged in the viewer and
    listed at the top of docs/PRINTER_V11_1.md; the DG-07 check reports each as an error.
+
+## Linear rails (owner, 2026-11-20)
+
+- X: genuine HIWIN MGN-R12-R300-HM rail + MGN-12-H-Z0-HM block (Digi-Key; accuracy H). Declare the Z0 preload in the model.
+- Y and Z: LDO Motors MGN12H rail + block sets (rail 12 x 8, 25 mm pitch, block 45.4 x 27 x 13 per LDO's drawing; accuracy
+  class C, light clearance fit, not preloaded; about GBP 31-34 per set at 300-400 mm, in stock). Stock lengths only: Y 300
+  or 350, Z the nearest stock length that gives the Z travel (HIWIN-style 245 is not an LDO length; check LDO's list).
+- The checks must model LDO's clearance (play) in the bed-support, tolerance and motion checks (Y rail parallelism, Z tilt
+  allowance, bed level over travel) and pass; if Y fails, fall back to HIWIN on Y. LDO CAD and full drawing: REQ-004/005.
+- Estimated rails total about $365 (vs $1,104 all-HIWIN).
