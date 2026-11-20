@@ -16,6 +16,18 @@ What this means in practice:
   make their own test pieces, fixtures and upgrade parts.
 - Get to a physical loop early: learning compounds only once parts are being made and measured.
 
+## Next milestone: Build 1 (agreed 2026-11-20)
+
+Build 1 means every part can be ordered and the machine assembled from our build package. One merged build-candidate
+revision (v11.1 + v12, including the camera and sensor hardware), a single buildability gate (zero errors, zero
+placeholders, every purchased part real with maker CAD and live price, stock and lead time, every fabricated part clean
+against its shop's rules, assembly plan checked), then freeze, order (long-lead parts first), build, and run the first
+closed loops (coupons, flow, pressure advance, resonance) with each result recorded as a learning.
+
+Owner's caution: design work is much faster and cheaper than building, so do not start the build too early. Use the
+design phase to remove risk; prefer cheap, targeted physical tests (a few sheet parts, coupons) over committing to the
+whole machine before the gate passes.
+
 The owner set three priorities for the system beyond the printer design itself. Each closes a loop between
 the design and the real world, so the system keeps learning from evidence rather than from its own models.
 
