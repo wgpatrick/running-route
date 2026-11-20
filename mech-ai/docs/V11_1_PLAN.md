@@ -73,3 +73,5 @@ stock and lead time before ordering.
 - PEM nut: switch to the zinc-plated S-M3-0ZI (same geometry); CAD requested from PEM/McMaster via Instinct (owner, 2026-11-20).
 - SendCutSend RP04 (flat 6061 plate) order: sent to Instinct by the owner (2026-11-20). First real part for the measure loop.
 - Drive pulleys: McMaster 3684N13 (20T GT2, 5 mm bore, two M4 set screws, $5.99); fallback Misumi GPA32GT2090-A-P5.
+- JST XH connectors: drawn as faithful re-makes from JST's public datasheet (owner, 2026-11-20); JST's CAD needs a licence and
+  personal-data form. Same for Molex 39-01-2020 and Phoenix NS 35/7.5 (STEPs behind TraceParts sign-up).
