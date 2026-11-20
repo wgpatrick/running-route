@@ -414,8 +414,9 @@ def _tslot_screws(design: Design, r: VerifierResult) -> dict:
         if slot.get("cavity_full_depth") is not None and float(ti.get("span", 0.0)) > 0:
             # the cavity narrows at 45 degrees below its full-width band (Misumi's STEP): the body's lower edge must fit there
             w_low = slot["cavity_width"] - 2.0 * max(0.0, body_h - float(slot["cavity_full_depth"]))
-            if float(ti.get("span", 0.0)) > w_low + 1e-6:
-                problems.append(f"body {ti.get('span')} mm wide at {body_h:g} mm under the lips: the cavity's tapered walls leave {w_low:.2f} mm there")
+            sb_ = float(ti.get("span_bottom", ti.get("span", 0.0)))      # a nut with chamfered lower edges states its width there
+            if sb_ > w_low + 1e-6:
+                problems.append(f"body {sb_:g} mm wide at {body_h:g} mm under the lips: the cavity's tapered walls leave {w_low:.2f} mm there")
         if slot["lip"] + body_h > slot["depth"] + 1e-6:
             problems.append(f"body {body_h:g} mm under a {slot['lip']:g} mm lip: deeper than the {slot['depth']:g} mm slot")
         if float(ti.get("neck", 0.0)) > slot["lip"] + 1e-6:
