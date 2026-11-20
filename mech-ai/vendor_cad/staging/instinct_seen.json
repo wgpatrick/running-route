@@ -1,7 +1,7 @@
 {
  "folder_id": "1ZtlzfkmX-Yz92soEepnPbyNiPK0uQ43v",
  "folder": "mechloop handoff/results/REQ-001-supplier-cad-batch-3",
- "last_checked": "2026-11-20T14:20:00Z",
+ "last_checked": "2026-11-20T15:15:00Z",
  "result_status": "partial (Misumi delivered and staged in instinct_REQ-001b; PEM S-M3-0 not fulfilled, owner decision pending)",
  "files": {
   "1vwRHKJkIJW3gaI138gcNPCUbF5RF8TUX": {
@@ -995,9 +995,163 @@
      "note": "staged as instinct_REQ-012/RESULT_instinct_REQ-012_2026-11-20.md, sha256 55227ede..."
     }
    }
+  },
+  "15LKAJDQN7rX38zy_DSCVmA9h3BzBjwIv": {
+   "folder": "mechloop handoff/results/REQ-013-build1-queue-refresh",
+   "last_checked": "2026-11-20T15:15:00Z",
+   "staged_in": "vendor_cad/staging/instinct_REQ-013",
+   "result_status": "partial (P1 items 1, 2, 4, 6, 7 delivered; item 3 facts only; item 5 store price only; P2 8-11 pending; REQ-013b: GPA32 A-P5 + McMaster 3684N13 delivered)",
+   "files": {
+    "11zPs7IGKw2-44Di7ERwitIclD__sz6sQ": {
+     "title": "RESULT.md",
+     "modifiedTime": "2026-11-20T15:10:43.818Z",
+     "size": 7767,
+     "note": "staged as instinct_REQ-013/RESULT_instinct_REQ-013_2026-11-20.md, sha256 6918ff08..."
+    },
+    "1FQ_YqahnAFh3Oq_btmcuL4SQxyW-zBwl": {
+     "title": "4301.1405__cad.step",
+     "modifiedTime": "2026-11-20T14:28:57.329Z",
+     "size": 6006141,
+     "note": "staged as Schurter_4301.1405.step"
+    },
+    "1Eyvs5p0juAFeVTd-20NBPHlZkl27qLyz": {
+     "title": "4301.1405__datasheet.pdf",
+     "modifiedTime": "2026-11-20T14:27:52.987Z",
+     "size": 324460,
+     "note": "duplicate of vendor_docs/Schurter_Fusedrawer-2_4301.1401_datasheet.pdf; not copied"
+    },
+    "1T5RK9CySVLeHxf6AhvKCfIHvXgl3I3y-": {
+     "title": "HBLFSN5__cad.step",
+     "modifiedTime": "2026-11-20T14:45:33.622Z",
+     "size": 157476,
+     "note": "staged as Misumi_HBLFSN5.step"
+    },
+    "1H-wIxHH6SNPPfpDzHUltDjpLmSVXDW1i": {
+     "title": "HBLFSN5-SEP__cad.step",
+     "modifiedTime": "2026-11-20T14:45:34.736Z",
+     "size": 320761,
+     "note": "staged as Misumi_HBLFSN5-SEP.step"
+    },
+    "1tQY3GtZN__kgglSSOpD-1CqBOPsRE_gP": {
+     "title": "HNTP5-5__cad.step",
+     "modifiedTime": "2026-11-20T14:45:35.800Z",
+     "size": 74923,
+     "note": "staged as Misumi_HNTP5-5.step"
+    },
+    "13L0EZcg9AW1jrlXsnkuH3H2rQrN8nzcN": {
+     "title": "CBM5-10__cad.step",
+     "modifiedTime": "2026-11-20T14:45:36.938Z",
+     "size": 38485,
+     "note": "staged as Misumi_CBM5-10.step; geometry is a socket head cap screw, not a button head (flag)"
+    },
+    "1rX1XIpSXMvXW1v-tUrMrCgVhcLk8qZ4P": {
+     "title": "AGTFW30-GT2090-5__cad.step",
+     "modifiedTime": "2026-11-20T14:45:32.304Z",
+     "size": 384381,
+     "note": "staged as Misumi_AGTFW30-GT2090-5.step"
+    },
+    "144wHBEM7fuuqfLrQHgu3P52HkiwQWsDT": {
+     "title": "AGTFW30-GT2090-5__datasheet.pdf",
+     "modifiedTime": "2026-11-20T14:46:29.693Z",
+     "size": 340142,
+     "note": "vendor_docs/Misumi_AGTFW_flanged-idlers-with-teeth_catalog_p1424-1425.pdf"
+    },
+    "1ZGQ4wIbYkfRuSom6MIW2oEzLezhvdNAS": {
+     "title": "GPA32GT2090-B-P5__cad.step",
+     "modifiedTime": "2026-11-20T14:45:31.157Z",
+     "size": 438746,
+     "note": "staged as Misumi_GPA32GT2090-B-P5.step"
+    },
+    "1OLgy6kQkx90m5mh-op_BcQRxAEEpTYfI": {
+     "title": "GPA32GT2090-A-P5__cad.step",
+     "modifiedTime": "2026-11-20T14:56:35.407Z",
+     "size": 477652,
+     "note": "staged as Misumi_GPA32GT2090-A-P5.step"
+    },
+    "1Kx1PJIGU__xxoKpVY-IOSvP9cm-rl40T": {
+     "title": "3684N13__cad.step",
+     "modifiedTime": "2026-11-20T15:01:51.779Z",
+     "size": 1455421,
+     "note": "staged as McMaster_3684N13.step; has 2 set screws (Instinct says 1)"
+    },
+    "17HxNwwJ-v31MYUpz0IHO7Ylw5oqqHdc1": {
+     "title": "3684N13__drawing.pdf",
+     "modifiedTime": "2026-11-20T15:02:54.302Z",
+     "size": 150030,
+     "note": "vendor_docs/McMaster_3684N13_drawing.pdf"
+    },
+    "1cmnh1hiGXldqMv0WGb0hE-ZPmePuvQOw": {
+     "title": "SC1432__drawing.pdf",
+     "modifiedTime": "2026-11-20T14:27:59.429Z",
+     "size": 174949,
+     "note": "duplicate of vendor_docs/RaspberryPi_Pi5_mechanical_drawing.pdf; not copied"
+    },
+    "1Pst3kHg-0knihkucMZwAM3txriiiZIMp": {
+     "title": "SC1148__drawing.pdf",
+     "modifiedTime": "2026-11-20T14:27:56.026Z",
+     "size": 233138,
+     "note": "vendor_docs/RaspberryPi_Active-Cooler_SC1148_mechanical_drawing.pdf"
+    },
+    "1eUzIuahNzfEu9I9gj2fuO4pGCsLXs5n8": {
+     "title": "SC1153__datasheet.pdf",
+     "modifiedTime": "2026-11-20T14:27:57.139Z",
+     "size": 1233433,
+     "note": "duplicate of vendor_docs/RaspberryPi_27W-USB-C-PSU_product_brief.pdf; not copied"
+    },
+    "1bUOrT19gmH33jhmZMAgRQtH3lTCEZiPu": {
+     "title": "SC1223__datasheet.pdf",
+     "modifiedTime": "2026-11-20T14:27:58.412Z",
+     "size": 1244344,
+     "note": "duplicate of vendor_docs/RaspberryPi_Camera-Module-3_product_brief.pdf; not copied"
+    },
+    "1xSw-uvAkasNQkazVN-CM7CznvMRw0PRB": {
+     "title": "EDDY-DUO__drawing.jpg",
+     "modifiedTime": "2026-11-20T14:27:54.289Z",
+     "size": 58592,
+     "note": "duplicate of vendor_docs/BTT_Eddy_dimensions.jpg; not copied"
+    },
+    "145BHsPihkMcremUFhk-IuzFxHXTUpJCm": {
+     "title": "VLM-520-56-LPO-D30-F10__datasheet.pdf",
+     "modifiedTime": "2026-11-20T14:34:19.315Z",
+     "size": 1183645,
+     "note": "vendor_docs/Quarton_VLM-520-56-30deg-series_manual.pdf"
+    },
+    "1fTAdX50EgbC7P9ydgZogiR3sCWkcpB-E": {
+     "title": "CS712025Y__datasheet.pdf",
+     "modifiedTime": "2026-11-20T14:33:25.643Z",
+     "size": 1392761,
+     "note": "vendor_docs/Cantherm_R53_CS712025Y_datasheet_rev2017-04.pdf (newer revision than Cantherm_CS7_R53_thermostat_datasheet.pdf)"
+    },
+    "1sdqUn-xpdYox-SQWpIRtOi4laBlrIFSb": {
+     "title": "104NT-4-R025H42G__datasheet.pdf",
+     "modifiedTime": "2026-11-20T14:27:51.811Z",
+     "size": 96355,
+     "note": "duplicate of vendor_docs/Semitec_NT-4_thermistor_datasheet.pdf; not copied"
+    },
+    "1492bLgym35NMwQ0j7GqsczDz3_2Qz7a9": {
+     "title": "D2F-01L__datasheet.pdf",
+     "modifiedTime": "2026-11-20T14:32:08.249Z",
+     "size": 850668,
+     "note": "duplicate of vendor_docs/ENDSTOP-MICRO_datasheet.pdf; not copied (owner-password encrypted, joboptions attachment)"
+    }
+   }
+  },
+  "1q3mYOgMuesTlqiKL3pHd0fxZDrbDfdLU": {
+   "folder": "mechloop handoff/results/REQ-014-bossard-pem-and-sendcutsend-cart",
+   "last_checked": "2026-11-20T15:15:00Z",
+   "staged_in": "vendor_cad/staging/instinct_REQ-014",
+   "result_status": "partial (item 1 Bossard PEM blocked, no CAD; items 2-3 from existing batch01 records, no new submissions)",
+   "files": {
+    "1o3MXYPd8IoYfY1XjdygDAofhF46ZVrjF": {
+     "title": "RESULT.md",
+     "modifiedTime": "2026-11-20T15:10:42.649Z",
+     "size": 5996,
+     "note": "staged as instinct_REQ-014/RESULT_instinct_REQ-014_2026-11-20.md, sha256 493f4128..."
+    }
+   }
   }
  },
- "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..008 (REQ-005..008 added 2026-11-20 batch 5). Batch 6 (2026-11-20 05:20Z): 7 new files + RESULT.md revision in REQ-005; nothing else new (154 files, 2 pages). Batch 7 (2026-11-20 06:20Z): 9 new files + RESULT.md revision in REQ-008; nothing else new (169 items incl. 8 folders, 3 pages). Batch 8 (2026-11-20 06:45Z): 2 new files + RESULT.md revision in REQ-008; new REQ-009 folder (RESULT.md only); new REQ-010 folder empty. Search: created or modified after 05:30Z under results, plus listing of the new folders. Batch 9 (2026-11-20 07:20Z): 5 new files in REQ-010; new NOTE-pcbway-review-status folder (RESULT.md only). Search: created or modified after 06:30Z under results (6 files + 2 folders). Batch 10 (2026-11-20 14:20Z): 3 new files + RESULT.md revision (07:22Z) in REQ-008; new REQ-012 folder (RESULT.md only). Only the five named file ids were fetched; no full search of results this batch.",
+ "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..008 (REQ-005..008 added 2026-11-20 batch 5). Batch 6 (2026-11-20 05:20Z): 7 new files + RESULT.md revision in REQ-005; nothing else new (154 files, 2 pages). Batch 7 (2026-11-20 06:20Z): 9 new files + RESULT.md revision in REQ-008; nothing else new (169 items incl. 8 folders, 3 pages). Batch 8 (2026-11-20 06:45Z): 2 new files + RESULT.md revision in REQ-008; new REQ-009 folder (RESULT.md only); new REQ-010 folder empty. Search: created or modified after 05:30Z under results, plus listing of the new folders. Batch 9 (2026-11-20 07:20Z): 5 new files in REQ-010; new NOTE-pcbway-review-status folder (RESULT.md only). Search: created or modified after 06:30Z under results (6 files + 2 folders). Batch 10 (2026-11-20 14:20Z): 3 new files + RESULT.md revision (07:22Z) in REQ-008; new REQ-012 folder (RESULT.md only). Only the five named file ids were fetched; no full search of results this batch. Batch 11 (2026-11-20 15:15Z): new REQ-013 folder (22 files + RESULT.md) and REQ-014 folder (RESULT.md only); only the named file ids plus a listing of these two folders; no full search of results this batch.",
  "last_checked_all": "2026-11-20T07:20:00Z",
  "_note_not_downloaded": "Files with 'NOT downloaded' notes are recorded as seen but were never fetched; retry them if a larger download route exists."
 }
