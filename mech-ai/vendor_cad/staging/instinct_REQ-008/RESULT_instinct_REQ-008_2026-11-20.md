@@ -1,4 +1,4 @@
-STATUS: partial (interim — items 1, 3, 4, 12 resolved; remaining items in progress)
+STATUS: partial (interim — items 1, 2, 3, 12, 16 delivered; item 14 pulley delivered, idler not available; item 4 blocked as named, not fulfilled; remaining items in progress)
 
 # REQ-008 results — priority queue
 
@@ -6,7 +6,7 @@ Interim result landed early so an interruption never leaves the folder empty. It
 
 ## Stage 1
 1. Schurter DD11.0114.1111 / 4301.1401 / 0001.2513 / 0001.2511 — DONE. 7 files in this folder, all official schurter.com downloads: DD11.0114.1111__cad.step (family model) + DD11.0114.1111__datasheet.pdf (typ_DD11), 4301.1401__cad.step + 4301.1401__datasheet.pdf (typ_Fusedrawer_2), 0001.2513__cad.step, 0001.2511__cad.step (fuse STEPs are surface geometry, official as-is), SPT-5x20__datasheet.pdf (covers both fuses).
-2. Finder 22.32.0.120.4320 STEP — REQ-006 delivered findernet.com series STEP 2232_xx20 (recorded as 2NO outline match). REQ-008 says the earlier file was the wrong part (auxiliary block); re-verifying against the official source.
+2. Finder 22.32.0.120.4320 STEP — DONE (delivered in REQ-006 folder; verified 2026-11-19). REQ-006 delivered Finder_22.32__step.zip (official findernet.com CAD download, product page -> CAD via cdn.findernet.com) containing 2232_xx20.stp and 2232_xx40.stp. Verification against the files themselves: the old REQ-002 file (22.32__step.stp) contains PRODUCT "Complessivo 022_35 1NO+1NC" — the 022.3x auxiliary-contact block, wrong part, exactly as this REQ states. The REQ-006 replacement 2232_xx20.stp contains PRODUCT "2232_2NO_senza_slitta" — the 22.32 2NO contactor geometry, matching 22.32.0.120.4320 (catalog coding x3x0 = 2 NO, confirmed against the official Finder 22 series catalog coding table, also in the REQ-006 folder as Finder_22-series__catalog.pdf). Coil voltage does not change geometry. Correct part confirmed; see REQ-006 RESULT.md item 1 for full provenance.
 3. Phoenix Contact 1119897 (PLC-RSC-5DC/21) — DONE. 1119897__cad.stp (official Creo export, 2 solids) + 1119897__datasheet.pdf (official product-details PDF generated from phoenixcontact.com online catalog) in this folder.
 4. StepperOnline 17E19S1684AB4-330RA full datasheet — BLOCKED. The direct PDF link and the whole stepperonline.com / files.omc-stepperonline.com domain sit behind a Cloudflare challenge that returns an interstitial page instead of the PDF; no alternate official source. Not retried further without a genuinely new source.
 5. Bed heater + magnetic PEI kit — REQ-003 items 1-2 state: item 1 had only 1 stock candidate of 2-3 requested, item 2 only 1 of 2 candidates (sold out); pending further research.
@@ -20,9 +20,9 @@ Interim result landed early so an interruption never leaves the folder empty. It
 ## Stage 2
 12. HIWIN MGNR12R-300 + MGN12H STEP — delivered via the REQ-005 results folder (REQ-005 item 2): MGNR12R-300__cad.step (rail, 1 solid) + drawing PDF, and MGN-12-H-1R0300-ZF-H-M__cad-block-rail-assembly.step (official block+rail assembly STEP containing the MGN12H block geometry; explicitly labeled as an assembly, not a per-part block file). See REQ-005 RESULT.md item 2 for full provenance and the MGN12C generator-defect note.
 13. LDO MGN12H rail+carriage US sellers — pending.
-14. Misumi GT2 20T 9mm 5mm-bore pulley/idler — part-number research possible; CAD blocked (Misumi registration rejected; 3Dfindit is CADENAS, exhausted).
+14. Misumi GT2 20T 9mm 5mm-bore pulley/idler — PULLEY DONE, IDLER NOT AVAILABLE. Pulley: Misumi part number GPA20GT2090-A-H5 (GT1.5, GT2 Timing Belt Pulley - High Torque; belt 2GT, width 9 mm, 20 teeth, Shape A, H round-hole 5 mm bore). Shown on us.misumi-ec.com 2026-11-19 at unit price $21.65 (USD), ship date Mon. Nov 30, 2026. Two files added to this folder: GPA20GT2090-A-H5__cad.step (official Misumi-generated STEP AP214 for the exact configured part number, from Misumi's login-gated CAD download flow) and GPA20GT2090-A-H5__drawing.pdf (official Misumi 2019 US catalog page 1340, the series dimension drawing covering the GPA__GT2090 family; Misumi's per-part configured-spec PDF flow did not complete in-session, so the series catalog drawing is provided instead, labeled as such). Idler: NOT AVAILABLE at Misumi in the exact spec. The both-sides-bearing series (AGTFW/BGTFW) offers 2GT idlers only in 30 teeth (AGTFW30-GT2090-5 is the closest: 30T, 9 mm, 5 mm bore); the center-bearing series (AGTF/BGTF) offers 20 teeth but only 8 mm and 20 mm bores. No equivalent substituted; picking either near-match requires the owner's approval.
 15. Gates 2MGT 9mm open belt — REQ-003 item 3 delivered Gates LL2MR09 (9396-0052) page; datasheet pending.
-16. TMC2209 datasheet — pending (Trinamic/ADI).
+16. TMC2209 datasheet — DONE. TMC2209__datasheet.pdf added to this folder: the official ADI/Trinamic TMC2209 datasheet, revision 1.08 (same revision as the current analog.com-hosted file, which is bot-blocked from this environment); copy sourced from Digi-Key's datasheet hosting (mm.digikey.com), provenance labeled as such.
 
 ## Stage 3
 17. Accelerometer board CAD/drawing — pending.
