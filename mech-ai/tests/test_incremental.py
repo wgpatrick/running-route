@@ -39,7 +39,7 @@ def test_every_verifier_declares_dependencies():
 def test_unknown_verifier_has_no_key():
     d = _synthetic()
     s = Session(d, Path("/nonexistent"), use_cache=False)
-    key, why = s.key("not_a_verifier")
+    key, why = s.slot("not_a_verifier")
     assert key is None and "always re-run" in why
 
 
@@ -169,7 +169,7 @@ def test_one_part_change_reruns_only_what_reads_it(tmp_path):
     assert within.get("pairs_reused", 0) >= 2            # a-b overlap and gap: unchanged pair
     assert within.get("pairs_computed", 0) >= 1          # c-e: changed pair
     m = inc2["reused_within"]["manufacture"]                # per-part DFM: only c re-checked
-    assert m.get("parts_reused") == 3 and m.get("parts_checked") == 1
+    assert m.get("parts_reused") == 3 and m.get("parts_run") == 1
     # the same as a run without any cache
     fresh = verify(_synthetic(c_size=12.0), ONLY)
     assert _findings(rep2) == _findings(fresh)
@@ -208,19 +208,34 @@ def test_no_cache_writes_nothing(tmp_path):
     assert not (tmp_path / "x" / "verify_cache").exists()
 
 
-def test_undeclared_read_is_not_cached(tmp_path, monkeypatch):
-    from mechloop.incremental import deps
-
-    monkeypatch.setitem(deps.DEPS, "geometry", deps.Deps("mechloop.verifiers.geometry", fields=("name",)))
+def test_what_a_verifier_reads_decides_its_reuse(tmp_path):
     d = _synthetic()
     d.envelope = (500, 500, 500)
-    s = Session(d, tmp_path / "x", tier="affected", use_cache=True)
-    rep = verify(d, ["geometry"], session=s)
-    dec = rep.incremental["verifiers"]["geometry"]
-    assert dec["status"] == "ran" and dec["stored"] is False and "envelope" in dec["undeclared_reads"]
-    s2 = Session(d, tmp_path / "x", tier="affected", use_cache=True)
-    rep2 = verify(d, ["geometry"], session=s2)
-    assert rep2.incremental["verifiers"]["geometry"]["status"] == "ran"      # never reused on a wrong declaration
+    s = Session(d, tmp_path / "x", tier="full", use_cache=True)
+    verify(d, ["geometry"], session=s)
+    d2 = _synthetic()
+    d2.envelope = (500, 500, 500)
+    d2.program = [{"to": {}, "speed": 1.0}]               # a field geometry does not read
+    rep2 = verify(d2, ["geometry"], session=Session(d2, tmp_path / "x", tier="affected", use_cache=True))
+    assert rep2.incremental["verifiers"]["geometry"]["status"] == "reused"
+    d3 = _synthetic()
+    d3.envelope = (400, 500, 500)                          # a field it reads
+    rep3 = verify(d3, ["geometry"], session=Session(d3, tmp_path / "x", tier="affected", use_cache=True))
+    dec = rep3.incremental["verifiers"]["geometry"]
+    assert dec["status"] == "ran" and "envelope" in dec["why"]
+
+
+def test_recorded_reads_are_exact():
+    from mechloop.incremental.recorder import tracking
+
+    d = _synthetic()
+    with tracking(d) as reads:
+        d.get("a").shape
+        _ = d.envelope
+        _ = d.get("b").body
+    assert ("a", "shape") in reads.attrs and ("b", "body") in reads.attrs and ("c", "shape") not in reads.attrs
+    assert "envelope" in reads.fields and reads.parts_list
+    assert type(d) is Design and type(d.get("a")).__name__ == "Component"
 
 
 # ------------------------------------------------------------------------------- a real design, via the CLI path
@@ -252,3 +267,24 @@ def test_reused_results_equal_a_no_cache_run_on_a_real_design(tmp_path):
     assert hist[-1]["tier"] == "affected" and "reused" in hist[-1]
     report = json.loads((out / "motor_bracket" / "report.json").read_text())
     assert report["incremental"]["tier"] == "affected"
+
+
+@pytest.mark.skipif(shutil.which("ccx") is None, reason="CalculiX not installed")
+def test_parallel_run_equals_serial_run(tmp_path):
+    f1 = tmp_path / "motor_bracket.py"
+    f1.write_text((ROOT / "examples" / "motor_bracket.py").read_text())
+    import subprocess
+    import sys
+
+    def cli(*args):      # a fresh process: forking is only safe before the CAD kernel has started its threads
+        p = subprocess.run([sys.executable, "-m", "mechloop", "verify", str(f1), "--no-render", "--max-findings", "500",
+                            *args], cwd=ROOT, capture_output=True, text=True, timeout=900)
+        return json.loads(p.stdout)
+
+    par = cli("--out", str(tmp_path / "par"), "--tier", "full", "--jobs", "3")
+    ser = cli("--out", str(tmp_path / "ser"), "--no-cache")
+    assert par["profile"]["parallel"]["jobs"] == 3 and par["profile"]["verifiers"]["fea"]["worker"].startswith("processes")
+    assert without_timings(par) == without_timings(ser)
+    again = cli("--out", str(tmp_path / "par"), "--tier", "affected", "--jobs", "3")      # all reused, also in parallel
+    assert set(again["incremental"]["reused"]) >= {"geometry", "interference", "practice", "assemblability"}
+    assert without_timings(again) == without_timings(ser)

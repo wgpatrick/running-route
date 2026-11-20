@@ -1,16 +1,25 @@
-"""Incremental verification: fingerprints, dependency declarations, a result cache and three tiers.
+"""Incremental verification: fingerprints, recorded dependencies, a result cache, three tiers, parallel runs.
 
     mechloop verify designs/x.py --tier quick      geometry, interference (changed pairs), manufacture, practice, ratings;
-                                                   any other verifier is reused when its inputs are unchanged, else
+                                                   any other verifier is reused when what it read is unchanged, else
                                                    reported NOT RUN (stale) -- the run is then partial
-    mechloop verify designs/x.py --tier affected   every verifier whose inputs changed re-runs (FEA case by case,
-                                                   interference pair by pair); the rest is reused
+    mechloop verify designs/x.py --tier affected   every verifier whose inputs changed re-runs (FEA case by case, DFM
+                                                   part by part, interference pair by pair); the rest is reused
     mechloop verify designs/x.py --tier full       everything re-runs, nothing is reused (results are still stored);
                                                    required before freezing / release, and the tier any design marked
                                                    `release = True` gets whatever tier is asked
-    mechloop verify designs/x.py                   (no tier) a full verify, exactly as before; results are stored so a
-                                                   later `--tier affected` can reuse them
+    mechloop verify designs/x.py                   (no tier) a full verify, as before; results are stored so a later
+                                                   `--tier affected` can reuse them
     --no-cache                                     nothing read, nothing stored
+
+How reuse is decided. A stored result (a verifier's, one FEA case's, one part's DFM checks) carries
+  - deps: the fingerprints, taken at the start of its run, of exactly what it read from the design: the Design fields,
+    the list of parts if it iterated it, and each part attribute it touched (shape, meta, body, ratings ...); recorded
+    at run time (recorder.py),
+  - manifest: the code that ran and the data files it read (coderec.py).
+It is reused only when every one of those is unchanged. Results are deterministic functions of what they read, so a
+result whose reads are unchanged would be computed again identically. A part a verifier never touched can change
+without re-running it.
 
 A reused result is the stored one, unchanged (findings and metrics), and says where it came from: the report's
 `incremental` section lists for each verifier "ran" / "reused" (with the iteration and time of the run that produced
@@ -24,13 +33,14 @@ from __future__ import annotations
 import time
 from pathlib import Path
 
-from .cache import ResultCache, verifier_key
-from . import coderec
+from . import coderec, recorder
+from .cache import ResultCache
 from .deps import DEPS, QUICK
 from .fingerprint import FP_VERSION, digest, diff, fingerprint as fingerprint_design, is_unstable, shape_fp, value_fp
 
 TIERS = ("quick", "affected", "full")
 CURRENT: "Session | None" = None
+KEEP = 3        # stored results kept per slot (different inputs of the same verifier / case / part)
 
 
 class Session:
@@ -56,32 +66,94 @@ class Session:
         self.verifier: str | None = None
         self._tables: dict[str, dict] = {}
         self._used: dict[str, set] = {}
+        self._new: dict[str, dict] = {}       # table entries added in this process (sent back from a worker)
         self.stats: dict[str, dict] = {}
 
-    # ----------------------------------------------------------------------------------------- verifier level
-    def key(self, name: str, upstream: dict | None = None):
-        return verifier_key(name, self.fps, self.design, upstream)
+    # ------------------------------------------------------------------------------------------ dependencies
+    def deps_of(self, reads) -> dict | None:
+        """The fingerprints (from the start of the run) of what `reads` recorded; None if any has no stable form."""
+        f = self.fps
+        d = {"fields": {n: f.fields.get(n, "absent") for n in sorted(reads.fields)},
+             "attrs": {f"{n}\x1f{a}": f.attr(n, a) for n, a in sorted(reads.attrs)}}
+        if reads.parts_list:
+            d["parts_list"] = f.parts_list()
+        if any(is_unstable(v) for v in list(d["fields"].values()) + list(d["attrs"].values())):
+            return None
+        return d
 
-    def lookup(self, name: str, key):
-        hit = self.cache.get(f"results/{name}", key)
-        if hit is None:
-            return None
-        ok, why = coderec.still_valid(hit.get("manifest"))
+    def deps_valid(self, d: dict | None) -> tuple[bool, str]:
+        if d is None:
+            return False, "dependencies not recorded"
+        f = self.fps
+        if "parts_list" in d and d["parts_list"] != f.parts_list():
+            return False, "parts added or removed"
+        for n, v in d.get("fields", {}).items():
+            if f.fields.get(n, "absent") != v:
+                return False, f"design field '{n}' changed"
+        for k, v in d.get("attrs", {}).items():
+            n, a = k.split("\x1f", 1)
+            if f.attr(n, a) != v:
+                return False, f"{n}.{a} changed"
+        return True, ""
+
+    def valid(self, entry: dict) -> tuple[bool, str]:
+        ok, why = self.deps_valid(entry.get("deps"))
         if not ok:
+            return ok, why
+        return coderec.still_valid(entry.get("manifest"))
+
+    def find(self, kind: str, slot: str | None, entries: list | None = None):
+        """(entry, why not) -- the newest stored entry of this slot whose deps and code are unchanged."""
+        if slot is None:
+            return None, "no stable key"
+        if entries is None:
+            if not self.cache.read:
+                return None, "full tier: nothing reused" if self.tier == "full" else "cache not read"
+            entries = self.cache.get(kind, slot) or []
+            entries = entries.get("entries", []) if isinstance(entries, dict) else []
+        why = "nothing stored yet"
+        for e in entries:
+            ok, w = self.valid(e)
+            if ok:
+                return e, ""
+            why = w
+        return None, why
+
+    def put(self, kind: str, slot: str | None, entry: dict) -> bool:
+        if slot is None or not self.cache.write or entry.get("deps") is None:
+            return False
+        m = entry.get("manifest")
+        if not m or m.get("unknown"):
+            return False
+        old = self.cache.get(kind, slot)      # (None in the full tier: the cache is not read)
+        prev = (old or {}).get("entries", []) if isinstance(old, dict) else []
+        entry = {**entry, "run": dict(self.run)}
+        return self.cache.put(kind, slot, {"entries": ([entry] + prev)[:KEEP]})
+
+    # ----------------------------------------------------------------------------------------- verifier level
+    def slot(self, name: str, upstream: dict | None = None) -> tuple[str | None, str]:
+        d = DEPS.get(name)
+        if d is None:
+            return None, "no dependency declaration: always re-run"
+        if d.granularity == "always":
+            return None, "always re-run (cheap; reads the results of the others)"
+        up = value_fp({u: (upstream or {}).get(u) for u in d.upstream}) if d.upstream else "no-upstream"
+        if is_unstable(up):
+            return None, "upstream metrics have no stable fingerprint: re-run"
+        return digest(FP_VERSION, "verifier", name, up), ""
+
+    def lookup(self, name: str, slot):
+        hit, why = self.find(f"results/{name}", slot)
+        if hit is None and why not in ("nothing stored yet", "full tier: nothing reused", "cache not read", "no stable key"):
             self.decisions.setdefault(name, {})["stored_result_invalid"] = why
-            return None
         return hit
 
-    def store(self, name: str, key, res, reads_ok: bool, manifest: dict | None = None) -> bool:
-        if not reads_ok or key is None:
-            return False
+    def store(self, name: str, slot, res, deps: dict | None, manifest: dict | None) -> bool:
         if any(f.code in ("verifier_crashed",) for f in res.findings):
             return False       # a crash may be the machine's (memory, a killed solver): never reuse it
-        if not manifest or manifest.get("unknown"):
-            return False       # what code produced it is not known: never reuse it
-        return self.cache.put(f"results/{name}", key, {
+        return self.put(f"results/{name}", slot, {
             "verifier": name, "findings": list(res.findings), "metrics": res.metrics, "skipped": res.skipped,
-            "seconds": res.seconds, "run": dict(self.run), "manifest": manifest,
+            "seconds": res.seconds, "deps": deps, "manifest": manifest,
             "artifacts_sim": res.artifacts_sim})      # the motion program's trace, so a reused result still renders
 
     # ------------------------------------------------------------------------------------------ memo tables
@@ -91,12 +163,40 @@ class Session:
             self._used[name] = set()
         return self._tables[name]
 
+    def table_put(self, name: str, k, v) -> None:
+        self.table(name)[k] = v
+        self._new.setdefault(name, {})[k] = v
+
     def mark_used(self, name: str, key) -> None:
         self._used.setdefault(name, set()).add(key)
 
     def stat(self, what: str, n: int = 1) -> None:
         s = self.stats.setdefault(self.verifier or "?", {})
         s[what] = s.get(what, 0) + n
+
+    # ------------------------------------------------------------------------- worker processes (parallel run)
+    def export_delta(self) -> dict:
+        """What a worker process learned, for the parent: new memo entries, keys used, stats, decisions."""
+        return {"new": self._new, "used": {k: v for k, v in self._used.items()}, "stats": self.stats,
+                "decisions": self.decisions}
+
+    def merge_delta(self, d: dict) -> None:
+        for name, entries in d.get("new", {}).items():
+            self.table(name).update(entries)
+        for name, used in d.get("used", {}).items():
+            self.table(name)
+            self._used.setdefault(name, set()).update(used)
+        for v, st in d.get("stats", {}).items():
+            mine = self.stats.setdefault(v, {})
+            for k, n in st.items():
+                mine[k] = mine.get(k, 0) + n
+        for v, dec in d.get("decisions", {}).items():
+            mine = self.decisions.setdefault(v, {})
+            for k, val in dec.items():
+                if isinstance(val, dict) and isinstance(mine.get(k), dict):
+                    mine[k].update(val)        # cases_run / cases_reused of several FEA case processes
+                else:
+                    mine[k] = val
 
     def finish(self) -> None:
         for name, t in self._tables.items():
@@ -105,7 +205,7 @@ class Session:
             self.cache.save_manifest({**self.fps.manifest(), "run": self.run, "fp_version": FP_VERSION})
 
     def section(self) -> dict:
-        reused = sorted(n for n, d in self.decisions.items() if d["status"] == "reused")
+        reused = sorted(n for n, d in self.decisions.items() if d.get("status") == "reused")
         return {"tier": self.tier, "requested_tier": self.requested_tier, "release": self.release,
                 "cache": "off (--no-cache)" if not self.use_cache else
                          ("written, not read (full tier)" if self.tier == "full" else "read and written"),
@@ -116,7 +216,8 @@ class Session:
                 "instances": {"parts": len(self.fps.parts),
                               "unique": len({p.get("instance") for p in self.fps.parts.values()}),
                               "note": "unique = distinct shape (placement aside), material, catalogue entry and ratings; "
-                                      "placement-independent checks run once per unique part"},
+                                      "placement-independent checks (geometry validity, proxy vs vendor CAD) run once per "
+                                      "unique part"},
                 **({"notes": self.notes} if self.notes else {})}
 
 
@@ -125,90 +226,77 @@ def active() -> "Session | None":
     return CURRENT
 
 
-def _fea_case_key(s: Session, design, kind: str, case, names) -> str | None:
-    import numpy as np
-
-    fps = s.fps
-    names = [n for n in names if n]
-    comps = {c.name: c for c in design.components}
-    if kind == "bed_support":
-        parts = fps.parts_digest()
-        fields = fps.fields_digest(fps.fields)
-        extra = "whole-machine"
-    else:
-        nameset = set(names)
-        parts = fps.parts_digest(names)
-        # screws that can act on these parts (their shank inside the parts' box, or naming them)
-        boxes = []
-        for n in names:
-            if n in comps:
-                bb = comps[n].shape.bounding_box()
-                boxes.append((np.array([bb.min.X, bb.min.Y, bb.min.Z]), np.array([bb.max.X, bb.max.Y, bb.max.Z])))
-        lo = np.min([b[0] for b in boxes], axis=0) if boxes else np.zeros(3)
-        hi = np.max([b[1] for b in boxes], axis=0) if boxes else np.zeros(3)
-        screws = []
-        for f in design.fasteners:
-            c = comps.get(f.name)
-            if c is None:
-                continue
-            near = f.name in nameset or bool(set(f.clamps) & nameset) or bool(set(c.meta.get("threads_into", []) or []) & nameset)
-            if not near:
-                sb = c.shape.bounding_box()
-                head = np.array(f.head_center, dtype=float)
-                slo = np.minimum(head, [sb.min.X, sb.min.Y, sb.min.Z])
-                shi = np.maximum(head, [sb.max.X, sb.max.Y, sb.max.Z])
-                m = max(10.0, 3.0 * float(c.meta.get("thread_d", 3.0) or 3.0))
-                near = bool(np.all(slo - m <= hi) and np.all(lo <= shi + m))
-            if near:
-                screws.append([f.name, fps.fasteners.get(f.name), fps.part(f.name)])
-        pairs = []
-        for attr in ("joins", "allowed_overlaps", "min_clearances"):
-            for k, v in (getattr(design, attr, {}) or {}).items():
-                if set(k) & (nameset | {s_[0] for s_ in screws}):
-                    pairs.append([attr, sorted(k), value_fp(v)])
-        fields = fps.fields_digest(("manufacturing", "gravity", "tnut_style"))
-        extra = digest("fea-neighbours", sorted(screws, key=str), sorted(pairs, key=str))
-        if any(is_unstable(x[1] or "") or is_unstable(x[2]) for x in screws):
-            return None
-    cfp = value_fp(case) if case is not None else "none"
-    for v in (parts, fields, cfp):
-        if is_unstable(v):
-            return None
-    return digest(FP_VERSION, "fea-case", kind, getattr(case, "name", kind), parts, fields, extra, cfp)
-
-
-def fea_case(design, r, kind: str, case, names, compute):
-    """Run (or reuse) one FEA case. `compute(result)` adds its findings to `result` and returns its metrics."""
+def _cached_unit(kind: str, slot, design, r, compute, label: str, stat: str, capture=None, restore=None, table=None):
+    """Run or reuse one unit of work (an FEA case, one part's checks) inside a verifier; see fea_case / part_cached."""
     s = CURRENT
-    if s is None:
-        return compute(r)
-    try:
-        key = _fea_case_key(s, design, kind, case, names)
-    except Exception:
-        key = None
-    label = getattr(case, "name", kind)
-    hit = s.cache.get("fea_cases", key)
-    if hit is not None and not coderec.still_valid(hit.get("manifest"))[0]:
-        hit = None
+    entries = None
+    if table is not None and slot is not None:
+        t = s.table(table)
+        s.mark_used(table, slot)
+        entries = (t.get(slot) or {}).get("entries", []) if s.cache.read else []
+    hit, _ = s.find(kind, slot, entries) if slot is not None else (None, "")
     if hit is not None:
-        coderec.push_manifest(hit.get("manifest"))
         r.findings.extend(hit["findings"])
-        s.stat("fea_cases_reused")
-        s.decisions.setdefault("fea", {}).setdefault("cases_reused", {})[label] = hit.get("run")
-        return hit["metrics"]
+        if restore is not None:
+            restore(hit.get("side"))
+        coderec.push_manifest(hit.get("manifest"))
+        recorder.push(hit.get("deps"))
+        s.stat(f"{stat}_reused")
+        return hit, True
     from ..report import VerifierResult
 
     sub = VerifierResult(r.verifier)
     t0 = time.time()
-    with coderec.Recording() as rec:
-        m = compute(sub)
+    with recorder.tracking(design) as reads, coderec.Recording() as rec:
+        v = compute(sub)
     r.findings.extend(sub.findings)
-    s.stat("fea_cases_run")
-    s.decisions.setdefault("fea", {}).setdefault("cases_run", {})[label] = round(time.time() - t0, 1)
-    if not any(f.code in ("fea_crashed",) for f in sub.findings):
-        s.cache.put("fea_cases", key, {"case": label, "kind": kind, "findings": list(sub.findings), "metrics": m,
-                                       "run": dict(s.run), "manifest": rec.manifest()})
-    return m
+    side = capture() if capture is not None else None
+    s.stat(f"{stat}_run")
+    entry = {"label": label, "findings": list(sub.findings), "value": v, "side": side, "deps": s.deps_of(reads),
+             "manifest": rec.manifest(), "seconds": round(time.time() - t0, 2)}
+    if not any(f.code in ("fea_crashed",) for f in sub.findings) and slot is not None and entry["deps"] is not None \
+            and s.cache.write and not (entry["manifest"] or {}).get("unknown"):
+        if table is not None:
+            old = (s.table(table).get(slot) or {}).get("entries", []) if s.cache.read else []
+            s.table_put(table, slot, {"entries": ([{**entry, "run": dict(s.run)}] + old)[:KEEP]})
+        else:
+            s.put(kind, slot, entry)
+    return entry, False
+
+
+def fea_case(design, r, kind: str, case, names, compute):
+    """Run (or reuse) one FEA case. `compute(result)` adds its findings to `result` and returns its metrics.
+    Keyed on the case itself; reused while everything it read (its parts, the screws its stacks looked at, joins,
+    print settings ...) is unchanged."""
+    s = CURRENT
+    if s is None:
+        return compute(r)
+    cfp = value_fp(case) if case is not None else "none"
+    label = getattr(case, "name", kind)
+    slot = None if is_unstable(cfp) else digest(FP_VERSION, "fea-case", kind, label, cfp)
+    entry, reused = _cached_unit("fea_cases", slot, design, r, compute, label, "fea_cases")
+    dec = s.decisions.setdefault("fea", {})
+    if reused:
+        dec.setdefault("cases_reused", {})[label] = entry.get("run")
+    else:
+        dec.setdefault("cases_run", {})[label] = entry["seconds"]
+    return entry["value"]
+
+
+def part_cached(r, part, design, compute, capture=None, restore=None):
+    """One part's checks inside a verifier, reused while everything they read is unchanged (the part, and whatever
+    else they looked at: screws threading into it, the design's settings ...).
+
+    compute(result) adds the part's findings to `result` and returns its value (a metrics row); capture() returns the
+    side state the part's run left (module-level tables a verifier aggregates afterwards) and restore(state) puts it
+    back on reuse. Outside an incremental run it just runs."""
+    s = CURRENT
+    if s is None or s.verifier is None:
+        return compute(r)
+    slot = digest(FP_VERSION, "part", s.verifier, part.name)
+    entry, _ = _cached_unit(None, slot, design, r, compute, part.name, "parts", capture, restore,
+                            table=f"{s.verifier}.parts")
+    return entry["value"]
 
 
 def memo(table: str, key_parts, compute, code: tuple = ()):
@@ -223,51 +311,12 @@ def memo(table: str, key_parts, compute, code: tuple = ()):
         key_parts = key_parts()
     k = digest(FP_VERSION, kernel_hash(code), table, key_parts)
     s.mark_used(table, k)
-    if k in t:
+    if k in t:      # (a full-tier run starts from an empty table: then only identical calls within the run are shared)
         s.stat(f"{short}_reused")
         return t[k]
     v = compute()
-    t[k] = v
+    s.table_put(table, k, v)
     s.stat(f"{short}_computed")
-    return v
-
-
-def part_cached(r, part, context, compute, capture=None, restore=None):
-    """One part's checks inside a verifier, reused while the part and its context are unchanged.
-
-    compute(result) adds the part's findings to `result` and returns its value (a metrics row); capture() returns the
-    side state the part's run left (module-level tables a verifier aggregates afterwards) and restore(state) puts it
-    back on reuse. `context`: everything besides the part's own fingerprint that the checks read (design settings,
-    the screws threading into it ...), as a value fingerprintable by value_fp. Each entry also holds the manifest of
-    the code and data that ran for it. Outside an incremental run (or with an unstable context) it just runs."""
-    s = CURRENT
-    if s is None or s.verifier is None:
-        return compute(r)
-    ctx = value_fp(context)
-    pfp = s.fps.part(part.name)
-    if is_unstable(ctx) or is_unstable(pfp):
-        return compute(r)
-    t = s.table(f"{s.verifier}.parts")
-    k = digest(FP_VERSION, "part", s.verifier, part.name, pfp, ctx)
-    s.mark_used(f"{s.verifier}.parts", k)
-    hit = t.get(k)
-    if hit is not None and coderec.still_valid(hit.get("manifest"))[0]:
-        r.findings.extend(hit["findings"])
-        if restore is not None:
-            restore(hit.get("side"))
-        coderec.push_manifest(hit.get("manifest"))
-        s.stat("parts_reused")
-        return hit["value"]
-    from ..report import VerifierResult
-
-    sub = VerifierResult(r.verifier)
-    with coderec.Recording() as rec:
-        v = compute(sub)
-    r.findings.extend(sub.findings)
-    side = capture() if capture is not None else None
-    s.stat("parts_checked")
-    if s.cache.write:
-        t[k] = {"findings": list(sub.findings), "value": v, "side": side, "manifest": rec.manifest()}
     return v
 
 
@@ -289,4 +338,4 @@ def intrinsic_key(shape) -> str:
     return intrinsic_fp(shape)
 
 
-__all__ = ["Session", "TIERS", "QUICK", "DEPS", "active", "fea_case", "memo", "shape_key"]
+__all__ = ["Session", "TIERS", "QUICK", "DEPS", "active", "fea_case", "part_cached", "memo", "shape_key", "intrinsic_key"]

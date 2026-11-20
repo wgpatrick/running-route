@@ -2,21 +2,19 @@
 
 Layout:
   verify_cache/manifest.json            fingerprints of the last run that wrote the cache (what changed since)
-  verify_cache/results/<verifier>/<key>.pkl
-                                        one verifier's findings, metrics and the run it came from
-  verify_cache/fea_cases/<key>.pkl      one FEA case (load / modal / assembly / thermal / bed support)
+  verify_cache/results/<verifier>/<slot>.pkl
+                                        one verifier's findings, metrics, dependencies, manifest and source run
+  verify_cache/fea_cases/<slot>.pkl     one FEA case (load / modal / assembly / thermal / bed support)
+  verify_cache/<verifier>.parts.pkl     per-part results inside a verifier (manufacture: each custom part's DFM)
   verify_cache/<verifier>.<table>.pkl   memoised geometric kernels, keyed by the shapes' fingerprints and the kernel's
                                         parameters: interference.pairs (overlap volume and place, gap of each pair),
                                         assemblability.overlap_memo (distances, overlaps along removal paths and of the
                                         driver), motion.overlap (overlap at each relative pose)
 
-Every key is a digest of the inputs that decide the result: the fingerprints of the parts and design fields it reads
-and the metrics of earlier verifiers it reads. Each entry also holds the manifest of the code and data that produced it
-(coderec: the mechloop files that ran, what they import, the data files they read, library versions); an entry is
-used only while that manifest still matches the files on disk. Memo tables are keyed on the kernel's own code
-(geom.py, the library versions). A key that cannot be formed (an input with no stable fingerprint) is None: always re-run.
-Entries are written atomically (temp file + rename), so a killed run leaves no half-written entry; an entry that
-fails to load is treated as a miss.
+Every stored result is found by its slot (the verifier, FEA case or part it belongs to, plus the earlier metrics it
+reads) and holds up to a few entries, each with its recorded dependencies (fingerprints of what it read from the
+design) and the manifest of the code and data that produced it; the session uses the newest entry whose dependencies
+and manifest are unchanged. Memo tables are keyed on the shapes' fingerprints and the kernel's own code.
 """
 from __future__ import annotations
 
@@ -28,8 +26,6 @@ import tempfile
 import time
 from pathlib import Path
 
-from .deps import ALL_FIELDS, DEPS
-from .fingerprint import FP_VERSION, Fingerprints, digest, is_unstable, value_fp
 
 KEEP_PER_VERIFIER = 4       # newest entries kept per verifier / per case directory
 
@@ -116,23 +112,3 @@ class ResultCache:
     def save_manifest(self, m: dict) -> None:
         if self.write:
             _atomic_write(self.root / "manifest.json", json.dumps(m, indent=0, sort_keys=True).encode())
-
-
-def verifier_key(name: str, fps: Fingerprints, design, upstream_metrics: dict | None = None) -> tuple[str | None, str]:
-    """(key, why there is none). The key of one verifier's whole result on this design."""
-    d = DEPS.get(name)
-    if d is None:
-        return None, "no dependency declaration: always re-run"
-    if d.granularity == "always":
-        return None, "always re-run (cheap; reads the results of the others)"
-    parts = fps.parts_digest() if d.parts == "all" else "no-parts"
-    # "all fields" is the set fingerprinted at the start of the run (not whatever the design holds by now)
-    fields = list(fps.fields) if d.fields == ALL_FIELDS else list(d.fields)
-    fd = fps.fields_digest(fields)
-    up = value_fp({u: (upstream_metrics or {}).get(u) for u in d.upstream}) if d.upstream else "no-upstream"
-    for what, v in (("parts", parts), ("fields", fd), ("upstream metrics", up)):
-        if is_unstable(v):
-            return None, f"{what} have no stable fingerprint ({v[9:80]}): re-run"
-    # the code is not in the key: each stored result carries the manifest of the code and data it ran (coderec), and
-    # is reused only while all of it is unchanged
-    return digest(FP_VERSION, "verifier", name, parts, fd, up), ""

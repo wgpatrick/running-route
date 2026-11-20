@@ -308,8 +308,11 @@ def part_fp(c) -> dict:
     # identical instances: same shape (placement aside), material, catalogue entry and ratings; the meta is left out
     # (it holds each instance's placement), so a check that reads meta must not be shared on this alone
     inst = digest("instance", intrinsic_fp(c.shape), c.material, c.sku, c.cots, value_fp(c.ratings), c.process or "")
+    # one fingerprint per attribute, for results that read only some of them (mechloop.incremental.recorder)
+    a = {k: value_fp(v) for k, v in vars(c).items() if not k.startswith("_") and k not in ("shape", "detail", "meta")}
+    a.update({"shape": geo, "detail": det, "meta": meta})
     return {"fp": whole if whole != "unstable" else f"unstable:{c.name}", "shape": geo, "detail": det,
-            "meta": meta, "attrs": other, "body": c.body, "instance": inst}
+            "meta": meta, "attrs": other, "body": c.body, "instance": inst, "a": a}
 
 
 def design_field_names(design) -> list[str]:
@@ -333,6 +336,18 @@ class Fingerprints:
     def part(self, name: str) -> str:
         p = self.parts.get(name)
         return p["fp"] if p else f"missing:{name}"
+
+    def attr(self, name: str, attr: str) -> str:
+        """Fingerprint of one attribute of one part ("*" = the whole part)."""
+        p = self.parts.get(name)
+        if p is None:
+            return f"missing:{name}"
+        if attr == "*":
+            return p["fp"]
+        return p["a"].get(attr, "absent")
+
+    def parts_list(self) -> str:
+        return digest("parts-list", list(self.parts))
 
     def parts_digest(self, names=None) -> str:
         names = sorted(self.parts) if names is None else sorted(set(names))

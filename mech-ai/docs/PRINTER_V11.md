@@ -13,15 +13,16 @@ comment). It carries out the changes the owner approved on 2026-11-19 (A to F be
 
 | Question | Answer |
 |---|---|
-| X travel | **191.6 mm** (194.6 mechanical) on a stock HIWIN MGNR12R 250 mm, 5 mm of rail beyond the block at each end. v10.1: 229.6 on a rail cut to 288. What limits it: the rail. The toolhead is now 21 mm (left) and 15 mm (right) from the top side rails at the ends. |
+| X travel | **191.6 mm** (194.6 mechanical) on a stock HIWIN MGNR12R 250 mm, 5 mm of rail beyond the block at each end. v10.1: 229.6 on a rail cut to 288. What limits it: the rail. Below the top side rails' top the toolhead is 21.0 mm (left, the Roto) and 19.7 mm (right, the duct) from them at the ends of the mechanical travel; the Delta blower passes 10.5 mm above the right rail. The blower swap did not change X travel. |
 | Y travel | 214.5 mm, unchanged (front: Y idlers and the envelope; rear: the toolhead and the top back rail). |
 | Z travel | 180 mm + 1.65 mm over-travel, unchanged. |
 | Print area | **191.6 x 214.5 mm, 411 cm2** (v10.1: 229.6 x 214.5, 492 cm2). |
 | Print sheet | **220 x 220 mm textured PEI on 0.4 mm spring steel** with a magnetic base (a third-party stock size; Creality sells 235 x 235 only). The print area is 84.9 % of it. The magnetic base must be bought rated 120 degC continuous. |
 | Bed plate | **MIC-6 232 x 232 x 6.35 mm** (v10.1: 241 x 241 x 12.7). 6.35 mm is the thinnest stock MIC-6. |
-| Bed limits | (a) out of flat as installed: **{{FLAT_A}}** of 0.3 mm; (b) change after probing: **{{FLAT_B}}** of 0.1 mm; (c) 1 kg at the worst corner: **{{FLAT_C}}** of 0.2 mm. **(b) binds**; (a) passes only on the owner's 0.13 mm figure for the plate as bought (see "The flatness figure"). |
-| Part cooling | One **Delta BFB0524HH** 5015 24 V radial blower (two ball bearings; owner's change from the GDSTIME GDB4010) behind the Roto, outlet down into a short printed duct; a 14 x 3 mm outlet 24 mm from the nozzle on the rear-right diagonal aims the jet 14 degrees down at 0.5 mm under the tip. **Estimated** delivered flow **{{FLOW}}** (GDB4010 on its 10 x 3 outlet: 0.62 CFM). |
-| Probe | **OMRON E2B-M12KS04-WP-C1 2M** (M12 shielded, 4 mm, NPN NO; owner's change from the E2E-X5ME1), OMRON's STEP; on a one-bend L of 2.286 mm 5052 under the Roto's two screws, clamped by its two nuts 15 mm behind its face. Metal in its zone (2.4 mm proud, 18 mm round the head): none (checked). Probed {{PROBED_SHORT}}. Temperature (estimate) {{PTEMP_SHORT}} against its 70 degC rating. |
+| Bed limits | (a) out of flat as installed: **0.131 mm** of 0.3 mm; (b) change after probing: **0.101 mm: FAILS** of 0.1 mm; (c) 1 kg at the worst corner: **0.035 mm** of 0.2 mm. **(b) fails by 0.001 mm** (it was 0.090 before the nut plates were enlarged for SendCutSend's web rule; it is a probed-cold bound: see B); (a) passes only on the owner's 0.13 mm figure for the plate as bought (see "The flatness figure"). |
+| Part cooling | One **Delta BFB0524HH** 5015 24 V radial blower (two ball bearings; owner's change from the GDSTIME GDB4010) behind the Roto, outlet down into a short printed duct; a 14 x 3 mm outlet 24 mm from the nozzle on the rear-right diagonal aims the jet 14 degrees down at 0.5 mm under the tip. **Estimated** delivered flow **1.19 CFM (33.6 l/min)** (GDB4010 on its 10 x 3 outlet: 0.62 CFM). |
+| Probe | **OMRON E2B-M12KS04-WP-C1 2M** (M12 shielded, 4 mm, NPN NO; owner's change from the E2E-X5ME1), OMRON's STEP; on a one-bend L of 2.286 mm 5052 under the Roto's two screws, clamped by its two nuts 15 mm behind its face. Metal in its zone (2.4 mm proud, 18 mm round the head): none (checked). Probed 191.6 x 170.75 mm (80 % of the print area). Temperature (estimate) 45 degC (55 degC hot case) against its 70 degC rating. |
+| Supplier rules (new check) | All 30 sheet parts go to SendCutSend: **0 requirement failures, 56 recommendation warnings** (mostly hole-to-edge distance on the thick plates). Not assigned, for comparison: Protolabs would refuse the nut plates and keepers (6 parts, one rule each); OSH Cut, Xometry, Fictiv and Hubs pass all 30. Section G. |
 | Bent parts | **2** (the X belt bracket, kept bent by the owner, and the probe L). v10.1: 8. |
 | Z screws | Used at **330 mm as sold** (328 above the face). Front two inboard of the top side rails at x +/-144.5, rear one outboard of the back wall at y 202.5; motors on posts of two stacked stock spacers. Envelope unchanged. |
 | POM nuts | The anti-backlash nuts the motors ship with, drawn as a **labelled stand-in** (no dimensions published), flange up under open-slotted nut plates, barrel hanging below, captive under open-slotted keepers. |
@@ -66,7 +67,7 @@ second half-nut. Scaled to the 42 mm motor: flange 23 x 23 x 6, barrel 12.7 x 26
 stand-in (`leadscrew_nut_pom_ab4`, SKU NUT-T8x2-POM-AB-17E19S1684AB4). Seating: the carrier's weight still rests on the flange,
 which floats +/-2.8 mm under the nut plate and is held 0.1 mm under it by the keeper; the pin is now in a corner hole. The nut
 has no backlash of its own (assumed); the bed-support check now takes the keeper's 0.1 mm as the reverse gap (declared), and
-the rocking allowance is the keeper's play over the 23 mm flange. Results: {{NUTS}}.
+the rocking allowance is the keeper's play over the 23 mm flange. Results: the nuts are captive; with the screws at opposite lead limits (LSC-015) the height error is 0.142 mm, the least nut load margin 8.0 N, and the 1 kg print sags the supports 0.0009 mm.
 
 **T-slot extrusion** is the one purchased part bought cut: Misumi HFS5-2020-<length>, cut to order by Misumi (recorded on the
 catalogue part, its BOM text and `misumi_hfs5_2020.json`).
@@ -85,9 +86,9 @@ is 192 x 205 mm between them, 95.6 % of the print area.
 
 | Limit | What is computed | Result | Limit |
 |---|---|---|---|
-| (a) out of flat as installed | plate flatness as bought (0.127 mm, the owner's figure) + sag under the bed's own weight on its three countersinks (FEA load case `bed_self_weight_sag`, plate alone, {{SELF_N}}) | {{FLAT_A_DETAIL}} | 0.3 |
-| (b) change after probing | the whole heat growth from cold to 80 degC (bed 60 K above the frame, carrier 15 K: the thermal case), as if the bed were probed before it grew at all: the larger of the nozzle-gap change and the plate's bow | {{FLAT_B_DETAIL}} | 0.1 |
-| (c) 1 kg at the worst corner | the bed-support FEA, screw-only bound | {{FLAT_C_DETAIL}} | 0.2 |
+| (a) out of flat as installed | plate flatness as bought (0.127 mm, the owner's figure) + sag under the bed's own weight on its three countersinks (FEA load case `bed_self_weight_sag`, plate alone, 14.7 N spread over its top face) | 0.127 + 0.0042 = **0.131 mm** (pass) | 0.3 |
+| (b) change after probing | the whole heat growth from cold to 80 degC (bed 60 K above the frame, carrier 15 K: the thermal case), as if the bed were probed before it grew at all: the larger of the nozzle-gap change and the plate's bow | nozzle-gap change **-0.101 mm**, plate bow 0.030 mm: **fails by 0.001 mm** (20:03 run, before the nut plates grew: -0.090) | 0.1 |
+| (c) 1 kg at the worst corner | the bed-support FEA, screw-only bound | **0.035 mm** at corner -x +y (bonded 0.034; guides and nuts 0.001) (pass) | 0.2 |
 
 **(b) fails, by 0.001 mm.** On the final code the nozzle-gap change in the thermal case is **-0.101 mm** against the 0.1 mm
 limit (the FEA verifier's `thermal_gap_change` and the (b) requirement, both errors). At 20:03 on 2026-11-19, before the nut
@@ -104,12 +105,12 @@ after its bed has soaked at temperature sees only the carrier's slower warming. 
 stiffen the thermal path: shorter stud stacks under the plate (they are at 30 K), or a nut plate whose seat sits closer to
 the carrier member it hangs from, then re-run the thermal case; (3) the owner relaxes (b) to, say, 0.12 mm. Not changed in
 v11: the limit is the owner's. The levelling points, the springs'
-preload margin ({{PRELOAD}}) and the tilt allowance ({{TILT}}) are kept and pass.
+preload margin (factor 2.82 at the weak end of the +/-1.5 mm range) and the tilt allowance (one Z motor may stand 1.14 mm out of the plane of the other two, 8.0 times the 0.142 mm routine height error) are kept and pass.
 
 **The flatness figure.** The brief gives "MIC-6 ~0.13 mm per McMaster listing; check". McMaster's page could not be read from
 here. The maker's brochure in the repository (Alcoa MIC 6, `cast_tooling_plate.json`) gives **0.381 mm (0.015 in) for 6.35 to
 15.9 mm plate** and 0.127 mm for 19 mm and thicker; 0.127 mm is also the thickness tolerance. On the maker's figure (a) is
-exceeded by the plate alone ({{FLAT_A_MAKER}}) and no MIC-6 plate under 19 mm would pass. The design takes 0.127 mm as a
+exceeded by the plate alone (0.385 mm) and no MIC-6 plate under 19 mm would pass. The design takes 0.127 mm as a
 receiving-inspection limit on the cut 232 mm piece (a whole-plate figure says little about a 232 mm piece, but nothing
 guarantees it either). Question 1.
 
@@ -133,11 +134,11 @@ washer on the plastic, through the duct's printed cradle, washer and nut behind,
 right side, a chamber under the Roto with a riser behind it up to the blower's outlet (deeper above z 406 for the 15 mm
 blower), a cradle behind the blower for its two bolts, and a front-left extension carrying the outlet tube. The outlet is
 **14 x 3 mm** (42 mm2; 10 x 3 for the GDB4010) at 24 mm out on the rear-right diagonal, pointing **14.0 degrees down** at a
-point 0.5 mm under the nozzle tip. Measured on the model: {{COOL_GEOM}}. E3D's silicone sock is on the BOM.
+point 0.5 mm under the nozzle tip. Measured on the model: the duct is 5.15 mm from the heater block (owner: 4 to 5) and its lowest face 2.88 mm above the tip (owner: >= 2.5); the jet's axis reaches the nozzle's axis 0.5 mm under the tip (off by 0.00 mm) and passes 0.41 mm under the heater core's edge. E3D's silicone sock is on the BOM.
 
 **Flow estimate** (not measured): the blower's P-Q curve (read by eye from Delta's chart at 24 V, spec p.5) against a duct
 loss of K = 1.85 at the outlet velocity (contraction 0.40, exit 1.00, tube friction 0.25, two 45-degree turns at chamber
-velocity 0.20: handbook figures): **{{FLOW}}** at {{VEL}} through the outlet, {{PA}} Pa. With K 1.4 to 2.5 it is 1.03 to
+velocity 0.20: handbook figures): **1.19 CFM (33.6 l/min)** at 13.3 m/s through the outlet, 197 Pa. With K 1.4 to 2.5 it is 1.03 to
 1.35 CFM. On the same method the GDB4010 on its 10 x 3 mm outlet gave 0.62 CFM at 9.8 m/s (107 Pa), and v10.1's axial
 fan about 0.8 CFM at about 5 m/s aimed at the heater: the Delta gives about twice the GDB4010's air at a third more speed,
 aimed at the bead. An airflow model is not part of the checks.
@@ -148,7 +149,7 @@ right top rail at the end of the mechanical travel (GDB4010 layout: 15.2 mm); th
 Delta is wider (52.6 mm) and stands higher: at the right end of the travel it and the duct's cradle reach 8.9 mm out over the
 right top rail, 10.5 mm above its top, where nothing on the frame reaches in (the motion check sweeps it: no collision). The
 X-travel requirement now measures only what is below the rails' top (it took each part's whole bounding box before, which
-the taller duct made meaningless). Moving mass on the X block: **{{XMASS}}** (GDB4010: 0.379 kg) against the 0.40 kg target:
+the taller duct made meaningless). Moving mass on the X block: **0.399 kg** (GDB4010: 0.379 kg) against the 0.40 kg target:
 it passes with 2 g to spare.
 
 **Probe.** OMRON E2B-M12KS04-WP-C1 2M: M12 x 1, **shielded**, double sensing distance **4 mm** (setting 0 to 3.2 mm), NPN
@@ -165,10 +166,10 @@ clamped 15 mm behind its face by its two nuts in the bracket's 12.5 mm hole.
   head clear, facing metal 12 mm away. Metal on the toolhead in those zones: **none** (requirement and the subsystems
   verifier). The 15 mm clamp height was kept from the unshielded E2E (it needed 15 mm and a 40 mm zone); the shielded sensor
   could be clamped much lower (a stiffer, shorter holder): question 7.
-- **Trigger height:** {{TRIG}} (E2E: 2.00 to 4.00 mm). Z over-travel (1.65 mm) still ends short of the face (2.0 mm).
-- **Probe coverage:** {{PROBED}}. The front 34.5 mm strip is the probe's offset behind the nozzle; the mesh extrapolates
+- **Trigger height:** the nozzle is 1.20 to 2.80 mm above the bed when the probe switches, over the unit spread and temperature drift (4 mm nominal, minus the face's 2.0 mm above the tip) (E2E: 2.00 to 4.00 mm). Z over-travel (1.65 mm) still ends short of the face (2.0 mm).
+- **Probe coverage:** 191.6 x 170.75 mm of the 191.6 x 214.5 mm print area (80 %); unprobed strips: front 34.5 mm, rear 9.25 mm, sides none (unchanged from the E2E: same position). The front 34.5 mm strip is the probe's offset behind the nozzle; the mesh extrapolates
   there (`bed_mesh_does_not_cover_print_area`, a warning, as in v10.1).
-- **Temperature** (owner: against the 70 degC rating): {{PTEMP}}. A lumped steady estimate: radiation from the 80 degC bed to
+- **Temperature** (owner: against the 70 degC rating): about **45 degC** at its bracket in the nominal case (air over the bed 55 degC, bracket 45, sock 150) and **55 degC** in a hot case (air 70, bracket 55, sock 180, weaker convection), against the **70 degC** rating: passes, with 15 degC to spare in the hot case. A lumped steady estimate: radiation from the 80 degC bed to
   the face 2.1 mm above it, convection from the warm air over the bed to the 15 mm of barrel below the bracket, radiation
   from the silicone sock seen at 34.5 mm, conduction up the shell to the bracket. The air and bracket temperatures are
   assumed, not computed; there is no enclosure. 55 degC is where OMRON's +/-10 % drift figure stops (+/-15 % to 70).
@@ -197,14 +198,14 @@ No off-the-shelf tensioner fits (consumer units take 6 mm belt; this machine use
 **Y motor shaft load (v10.1: 1.01 of its allowance).** The allowance at the belt plane is 21 N x 20 mm / arm; the belt pulls
 2 x 18.7 N. The arm is set by the idler's stack (idler plate + two washers + half the idler), not by the motor plate. The Y idler
 plates are now 304 1.52 mm (SendCutSend .060; v10.1 1.88): the belt plane, the Y pulleys and the Y plates' belt slots move
-0.36 mm towards the motors (arm 10.97 mm) and the load is {{SHAFT}} of the allowance: the warning is gone. The Y motor plates
+0.36 mm towards the motors (arm 10.97 mm) and the load is 0.98 of the allowance: the warning is gone. The Y motor plates
 keep 1.88 mm as the owner asked; the belt plane does move, by 0.36 mm, to fix the shaft load.
 
 ### E. Fasteners
 
 | Decision | Done |
 |---|---|
-| Corner-bracket screws: flanged button heads | ISO 7380-2 M5 x 8 on all {{NBRK}} bracket legs (catalogue `bhcs_flanged`, collar 11.8, head 2.75, from distributors' listings: secondary). The collar covers the 6 mm slot; it fits between the casting's webs (12 mm apart) with 0.1 mm a side. v10.1's `screw_head_seat_too_small` warning is gone |
+| Corner-bracket screws: flanged button heads | ISO 7380-2 M5 x 8 on all 66 (every bracket leg on a slot; 2 more, M5 x 10, through the Y motor plates) bracket legs (catalogue `bhcs_flanged`, collar 11.8, head 2.75, from distributors' listings: secondary). The collar covers the 6 mm slot; it fits between the casting's webs (12 mm apart) with 0.1 mm a side. v10.1's `screw_head_seat_too_small` warning is gone |
 | 26 M5 x 10 with two washers -> M5 x 8 with one | done on the 20 that remain (deck 12, X motor and idler plates 4, tray 2, inlet panel 2; the X and Y tension anchors' 6 are gone). M5 x 8 with one washer ends 3.7 mm into the slot with 0.50 d of thread: they pass and are listed in the marginal-thread warning |
 | Four beam bolts at 0.59 d | M5 x 12 with a second washer: through the whole T-nut |
 | M2.5 nuts | thread locker (as v10.1 drew it) |
@@ -281,7 +282,22 @@ From the two full verify reports and the two scorecards, each on its design's fi
 
 ## Purchased-part CAD: three states
 
-{{STATES}}
+Counted on the final design (`vendor_cad.model_state` of each purchased part's display model): 763 purchased parts and 34
+made parts (797 in all; v10.1: 825, 37 made).
+
+| State | Parts | What |
+|---|---|---|
+| Supplier CAD | **380** | 345 fasteners (McMaster: cap screws, washers, nuts, nylocs) and 35 others: the 20 extrusions (Misumi's section), the Delta BFB0524HH blower and the **OMRON E2B probe** (both new in v11), the three KIPP thumb nuts, the three Century springs, the Schurter inlet, the X and Y motors, Roto, Revo and power supply |
+| Faithful re-make from a named supplier drawing | 171 | the 152 T-nuts (Misumi HNTAJ5) and the 19 Accu large washers |
+| Stand-in: generated to a standard | 103 | the 68 flanged button heads (ISO 7380-2; McMaster's 92137A412 / A414 STEPs are now staged, not yet adopted), M3 x 25, M5 x 16, M5 x 65, M4 x 6, M5 x 6 and M2.5 x 20 screws, the DIN 934 M5 nuts, the toothed washer, the probe's two nuts |
+| Stand-in: community CAD | 50 | the 36 corner brackets, the guide rails and blocks, the two endstop boards |
+| Stand-in: assumed dimensions or simulation solid | 59 | spacers (35), the three POM nuts, lead-screw motors and screws, the two PEM S-M3-0, pulleys and idlers, the sheet, magnetic base, heater, thermal fuse, Octopus, Pi and relay |
+
+New supplier CAD in v11 (both owner changes): Delta's own STEP of the BFB0524HH, and OMRON's own STEP of the
+E2B-M12KS04-WP-C1, adopted on 2026-11-20 when it arrived (it was drawn from the data sheet until then). Staged but **not
+adopted** in v11 (left for v11.1): McMaster's STEPs for the M4 x 6 and M5 x 6 cap screws, the flanged button heads M5 x 8 / x 10,
+the internal-tooth lock washer and the large washers (`vendor_cad/staging/instinct_REQ-001/`), and Misumi's HNTAJ5 and
+HBLFSNF5 files.
 
 ## Judgement calls
 

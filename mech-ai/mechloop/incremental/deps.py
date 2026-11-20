@@ -1,26 +1,21 @@
-"""What each verifier reads: the declaration that maps a change set to the checks to re-run.
+"""What each verifier reads: its declared inputs, granularity and tier.
 
-Every verifier the runner knows (runner.ORDER and "requirements") must have an entry here; a verifier without one is
-always re-run (tests/test_incremental.py asserts there is none). An entry says:
-
-- module: where its code lives (its code hash, codehash.code_hash, is part of every cache key),
-- parts: "all" (any part's fingerprint: shape, placement, material, body, ratings, meta ...) or "none",
-- fields: the Design fields it reads besides the parts ("components" is the parts and is never listed),
-- upstream: earlier verifiers whose metrics it reads in the same run (their metrics are hashed into its key),
-- granularity: how finely results are reused,
-    "verifier": the whole result is reused when nothing it reads changed,
-    "per_case": FEA: each load / modal / assembly / thermal case is reused on its own, keyed by the parts it names
-                (+ the screws that cross them, the joins among them, the case itself); the bed-support study reads
-                the whole machine,
-    "pairwise": interference: per-pair kernel results (bbox test, overlap volume, gap) are reused for pairs of
-                unchanged parts; pairs are found through a spatial index (sorted bbox sweep), and the whole-design
-                logic (floating parts, fastening, threads, T-slot screws) re-runs on them,
+Reuse is decided by what a result actually read (recorder.py: Design fields, the parts list, each part attribute, at
+run time) and the code that ran (coderec.py), not by this table. The table still matters:
+- every verifier the runner knows (runner.ORDER and "requirements") must have an entry; a verifier without one is
+  always re-run (tests/test_incremental.py asserts there is none),
+- `upstream`: earlier verifiers whose metrics it reads in the same run (their metrics are part of its key: printing
+  reads FEA's stiffness),
+- `granularity`: how finely results are reused --
+    "verifier": the whole result,
+    "per_case": FEA: each load / modal / assembly / thermal case and the bed-support study on its own,
+    "pairwise": interference: per-pair kernel results (overlap volume, gap) of unchanged pairs; the whole-design logic
+                re-runs on them,
     "always":   cheap and reads the results of the others: re-runs every time,
-- quick: part of `--tier quick`.
-
-The declared fields are checked at run time: while a verifier runs, reads of Design fields are recorded, and a result
-that read a field missing from its declaration is not stored in the cache (and the report says so), so a wrong
-declaration costs speed, never correctness.
+  (manufacture also reuses each custom part's DFM checks on its own; geometry, motion and assemblability memoise
+  their geometric kernels per pair of part fingerprints),
+- `quick`: part of `--tier quick`,
+- `fields`, `module`, `note`: documentation of what it is expected to read and where its code lives.
 """
 from __future__ import annotations
 

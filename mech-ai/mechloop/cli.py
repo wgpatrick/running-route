@@ -38,6 +38,14 @@ def main(argv=None) -> int:
                         "with release = True always gets it). Default (no --tier): a full verify, as before")
     v.add_argument("--no-cache", action="store_true",
                    help="neither read nor write the result cache (out/<design>/verify_cache/)")
+    v.add_argument("--jobs", type=int, default=None,
+                   help="parallel processes for verifiers and FEA cases (default for --tier runs: the CPU count up to 4; "
+                        "a plain verify is serial). Memory-aware: at most 2 heavy CalculiX cases at once, within --memory-budget")
+    v.add_argument("--serial", action="store_true", help="run everything in this process, one after the other (= --jobs 1)")
+    v.add_argument("--memory-budget", type=int, default=None, metavar="MB",
+                   help="memory the parallel jobs may add, MB (default 12500 of the 15 GB container)")
+    v.add_argument("--render", action="store_true", help="render views / motion even in the quick and affected tiers")
+    v.add_argument("--step", action="store_true", help="export the STEP model even in the quick and affected tiers")
     h = sub.add_parser("history", help="show the loop history of a design")
     h.add_argument("name")
     h.add_argument("--out", default="out", help="ROOT folder the verify runs wrote to (reads <out>/<name>/history.jsonl)")
@@ -87,7 +95,9 @@ def main(argv=None) -> int:
         from .verifiers import electrical as _ve
 
         _ve.OUT_ROOT = a.out      # the electrical verifier writes printer.cfg and the wiring tables under the same root
-        rep = run(a.design, a.out, only, render=not a.no_render, tier=a.tier, use_cache=not a.no_cache)
+        rep = run(a.design, a.out, only, render=False if a.no_render else (True if a.render else None), tier=a.tier,
+                  use_cache=not a.no_cache, jobs=1 if a.serial else a.jobs, step=True if a.step else None,
+                  memory_budget_mb=a.memory_budget)
         _warn_nested_out(a.out, rep.design)
         print(rep.to_json(max_findings=a.max_findings))
         return 0 if rep.ok else 1

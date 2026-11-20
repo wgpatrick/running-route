@@ -45,6 +45,7 @@ class Report:
     partial: bool = False  # only a subset of verifiers was requested
     provenance: dict = field(default_factory=dict)  # what produced this report: hashes of the mechloop source and of the design file
     incremental: dict = field(default_factory=dict)  # tier run, what was reused and from which run (mechloop.incremental)
+    profile: dict = field(default_factory=dict)  # wall time and peak memory per verifier, FEA case and step (load, render ...)
 
     @property
     def ok(self) -> bool:
@@ -62,6 +63,7 @@ class Report:
             **({"provenance": self.provenance} if self.provenance else {}),
             **({"partial": "only some verifiers were run; this is not a full pass"} if self.partial else {}),
             **({"incremental": self.incremental} if self.incremental else {}),
+            **({"profile": self.profile} if self.profile else {}),
             "summary": {
                 r.verifier: (
                     "skipped: " + r.skipped
@@ -108,14 +110,15 @@ def without_timings(report: dict) -> dict:
     two runs can be compared: a verify is a function of the design alone, and every other field must be identical
     between two runs of one design, whatever the process's hash seed, the machine's load or what earlier runs left
     on disk. Removed: keys named `seconds` or ending in `_seconds`, the `(…, 12.3s)` of each summary line (and its
-    `[reused from run N ...]` mark), `artifacts` (file paths, the iteration counter and run times) and `incremental` (which
-    tier ran and what was reused from which run) at any depth."""
+    `[reused from run N ...]` mark), `artifacts` (file paths, the iteration counter and run times), `incremental` (which
+    tier ran and what was reused from which run) and `profile` (time and memory per verifier and step) at any depth."""
     import re
 
     def strip(x):
         if isinstance(x, dict):
             return {k: strip(v) for k, v in x.items()
-                    if not (k == "seconds" or str(k).endswith("_seconds") or k == "artifacts" or k == "incremental")}
+                    if not (k == "seconds" or str(k).endswith("_seconds") or k == "artifacts" or k == "incremental"
+                             or k == "profile")}
         if isinstance(x, list):
             return [strip(v) for v in x]
         return x

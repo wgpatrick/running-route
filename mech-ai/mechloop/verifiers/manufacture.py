@@ -129,16 +129,6 @@ def _restore_side(name: str, state) -> None:
         _EDGE_CLASSES[name] = ec
 
 
-def _part_context(design: Design, c, pem: list, fast: dict) -> list:
-    """What check_part reads besides the part itself (its key for per-part reuse, mechloop.incremental.part_cached):
-    the design's manufacturing and printer settings, the screws that thread into the part (tapped holes, PEM screws:
-    their shape, meta and fastener record) and the self-clinching nuts in the design (whether one sits in this part)."""
-    comps = {p.name: p for p in design.components}
-    screws = [[s.name, s.shape, s.meta, fast.get(s.name)] for s in design.components
-              if c.name in (s.meta.get("threads_into") or [])]
-    return [design.manufacturing, design.printer, screws, [[n, comps[n].shape, comps[n].meta] for n in pem]]
-
-
 def verify_manufacture(design: Design) -> VerifierResult:
     r = VerifierResult("manufacture")
     custom = [c for c in design.components if not c.cots]
@@ -151,12 +141,10 @@ def verify_manufacture(design: Design) -> VerifierResult:
         _EDGE_CLASSES.clear()
         from .. import incremental as _inc      # per-part reuse under an incremental run (a no-op otherwise)
 
-        pem = sorted(p.name for p in design.components if p.cots and (p.sku or "").startswith("NUT-PEM-"))
-        fast = {f.name: f for f in design.fasteners}
         for c in custom:
             try:
                 parts[c.name] = _inc.part_cached(
-                    r, c, _part_context(design, c, pem, fast), lambda rr, c=c: check_part(rr, design, c),
+                    r, c, design, lambda rr, c=c: check_part(rr, design, c),
                     capture=lambda c=c: (_PRINTED_EDGES.get(c.name), _EDGE_CLASSES.get(c.name)),
                     restore=lambda st, c=c: _restore_side(c.name, st))
             except ValueError as e:     # an unknown process, shop, rule id or orientation: the declaration is wrong, not the part

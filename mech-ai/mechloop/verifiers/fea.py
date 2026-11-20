@@ -1069,61 +1069,89 @@ def run_thermal(design: Design, tc, r: VerifierResult) -> dict:
         shutil.rmtree(workdir, ignore_errors=True)
 
 
-def verify_fea(design: Design, keep_dir: Path | None = None) -> VerifierResult:
+class FeaUnit:
+    """One FEA case as a unit of work: run serially by verify_fea, or as its own process by the parallel runner."""
+
+    def __init__(self, label, kind, case, names, fn, heavy, on_error, metric_key=None):
+        self.label, self.kind, self.case, self.names, self.fn = label, kind, case, names, fn
+        self.heavy = heavy                  # an assembly / thermal / bed-support solve: several GB of solver memory
+        self.on_error = on_error            # on_error(result, exception): the finding a crash leaves
+        self.metric_key = metric_key or label
+
+
+def fea_units(design: Design, keep_dir: Path | None = None):
+    """(ready_result, units). ready_result is the whole FEA result when there is nothing to solve (no cases: skipped;
+    no CalculiX: an error); otherwise None and the cases in their order."""
     r = VerifierResult("fea")
     from .bed_support import layout as _bed_layout
 
     has_bed = _bed_layout(design) is not None
     if not design.loadcases and not design.modalcases and not design.assemblycases and not design.thermalcases and not has_bed:
         r.skipped = "design has no load cases"
-        return r
+        return r, []
     if not shutil.which("ccx"):
         r.add("error", "fea_unavailable", "CalculiX (ccx) is not installed; FEA was NOT run.")
-        return r
+        return r, []
+    units = []
+    for lc in design.loadcases:
+        units.append(FeaUnit(lc.name, "loadcase", lc, [lc.component], lambda rr, lc=lc: run_loadcase(design, lc, rr, keep_dir),
+                             False, lambda rr, e, lc=lc: rr.add("error", "fea_crashed", f"{lc.name}: {type(e).__name__}: {e}",
+                                                                 loadcase=lc.name)))
+
+    def asm_error(rr, e, ac):
+        hint = ("Two of these parts are separated by a very thin gap, which the mesher cannot fill. Leave one of the "
+                "two out of `components`, or make them touch or stand clearly apart in this case."
+                if "PLC" in str(e) or "facet" in str(e) else "")
+        rr.add("error", "fea_crashed", f"{ac.name}: {type(e).__name__}: {e}", case=ac.name, **({"hint": hint} if hint else {}))
+
+    for ac in design.assemblycases:
+        units.append(FeaUnit(ac.name, "assembly", ac, list(ac.components), lambda rr, ac=ac: run_assembly(design, ac, rr),
+                             True, lambda rr, e, ac=ac: asm_error(rr, e, ac)))
+    for tc in design.thermalcases:
+        units.append(FeaUnit(tc.name, "thermal", tc, list(tc.components), lambda rr, tc=tc: run_thermal(design, tc, rr),
+                             True, lambda rr, e, tc=tc: rr.add("error", "fea_crashed", f"{tc.name}: {type(e).__name__}: {e}",
+                                                                 case=tc.name)))
+    for mc in design.modalcases:
+        units.append(FeaUnit(mc.name, "modal", mc, [mc.component], lambda rr, mc=mc: run_modal(design, mc, rr),
+                             False, lambda rr, e, mc=mc: rr.add("error", "fea_crashed", f"{mc.name}: {type(e).__name__}: {e}",
+                                                                 case=mc.name)))
+    if has_bed:      # how the printer's bed is held: support compliance, flexure, screw offset (bed_support.py)
+        def bed(rr):
+            from . import bed_support as _BS
+            from . import electrical as _VE
+            from .bed_support import bed_support
+
+            _BS.FIELD_DIR = Path(_VE.OUT_ROOT) / design.name / "fea"      # the displacement fields, for rendering
+            return bed_support(design, rr)
+
+        def bed_error(rr, e):     # not evaluated is not a pass
+            import traceback
+
+            rr.add("error", "bed_support_failed", f"The bed support measures did not run: {type(e).__name__}: {e}",
+                   trace=traceback.format_exc()[-600:])
+
+        units.append(FeaUnit("bed_support", "bed_support", None, [], bed, True, bed_error))
+    return None, units
+
+
+def run_unit(design: Design, r: VerifierResult, u: FeaUnit) -> None:
+    """Run (or, in an incremental run, reuse) one FEA unit; its findings go to r, its metrics to r.metrics."""
     from .. import incremental as _inc     # per-case reuse under `--tier affected` (a no-op outside an incremental run)
 
+    try:
+        m = _inc.fea_case(design, r, u.kind, u.case, u.names, u.fn)
+        if u.kind != "bed_support" or m is not None:
+            r.metrics[u.metric_key] = m
+    except Exception as e:
+        u.on_error(r, e)
+
+
+def verify_fea(design: Design, keep_dir: Path | None = None) -> VerifierResult:
+    ready, units = fea_units(design, keep_dir)
+    if ready is not None:
+        return ready
+    r = VerifierResult("fea")
     with timed(r):
-        for lc in design.loadcases:
-            try:
-                r.metrics[lc.name] = _inc.fea_case(design, r, "loadcase", lc, [lc.component],
-                                                    lambda rr, lc=lc: run_loadcase(design, lc, rr, keep_dir))
-            except Exception as e:
-                r.add("error", "fea_crashed", f"{lc.name}: {type(e).__name__}: {e}", loadcase=lc.name)
-        for ac in design.assemblycases:
-            try:
-                r.metrics[ac.name] = _inc.fea_case(design, r, "assembly", ac, list(ac.components),
-                                                    lambda rr, ac=ac: run_assembly(design, ac, rr))
-            except Exception as e:
-                hint = ("Two of these parts are separated by a very thin gap, which the mesher cannot fill. Leave one of the "
-                        "two out of `components`, or make them touch or stand clearly apart in this case."
-                        if "PLC" in str(e) or "facet" in str(e) else "")
-                r.add("error", "fea_crashed", f"{ac.name}: {type(e).__name__}: {e}", case=ac.name, **({"hint": hint} if hint else {}))
-        for tc in design.thermalcases:
-            try:
-                r.metrics[tc.name] = _inc.fea_case(design, r, "thermal", tc, list(tc.components),
-                                                    lambda rr, tc=tc: run_thermal(design, tc, rr))
-            except Exception as e:
-                r.add("error", "fea_crashed", f"{tc.name}: {type(e).__name__}: {e}", case=tc.name)
-        for mc in design.modalcases:
-            try:
-                r.metrics[mc.name] = _inc.fea_case(design, r, "modal", mc, [mc.component],
-                                                    lambda rr, mc=mc: run_modal(design, mc, rr))
-            except Exception as e:
-                r.add("error", "fea_crashed", f"{mc.name}: {type(e).__name__}: {e}", case=mc.name)
-        if has_bed:      # how the printer's bed is held: support compliance, flexure, screw offset (bed_support.py)
-            try:
-                from .bed_support import bed_support
-
-                from . import bed_support as _BS
-                from . import electrical as _VE
-
-                _BS.FIELD_DIR = Path(_VE.OUT_ROOT) / design.name / "fea"      # the displacement fields, for rendering
-                bs = _inc.fea_case(design, r, "bed_support", None, [], lambda rr: bed_support(design, rr))
-                if bs is not None:
-                    r.metrics["bed_support"] = bs
-            except Exception as e:      # not evaluated is not a pass
-                import traceback
-
-                r.add("error", "bed_support_failed", f"The bed support measures did not run: {type(e).__name__}: {e}",
-                      trace=traceback.format_exc()[-600:])
+        for u in units:
+            run_unit(design, r, u)
     return r
