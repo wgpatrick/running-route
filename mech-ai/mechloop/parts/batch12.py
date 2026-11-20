@@ -962,3 +962,34 @@ def foot_levelling_m5_placeholder() -> Stock:
                  material="steel", cost_usd=3.0, ratings={"approximate": True},
                  interfaces={"stud": "M5", "stud_length": 10.0, "pad_d": 25.0},
                  model={"kind": "proxy", "state": "stand-in", "source": "placeholder outline: no product chosen yet (REQ-017)"})
+
+
+@part
+def spool_1kg_placeholder() -> Stock:
+    """PLACEHOLDER (owner, 2026-11-20; maker drawing via Instinct REQ-018): a full 1 kg filament spool, about 200 OD, 52 hub bore,
+    68 wide, 1.25 kg with filament. Drawn as the full spool's envelope (flanges and wound filament as one solid). Local frame: axis
+    along Z, centred."""
+    s = Cylinder(100.0, 68.0) - Cylinder(26.0, 68.0)
+    return Stock(s, "SPOOL-1KG-FILAMENT", "1 kg filament spool, full (placeholder until REQ-018's drawing)", 1.25, material="pla",
+                 cost_usd=20.0, ratings={"approximate": True, "mass_full_kg": 1.25},
+                 interfaces={"hub_bore": 52.0, "od": 200.0, "width": 68.0},
+                 model={"kind": "proxy", "state": "stand-in", "source": "placeholder envelope: ~200 OD x 52 bore x 68 wide (owner's figures)"})
+
+
+@part
+def spacer_tube_m8_placeholder(length: float) -> Stock:
+    """PLACEHOLDER: an M8 spacer sleeve (12 OD x 8.4 ID) on the spool axle, product pending REQ-018. Local frame: axis Z, bottom Z=0."""
+    s = Pos(0, 0, length / 2) * (Cylinder(6.0, length) - Cylinder(4.2, length))
+    return Stock(s, f"SPACER-M8-12x8.4x{length:g}", f"M8 spacer sleeve 12 x 8.4 x {length:g} mm (placeholder)", 0.0001 * length,
+                 material="al6061", cost_usd=1.0, ratings={"approximate": True}, interfaces={"length": length},
+                 model={"kind": "proxy", "state": "stand-in", "source": "placeholder sleeve (REQ-018)"})
+
+
+@part
+def ptfe_coupler_placeholder() -> Stock:
+    """PLACEHOLDER: a push-fit coupler for 4 mm OD PTFE tube (M10 / M6 thread class), product pending REQ-018. Drawn as a 10 x 12 mm
+    hex-and-collet envelope. Local frame: axis Z, the tube enters at +Z, the threaded end at Z=0."""
+    s = Pos(0, 0, 6.0) * Cylinder(5.0, 12.0)
+    return Stock(s, "PTFE-COUPLER-4MM", "push-fit coupler for 4 mm PTFE (placeholder)", 0.003, material="brass", cost_usd=2.0,
+                 ratings={"approximate": True},
+                 model={"kind": "proxy", "state": "stand-in", "source": "placeholder envelope (REQ-018)"})

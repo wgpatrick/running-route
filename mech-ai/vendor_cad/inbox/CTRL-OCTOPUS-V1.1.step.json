@@ -1,3 +1,14 @@
-{"rot": [0, 0, 0], "pos": [-80.0, -70.0, 1.6],
- "source": "BIGTREETECH's STEP of the Octopus V1.0 (github.com/bigtreetech/BIGTREETECH-OCTOPUS-V1.0, 3D/BIGTREETECH Octopus V1.0.stp, commit 9526ff1), unchanged",
- "note": "maker CAD for V1.0, accepted by the owner for V1.1 (same outline and mounting holes), 2026-11-20. Board outline x 0..160, y 20..120 in BTT's axes, its top face at z 0: moved so the PCB is centred with its underside on Z=0 (the catalogue frame). The PCB itself is surfaces only; the simulation solid is the envelope."}
+{
+ "rot": [
+  0,
+  0,
+  0
+ ],
+ "pos": [
+  -80.0,
+  -70.0,
+  1.6
+ ],
+ "source": "BIGTREETECH's STEP of the Octopus V1.0 (github.com/bigtreetech/BIGTREETECH-OCTOPUS-V1.0, 3D/BIGTREETECH Octopus V1.0.stp, commit 9526ff1), REDUCED to its 59 solids of 200 mm^3 or more (connectors, sockets, terminals, large parts: 36,294 of 50,419 mm^3; 8,281 faces of 92,242): the full file's 2,563 solids ran the geometry verifier out of memory. Full file: vendor_cad/staging/provenance_2026-11-19/BTT_Octopus_V1.0.stp.gz",
+ "note": "maker CAD for V1.0, accepted by the owner for V1.1 (same outline and mounting holes), 2026-11-20. Board outline x 0..160, y 20..120 in BTT's axes, its top face at z 0: moved so the PCB is centred with its underside on Z=0 (the catalogue frame). The PCB itself is surfaces only; the simulation solid is the envelope."
+}

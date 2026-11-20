@@ -135,12 +135,12 @@ from mechloop.parts.batch10 import blower_bfb0524hh, blower_flow_estimate_pa, le
 from mechloop.parts.hardware import washer_toothed
 from mechloop.parts.electrical import (THERMISTORS, add_electrical_bom, bed_heater_pad, device_from, embedded_device,
                                        iec_inlet_c14, psu_lrs, raspberry_pi_zero2w, relay_btt_v12, thermal_fuse)
-from mechloop.parts import BRACKET_CAD_SLOT, BRACKET_SLOT_LEG, CSK, corner_bracket_2020
+from mechloop.parts import BRACKET_CAD_SLOT, BRACKET_SLOT_LEG, CSK, bearing, corner_bracket_2020
 from mechloop.parts.hardware import WASHER, spacer_round
 from mechloop.parts.probes import add_probe_nuts, probe_omron_e2e
 from mechloop.parts.toolhead import extruder_roto, hotend_revo
 from mechloop.shops import assign
-from mechloop.parts.batch12 import (tnut_hntp5, foot_levelling_m5_placeholder, add_bracket_misumi, adxl345_btt, cam_arducam_b0454, cob_led, contactor_finder_2232, din_endstop_wago,
+from mechloop.parts.batch12 import (tnut_hntp5, foot_levelling_m5_placeholder, spool_1kg_placeholder, spacer_tube_m8_placeholder, ptfe_coupler_placeholder, add_bracket_misumi, adxl345_btt, cam_arducam_b0454, cob_led, contactor_finder_2232, din_endstop_wago,
                                     din_rail_wago, heater_hydra_sq1451144, hiwin_mgn12_rail, hiwin_mgn12h_block, laser_vlm520, lens_cil062,
                                     leadscrew_motor_a4003, leadscrew_nut_pom_a4003, leadscrew_screw_a4003, picam3, pi5_host, probe_eddy_duo,
                                     relay_phoenix_1119897, sfs_v2, spacer_harwin, thermostat_cs7,
@@ -153,7 +153,7 @@ PAYLOAD_KG = 1.0
 V_XY, A_XY = 250.0, 4000.0
 V_Z, A_Z = 12.0, 200.0
 MARGIN = 3.0
-ENVELOPE = (420.0, 420.0, 480.0)
+ENVELOPE = (420.0, 515.0, 495.0)    # v12: with the owner's rear spool (Y) and levelling feet (Z), 2026-11-20; the machine without them is held to 420 x 420 x 480 by a requirement
 MAX_TOOLHEAD_KG, MIN_BELT_IN_PLANE = 0.45, 0.98   # v12 (owner, Q9): toolhead under 0.45 kg with the new sensors
 
 # ---- electrical choices -----------------------------------------------------------
@@ -2215,6 +2215,7 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
                                 force=(0.0, 0.0, -w_own), min_fos=3.0, max_deflection=FLAT_AS_INSTALLED - MIC6_FLAT_BOUGHT))
     d.modalcases.append(ModalCase("bed_plate_on_three_studs", "bed_plate", fixed=lambda f: f.geom_type.name == "CONE", min_frequency_hz=100.0))
     add_feedback_hardware(d)
+    add_filament_supply(d)
     add_soak_case(d, zs, posts, carrier, zcars, nplates, on_rail, on_nut)
     add_requirements(d, zs)
     assign(d, sheet="sendcutsend", machined="xometry")
@@ -2603,6 +2604,59 @@ def add_requirements(d, zs):
                        + (" THIN (over the usual 80 % continuous loading)" if f_rms > 0.8 else (" thin at full power" if f_full > 0.8 else "")))
         return True, f"bed pad {BED_W:g} W at 24 V = {i_full:.2f} A ({i_rms:.2f} A RMS at max_power 0.95): " + "; ".join(txt)
     d.requirements.append(Requirement("reported: the 24 V bed path at the pad's full 200 W (owner, 2026-11-20): HB output, blade fuse and thermostat margins", bed_current_margins))
+    def machine_envelope(dd, m):
+        import numpy as np
+        from mechloop.geom import bbox_of
+        lo, hi = bbox_of([c.shape for c in dd.components if not c.name.startswith(("spool", "ptfe_coupler_sfs", "foot_"))])
+        size = (hi - lo).round(1).tolist()
+        allb = bbox_of([c.shape for c in dd.components])
+        return all(a_ <= b_ + 1e-6 for a_, b_ in zip(size, (420.0, 420.0, 480.0))), (
+            f"machine without the spool holder and the feet: {size[0]:g} x {size[1]:g} x {size[2]:g} mm (owner's envelope 420 x 420 x 480); with the rear "
+            f"spool and the feet: {(allb[1] - allb[0]).round(1).tolist()} (owner's requests: spool at the rear, outside the enclosure's panel planes; feet 13 mm under the frame)")
+    d.requirements.append(Requirement("the machine stays in the owner's 420 x 420 x 480 envelope; the rear spool holder and the feet are reported", machine_envelope))
+
+    def ptfe_route(dd, m):
+        # v12 (owner): the 4 mm PTFE tube from the SFS V2's outlet to the Roto's inlet over the whole X / Y travel (Z moves the bed,
+        # not the toolhead): never through a part, bend radius >= PTFE_MIN_R, the length it needs at the extremes. The tube is
+        # taken as straight up from both ends joined by a half circle (ptfe_curve: an ESTIMATE of the tube's shape)
+        import numpy as np
+        pth = dd.printer["ptfe_path"]
+        jx = next(j for j in dd.joints if j.name == "x"); jy = next(j for j in dd.joints if j.name == "y")
+        skip = ("extruder", "ptfe_", "filament_sensor", "sfs_", "spool", "hotend", "bed_probe", "eddy_", "probe_mount", "part_fan", "part_duct")
+        parts = [c for c in dd.components if c.body in ("world", "ybody", "xbody") and not c.name.startswith(skip)]
+        boxes = [(c, c.shape.bounding_box()) for c in parts]
+        worst = {"r": 1e9, "len": [1e9, 0.0], "hits": set()}
+        for xv in (jx.range[0], 0.0, jx.range[1]):
+            for yv in (jy.range[0], 0.0, jy.range[1]):
+                end = np.array(pth["end"]) + np.array([xv, yv, 0.0])
+                best = None
+                for rise in (10.0, 40.0):
+                    pts, ln, r = ptfe_curve(pth["start"], end, rise)
+                    hits = set()
+                    for c, bb in boxes:
+                        off = np.array([0.0, yv if c.body in ("ybody", "xbody") else 0.0, 0.0]) + np.array([xv if c.body == "xbody" else 0.0, 0.0, 0.0])
+                        q = pts - off
+                        inb = (q[:, 0] > bb.min.X - 2) & (q[:, 0] < bb.max.X + 2) & (q[:, 1] > bb.min.Y - 2) & (q[:, 1] < bb.max.Y + 2) & \
+                              (q[:, 2] > bb.min.Z - 2) & (q[:, 2] < bb.max.Z + 2)
+                        for pt in q[inb][::2]:
+                            from build123d import Vector
+                            if c.shape.is_inside(Vector(*pt), tolerance=2.0):
+                                hits.add(c.name); break
+                    if best is None or (len(hits), -r) < (len(best[2]), -best[1]):
+                        best = (ln, r, hits)
+                    if not hits and r >= PTFE_MIN_R:
+                        break
+                ln, r, hits = best
+                worst["r"] = min(worst["r"], r); worst["len"] = [min(worst["len"][0], ln), max(worst["len"][1], ln)]
+                worst["hits"] |= hits
+        ok = not worst["hits"] and worst["r"] >= PTFE_MIN_R
+        tube = worst["len"][1] + 50.0
+        return ok, (f"PTFE from the SFS outlet to the Roto inlet over X {jx.range[0]:g}..{jx.range[1]:g} and Y {jy.range[0]:g}..{jy.range[1]:g}: "
+                    f"parts touched: {sorted(worst['hits']) or 'none'}; least bend radius {worst['r']:.0f} mm (limit {PTFE_MIN_R:g}, until the "
+                    f"datasheet); path {worst['len'][0]:.0f} to {worst['len'][1]:.0f} mm: cut the tube {tube:.0f} mm (the longest path + 50). "
+                    f"Drag (estimate): PTFE on filament mu 0.1 to 0.2 over about 180 degrees of total bend, capstan factor 1.4 to 1.9 on the "
+                    f"spool's own drag (608s: well under 1 N at the rim), so under 2 N against the Roto's tens of newtons of push")
+    d.requirements.append(Requirement("v12 (owner): the PTFE tube clears every part over the X / Y travel, bends no tighter than its limit, and is long enough", ptfe_route))
     STANDINS = []
     d.requirements.append(Requirement("target: no purchased part is a stand-in where the catalogue has a real one", lambda dd: (
         sorted(px := [c.name for c in dd.components if c.cots and not c.meta.get("catalog")]) == STANDINS,
@@ -2781,6 +2835,79 @@ def add_soak_case(d, zs, posts, carrier, zcars, nplates, on_rail, on_nut):
 
 
 # ---- feedback hardware on the frame (stage 3) ------------------------------------------------------------------------------------
+SPOOL_AX = (95.0, 290.0)           # v12 (owner): spool axle, world x / z, behind the frame (plate inboard of the right Y motor, x 122+)
+SPOOL_Y0 = 236.0                   # the spool's front face: clear of everything behind the back wall (rear nut plate and Y motors to 226)
+PTFE_MIN_R = 50.0                  # minimum bend radius of the 4 mm PTFE tube until its datasheet arrives (owner)
+
+
+def add_filament_supply(d):
+    """v12 stage 3 (owner, 2026-11-20): a 1 kg spool behind the frame on a cantilevered M8 axle with two 608 bearings (the spool's hub
+    rests on the bearings' outer races and rolls; it lifts off the free end: no tools), the axle in a flat 6061 plate on the top
+    back rail's rear face; filament from the spool's top to the SFS V2's inlet (+X end), then a 4 mm PTFE tube from the SFS's outlet
+    to the Roto's inlet with push-fit couplers at both ends. Spool, M8 parts, sleeves and couplers are PLACEHOLDERS (REQ-018)."""
+    xa, za = SPOOL_AX
+    yb = FY / 2
+    pl = bx(xa - 20.0, xa + 20.0, yb, yb + G32, za - 12.0, FZ + 10.0)
+    for xh in (xa - 13.0, xa + 13.0):
+        pl -= Pos(xh, yb + G32 / 2, FZ) * ycyl(clearance_hole("M5") / 2, G32)
+    pl -= Pos(xa, yb + G32 / 2, za) * ycyl(clearance_hole("M8") / 2, G32)
+    sheet(d, "spool_plate", pl, AL, description="v12: spool holder plate (6061 .125, SendCutSend) on the top back rail's rear face")
+    for i, xh in enumerate((xa - 13.0, xa + 13.0)):
+        add_screw(d, f"spool_plate_screw_{i}", "M5", 8, at=(xh, yb + G32, FZ), direction=(0, -1, 0), threads_into="frame_top_back", tnut=True,
+                  washer=True, clamps=("spool_plate",))
+    y_b1, y_b2 = SPOOL_Y0 + 9.0, SPOOL_Y0 + 59.0             # bearing centres inside the 68 mm hub
+    y_end = SPOOL_Y0 + 68.0 + 4.0
+    ax_len = 140.0
+    # axle: M8 x 140 socket head at the free end (inside the 52 mm hub bore the spool slides over it), nut and washer on the plate's
+    # inner face; sleeves hold the bearings
+    add_screw(d, "spool_axle", "M8", ax_len, at=(xa, y_end, za), direction=(0, -1, 0), clamps=("spool_plate",))
+    d.get("spool_axle").meta["torque_nm"] = 10.0
+    place(d, "spool_sleeve_0", spacer_tube_m8_placeholder(round(y_b1 - 3.5 - (yb + G32), 2)), Location(Plane(origin=(xa, yb + G32, za), z_dir=(0, 1, 0))))
+    place(d, "spool_sleeve_1", spacer_tube_m8_placeholder(round(y_b2 - y_b1 - 7.0, 2)), Location(Plane(origin=(xa, y_b1 + 3.5, za), z_dir=(0, 1, 0))))
+    for i, yy in enumerate((y_b1, y_b2)):
+        place(d, f"spool_bearing_{i}", bearing("608"), Location(Plane(origin=(xa, yy, za), z_dir=(0, 1, 0))))
+        d.join(f"spool_bearing_{i}", "spool_axle", "on the axle, clamped between the sleeves")
+    add_washer(d, "spool_axle_nwasher", "M8", (xa, yb, za), (0, -1, 0), screw="spool_axle")
+    add_nut(d, "spool_axle_nut", "M8", at=(xa, yb - WASHER["normal"]["M8"][2], za), direction=(0, -1, 0), screw="spool_axle")
+    d.join("spool_axle_nut", "spool_plate", "clamped through its washer")
+    for i in (0, 1):
+        d.join(f"spool_sleeve_{i}", "spool_axle", "sleeve on the axle")
+        d.allow_overlap(f"spool_sleeve_{i}", "spool_axle")
+    # the spool hangs on the bearings: hub bore 52 on the 22 mm outer races, centre 15 mm below the axle
+    place(d, "spool", spool_1kg_placeholder(), Location(Plane(origin=(xa, SPOOL_Y0 + 34.0, za - 15.0), z_dir=(0, 1, 0))))
+    d.join("spool", "spool_bearing_0", "the hub rests on the outer races (rolls; lifts off the free end)")
+    # couplers: one in the SFS's outlet (its top), one in the Roto's inlet
+    sfs = d.get("filament_sensor").shape.bounding_box()
+    out_pt = ((sfs.min.X + sfs.max.X) / 2, (sfs.min.Y + sfs.max.Y) / 2, sfs.max.Z)          # the outlet at the top
+    place(d, "ptfe_coupler_sfs", ptfe_coupler_placeholder(), Location(Plane(origin=(out_pt[0], out_pt[1], out_pt[2] - 3.0), z_dir=(0, 0, 1))))
+    d.allow_overlap("ptfe_coupler_sfs", "filament_sensor")
+    d.join("ptfe_coupler_sfs", "filament_sensor", "threaded into the sensor's outlet")
+    ent = d.get("extruder").meta["interfaces"]["filament_entry"][0]       # the body's top at the filament (the lever box stands beside it)
+    place(d, "ptfe_coupler_roto", ptfe_coupler_placeholder(), Location(Plane(origin=(ent[0], ent[1], ent[2]), z_dir=(0, 0, 1))), body="xbody")
+    d.join("ptfe_coupler_roto", "extruder", "in the Roto's filament inlet")
+    d.printer["ptfe_path"] = {"start": (out_pt[0], out_pt[1], out_pt[2] + 9.0), "start_dir": (0.0, 0.0, 1.0),
+                              "end": (ent[0], ent[1], ent[2] + 9.0), "end_dir": (0.0, 0.0, 1.0)}
+    d.bom_extra("PTFE-TUBE-4x2-M (4 mm OD x 2 mm ID PTFE, by the metre; placeholder until REQ-018)", 1, 3.0, stage=3)
+
+
+def ptfe_curve(p0, p3, rise=10.0, n=80):
+    """The PTFE tube between two upward-facing ends (SFS outlet, Roto inlet) taken as it lies when pushed into both: straight up
+    from each end to a common height (`rise` above the higher end), joined by a half circle in the vertical plane through the two
+    ends; its radius is half their horizontal distance, the largest a 180-degree turn between them can have. Points, length, radius."""
+    import numpy as np
+    P0, P3 = np.array(p0, float), np.array(p3, float)
+    h = np.array([P3[0] - P0[0], P3[1] - P0[1], 0.0]); dist = float(np.linalg.norm(h)); u = h / max(dist, 1e-9)
+    r = dist / 2.0
+    zt = max(P0[2], P3[2]) + rise
+    c = np.array([P0[0], P0[1], zt]) + u * r
+    up0 = [P0 + (zt - P0[2]) * k / 10 * np.array([0, 0, 1.0]) for k in range(11)]
+    arc = [c + r * (-np.cos(t)) * u + r * np.sin(t) * np.array([0, 0, 1.0]) for t in np.linspace(0, np.pi, n)]
+    dn = [np.array([P3[0], P3[1], zt]) - (zt - P3[2]) * k / 10 * np.array([0, 0, 1.0]) for k in range(11)]
+    pts = np.array(up0 + arc + dn)
+    length = (zt - P0[2]) + (zt - P3[2]) + np.pi * r
+    return pts, float(length), float(r)
+
+
 def add_feedback_hardware(d):
     """Overview and top-down Pi Camera Module 3s on printed brackets on the top front / back rails, the BTT SFS V2 on the top back rail's rear face,
     the overview COB strip in two printed clips on the top front rail. The nozzle camera, its lens, the line laser, the two nozzle LED
@@ -2828,7 +2955,7 @@ def add_feedback_hardware(d):
     for i, xh in enumerate((-10.5, 10.5)):
         bolt_nut(d, f"cam_topdown_screw_{i}", "M2", 20, (-60.0 + xh, yb + 20.0, FZ + 30.0), (0, -1, 0), "world", ("cam_topdown_mount", "cam_topdown"),
                  nut_at=(-60.0 + xh, yc - 1.0, FZ + 30.0))
-    place(d, "filament_sensor", sfs_v2(), Location((40.0, yb + 10.0 + 30.3 / 2, FZ)))
+    place(d, "filament_sensor", sfs_v2(), Location((40.0, yb + 10.0 + 30.3 / 2, FZ - 9.0 + 53.15 / 2), (0, 90, 0)))     # v12: filament axis vertical: in from the spool below, out at the top towards the toolhead
     d.join("filament_sensor", "sfs_mount", "two cable ties round the sensor and the bracket's plate (its own holes face the spool)")
     # overview COB strip in two printed clips on the top front rail's inner face: the clip's plate on the face (screw at the slot), the
     # strip in a channel in front of it below the screw head
@@ -2846,7 +2973,7 @@ def add_feedback_hardware(d):
 
 
 STAGE_RULES = [  # (stage, name prefixes): first match wins; screws, nuts, washers and T-nuts are named after what they fix
-    (3, ("cam_", "led_", "sfs_", "filament_sensor", "adxl", "sensor_plate")),
+    (3, ("cam_", "led_", "sfs_", "filament_sensor", "adxl", "sensor_plate", "spool", "ptfe_")),
     (2, ("y_", "x_", "tool_", "extruder", "hotend", "part_", "beam_bolt", "bed_probe", "eddy", "probe_mount")),
     (1, ("frame_", "foot_", "post_", "bracket_", "brkt_up_", "upright_", "z_", "sq_", "carriage_plate", "nut_", "bed", "leadscrew", "electronics",
          "psu", "control_board", "host", "inlet", "mains_", "earth", "tray", "din_", "iface_", "z_mount")),
