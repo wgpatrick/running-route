@@ -14,7 +14,7 @@ import math
 import numpy as np
 from build123d import Box, Plane, Pos
 
-from ..geom import bboxes_overlap, forward_kinematics, location_from_matrix, overlap_volume
+from ..geom import bboxes_overlap, box_of, forward_kinematics, location_from_matrix, overlap_volume
 from ..model import Belt, Design
 from ..report import VerifierResult
 
@@ -36,6 +36,14 @@ def clearance_limits(design: Design) -> tuple[float, float]:
 def _world_bbox(lb, T):
     """Axis-aligned world box of a local bounding box moved by T (8 corners)."""
     cs = np.array([[x, y, z, 1.0] for x in (lb.min.X, lb.max.X) for y in (lb.min.Y, lb.max.Y) for z in (lb.min.Z, lb.max.Z)])
+    w = (T @ cs.T).T[:, :3]
+    return w.min(axis=0), w.max(axis=0)
+
+
+def _world_bbox_t(box, T):
+    """_world_bbox for a ((x, y, z) min, (x, y, z) max) box."""
+    (x0, y0, z0), (x1, y1, z1) = box
+    cs = np.array([[x, y, z, 1.0] for x in (x0, x1) for y in (y0, y1) for z in (z0, z1)])
     w = (T @ cs.T).T[:, :3]
     return w.min(axis=0), w.max(axis=0)
 
@@ -198,6 +206,7 @@ def verify_belts(design: Design, r: VerifierResult, poses: list[dict]) -> None:
         a, _, _ = _basis(belt.axis)
         hit: dict[str, dict] = {}
         check = [{}] + [q for q in poses if len(q) == 1][::2] + [q for q in poses if len(q) > 1][:40]
+        lbox = {c.name: box_of(c.shape) for c in design.components}
         for q in check:
             T = forward_kinematics(design, q)
             rt = route(design, belt, T)
@@ -207,8 +216,14 @@ def verify_belts(design: Design, r: VerifierResult, poses: list[dict]) -> None:
                     continue
                 t = (p1 - p0) / L
                 seg = Plane(origin=tuple((p0 + p1) / 2), x_dir=tuple(t), z_dir=tuple(a)) * Box(L - 1.0, belt.thickness, belt.width)
+                sbox = box_of(seg)
+                sbox = (np.array(sbox[0]), np.array(sbox[1]))
                 for c in design.components:
                     if c.name in own or c.name in hit:
+                        continue
+                    # cheap first: the part's own box carried by the pose (it contains the moved part's box) must come
+                    # near the run; only then is the part moved and tested as before
+                    if not _boxes_near(sbox, _world_bbox_t(lbox[c.name], T[c.body]), 1e-3):
                         continue
                     shp = c.shape.moved(location_from_matrix(T[c.body]))
                     if not bboxes_overlap(seg, shp):

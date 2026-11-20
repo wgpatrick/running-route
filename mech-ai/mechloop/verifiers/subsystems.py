@@ -8,7 +8,7 @@ import math
 import numpy as np
 from build123d import Vertex
 
-from ..geom import forward_kinematics
+from ..geom import box_of, forward_kinematics
 from ..model import Design
 from ..report import VerifierResult, timed
 from .motion import sample_poses
@@ -183,8 +183,7 @@ def clamp_distance(design: Design, body: str, point) -> tuple:
         for shp, what in ((x.shape, ""), (x.detail, " (its CAD model)")):
             if shp is None:
                 continue
-            bb = shp.bounding_box()
-            lo, hi = np.array([bb.min.X, bb.min.Y, bb.min.Z]), np.array([bb.max.X, bb.max.Y, bb.max.Z])
+            lo, hi = map(np.array, box_of(shp))        # cached per shape: the same box, computed once
             box_d = float(np.linalg.norm(np.maximum(np.maximum(lo - p, p - hi), 0.0)))     # never more than the true distance
             if best is not None and box_d >= best:
                 continue
@@ -234,8 +233,7 @@ def _switch_checks(design: Design, e: dict, sw, j, r: VerifierResult) -> dict:
             if c.name == sw.name or moves_with_switch:
                 continue
             local = (np.linalg.inv(T[c.body]) @ np.array([*p, 1.0]))[:3]
-            bb = c.shape.bounding_box()
-            lo, hi = np.array([bb.min.X, bb.min.Y, bb.min.Z]), np.array([bb.max.X, bb.max.Y, bb.max.Z])
+            lo, hi = map(np.array, box_of(c.shape))
             if float(np.linalg.norm(np.maximum(np.maximum(lo - local, local - hi), 0.0))) >= best:
                 continue
             dd = surface_distance(c.shape, local)                    # 0 once the striker has passed the point

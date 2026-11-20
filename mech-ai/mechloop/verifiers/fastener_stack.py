@@ -17,6 +17,7 @@ Resolution: stations every 0.25 mm along the screw; hole radius in 0.05 mm steps
 from __future__ import annotations
 
 import collections
+import copy
 import math
 import re
 
@@ -161,17 +162,61 @@ def fastener_stack(design, pr: Probe) -> list[dict]:
     head. Measured, not read from declarations, except `threads_into` (which parts the screw is meant to thread into)."""
     comps = pr.comps
     rows = []
+    from .. import incremental as _inc
+
+    s_ = _inc.active()
     for f in design.fasteners:
         c = comps.get(f.name)
         if c is None:
             continue
+        if s_ is None:
+            row = _screw_row(design, pr, f, c)
+        else:
+            # reused across runs while the screw, its record and every part near it (whose box meets the screw's
+            # envelope: what the probing can touch) and the parts it names are unchanged
+            near0 = _envelope_parts(pr, f, c)
+            names = sorted(set(near0) | {f.name} | set(f.clamps) | set(c.meta.get("threads_into", []) or []))
+            from ..incremental.fingerprint import value_fp
+
+            def compute(f=f, c=c):
+                n0 = pr.calls
+                r_ = _screw_row(design, pr, f, c)
+                return copy.deepcopy(r_), pr.calls - n0
+            n0 = pr.calls
+            r_, calls = _inc.memo("screw_rows", lambda f=f, names=names: ["row", value_fp(f), [[n, s_.fps.part(n)] for n in names]],
+                                  compute, code=("verifiers/fastener_stack.py",))
+            if pr.calls == n0:      # reused: count its point tests as a fresh run would
+                pr.calls += calls
+            row = copy.deepcopy(r_)
+        if row is not None:
+            rows.append(row)
+    return rows
+
+
+def _envelope_parts(pr: Probe, f, c) -> list:
+    size, L = size_of(c.sku)
+    itf = c.meta.get("interfaces", {})
+    hd, hh = itf.get("head_d"), itf.get("head_h")
+    if size is None or L is None or not hd or not hh:
+        return []
+    a, u, v = frame(f.axis)
+    under = np.array(f.head_center, float) - a * hh
+    lo = np.minimum(under, under - a * (L + 1)) - hd
+    hi = np.maximum(under, under - a * (L + 1)) + hd
+    return pr.near(lo, hi, exclude=(f.name,))
+
+
+def _screw_row(design, pr: Probe, f, c):
+    """The row of one cap screw (None when it is not one that is measured)."""
+    comps = pr.comps
+    if True:
         size, L = size_of(c.sku)
         if size is None or L is None:
-            continue
+            return None
         itf = c.meta.get("interfaces", {})
         d, hd, hh = itf.get("thread_d", float(size[1:])), itf.get("head_d"), itf.get("head_h")
         if not hd or not hh:
-            continue
+            return None
         a, u, v = frame(f.axis)                        # a points from the thread towards the head
         under = np.array(f.head_center, float) - a * hh
         tdir = -a
@@ -229,15 +274,14 @@ def fastener_stack(design, pr: Probe) -> list[dict]:
         held = sorted({e["part"] for e in stack if e["role"] == "clamped" and e.get("hole_mm") is not None}
                       | set(declared) | set(threads_into))
         joint = sorted(n for n in held if not is_nut(comps[n]) and not is_spacer(comps[n]) and not is_washer(comps[n]))
-        rows.append({"screw": f.name, "sku": c.sku, "size": size, "d": float(d), "length_mm": float(L), "body": c.body,
+        return {"screw": f.name, "sku": c.sku, "size": size, "d": float(d), "length_mm": float(L), "body": c.body,
                      "axis_towards_head": [round(float(x), 3) for x in a], "under_head": [round(float(x), 3) for x in under],
                      "tnut": bool(c.meta.get("tnut")), "tnut_part": c.meta.get("tnut_part"), "threads_into": threads_into, "stack": stack, "threaded": threaded,
                      "thread_starts_mm_under_head": round(thr0, 2), "head": head, "joint": joint, "held": held,
                      "declared_clamps": declared, "tip_on": tip_on,
                      "locking": c.meta.get("locking"), "torque_nm": c.meta.get("torque_nm"),
                      "thread_insert": c.meta.get("thread_insert"), "heatset_insert": bool(c.meta.get("insert")),
-                     "fully_threaded": bool(c.meta.get("fully_threaded"))})
-    return rows
+                     "fully_threaded": bool(c.meta.get("fully_threaded"))}
 
 
 def bearing_contacts(design, pr: Probe) -> list[dict]:
