@@ -358,7 +358,13 @@ def diff(old: dict | None, new: Fingerprints) -> dict:
                 "parts_removed": [], "fields_changed": sorted(new.fields)}
     op, of = old.get("parts", {}), old.get("fields", {})
     changed = sorted(n for n in new.parts if op.get(n) != new.part(n) or is_unstable(new.part(n)))
+    ob, osub = old.get("bodies", {}), old.get("subassemblies", {})
     return {"first_run": False, "parts_changed": changed, "parts_added": sorted(set(new.parts) - set(op)),
+            "bodies_changed": sorted(b for b in set(new.bodies) | set(ob) if ob.get(b) != new.bodies.get(b)),
+            "subassemblies_changed": sorted(x for x in set(new.subassemblies) | set(osub)
+                                            if osub.get(x) != new.subassemblies.get(x)),
+            "fasteners_changed": sorted(x for x in set(new.fasteners) | set(old.get("fasteners", {}))
+                                        if old.get("fasteners", {}).get(x) != new.fasteners.get(x)),
             "parts_removed": sorted(set(op) - set(new.parts)),
             "fields_changed": sorted(n for n in set(new.fields) | set(of)
                                      if of.get(n) != new.fields.get(n) or is_unstable(new.fields.get(n, "")))}

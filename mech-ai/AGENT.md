@@ -25,6 +25,17 @@ you report what was verified and what was not.
 Use `--only geometry interference --no-render` while roughing out geometry; run
 everything (with renders) before you finish. `python -m mechloop history <name>` shows the loop so far.
 
+Staged verify for small tweaks (mechloop/incremental): every verify stores its results in `out/<name>/verify_cache/`,
+keyed by fingerprints of what each verifier reads (parts' B-rep, placement, material, meta; fasteners; design settings;
+the mechloop code and data behind it). `--tier quick` runs geometry, interference (changed pairs only), manufacture,
+practice and ratings, reuses any other verifier whose inputs are unchanged and reports the rest NOT RUN (stale; the
+report is partial). `--tier affected` re-runs every verifier whose inputs changed (FEA case by case, interference pair
+by pair, exact overlap tests of motion and assemblability for unchanged parts reused) and reuses the rest.
+`--tier full` (or no `--tier`) re-runs everything; it is required before release, and a design with `release = True`
+always gets it. The report's `incremental` section and the `[reused from run N]` on summary lines say what was reused
+and from which run. `--no-cache` neither reads nor writes the cache. Renders and the STEP export are never cached:
+use `--no-render` while iterating.
+
 ## Rules that keep results honest
 
 - Units: mm, N, MPa, kg, degrees. Shapes are in the assembled home pose, world frame.
