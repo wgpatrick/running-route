@@ -21,8 +21,11 @@ until a check exists.
   design doc and the build package with the real part (or the search) that will replace each one, and reported by the
   check as an **error** ("must be fixed before buying"), never as a pass or a quiet info line. A design with any
   placeholder is not buildable.
-- Check: to be implemented (`practice` DG-07, `purchased_part_not_real` / `purchased_geometry_not_sourced` /
-  `purchased_rating_not_sourced`, errors). Audit of the current catalogue: docs/PROVENANCE_AUDIT.md.
+- Check: `practice` DG-07 (mechloop/verifiers/purchased.py): `purchased_part_not_real` / `purchased_geometry_not_sourced` /
+  `purchased_rating_not_sourced`, errors, one per SKU; warnings only in a design that sets `design.exploratory = True`. Real-part
+  facts go on the part (`place(..., real_part={...})`, `bom_extra(..., real_part={...})`) or in mechloop/data/real_parts.json.
+  The viewer export flags each placeholder (`placeholder: true`, magenta), the BOM names it `PLACEHOLDER-<sku>` and the build
+  package README lists them first. Audit of the current catalogue: docs/PROVENANCE_AUDIT.md.
 
 ## Priorities
 

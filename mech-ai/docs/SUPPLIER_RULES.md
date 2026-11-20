@@ -537,3 +537,25 @@ print orientation and says whether the slicer's support agrees with the overhang
 Lathe parts are not judged by the milling rules. Code: data and builder as above, evaluation `shops/process_rules.py`
 (geometry-free), features `verifiers/dfm_features.py`; tests `tests/test_process_rules.py` (synthetic solids for each
 extractor, feature-dict evaluation, reference parts RP01, RP02 and RP05).
+
+
+## Benchmark corrections (2026-11-20, reference parts batch 01)
+
+From the quote-page benchmark (reference_parts/batch01/results/RESULTS.md and web_benchmark_2026-11-19.csv):
+
+- **SendCutSend minimum flange.** The quote page's .254" (5052 .090") is the *flat* figure, measured in the flat pattern from
+  the bend line to the flange's edge (`min_flange_length_before_bend`); the specs file's .326" is the *formed* figure,
+  measured from the apex (`min_flange_length_after_bend`). They are one requirement: bend line = apex length - half the bend
+  deduction (SendCutSend's own calculator example; true within .0035" for 49 of 56 metal stocks in the specs file). The
+  `flange_min_flat` rows are now evaluated (apex length - BD/2, BD from the shop's radius and K-factor) and reported in the
+  formed rule's finding (`same_requirement_as`).
+- **Bend radius**: a modelled inside radius more than 0.15 mm from the shop's one radius is a warning that the finished
+  dimensions will change (as SendCutSend's quote page words it).
+- **SendCutSend hole-to-edge** (`min_hole_to_edge`): a warning, "order review required" for instant quoting, not a refusal;
+  **bridge** (`min_bridge_size`) is judged between two cut features only (the edge has the hole-to-edge rule).
+- **Hand-collected rules** (`quote_kind: "quote_page"`, `source: "owner's agent quote page, 2026-11-19"`, `source_row` = line of
+  the CSV): SendCutSend flat flange .254", bend radius .032", hole-to-edge review 0.97 mm; OSH Cut "small gaps" and "narrow
+  features" recommendations (one part only: thresholds bracketed, see each rule's note); Fabworks (new file `fabworks.json`)
+  minimum flange .367" and hole-to-bend "major deformation" (about 5.0 mm from the tangent at 5052 .090", one data point).
+  `tools/build_supplier_rules.py` checks each quote against its CSV row.
+- `dfm_supplier.check_file(path, material, process, shop, thickness_mm)` runs the checks on a raw STEP (reference parts).
