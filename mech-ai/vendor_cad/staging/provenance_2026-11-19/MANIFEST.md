@@ -1,0 +1,43 @@
+# Provenance fetch, 2026-11-19 (staging; nothing here is in `inbox/` yet)
+
+Collected by the provenance-audit agent (see `docs/PROVENANCE_AUDIT.md`). Links came from Digi-Key's product media
+(API v4, `GET /products/v4/search/{pn}/media`) or the maker's own published repository; files were downloaded
+from hosts this session can reach (mm.digikey.com, github.com). No login was used. Bounding boxes were measured
+with build123d (`import_step`), in the file's own axes, mm. None of these files carries a licence grant unless
+stated; they are the makers' published downloads, kept for internal design use.
+
+| file | part (maker, MPN) | source URL | bbox / key dims, checked against | licence | replaces / for |
+|---|---|---|---|---|---|
+| `RPi5_SC1432.step` | Raspberry Pi Ltd, Raspberry Pi 5 8 GB, SC1432 (Digi-Key 2648-SC1432-ND; same file is listed for SC1431) | https://mm.digikey.com/Volume0/opasdata/d220001/medias/common/7211/RaspberryPi5.step (Digi-Key media "CAD Models") | 47 solids; 90.0 x 19.79 x 57.66 (board plane X-Z, connectors overhang). Board 85.6 x 56.5 per Digi-Key's parameters and the product brief (`vendor_docs/RPi5_product_brief_v2.pdf`); the mechanical drawing PDF (pip.raspberrypi.com) is not reachable, so hole positions are NOT yet checked | none read | v12 host (`docs/V12_PLAN.md`); no catalogue entry yet (new SKU HOST-RPI5-8GB) |
+| `BTT_Octopus_V1.0.stp.gz` | BIGTREETECH Octopus V1.0 (board outline shared with V1.1) | https://github.com/bigtreetech/BIGTREETECH-OCTOPUS-V1.0 `3D/BIGTREETECH Octopus V1.0.stp`, commit 9526ff1 (gzip -9 of the unchanged 24,375,849-byte file, to stay under 10 MB) | 2563 solids; 162.19 x 100.00 x 19.33. Board 160 x 100 class; hole pattern to be checked against `vendor_cad/staging/BIGTREETECH Octopus - SIZE.pdf` (byte-identical to the repository's `Hardware/BIGTREETECH Octopus - SIZE.pdf`, SHA-256 f4a1718a55d064f8...) before promotion. V1.0 vs V1.1: same PCB outline per BTT's manual; MCU differs | no licence file in the repository | `control_board_octopus()` / CTRL-OCTOPUS-V1.1 (detail model; currently none) |
+| `BTT_SFS_V2.0_Model.step.gz` | BIGTREETECH Smart Filament Sensor V2.0 | https://github.com/bigtreetech/smart-filament-detection-module `V2.0/CAD/SFS V2.0 Model.STEP`, commit cfacc9a (gzip -9 of the unchanged 24,967,212-byte file) | 248 solids; 53.15 x 30.30 x 27.30. Manual (`vendor_docs/BTT_SFS_V2.0_user_manual_20231123.pdf`) to be read for the outline drawing before promotion | no licence file in the repository | v12 filament motion sensor (new SKU SENSOR-BTT-SFS-V2) |
+| `JST_XHP-2.step` | JST XHP-2 (XH receptacle housing, 2 pos.) | Digi-Key media "CAD Models" for XHP-2 (file `XHP-2.STEP`, served from mm.digikey.com) | 1 solid; 7.30 x 7.75 x 5.70. The JST XH data sheet (jst-mfg.com) refuses automated requests: not cross-checked | none read | CONN-JST-XH (no geometry today) |
+| `TE_2-520182-2.step`, `TE_2-520182-2_drawing.dxf` | TE Connectivity 2-520182-2, FASTON 187 (4.75 mm) fully insulated receptacle | Digi-Key media "CAD Models" (TE's `c-2-520182-2-f-3d.stp` and `-2d.dxf`) | 1 solid; 7.62 x 5.08 x 21.72. TE's 2D DXF is the maker's drawing; not compared yet | none read | CONN-FASTON-4.8 (no geometry today) |
+| `SUNON_MF30101V2-1000U-A99.step` | SUNON MF30101V2-1000U-A99, 30 x 30 x 10 fan, 12 V | https://mm.digikey.com/Volume0/opasdata/d220001/medias/common/8896/259_Doc-0175505-7-0.stp | 1 solid; 30.0 x 10.4 x 30.0 (10.4 includes the label/hub boss). Data sheet already at `vendor_cad/staging/MF30101V2-1000U-A99_12V_datasheet.pdf` | none read | `fan(30)` / FAN-3010 detail model (Sunon record `mechloop/parts/vendor/sunon_mf30101v2.json`) — only if the 12 V part is chosen |
+
+Already held, re-confirmed byte-identical (not copied again): Delta BFB0524HH STEP (= `inbox/BFB0524HH.step`) and spec
+(= `vendor_docs/delta_BFB0524HH_spec.pdf`); BTT Octopus SIZE drawing (= `staging/BIGTREETECH Octopus - SIZE.pdf`).
+
+## Data sheets copied to `vendor_docs/` (this fetch)
+
+| file | part | source URL | figures read (page, verbatim) |
+|---|---|---|---|
+| `Cantherm_RT_series_OTCO_datasheet.pdf` | Cantherm RT series organic thermal link, 15/16 A 250 VAC (RT128 = Digi-Key 1.08 USD, 4,614 in stock) | https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/8325/Thermal-Link%20%28OTCO%29-Organic%20Type-Datasheet.pdf | p.1 "Lead Length ... Standard 65 ± 3 ( 14 ) 35 ± 2 Φ 4 ± 0.2 Φ 1 ± 0.1" (L, L1 body, L2, D, d); p.2 rows "134 RT134 131 ± 2 104 119 250 15 / 16 250 1.5 3" and "128 RT128 124 ± 2 98 113 200 15 / 16 250 1.5 3" (Tf, model, fusing temp, Th, Th UL/cUL, Tm, Ir A, Ur VAC, In kA, Imax kA). No DC rating stated. |
+| `Cantherm_CS7_R53_thermostat_datasheet.pdf` | Cantherm CS7 series bimetal thermostat (CS712025Y: 120 °C NC; Digi-Key 5.38 USD, 427 in stock) | https://www.cantherm.com/wp-content/uploads/2017/05/R53_APRIL_2015.pdf | Digi-Key parameters for CS712025Y: "Switching Temperature 248°F (120°C)", "Current Rating - DC 10A (24V), 15A (12V)", "Tolerance ±9°F (±5°C)", "Switching Cycles 100K", "Quick Connect", "Cylinder with Mounting Flange". Dimensions page to be read when the part is modelled. |
+| `Semitec_NT-4_thermistor_datasheet.pdf` | Semitec 104NT-4-R025H42G (Digi-Key 0.91 USD, 250 in stock) | https://www.semitec-global.com/uploads/2022/01/P18-NT-Thermistor.pdf | specifications table: "104NT-4-R025H42G 25 ℃ 100 kΩ 25/85 4267 K ± 2%"; product number legend "Resistance tolerance (H = ± 3%)" (Digi-Key lists ±1%: the maker's sheet governs); range "− 50 to 300" °C; dimensions "φ1.25 ± 0.30" bead. |
+| `Phoenix_3200519_ferrule_datasheet.pdf`, `Phoenix_3200014_ferrule_datasheet.pdf` | Phoenix Contact insulated ferrules 3200519 (gray, 14 mm) and 3200014 (white, 14 mm) | Digi-Key media "Datasheets" (mm.digikey.com copies of Phoenix's PDF) | 3200519: "Length (b) 14 mm", "Sleeve length 8 mm", "Inner dimension of the insulating collar (d) 2.8 mm", "Ferrule diameter 1.3 mm"; 3200014: "Length (b) 14 mm", "Sleeve length 8 mm", "(d) 2.5 mm", "Ferrule diameter 1.1 mm". |
+| `igus_CF130_datasheet.pdf` | igus chainflex CF130 (CF130-03-02: 2 x 22 AWG, Digi-Key 1.54 USD/ft, 974 in stock) | https://www.igus.com/us/pdf/cf130.pdf | conductor and jacket figures per row; read when the cable is modelled. |
+| `InspiredLED_24V-COB_flex_spec.pdf` | Inspired LED 24V-COB-4000K-12M COB strip | Digi-Key media (mm.digikey.com) | "8mm flex, cut points available every 1.97” (24 LEDs)". |
+| `RPi5_product_brief_v2.pdf` | Raspberry Pi 5 | Digi-Key media (mm.digikey.com) | board figures; the mechanical drawing is a separate PDF (owner's agent list). |
+| `ST_PN2222A_datasheet.pdf` | ST PN2222A NPN (contactor-coil driver in v12) | Digi-Key media | ratings table. |
+| `BTT_SFS_V2.0_user_manual_20231123.pdf` | BIGTREETECH SFS V2.0 | github.com/bigtreetech/smart-filament-detection-module, commit cfacc9a | outline, wiring. |
+| `delta_BFB_51x51x15_series_drawing.pdf` | Delta BFB 51 x 51 x 15 series drawing (BFB0524HH family) | Digi-Key media | second Delta document (the spec sheet was already held). |
+| `SDP-SI_D815_GT2_2mm_belts_pulleys_pp144-148_153-155.pdf` | SDP/SI D815 metric catalogue section 2, GT2 2 mm pitch belts (pp.144-148) and pulleys for 6 / 9 mm belts (pp.153-155), extracted pages | https://sdp-si.com/D815/D815-Metric-Section2-Belt-and-Chain-Drives.pdf (36.5 MB, not kept whole) | belts: "METRIC - 3, 6 & 9 mm", "Special Widths - cut to size from sleeves available from stock."; 9 mm-belt pulleys, 20 grooves: "A 6A51M020DF0904 2 ... 4 13.1 19.1 9.9 M2.5" and "A 6A51M020DF0906 1 ... 6 — 17.5 18.8 ... M3" (bores 4 and 6 mm only; P.D. 12.7, O.D. 12.2, flange 17.4). |
+| `Omron_D2F_datasheet_digikey_0318.pdf` | Omron (Aratas) D2F series data sheet as Digi-Key serves it (D2F-L, D2F-01L) | https://mm.digikey.com/Volume0/opasdata/d220001/medias/docus/875/D2F_0318_DS.pdf | same 6-page sheet as `vendor_docs/ENDSTOP-MICRO_datasheet.pdf` (outlined text, not extractable); records a download URL for the existing D2F record, whose source_url_note says none was recorded. |
+
+## Measured from supplier STEP files already in `inbox/` (McMaster, batch 2026-11-18)
+
+| file | measured | replaces |
+|---|---|---|
+| `inbox/FHCS-M4x40.step` (McMaster 91294A204) | one solid, 8.0 x 8.0 x 40.0; head top plane dia 8.00; 90° cone from dia 4.0 at Z 17.7 to Z 19.7, then 0.3 mm cylindrical head edge (head height 2.3); socket floor plane at Z 18.39, 2.5 across flats (hex key 2.5, socket depth 1.61) | `CSK["M4"]` = (8.96, 7.53, 2.5), "recalled from ISO 10642" (`mechloop/parts/__init__.py`): McMaster's head is 8.00, not 7.53 |
+| `inbox/NUT-M3-NYLOC.step` (McMaster 90576A102) | 2 solids, 5.50 across flats (6.35 across corners) x 4.00 high | confirms `NUT_ISO10511["M3"]` = 4.0 ("recalled") for the bought part |
