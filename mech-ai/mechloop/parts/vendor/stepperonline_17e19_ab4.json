@@ -6,7 +6,7 @@
  "source_url": "https://www.omc-stepperonline.com/anti-backlash-screw-nut-nema-17-external-48mm-stack-1-68a-lead-2mm-0-07874-length-330mm-17e19s1684ab4-330ra",
  "title": "Anti-backlash Screw Nut Nema 17 External 48mm Stack 1.68A Lead 2mm(0.07874\") Length 330mm - 17E19S1684AB4-330RA",
  "datasheet_url": "https://files.omc-stepperonline.com/17E19S1684AB4-330RA_Full_Datasheet.pdf",
- "datasheet_status": "NOT fetched (host not reachable from this session): nut dimensions, rotor inertia, mass and any drawing values are not in hand",
+ "datasheet_status": "FETCHED 2026-11-20 (owner supplied): vendor_docs/StepperOnline_17E19S1684AB4-330RA_Full_Datasheet.pdf, StepperOnline drawing A4003 rev 0 (12.24.2024). Values in 'datasheet_drawing' are read from it; apply them in the next design revision (v11.1).",
  "predecessor": {
   "part": "17E19S1684AB2-330RA (17E19S1684AB-330RA)",
   "source_url": "https://www.omc-stepperonline.com/anti-backlash-screw-nut-nema-17-external-48mm-stack-1-68a-lead-2mm-0-07874-length-330mm-17e19s1684ab2-330ra",
@@ -152,5 +152,38 @@
   "basis": "lead angle at the Tr8x2 pitch diameter (7.0 mm): atan(2 / (pi x 7.0)) = 5.2 deg. A trapezoidal flank (30 deg) raises the friction angle to atan(mu / cos 15 deg): 5.9 deg at mu 0.10, 8.8 deg at mu 0.15 (steel on brass or acetal, lubricated, typical). Friction angle > lead angle: the screw does not back-drive under a static load. Tr8x8 (17E19S1684MB4): lead angle 20.0 deg, back-drives",
   "status": "DERIVED from textbook screw mechanics and typical friction coefficients; vibration can still creep a self-locking screw; not tested"
  },
- "licence": "not stated on the product page"
+ "licence": "not stated on the product page",
+ "datasheet_drawing": {
+  "source": "vendor_docs/StepperOnline_17E19S1684AB4-330RA_Full_Datasheet.pdf (drawing A4003 rev 0)",
+  "electrical": {
+   "amps_per_phase": 1.68,
+   "resistance_per_phase_ohm": "1.65 +/-10% @25C",
+   "inductance_per_phase_mh": "2.80 +/-20% @1 kHz",
+   "holding_torque_nm": 0.44,
+   "step_angle_deg": 1.8,
+   "step_accuracy": "+/-5% non-accumulative",
+   "insulation": "class B 130C",
+   "temperature_rise": "max 80C",
+   "ambient": "-10..50C, humidity max 85%",
+   "life": "TMBF 6000 h or more @ 24 V / 300 rpm",
+   "connector": "S6B-PH-K (JST PH 6-pin), pins 1 A+ red, 4 A- grey, 3 B+ yellow, 6 B- green",
+   "lead_wire_length_mm": "500 +/-10"
+  },
+  "mechanical": {
+   "body_square_mm": "42.3 max",
+   "body_length_mm": "48 max",
+   "mounting_holes": "4 x M3, depth 4.5 min, on 31 +/-0.1 square",
+   "pilot": "dia 22 +/-0.052, 2 mm high",
+   "screw": "Tr8x2, 330 +/-1 mm from the mounting face",
+   "connector_offset_mm": "6.5 (connector housing 16 wide, 11 deep)"
+  },
+  "anti_backlash_nut": {
+   "flange": "square 26 +/-0.1, corners within dia 35, 5 thick",
+   "flange_holes": "4 x M4 on 18.5 square",
+   "barrel": "dia 18, 16 long, then a 2 mm gap, then the threaded preload section dia 18",
+   "overall_length_mm": "33 max",
+   "thread": "Tr8x2",
+   "note": "replaces the photo-based stand-in; every dimension shown on the drawing; thread/spring internals not dimensioned (not needed for the outer envelope)"
+  }
+ }
 }
