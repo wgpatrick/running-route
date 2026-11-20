@@ -6,8 +6,10 @@ Everything here is simulated. Nothing has been built.
 comment). It carries out the changes the owner approved on 2026-11-19 (A to F below). The frame's extrusions, the 420 x 420 x
 480 mm envelope, the Z rails, the electronics and the gantry's Y side are v10.1's except where a change below says otherwise.
 
-**Verify (full, all 13 verifiers, on the final code): {{VERIFY}}** (v10.1: 0 errors, 61 warnings). All {{REQ}} requirements met
-(v10.1: 33 of 33). Report: `out/printer_v11/report.json`; scorecard `out/printer_v11/scores.jsonl`.
+**Verify (all 13 verifiers, on the final code, 2026-11-20 07:20): FAILS, 118 errors, 142 warnings** (v10.1: 0 errors, 61
+warnings). The errors: **116 are the new DG-07 purchased-part rule** (section H; v11.1's work, not fixed here by instruction),
+**1 is the FEA thermal case** (`thermal_gap_change`, -0.101 mm against 0.1) and **1 is its requirement, limit (b)** (section B).
+Every other verifier passes. **39 of 40 requirements met** (v10.1: 33 of 33). Report: `out/printer_v11/report.json`; scorecard `out/printer_v11/scores.jsonl`.
 
 ## The short answers
 
@@ -236,7 +238,8 @@ Each is recorded in `vendor_cad/SOURCES.md`.
 The manufacture verifier now judges every sheet part against the published design rules of six sheet suppliers
 (`mechloop/data/supplier_rules/`, `mechloop/verifiers/dfm_supplier.py`, `docs/SUPPLIER_RULES.md`): a rule the supplier
 states as a requirement is an error, one it phrases as a recommendation a warning. v11 has **30 sheet parts, all assigned to
-SendCutSend** (no machined part). Result on the final code: {{SUPPLIER}}.
+SendCutSend** (no machined part). Result on the final code: **no supplier-rule error; 56 warnings (all SendCutSend recommendations)**, plus the general sheet
+checks' 39 warnings (holes near edges, holes smaller than the thickness, sharp corners, one hole near a bend).
 
 | Supplier | Assigned | v11's 30 sheet parts against its published rules |
 |---|---|---|
@@ -262,11 +265,11 @@ A practice rule added during this work (DG-07, `mechloop/verifiers/purchased.py`
 purchased part to be a real, orderable product (maker, part number, seller), with the maker's CAD or a faithful re-make and a
 maker's source for every rating a check reads. It is an error unless a design is marked exploratory, and v11 is not (the
 coordinator's instruction: v11 is not the build candidate; the replacements are v11.1's work, `docs/V11_1_PLAN.md`). On v11
-it gives **{{DG07}}**:
+it gives **116 errors** on the final code (138 on an earlier run the same night, before the commodity lines were pinned):
 
 | Category | SKUs (pieces) | Examples |
 |---|---|---|
-| Not pinned to a real product (`purchased_part_not_real`) | 77 (241 drawn pieces, plus BOM-only lines: wire, connectors, cable ties, fuses, belts, TMC2209 drivers, sock, thread locker) | extrusions (no seller recorded although Misumi cuts them), corner brackets, flanged button heads, rails and blocks (no seller), motors, pulleys and idlers, spacers, the PEI sheet and its magnetic base, the heater, the POM nut, the E2B probe (no seller recorded), the Octopus |
+| Not pinned to a real product (`purchased_part_not_real`) | 55 (232 pieces: 52 drawn SKUs and 3 BOM-only lines, the two belts and the silicone sock; 22 more, the wire, connectors, cable ties, fuses, drivers and thread locker, were pinned by the sourcing work while v11 was being verified) | extrusions (no seller recorded although Misumi cuts them), corner brackets, flanged button heads, rails and blocks (no seller), motors, pulleys and idlers, spacers, the PEI sheet and its magnetic base, the heater, the POM nut, the E2B probe (no seller recorded), the Octopus |
 | Geometry a stand-in (`purchased_geometry_not_sourced`) | 41 (212) | flanged button heads, corner brackets, pulleys, spacers, M5 x 16 / x 65 / M3 x 25 / M2.5 x 20 screws, MGN rails and blocks, the POM nut, the PEM S-M3-0, the probe's nuts, heater, magnetic base, sheet |
 | A rating a check reads has no maker's source (`purchased_rating_not_sourced`) | 20 (43) | pulley pitch diameter and teeth, the Octopus's driver ratings, the Roto's motor figures, the E2B's repeatability and drift-rated-to figures (assumed in the catalogue), the PSU, the POM nut |
 
@@ -357,15 +360,25 @@ HBLFSNF5 files.
 
 ## Questions for the owner
 
-1. MIC-6 flatness: accept 0.13 mm as a receiving check on the cut plate (and reject a worse piece), or go by the maker's
+1. **Limit (b) fails by 0.001 mm** (-0.101 mm; -0.090 before the nut plates grew for SendCutSend). Choose for v11.1: make
+   "heat the bed, soak, then probe" the procedure and bound (b) on the carrier's warming after the soak; shorten or stiffen
+   the thermal path (stud stacks, nut-plate seat); or relax (b).
+2. **DG-07: 116 errors** on purchased parts (55 not pinned to a real product, 41 stand-in geometry, 20 unsourced ratings).
+   Confirmed as v11.1's work (`docs/V11_1_PLAN.md`); v11 is not the build candidate.
+3. MIC-6 flatness: accept 0.13 mm as a receiving check on the cut plate (and reject a worse piece), or go by the maker's
    0.381 mm, which no plate under 19 mm meets against limit (a)?
-2. Z screws at 330 mm: is the arrangement acceptable (front screws 1.5 mm from the top side rails, rear motor outside the back
+4. Z screws at 330 mm: is the arrangement acceptable (front screws 1.5 mm from the top side rails, rear motor outside the back
    wall, front Z drives fitted before the top side rails)? The alternatives are custom-length screws or feet.
-3. The POM nut: can one be measured before the nut plates and keepers are cut?
-4. The 220 x 220 sheet comes from resellers, not Creality: acceptable, or keep Creality's 235 (74 % used)?
-5. The Y belt plane moved 0.36 mm (thinner Y idler plates) to clear the shaft-load warning: acceptable?
-6. Blower: insist on a ball-bearing GDB4010 from the seller?
-7. The probe holder in 2.286 mm 5052: acceptable, or a stiffer holder (which would need the probe moved or a two-part holder)?
+5. The POM nut: can one be measured before the nut plates and keepers are cut?
+6. The 220 x 220 sheet comes from resellers, not Creality: acceptable, or keep Creality's 235 (74 % used)?
+7. The E2B is shielded: its holder could clamp it 2.4 mm behind its face instead of the E2E's 15 mm (a shorter, stiffer
+   holder). Redraw the holder in v11.1, or keep the 15 mm?
+8. SendCutSend's 56 recommendations (mostly hole-to-edge distance on the 6.35 and 9.525 mm plates): follow them where cheap
+   (Y plates, tool plates, electronics tray), and accept them on the nut plates, where 1.5 to 2 x thickness would grow each plate
+   by about 20 mm?
+9. The toolhead is 0.399 kg against the 0.40 kg target (the Delta is 28 g against the GDB4010's 12 g; with its bigger duct and M3 bolts the toolhead gained 20 g): accept, or raise
+   the target / save mass elsewhere?
+10. The Y belt plane moved 0.36 mm (thinner Y idler plates) to clear the shaft-load warning (now 0.98): acceptable?
 
 ## What was run
 

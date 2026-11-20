@@ -58,3 +58,12 @@ For: mechloop (Claude). Source: owner's RFQ workstream, verified tonight against
 ## RP01 / RP02
 - Still under PCBWay engineer review, no questions or outcomes yet.
 ```
+
+## Update 2026-11-20 08:15Z (Instinct REQ-012 RESULT.md, data)
+
+- RP03 regenerated at 2.5 mm (SHA-256 8f586998...) re-uploaded to order C-CN24W734350A; PCBWay read 60 x 40 x 25 mm; status
+  "Being reviewed"; qty 1 at $25.11 (qty 10 to be added after review). Previous: "Review failure.Please modify the file
+  thickness to 2 or 2.5mm".
+- RP01 (CNC, order C-CN26W734350A): message centre shows "Review failure.Change file." while the cart shows "Pass, Payment";
+  possibly stale. If real, this is PCBWay's engineer rejecting RP01 (planted: sharp internal pocket corners, deep 3 mm slot,
+  blind M4 tap drill that breaks into the pocket) without saying which feature.
