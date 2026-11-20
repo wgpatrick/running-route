@@ -4,7 +4,8 @@
  "distributors": [
   "Digi-Key",
   "Mouser",
-  "Newark"
+  "Newark",
+  "Farnell"
  ],
  "cache_ttl_hours": 24,
  "pacing_s": {
@@ -59,6 +60,7 @@
   "final": 0,
   "note": "bench time per sub-assembly and for the final assembly; 0 = not modelled (the schedule gives the earliest start, not the finish)"
  },
- "domestic_only": true,
- "domestic_only_note": "owner, 2026-11-20: no international shipping. Farnell (UK) removed; maker-direct shops count only through a seller that ships within the US (e.g. a US warehouse or US reseller), recorded per line."
+ "domestic_only": false,
+ "domestic_only_note": "owner, 2026-11-20: prefer US sellers; an overseas seller (e.g. Farnell UK, maker shops abroad) only when no US seller holds the quantity AND its shipping cost is low; the report states shipping cost and extra lead time and flags the line 'overseas'.",
+ "prefer_domestic": true
 }
