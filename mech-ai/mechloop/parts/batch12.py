@@ -531,12 +531,26 @@ def probe_eddy_duo() -> Stock:
     from .electrical import inductive_probe_template
 
     tpl = inductive_probe_template(4.0, 4.0, "pnp_no", (4.75, 5.25), internal_pullup=False)
-    tpl["ratings"].update({"max_ambient_c": 60.0, "repeatability_mm": 0.001, "switching_distance_tolerance_frac": 0.10})
-    tpl["sources"].update({"max_ambient_c": "BTT Eddy manual (vendor_docs/BTT_Eddy_Series_User_Manual_20250507.pdf): 60 degC",
-                           "switching_distance_steel_mm": "Klipper probe_eddy_current homes at a calibrated height; 4 mm stands for the "
-                                                          "calibrated range (z_offset set by PROBE_EDDY_CURRENT_CALIBRATE): ASSUMED"})
+    MAN = "BTT Eddy manual (vendor_docs/BTT_Eddy_Series_User_Manual_20250507.pdf)"
+    tpl["ratings"].update({"max_ambient_c": 60.0, "repeatability_mm": 0.001, "switching_distance_tolerance_frac": 0.10,
+                           "supply_current_a": 0.03, "output_max_a": 0.0})
+    tpl["sources"].update({
+        "max_ambient_c": f"{MAN} 1: operating temperature <= 60 degC ambient",
+        "supply_v_min": "USB 2.0 VBUS at the device 4.75-5.25 V (USB-IF specification); " + MAN + " 1: 5 V",
+        "supply_v_max": "USB 2.0 VBUS at the device 4.75-5.25 V (USB-IF specification); " + MAN + " 1: 5 V",
+        "supply_current_a": f"{MAN} 1: static and operating current 30 mA",
+        "output": "no switched output: USB device read by Klipper (probe_eddy_current); 'pnp_no' only names the electrical template",
+        "output_max_a": f"{MAN} 1: USB connection, no switched output: nothing is drawn from one (0 A)",
+        "repeatability_mm": f"{MAN} 1: 'standard error 0.5 um'; taken as 1 um (twice the maker's figure)",
+        "switching_distance_steel_mm": f"{MAN} 4.1: mounted 2-3 mm above the tip, coil current calibrated at 20 mm, so it reads over at "
+                                       "least 2-20 mm; Klipper probe_eddy_current triggers at the height PROBE_EDDY_CURRENT_CALIBRATE sets: 4 mm "
+                                       "is a setting inside that range",
+        "switching_distance_aluminium_mm": f"{MAN} 4.1: as steel (the calibration is made on the printer's own bed sheet)",
+        "switching_distance_tolerance_frac": "IEC 60947-5-2 real switching distance 0.9-1.1 x nominal (standard); the Eddy's trigger is a "
+                                             "calibrated firmware setting, so this bounds it generously",
+        "internal_pullup": "no switched output (USB device): no pull-up"})
     tpl["product"] = {"product": "BIGTREETECH Eddy Duo", "vendor": "BIGTREETECH", "part_number": "Eddy Duo", "form": "module",
-                      "off_the_shelf": True, "custom_pcb": False, "builder_work": "high-flex 4-core USB lead to the Pi 5"}
+                      "off_the_shelf": True, "custom_pcb": False, "builder_work": "its own 2.5 m USB lead (supplied with it, Eddy manual 1) to the Pi 5 in the toolhead loom"}
     tpl["params"] = {"interface": "usb", "usb_host": "Pi 5"}
     return Stock(body, "PROBE-BTT-EDDY-DUO", "BIGTREETECH Eddy Duo eddy-current bed probe (USB)", 0.012, material="abs", cost_usd=38.99,
                  ratings={"electrical": tpl, "max_ambient_c": 60.0},

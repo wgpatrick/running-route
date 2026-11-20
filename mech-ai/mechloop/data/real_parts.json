@@ -994,6 +994,12 @@
    ],
    "datasheet": "vendor_cad/staging/instinct_REQ-014/MANIFEST.md (McMaster drawing in vendor_docs)",
    "note": "display model: McMaster's STEP of 95185A520 (vendor_cad/inbox/NUT-PEM-S-M3-0.step); mounting hole 4.22, min sheet 0.8"
+  },
+  "NUT-M3-NYLOC": {
+   "ratings_source": {
+    "max_temp_c": "McMaster-Carr 90576A102 (nylon-insert locknut, class 8 steel): nylon insert to 250 degF (121 degC); RP1228 / PRACTICE FST-072: about 120 degC; 120 used"
+   },
+   "note": "seller and part number from the McMaster table (mcmaster_part)"
   }
  }
 }

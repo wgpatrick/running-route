@@ -1636,7 +1636,9 @@ def build() -> Design:
     d.get("hotend").meta["description"] = ("E3D Revo hotend, held in the Roto's hotend seat by the Roto's own clamp (no separate fasteners). "
                                            "v11: fitted with E3D's silicone sock for the Revo HeaterCore (BOM), so the part-cooling jet "
                                            "that passes under the heater does not cool it.")
-    d.bom_extra("E3D-REVO-SILICONE-SOCK (E3D Revo HeaterCore silicone sock; v11 part cooling)", 1, 3.0)
+    d.bom_extra("E3D-REVO-SILICONE-SOCK (E3D Revo HeaterCore silicone sock; v11 part cooling)", 1, 3.0,
+                real_part={"maker": "E3D", "mpn": "Revo Silicone Sock", "sellers": [{"name": "E3D Online (maker direct; US shipping)",
+                                                                                     "checked": "2026-11-20"}], "sold_by_maker": True})
     # part cooling (v11): the BFB0524HH blower behind the Roto, 0.1 mm behind the probe bracket's leg, outlet down into the duct
     y_noz = YB0 + HOT_OFF
     bl_y0 = yb_pm + B23 + 2 * WASHER["large"]["M3"][2] + 3.0 + 1.5     # 1.5 mm behind the Roto screws' heads and washers
@@ -2668,6 +2670,8 @@ def add_v12_bom_lines(d):
         d.bom_extra(sku, q, c, real_part=rp, stage=st)
     d.bom_extras.pop("GT2-BELT-9MM-OPEN-1M", None)
     d.bom_extras.pop("GT2-BELT-12MM-OPEN-1M", None)
+    # the Eddy Duo's USB-A plug is on the 2.5 m lead BIGTREETECH ships with it (Eddy manual 1: cable length 2.5 m): not bought apart
+    d.bom_extras.pop("CONN-USB-A", None)
     # one THREADLOCKER line (Loctite 243, Henkel 1329837): the v11 duplicate is merged (V12_PLAN wiring decisions)
     for k in [k for k in d.bom_extras if k.startswith("THREADLOCKER-MEDIUM (")]:
         d.bom_extras.pop(k)
