@@ -299,10 +299,10 @@ From the two full verify reports and the two scorecards, each on its design's fi
 | Step-loss ceiling | 24,000 mm/s2 | 20,000 mm/s2 (first failure at 24,000 is a print-outline defect, no step loss; one sweep step is not a real difference) |
 | Cross-track error RMS / worst | 0.0109 / 0.1029 mm | 0.0103 / 0.1039 mm |
 | Benchmark print time | 2,571 s | 2,571 s |
-| Input shaper (tune, Klipper's code on the twin) | X EI 92.8 Hz, Y MZV 67.2 Hz | X EI {{SHX}}, Y MZV {{SHY}} |
+| Input shaper (tune, Klipper's code on the twin) | X EI 92.8 Hz, Y MZV 67.2 Hz | X EI 90.8 Hz, Y MZV 67.6 Hz (predicted resonance 71.8 / 67.3 Hz) |
 | Pressure advance (tune) | 0.042 | 0.042 |
-| Bed mesh (tune): first layer gap error with / without mesh | | worst {{MESH_ON}} / {{MESH_OFF}} mm |
-| Firmware-in-the-loop print (Klipper, STM32F446, motor bracket) | v10's: clean, 3,891 s, 0.055 mm from the path | {{FIL}} |
+| Bed mesh (tune): first layer gap error with / without mesh | | worst 0.015 / 0.104 mm (RMS 0.008 / 0.074; on the assumed as-built bed 0.30 / 0.20 tilt, 0.15 bow) |
+| Firmware-in-the-loop print (Klipper, STM32F446, motor bracket) | v10's: clean, 3,891 s, 0.055 mm from the path | clean: 3,891 s, the nozzle within 0.055 mm of the G-code path, no machine collision in 4,074 poses checked, one corner-bulge warning (0.40 mm, pressure advance off in this run) |
 | Part cooling (estimate) | about 0.8 CFM at 5 m/s (axial fan, aimed at the heater) | 1.19 CFM at 13.3 m/s (Delta blower, aimed under the tip) |
 | Probe | OMRON E2E-X5ME1 (unshielded) | OMRON E2B-M12KS04-WP-C1 (shielded), OMRON's STEP |
 
@@ -342,6 +342,9 @@ HBLFSNF5 files.
 8. **No part-cooling bench unit**: the blower sits where the driver for the Roto's right-hand screw goes, so the order is duct,
    Roto, screws, blower. The front Z drives go in as units with their nut stacks, before the top side rails.
 9. **The tension screws are not driver-checked**: they are set by their jam nuts and their heads bear on the brackets.
+10. **The Delta blower overhangs the right top rail** at the right end of the travel, 10.5 mm above it: X travel stays
+    rail-limited, and the X-travel requirement counts only what is below the rails' top.
+11. **Limit (b) is reported as a fail**, not relaxed and not designed round in v11 (the owner's limit; the fixes are listed).
 
 ## Checker and catalogue changes
 
@@ -379,7 +382,11 @@ HBLFSNF5 files.
 - The probe bracket's stiffness; the E2B's switching distance on the 0.4 mm spring-steel sheet (OMRON's figure is for a
   1 mm iron target); the probe's temperature (a lumped estimate with assumed air and bracket temperatures).
 - v10.1's open items that still stand (T-slot tolerances, the T-nut re-make, McMaster files not in hand).
-{{NOTRUN}}
+- Not run: `score --firmware klipper` (the real firmware planning every benchmark print); a transient thermal case (what
+  limit (b) would be after a heat soak); an airflow model of the new duct; any test of the generated drawings beyond the
+  generator's own checks; nothing physical.
+- Not adopted (staged for v11.1): McMaster's STEPs for M4 x 6, M5 x 6, the flanged button heads, the toothed washer and the
+  large washers; Misumi's HNTAJ5 and corner-bracket files.
 
 ## Questions for the owner
 
@@ -405,12 +412,46 @@ HBLFSNF5 files.
 
 ## What was run
 
-{{RUN}}
+All on 2026-11-19/20. The previous agent's last full verify was cut off by a container restart. This pass:
+
+- **Full verify, five attempts on the way to the final one.** 00:48: lost to the second container restart. 00:48 to
+  02:04 (complete): bed-support FEA killed for lack of memory (two agents' CalculiX runs, about 6.5 GB each, at once), and it
+  found the X-travel requirement measuring the whole duct's bounding box (fixed: only what is below the rails' top counts)
+  and limit (c) passing although its FEA had not run (fixed: (c) now fails when the flexure is not evaluated). 02:08 and
+  02:59: stopped (memory). 02:59 to 04:07 (complete): the geometry check's `multiple_solids` warning showed the **part duct in
+  two pieces**: the riser behind the Roto had no front wall, open to the Roto's back through a 0.6 mm slit (fixed: a bridge
+  and a front wall; one solid, 22 g, toolhead 0.399 kg). 04:10 to 05:16: bed-support FEA failed with the disk full (5 GB of
+  stale FEA scratch folders from the killed runs; removed). 05:18 to 06:04: bed-support FEA killed again (memory, against
+  this pass's own scorecard run). **06:30 to 07:20: the final report**, on the final code, with nothing else running:
+  all 13 verifiers ran, every FEA case ran, nothing was reused (`--tier affected`, whose cache held nothing usable; the
+  report's `incremental` block lists each verifier as "ran"). Result at the top of this page.
+- **`score --assembly`** (08:22, 61 min) on the final report: the comparison table. Its static check names the one real FEA
+  error (`thermal_gap_change`); an earlier score run at 06:30 had memory-killed FEA and is superseded.
+- **`tune`** (Klipper's shaper, pressure-advance and bed-mesh code on the twin): shaper, pressure advance and mesh in the table.
+- **Firmware-in-the-loop print** of the standard part (`examples/motor_bracket.py:bracket`, real Klipper at commit 29d4ec2, the
+  Octopus's STM32F446 dictionary, `--trajectory`): clean: 3,891 s, the nozzle within 0.055 mm of the G-code path, no machine collision in 4,074 poses checked, one corner-bulge warning (0.40 mm, pressure advance off in this run); output `out/printer_v11/fil/bracket/`, replayed in the viewer.
+- **Electrical:** the generated `out/printer_v11/electrical/printer.cfg` is parsed against the board's pins and loaded by klippy
+  itself inside the verify (`klipper_config_check`: no problems, klippy ok); the FIL print plans on it.
+- **Assembly plan / simulation:** inside the verify (assemblability: pass, one `unsupported_step` warning for the thumb nuts),
+  in `score --assembly` (154 min, 251 fasteners, 33 tool changes, 20 turn-overs) and in the build package (`ASSEMBLY.md`).
+- **Viewer** (`tools/export_viewer.py`, with the assembly simulation and the FIL print): `viewer/meshes.txt` 16.1 MB, 800
+  parts (the three belts as display parts). `viewer_v10_1/` and `review_v10_1/` are left as they were.
+- **Build package** `docs/build/printer_v11/` (`tools/build_package.py --force`): the generator refuses a report with
+  errors, so it was written with `--force`, and every document carries its banner "STALE PACKAGE (--force) ... the report is
+  not a pass (errors present)". The report does describe this design file (md5 checked); the banner's reason line is the
+  true one. Its README lists the 60 placeholder BOM lines first (DG-07).
+- **Review data** (`tools/build_review.py printer_v11`): `review/data.json` (800 parts, 112 joints, 184 open items) and
+  `review/drawings/` (34 SVGs; three stale v10.1 drawings of deleted tension anchors removed).
+- `tools/mcmaster_wanted.py`: `vendor_cad/mcmaster_wanted.csv`, 42 hardware types, 621 parts.
+- **Tests:** `tests/test_v11_support.py` 16 passed; the whole suite with `-k "not v11"`: {{TESTS}}.
 
 ## Files
 
-- `designs/printer_v11.py`; `out/printer_v11/report.json`, `scores.jsonl`, `tune/tuning.json` (not in git)
-- `mechloop/parts/batch10.py` and the vendor files above; `tests/test_v11_support.py`
-- `docs/build/printer_v11/`, `viewer/`, `review/data.json`, `review/drawings/` (generated); v10.1's viewer and review data kept
-  in `viewer_v10_1/` and `review_v10_1/`
-- `vendor_cad/inbox/` (five supplier files and three sidecars), `vendor_cad/SOURCES.md`, `vendor_cad/mcmaster_wanted.csv`
+- `designs/printer_v11.py`; `out/printer_v11/report.json`, `scores.jsonl`, `tune/tuning.json`, `fil/bracket/`,
+  `electrical/printer.cfg` (not in git; `printer_v11.step`, 107 MB, also not)
+- `mechloop/parts/batch10.py`, `mechloop/parts/probes.py` and the vendor files above (`delta_bfb0524hh.json`,
+  `omron_e2e.json`); `tests/test_v11_support.py`; `tools/build_package.py` (v11 open items)
+- `docs/build/printer_v11/`, `viewer/`, `review/data.json`, `review/drawings/` (generated; `review/drawings/` is not in git);
+  v10.1's viewer and review data kept in `viewer_v10_1/` and `review_v10_1/`
+- `vendor_cad/inbox/` (seven supplier files used by v11, among them `BFB0524HH.step` and `E2B-M12KS04-WP-C1.step`, and their
+  sidecars), `vendor_cad/SOURCES.md`, `vendor_cad/mcmaster_wanted.csv`

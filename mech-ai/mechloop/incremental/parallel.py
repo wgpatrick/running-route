@@ -139,8 +139,10 @@ class Scheduler:
         if free < job.est_mb + RESERVE_MB:
             self.waiting_since = self.waiting_since or time.time()
             waited = time.time() - self.waiting_since
-            if waited - getattr(self, "_told", -1e9) > 300:
-                self._told = waited
+            told = getattr(self, "_told", {})
+            if time.time() - told.get(job.name, -1e9) > 300:      # at most every 5 min per job
+                told[job.name] = time.time()
+                self._told = told
                 self.log(f"waiting to start {job.name}: needs about {job.est_mb + RESERVE_MB} MB, {max(free, 0)} MB free "
                          f"(other processes on the machine count); waited {waited / 60:.0f} min")
             # a large solver case never starts without its memory; a light job may, after 30 min with none of ours running
@@ -148,7 +150,6 @@ class Scheduler:
                 return False
             self.log(f"starting {job.name} with only {free} MB free (waited 30 min)")
         self.waiting_since = None
-        self._told = -1e9
         return True
 
     def stop_all(self) -> None:
