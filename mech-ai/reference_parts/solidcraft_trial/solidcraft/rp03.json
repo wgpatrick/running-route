@@ -1,0 +1,22 @@
+{"commands": [
+  {"command": "sheet.manage_rules", "params": {"name": "AL5052_090", "thickness": "2.286 mm", "k_factor": 0.37, "bend_radius": "2.286 mm", "active": true, "material": "5052-H32"}},
+  {"command": "sketch.create", "params": {"plane": "XY", "name": "Base"}},
+  {"command": "sketch.rectangle.two_point", "params": {"p0": [-30, -20], "p1": [30, 20]}},
+  {"command": "sketch.finish", "params": {}},
+  {"command": "sheet.flange", "params": {"sketch": "Base", "body_name": "RP03"}},
+  {"command": "sheet.flange", "params": {"edges": [[-30, 0, 2.286]], "height": "25 mm", "angle": "90 deg"}},
+  {"command": "sheet.flange", "params": {"edges": [[30, 0, 2.286]], "height": "6 mm", "angle": "90 deg"}},
+  {"command": "sketch.create", "params": {"plane": {"origin": [0, 0, 5], "x_dir": [1, 0, 0], "y_dir": [0, 1, 0]}, "name": "BaseHoles"}},
+  {"command": "sketch.circle.center", "params": {"center": [-12, 0], "diameter": 5.5}},
+  {"command": "sketch.circle.center", "params": {"center": [12, 0], "diameter": 5.5}},
+  {"command": "sketch.finish", "params": {}},
+  {"command": "solid.extrude", "params": {"sketch": "BaseHoles", "through_all": true, "direction": "negative", "operation": "cut", "targets": ["RP03"]}},
+  {"command": "sketch.create", "params": {"plane": {"origin": [-35, 0, 0], "x_dir": [0, 1, 0], "y_dir": [0, 0, 1]}, "name": "FlangeHole"}},
+  {"command": "sketch.circle.center", "params": {"center": [0, 8.822], "diameter": 5.5}},
+  {"command": "sketch.finish", "params": {}},
+  {"command": "solid.extrude", "params": {"sketch": "FlangeHole", "distance": "10 mm", "operation": "cut", "targets": ["RP03"]}},
+  {"command": "inspect.measure", "params": {}},
+  {"command": "sheet.flat_pattern", "params": {}},
+  {"command": "sheet.export_bend_table", "params": {"format": "json", "path": "rp03_bends.json"}},
+  {"command": "sheet.export_dxf", "params": {"path": "rp03_flat.dxf"}}
+]}

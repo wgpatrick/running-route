@@ -1,0 +1,22 @@
+{"commands": [
+  {"command": "sheet.manage_rules", "params": {"name": "SCS_5052_090", "thickness": "2.286 mm", "k_factor": 0.37, "bend_radius": "0.81 mm", "active": true, "material": "5052-H32"}},
+  {"command": "sketch.create", "params": {"plane": "XY", "name": "LegA"}},
+  {"command": "sketch.line", "params": {"points": [[-12.75, 0], [12.75, 0], [12.75, 52.55], [-20.25, 52.55], [-20.25, 5.55], [-12.75, 5.55]], "closed": true}},
+  {"command": "sketch.fillet", "params": {"points": ["l2.end", "l3.end", "l4.end"], "radius": 0.8}},
+  {"command": "sketch.finish", "params": {}},
+  {"command": "sheet.flange", "params": {"sketch": "LegA", "body_name": "PRB"}},
+  {"command": "sheet.flange", "params": {"edges": [[0, 0, 2.286]], "height": "21.69 mm", "angle": "90 deg"}},
+  {"command": "solid.fillet", "params": {"edges": [[12.75, 1.143, 21.69], [-12.75, 1.143, 21.69]], "radius": 0.8, "body": "PRB"}},
+  {"command": "sketch.create", "params": {"plane": {"origin": [0, 5, 0], "x_dir": [1, 0, 0], "y_dir": [0, 0, 1]}, "name": "HoleB"}},
+  {"command": "sketch.circle.center", "params": {"center": [-0.25, 11.19], "diameter": 12.5}},
+  {"command": "sketch.finish", "params": {}},
+  {"command": "solid.extrude", "params": {"sketch": "HoleB", "distance": "10 mm", "operation": "cut", "targets": ["PRB"]}},
+  {"command": "sketch.create", "params": {"plane": {"origin": [0, 0, 5], "x_dir": [1, 0, 0], "y_dir": [0, 1, 0]}, "name": "HolesA"}},
+  {"command": "sketch.circle.center", "params": {"center": [-9.308, 16.55], "diameter": 3.4}},
+  {"command": "sketch.circle.center", "params": {"center": [-16.108, 47.05], "diameter": 3.4}},
+  {"command": "sketch.finish", "params": {}},
+  {"command": "solid.extrude", "params": {"sketch": "HolesA", "distance": "10 mm", "direction": "negative", "operation": "cut", "targets": ["PRB"]}},
+  {"command": "inspect.measure", "params": {}},
+  {"command": "sheet.flat_pattern", "params": {}},
+  {"command": "sheet.export_dxf", "params": {"path": "prb_flat.dxf"}}
+]}
