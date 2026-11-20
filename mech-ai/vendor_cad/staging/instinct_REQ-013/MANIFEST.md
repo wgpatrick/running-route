@@ -148,3 +148,65 @@ dimensioned. Result: PASS (reference CAD).
 1. Item 013b-2 in RESULT.md still says 3684N13 has ONE set screw. The staged STEP has two (see the batch 11 flag).
 2. The Gates extract does not name LL2MR09 / 2MR (see above).
 3. The ADXL345 drawing was re-delivered unchanged with JavaScript. A JavaScript-free copy is still needed if the drawing is wanted.
+
+## 2026-11-20 batch 13 (ingested about 17:15Z)
+
+Source: REQ-013 results folder 15LKAJDQN7rX38zy_DSCVmA9h3BzBjwIv. Each file was downloaded into its own scratch dir and read
+with `python3 -I`. The PDFs were checked for JavaScript, Launch, OpenAction/AA, AcroForm/XFA and embedded files: **none found in
+any of them**. The only actions are /URI links (phoenixcontact.com product page; klusdesign.com and a mailto).
+
+| Drive file (id, modifiedTime, size) | Destination | sha256 |
+|---|---|---|
+| RESULT.md (1F4XTfDRpBYiwztAlOPoNon5wYjyCR87R, updated 17:10Z, 15,679 B) | RESULT_instinct_REQ-013_2026-11-20_1710Z.md | f8116da4ba29fec1353a8a3134bc03d46829cd3a87c071a1a572c4edecd5bf2d |
+| 0801733__datasheet.pdf (1UuRHPUsdOL9JQVgjPWri3sZEN5DByDQL, 50,066 B) | vendor_docs/Phoenix_0801733_NS35-7.5-PERF_datasheet.pdf | bc2ca91f634476971e3bbe30dd9693173cc89931c2605f545644a2e76b04ca97 |
+| PDS-4-ALU__datasheet.pdf (1RL1e-jhoWPxMZt98RUXgKA2TFJ8SYROZ, 569,880 B) | vendor_docs/KLUS_PDS-4-ALU_A01718_datasheet.pdf | e5201d8c67b61cc93a4f9c282cac737bbf568fc918d3b8a6789e892e5c4af7cd |
+| 24V-COB-4000K__datasheet.pdf (1ZNsCGivzeBH7k41iXCzE-cv6K-MxhGZR, 312,523 B) | **not copied**: byte-identical to vendor_docs/InspiredLED_24V-COB_flex_spec.pdf (third delivery; see REQ-003) | 2b0101b9fa993922d896d5d315f1fd020eddc4f321a8fdb9060f6504111ecef8 |
+
+### Stated provenance (Instinct's statements, not verified)
+- 0801733: the official Phoenix Contact catalog-generated datasheet, "mirrored on Octopart". The direct phoenixcontact.com
+  download sits behind Friendly Captcha. Instinct says the captcha flow downloaded the file and the STEP (AP203/214/242,
+  loginRequired=false) into the remote browser, but the bytes could not be retrieved from there (direct URL 403).
+- PDS-4-ALU: the official KLUS product datasheet.
+- 24V-COB-4000K: Inspired LED spec 2.0, via DigiKey media.
+
+### Key specs (from the datasheets)
+- **Phoenix Contact 0801733, NS 35/7.5 PERF 2000MM**: perforated DIN rail, EN 60715 standard profile. 35 mm wide, 7.5 mm high,
+  2000 mm long. Drawing: 1 mm material, 27 mm inner width. Slots are 15.00 x 6.20 mm at a 25.00 mm pitch. Steel, galvanized and
+  thickly passivated, silver. Packing unit **5 pc**, GTIN 4017918006686. PDF from Apache FOP, catalog print dated 2019-05-16.
+- **Inspired LED 24V COB Flex, 4000K "Pure White"** (DigiKey 24V-COB-4000K-12M, Inspired LED code 265216 on the sheet): 24 VDC,
+  480 LED/m (144/ft), **CRI 91**, 3.15 W/ft (about **10.3 W/m**), 340 lm/ft. **8 mm** wide, cut every **1.97 in (50 mm, 24 LEDs)**,
+  12 m reels or pre-cut lengths, 3M adhesive. Maximum run on a 96 W supply is 292 in; feed from the centre beyond about 130 in.
+- **KLUS PDS-4-ALU extrusion, ref A01718**: aluminium, white lacquered, rectangular. **0.6 in wide x 0.5 in high** (about
+  15 x 13 mm; the sheet gives inch values only). LED gluing (inner) width **0.4 in (about 10 mm)**, 1 strip up to 0.31 in (8 mm)
+  wide. Glow width 11.2 mm. Max 7.3 W/ft. Bendable: 150 mm inward, 350 mm outward. Lengths 39.4 in (A01718L10NS_1) and 78.9 in
+  (A01718L10NS_2). Covers are sold separately: LIGER-11 (B17037S satin, 59 %), HS-11 (B17208F frosted, 59 %), KA-11 (B17064F
+  frosted, 67 %). PDF made with wkhtmltopdf on 2026-04-29. Publisher: KLUS LLC, Vero Beach FL.
+
+### US seller / price / stock (as Instinct states)
+- LED strip: DigiKey 24V-COB-4000K-12M. **Price and stock not captured** (DigiKey blocked the sandbox fetch).
+- Channel: "US stock via superbrightleds.com (PDS-4 Plus)". **Price and stock not captured.**
+- DIN rail: no price. RESULT says "pack of 25".
+
+### RESULT.md, 17:10Z against 15:50Z
+- STATUS line rewritten (item 8 candidates; item 9 datasheet delivered, STEPs held; item 10 datasheets delivered; item 11 needs an address).
+- **Item 8 (bed heater and PEI kit): "not started" is now DONE (research), but it is partial on the requirements.**
+  - Heater: Keenovo 200-24-0-0-3M-200x200 (24 V, 200 W, 200x200, NTC 100K, 3M adhesive, optional 150 C thermostat). Its
+    part page is cited on keenovo.ru. **No US stock at 24 V.** US resellers stock only 110/120 V variants (KB-3D $44.39, 4 in
+    stock; West3D $44.99 for 120 V 500 W and $39.99 for 110 V 200 W, both in stock), which Instinct labels a voltage mismatch.
+  - PEI: HoneyBadger P-Series Gen 2 220x220 textured, from consum3d.com, $24.99, 12 in stock, rated to 120 C. Wham Bam 220
+    (base $26, rated 150 C) is sold out, and its plate ($35) is out of stock. Fulament was unreachable.
+- Item 9: the Molex STEP is held because TraceParts needs a registration. The Phoenix datasheet was delivered; its STEP is held
+  (see provenance). JST XH is still held behind its licence and personal-data form, unchanged.
+- Item 10: the COB strip and KLUS channel lines were added (above).
+- "Still open" list rewritten. The item 5 reseller text there was already in the 15:50Z body (batch 12). RP04 and belt sellers
+  are not mentioned in the diff.
+
+### Flags
+1. The channel datasheet is PDS-4-**ALU** (A01718), but the stated US stock is "PDS-4 **Plus**" at superbrightleds.com. That is a
+   different extrusion (A01263, listed by the sheet as a "similar extrusion"). Stock for the actual pick is unconfirmed.
+2. The DIN rail packing is 25 in RESULT.md but **5 pc** in the datasheet. "Current revision" in RESULT.md, but the catalog print
+   is dated 2019.
+3. The COB datasheet was delivered for the third time, unchanged. No price yet.
+4. Instinct says the Phoenix captcha flow auto-solved and downloaded files into the remote browser. Nothing was registered and
+   no terms were accepted, per Instinct.
+5. The Keenovo part page is on keenovo.ru, not keenovo.com, and the 24 V part has no US stock.

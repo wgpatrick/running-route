@@ -998,9 +998,9 @@
   },
   "15LKAJDQN7rX38zy_DSCVmA9h3BzBjwIv": {
    "folder": "mechloop handoff/results/REQ-013-build1-queue-refresh",
-   "last_checked": "2026-11-20T16:15:00Z",
+   "last_checked": "2026-11-20T17:15:00Z",
    "staged_in": "vendor_cad/staging/instinct_REQ-013",
-   "result_status": "partial (P1 1, 2, 4, 5, 6, 7 done per Instinct, item 3 facts only; P2 9-11 partial, 8 not started; 12 unavailable; REQ-013b: GPA32 A-P5 + McMaster 3684N13 delivered)",
+   "result_status": "partial (17:10Z: P1 1,2,4,5,6,7 done per Instinct, item 3 facts only; item 8 researched but no US-stock 24V heater / one stocked PEI; 9 datasheet only, STEPs held on TraceParts; 10 datasheets delivered, LED/channel price not captured; 11 needs address; 12 unavailable; REQ-013b: GPA32 A-P5 + McMaster 3684N13 delivered)",
    "files": {
     "11zPs7IGKw2-44Di7ERwitIclD__sz6sQ": {
      "title": "RESULT.md",
@@ -1157,6 +1157,27 @@
      "modifiedTime": "2026-11-20T15:44:22.741Z",
      "size": 184552,
      "note": "vendor_docs/Gates_LPP-manual_2mm-GT3_long-length_extract_for_LL2MR09.pdf; extract names 2MGT/GT3, not LL2MR09"
+    },
+    "1F4XTfDRpBYiwztAlOPoNon5wYjyCR87R": {
+     "title": "RESULT.md",
+     "modifiedTime": "2026-11-20T17:10Z",
+     "size": 15679,
+     "note": "new file id; staged as instinct_REQ-013/RESULT_instinct_REQ-013_2026-11-20_1710Z.md, sha256 f8116da4...; modifiedTime per caller (17:10Z), not read from Drive metadata"
+    },
+    "1UuRHPUsdOL9JQVgjPWri3sZEN5DByDQL": {
+     "title": "0801733__datasheet.pdf",
+     "size": 50066,
+     "note": "vendor_docs/Phoenix_0801733_NS35-7.5-PERF_datasheet.pdf (batch 13)"
+    },
+    "1RL1e-jhoWPxMZt98RUXgKA2TFJ8SYROZ": {
+     "title": "PDS-4-ALU__datasheet.pdf",
+     "size": 569880,
+     "note": "vendor_docs/KLUS_PDS-4-ALU_A01718_datasheet.pdf (batch 13)"
+    },
+    "1ZNsCGivzeBH7k41iXCzE-cv6K-MxhGZR": {
+     "title": "24V-COB-4000K__datasheet.pdf",
+     "size": 312523,
+     "note": "byte-identical to vendor_docs/InspiredLED_24V-COB_flex_spec.pdf (2b0101b9...); not copied"
     }
    }
   },
