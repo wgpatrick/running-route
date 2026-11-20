@@ -1,5 +1,21 @@
 # Roadmap: owner's priorities (2026-11-19)
 
+## The overarching goal (owner, 2026-11-20)
+
+Recursive hardware self-improvement: a system that loops around making physical parts, testing them and improving them to
+create great hardware, and that uses what it learns to improve the loop itself. The 3D printer is both an output and part
+of the loop: it is the loop's first fabrication tool, and redesigning the fabrication equipment (and later other tools:
+measurement, cutting, machining) is how the loop gets faster and better.
+
+What this means in practice:
+- Measure the loop, not just the parts: loop time (design change to measured part), fidelity (prediction vs measurement
+  error for each check and the twin), and autonomy (human touches per iteration). Each should improve over time.
+- Every real-world result updates the system with provenance: a rule, an allowance, a twin parameter, a supplier figure.
+  Keep a ledger of these learnings and of the prediction error before and after.
+- Design the fabrication tools for the loop: instrumented (cameras, accelerometer, sensors), easy to modify, and able to
+  make their own test pieces, fixtures and upgrade parts.
+- Get to a physical loop early: learning compounds only once parts are being made and measured.
+
 The owner set three priorities for the system beyond the printer design itself. Each closes a loop between
 the design and the real world, so the system keeps learning from evidence rather than from its own models.
 
