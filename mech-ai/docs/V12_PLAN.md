@@ -37,3 +37,15 @@ strain relief. All checked like every other part (clearances, heat, cable routin
 
 Camera choice (owner, 2026-11-20): Raspberry Pi Camera Module 3 (SC1223) for both the overview and the top-down camera;
 the HQ Camera (SC1220) is out of stock at Digi-Key with a 26-week factory lead, which alone set the critical path.
+
+## Wiring decisions from commodity pinning (2026-11-20; docs/COMMODITY_PARTS.md)
+
+- Earth to frame: 16 AWG green/yellow (LAPP 4160400, per foot, in stock) instead of 13 AWG (not a stocked gauge; 14 AWG only
+  as a 100 ft minimum with no stock). 16 AWG is heavier than the 18 AWG supply conductors, as required.
+- Inlet PE: one conductor per 4.8 mm tab — take PE from the inlet to the frame earth stud, and bond the PSU FG and the bed
+  plate from that stud (ring lugs with star washers), instead of two conductors on one tab.
+- Flexing runs (X motor, left-Y motor, toolhead loom, bed): igus chainflex (CF130 signal, CF880 power) per this plan, not
+  UL1007/1569 hook-up wire.
+- Merge the duplicate THREADLOCKER-MEDIUM BOM line (one bottle: Henkel 1329837, Loctite 243 10 ml).
+- Braided sleeve: the distributors list only a 200 ft spool (Techflex PTN0.25BK200, ~$44); look for a short length from a
+  US seller with the maker's datasheet before ordering.
