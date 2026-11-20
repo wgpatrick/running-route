@@ -233,6 +233,29 @@ def export_print(folder: Path, out: Path):
             "findings": [{"severity": f["severity"], "code": f["code"], "message": f["message"]} for f in rep["findings"]]}
 
 
+def _placeholder(c) -> dict:
+    """DG-07 verdict for the viewer: real_part_state, placeholder (bool), placeholder_why; a placeholder's colour becomes the
+    warning colour (mechloop.verifiers.purchased.PLACEHOLDER_COLOUR, magenta; geometry pending: pink), its own kept in color_design."""
+    from mechloop.verifiers import purchased as P
+
+    st = P.part_state(c)
+    out = {"real_part_state": st["real_part_state"], "placeholder": st["placeholder"], "placeholder_why": st.get("placeholder_why")}
+    if st["placeholder"]:
+        out.update({"color": st["placeholder_colour"], "color_design": c.color})
+    return out
+
+
+def _placeholder_extra(sku: str, e: dict) -> dict:
+    """The same for a display-only part drawn from a BOM-only line (belts)."""
+    from mechloop.verifiers import purchased as P
+
+    miss = P.extra_missing(sku, e)
+    if not miss:
+        return {"real_part_state": "real", "placeholder": False, "placeholder_why": None}
+    return {"real_part_state": "placeholder", "placeholder": True, "placeholder_why": "BOM-only line with no " + ", ".join(miss),
+            "color": P.PLACEHOLDER_COLOUR, "color_design": "#161616"}
+
+
 def main():
     path = sys.argv[1]
     d = load_design(path)
@@ -287,6 +310,9 @@ def main():
             "bbox": [round(x, 2) for x in (bb.min.X, bb.min.Y, bb.min.Z, bb.max.X, bb.max.Y, bb.max.Z)],
             "v": [off, len(v)], "t": [off + len(vb), len(t)],
             "mfg": mfg.get(c.name), "dxf": c.name in dxf, "findings": by_part.get(c.name, []), "color": c.color,
+            # practice DG-07: a purchased part that is not a real product with the maker's CAD and ratings is a placeholder, drawn
+            # in the warning colour (the design's own colour kept in color_design)
+            **_placeholder(c),
         })
         blob += [vb, tb]
         off += len(vb) + len(tb)
@@ -311,6 +337,7 @@ def main():
             "bbox": [round(float(x), 2) for x in (*lo, *hi)],
             "v": [off, len(v)], "t": [off + len(vb), len(t)],
             "mfg": None, "dxf": False, "findings": by_part.get(b.name, []), "color": "#161616",
+            **_placeholder_extra(sku, (d.bom_extras or {}).get(sku) or {}),
         })
         blob += [vb, tb]
         off += len(vb) + len(tb)

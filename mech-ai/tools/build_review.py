@@ -320,6 +320,13 @@ def main() -> None:
         q["shop"] = SHOP.get(proc) if kind == "fabricated" else None
         q["model"] = p["model"]
         q["model_source"] = p["model_source"]
+        # practice DG-07 (from the viewer export): placeholder purchased parts, drawn and listed in the warning colour
+        q["real_part_state"] = p.get("real_part_state")
+        q["placeholder"] = bool(p.get("placeholder"))
+        if q["placeholder"]:
+            q["color"] = p.get("color")
+            q["placeholder_why"] = p.get("placeholder_why")
+            q["sku_bom"] = f"PLACEHOLDER-{p['sku']}" if p.get("sku") else None
         try:
             src = json.loads(p["source"]) if p.get("source") else None
         except json.JSONDecodeError:
@@ -391,6 +398,10 @@ def main() -> None:
                 w = washers[name]
                 flags.append({"sev": "warning", "rule": "Washer needed",
                               "text": f"Bears on {w['bears_on']}: {w['why']}."})
+        if q["placeholder"]:
+            flags.insert(0, {"sev": "error", "rule": "Off-the-shelf parts are real parts (DG-07)",
+                             "text": f"PLACEHOLDER: {q.get('placeholder_why') or 'not a real, orderable product with the maker CAD and ratings'}. "
+                                     "Must be fixed before buying."})
         q["flags"] = flags
         out_parts.append(q)
 
@@ -509,7 +520,11 @@ def main() -> None:
                     "assembly_min": plan["metrics"]["estimated_time_min"],
                     "verifiers": {k: {"ok": s.get("ok"), "errors": s.get("errors"), "warnings": s.get("warnings")}
                                   for k, s in v["summary"].items() if isinstance(s, dict)},
-                    "resonance_hz": sc["resonance_hz"]},
+                    "resonance_hz": sc["resonance_hz"],
+                    "placeholders": sum(1 for p in out_parts if p.get("placeholder"))},
+        "placeholder_legend": {"placeholder": "#ff00ff", "geometry pending": "#ff66cc",
+                               "meaning": "purchased part that is not yet a real, orderable product with the maker's CAD and ratings "
+                                          "(practice DG-07): must be fixed before buying"},
         "tolerance_html": tol_html,
         "printing_html": print_html,
         "shops": {"sheet": {"name": "SendCutSend", "tolerance": "±0.127 mm under 12 in, ±0.254 mm over",

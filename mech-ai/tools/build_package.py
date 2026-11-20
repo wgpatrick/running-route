@@ -375,13 +375,31 @@ def build_bom(cx: Ctx) -> dict:
         desc = c.meta.get("description", "") if c is not None else EXTRA_DESCRIPTIONS.get(sku.split("-")[0] + "-" + (sku.split("-")[1] if "-" in sku else ""), sku)
         if c is None:
             desc = next((v for kk, v in EXTRA_DESCRIPTIONS.items() if sku.startswith(kk)), sku)
+        ph = _placeholder_of(c, sku, L.get("extra"))
         out.append({"category": cat, "sku": sku, "key": k, "qty": L["qty"], "qty_model": L["qty_model"], "qty_extra": L["qty_extra"],
+                    "placeholder": ph["placeholder"], "real_part_state": ph["state"], "placeholder_why": ph["why"],
+                    "replace_with": ph["replace_with"], "bom_key": f"PLACEHOLDER-{k}" if ph["placeholder"] else k,
                     "description": desc, "maker": maker, "maker_pn": pn, "mcmaster": mc or "", "mcmaster_status": mcs or "",
                     "spec": _spec_of(c) if c is not None else "", "unit": unit, "ext": None if unit is None else unit * L["qty"],
                     "provenance": prov, "why": why, "used": L["used"], "cad": _cad_state(c)})
     order = [n for n, _ in CATEGORIES] + ["Other"]
-    out.sort(key=lambda r: (order.index(r["category"]), r["sku"], r["key"]))
+    out.sort(key=lambda r: (order.index(r["category"]), not r["placeholder"], r["sku"], r["key"]))    # placeholders first in each category
     return {"lines": out}
+
+
+def _placeholder_of(c, sku: str, extra) -> dict:
+    """Practice DG-07 for one BOM line (mechloop/verifiers/purchased.py): a purchased part that is not a real, orderable product
+    with the maker's CAD and ratings is a placeholder, named PLACEHOLDER-<sku> in the BOM and listed at the top of README.md."""
+    from mechloop.verifiers import purchased as P
+
+    if c is None:
+        miss = P.extra_missing(sku, extra or {})
+        return {"placeholder": bool(miss), "state": "placeholder" if miss else "real",
+                "why": ("BOM-only line with no " + ", ".join(miss)) if miss else "", "replace_with": ""}
+    a = P.assess(c)
+    if a is None:
+        return {"placeholder": False, "state": None, "why": "", "replace_with": ""}
+    return {"placeholder": a["placeholder"], "state": a["state"], "why": "; ".join(P.why(a)), "replace_with": a["replace_with"] or ""}
 
 
 # Words for BOM lines that have no geometry in the model. They describe the SKU the design wrote; no number is added. (generator)
@@ -496,6 +514,11 @@ def write_bom(cx: Ctx) -> dict:
          "Provenance: **vendor data** = the catalogue record rests on the maker's datasheet / CAD (`vendor_docs/`, `vendor_cad/`, "
          "`mechloop/parts/vendor/*.json`); **class value** = a generic part, dimensions to a standard or typical for its class; "
          "**STAND-IN** = no real part is identified yet: confirm before buying.", ""]
+    ph = [L for L in lines if L["placeholder"]]
+    T += ["Placeholders (practice DG-07, docs/DESIGN_GUIDELINES.md key rule): a purchased line that is not yet a real, orderable product "
+          "(maker, maker part number, seller), drawn from the maker's CAD and rated from the maker's datasheet is named "
+          f"**`PLACEHOLDER-<sku>`** and must be fixed before buying. This BOM has **{len(ph)}** placeholder line(s) of {len(lines)}; "
+          "they are listed first in each category and at the top of README.md.", ""]
     T += ["## Reconciliation against the model", "",
           table(["Check", "Value"], [
               ["components in the design", recon["components"]],
@@ -515,8 +538,10 @@ def write_bom(cx: Ctx) -> dict:
         if not rows:
             continue
         T += [f"## {cat}", "",
-              table(["Qty", "SKU (design)", "Description", "Maker", "Maker part no.", "McMaster no.", "Key spec / what to search for", "Unit $", "Ext $", "Provenance", "Basis", "CAD in the model"],
-                    [[L["qty"], f"`{L['key']}`", L["description"], L["maker"], L["maker_pn"],
+              table(["Qty", "SKU (design)", "Placeholder (DG-07)", "Description", "Maker", "Maker part no.", "McMaster no.", "Key spec / what to search for", "Unit $", "Ext $", "Provenance", "Basis", "CAD in the model"],
+                    [[L["qty"], f"**`{L['bom_key']}`**" if L["placeholder"] else f"`{L['key']}`",
+                      f"**PLACEHOLDER** ({L['real_part_state']}): {L['placeholder_why']}" if L["placeholder"] else "no (real part)",
+                      ("PLACEHOLDER: " if L["placeholder"] else "") + L["description"], L["maker"], L["maker_pn"],
                       (L["mcmaster"] + (" (" + L["mcmaster_status"] + ")" if L["mcmaster_status"] and "confirmed by" not in L["mcmaster_status"] else "")) or "not recorded",
                       L["spec"] or "-", money(L["unit"]), money(L["ext"]), f"**{L['provenance']}**" if L["provenance"].startswith("STAND") else L["provenance"], L["why"],
                       L.get("cad", "")]
@@ -575,11 +600,14 @@ def write_bom(cx: Ctx) -> dict:
     with open(cx.out / "bom.csv", "w", newline="") as fh:
         w = csv.writer(fh)
         w.writerow(["category", "qty", "sku", "bom_key", "description", "maker", "maker_part_number", "mcmaster_number", "mcmaster_status", "key_spec",
-                    "unit_cost_usd", "ext_cost_usd", "provenance", "basis", "qty_in_model", "qty_bom_only", "used_as"])
+                    "unit_cost_usd", "ext_cost_usd", "provenance", "basis", "qty_in_model", "qty_bom_only", "used_as",
+                    "placeholder", "real_part_state", "placeholder_why", "replace_with"])
         for L in lines:
-            w.writerow([L["category"], L["qty"], L["sku"], L["key"], L["description"], L["maker"], L["maker_pn"], L["mcmaster"], L["mcmaster_status"],
+            w.writerow([L["category"], L["qty"], L["sku"], L["bom_key"], ("PLACEHOLDER: " if L["placeholder"] else "") + L["description"], L["maker"],
+                        L["maker_pn"], L["mcmaster"], L["mcmaster_status"],
                         L["spec"], "" if L["unit"] is None else round(L["unit"], 4), "" if L["ext"] is None else round(L["ext"], 2), L["provenance"], L["why"],
-                        L["qty_model"], L["qty_extra"], " ".join(L["used"])])
+                        L["qty_model"], L["qty_extra"], " ".join(L["used"]),
+                        "yes" if L["placeholder"] else "no", L["real_part_state"] or "", L["placeholder_why"], L["replace_with"]])
     with open(cx.out / "fasteners.csv", "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(fast[0].keys()))
         w.writeheader()
@@ -2847,6 +2875,22 @@ def write_open_items(cx: Ctx, bom: dict, fab: dict, asm: dict, wash: list, lead:
 
 
 # =================================================================================================== 7. README
+def placeholders_section(bom) -> list[str]:
+    """README's first section: every placeholder line (practice DG-07) with why and what replaces it. Empty list of lines -> says so."""
+    ph = [L for L in bom["lines"] if L.get("placeholder")]
+    T = ["## Placeholders to fix before buying", ""]
+    if not ph:
+        return T + ["None: every purchased line is a real, orderable product with the maker's CAD and ratings (practice DG-07).", ""]
+    T += [f"**{len(ph)} of {len(bom['lines'])} purchased lines are placeholders** (practice DG-07, docs/DESIGN_GUIDELINES.md key rule: "
+          "a purchased part must be a real, orderable product - maker, maker part number, seller - drawn from the maker's CAD and rated "
+          "from the maker's datasheet). The design is **not buildable** while any remains. They are named `PLACEHOLDER-<sku>` in BOM.md "
+          "and bom.csv.", "",
+          table(["BOM line", "Qty", "State", "Why", "Replace with (real part or search)"],
+                [[f"`{L['bom_key']}`", L["qty"], L["real_part_state"], L["placeholder_why"], L["replace_with"] or (L["spec"] or "to be found")]
+                 for L in sorted(ph, key=lambda L: (L["real_part_state"] != "placeholder", L["category"], L["sku"]))]), ""]
+    return T
+
+
 def write_readme(cx: Ctx, bom, fab, asm, opn, wash) -> None:
     d, m = cx.d, cx.m
     am = dig(asm, "plan", "metrics", default={})
@@ -2862,7 +2906,7 @@ def write_readme(cx: Ctx, bom, fab, asm, opn, wash) -> None:
         k = str(p.parent.relative_to(cx.out)) if p.parent != cx.out else "."
         by_dir[k][0] += 1
         by_dir[k][1] += p.stat().st_size
-    T = [f"# Build package: {cx.name}", "", cx.stamp(),
+    T = [f"# Build package: {cx.name}", "", cx.stamp()] + placeholders_section(bom) + [
          "Regenerate: `.venv/bin/python tools/build_package.py " + rel(cx.design_path) + "`. The generator refuses to run if `report.json` does not describe the design file "
          "(part count, mass, BOM quantities, custom part list, full pass); `--force` writes a package marked STALE.", "",
          "## Stamp", "",
