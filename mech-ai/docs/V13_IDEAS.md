@@ -15,3 +15,5 @@ Not part of Build 1. Design it for the next version as a bolt-on to the 2020 fra
 - Checks it must pass: clearance to the gantry and toolhead over full travel, camera sight lines, door access for
   maintenance, chamber and electronics temperatures, mass and cost (get real quotes; rough guess low hundreds of dollars).
 - For Build 1: avoid permanently filling the frame slots and outer faces an enclosure would need, where it costs nothing.
+- Door (owner, 2026-11-20): the hinged door is the FRONT panel, the one side with no Z rail (v12 has Z rails on the left,
+  right and rear). Full-width opening for bed access and print removal; the side, rear and top panels are fixed.
