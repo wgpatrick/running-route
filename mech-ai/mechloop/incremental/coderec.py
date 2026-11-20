@@ -275,10 +275,14 @@ def file_hash(path: str) -> str:
     return h
 
 
+DIR_SKIP = (".cache", "staging", "__pycache__")       # derived caches and incoming files nothing reads from yet
+
+
 def dir_stat(path: str) -> str:
+    """Names, sizes and times of the files under a folder (the vendor CAD), leaving out DIR_SKIP folders."""
     h = hashlib.sha256()
     for root, dirs, files in os.walk(path):
-        dirs.sort()
+        dirs[:] = sorted(d for d in dirs if d not in DIR_SKIP)
         for n in sorted(files):
             try:
                 st = os.stat(os.path.join(root, n))

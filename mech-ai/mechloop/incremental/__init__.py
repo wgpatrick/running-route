@@ -283,6 +283,18 @@ def fea_case(design, r, kind: str, case, names, compute):
     return entry["value"]
 
 
+def fea_case_reusable(kind: str, case) -> bool:
+    """True when a stored result of this FEA case is still valid (no solver run is needed for it)."""
+    s = CURRENT
+    if s is None:
+        return False
+    cfp = value_fp(case) if case is not None else "none"
+    if is_unstable(cfp):
+        return False
+    hit, _ = s.find("fea_cases", digest(FP_VERSION, "fea-case", kind, getattr(case, "name", kind), cfp))
+    return hit is not None
+
+
 def part_cached(r, part, design, compute, capture=None, restore=None):
     """One part's checks inside a verifier, reused while everything they read is unchanged (the part, and whatever
     else they looked at: screws threading into it, the design's settings ...).

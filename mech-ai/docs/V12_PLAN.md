@@ -58,3 +58,10 @@ the HQ Camera (SC1220) is out of stock at Digi-Key with a 26-week factory lead, 
 - Line laser for camera triangulation: Quarton VLM-520-56 LPO-D30-F10 (520 nm, 30° fan, Class 1M). Owner accepts Class 1M
   with controls: off by default, switched on only by the measurement macro for a few seconds, maker's warning label on the
   toolhead, insulating printed clamp (case may be live). Mount beside the hotend, out of the heater plume and cooling jet.
+
+## Inlet correction (2026-11-20)
+
+DD11.0114.1111 is the 1-pole fuseholder variant (Schurter DD11 datasheet p.5), but the plan pairs it with the 2-pole drawer
+4301.1401 and two fuses (L and N). Keep 2-pole fusing (non-polarised plugs) and change the module to DD11.0124.1111 (2-pole,
+same options) — confirm the part number, stock and STEP. The Schurter SPT STEP files delivered are the wire-lead (pigtail)
+variant; model the 5x20 cartridge from the SPT datasheet (dia 5.2 caps, 20 mm long, caps 5.1 mm) as a faithful re-make.

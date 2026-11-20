@@ -27,6 +27,18 @@ ALPHA = {"al6061": 23.6e-6, "steel": 12e-6, "stainless304": 17.3e-6, "pla": 68e-
          "al_mic6": 23.6e-6, "al_atp5": 23.6e-6}
 
 
+def _workdir(kind: str) -> Path:
+    from ..resources import workdir
+
+    return workdir(kind)
+
+
+def _heavy_lock(label: str):
+    from ..resources import heavy_lock
+
+    return heavy_lock(label)
+
+
 def _gmsh_start():
     """Start Gmsh single-threaded and with a fixed random seed, so the same part always gets the same mesh.
     (Multi-threaded meshing is not repeatable from run to run.)"""
@@ -133,7 +145,8 @@ def _ccx_balanced(job: str, workdir: Path, n_nodes: int, n_el: int, force, label
     fmag = float(np.linalg.norm(force))
     last = None
     for attempt in range(2):
-        p = subprocess.run(["ccx", job], cwd=workdir, capture_output=True, text=True, env=env, timeout=3600)
+        with _heavy_lock(f"ccx {job}"):      # one heavy FEA run at a time on this machine (mechloop.resources)
+            p = subprocess.run(["ccx", job], cwd=workdir, capture_output=True, text=True, env=env, timeout=3600)
         dat = workdir / f"{job}.dat"
         if p.returncode != 0 or not dat.exists() or dat.stat().st_size == 0:
             return {"error": "CalculiX failed: " + (p.stdout[-400:] + p.stderr[-200:]).strip()}
@@ -254,7 +267,7 @@ def run_loadcase(design: Design, lc: LoadCase, r: VerifierResult, keep_dir: Path
     size = lc.mesh_size or max(diag / 30.0, 0.4)
     force = np.array(lc.force, dtype=float)
     out: dict = {"component": lc.component, "material": mat.name}
-    workdir = Path(tempfile.mkdtemp(prefix="mechloop_fea_"))
+    workdir = _workdir("fea")
     try:
         runs = []
         for attempt in range(2):
@@ -394,7 +407,7 @@ def run_modal(design: Design, mc, r: VerifierResult) -> dict:
     mat = MATERIALS[comp.material]
     bb = comp.shape.bounding_box()
     size = mc.mesh_size or max(float(np.linalg.norm([bb.size.X, bb.size.Y, bb.size.Z])) / 30.0, 0.4)
-    workdir = Path(tempfile.mkdtemp(prefix="mechloop_modal_"))
+    workdir = _workdir("modal")
     try:
         mesh = _mesh(comp.shape, mc.fixed, None, size, workdir, straight=True)
         if "error" in mesh:
@@ -421,7 +434,8 @@ def run_modal(design: Design, mc, r: VerifierResult) -> dict:
             f.write("*SOLID SECTION, ELSET=EALL, MATERIAL=M\n*BOUNDARY\nNFIX,1,3\n")
             f.write("*STEP\n*FREQUENCY\n3\n*END STEP\n")
         env = _ccx_env()
-        p = subprocess.run(["ccx", "modal"], cwd=workdir, capture_output=True, text=True, env=env, timeout=1800)
+        with _heavy_lock("ccx modal"):
+            p = subprocess.run(["ccx", "modal"], cwd=workdir, capture_output=True, text=True, env=env, timeout=1800)
         freqs = []
         dat = workdir / "modal.dat"
         if dat.exists():
@@ -848,7 +862,7 @@ def run_assembly(design: Design, ac, r: VerifierResult) -> dict:
     """Multi-part linear static. Solved twice: every touching face bonded (upper bound on stiffness),
     and screwed joints held only around their screws (lower bound)."""
     names = list(ac.components)
-    workdir = Path(tempfile.mkdtemp(prefix="mechloop_asm_"))
+    workdir = _workdir("asm")
     try:
         try:
             mesh = _asm_mesh(design, names, {"fixed": list(ac.fixed), "load": [ac.loaded]}, ac.mesh_size, workdir)
@@ -998,7 +1012,7 @@ def run_thermal(design: Design, tc, r: VerifierResult) -> dict:
     """Thermal growth: parts at given temperature rises, bonded where they touch. Reports how far
     probe points move and how much a gap between two probe points changes."""
     names = list(tc.components)
-    workdir = Path(tempfile.mkdtemp(prefix="mechloop_thermal_"))
+    workdir = _workdir("thermal")
     try:
         try:
             mesh = _asm_mesh(design, names, {"fixed": list(tc.fixed)}, tc.mesh_size, workdir)

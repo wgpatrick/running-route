@@ -5,6 +5,7 @@ design checks that a run that reuses results gives exactly the findings of a run
 from __future__ import annotations
 
 import json
+import os
 import shutil
 from pathlib import Path
 
@@ -288,3 +289,74 @@ def test_parallel_run_equals_serial_run(tmp_path):
     again = cli("--out", str(tmp_path / "par"), "--tier", "affected", "--jobs", "3")      # all reused, also in parallel
     assert set(again["incremental"]["reused"]) >= {"geometry", "interference", "practice", "assemblability"}
     assert without_timings(again) == without_timings(ser)
+
+
+# ------------------------------------------------------------------------------------------- machine resources
+def test_memory_reading_counts_the_whole_machine():
+    from mechloop import resources
+
+    m = resources.mem_available_mb()
+    meminfo = int(next(l for l in open("/proc/meminfo") if l.startswith("MemAvailable")).split()[1]) // 1024
+    assert 0 < m <= meminfo
+    assert resources.tree_rss_mb(os.getpid()) > 50
+
+
+def test_stale_scratch_folders_are_removed(tmp_path):
+    from mechloop import resources
+
+    dead = tmp_path / "mechloop_bed_999999_abc"          # a pid that does not exist
+    mine = tmp_path / f"mechloop_asm_{os.getpid()}_def"
+    fresh_legacy = tmp_path / "mechloop_fea_xyz"
+    for d in (dead, mine, fresh_legacy):
+        d.mkdir()
+        (d / "job.frd").write_bytes(b"x" * 1000)
+    out = resources.sweep_stale(tmp_path)
+    assert out["removed"] == 1 and not dead.exists() and mine.exists() and fresh_legacy.exists()
+    w = resources.workdir("modal")
+    assert w.name.startswith(f"mechloop_modal_{os.getpid()}_")
+    w.rmdir()
+
+
+def test_heavy_lock_is_machine_wide(tmp_path, monkeypatch):
+    import subprocess
+    import sys
+    import time
+
+    from mechloop import resources
+
+    lock = tmp_path / "heavy.lock"
+    monkeypatch.setattr(resources, "LOCK_PATH", lock)
+    holder = subprocess.Popen([sys.executable, "-c",
+                               "import sys, time; from pathlib import Path; from mechloop import resources as r; "
+                               f"r.LOCK_PATH = Path({str(lock)!r}); r.acquire('test holder'); print('held', flush=True); "
+                               "time.sleep(30)"], stdout=subprocess.PIPE, text=True, cwd=ROOT)
+    try:
+        assert holder.stdout.readline().strip() == "held"
+        with pytest.raises(resources.HeavyLockBusy, match="test holder"):
+            resources.acquire(wait=False)
+    finally:
+        holder.kill()
+        holder.wait()
+    time.sleep(0.2)
+    resources.acquire(wait=False)          # its holder is gone: the lock went with it
+    assert resources._HELD
+    with resources.heavy_lock("nested"):   # re-entrant
+        pass
+    assert resources._HELD
+    resources.release()
+    assert not resources._HELD
+
+
+def test_scheduler_never_starts_a_heavy_case_without_its_memory(monkeypatch):
+    from mechloop.incremental import parallel
+
+    s = parallel.Scheduler(4, 12500)
+    heavy, light = parallel.Job("fea:bed", "fea", heavy=True), parallel.Job("geometry", "verifier")
+    monkeypatch.setattr(parallel, "mem_available_mb", lambda: 3000)       # other programs hold the rest
+    assert not s.can_start(heavy)
+    assert s.can_start(light)
+    s.waiting_since = 0.0                                                  # waited "forever": still no
+    assert not s.can_start(heavy)
+    monkeypatch.setattr(parallel, "mem_available_mb", lambda: 9000)
+    assert s.can_start(heavy)
+    s.close()

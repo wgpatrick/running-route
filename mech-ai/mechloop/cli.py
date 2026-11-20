@@ -44,6 +44,9 @@ def main(argv=None) -> int:
     v.add_argument("--serial", action="store_true", help="run everything in this process, one after the other (= --jobs 1)")
     v.add_argument("--memory-budget", type=int, default=None, metavar="MB",
                    help="memory the parallel jobs may add, MB (default 12500 of the 15 GB container)")
+    v.add_argument("--no-wait", action="store_true",
+                   help="if another heavy FEA run holds the machine-wide solver lock (/tmp/mechloop_heavy.lock), report the "
+                        "FEA cases that need it as not run instead of waiting for it")
     v.add_argument("--render", action="store_true", help="render views / motion even in the quick and affected tiers")
     v.add_argument("--step", action="store_true", help="export the STEP model even in the quick and affected tiers")
     h = sub.add_parser("history", help="show the loop history of a design")
@@ -83,6 +86,13 @@ def main(argv=None) -> int:
     c = sub.add_parser("catalog", help="list off-the-shelf parts")
     c.add_argument("query", nargs="?", default="")
     a = p.parse_args(argv)
+    if a.cmd in ("verify", "print", "assemble", "score", "tune"):
+        try:      # scratch folders that killed runs left in /tmp (a bed-support case leaves gigabytes)
+            from .resources import sweep_stale
+
+            sweep_stale()
+        except Exception:
+            pass
     if a.cmd == "verify":
         from .runner import run
 
@@ -95,6 +105,10 @@ def main(argv=None) -> int:
         from .verifiers import electrical as _ve
 
         _ve.OUT_ROOT = a.out      # the electrical verifier writes printer.cfg and the wiring tables under the same root
+        if a.no_wait:
+            import os
+
+            os.environ["MECHLOOP_NO_WAIT"] = "1"
         rep = run(a.design, a.out, only, render=False if a.no_render else (True if a.render else None), tier=a.tier,
                   use_cache=not a.no_cache, jobs=1 if a.serial else a.jobs, step=True if a.step else None,
                   memory_budget_mb=a.memory_budget)

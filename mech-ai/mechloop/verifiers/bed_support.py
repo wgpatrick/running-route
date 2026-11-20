@@ -764,7 +764,7 @@ def flexure(design: Design, lay: dict, load_point=None, r: VerifierResult | None
         sel[f"guide:{b}"] = [(b, against(rl.shape, 0.35))]
     for c, nn in seats:
         sel.setdefault(f"seat:{nn}", []).append((c, against(comps[nn].shape, 0.05, square_to=a)))
-    workdir = Path(tempfile.mkdtemp(prefix="mechloop_bed_"))
+    workdir = F._workdir("bed")
     try:
         try:
             mesh = F._asm_mesh(design, names, sel, None, workdir)

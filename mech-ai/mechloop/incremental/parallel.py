@@ -37,14 +37,10 @@ DEFAULT_SECONDS = {"fea:heavy": 400, "fea:light": 40, "geometry": 140, "interfer
 
 
 def mem_available_mb() -> int:
-    try:
-        with open("/proc/meminfo") as f:
-            for line in f:
-                if line.startswith("MemAvailable:"):
-                    return int(line.split()[1]) // 1024
-    except OSError:
-        pass
-    return 1 << 30
+    """Memory usable now on this machine, MB: MemAvailable and the container's cgroup limit (mechloop.resources)."""
+    from ..resources import mem_available_mb as m
+
+    return m()
 
 
 def _rss_mb() -> int:
@@ -64,8 +60,9 @@ class Job:
 
 def _child(job: Job, fn, out_path: str, session) -> None:
     """In the forked process: run the job, write {"value", "deps", "manifest", "delta", "peak"} to out_path."""
-    from . import coderec, recorder
+    from .. import resources
 
+    resources.in_child()          # the parent holds (and releases) the heavy-solver lock
     code = 0
     try:
         if session is not None:      # only this job's own decisions, stats and memo entries go back
@@ -107,7 +104,9 @@ class Scheduler:
         self.budget = budget_mb
         self.profile = profile or {}
         self.running: dict[int, tuple] = {}     # pid -> (job, out_path, t0, rss_at_fork)
-        self.tmp = tempfile.mkdtemp(prefix="mechloop_jobs_")
+        from ..resources import workdir
+
+        self.tmp = str(workdir("jobs"))
         self.log = log or (lambda msg: None)
         self.waiting_since: float | None = None
 
@@ -117,6 +116,17 @@ class Scheduler:
             job.est_mb = max(300, int(1.15 * p.get("extra_mb", job.est_mb)))
             job.est_s = p.get("seconds", job.est_s)
 
+    def projected_free_mb(self) -> int:
+        """Memory free now (whoever uses the rest: other agents' jobs count) less what our running jobs are still
+        expected to add (their estimate minus what they hold already)."""
+        from ..resources import tree_rss_mb
+
+        free = mem_available_mb()
+        for pid, (j, _out, _t0, rss_fork) in self.running.items():
+            grown = max(0, tree_rss_mb(pid) - rss_fork)
+            free -= max(0, j.est_mb - grown)
+        return free
+
     def can_start(self, job: Job) -> bool:
         if len(self.running) >= self.slots:
             return False
@@ -125,16 +135,53 @@ class Scheduler:
         used = sum(j.est_mb for j, *_ in self.running.values())
         if self.running and used + job.est_mb > self.budget:
             return False
-        if mem_available_mb() < job.est_mb + RESERVE_MB:
-            if self.running:
-                return False
-            # nothing of ours is running: another program holds the memory. Wait for it, up to 30 min, then go
+        free = self.projected_free_mb()
+        if free < job.est_mb + RESERVE_MB:
             self.waiting_since = self.waiting_since or time.time()
-            if time.time() - self.waiting_since < 1800:
+            waited = time.time() - self.waiting_since
+            if waited - getattr(self, "_told", -1e9) > 300:
+                self._told = waited
+                self.log(f"waiting to start {job.name}: needs about {job.est_mb + RESERVE_MB} MB, {max(free, 0)} MB free "
+                         f"(other processes on the machine count); waited {waited / 60:.0f} min")
+            # a large solver case never starts without its memory; a light job may, after 30 min with none of ours running
+            if job.heavy or self.running or waited < 1800:
                 return False
-            self.log(f"starting {job.name} with only {mem_available_mb()} MB available (waited 30 min)")
+            self.log(f"starting {job.name} with only {free} MB free (waited 30 min)")
         self.waiting_since = None
+        self._told = -1e9
         return True
+
+    def stop_all(self) -> None:
+        """Ask every running job to stop (they clean up their scratch folders) and wait for them."""
+        import signal
+
+        for pid in list(self.running):
+            try:
+                os.kill(pid, signal.SIGTERM)
+            except OSError:
+                pass
+        t_end = time.time() + 30
+        while self.running and time.time() < t_end:
+            for pid in list(self.running):
+                try:
+                    done, _ = os.waitpid(pid, os.WNOHANG)
+                except ChildProcessError:
+                    done = pid
+                if done:
+                    self.running.pop(pid, None)
+            time.sleep(0.2)
+        for pid in list(self.running):
+            try:
+                os.kill(pid, signal.SIGKILL)
+                os.waitpid(pid, 0)
+            except OSError:
+                pass
+        self.running.clear()
+
+    def close(self) -> None:
+        import shutil
+
+        shutil.rmtree(self.tmp, ignore_errors=True)
 
     def start(self, job: Job, fn, session) -> None:
         out = os.path.join(self.tmp, f"{job.name}.{len(os.listdir(self.tmp))}.pkl")

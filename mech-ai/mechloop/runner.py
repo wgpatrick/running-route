@@ -312,64 +312,82 @@ def _verify_parallel(design: Design, only, stop_on_geometry_error: bool, session
             ready.append(job)
         ready.sort(key=lambda j: -j.est_s)
 
-    promote()
-    while pending or ready or sched.running:
-        started = True
-        while started:
-            started = False
-            for job in list(ready):
-                if sched.can_start(job):
-                    ready.remove(job)
-                    if job.kind == "fea" and fea_t0 is None:
-                        fea_t0 = time.time()
-                    sched.start(job, unit_fn(job.unit) if job.kind == "fea" else verifier_fn(job.name), session)
-                    started = True
-                    break
-        for job, payload, err in sched.wait_one(0.5):
-            if payload is not None and payload.get("delta"):
-                session.merge_delta(payload["delta"])
-            peak = (payload or {}).get("peak", {})
-            info = {"seconds": round((payload or {}).get("wall_s", 0.0), 2), **{k: v for k, v in peak.items()}, "worker": "process"}
-            learned[job.name] = {"extra_mb": peak.get("extra_mb", job.est_mb), "seconds": round((payload or {}).get("seconds", 0.0), 1)}
-            if job.kind == "fea":
-                if payload is None or isinstance(payload["value"], tuple):
-                    r = VerifierResult("fea")
-                    job.unit.on_error(r, RuntimeError(err or str(payload["value"])))
-                    val = {"findings": r.findings, "metrics": {}}
-                else:
-                    val = payload["value"]
-                fea_parts[job.index] = val
-                rep.profile.setdefault("fea_case_processes", {})[job.unit.label] = info
-                if len(fea_parts) == len(fea_units_list):
-                    r = VerifierResult("fea")
-                    for k in range(len(fea_units_list)):
-                        r.findings.extend(fea_parts[k]["findings"])
-                        r.metrics.update(fea_parts[k]["metrics"])
-                    r.seconds = time.time() - fea_t0
-                    results["fea"] = r
-                    prof["fea"] = {"seconds": round(r.seconds, 2), "worker": "processes (one per case)"}
-                    dec = session.decisions.setdefault("fea", {})
-                    all_reused = not dec.get("cases_run")
-                    dec.update({"status": "reused (every case)" if all_reused else "ran",
-                                "why": "full tier: nothing reused" if session.tier == "full" else
-                                       (slots["fea"][1] or "cases run where what they read changed")})
-            else:
-                if payload is None or isinstance(payload["value"], tuple):
-                    res = VerifierResult(job.name)
-                    res.add("error", "verifier_crashed", f"{job.name} crashed: {err or payload['value'][1]}")
-                    stored = False
-                else:
-                    res, stored = payload["value"]["res"], payload["value"]["stored"]
-                results[job.name] = res
-                prof[job.name] = info
-                slot, why = slots[job.name]
-                dec = session.decisions.setdefault(job.name, {})
-                dec.update({"status": "ran", "why": ("full tier: nothing reused" if session.tier == "full"
-                                                    else dec.get("stored_result_invalid") or why or "nothing stored yet"),
-                            "stored": stored})
-                if session.stats.get(job.name):
-                    dec["reused_within"] = session.stats[job.name]
+    from . import incremental as _inc
+    from . import resources
+
+    lock_told = [0.0]
+    lock_failed: dict = {}
+
+    def lock_ok(job) -> bool:
+        """An FEA case that has to solve needs the machine-wide heavy-solver lock (held until FEA is done)."""
+        if job.kind != "fea" or resources._HELD or _inc.fea_case_reusable(job.unit.kind, job.unit.case):
+            return True
+        try:
+            resources.acquire(f"mechloop verify {design.name} (FEA phase)", wait=False)
+            return True
+        except resources.HeavyLockBusy as e:
+            if resources.no_wait():
+                lock_failed[job.index] = e
+                return True
+            if time.time() - lock_told[0] > 300:
+                lock_told[0] = time.time()
+                print(f"mechloop: FEA waits for the heavy-solver lock, held by {resources.holder()} (the other verifiers go "
+                      f"on; --no-wait to fail instead)", file=sys.stderr, flush=True)
+            return False
+
+    def fea_done(job, val):
+        nonlocal fea_t0
+        fea_parts[job.index] = val
+        if len(fea_parts) == len(fea_units_list):
+            r = VerifierResult("fea")
+            for k in range(len(fea_units_list)):
+                r.findings.extend(fea_parts[k]["findings"])
+                r.metrics.update(fea_parts[k]["metrics"])
+            r.seconds = time.time() - (fea_t0 or time.time())
+            results["fea"] = r
+            prof["fea"] = {"seconds": round(r.seconds, 2), "worker": "processes (one per case)"}
+            dec = session.decisions.setdefault("fea", {})
+            all_reused = not dec.get("cases_run")
+            dec.update({"status": "reused (every case)" if all_reused else "ran",
+                        "why": "full tier: nothing reused" if session.tier == "full" else
+                               (slots["fea"][1] or "cases run where what they read changed")})
+            resources.release()
+
+    import signal
+
+    def on_term(signum, frame):
+        raise SystemExit(128 + signum)
+
+    old_term = signal.signal(signal.SIGTERM, on_term) if hasattr(signal, "SIGTERM") else None
+    try:
         promote()
+        while pending or ready or sched.running:
+            started = True
+            while started:
+                started = False
+                for job in list(ready):
+                    if sched.can_start(job) and lock_ok(job):
+                        ready.remove(job)
+                        if job.kind == "fea" and fea_t0 is None:
+                            fea_t0 = time.time()
+                        if job.kind == "fea" and job.index in lock_failed:
+                            r = VerifierResult("fea")
+                            job.unit.on_error(r, lock_failed[job.index])
+                            fea_done(job, {"findings": r.findings, "metrics": {}})
+                        else:
+                            sched.start(job, unit_fn(job.unit) if job.kind == "fea" else verifier_fn(job.name), session)
+                        started = True
+                        break
+            _drain(sched, session, learned, rep, prof, results, slots, fea_done)
+            promote()
+    except BaseException:
+        sched.stop_all()
+        raise
+    finally:
+        resources.release()
+        sched.close()
+        if old_term is not None:
+            signal.signal(signal.SIGTERM, old_term)
     parallel.save_profile(session.cache.root, learned)
     geo = results.get("geometry")
     blocked = bool(geo is not None and stop_on_geometry_error and not geo.ok
@@ -385,6 +403,41 @@ def _verify_parallel(design: Design, only, stop_on_geometry_error: bool, session
     return rep
 
 
+def _drain(sched, session, learned, rep, prof, results, slots, fea_done) -> None:
+    """Collect the jobs that ended."""
+    for job, payload, err in sched.wait_one(0.5):
+        if payload is not None and payload.get("delta"):
+            session.merge_delta(payload["delta"])
+        peak = (payload or {}).get("peak", {})
+        info = {"seconds": round((payload or {}).get("wall_s", 0.0), 2), **{k: v for k, v in peak.items()}, "worker": "process"}
+        learned[job.name] = {"extra_mb": peak.get("extra_mb", job.est_mb), "seconds": round((payload or {}).get("seconds", 0.0), 1)}
+        if job.kind == "fea":
+            if payload is None or isinstance(payload["value"], tuple):
+                r = VerifierResult("fea")
+                job.unit.on_error(r, RuntimeError(err or str(payload["value"])))
+                val = {"findings": r.findings, "metrics": {}}
+            else:
+                val = payload["value"]
+            rep.profile.setdefault("fea_case_processes", {})[job.unit.label] = info
+            fea_done(job, val)
+        else:
+            if payload is None or isinstance(payload["value"], tuple):
+                res = VerifierResult(job.name)
+                res.add("error", "verifier_crashed", f"{job.name} crashed: {err or payload['value'][1]}")
+                stored = False
+            else:
+                res, stored = payload["value"]["res"], payload["value"]["stored"]
+            results[job.name] = res
+            prof[job.name] = info
+            slot, why = slots[job.name]
+            dec = session.decisions.setdefault(job.name, {})
+            dec.update({"status": "ran", "why": ("full tier: nothing reused" if session.tier == "full"
+                                                else dec.get("stored_result_invalid") or why or "nothing stored yet"),
+                        "stored": stored})
+            if session.stats.get(job.name):
+                dec["reused_within"] = session.stats[job.name]
+
+
 def run(path: str | Path, out_root: str | Path = "out", only=None, render: bool | None = True, tier: str | None = None,
         use_cache: bool = True, jobs: int | None = None, step: bool | None = None, memory_budget_mb: int | None = None) -> Report:
     """Build and verify a design and write the loop artefacts. tier None: a full verify (results are stored for a later
@@ -395,6 +448,19 @@ def run(path: str | Path, out_root: str | Path = "out", only=None, render: bool 
     a design marked release; off for the quick and affected tiers (they are slow and not checks)."""
     t0 = time.time()
     steps: dict = {}
+    import signal
+    import threading
+
+    from . import resources
+
+    swept = resources.sweep_stale()       # scratch folders of runs that were killed
+    if swept["removed"]:
+        steps["stale_scratch_removed"] = swept
+    if threading.current_thread() is threading.main_thread():
+        def _term(signum, frame):         # a stopped verify still cleans up (scratch folders, solver processes, lock)
+            raise SystemExit(128 + signum)
+
+        signal.signal(signal.SIGTERM, _term)
     if jobs is None:
         import os
 
