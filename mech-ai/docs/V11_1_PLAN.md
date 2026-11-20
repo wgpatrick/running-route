@@ -41,3 +41,11 @@ Update (owner, 2026-11-20): no international shipping. LDO (UK-only) is out for 
 evaluate US-stocked options — HIWIN (about $185/set, Digi-Key/MotionUSA), IKO ML12 (about $84/assembly at Misumi USA, to
 confirm), NSK PAU12 ($49 at MROSupply, block or assembly to confirm), Misumi SSEB13 (from $117) — noting rail height (8 vs
 7.5 mm) and block length differences against MGN12H, and the two-Z-rails option. Choose the cheapest that passes the checks.
+
+## Rails, revised (2026-11-20, REQ-009)
+
+Genuine HIWIN MGN12HZ0C sets (rail + one MGN12H block, preload Z0, accuracy class C) from Motion Constrained (Colorado), $79.64
+per set with free US shipping, rail 295 mm (HIWIN standard length; E = 10/10). Six sets about $478 for all axes (vs $1,104 at
+Digi-Key). Design to 295 mm rails (X travel about 5 mm less than the 300 mm plan); Z may use 295 or 245 (rail-only $49.49 +
+block) as the Z travel requires. Use the HIWIN official CAD (REQ-005) with the length changed per HIWIN's E rule. Confirm
+stock and lead time before ordering.

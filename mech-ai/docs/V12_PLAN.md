@@ -65,3 +65,8 @@ DD11.0114.1111 is the 1-pole fuseholder variant (Schurter DD11 datasheet p.5), b
 4301.1401 and two fuses (L and N). Keep 2-pole fusing (non-polarised plugs) and change the module to DD11.0124.1111 (2-pole,
 same options) — confirm the part number, stock and STEP. The Schurter SPT STEP files delivered are the wire-lead (pigtail)
 variant; model the 5x20 cartridge from the SPT datasheet (dia 5.2 caps, 20 mm long, caps 5.1 mm) as a faithful re-make.
+
+Inlet stock problem (2026-11-20): DD11.0124.1111 (2-pole) is not stocked, 16-week lead (Digi-Key 486-1286-ND, $28.36, per
+Instinct, unverified). Proposed: DD11.0114.1111 (1-pole, in stock) with the 1-pole drawer 4301.1405 and one fuse in the live
+conductor (normal for US 120 V equipment with a grounded, polarised NEMA 5-15 plug); 2-pole only if a stocked 2-pole inlet
+is found. Owner to confirm.
