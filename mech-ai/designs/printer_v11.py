@@ -862,6 +862,7 @@ def part_duct_shape(y_noz, bl_y0):
     c += bx(NOZ_X + 21.5, FC_X1, yf + FC_FL, y_c0, z0, zf)                        # arm under the Roto
     y_rf = YB0 + R_TPR + ROTO_W                         # the Roto's rear face: under the Roto the chamber stays below its underside
     c += bx(NOZ_X + 21.5, NOZ_X + 48.5, y_c0, y_rf, DUCT_FLOOR, Z_NOZZLE + 20.55)   # chamber A, under the Roto
+    c += bx(NOZ_X + 21.5, NOZ_X + 48.5, y_rf - 0.01, y_rf + 0.61, DUCT_FLOOR, Z_NOZZLE + 20.55)   # v11: bridges chamber A to the riser (below the Roto)
     c += bx(NOZ_X + 21.5, NOZ_X + 48.5, y_rf + 0.6, yl_back, DUCT_FLOOR, Z_NOZZLE + 32.55)   # and its riser behind the Roto (0.6 mm clear of it),
     c += bx(NOZ_X + 21.5, NOZ_X + 48.5, y_rf + 0.6, by1, Z_NOZZLE + 32.55, BL_Z0)            # deeper above z 406, up to the blower
     c += bx(NOZ_X + 13.0, NOZ_X + 28.0, y_c0, y_noz + 23.0, DUCT_FLOOR, DUCT_FLOOR + 9.5)   # chamber B, its front-left extension
@@ -871,9 +872,11 @@ def part_duct_shape(y_noz, bl_y0):
     o, ax = _outlet_frame(y_noz)
     c += _tube(o, ax, OUT_W + 2.4, OUT_H + 2.4, OUT_L)
     # the air passage
-    c -= bx(NOZ_X + 21.5 + w, NOZ_X + 48.5 - w, y_c0 + w, y_rf + 0.01, DUCT_FLOOR + w, Z_NOZZLE + 20.55 - w)
-    c -= bx(NOZ_X + 21.5 + w, NOZ_X + 48.5 - w, y_rf - 0.01, yl_back - w, DUCT_FLOOR + w, Z_NOZZLE + 32.55 + 0.01)
-    c -= bx(NOZ_X + 21.5 + w, NOZ_X + 48.5 - w, y_rf - 0.01, by1 - w, Z_NOZZLE + 32.55, BL_Z0 - w)
+    # v11: the riser keeps a front wall (it was cut open towards the Roto's rear face, leaving a 0.6 mm slit and the duct in
+    # two pieces); chamber A's passage runs through the bridge into the riser below the Roto's underside
+    c -= bx(NOZ_X + 21.5 + w, NOZ_X + 48.5 - w, y_c0 + w, y_rf + 0.6 + w + 0.01, DUCT_FLOOR + w, Z_NOZZLE + 20.55 - w)
+    c -= bx(NOZ_X + 21.5 + w, NOZ_X + 48.5 - w, y_rf + 0.6 + w, yl_back - w, DUCT_FLOOR + w, Z_NOZZLE + 32.55 + 0.01)
+    c -= bx(NOZ_X + 21.5 + w, NOZ_X + 48.5 - w, y_rf + 0.6 + w, by1 - w, Z_NOZZLE + 32.55, BL_Z0 - w)
     bc = (BL_X0 + BL_X1) / 2
     # the blower's outlet (Delta drawing: 20 x 12.2) at the -x end of its lower edge, as the blower is turned here
     c -= bx(max(BL_X0, NOZ_X + 21.5 + w), min(BL_X0 + 19.8, NOZ_X + 48.5 - w), bl_y0 + BL_T / 2 - 6.1, bl_y0 + BL_T / 2 + 6.1, BL_Z0 - w - 0.1, BL_Z0 + 0.1)
