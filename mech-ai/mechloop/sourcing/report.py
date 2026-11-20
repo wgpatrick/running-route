@@ -67,6 +67,9 @@ def snapshot_design(design_path, report_root=None, refresh: bool = False) -> dic
                     L["maker"], L["maker_part_number"] = house["name"], f"{house['name']} {house.get('part_number', '')}"
             L["qty"] += 1
             L["members"].append(c.name)
+            stg = P.stage_of(c, d)
+            if stg is not None and (L.get("stage") is None or stg < L["stage"]):
+                L["stage"] = stg
         elif P.is_fabricated(c):
             mp = manu.get(c.name) or {}
             est = mp.get("estimate") or {}
@@ -76,13 +79,16 @@ def snapshot_design(design_path, report_root=None, refresh: bool = False) -> dic
             proc = mp.get("process") or P._process(c)
             fab.append({"name": c.name, "process": proc, "form": mp.get("form") or ("flat" if proc == "sheet" else ""),
                         "shop": mp.get("shop") or (c.meta.get("dfm") or {}).get("shop") or (d.manufacturing.get("shop") if proc in ("sheet",) else None),
-                        "estimate_usd": None if val is None else round(float(val), 2), "estimate_basis": est.get("basis", "")})
+                        "estimate_usd": None if val is None else round(float(val), 2), "estimate_basis": est.get("basis", ""),
+                        "stage": P.stage_of(c, d)})
     for sku, e in (d.bom_extras or {}).items():
         L = lines.setdefault(sku, {"sku": sku, "qty": 0, "members": [], "description": e.get("description", ""), "unit_cost_usd": e.get("unit_cost_usd"),
                                    "maker": e.get("maker", ""), "maker_part_number": e.get("mpn") or e.get("maker_part_number") or "",
                                    "mcmaster_number": e.get("mcmaster_pn") or "", "mcmaster_status": str(e.get("mcmaster_pn_status") or ""),
                                    "category": "BOM only", "real_part": e.get("real_part")})
         L["qty"] += e.get("qty", 0)
+        if e.get("stage") is not None:
+            L["stage"] = e["stage"]
     s = {"design": d.name, "design_file": str(design_path.relative_to(ROOT)) if design_path.is_relative_to(ROOT) else str(design_path),
          "design_md5": md5, "report": str(rep_path.relative_to(ROOT)) if rep_path.exists() else None,
          "lines": list(lines.values()), "fabricated": fab, "subassemblies": {k: list(v) for k, v in d.subassemblies.items()},
@@ -151,6 +157,26 @@ def run(data: dict, finder, cfg: dict | None = None, builds: int | None = None, 
         "generated": _dt.datetime.now().isoformat(timespec="seconds"), "config": {k: cfg[k] for k in (
             "in_stock_ship_business_days", "low_stock_factor", "long_lead_business_days", "cache_ttl_hours", "fx_to_usd", "distributors")},
     }
+    # staged Build 1 (part meta "build_stage"): cost, longest lead and earliest finish per stage, each stage scheduled on its own
+    stage_of_line = {L["sku"]: L.get("stage") for L in data["lines"]}
+    stage_of_fab = {p["name"]: p.get("stage") for p in data.get("fabricated") or []}
+    stages = sorted({x for x in list(stage_of_line.values()) + list(stage_of_fab.values()) if x is not None})
+    by_stage = {}
+    for st in stages:
+        pl = [r for r in lines if stage_of_line.get(r["sku"]) == st]
+        fp = [p for p in fab["parts"] if stage_of_fab.get(p["name"]) == st]
+        sc = schedule(order_date, [{"sku": r["sku"], "lead_business_days": r["lead_business_days"], "members": r["members"], "flags": r["flags"]}
+                                   for r in pl],
+                      [{"name": p["name"], "shop": p["shop"], "lead_business_days": p["lead_business_days"], "flags": p["flags"]} for p in fp],
+                      {}, cfg)
+        pc = round(sum(r["cost_usd"] or 0.0 for r in pl), 2)
+        fc = round(sum(p.get("price_usd") or 0.0 for p in fp), 2)
+        by_stage[str(st)] = {"purchased_lines": len(pl), "fabricated_parts": len(fp), "purchased_cost_usd": pc, "fabricated_cost_usd_parts": fc,
+                             "total_cost_usd": round(pc + fc, 2), "final_assembly": sc["final_assembly"], "critical_path": sc["critical_path"],
+                             "longest_leads": [{"id": i["id"], "kind": i["kind"], "lead_business_days": i["lead_business_days"],
+                                                "lead_unknown": i["lead_unknown"]} for i in sorted(sc["items"], key=lambda i: -i["lead_business_days"])[:6]],
+                             "flags": dict(Counter(f for r in pl for f in r["flags"]))}
+    summary["by_stage"] = by_stage
     return {"summary": summary, "lines": lines, "fabricated": fab, "schedule": sched}
 
 
@@ -246,6 +272,14 @@ def markdown(rep: dict) -> tuple[str, str]:
          f"{sch['assumptions']['unknown_lead_business_days']} business days.", "",
          f"**Final assembly can start {sch['final_assembly']['earliest_start']}** ({sch['final_assembly']['business_days_from_order']} business days after ordering). "
          "Critical path: " + "; ".join(" -> ".join(c["path"]) for c in sch["critical_path"]), ""]
+    bst = rep["summary"].get("by_stage") or {}
+    if bst:
+        S += ["## By build stage (staged Build 1: 1 frame, bay, bed, Z; 2 gantry, toolhead; 3 feedback hardware)", "",
+              _t(["stage", "purchased lines", "fabricated parts", "purchased $", "fabricated $ (each, qty 1)", "total $", "earliest finish (business days)",
+                  "gated by"],
+                 [[k, v["purchased_lines"], v["fabricated_parts"], _m(v["purchased_cost_usd"]), _m(v["fabricated_cost_usd_parts"]), _m(v["total_cost_usd"]),
+                   v["final_assembly"]["business_days_from_order"], "; ".join(" -> ".join(c["path"][:-1]) for c in v["critical_path"])[:120]]
+                  for k, v in sorted(bst.items())]), ""]
     if sch["subassemblies"]:
         S += ["## Sub-assemblies", "", _t(["Sub-assembly", "Parts", "Earliest start", "Gated by", "Waits for"],
                                           [[x["name"], x["parts"], x["earliest_start"], f"{x['gated_by']} ({x['gate_kind']})", ", ".join(x["waits_for"])[:120]]

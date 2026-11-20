@@ -172,7 +172,7 @@ def bracket_misumi(kind: str = "HBLFSN5") -> Stock:
           "ratings_source": {"allowable_load_n": "MISUMI p.2692 table: 1176 N"}}
     st = Stock(s, kind, f"MISUMI {kind} reversal tabbed bracket ({la:g} x {lb:g}), casting 383.0, -SEP set", mass, material="al6061",
                cost_usd=1.05 if kind == "HBLFSN5" else 1.0, ratings={"allowable_load_n": 1176.0, "maker_part": f"MISUMI {kind}-SEP"},
-               interfaces={"holes_a": holes_a, "holes_b": holes_b, "leg_t": 4.5, "legs": (la, lb)}, model=model, real_part=rp,
+               interfaces={"holes_a": tuple(holes_a), "holes_b": tuple(holes_b), "leg_t": 4.5, "legs": (la, lb)}, model=model, real_part=rp,
                source={"level": "vendor", "vendor": "MISUMI", "part": kind, "url": HBLF_DRAWING, "retrieved": CHECKED, "unverified_fields": [],
                        "file": "docs/V11_1_PLAN.md"})
     return st
@@ -272,7 +272,7 @@ def heater_keenovo_200() -> Stock:
           "sellers": [{"name": "Keenovo (keenovo.store, maker direct)", "part_number": "200x200 24V 200W", "checked": CHECKED,
                        "note": "$43.28, available (REQ-003); ships from Keenovo: confirm US shipping cost and lead"}],
           "sold_by_maker": True, "stock_size": "200 x 200 mm", "datasheet": "vendor_docs/Keenovo_200x200-24V-200W_page_2026-11-20.pdf",
-          "ratings_source": {"watts": "Keenovo page: 200 W", "electrical.watts": "Keenovo page: 200 W", "electrical.volts": "Keenovo page: 24 V"},
+          "ratings_source": {"watts": "Keenovo page: 200 W", "volts": "Keenovo page: 24 V"},
           "replace_with": "Keenovo's drawing with thickness and lead exit (ask Keenovo), or measure the delivered pad"}
     return _tagged(st, "HEATER-KEENOVO-200x200-24V-200W", "Keenovo silicone heater 200 x 200 mm 24 V 200 W (stock)", rp, cost_usd=43.28,
                    model={"kind": "proxy", "source": "plain 200 x 200 x 1.5 sheet: thickness not published (geometry pending)",
@@ -303,8 +303,8 @@ def thermostat_cs7() -> Stock:
     rp = {"maker": "Cantherm", "mpn": "CS712025Y", "sellers": [{"name": "Digi-Key", "part_number": "Cantherm CS712025Y", "checked": CHECKED,
                                                                "note": "$5.38, 427 in stock (V12_PLAN, distributor API 2026-11-19)"}],
           "datasheet": "vendor_docs/Cantherm_CS7_R53_thermostat_datasheet.pdf",
-          "ratings_source": {"electrical.trip_c": "Cantherm data sheet / order code", "electrical.hold_c": "data sheet hysteresis 20K",
-                             "electrical.amps": "data sheet 24VDC 10A", "electrical.resistance_ohm": "data sheet < 50 mOhm"},
+          "ratings_source": {"trip_c": "Cantherm data sheet (120 degC NC per the order code CS712025Y)", "hold_c": "data sheet hysteresis 20K +/-5K",
+                             "amps": "data sheet: 24VDC 10A", "resistance_ohm": "data sheet: contact resistance < 50 mOhm"},
           "replace_with": "the R53 drawing's full outline (terminals, bracket) in the model"}
     return _tagged(st, "THERMOSTAT-CANTHERM-CS712025Y", "Cantherm CS712025Y bimetal thermostat 120 degC NC (bed cut-off)", rp,
                    shape=shape, mass_kg=0.006, cost_usd=5.38,
@@ -349,7 +349,11 @@ def pi5_host() -> Stock:
     for x, y, _ in holes:
         pcb -= Pos(x, y, T / 2) * Cylinder(1.35, T)
     ports = {"GPIO": dict(kind="host", connector="dupont", max_a=2.0, conductors=3, at=(-10.0, 24.5, T + 3.0), dir=(0, 0, 1),
-                          pin="GND, GPIO14 TXD, GPIO15 RXD (no 5 V: the Pi has its own supply)")}
+                          pin="GND, GPIO14 TXD, GPIO15 RXD (no 5 V: the Pi has its own supply)"),
+             "PWR": dict(kind="host", connector="dupont", max_a=0.1, conductors=2, at=(10.0, 24.5, T + 3.0), dir=(0, 0, 1),
+                         pin="GPIO26 + GND (drives the PN2222A of the contactor's interface relay)"),
+             "USB": dict(kind="host", connector="usb-a", max_a=0.6, conductors=4, at=(42.5, -10.0, T + 8.0), dir=(1, 0, 0),
+                         pin="USB 2.0 port (Eddy Duo; the nozzle camera and the accelerometer on the others)", multi=True)}
     ratings = {"supply_w": 0.0, "volts": 5.0, "min_ambient_c": 0.0, "max_ambient_c": 50.0}
     sources = {"geometry": "Raspberry Pi 5 mechanical drawing (vendor_docs/RaspberryPi_Pi5_mechanical_drawing.pdf): 85 x 56, holes 2.7 on 58 x 49, "
                            "3.5 from the edge; Active Cooler outline from its product brief",
@@ -361,8 +365,8 @@ def pi5_host() -> Stock:
     rp = {"maker": "Raspberry Pi Ltd", "mpn": "SC1432 (Raspberry Pi 5 8GB)",
           "sellers": [{"name": "Digi-Key", "part_number": "SC1432", "checked": CHECKED, "note": "$175.00, 19,347 in stock (V12_PLAN)"}],
           "datasheet": "vendor_docs/RaspberryPi_Pi5_mechanical_drawing.pdf",
-          "ratings_source": {"electrical.supply_w": "own 27 W supply SC1153", "electrical.volts": "product brief: 5 V USB-C",
-                             "electrical.min_ambient_c": "product brief", "electrical.max_ambient_c": "product brief 0-50 degC"}}
+          "ratings_source": {"supply_w": "own 27 W supply SC1153 (not the board's rail)", "volts": "Raspberry Pi 5 product brief: 5 V DC via USB-C",
+                             "min_ambient_c": "Raspberry Pi 5 product brief: 0 to 50 degC", "max_ambient_c": "Raspberry Pi 5 product brief: 0 to 50 degC"}}
     from .electrical import _ots
 
     return Stock(pcb + cooler, "HOST-RPI5-8GB-SC1432", "Raspberry Pi 5 8 GB + Active Cooler (Klipper host, own 27 W supply)", 0.073,
@@ -402,7 +406,7 @@ def contactor_finder_2232() -> Stock:
     rp = {"maker": "Finder", "mpn": "22.32.0.120.4320", "sellers": [{"name": "Digi-Key", "part_number": "22.32.0.120.4320", "checked": CHECKED,
                                                                     "note": "$46.34, 205 in stock (V12_PLAN)"}],
           "datasheet": "vendor_docs/Finder_22-series_datasheet.pdf",
-          "ratings_source": {f"electrical.{k}": "Finder S22EN data sheet" for k in ratings}}
+          "ratings_source": {k: "Finder S22EN data sheet" for k in ratings}}
     st = Stock(body, "CONTACTOR-FINDER-22.32.0.120.4320", "Finder 22.32 25 A 2-pole contactor, 120 V coil (mains switching)", 0.12,
                material="abs", detail=detail, model=model,
                ratings={"electrical": {"kind": "relay", "ports": ports, "ratings": ratings, "sources": sources,
@@ -655,7 +659,7 @@ def leadscrew_motor_a4003() -> Stock:
 
     st = leadscrew_motor_17e19_ab4()
     src = {k: "drawing A4003" for k in ("holding_torque_nmm", "rated_current_a", "phase_resistance_ohm", "phase_inductance_mh", "lead_mm")}
-    return _a4003_retag(st, "MOTOR-17E19S1684AB4-330RA", "StepperOnline 17E19S1684AB4-330RA lead-screw stepper (drawing A4003)", src)
+    return _a4003_retag(st, st.sku, "StepperOnline 17E19S1684AB4-330RA lead-screw stepper (drawing A4003)", src)
 
 
 @part
@@ -666,3 +670,37 @@ def leadscrew_screw_a4003(length: float = 328.0) -> Stock:
 
     st = leadscrew_screw_17e19_ab4(length)
     return _a4003_retag(st, "TR8x2-INTEGRAL-17E19S1684AB4-330RA", st.description, {"lead_mm": "drawing A4003: Tr8x2"})
+
+
+# ------------------------------------------------------------------ Wham Bam 220 PEI kit
+WB_PLATE = "vendor_docs/WhamBam_PEI-plate-220_page_2026-11-20.pdf"
+WB_BASE = "vendor_docs/WhamBam_magnetic-base-220_page_2026-11-20.pdf"
+
+
+@part
+def whambam_base_220() -> Stock:
+    """Wham Bam magnetic base 220 x 220, 1 mm, 3M 468MP adhesive, rated 150 degC continual (maker's page). Local frame: centred, its
+    adhesive face on Z=0, 1 mm up."""
+    t = 1.0
+    return Stock(Pos(0, 0, t / 2) * Box(220.0, 220.0, t), "WHAMBAM-MAGNETIC-BASE-220", "Wham Bam magnetic base 220 x 220 x 1 mm (150 degC)",
+                 220 * 220 * t * 3.7e-6, material="rubber_gt2", cost_usd=30.0, ratings={"max_temp_c": 150.0},
+                 model={"kind": "generated to standard", "remade_from": WB_BASE, "no_auto_features": True,
+                        "source": f"220 x 220 x 1 mm from the maker's page ({WB_BASE})"},
+                 real_part={"maker": "Wham Bam Systems", "mpn": "Magnetic Base 220 x 220", "sellers": [{"name": "whambam3d.com (maker direct, US)",
+                                                                                                       "checked": "2026-11-20"}],
+                            "sold_by_maker": True, "datasheet": WB_BASE, "ratings_source": {"max_temp_c": "maker's page: 150 degC continual"}})
+
+
+@part
+def whambam_plate_220() -> Stock:
+    """Wham Bam textured PEI flexi plate 220 x 220: 0.4 mm high-chromium spring steel, 0.12 mm ULTEM PEI each side (0.64 mm). SOLD OUT
+    at the maker on 2026-11-20 (REQ-003): a restock or a second source is an open item. Local frame: centred, bottom on Z=0."""
+    t = 0.64
+    return Stock(Pos(0, 0, t / 2) * Box(220.0, 220.0, t), "WHAMBAM-PEI-PLATE-220", "Wham Bam PEX textured PEI flexi plate 220 x 220 (0.4 steel)",
+                 220 * 220 * 0.4 * 7.85e-6, material="steel", cost_usd=35.0, ratings={"steel_thickness_mm": 0.4},
+                 interfaces={"steel_thickness": 0.4, "size": 220.0},
+                 model={"kind": "generated to standard", "remade_from": WB_PLATE, "no_auto_features": True,
+                        "source": f"220 x 220, 0.4 steel + 2 x 0.12 PEI, from the maker's page ({WB_PLATE})"},
+                 real_part={"maker": "Wham Bam Systems", "mpn": "PEX Flexi Plate 220 x 220", "sellers": [{"name": "whambam3d.com (maker direct, US)",
+                                                                                                         "checked": "2026-11-20", "note": "$35.00, SOLD OUT on 2026-11-20"}],
+                            "sold_by_maker": True, "datasheet": WB_PLATE, "ratings_source": {"steel_thickness_mm": "maker's page: 0.4 mm"}})

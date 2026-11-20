@@ -652,6 +652,257 @@
    "stock_size": "pack (Pololu sells these spacers in multi-packs)",
    "source": "mechloop/parts/vendor/pololu_spacers.json; seller = the maker",
    "checked": "2026-11-20"
+  },
+  "EXT2020-230": {
+   "maker": "MISUMI",
+   "mpn": "HFS5-2020-230",
+   "sellers": [
+    {
+     "name": "MISUMI USA",
+     "part_number": "HFS5-2020-230",
+     "catalogue": true,
+     "url": "https://us.misumi-ec.com",
+     "checked": "2026-11-20",
+     "note": "cut to length by MISUMI (the one purchased part bought cut)"
+    }
+   ],
+   "stock_size": "230 mm, cut by MISUMI",
+   "datasheet": "vendor_docs/misumi_2019_US_2686_HFS5_extrusions_slot_details.pdf",
+   "source": "MISUMI 2019 US catalogue p.2686 + MISUMI's HFS5-2020 STEP (vendor_cad/inbox/HFS5-2020-500.step)"
+  },
+  "EXT2020-276": {
+   "maker": "MISUMI",
+   "mpn": "HFS5-2020-276",
+   "sellers": [
+    {
+     "name": "MISUMI USA",
+     "part_number": "HFS5-2020-276",
+     "catalogue": true,
+     "url": "https://us.misumi-ec.com",
+     "checked": "2026-11-20",
+     "note": "cut to length by MISUMI (the one purchased part bought cut)"
+    }
+   ],
+   "stock_size": "276 mm, cut by MISUMI",
+   "datasheet": "vendor_docs/misumi_2019_US_2686_HFS5_extrusions_slot_details.pdf",
+   "source": "MISUMI 2019 US catalogue p.2686 + MISUMI's HFS5-2020 STEP (vendor_cad/inbox/HFS5-2020-500.step)"
+  },
+  "EXT2020-281": {
+   "maker": "MISUMI",
+   "mpn": "HFS5-2020-281",
+   "sellers": [
+    {
+     "name": "MISUMI USA",
+     "part_number": "HFS5-2020-281",
+     "catalogue": true,
+     "url": "https://us.misumi-ec.com",
+     "checked": "2026-11-20",
+     "note": "cut to length by MISUMI (the one purchased part bought cut)"
+    }
+   ],
+   "stock_size": "281 mm, cut by MISUMI",
+   "datasheet": "vendor_docs/misumi_2019_US_2686_HFS5_extrusions_slot_details.pdf",
+   "source": "MISUMI 2019 US catalogue p.2686 + MISUMI's HFS5-2020 STEP (vendor_cad/inbox/HFS5-2020-500.step)"
+  },
+  "EXT2020-300": {
+   "maker": "MISUMI",
+   "mpn": "HFS5-2020-300",
+   "sellers": [
+    {
+     "name": "MISUMI USA",
+     "part_number": "HFS5-2020-300",
+     "catalogue": true,
+     "url": "https://us.misumi-ec.com",
+     "checked": "2026-11-20",
+     "note": "cut to length by MISUMI (the one purchased part bought cut)"
+    }
+   ],
+   "stock_size": "300 mm, cut by MISUMI",
+   "datasheet": "vendor_docs/misumi_2019_US_2686_HFS5_extrusions_slot_details.pdf",
+   "source": "MISUMI 2019 US catalogue p.2686 + MISUMI's HFS5-2020 STEP (vendor_cad/inbox/HFS5-2020-500.step)"
+  },
+  "EXT2020-364": {
+   "maker": "MISUMI",
+   "mpn": "HFS5-2020-364",
+   "sellers": [
+    {
+     "name": "MISUMI USA",
+     "part_number": "HFS5-2020-364",
+     "catalogue": true,
+     "url": "https://us.misumi-ec.com",
+     "checked": "2026-11-20",
+     "note": "cut to length by MISUMI (the one purchased part bought cut)"
+    }
+   ],
+   "stock_size": "364 mm, cut by MISUMI",
+   "datasheet": "vendor_docs/misumi_2019_US_2686_HFS5_extrusions_slot_details.pdf",
+   "source": "MISUMI 2019 US catalogue p.2686 + MISUMI's HFS5-2020 STEP (vendor_cad/inbox/HFS5-2020-500.step)"
+  },
+  "EXT2020-373": {
+   "maker": "MISUMI",
+   "mpn": "HFS5-2020-373",
+   "sellers": [
+    {
+     "name": "MISUMI USA",
+     "part_number": "HFS5-2020-373",
+     "catalogue": true,
+     "url": "https://us.misumi-ec.com",
+     "checked": "2026-11-20",
+     "note": "cut to length by MISUMI (the one purchased part bought cut)"
+    }
+   ],
+   "stock_size": "373 mm, cut by MISUMI",
+   "datasheet": "vendor_docs/misumi_2019_US_2686_HFS5_extrusions_slot_details.pdf",
+   "source": "MISUMI 2019 US catalogue p.2686 + MISUMI's HFS5-2020 STEP (vendor_cad/inbox/HFS5-2020-500.step)"
+  },
+  "EXT2020-333": {
+   "maker": "MISUMI",
+   "mpn": "HFS5-2020-333",
+   "sellers": [
+    {
+     "name": "MISUMI USA",
+     "part_number": "HFS5-2020-333",
+     "catalogue": true,
+     "url": "https://us.misumi-ec.com",
+     "checked": "2026-11-20",
+     "note": "cut to length by MISUMI (the one purchased part bought cut)"
+    }
+   ],
+   "stock_size": "333 mm, cut by MISUMI",
+   "datasheet": "vendor_docs/misumi_2019_US_2686_HFS5_extrusions_slot_details.pdf",
+   "source": "MISUMI 2019 US catalogue p.2686 + MISUMI's HFS5-2020 STEP (vendor_cad/inbox/HFS5-2020-500.step)"
+  },
+  "EXT2020-340": {
+   "maker": "MISUMI",
+   "mpn": "HFS5-2020-340",
+   "sellers": [
+    {
+     "name": "MISUMI USA",
+     "part_number": "HFS5-2020-340",
+     "catalogue": true,
+     "url": "https://us.misumi-ec.com",
+     "checked": "2026-11-20",
+     "note": "cut to length by MISUMI (the one purchased part bought cut)"
+    }
+   ],
+   "stock_size": "340 mm, cut by MISUMI",
+   "datasheet": "vendor_docs/misumi_2019_US_2686_HFS5_extrusions_slot_details.pdf",
+   "source": "MISUMI 2019 US catalogue p.2686 + MISUMI's HFS5-2020 STEP (vendor_cad/inbox/HFS5-2020-500.step)"
+  },
+  "EXT2020-360": {
+   "maker": "MISUMI",
+   "mpn": "HFS5-2020-360",
+   "sellers": [
+    {
+     "name": "MISUMI USA",
+     "part_number": "HFS5-2020-360",
+     "catalogue": true,
+     "url": "https://us.misumi-ec.com",
+     "checked": "2026-11-20",
+     "note": "cut to length by MISUMI (the one purchased part bought cut)"
+    }
+   ],
+   "stock_size": "360 mm, cut by MISUMI",
+   "datasheet": "vendor_docs/misumi_2019_US_2686_HFS5_extrusions_slot_details.pdf",
+   "source": "MISUMI 2019 US catalogue p.2686 + MISUMI's HFS5-2020 STEP (vendor_cad/inbox/HFS5-2020-500.step)"
+  },
+  "EXT2020-284": {
+   "maker": "MISUMI",
+   "mpn": "HFS5-2020-284",
+   "sellers": [
+    {
+     "name": "MISUMI USA",
+     "part_number": "HFS5-2020-284",
+     "catalogue": true,
+     "url": "https://us.misumi-ec.com",
+     "checked": "2026-11-20",
+     "note": "cut to length by MISUMI (the one purchased part bought cut)"
+    }
+   ],
+   "stock_size": "284 mm, cut by MISUMI",
+   "datasheet": "vendor_docs/misumi_2019_US_2686_HFS5_extrusions_slot_details.pdf",
+   "source": "MISUMI 2019 US catalogue p.2686 + MISUMI's HFS5-2020 STEP (vendor_cad/inbox/HFS5-2020-500.step)"
+  },
+  "SPRING-DIE-DJ-8X20YCS": {
+   "maker": "Century Spring",
+   "mpn": "DJ-8X20YCS",
+   "sellers": [
+    {
+     "name": "Century Spring (maker direct, US)",
+     "part_number": "DJ-8X20YCS",
+     "checked": "2026-11-20",
+     "note": "$2.20, backordered 4-6 weeks on 2026-11-20 (Instinct REQ-002 item 21)"
+    }
+   ],
+   "sold_by_maker": true,
+   "datasheet": "vendor_docs/CenturySpring_DJ-8X20YCS_catalog_p460_p475.pdf",
+   "ratings_source": {
+    "free_length_mm": "Century 2021 catalogue p.475: free length 20",
+    "rate_n_per_mm": "p.475: 0.78 kgf/mm (7.6 N/mm)",
+    "max_deflection_mm": "p.475: max operating (50 %) 10.0 mm at 8.0 kgf",
+    "hole_mm": "p.475: hole size (DJ-8: 8 mm)",
+    "preload_n": "DERIVED from p.475's rate at the installed height (7.6 N/mm x 8 mm)",
+    "max_temp_c": "p.460: chrome alloy about 440 F"
+   }
+  },
+  "THUMBNUT-DIN466-M4": {
+   "maker": "KIPP",
+   "mpn": "K0143.04",
+   "sellers": [
+    {
+     "name": "KIPP Inc. (US)",
+     "part_number": "K0143.04",
+     "checked": "2026-11-20",
+     "note": "knurled nut DIN 466 M4 steel; STEP from KIPP (vendor_cad/inbox/THUMBNUT-DIN466-M4.step); price and stock to confirm"
+    }
+   ],
+   "sold_by_maker": true,
+   "datasheet": "vendor_cad/staging/supplier_2026-11-19/THUMBNUT-DIN466-M4.pdf"
+  },
+  "PSU-LRS-350-24": {
+   "maker": "MEAN WELL",
+   "mpn": "LRS-350-24",
+   "sellers": [
+    {
+     "name": "Digi-Key",
+     "part_number": "1866-3349-ND (LRS-350-24)",
+     "checked": "2026-11-20"
+    }
+   ],
+   "datasheet": "vendor_docs/LRS-350-24_datasheet.pdf (MEAN WELL LRS-350-SPEC)",
+   "ratings_source": {
+    "volts": "LRS-350 spec p.2: DC voltage 24 V",
+    "watts": "LRS-350 spec p.2: rated power 350.4 W",
+    "derate_to_frac_at_70c": "LRS-350 spec: derating curve (load vs ambient), 60 % at 70 degC",
+    "full_load_min_vac": "LRS-350 spec: static characteristics / input range by switch",
+    "leakage_current_at_vac": "LRS-350 spec: leakage current < 2 mA / 240 VAC"
+   }
+  },
+  "CTRL-OCTOPUS-V1.1": {
+   "maker": "BIGTREETECH",
+   "mpn": "Octopus V1.1 (STM32F446)",
+   "sellers": [
+    {
+     "name": "BIQU store (biqu.equipment, maker direct)",
+     "checked": "2026-11-20",
+     "note": "price and US stock to confirm on ordering"
+    }
+   ],
+   "sold_by_maker": true,
+   "datasheet": "vendor_cad/staging/BIGTREETECH Octopus V1.0-V1.1 User Manual (EN, 2021-07-19).pdf",
+   "ratings_source": {
+    "bed_max_w": "Octopus manual 8 item 3: 300 W",
+    "rail_12v_max_a": "manual 1.1 item 6: 12 V rail 4 A",
+    "driver_sockets": "manual 1.1: eight driver sockets",
+    "stepper_drivers": "manual 1.1: eight driver sockets",
+    "driver_max_rms_a": "TMC2209 data sheet (owner-supplied) / BTT TMC2209 V1.2 manual: 2.0 A RMS",
+    "driver_abs_max_rms_a": "TMC2209 data sheet: 2.8 A peak",
+    "driver_max_v": "TMC2209 data sheet: VS 29 V max",
+    "driver_rds_on_ohm": "TMC2209 data sheet: RDS(on) 0.17 ohm",
+    "sense_resistor_ohm": "BTT TMC2209 V1.2 manual: 0.11 ohm",
+    "adc_bits": "STM32F446 (manual 1.2 item 3): 12-bit ADC"
+   },
+   "replace_with": "BTT schematic / manual figures for logic power, max ambient, fan-output resistance and the thermistor pull-up (now typical values)"
   }
  }
 }

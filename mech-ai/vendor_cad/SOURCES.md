@@ -107,3 +107,20 @@ Links from Digi-Key's product media (API v4), downloaded from the maker's own si
 |---|---|---|---|---|---|
 | `inbox/BFB0524HH.step` | Delta BFB0524HH 50x50x15 24 V centrifugal blower (part-cooling, from v11) | https://www.delta-fan.com/Download/3D/BFB0524HH.stp (Digi-Key 603-1116-ND media "CAD Models"), unchanged; 2 solids, bbox 52.59 x 15.34 x 51.42 mm; spec sheet `vendor_docs/delta_BFB0524HH_spec.pdf` | retrieved 2026-11-19 | no licence grant: the maker's published download, internal design use | vendor (Delta Electronics) |
 | (pending) `inbox/E2B-M12KS04-WP-C1.step` | Omron E2B-M12KS04-WP-C1 2M inductive probe (from v11) | https://download.ia.omron.com/download/zip/ST/OEE/E2B_M12KS04_WP_C1/ (Digi-Key Z4126-ND media) refused automated download (HTTP 403 from the site's CDN); to be fetched in a browser. Datasheet `vendor_docs/omron_E2B_datasheet_en.pdf` | 2026-11-19 | | vendor (Omron) |
+
+### printer_v12 (2026-11-20): staged maker files moved to the inbox under the catalogue SKU (copies; the staged originals stay with their MANIFEST)
+
+| file | part | origin | commit / retrieved | licence | made by |
+|---|---|---|---|---|---|
+| `inbox/HIWIN-MGNR12R-R0300.step` | HIWIN MGNR-12-R0300-H-M rail: its section, swept to 245 / 295 mm with holes by HIWIN's E rule (`batch12.hiwin_mgn12_rail`) | `staging/instinct_REQ-005/HIWIN_MGNR-12-R0300-H-M.step` (configure.hiwin.com, Instinct REQ-005 batch 6; checks in that MANIFEST) | 2026-11-20 | maker's configurator download, internal design use | vendor (HIWIN) |
+| `inbox/HIWIN-MGN12H-ASSEMBLY.step` | HIWIN MGN12H block solids from MGN-12-H-1R0300-ZF-H-M (`batch12.hiwin_mgn12h_block`) | `staging/instinct_REQ-005/HIWIN_MGN-12-H-1R0300-ZF-H-M_block-rail-assembly.step` | 2026-11-20 | as above | vendor (HIWIN) |
+| `inbox/HBLFSNF5.step` | MISUMI HBLFSNF5 tabbed bracket 30 x 20 | `staging/instinct_REQ-001b/HBLFSNF5.step` (3Dfindit / CADENAS MISUMI catalogue) | 2026-11-20 | catalogue download, internal use | vendor (MISUMI) |
+| `inbox/SHCS-M4x6.step` | McMaster 91290A139 SHCS M4 x 6 black oxide (replaces the zinc 90128A208 mapping) | `staging/instinct_REQ-001/91290A139.step` | 2026-11-20 | McMaster download for the owner | vendor (McMaster) |
+| `inbox/SHCS-M5x6.step` | McMaster 91290A221 | `staging/instinct_REQ-001/91290A221.step` | 2026-11-20 | as above | vendor (McMaster) |
+| `inbox/BHCS-FL-M5x8.step`, `inbox/BHCS-FL-M5x10.step` | McMaster 92137A412 / 92137A414 flanged button heads ISO 7380-2 | `staging/instinct_REQ-001/` | 2026-11-20 | as above | vendor (McMaster) |
+| `inbox/WASHER-M5-SERRATED.step` | McMaster 91106A126 internal-tooth lock washer M5 (the one whose STEP passes the BRep check) | `staging/instinct_REQ-001/91106A126.step` | 2026-11-20 | as above | vendor (McMaster) |
+| `inbox/SHCS-M2x20.step`, `SHCS-M2.5x20.step`, `SHCS-M3x25.step`, `SHCS-M5x16.step`, `SHCS-M5x65.step`, `WASHER-M2.step` | McMaster 91290A049 / 91290A108 / 91290A125 / 91290A232 / 91290A270 / 91166A180 | `staging/instinct_REQ-002/` | 2026-11-20 | as above | vendor (McMaster) |
+| `inbox/WASHER-M3-LARGE.step`, `inbox/WASHER-M4-LARGE.step` | Accu HPLW-M3-A2 / HPLW-M4-A2 (0.8 / 1.0 mm, inside Accu's tolerance) | `staging/instinct_REQ-002/HPLW-M3-A2.step`, `HPLW-M4-A2.step` | 2026-11-20 | Accu download for the owner | vendor (Accu) |
+| `inbox/NUT-M2.step` | McMaster 91828A111 hex nut M2 18-8, DIN 934 height (1.6) | `staging/instinct_REQ-006/91828A111.step` | 2026-11-20 | as above | vendor (McMaster) |
+| `inbox/Finder_22.32_2NO.step` | Finder 22.32.0.120.4320 contactor (2232_xx20, 88.8 high) | `staging/instinct_REQ-006/Finder_22.32_2NO_2232_xx20.stp` | 2026-11-20 | Finder's published CAD | vendor (Finder) |
+| `inbox/Phoenix_1119897.step` | Phoenix Contact PLC-RSC- 5DC/21 (1119897) | `staging/instinct_REQ-008/Phoenix_1119897_PLC-RSC-5DC-21.stp` | 2026-11-20 | Phoenix's published CAD | vendor (Phoenix Contact) |

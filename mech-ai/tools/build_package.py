@@ -2679,8 +2679,46 @@ CURATED_V11 = [
     ("B", "Frame stiffness is not in the twin", "The twin's resonances use belts, guide blocks and the gantry's FEA only.", "resonance measurement E13"),
 ]
 
+STAGE_NOTES_BY_DESIGN["printer_v12"] = {
+    **STAGE_NOTES_BY_DESIGN["printer_v11"],
+    "frame": ["v12: every frame and carrier corner is a MISUMI HBLFSN5-SEP tabbed bracket (30 x 30): drop the set's two HNTP5-5 spring nuts into "
+              "the slots, offer up the bracket (its tabs locate in the slot openings), start both CBM5-10 (4 mm key) before tightening either "
+              "(6.8 N.m reference torque, MISUMI). The extrusions come cut to length from MISUMI (HFS5-2020-<length>)."]
+             + list(STAGE_NOTES_BY_DESIGN["printer_v10"]["frame"]),
+}
+
+CURATED_V12 = [
+    ("A", "Build 1 is staged: order and build stage 1 first",
+     "Every part carries its build stage (1 frame, electronics bay, bed and Z; 2 gantry, toolhead and probe; 3 feedback hardware). The DG-07 "
+     "placeholders left in stage 1 are listed at the top of this package; stage 2 and 3 placeholders are allowed now and listed with them.",
+     "run python -m mechloop.sourcing --design designs/printer_v12.py and order stage 1's long-lead lines first"),
+    ("A", "Commissioning: probe only after the bed has soaked at temperature",
+     "Limit (b) is worked on the warming that is left after the soak (the START_PRINT macro holds it: M190, then the soak, then G28, "
+     "Z_TILT_ADJUST, BED_MESH_CALIBRATE). The carrier's time constant is an estimate.",
+     "measure the nozzle-gap drift with the probe over 30 min after the bed reaches temperature; set the soak to what the drift needs"),
+    ("A", "MIC-6 flatness is a receiving check (owner: accept 0.13 mm, reject worse)",
+     "Limit (a) uses 0.127 mm for the plate as bought; the maker's brochure gives 0.381 mm for this thickness.",
+     "straight edge and feelers on the cut plate on arrival; reject a worse piece"),
+    ("A", "Mains: contactor switched from the Pi; earth star at the frame stud",
+     "Finder 22.32 (L and N) with a 120 V coil through the Phoenix PLC-RSC-5DC/21, whose coil a Pi GPIO drives through a PN2222A (1 kOhm); "
+     "Moonraker [power printer] with off_when_shutdown. 16 AWG earth: inlet PE -> frame stud; supply FG and bed plate each on their own lug.",
+     "continuity test of every earth bond to the inlet's PE pin before first mains power; check the contactor drops on a Klipper shutdown"),
+    ("A", "Wham Bam 220 PEI plate was sold out on 2026-11-20", "The magnetic base is in stock at the maker.",
+     "order when restocked, or choose another 220 x 220 0.4 mm spring-steel PEI plate with a published thickness"),
+    ("B", "Keenovo 200 x 200 heater and Cantherm thermostat: outlines not dimensioned",
+     "The heater's thickness and lead exit are not published; the thermostat's R53 outline is drawn as an envelope. Both are bonded under the plate.",
+     "measure both on arrival; the owner asked for the thermostat to be clamped: a clamp needs two countersunk M3 through the plate"),
+    ("B", "Lead-screw motors: no thrust rating, rotor inertia and screw efficiency not on drawing A4003",
+     "Geometry, winding and the POM nut are from StepperOnline's drawing A4003; inertia and efficiency are the sister model's / typical.",
+     "ask StepperOnline for the axial rating, rotor inertia and screw efficiency"),
+    ("B", "Stage 3 toolhead brackets are not drawn",
+     "The nozzle camera, its lens, the line laser, the two nozzle LED segments and the toolhead ADXL345 are on the BOM; their bracket is a "
+     "design item (the Eddy probe fills the rear view of the nozzle).", "design the duct-side bracket before ordering stage 3"),
+] + [c for c in CURATED_V11 if c[1].startswith(("Z screws at full length", "Screw lengths in T-slots", "Part-cooling flow", "X belt tensioned",
+                                                 "Thumb nuts", "Earth stud", "Frame stiffness"))]
+
 CURATED_BY_DESIGN = {"printer_v8_1": CURATED_V8_1, "printer_v8_2": CURATED_V8_2, "printer_v9": CURATED_V9, "printer_v10": CURATED_V10,
-                     "printer_v10_1": CURATED_V10_1, "printer_v11": CURATED_V11}
+                     "printer_v10_1": CURATED_V10_1, "printer_v11": CURATED_V11, "printer_v12": CURATED_V12}
 
 
 def write_open_items(cx: Ctx, bom: dict, fab: dict, asm: dict, wash: list, lead: list) -> dict:

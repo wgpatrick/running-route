@@ -68,7 +68,10 @@ def spacer_round(size: str = "M3", length: float = 6.0, material: str = "nylon")
                  f"Round {material} spacer for {size}, {od:g} OD x {bore:g} ID x {length:g} mm" + (f" ({pn})" if pn else ""), mass,
                  material=_MATERIAL[material], cost_usd={"nylon": 0.07, "aluminium": 0.6}[material],
                  ratings={"approximate": True, "screw": size, **({"vendor_part": pn} if pn else {}), **({"note": note} if note else {})},
-                 interfaces={"od": od, "bore": bore, "length": float(length), "top": [(0.0, 0.0, float(length))]}, source=src)
+                 interfaces={"od": od, "bore": bore, "length": float(length), "top": [(0.0, 0.0, float(length))]}, source=src,
+                 # a plain round spacer has three dimensions; Pololu's product page gives all three: a faithful re-make (v12)
+                 model=({"kind": "generated to standard", "remade_from": f"{pn} product page (OD, bore, length: mechloop/parts/vendor/pololu_spacers.json)",
+                         "no_auto_features": True, "source": f"re-made from {pn}'s product page dimensions"} if pn else {}))
 
 
 @part
