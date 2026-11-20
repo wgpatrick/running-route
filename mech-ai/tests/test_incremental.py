@@ -289,6 +289,9 @@ def test_parallel_run_equals_serial_run(tmp_path):
     again = cli("--out", str(tmp_path / "par"), "--tier", "affected", "--jobs", "3")      # all reused, also in parallel
     assert set(again["incremental"]["reused"]) >= {"geometry", "interference", "practice", "assemblability"}
     assert without_timings(again) == without_timings(ser)
+    quick = cli("--out", str(tmp_path / "par"), "--tier", "quick", "--jobs", "3")         # FEA reused case by case
+    assert not quick["summary"]["fea"].startswith("skipped") and not quick.get("partial")
+    assert without_timings(quick)["findings"] == without_timings(ser)["findings"]
 
 
 # ------------------------------------------------------------------------------------------- machine resources

@@ -281,6 +281,8 @@ def _verify_parallel(design: Design, only, stop_on_geometry_error: bool, session
             return {"findings": r.findings, "metrics": r.metrics}, session.deps_of(reads), rec.manifest()
         return fn
 
+    from . import incremental as _inc
+
     def promote():
         nonlocal fea_units_list, fea_ready
         for n in list(pending):
@@ -291,6 +293,12 @@ def _verify_parallel(design: Design, only, stop_on_geometry_error: bool, session
                 results[n] = VerifierResult(n, skipped="not run: parts that overlap cannot be sequenced; fix interference first")
                 continue
             res, slot, why = _reuse_or_stale(session, n, metrics_now())
+            if n == "fea" and res is not None and res.skipped.startswith("not run: stale"):
+                # FEA is reused case by case: in the quick tier it is "stale" only if some case has to solve
+                _, units = fea_units(design)
+                if units and all(_inc.fea_case_reusable(u.kind, u.case) for u in units):
+                    session.decisions["fea"] = {}
+                    res = None
             slots[n] = (slot, why)
             if res is not None:
                 results[n] = res
@@ -303,8 +311,12 @@ def _verify_parallel(design: Design, only, stop_on_geometry_error: bool, session
                     continue
                 fea_units_list = units
                 for k, u in enumerate(units):
-                    job = parallel.Job(f"fea:{u.label}", "fea", heavy=u.heavy, unit=u, index=k)
-                    sched.estimate(job)
+                    reusable = _inc.fea_case_reusable(u.kind, u.case)
+                    job = parallel.Job(f"fea:{u.label}", "fea", heavy=u.heavy and not reusable, unit=u, index=k)
+                    if reusable:          # its stored result is valid: no solver, little memory, seconds
+                        job.est_mb, job.est_s = parallel.VERIFIER_MB, 5
+                    else:
+                        sched.estimate(job)
                     ready.append(job)
                 continue
             job = parallel.Job(n, "verifier")
