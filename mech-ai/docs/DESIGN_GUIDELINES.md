@@ -4,6 +4,20 @@ Standing guidance from the owner, who intends to build the printer. Every design
 alongside AGENT.md. Where a check enforces a guideline the check is named; the rest are reviewed by hand
 until a check exists.
 
+## Key rule: off-the-shelf parts are real parts (owner, 2026-11-20)
+
+- **Every off-the-shelf part is a real, orderable product**: a named maker, the maker's part number, and a seller where it can
+  be bought (distributor or maker) at the stock size used. No generic, "typical", "class value" or "any to the standard"
+  purchased parts in a design that is presented as buildable. Commodity hardware (screws, nuts, washers, wire, ferrules) is
+  pinned to a real catalogue item too (e.g. a McMaster, Misumi, Accu or distributor part number).
+- **Its geometry comes from the maker**: ideally the maker's own CAD file; otherwise a faithful re-make from the maker's
+  dimensioned drawing (every dimension on the drawing in the model, nothing un-dimensioned, the drawing recorded). Its
+  ratings (current, torque, temperature, load) come from the maker's datasheet, with source and quote.
+- Anything else is a stand-in. A stand-in is an **error** in a design presented as buildable: it is allowed only in an
+  exploratory design and must be listed, with the real part that will replace it.
+- Check: to be implemented (`practice` DG-07, `purchased_part_not_real` / `purchased_geometry_not_sourced` /
+  `purchased_rating_not_sourced`, errors). Audit of the current catalogue: docs/PROVENANCE_AUDIT.md.
+
 ## Priorities
 
 - **Functionality comes first.** Part count, assembly time and cost are reported, not optimised. More parts,
