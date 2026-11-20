@@ -566,6 +566,19 @@ def _world(P, pts: np.ndarray) -> np.ndarray:
     return pts @ P[:, :3].T + P[:, 3]
 
 
+def _check_stock_memo(st):
+    """check_stock, reused across runs while the catalogue entry (its solids, interfaces, model record) is unchanged."""
+    from .. import incremental as _inc
+    from ..incremental.fingerprint import is_unstable, value_fp
+
+    if _inc.active() is None:
+        return check_stock(st)
+    fp = value_fp(st)
+    if is_unstable(fp):
+        return check_stock(st)
+    return _inc.memo("proxy_match", ["stock", fp], lambda: check_stock(st), code=("parts/vendor_cad.py", "parts/__init__.py"))
+
+
 def verify_detail(design, r, envelope: bool = True) -> dict:
     """Run `proxy_matches_cad` and (optionally) `detail_clash` on a design; findings go into VerifierResult `r`.
     Returns the metrics block."""
@@ -583,7 +596,7 @@ def verify_detail(design, r, envelope: bool = True) -> dict:
     out = {"parts_by_model_kind": kinds, "part_types_with_cad": len(by_key), "checked": {}}
     for key, comps in sorted(by_key.items()):
         st = STOCKS[key]
-        bad, meas = check_stock(st)
+        bad, meas = _check_stock_memo(st)
         out["checked"][st.sku] = {"model": st.model.get("kind"), "source": st.model.get("source"), "instances": len(comps),
                                   "mismatches": len(bad),
                                   **{k: meas[k] for k in ("bbox_proxy", "bbox_cad", "volume_proxy_mm3", "volume_cad_mm3") if k in meas},
@@ -636,6 +649,10 @@ def verify_detail(design, r, envelope: bool = True) -> dict:
         ctr = gp_Pnt(*map(float, w.mean(0)))            # the hull wholly inside the neighbour
         return any(BRepClass3d_SolidClassifier(so.wrapped, ctr, 1e-6).State() == TopAbs_IN for so in o.shape.solids())
 
+    import hashlib
+
+    from .. import incremental as _inc
+
     for key, group in by_key.items():
         st = STOCKS[key]
         hulls = excess_hulls(st, key)
@@ -658,30 +675,45 @@ def verify_detail(design, r, envelope: bool = True) -> dict:
                             (mates and (o.sku or "").startswith(mates)):
                         continue
                     tested += 1
-                    if not touches(j, w):
+
+                    def pair(c=c, o=o, j=j, w=w, lo=lo, hi=hi):
+                        """(touches, volume, how): this hull of c's detail model against neighbour o."""
+                        nonlocal det_solids
+                        if not touches(j, w):
+                            return False, 0.0, ""
+                        if det_solids is None:
+                            det_solids = [(s, bbox6(s)) for s in c.detail.solids()]
+                        # against the neighbour's own detail model where it has one (a carriage's lips sit in the
+                        # rail's grooves, which the rail's plain simulation solid does not have)
+                        other = o.detail if o.detail is not None else o.shape
+                        vol, how = 0.0, "exact"
+                        try:
+                            for s, sb in det_solids:
+                                if (sb[:3] < hi + 0.5).all() and (sb[3:] > lo - 0.5).all() and \
+                                        (sb[:3] < boxes[j, 3:]).all() and (sb[3:] > boxes[j, :3]).all():
+                                    for os_ in other.solids():
+                                        ob = bbox6(os_)
+                                        if not ((sb[:3] < ob[3:]).all() and (sb[3:] > ob[:3]).all()):
+                                            continue
+                                        common = s & os_
+                                        if common is None or not common.solids():
+                                            continue
+                                        extra = common - c.shape
+                                        vol += sum(q.volume for q in extra.solids()) if extra is not None else 0.0
+                        except Exception:
+                            how, vol = "convex hull (the exact boolean failed)", 1.0
+                        return True, vol, how
+
+                    # reused across runs while both parts are unchanged (a no-op outside an incremental run)
+                    touched, vol, how = _inc.memo(
+                        "detail_envelope",
+                        lambda c=c, o=o, w=w: ["env", _inc.shape_key(c.shape), _inc.shape_key(c.detail), _inc.shape_key(o.shape),
+                                               _inc.shape_key(o.detail) if o.detail is not None else "none",
+                                               hashlib.sha256(np.ascontiguousarray(np.round(w, 6)).tobytes()).hexdigest()],
+                        pair, code=("parts/vendor_cad.py",))
+                    if not touched:
                         continue
                     exact += 1
-                    if det_solids is None:
-                        det_solids = [(s, bbox6(s)) for s in c.detail.solids()]
-                    # against the neighbour's own detail model where it has one (a carriage's lips sit in the
-                    # rail's grooves, which the rail's plain simulation solid does not have)
-                    other = o.detail if o.detail is not None else o.shape
-                    vol, how = 0.0, "exact"
-                    try:
-                        for s, sb in det_solids:
-                            if (sb[:3] < hi + 0.5).all() and (sb[3:] > lo - 0.5).all() and \
-                                    (sb[:3] < boxes[j, 3:]).all() and (sb[3:] > boxes[j, :3]).all():
-                                for os_ in other.solids():
-                                    ob = bbox6(os_)
-                                    if not ((sb[:3] < ob[3:]).all() and (sb[3:] > ob[:3]).all()):
-                                        continue
-                                    common = s & os_
-                                    if common is None or not common.solids():
-                                        continue
-                                    extra = common - c.shape
-                                    vol += sum(q.volume for q in extra.solids()) if extra is not None else 0.0
-                    except Exception:
-                        how, vol = "convex hull (the exact boolean failed)", 1.0
                     if vol > 0.5:
                         e = hit.setdefault(o.name, {"volume": 0.0, "lo": lo, "hi": hi, "how": how})
                         e["volume"] = max(e["volume"], vol)

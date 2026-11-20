@@ -13,11 +13,11 @@ Nothing purchased. All prices are listed distributor prices captured 2026-11-19 
 | Helix HMR12MLSS1V0N-300L | not listed at Digi-Key | — | — | no | Anaheim CPC-branded listing (below) is the only US 300 mm source found |
 | Helix HMR12MLSS1V0N-320L | $118.44 | 10 | 10 available; 21-day supplier lead time | no | digikey.com |
 | CPC MR12MLSSV0N-300-12.5-12.5 (ALTERNATE, not proven identical — see item 1 notes) | $109.00 (1 pc); $104.99 / $102.07 / $100.67 at higher qty | 1 | not in stock, typ. 60 days | no | anaheimautomation.com/cpc-mr12mlssv0n-300-12-5-12-5.html |
-| HIWIN MGN12H block, ZF preload (MGN12HZFH) | $59.00 | 1 | cart-enabled | no (blocked, see below) | motionusa.com/manufacturer/hiwin/mgn12hzfh-hiwin |
+| HIWIN MGN12H block, ZF preload (MGN12HZFH) | $59.00 | 1 | cart-enabled | partial: geometry only inside block+rail assembly STEP (item 2); block-only STEP blocked by generator defect | motionusa.com/manufacturer/hiwin/mgn12hzfh-hiwin |
 | HIWIN MGN12H block, Z1 preload (MGN-12-H-Z1-HM) | $59.00 | 1 | 96 in stock | no | digikey.com |
 | HIWIN MGN12H block, Z0 preload (MGN-12-H-Z0-HM) | $59.00 | 1 | 70 in stock | no | digikey.com |
-| HIWIN MGNR12R rail 245 mm (MGNR12R0245HM/E10/E10) | $126.00 | 1 | cart-enabled | no | motionusa.com |
-| HIWIN MGNR12R rail 300 mm (MGN-R12-R300-HM) | $125.00 | 1 | in stock | no | digikey.com (no 245 mm rail listed) |
+| HIWIN MGNR12R rail 245 mm (MGNR12R0245HM/E10/E10) | $126.00 | 1 | cart-enabled | yes (official STEP + drawing in folder) | motionusa.com |
+| HIWIN MGNR12R rail 300 mm (MGN-R12-R300-HM) | $125.00 | 1 | in stock | yes (official STEP + drawing in folder) | digikey.com (no 245 mm rail listed) |
 | HIWIN assembled set (ZF block + 245 mm rail) | ~$185 (calculated: $59 + $126, my arithmetic, not a quoted bundle) | 1 | — | no | calculated from the two lines above |
 | NSK PU12UR block / P1U12 rail | not found | — | — | no (blocked) | see notes |
 | igus TS-04-12 rail | $119.84 (length basis unconfirmed; configured 250/300 mm price not obtained) | 1 | — | no (blocked) | igus.com product JSON-LD |
@@ -51,10 +51,21 @@ Price/MOQ/lead:
 
 ## Item 2 — HIWIN MGN12H / MGN12C / MGNR12R
 
-- STEP: STILL BLOCKED, now on account access rather than the disclaimer. Will approved accepting the disclaimer (2026-11-19 iMessage); I accepted it as guest, and the download stage then required a configure.hiwin.com login (the guest path warns "Signup required at end"). The only HIWIN credential on file (hiwinsupport.com support account) was rejected: "Incorrect Username or Password Provided." HIWIN self-registration failed on their side on 2026-11-14, and creating a new account needs Will's OK under the standing rules. Original disclaimer analysis kept below for the record.
-- hiwin.com CAD downloads route to configure.hiwin.com (DriveWorks; no account needed, "Continue as Guest" works). A guest session configured MGN12H ZF successfully (part number MGN-12-H-1XXXX-ZF-H-M), but before the model download the configurator shows a click-through with "I Accept" / "I Decline". Verbatim wording (captured 2026-11-19 at configure.hiwin.com/run.html, Linear Guideway Configurator): "You are responsible for verifying the suitability of the product configuration for your application. HIWIN makes no warranty, expressed or implied, regarding the suitability of a product configuration to an application. Submit configurations to Hiwin engineering for a free review before ordering." What acceptance means: an acknowledgment that the user (not HIWIN) is responsible for checking the configuration suits the application, and a warranty disclaimer on configuration suitability. It contains no license grant, no restriction on using or keeping the downloaded CAD, and no account or payment terms. Per the standing no-extra-terms rule I clicked "I Decline", which ends the session. If Will approves accepting this acknowledgment, the STEP downloads are otherwise reachable.
-- Prices in the table above (ZF block and 245 mm rail both cart-enabled at MotionUSA; Z0/Z1 blocks and 220/300/320 mm rails at Digi-Key).
-- MGN12C (short block) STEP/price: covered by the same blocked CAD route; no distributor price captured this run.
+All files generated 2026-11-19 from Will's approved configure.hiwin.com account (official HIWIN CAD). STEP = AP214. Disclaimer accepted 2026-11-19 with Will's iMessage approval (suitability/warranty acknowledgment, no license or payment terms).
+
+Files landed in this folder:
+- MGNR12R-245__cad.step + MGNR12R-245__drawing.pdf — individual rail-only config MGNR-12-R0245-H-M (245 mm). STEP verified non-empty (610 KB, 1 solid, 209 faces). FULFILLS the requested MGNR12R 245 mm STEP.
+- MGNR12R-300__cad.step + MGNR12R-300__drawing.pdf — individual rail-only config MGNR-12-R0300-H-M (300 mm). STEP verified non-empty (633 KB, 1 solid, 219 faces). FULFILLS the requested MGNR12R 300 mm STEP.
+- MGN-12-H-1R0300-ZF-H-M__cad-block-rail-assembly.step (3.7 MB, 10 solids, verified) + MGN-12-H-1R0300-ZF-H-M__drawing-block-rail-assembly.pdf — official block+rail ASSEMBLY (MGN12H block, ZF preload, H accuracy, 300 mm rail, E1=E2=12.5, qty 1). This is one combined assembly file, NOT separate block-only/rail-only files. The MGN12H block geometry exists only inside this assembly.
+- MGN-12-C-1R0300-ZF-H-M__drawing-block-rail-assembly.pdf — official dimensioned drawing of the MGN12C block + 300 mm rail assembly (correct block+rail content; MGN12C block 34.7 mm length shown).
+
+Per-item fulfillment of the requested individual STEPs:
+- MGNR12R rail 245 mm: DELIVERED (individual file above).
+- MGNR12R rail 300 mm: DELIVERED (individual file above).
+- MGN12H block: NOT delivered as a separate per-part file. Block-only configs generate an EMPTY STEP (310-byte header, zero geometry, two attempts) — HIWIN generator defect. The block's geometry is available only inside the block+rail assembly STEP above, which is not the requested individual file.
+- MGN12C block: NOT delivered. Block-only export hits the same empty-STEP defect, and the block+rail combo generation for MGN-12-C-1R0300-ZF-H-M produced a STEP containing rail-only geometry (219 faces, identical to the bare 300 mm rail — the block was silently dropped) while its drawing PDF (landed here) is correct. Retried once with Z0 preload; result did not resolve the block (see notes).
+
+Prices are in the table above (ZF block and 245 mm rail both cart-enabled at MotionUSA; Z0/Z1 blocks and 220/300/320 mm rails at Digi-Key). MGN12C (short block) distributor price: none captured.
 
 ## Item 3 — NSK PU12UR / P1U12
 
@@ -75,7 +86,7 @@ Price/MOQ/lead:
 
 ## Open items for next run / decisions for Will
 
-1. HIWIN STEP — disclaimer accepted with Will's OK, but download needs a configure.hiwin.com account. Support-site credential rejected; Nov 14 self-registration failed on HIWIN's side. Needs Will: register a configure.hiwin.com "New User" account himself, or approve another registration attempt by us.
+1. HIWIN STEP — account created with Will's approval and working. Combo rail+block configs generate full STEP; block-only configs return empty STEP (HIWIN generator issue, reproduced twice). Remaining: MGN12C block combo and MGNR12R-245 combo generation (in progress, no input needed from Will). If block-only STEP files are strictly required, Will could ask designautomation@hiwin.com why block-only generations return empty files.
 2. Misumi CAD — account already approved by Will 2026-11-18 but Misumi's registration rejects our signups; needs Will to register himself or a MISUMI USA reply.
 3. igus configured rail price at 250/300 mm — retry when igus.com stops redirecting.
 4. Helix per-length STEP — CAD library JS route still uncracked.

@@ -11,6 +11,13 @@ from pathlib import Path
 from .model import Design
 from .report import Report, VerifierResult
 
+try:        # attribute every data file a verifier reads, from the start (mechloop.incremental.coderec)
+    from .incremental import coderec as _coderec
+
+    _coderec.install()
+except Exception:       # pragma: no cover
+    pass
+
 ORDER = ["geometry", "interference", "tolerance", "manufacture", "practice", "ratings", "motion", "subsystems", "electrical", "assemblability", "fea", "printing"]
 
 
@@ -135,15 +142,17 @@ def _incremental_step(session, design: Design, name: str, call, rep: Report) -> 
             dec.update({"status": "not run", "why": "inputs changed since the stored result (or none stored); not a quick-tier "
                                                     "check: run --tier affected or full"})
             return VerifierResult(name, skipped="not run: stale (its inputs changed) and not part of --tier quick")
+    from .incremental import coderec
+
     session.verifier = name
-    with recording(design) as reads:
+    with recording(design) as reads, coderec.Recording() as rec:
         res = call()
     session.verifier = None
     from .incremental.deps import ALL_FIELDS, DEPS
 
     d = DEPS.get(name)
     undeclared = sorted(reads - set(d.fields)) if d is not None and d.fields != ALL_FIELDS else []
-    stored = session.store(name, key, res, reads_ok=not undeclared)
+    stored = session.store(name, key, res, reads_ok=not undeclared, manifest=rec.manifest())
     dec.update({"status": "ran", "why": ("full tier: nothing reused" if session.tier == "full"
                                         else why or "inputs changed since the stored result (or none stored)"),
                 "stored": stored, **({"undeclared_reads": undeclared} if undeclared else {})})

@@ -25,7 +25,7 @@ import time
 from pathlib import Path
 
 from .cache import ResultCache, verifier_key
-from .codehash import code_hash
+from . import coderec
 from .deps import DEPS, QUICK
 from .fingerprint import FP_VERSION, digest, diff, fingerprint as fingerprint_design, is_unstable, shape_fp, value_fp
 
@@ -63,16 +63,25 @@ class Session:
         return verifier_key(name, self.fps, self.design, upstream)
 
     def lookup(self, name: str, key):
-        return self.cache.get(f"results/{name}", key)
+        hit = self.cache.get(f"results/{name}", key)
+        if hit is None:
+            return None
+        ok, why = coderec.still_valid(hit.get("manifest"))
+        if not ok:
+            self.decisions.setdefault(name, {})["stored_result_invalid"] = why
+            return None
+        return hit
 
-    def store(self, name: str, key, res, reads_ok: bool) -> bool:
+    def store(self, name: str, key, res, reads_ok: bool, manifest: dict | None = None) -> bool:
         if not reads_ok or key is None:
             return False
         if any(f.code in ("verifier_crashed",) for f in res.findings):
             return False       # a crash may be the machine's (memory, a killed solver): never reuse it
+        if not manifest or manifest.get("unknown"):
+            return False       # what code produced it is not known: never reuse it
         return self.cache.put(f"results/{name}", key, {
             "verifier": name, "findings": list(res.findings), "metrics": res.metrics, "skipped": res.skipped,
-            "seconds": res.seconds, "run": dict(self.run),
+            "seconds": res.seconds, "run": dict(self.run), "manifest": manifest,
             "artifacts_sim": res.artifacts_sim})      # the motion program's trace, so a reused result still renders
 
     # ------------------------------------------------------------------------------------------ memo tables
@@ -161,7 +170,7 @@ def _fea_case_key(s: Session, design, kind: str, case, names) -> str | None:
     for v in (parts, fields, cfp):
         if is_unstable(v):
             return None
-    return digest(FP_VERSION, "fea-case", kind, getattr(case, "name", kind), code_hash(DEPS["fea"].module), parts, fields, extra, cfp)
+    return digest(FP_VERSION, "fea-case", kind, getattr(case, "name", kind), parts, fields, extra, cfp)
 
 
 def fea_case(design, r, kind: str, case, names, compute):
@@ -175,7 +184,10 @@ def fea_case(design, r, kind: str, case, names, compute):
         key = None
     label = getattr(case, "name", kind)
     hit = s.cache.get("fea_cases", key)
+    if hit is not None and not coderec.still_valid(hit.get("manifest"))[0]:
+        hit = None
     if hit is not None:
+        coderec.push_manifest(hit.get("manifest"))
         r.findings.extend(hit["findings"])
         s.stat("fea_cases_reused")
         s.decisions.setdefault("fea", {}).setdefault("cases_reused", {})[label] = hit.get("run")
@@ -184,17 +196,18 @@ def fea_case(design, r, kind: str, case, names, compute):
 
     sub = VerifierResult(r.verifier)
     t0 = time.time()
-    m = compute(sub)
+    with coderec.Recording() as rec:
+        m = compute(sub)
     r.findings.extend(sub.findings)
     s.stat("fea_cases_run")
     s.decisions.setdefault("fea", {}).setdefault("cases_run", {})[label] = round(time.time() - t0, 1)
     if not any(f.code in ("fea_crashed",) for f in sub.findings):
         s.cache.put("fea_cases", key, {"case": label, "kind": kind, "findings": list(sub.findings), "metrics": m,
-                                       "run": dict(s.run)})
+                                       "run": dict(s.run), "manifest": rec.manifest()})
     return m
 
 
-def memo(table: str, key_parts, compute):
+def memo(table: str, key_parts, compute, code: tuple = ()):
     """Persistent memo of a pure geometric kernel. key_parts (or a function returning them, called only in an
     incremental run) must be built from shape fingerprints and the kernel's parameters."""
     s = CURRENT
@@ -204,7 +217,7 @@ def memo(table: str, key_parts, compute):
     t = s.table(table)
     if callable(key_parts):
         key_parts = key_parts()
-    k = digest(FP_VERSION, code_hash(DEPS[s.verifier].module) if s.verifier in DEPS else "?", table, key_parts)
+    k = digest(FP_VERSION, kernel_hash(code), table, key_parts)
     s.mark_used(table, k)
     if k in t:
         s.stat(f"{short}_reused")
@@ -213,6 +226,53 @@ def memo(table: str, key_parts, compute):
     t[k] = v
     s.stat(f"{short}_computed")
     return v
+
+
+def part_cached(r, part, context, compute, capture=None, restore=None):
+    """One part's checks inside a verifier, reused while the part and its context are unchanged.
+
+    compute(result) adds the part's findings to `result` and returns its value (a metrics row); capture() returns the
+    side state the part's run left (module-level tables a verifier aggregates afterwards) and restore(state) puts it
+    back on reuse. `context`: everything besides the part's own fingerprint that the checks read (design settings,
+    the screws threading into it ...), as a value fingerprintable by value_fp. Each entry also holds the manifest of
+    the code and data that ran for it. Outside an incremental run (or with an unstable context) it just runs."""
+    s = CURRENT
+    if s is None or s.verifier is None:
+        return compute(r)
+    ctx = value_fp(context)
+    pfp = s.fps.part(part.name)
+    if is_unstable(ctx) or is_unstable(pfp):
+        return compute(r)
+    t = s.table(f"{s.verifier}.parts")
+    k = digest(FP_VERSION, "part", s.verifier, part.name, pfp, ctx)
+    s.mark_used(f"{s.verifier}.parts", k)
+    hit = t.get(k)
+    if hit is not None and coderec.still_valid(hit.get("manifest"))[0]:
+        r.findings.extend(hit["findings"])
+        if restore is not None:
+            restore(hit.get("side"))
+        coderec.push_manifest(hit.get("manifest"))
+        s.stat("parts_reused")
+        return hit["value"]
+    from ..report import VerifierResult
+
+    sub = VerifierResult(r.verifier)
+    with coderec.Recording() as rec:
+        v = compute(sub)
+    r.findings.extend(sub.findings)
+    side = capture() if capture is not None else None
+    s.stat("parts_checked")
+    if s.cache.write:
+        t[k] = {"findings": list(sub.findings), "value": v, "side": side, "manifest": rec.manifest()}
+    return v
+
+
+def kernel_hash(code: tuple = ()) -> str:
+    """The code behind a memoised kernel: geom.py (exact overlap volume), this module, the fingerprint recipe, the
+    library versions, and the files named in `code` (paths relative to the package) where the kernel's own code lives."""
+    root = coderec.PKG_ROOT
+    files = ("geom.py", "incremental/__init__.py", "incremental/fingerprint.py") + tuple(code)
+    return digest("kernel", [[f, coderec.file_hash(str(root / f))] for f in files], coderec.externals())
 
 
 def shape_key(shape) -> str:

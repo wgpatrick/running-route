@@ -10,9 +10,11 @@ Layout:
                                         assemblability.overlap_memo (distances, overlaps along removal paths and of the
                                         driver), motion.overlap (overlap at each relative pose)
 
-Every key is a digest of what decides the result: the verifier's code hash (its module and imports, the package's data
-files, library versions), the fingerprints of the parts and design fields it reads, and the metrics of earlier
-verifiers it reads. A key that cannot be formed (an input with no stable fingerprint) is None: always re-run.
+Every key is a digest of the inputs that decide the result: the fingerprints of the parts and design fields it reads
+and the metrics of earlier verifiers it reads. Each entry also holds the manifest of the code and data that produced it
+(coderec: the mechloop files that ran, what they import, the data files they read, library versions); an entry is
+used only while that manifest still matches the files on disk. Memo tables are keyed on the kernel's own code
+(geom.py, the library versions). A key that cannot be formed (an input with no stable fingerprint) is None: always re-run.
 Entries are written atomically (temp file + rename), so a killed run leaves no half-written entry; an entry that
 fails to load is treated as a miss.
 """
@@ -26,7 +28,6 @@ import tempfile
 import time
 from pathlib import Path
 
-from .codehash import code_hash
 from .deps import ALL_FIELDS, DEPS
 from .fingerprint import FP_VERSION, Fingerprints, digest, is_unstable, value_fp
 
@@ -132,5 +133,6 @@ def verifier_key(name: str, fps: Fingerprints, design, upstream_metrics: dict | 
     for what, v in (("parts", parts), ("fields", fd), ("upstream metrics", up)):
         if is_unstable(v):
             return None, f"{what} have no stable fingerprint ({v[9:80]}): re-run"
-    code = code_hash(d.module, *d.extra_modules)
-    return digest(FP_VERSION, "verifier", name, code, parts, fd, up), ""
+    # the code is not in the key: each stored result carries the manifest of the code and data it ran (coderec), and
+    # is reused only while all of it is unchanged
+    return digest(FP_VERSION, "verifier", name, parts, fd, up), ""

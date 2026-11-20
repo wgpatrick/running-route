@@ -101,3 +101,93 @@ editions disagree on stiffness.
 
 Outstanding: every STEP (Helix, HIWIN, NSK, igus, Misumi); Helix 300L and a single-unit Helix source; LDO US sellers;
 NSK price; igus configured rail price; Misumi SSEBL13-245 price.
+
+## Batch 6 (ingested 2026-11-20, folder state at 05:06Z): official HIWIN CAD + drawings, RESULT.md revision
+
+Seven new files plus a revised RESULT.md in REQ-005 (folder 1_-rIetDBexZ6IT3MwJJwYEeNrE4yaU8_). A full recursive listing of
+`mechloop handoff/results` (2 pages, 154 files, nextPageToken followed to the end) found nothing else new in any other folder.
+Downloaded one at a time into scratchpad `instinct_batch6/REQ-005/`; all sizes match Drive. Everything handled as untrusted
+data. Staged for review only: nothing copied to `vendor_cad/inbox/`, nothing committed.
+
+Instinct says (not verified here) the files were generated 2026-11-19 from a configure.hiwin.com account it created "with
+Will's approval", after accepting the configurator disclaimer with his OK. The STEP headers say SolidWorks 2024 / SwSTEP 2.0,
+AP214, generated 2026-11-20T04:26 to 04:51; the drawings carry HIWIN Corporation (Huntley, IL) title blocks, drawn and checked
+11-19-2026, dwg nos. 570302 / 570307 / 570310 / 570313.
+
+PDF checks (same method as above: header / %%EOF, raw and inflated-stream scan, pypdf object-graph walk): all four drawings
+1 page, not encrypted, **no JavaScript, actions, embedded files or link annotations**. None duplicates a vendor_docs file.
+STEP files: plain ISO-10303-21 text, complete (END-ISO-10303-21), no URLs or other non-geometry content.
+
+| Delivered as (Drive id) | Staged as | sha256 | Content |
+|---|---|---|---|
+| RESULT.md (1xgxLAJCwLrfp6DcnJug0FK5bGGN4xpgD, 05:06:20Z, 11,704 B) | instinct_REQ-005/RESULT_instinct_REQ-005_2026-11-20.md (overwritten; previous 03:29Z copy was b4b0cfd0...) | c728ca127e6d8240de3512ebc0338da6ada6650875df6f75fa47ff4bdaa8327f | STATUS still partial. Price table unchanged apart from the CAD column; item 2 rewritten (HIWIN CAD) |
+| MGNR12R-245__cad.step (1uSJ2xRBPbvRWEaqSBnPxhvXQUqA9nIJH) | instinct_REQ-005/HIWIN_MGNR-12-R0245-H-M.step | 96fe1ffb2a154edacf37ddd75e4a98974f08fc14cc215954da4c3d3d583f1b66 | rail only, MGNR-12-R0245-H-M |
+| MGNR12R-300__cad.step (1IlQDTMt2T6CooyAnwxVtnJirlm3-tUz3) | instinct_REQ-005/HIWIN_MGNR-12-R0300-H-M.step | e264f5be08aae26ebef2f594717cbe9784e61ee8bdaaf475761790cf0e575f7f | rail only, MGNR-12-R0300-H-M |
+| MGN-12-H-1R0300-ZF-H-M__cad-block-rail-assembly.step (1nPALJXCuGGyfbAMiwPmpoSG_VF2DNj1T) | instinct_REQ-005/HIWIN_MGN-12-H-1R0300-ZF-H-M_block-rail-assembly.step | f89e4a0a5f57037a3a3a7a2713d24baf33578864b9f341a81e1c1a2f4328ca63 | MGN12H ZF block on 300 mm rail, H class |
+| MGNR12R-245__drawing.pdf (1eKpVi-n7BxlSHnGlrUJOUz_j3ovWt9Ib) | vendor_docs/HIWIN_MGNR-12-R0245-H-M_drawing.pdf | 1160e8d3afb56789251491ebe773fa1a71de57e9ed2e6e3670bdf1b4d3fdf383 | 10 + 9x25 + 10 = 245, 12 x 8, Ø3.5 thru, Ø6 x 4.5 deep, alloy steel |
+| MGNR12R-300__drawing.pdf (1Gt4Mw7JKLecF9IMjblrez-535124LkMh) | vendor_docs/HIWIN_MGNR-12-R0300-H-M_drawing.pdf | 4622dc90c30f4ccec155a65b990101103e2772c9634db5eb5dd2a0f48595d4c4 | 12.5 + 11x25 + 12.5 = 300, otherwise as above |
+| MGN-12-H-1R0300-ZF-H-M__drawing-block-rail-assembly.pdf (1VFvpP2mbM2wvAuRhEpnUMPwMywUsgSSy) | vendor_docs/HIWIN_MGN-12-H-1R0300-ZF-H-M_drawing.pdf | 64a155da135ef4b8a9345cbb3cabc3af28136e02d3738879b8b006418964e8c9 | L 45.4, L1 32.4, W 27, B x C 20 x 20, 4-M3x3.5, H 13 ±0.02, H1 3, N 7.5 ±0.025; C 3.72 kN, C0 5.88 kN; running parallelism 0.011; ZF clearance 4-10 µm; material "Stainless Steel" |
+| MGN-12-C-1R0300-ZF-H-M__drawing-block-rail-assembly.pdf (1Do9Thq3pNOsfJPuV8yU1ER8Ds6GPHR1w) | vendor_docs/HIWIN_MGN-12-C-1R0300-ZF-H-M_drawing.pdf | 2ea2088110efd3c153e04b74019977e845722edee21e51899ce29d337b5c91b5 | MGN12C: L 34.7, L1 21.7, B x C 20 x 15, 4-M3x3.5, H 13, H1 3; C 2.84 kN, C0 3.92 kN. **No STEP** for MGN12C (per RESULT.md HIWIN's generator dropped the block) |
+
+### Geometry checks (build123d, `.venv/bin/python -I`, scripts in scratchpad/scripts/hiwin_check_b6.py, holes_b6.py, section_cmp_b6.py)
+
+Reference values: HIWIN GW-11-5-EN-2207-K (`vendor_docs/Hiwin_MG_catalogue.pdf`) Table 3.79 (block) and 3.81 (rail), and
+the HIWIN drawings above. File frame: rail along -Z, width X, height Y (rail base Y = 0).
+
+| Check | Catalogue / drawing | MGNR-12-R0245 STEP | MGNR-12-R0300 STEP | Assembly STEP |
+|---|---|---|---|---|
+| Solids / valid | - | 1 / valid (209 faces) | 1 / valid (219 faces) | **10 / all valid** |
+| Rail section WR x HR | 12 x 8.0 | 12.000 x 8.000 | 12.000 x 8.000 | 12.000 x 8.000 |
+| Rail length | 245 / 300 | 245.000 | 300.000 | 300.000 |
+| Holes, pitch P | 25 | 10 holes, 25.000 | 12 holes, 25.000 | 12 holes, 25.000 |
+| End distance E1 / E2 | catalogue 5 min, 20 max; drawing 10 / 12.5 | 10.000 / 10.000 | 12.500 / 12.500 | 12.500 / 12.500 |
+| Through hole d / counterbore D x h | 3.5 / 6 x 4.5 | 3.500 (Y 0-3.5) / 6.000 x 4.500 (Y 3.5-8) | same | same |
+| Rail volume, mass at 7.85 g/cm³ | 0.65 kg/m | 20,824 mm³, 163 g (0.667 kg/m) | 25,540 mm³, 200 g (0.667 kg/m) | rail solid identical to the 300 rail-only file (same volume and face count) |
+| Ball track | - | 2 gothic-arch tracks per side, R 1.14, centres at Y 4.65 and 6.26 | same | same |
+| Block L / L1 | 45.4 / 32.4 | - | - | 45.400 overall (body 32.4 + 2 end caps 5.5 + 2 end seals 1.0) / body 32.400 |
+| Block W, H, H1 | 27, 13, 3.0 | - | - | 27.000; top at Y 13.000; underside at Y 3.000 |
+| Block mounting B x C, M x l | 20 x 20, M3 x 3.5 | - | - | 20.000 x 20.000 centred on the body; holes drawn as Ø2.5 tap drill, 4.5 deep (threads not modelled) |
+| Block body volume | 0.050 kg | - | - | body 6,662 mm³ (52 g steel); end caps 2 x 1,065 mm³, seals 2 x 175 mm³ |
+
+**Assembly structure: block and rail are separate solids.** Products: `MGN-12-H_...` (block) and `MGNR-12-R_..._MGNR12R`
+(rail) under `MGN-12-H-1R0300-ZF-H-M 570302`. The block itself is 9 solids: steel body (27 x 10 x 32.4), two end caps
+(26.8 x 9.6 x 5.5), two end seals (26.8 x 9.6 x 1.0) and four small parts 4 x 4 x 4.61 mm at X ±7.25, Y 8-12 (two per end,
+likely the end-cap screws or plugs; not identified). The rail is solid 9. The block sits centred on the rail (body centre at
+Z -150). No balls are modelled. Instinct's "10 solids" and the rail face counts (209 / 219) are confirmed.
+
+### Differences from the community MGN12 models in the repo
+
+Compared: `vendor_cad/mgn12_rail_100mm.step` (FreeCAD LinearSlide-MGN12-Rail, used by `details.mgn12_rail()`, section swept
+to length) and `vendor_cad/mgn12h_block.step` (LinearSlide-MGN12H, used by `details.mgn12h()`; `staging/MGN12H.step` is the
+same geometry with a step.parts header). Cross-sections compared with 0.01 mm slabs, both aligned on rail base and centreline.
+
+- Rail envelope identical: 12 x 8, same base chamfers, same holes (Ø3.5 thru, Ø6 x 4.5 cbore, 25 pitch). `mgn12_rail()` places
+  holes symmetrically, n = floor((L - 2E)/P) + 1 with E = 10, which gives exactly HIWIN's layouts: 245 -> 10 holes, E 10;
+  300 -> 12 holes, E 12.5.
+- Rail ball track: HIWIN has two gothic-arch tracks per side (R 1.14 at Y 4.65 / 6.26) with a relief between them; the side
+  groove is up to 1.73 mm deep per side (section width 8.53 at Y 5.5). The community rail has one shallow groove (width 10.40
+  at Y 5.5, about 0.8 mm deep per side). Section area HIWIN 91.52 mm² vs community 94.22 (+2.70 mm², +3 %); the HIWIN section
+  lies entirely inside the community one (HIWIN minus community = 0). Rail mass in the code uses 0.65 kg/m (catalogue).
+- Block envelope identical: 27 x 10 (Y 3-13) x 45.4, H1 3, top 13, mounting holes 20 x 20 centred. Section through the body:
+  areas 208.5 (HIWIN) vs 211.0 mm² (community), XOR 2.7 + 5.2 mm² (small chamfer / slot-shape differences).
+- Community block is one solid with no end caps or seals (so no L1 = 32.4 body, as `details.mgn12h()` already notes); it
+  is one 45.4 mm long body, volume 9,481 mm³ vs HIWIN total block 9,219 mm³ (body 6,662 + caps + seals + 4 small parts).
+- Mounting threads: community draws Ø3.0 x 3.5 deep; HIWIN draws the Ø2.5 tap drill 4.5 deep (drawing: M3 x 3.5 thread).
+- Community block has a Ø1.5 feature at the ends (2 faces); HIWIN has a Ø2.0/Ø2.2 bore in the end caps/seals (lube path).
+
+Not checked: block-to-rail fit of the community pair vs HIWIN pair (the community block's ball rows interpenetrate the
+community rail by design, per details.py).
+
+### Notes and flags
+
+- The assembly and MGN12C drawings give material "Stainless Steel"; the rail-only drawings say "Alloy Steel". The part
+  numbers carry no stainless code. Not resolved here; treat as a drawing-template detail until HIWIN confirms.
+- The 300 mm rail is not a catalogue standard length (standard list ends ...270, 320); HIWIN centred the holes (E 12.5).
+  245 is standard (E 10).
+- MGN12H block-only STEP: not delivered (Instinct reports HIWIN's generator returns an empty 310-byte STEP for block-only
+  configurations). The block geometry is only inside the assembly file. MGN12C: drawing only.
+- RESULT.md has **no LDO shipping (REQ-009c) or 80/20 (REQ-009b) content**.
+- Prices in the revised RESULT.md are the same figures as the 03:29Z table above (captured 2026-11-19); only the CAD column
+  changed (245 / 300 rails: "yes, official STEP + drawing"; ZF block: geometry only inside the assembly STEP).
+- RESULT.md open items: MGN12C combo and an MGNR12R-245 combo generation still "in progress"; Misumi CAD still blocked on
+  registration; igus configured rail price; Helix STEP; NSK US price.

@@ -100,27 +100,39 @@ def test_callable_fingerprints_see_code_and_closures():
     assert value_fp({"x": threading.Lock()}).startswith("unstable:")     # no stable form: whatever reads it re-runs
 
 
-def test_code_hash_follows_sources_and_data(monkeypatch):
+def test_code_manifest_records_what_ran_and_what_it_read(monkeypatch):
+    from mechloop.incremental import coderec
+    from mechloop.verifiers.geometry import verify_geometry
+    from mechloop.verifiers.purchased import records
+
+    d = _synthetic()
+    with coderec.Recording() as rec:
+        verify_geometry(d)
+        records()
+    man = rec.manifest()
+    m = man["files"]
+    assert "mechloop/verifiers/geometry.py" in m and "mechloop/model.py" in m
+    assert "mechloop/data/real_parts.json" in m                       # read while recording
+    assert "mechloop/verifiers/fea.py" not in m                       # did not run: an edit there changes nothing here
+    assert not any(k.startswith("mechloop/sourcing/") or k.startswith("mechloop/data/sourcing/") for k in m)
+    assert coderec.still_valid(man) == (True, "")
+    orig = coderec.file_hash
+    monkeypatch.setattr(coderec, "file_hash", lambda p: "edited" if p.endswith("verifiers/geometry.py") else orig(p))
+    ok, why = coderec.still_valid(man)
+    assert not ok and "geometry.py" in why
+    monkeypatch.setattr(coderec, "file_hash", lambda p: "edited" if p.endswith("verifiers/fea.py") else orig(p))
+    assert coderec.still_valid(man)[0]
+    assert not coderec.still_valid({"unknown": "x"})[0] and not coderec.still_valid(None)[0]
+
+
+def test_static_code_hash_still_covers_everything():
     base = codehash.code_hash("mechloop.verifiers.fea")
-    base_geo = codehash.code_hash("mechloop.verifiers.geometry")
     assert "verifiers/fea.py" in codehash.module_closure("mechloop.verifiers.fea")
-    assert any(f.endswith(".json") for f in codehash.data_files())
-    orig = codehash._file_hash.__wrapped__
-
-    def fake(rel):
-        return "changed" if rel == "verifiers/fea.py" else orig(rel)
-
-    codehash.clear()
-    monkeypatch.setattr(codehash, "_file_hash", fake)
-    monkeypatch.setattr(codehash, "code_hash", codehash.code_hash.__wrapped__)
-    assert codehash.code_hash("mechloop.verifiers.fea") != base
-    data = next(f for f in codehash.data_files() if f.endswith(".json"))
-    monkeypatch.setattr(codehash, "_file_hash", lambda rel: "changed" if rel == data else orig(rel))
-    assert codehash.code_hash("mechloop.verifiers.geometry") != base_geo     # data files count for every verifier
+    assert any(f.endswith(".json") for f in codehash.data_files()) and len(base) == 24
 
 
 # ------------------------------------------------------------------------------------------ reuse on a change
-ONLY = ["geometry", "interference", "fea"]
+ONLY = ["geometry", "interference", "manufacture", "fea"]
 
 
 def _run(d, out, tier):
@@ -156,6 +168,8 @@ def test_one_part_change_reruns_only_what_reads_it(tmp_path):
     within = inc2["reused_within"]["interference"]
     assert within.get("pairs_reused", 0) >= 2            # a-b overlap and gap: unchanged pair
     assert within.get("pairs_computed", 0) >= 1          # c-e: changed pair
+    m = inc2["reused_within"]["manufacture"]                # per-part DFM: only c re-checked
+    assert m.get("parts_reused") == 3 and m.get("parts_checked") == 1
     # the same as a run without any cache
     fresh = verify(_synthetic(c_size=12.0), ONLY)
     assert _findings(rep2) == _findings(fresh)

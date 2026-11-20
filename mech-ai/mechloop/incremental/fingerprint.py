@@ -23,7 +23,7 @@ import json
 import math
 import types
 
-FP_VERSION = "fp1"      # bump when the fingerprint recipe changes (old cache entries then simply miss)
+FP_VERSION = "fp2"      # bump when the fingerprint recipe changes (old cache entries then simply miss)
 
 
 class Unstable(Exception):
@@ -50,24 +50,24 @@ def _wrapped(shape):
     return getattr(shape, "wrapped", shape)
 
 
-def shape_fp(shape) -> str:
-    """Fingerprint of a build123d Shape (or a TopoDS_Shape): its B-rep text without triangulation, and its bbox."""
-    if shape is None:
-        return "none"
-    w = _wrapped(shape)
-    if w is None:
-        return "null-shape"
+def _fps_of(w) -> tuple[str, str]:
+    """(fingerprint, intrinsic fingerprint) of a TopoDS shape: the intrinsic one is the B-rep with the shape's own
+    placement taken off (two instances of one part, placed apart, share it); the full one adds that placement."""
     hit = _SHAPE_FP.get(id(w))
     if hit is not None and hit[0] is w:
-        return hit[1]
+        return hit[1], hit[2]
     from OCP.BRepTools import BRepTools
+    from OCP.TopLoc import TopLoc_Location
     from OCP.TopTools import TopTools_FormatVersion
 
     buf = io.BytesIO()
-    BRepTools.Write_s(w, buf, False, False, TopTools_FormatVersion.TopTools_FormatVersion_VERSION_1)
+    BRepTools.Write_s(w.Located(TopLoc_Location()), buf, False, False, TopTools_FormatVersion.TopTools_FormatVersion_VERSION_1)
     # drop the per-shape state flags (free / modified / checked / orientable / closed / infinite / convex): "modified"
     # and "checked" flip when a part is meshed or checked, which is not a change of the part
-    h = hashlib.sha256(_FLAGS.sub(b"", buf.getvalue()))
+    intrinsic = hashlib.sha256(_FLAGS.sub(b"", buf.getvalue())).hexdigest()[:24]
+    t = w.Location().Transformation()
+    loc = [round(t.Value(i, j), 9) for i in range(1, 4) for j in range(1, 5)]
+    h = hashlib.sha256((intrinsic + json.dumps(loc)).encode())
     try:
         from OCP.Bnd import Bnd_Box
         from OCP.BRepBndLib import BRepBndLib
@@ -79,8 +79,27 @@ def shape_fp(shape) -> str:
     except Exception:
         pass
     fp = h.hexdigest()[:24]
-    _SHAPE_FP[id(w)] = (w, fp)
-    return fp
+    _SHAPE_FP[id(w)] = (w, fp, intrinsic)
+    return fp, intrinsic
+
+
+def shape_fp(shape) -> str:
+    """Fingerprint of a build123d Shape (or a TopoDS_Shape): its B-rep text without triangulation, its placement and
+    its bbox."""
+    if shape is None:
+        return "none"
+    w = _wrapped(shape)
+    if w is None:
+        return "null-shape"
+    return _fps_of(w)[0]
+
+
+def intrinsic_fp(shape) -> str:
+    """The shape's fingerprint without its own placement: equal for identical instances of one part."""
+    if shape is None:
+        return "none"
+    w = _wrapped(shape)
+    return "null-shape" if w is None else _fps_of(w)[1]
 
 
 def shape_summary(shape) -> dict:
@@ -286,8 +305,11 @@ def part_fp(c) -> dict:
     meta = value_fp(rest.pop("meta", {}))
     other = value_fp([rest, extra])
     whole = "unstable" if is_unstable(meta) or is_unstable(other) else digest(geo, det, meta, other)
+    # identical instances: same shape (placement aside), material, catalogue entry and ratings; the meta is left out
+    # (it holds each instance's placement), so a check that reads meta must not be shared on this alone
+    inst = digest("instance", intrinsic_fp(c.shape), c.material, c.sku, c.cots, value_fp(c.ratings), c.process or "")
     return {"fp": whole if whole != "unstable" else f"unstable:{c.name}", "shape": geo, "detail": det,
-            "meta": meta, "attrs": other, "body": c.body}
+            "meta": meta, "attrs": other, "body": c.body, "instance": inst}
 
 
 def design_field_names(design) -> list[str]:
