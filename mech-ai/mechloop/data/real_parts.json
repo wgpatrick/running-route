@@ -985,13 +985,15 @@
    "mpn": "S-M3-0ZI",
    "sellers": [
     {
-     "name": "SendCutSend hardware service (installs PEM S-M3-0 class nuts) / Mouser",
-     "part_number": "S-M3-0ZI",
+     "name": "McMaster-Carr",
+     "part_number": "95185A520",
+     "catalogue": true,
      "checked": "2026-11-20",
-     "note": "owner decision 2026-11-20: zinc-plated S-M3-0ZI, same geometry as S-M3-0"
+     "note": "$3.75 per 25; McMaster cross-references 95185A520 to PEM S-M3-0ZI (Instinct REQ-014); owner decision: zinc-plated S-M3-0ZI"
     }
    ],
-   "replace_with": "PEM's CAD for S-M3-0ZI (requested via Instinct); geometry is a stand-in until then"
+   "datasheet": "vendor_cad/staging/instinct_REQ-014/MANIFEST.md (McMaster drawing in vendor_docs)",
+   "note": "display model: McMaster's STEP of 95185A520 (vendor_cad/inbox/NUT-PEM-S-M3-0.step); mounting hole 4.22, min sheet 0.8"
   }
  }
 }
