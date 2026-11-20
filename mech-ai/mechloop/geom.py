@@ -137,6 +137,8 @@ def box_of(shape) -> tuple[tuple, tuple]:
     if hit is None or hit[0] is not w:
         bb = shape.bounding_box()
         hit = (w, ((bb.min.X, bb.min.Y, bb.min.Z), (bb.max.X, bb.max.Y, bb.max.Z)))
+        if len(_BOX_CACHE) > 200_000:       # transient shapes (tool envelopes, moved copies) must not pile up
+            _BOX_CACHE.clear()
         _BOX_CACHE[id(w)] = hit
     return hit[1]
 
@@ -162,12 +164,8 @@ def bbox_of(shapes) -> tuple[np.ndarray, np.ndarray]:
 
 
 def bboxes_overlap(a: Shape, b: Shape, margin: float = 0.0) -> bool:
-    A, B = a.bounding_box(), b.bounding_box()
-    return not (
-        A.max.X + margin < B.min.X or B.max.X + margin < A.min.X
-        or A.max.Y + margin < B.min.Y or B.max.Y + margin < A.min.Y
-        or A.max.Z + margin < B.min.Z or B.max.Z + margin < A.min.Z
-    )
+    (alo, ahi), (blo, bhi) = box_of(a), box_of(b)       # the same boxes, each computed once per shape
+    return not any(ahi[k] + margin < blo[k] or bhi[k] + margin < alo[k] for k in range(3))
 
 
 def overlap_volume(a: Shape, b: Shape) -> tuple[float, tuple[float, float, float] | None]:

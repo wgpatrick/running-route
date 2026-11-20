@@ -38,8 +38,10 @@ def near_limit(p: float, n: int, limit: float) -> bool:
 
 
 def _bb(shape):
-    b = shape.bounding_box()
-    return np.array([b.min.X, b.min.Y, b.min.Z]), np.array([b.max.X, b.max.Y, b.max.Z])
+    from ..geom import box_of
+
+    lo, hi = box_of(shape)
+    return np.array(lo), np.array(hi)
 
 
 def _skew_rows(c):
