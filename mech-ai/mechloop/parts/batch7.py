@@ -213,6 +213,16 @@ def octopus_v11(drivers: str = "TMC2209") -> Stock:
                  interfaces={"mount_holes_m3": holes, "standoff_min": 5.0, "size": (W, H), "hole_pattern": tuple(v["hole_pattern_mm"]["value"]),
                              **_pe._ports_to_interfaces(ports)},
                  cost_usd=55.0,
+                 # display model (when vendor_cad/inbox/CTRL-OCTOPUS-V1.1.step is present): BTT's V1.0 STEP, accepted by the owner for the
+                 # V1.1 (same outline and mounting holes, 2026-11-20). It has no driver modules and its PCB is surfaces only, so the
+                 # simulation solid (PCB + a 22 mm envelope with the TMC2209 sticks plugged in) is larger than the CAD's solids
+                 model={"inbox": ["CTRL-OCTOPUS-V1.1"], "no_auto_features": True,
+                        "provenance": "maker CAD for V1.0, accepted by owner for V1.1, 2026-11-20",
+                        "tolerance": {"volume_ratio": (2.0, 12.0), "mass_ratio": (0.2, 10.0)},
+                        "protrusions": {"zmin": (3.12, "through-hole pins below the board"),
+                                        "zmax": (-7.4, "the simulation envelope includes plugged-in driver modules, not in BTT's CAD"),
+                                        "xmax": (2.2, "connector bodies past the board edge"),
+                                        "xmin": (0.6, "connector bodies past the board edge")}},
                  source=_source("bigtreetech_octopus_v11", "partial", "Octopus V1.1",
                                 unverified=("mass_kg", "mount hole diameter", "connector positions", "heater and fan current limits",
                                             "input fuse ratings", "envelope height", "cost"),
