@@ -186,13 +186,16 @@ def tnut_hntp5() -> Stock:
     X along the slot, the face that bears on the lips at Z=0, the THREAD's axis at the origin (the body is 2.5 mm off centre)."""
     L, Wd, H, B, NW, L1 = 17.0, 8.3, 3.8, 3.2, 5.8, 6.0
     off = L / 2 - L1
-    shape = Pos(off, 0, -B / 2) * Box(L, Wd, B) + Pos(off, 0, (H - B) / 2) * Box(L, NW, H - B)
+    # the drawing shows the body's lower edges chamfered (no dimension: 0.5 x 45 degrees taken, so the body is 7.3 wide at its bottom,
+    # the width MISUMI makes it to sit in the HFS5 cavity's tapered walls)
+    sec = Polygon((-Wd / 2, 0.0), (Wd / 2, 0.0), (Wd / 2, -(B - 0.5)), (Wd / 2 - 0.5, -B), (-(Wd / 2 - 0.5), -B), (-Wd / 2, -(B - 0.5)), align=None)
+    shape = Location(Plane(origin=(off + L / 2, 0, 0), x_dir=(0, 1, 0), z_dir=(1, 0, 0))) * extrude(sec, L) + Pos(off, 0, (H - B) / 2) * Box(L, NW, H - B)
     detail = shape - Pos(0, 0, (H - B - B) / 2) * Cylinder(2.5, H)
     drawing = "MISUMI 2019 US catalogue p.2716 (vendor_docs/misumi_2019_US_2716_post_assembly_nuts_HFS5.pdf): HNTP5, M5: 17, 8.3, 5.8, 3.8, 3.2, L1 = 6"
     return Stock(shape, "HNTP5-5", "MISUMI HNTP5-5 post-assembly spring nut M5 (-SEP set)", float(detail.volume) * 7.85e-6, material="steel",
                  cost_usd=0.0, detail=detail,
                  ratings={"insertion": "drop-in", "maker_part": "MISUMI HNTP5-5", "reference_tightening_torque_nm": 6.8},
-                 interfaces={"thread_d": 5.0, "length": L, "span": Wd, "height": H, "neck": H - B, "neck_width": NW, "body_height": B,
+                 interfaces={"thread_d": 5.0, "length": L, "span": Wd, "span_bottom": 7.3, "height": H, "neck": H - B, "neck_width": NW, "body_height": B,
                              "thread_length": H, "thread_offset": -(H - B), "insertion": "drop-in"},
                  model={"kind": "generated to standard", "remade_from": drawing, "no_auto_features": True,
                         "tolerance": {"volume_ratio": (0.8, 1.6), "mass_ratio": (0.5, 2.0)},
@@ -545,6 +548,8 @@ def picam3() -> Stock:
     lens up +Z, centred on the board; holes 2.2 on 21 x 12.5 (RPi drawing)."""
     s = Pos(0, 0, 0.5) * Box(25.0, 23.862, 1.0) + Pos(0, 2.0, 1.0 + 5.15) * Box(8.5, 8.5, 10.3)
     holes = [(x, y, 0.0) for x in (-10.5, 10.5) for y in (-23.862 / 2 + 2.0, -23.862 / 2 + 14.5)]
+    for x, y, _ in holes:
+        s -= Pos(x, y, 0.5) * Cylinder(1.1, 1.0)
     return _simple("CAM-RPI-CM3-SC1223", "Raspberry Pi Camera Module 3 (overview / top-down)", s, 0.004, 25.0,
                    {"maker": "Raspberry Pi Ltd", "mpn": "SC1223", "sellers": [{"name": "Digi-Key", "part_number": "SC1223", "checked": CHECKED,
                                                                                "note": "$25.00, 1,231 in stock"}],

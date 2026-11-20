@@ -903,6 +903,54 @@
     "adc_bits": "STM32F446 (manual 1.2 item 3): 12-bit ADC"
    },
    "replace_with": "BTT schematic / manual figures for logic power, max ambient, fan-output resistance and the thermistor pull-up (now typical values)"
+  },
+  "NEMA17-34": {
+   "maker": "STEPPERONLINE",
+   "mpn": "17HS13-0404S1",
+   "sellers": [
+    {
+     "name": "StepperOnline (OMC, US warehouse)",
+     "part_number": "17HS13-0404S1",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": true,
+   "datasheet": "vendor_cad/staging/17HS13-0404S1_datasheet.pdf"
+  },
+  "NEMA17-48": {
+   "maker": "STEPPERONLINE",
+   "mpn": "17HS19-2004S1",
+   "sellers": [
+    {
+     "name": "StepperOnline (OMC, US warehouse)",
+     "part_number": "17HS19-2004S1",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": true,
+   "datasheet": "vendor_cad/staging/17HS19-2004S1_datasheet.pdf"
+  },
+  "EXTRUDER-E3D-ROTO": {
+   "maker": "E3D",
+   "mpn": "Revo Roto (Roto extruder)",
+   "sellers": [
+    {
+     "name": "E3D Online (maker direct; US shipping)",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": true
+  },
+  "HOTEND-REVO-24V-40W": {
+   "maker": "E3D",
+   "mpn": "Revo HeaterCore 24 V 40 W + Revo nozzle 0.4",
+   "sellers": [
+    {
+     "name": "E3D Online (maker direct; US shipping)",
+     "checked": "2026-11-20"
+    }
+   ],
+   "sold_by_maker": true
   }
  }
 }
