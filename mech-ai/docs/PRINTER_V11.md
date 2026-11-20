@@ -446,7 +446,10 @@ All on 2026-11-19/20. The previous agent's last full verify was cut off by a con
 - **Review data** (`tools/build_review.py printer_v11`): `review/data.json` (800 parts, 112 joints, 184 open items) and
   `review/drawings/` (34 SVGs; three stale v10.1 drawings of deleted tension anchors removed).
 - `tools/mcmaster_wanted.py`: `vendor_cad/mcmaster_wanted.csv`, 42 hardware types, 621 parts.
-- **Tests:** `tests/test_v11_support.py` 16 passed; the whole suite with `-k "not v11"`: {{TESTS}}.
+- **Tests:** `tests/test_v11_support.py` 16 passed; the whole suite with `-k "not v11"`: **612 passed, 1 skipped** (40 min), with `tests/test_incremental.py` left out: it belongs to
+  the incremental-verify work in progress (uncommitted changes) and one of its tests failed
+  (`test_code_manifest_records_what_ran_and_what_it_read`) while its slow real-design test ran for over 30 minutes. An earlier
+  full run the same night, before the E2B STEP was adopted, gave 564 passed.
 
 ## Files
 
