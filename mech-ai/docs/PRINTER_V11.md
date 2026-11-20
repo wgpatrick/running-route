@@ -28,7 +28,7 @@ Every other verifier passes. **39 of 40 requirements met** (v10.1: 33 of 33). Re
 | Bent parts | **2** (the X belt bracket, kept bent by the owner, and the probe L). v10.1: 8. |
 | Z screws | Used at **330 mm as sold** (328 above the face). Front two inboard of the top side rails at x +/-144.5, rear one outboard of the back wall at y 202.5; motors on posts of two stacked stock spacers. Envelope unchanged. |
 | POM nuts | The anti-backlash nuts the motors ship with, drawn as a **labelled stand-in** (no dimensions published), flange up under open-slotted nut plates, barrel hanging below, captive under open-slotted keepers. |
-| Mass / cost / assembly | {{MASS}} kg / ${{COST}} / {{ASM}} min (v10.1: 14.93 kg / $1,061.69 / 161 min). |
+| Mass / cost / assembly | **13.82 kg / $1,110.99 / 154 min** (v10.1: 14.93 kg / $1,061.69 / 161 min). |
 
 ## What changed and why (the owner's decisions)
 
@@ -281,7 +281,30 @@ From the two full verify reports and the two scorecards, each on its design's fi
 
 | | v10.1 | v11 |
 |---|---|---|
-{{TABLE}}
+| Verify errors / warnings | 0 / 61 | 118 / 142 (116 from DG-07, which did not exist when v10.1 was verified; 1 FEA thermal + 1 requirement: limit (b)) |
+| Requirements met | 33 of 33 | 39 of 40 (limit (b)) |
+| X / Y / Z travel | 229.6 / 214.5 / 180 mm | 191.6 / 214.5 / 180 mm (+1.65 over-travel) |
+| Print area | 229.6 x 214.5 mm (492 cm2) | 191.6 x 214.5 mm (411 cm2); probed 191.6 x 170.75 (80 %) |
+| Parts in the model (made) | 825 (37) | 797 (34) |
+| Mass | 14.93 kg | 13.82 kg (-1.11: the 6.35 mm bed plate, a smaller bed, fewer bent brackets) |
+| Moving mass X / Y / Z | 0.360 / 1.289 / 5.59 kg | 0.399 / 1.275 / 4.42 kg |
+| BOM cost (estimate) | $1,061.69 | $1,110.99 (+$49.30: the Delta blower $17, the E2B $35.22, POM-nut screws, flanged button heads) |
+| Assembly time (estimate) | 161 min | 154 min |
+| Fasteners with a driver-access check / types / tool changes | 259 / 22 / 22 | 251 / 24 / 33 |
+| Assembly turned over / parts fitted from below / parts needing holding | 24 / 27 / 251 | 20 / 39 / 224 |
+| Bounding box | 389.7 x 419.0 x 471.0 mm | 389.0 x 419.9 x 475.9 mm (the blower's cradle is the top; the envelope is 420 x 420 x 480) |
+| Y motor shaft load against its allowance | 1.01 (warning) | 0.98 (no warning) |
+| Resonance X / Y (scorecard) | 74.8 / 67.8 Hz | 73.1 / 68.2 Hz |
+| Acceleration an owner would run | 8,200 mm/s2 | 8,200 mm/s2 |
+| Step-loss ceiling | 24,000 mm/s2 | 20,000 mm/s2 (first failure at 24,000 is a print-outline defect, no step loss; one sweep step is not a real difference) |
+| Cross-track error RMS / worst | 0.0109 / 0.1029 mm | 0.0103 / 0.1039 mm |
+| Benchmark print time | 2,571 s | 2,571 s |
+| Input shaper (tune, Klipper's code on the twin) | X EI 92.8 Hz, Y MZV 67.2 Hz | X EI {{SHX}}, Y MZV {{SHY}} |
+| Pressure advance (tune) | 0.042 | 0.042 |
+| Bed mesh (tune): first layer gap error with / without mesh | | worst {{MESH_ON}} / {{MESH_OFF}} mm |
+| Firmware-in-the-loop print (Klipper, STM32F446, motor bracket) | v10's: clean, 3,891 s, 0.055 mm from the path | {{FIL}} |
+| Part cooling (estimate) | about 0.8 CFM at 5 m/s (axial fan, aimed at the heater) | 1.19 CFM at 13.3 m/s (Delta blower, aimed under the tip) |
+| Probe | OMRON E2E-X5ME1 (unshielded) | OMRON E2B-M12KS04-WP-C1 (shielded), OMRON's STEP |
 
 ## Purchased-part CAD: three states
 
@@ -343,7 +366,7 @@ HBLFSNF5 files.
    nut kept visible with the drive parts.
 10. The supplier sheet-metal rules (`mechloop/data/supplier_rules/`, `mechloop/verifiers/dfm_supplier.py`) now run inside the
    manufacture verifier; their findings for v11 are below.
-9. Tests: `tests/test_v11_support.py` ({{NTESTS}} tests).
+9. Tests: `tests/test_v11_support.py` (16 tests).
 
 ## Unverified, assumed or not done
 
