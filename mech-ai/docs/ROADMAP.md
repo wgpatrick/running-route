@@ -24,6 +24,12 @@ placeholders, every purchased part real with maker CAD and live price, stock and
 against its shop's rules, assembly plan checked), then freeze, order (long-lead parts first), build, and run the first
 closed loops (coupons, flow, pressure advance, resonance) with each result recorded as a learning.
 
+Printed parts for Build 1 (owner, 2026-11-20): the owner has no 3D printer; Build 1's printed parts (part-cooling duct,
+probe holder, covers, camera mounts) are ordered from a print service in PETG. Design them to the service's published
+rules (Hubs / Protolabs: 0.8 mm minimum wall, 2 mm minimum feature, FDM tolerance about +/-0.5 mm or 0.5 %), not to the
+owner's-printer allowances, and include the service's lead time (about 4-11 days in the 2026-11-19 benchmark) in the
+Build 1 schedule. Calibration coupons wait for Build 1 itself.
+
 Owner's caution: design work is much faster and cheaper than building, so do not start the build too early. Use the
 design phase to remove risk; prefer cheap, targeted physical tests (a few sheet parts, coupons) over committing to the
 whole machine before the gate passes.
