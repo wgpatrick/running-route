@@ -79,3 +79,4 @@ stock and lead time before ordering.
   moving bed. Keenovo 200 x 200 mm 24 V 200 W pad (NTC 100K, 3M adhesive), part number and US shipping being confirmed
   (REQ-016), with a US-stocked 24 V alternative as fallback. The 120 V AC pads stocked in the US were rejected: mains on the
   moving bed would need a solid-state relay, more insulation and a re-done bed wiring safety case.
+- BTT Octopus V1.1: owner accepts BTT's V1.0 CAD as its geometry (same outline and mounting holes), 2026-11-20.
