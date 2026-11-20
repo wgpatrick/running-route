@@ -23,8 +23,8 @@ D. Belt brackets: X belt bracket kept bent (the only bent part); Y tension ancho
    plates 304 1.52) so the Y motor shaft load passes.
 E. Fasteners: flanged button heads (ISO 7380-2) on every corner-bracket leg; M5 x 8 with one washer for the v10.1 M5 x 10 +
    two washers; beam bolts M5 x 12 with two washers; M2.5 nuts thread-locked; Accu A2 large washers.
-F. Supplier CAD folded in: Misumi HFS5-2020 section, KIPP thumb nut, Century spring, Schurter inlet, Delta blower (the E2B probe
-   is drawn from OMRON's data sheet until its STEP is in hand).
+F. Supplier CAD folded in: Misumi HFS5-2020 section, KIPP thumb nut, Century spring, Schurter inlet, Delta blower, OMRON E2B probe
+   (OMRON's STEP, adopted 2026-11-20).
 
 Below: printer_v10_1's own description, unchanged.
 
