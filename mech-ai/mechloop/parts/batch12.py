@@ -876,11 +876,11 @@ def jst_sxh_contact() -> Stock:
 @part
 def molex_minifit_39_01_2020() -> Stock:
     """Molex 39-01-2020 Mini-Fit Jr. receptacle housing, 2 circuits, dual row (nylon 6/6). Drawing SD-5557-003: width A 5.40 (2 ckt),
-    9.6 across the rows (4.20 pitch), 10.6 with the latch, 19.6 long; latch 3.0 wide, 1.0 proud over 8.5. Local frame: mating face on
-    Z=0, wires out +Z, the rows along Y, latch on +Y."""
-    s = Pos(0, 0, 19.6 / 2) * Box(5.4, 9.6, 19.6) + Pos(0, 9.6 / 2 + 0.5, 6.3 + 8.5 / 2) * Box(3.0, 1.0, 8.5)
-    for y in (-2.1, 2.1):
-        s -= Pos(0, y, 19.6 / 2) * Box(3.6, 3.6, 19.6)
+    9.6 across the rows (4.20 pitch), 11.6 body, 19.6 overall with the latch arm. Display model: Molex's STEP (CADENAS / 3dfindit, REQ-015;
+    a simplified solid, no cavities): pin positions and the 4.20 pitch come from the drawing, not from it. Local frame: the STEP's own
+    (X across, 5.4; Y along, 19.6, the latch arm towards -Y; Z across the rows, base Z=-0.25). The simulation solid is the drawing's
+    body (5.4 x 9.85 x 11.6) and the 3.4-wide latch arm (12.1 high over 7.9) as the STEP has them."""
+    s = Pos(0, 4.85, 4.675) * Box(5.4, 11.7, 9.85) + Pos(0, -4.95, 7.05) * Box(3.4, 7.9, 12.1) + Pos(0, 10.2, -0.625) * Box(5.4, 1.0, 0.75)   # + the STEP's 0.75 rib at the end
     return _simple("MOLEX-39-01-2020", "Molex 39-01-2020 Mini-Fit Jr. receptacle housing, 2 circuits", s, 0.0006, 0.27,
                    {"maker": "Molex", "mpn": "39-01-2020", "sellers": [{**DK, "part_number": "39-01-2020"}], "datasheet": MOLEX_5557},
                    _remake(MOLEX_5557, "SD-5557-003 sheet 1: A 5.40, 9.6 / 10.6, 19.6, latch 3.0 x 1.0 x 8.5, cavities 4.20 pitch (3.6 drawn)"),
@@ -900,8 +900,20 @@ def din_rail_phoenix(length: float = 100.0) -> Stock:
     for x in xs:
         sec -= Pos(x, 0, t / 2) * (Box(15.0 - 6.2, 6.2, t) + Pos(-(15.0 - 6.2) / 2, 0, 0) * Cylinder(3.1, t)
                                    + Pos((15.0 - 6.2) / 2, 0, 0) * Cylinder(3.1, t))
+    model, detail = _remake(PHOENIX_NS35, "35 / 27 / 7.5 / 1, slots 15 x 6.2 on 25"), None
+    f = vc.find_file("DIN-RAIL-PHOENIX-0801733-2000", inbox_only=True)
+    if f is not None:          # Phoenix's own 2 m STEP (3dfindit, REQ-015), cut to this length about a slot centre (odd count) or between two
+        cx = 1000.0 if n % 2 else 1012.5
+
+        def build():
+            full = vc.solids_of(vc.load_step(f))
+            return vc.bake(Pos(-cx, -17.5, 0) * (full & Pos(cx, 17.5, h / 2) * Box(length, 40.0, h + 2.0)))
+
+        detail = vc.cached(f"phoenix_0801733:{length}", [f], build)
+        model = {"kind": "vendor CAD", "file": f"vendor_cad/inbox/{f.name}", "no_auto_features": True,
+                 "source": f"Phoenix Contact's STEP of the 2 m 0801733 (CADENAS / 3dfindit, REQ-015), cut to {length:g} mm as the builder cuts it"}
     return Stock(sec, f"DIN-RAIL-PHOENIX-0801733-{int(length)}", f"Phoenix 0801733 NS 35/7,5 PERF rail, cut to {length:g} mm",
                  0.0005 * length, material="steel", cost_usd=12.0 * length / 2000.0 + 0.5, interfaces={"slots": [(x, 0.0, 0.0) for x in xs], "top_z": h},
-                 model=_remake(PHOENIX_NS35, "35 / 27 / 7.5 / 1, slots 15 x 6.2 on 25"),
+                 model=model, detail=detail,
                  real_part={"maker": "Phoenix Contact", "mpn": "0801733", "sellers": [{**DK, "part_number": "0801733"}],
                             "stock_size": "2 m, cut to length by the builder", "datasheet": PHOENIX_NS35})

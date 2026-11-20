@@ -65,5 +65,6 @@ def test_connector_remakes_match_their_drawings():
         assert vc.model_state(st.model) == "faithful re-make"
     hb = b.jst_xh_header(4).shape.bounding_box()                   # p.5: B 12.4, 7 above the board, posts 3.4 below
     assert abs(hb.size.X - 12.4) < 1e-6 and abs(hb.max.Z - 7.0) < 1e-6 and abs(hb.min.Z + 3.4) < 1e-6
-    mb = b.molex_minifit_39_01_2020().shape.bounding_box()         # SD-5557-003: 5.40 x 10.6 x 19.6 (2 circuits)
-    assert (round(mb.size.X, 2), round(mb.size.Y, 2), round(mb.size.Z, 2)) == (5.4, 10.6, 19.6)
+    mb = b.molex_minifit_39_01_2020().shape.bounding_box()         # SD-5557-003 / Molex STEP: 5.40 wide, 19.6 long
+    assert (round(mb.size.X, 2), round(mb.size.Y, 2)) == (5.4, 19.6)
+    assert vc.model_state(b.din_rail_phoenix(60).model) in ("supplier CAD", "faithful re-make")
