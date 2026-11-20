@@ -1,4 +1,4 @@
-STATUS: partial
+STATUS: partial — research finished on all requested brands/rows; requirements not fully met: official STEP/CAD not obtained for any brand (CADENAS-family routes exhausted, Misumi CAD needs an unapproved account), and some per-config prices are quote-only or unlisted on the regions checked (documented per row below). No equivalents substituted for the requested exact parts.
 
 # REQ-004 RESULT: cheaper 12 mm miniature linear rails and blocks
 
@@ -24,7 +24,7 @@ Series-name corrections found while researching (load-bearing for part numbers):
 | TBI Motion | TH12NL (long) / TH12NN | pending distributor price | | | per TBI catalog (saved) | per catalog | pending | in official catalog (saved); STEP pending | https://www.tbimotion.com.tw/en/category/linear-guide-miniature-series |
 | IKO | ML12C1HS2 (LWL12 family, long H carriage) at Misumi US | $84.28 (assembly; rail length for this code still to confirm — likely configurable) | | | Standard preload | pending | ships Nov 20 2026 at Misumi US | pending | https://us.misumi-ec.com/vona2/detail/221005387514/?HissuCode=ML12C1HS2 |
 | THK | SRS12N (long) | not captured — Misumi US configurator did not converge in bounded attempts; THK direct is quote-only | | | per THK SRS catalog (saved) | per catalog | pending | on Misumi page; official SRS catalog saved | https://us.misumi-ec.com/vona2/detail/221000096246/ |
-| PMI | MSC12LM long carriage | rail: Matara UK sells MSC-12-R in 25 mm steps 120–1000 mm; 1000 mm = £42.21 ex VAT; per-length price for 295/320 not captured | | | per PMI catalog (saved) | per PMI catalog | block £51.23 ex VAT (£61.48 inc) at Matara UK; MSC12M std £48.91 ex (£58.69 inc) | STEP pending | https://matara.com/products/linear-motion/linear-rail-and-guides/miniature-type/ |
+| PMI | MSC12LM long carriage | rail: Matara UK sells MSC-12-R in 25 mm steps 120–1000 mm; 1000 mm = £42.21 ex VAT; per-length price for 295/320 not captured | | | C 3.77 kN / Co 5.72 kN, 36 g; rail 0.63 kg/m, 25 mm pitch, M3 bolts | preload FZ (clearance) / FC (light) / F0 (medium); accuracy N or H (miniature offers no P) | block £51.23 ex VAT (£61.48 inc) at Matara UK; MSC12M std £48.91 ex (£58.69 inc), C 2.62 kN / Co 3.52 kN | STEP pending | https://matara.com/products/linear-motion/linear-rail-and-guides/miniature-type/ |
 | igus (comparison, polymer slide) | NS-01-27 rail + NW-02-27 carriage | rail is priced per meter: $74.99/m cut-to-length; 300mm ≈ $22.50 is MY CALCULATION from the per-meter price, not a merchant-quoted total | ≈ $26.25 (calculated) | ≈ $30.00 (calculated) | n/a (sliding, clearance adjustable) | n/a | carriage $11.16; both ship within 5 working days (igus US) | CAD via igus product page CAD tab (not downloaded) | https://www.igus.com/product/drylin-ns-2-27-j?artnr=NW-02-27 |
 | CPC (lower-cost #1, Taiwanese brand) | MR12MNSUV0N-300-12.5-12.5 (rail + 1 standard MN block; long = ML code) | $106.00 list, $102.85 @ qty 10 | | | V0N = standard preload per CPC code | per CPC catalog (saved) | in stock at Anaheim Automation US | official catalog saved; STEP via CPC e-catalog pending | https://anaheimautomation.com/cpc-mr12mnsuv0n-300-12-5-12-5.html |
 | LDO (lower-cost #2, 3D-printer staple) | MGN12H stainless rail+carriage set | £31.14 | £33.37 | £34.48 | "Precision H" per reseller listing (verify) | per reseller | in stock at onetwo3d.co.uk (UK) | official LDO dimensioned drawing saved; no official STEP found (checked MotorDynamicsLab GitHub) | https://www.onetwo3d.co.uk/product/ldo-linear-rails-mgn12h/ |
@@ -54,6 +54,8 @@ igus NS-27 stays as the quiet/low-maintenance outlier (~$34 per 300mm set, calcu
 - LDO_MGN12H__drawing.pdf — official LDO MGN12 rail drawing (Rev A), hosted by reseller onetwo3D.
 - RobotDigg_MGN__drawing.jpg — RobotDigg's own MGN dimension sheet (from robotdigg.com download page).
 - RobotDigg_MGN12C__cad.stl / RobotDigg_MGN-rail__cad.stl — RobotDigg's published STL models (mesh, not STEP).
+- igus_NS-01-27__datasheet.pdf — official igus drylin N size-27 rail datasheet (igus.com Downloads tab, widen.net CDN).
+- igus_NW-01-27__datasheet.pdf — official igus drylin N NW-01-27 carriage datasheet (same source).
 
 ## CAD download status
 The 3dfindit digitaltwin viewer route is EXHAUSTED for now (hung the cloud-browser renderer across 2 leases / 3 tabs on 2026-11-19; per main's ruling it is not retried without a new signal). Remaining CAD would need a genuinely different official route: vendor CAD portals (HIWIN, THK, NSK, IKO, igus, CPC e-catalog) or Misumi's own CAD tab (needs a Misumi account — not created; no owner approval).

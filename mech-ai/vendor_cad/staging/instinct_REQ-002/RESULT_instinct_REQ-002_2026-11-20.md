@@ -1,5 +1,5 @@
 # RESULT — REQ-002: supplier CAD and datasheets, batch 3 (full list)
-STATUS: partial (2026-11-19 ~6:10 PM PST — items 4, 5, 13, 14, 17, 20, 22, 23, 25 complete; 9/10/11/15/18/19/21 partial; 1/12/16 blocked-exhausted; 6 awaiting PEM approval)
+STATUS: partial (2026-11-19 ~6:50 PM PST). Research finished on 24 of 25 items (item 6 awaits PEM account approval). Requirements fully met on 11 of 25: items 4, 5, 8, 13, 14, 17, 20, 21, 22, 23, 25. Partial (datasheet/catalog delivered, required STEP/CAD or second candidate not obtained): 2, 7, 9, 10, 11, 15, 18, 19, 24. Blocked, routes exhausted (nothing delivered beyond documented negatives): 1, 3, 12, 16. Waiting on PEM approval: 6. Blocked-exhausted means the vendor blocks automated access and no permitted route remains - it is research finished, not fulfillment.
 
 Naming: `<MPN>__<what>.<ext>`, files unchanged as downloaded. Prices are McMaster pack prices as shown, USD.
 
@@ -68,9 +68,10 @@ Naming: `<MPN>__<what>.<ext>`, files unchanged as downloaded. Prices are McMaste
 ## 23. Alcoa MIC-6 — DONE
 - MIC-6__datasheet.pdf — Alcoa AMP 003 (MIC-6) brochure, hosted by distributor Howard Precision; PROVENANCE: no current official alcoa.com/arconic.com PDF for MIC-6 was found, this is the Alcoa-authored document via a distributor host.
 
-## 21. Century Spring DJ-8X20YCS — partial
-- Page specs captured: $2.20 each, backordered 4-6 weeks, music wire, closed ends, 0.8 N/mm rate.
-- Drawing PDF + max operating temp not published on the product page; check century spring catalog PDF next.
+## 21. Century Spring DJ-8X20YCS — DONE
+- DJ-8X20YCS__drawing.pdf — two pages extracted from the official Century Spring 2021 catalog (centuryspring.com/catalog): (1) catalog p.460 "Spring Characteristics" with the chrome-alloy load-loss-vs-temperature chart, and (2) catalog p.475 JIS EXTRA LIGHT DUTY (YELLOW) spec table incl. the DJ-8X20Y row (hole 8 mm, rod 4 mm, free length 20 mm, rate 0.78 kgf/mm ≈ 7.6 N/mm; max oper. deflection 8.0 mm at 50% free length) plus dimensioned spring figure. Both pages visually verified.
+- MAX TEMPERATURE: catalog p.460 states "The maximum rated service temperature for chrome-alloy steel is about 440° F" (≈227 °C). Product page lists material "Chrome Alloy", so this rating applies to DJ-8X20YCS.
+- Product page facts (centuryspring.com/shop/dj-8x20ycs): $2.20 each; chrome alloy, yellow / JIS extra-light duty; closed ends. (Corrects an earlier partial note that said music wire / 0.8 N/mm — that was wrong.)
 
 ## 22. Accu HPLW-M3-A2 / HPLW-M4-A2 — DONE
 - Owner approved creating a free Accu account (2026-11-19, via main). Account created as Will Patrick / wgpatrick@gmail.com (personal use, no marketing opt-in), email verified same day.
@@ -89,8 +90,8 @@ Naming: `<MPN>__<what>.<ext>`, files unchanged as downloaded. Prices are McMaste
 - 2. HIWIN MGNR12R300 / MGNR12R220 / MGN12H CAD (STEP) — MG catalogue delivered: HIWIN_MG__catalog.pdf (official hiwin.com linear guideway catalog, covers MGN12/MGN12H, verified 16 MGN12 mentions)
 - 3. Misumi HBLFSN5 bracket; GPA20GT2090-B-P5 / -A-N5 pulley+idler (3dfindit route now EXHAUSTED — viewer hangs cloud-browser renderer; needs a different official route or retry after new signal)
 - 6. PEM S-M3-1ZI + S-M3-0ZI: waiting on PEM account approval (registered 2026-11-19, review pending, activation email watched)
-- 7. Omron D2F-01L STEP (TraceParts via Digi-Key)
-- 24. PEI spring-steel sheet kit research (two real products, pages as PDF)
+- 7. Omron D2F-01L: official datasheet DELIVERED (Omron_D2F-01L__datasheet.pdf, from omronfs.omron.com, covers D2F-01L). STEP still gated: Omron's own CAD library (aratas.com) is member-account only; TraceParts website needs an account; a TraceParts API key request was already submitted 2026-11-19 morning from Will's gmail and is pending validation, but NOTE (per main): a granted API key does not by itself establish CAD-download entitlement - that route is UNVERIFIED until the key arrives and its scope is checked; Digi-Key CAD tab works with Will's existing DigiKey vault login but presents a click-through CAD Model Agreement (as-is, internal-business-purposes-only use restriction, broad indemnification) - route BLOCKED by unapproved terms; left unaccepted, no acceptance question to the owner; CADENAS-family mirrors (3dfindit, partcommunity.com) hang the cloud-browser renderer - route exhausted, no retries.
+- 24. PEI spring-steel kit research — PARTIAL (one of two products verified). Product 1 VERIFIED and pages saved as PDF: Wham Bam Systems (US, USD) — WhamBam_PEI-plate-220__page.pdf (Flexi Plate with Textured ULTEM PEI, 220 x 220, $35, 0.4 mm high-chromium spring steel, 0.12 mm ULTEM PEI per side; page shows Sold out as of 2026-11-19) + WhamBam_magnetic-base-220__page.pdf (matching Magnetic Base 220 x 220, 1 mm, 3M adhesive, rated 150 C continual use — exceeds the 120 C requirement; plate and base are separate SKUs at the same store). Product 2 NOT FOUND with a documented >=120 C magnet after checking: IdeaFormer (EXCLUDED — its own page states the magnetic bottom sheet is limited to 80 C), Kingroon / TwoTrees / Metaflex / Forgely (no magnet temperature stated), 3DJAKE (no 220 x 220 size; 120 C stated is max bed temp, not a magnet rating), Energetic (states 130 C magnet but is B2B inquiry-only, no retail price), Trianglelab (no 220 x 220 size). Next wake can try more vendors (e.g. Mandala Roseworks, Sparta3D, printer-universe stores) or accept documenting that the >=120 C magnet is a market rarity and Wham Bam is the find.
 
 ## Overlap note
 - 8. Omron E2B-M12KS04-WP-C1: already delivered in REQ-001 results (overlap)
