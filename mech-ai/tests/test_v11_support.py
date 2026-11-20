@@ -127,7 +127,7 @@ def test_v11_builds_with_stock_parts(v11):
     assert all(s <= e for s, e in zip(size, v11.ENVELOPE))
 
 
-def test_delta_blower_is_supplier_cad_and_omron_e2b_is_a_standin_picked_up_by_its_inbox_name():
+def test_delta_blower_and_omron_e2b_are_supplier_cad_picked_up_by_their_inbox_names():
     b = parts.blower_bfb0524hh()
     assert b.ratings["rated_current_a"] == 0.11 and b.ratings["static_pressure_pa"] == pytest.approx(215.7) and b.cost_usd == 17.0
     assert b.ratings["electrical"]["ratings"]["current_a"] == 0.11 and "BFB0524HH" in b.model.get("inbox", [])
@@ -138,3 +138,6 @@ def test_delta_blower_is_supplier_cad_and_omron_e2b_is_a_standin_picked_up_by_it
     assert el["switching_distance_steel_mm"] == 4.0 and el["internal_pullup"] is False
     assert p.interfaces["mounting"]["shielded"] and p.interfaces["mounting"]["head_proud_of_metal_l"] == 2.4   # OMRON E2B p.20, double distance
     assert "E2B-M12KS04-WP-C1" in p.model.get("inbox", [])
+    assert vc.model_state(p.model) == "supplier CAD" and vc.check_stock(p)[0] == []        # OMRON's STEP (2026-11-20)
+    b_ = p.shape.bounding_box()
+    assert b_.max.Z == pytest.approx(47.0) and p.interfaces["mounting"]["thread_z"] == (0.0, 30.0)   # D116-E1-02 p.14
