@@ -7,6 +7,8 @@ from ..report import VerifierResult, timed
 
 
 def verify_geometry(design: Design) -> VerifierResult:
+    from .. import incremental as _inc
+
     r = VerifierResult("geometry")
     with timed(r):
         if not design.components:
@@ -18,18 +20,20 @@ def verify_geometry(design: Design) -> VerifierResult:
                       part=c.name, known=sorted(MATERIALS))
                 continue
             s = c.shape
-            solids = s.solids()
-            if not solids:
+            # placement does not change these: identical instances (120 T-nuts) are checked once, also across runs
+            n_solids, valid, volume = _inc.memo("validity", lambda s=s: ["valid", _inc.intrinsic_key(s)],
+                                                lambda s=s: (len(s.solids()), bool(s.is_valid), float(s.volume)))
+            if not n_solids:
                 r.add("error", "no_solid", f"{c.name}: shape has no solid volume.", part=c.name)
                 continue
-            if not s.is_valid:
+            if not valid:
                 r.add("error", "invalid_brep", f"{c.name}: B-rep is invalid (failed kernel check).", part=c.name)
-            if s.volume <= 1e-6:
-                r.add("error", "zero_volume", f"{c.name}: volume is {s.volume:.3g} mm^3.", part=c.name)
-            if len(solids) > 1 and not c.cots:
+            if volume <= 1e-6:
+                r.add("error", "zero_volume", f"{c.name}: volume is {volume:.3g} mm^3.", part=c.name)
+            if n_solids > 1 and not c.cots:
                 r.add("warning", "multiple_solids",
-                      f"{c.name}: {len(solids)} disconnected solids in one part (should it be one piece?).",
-                      part=c.name, solids=len(solids))
+                      f"{c.name}: {n_solids} disconnected solids in one part (should it be one piece?).",
+                      part=c.name, solids=n_solids)
         lo, hi = bbox_of([c.shape for c in design.components])
         size = (hi - lo).round(2).tolist()
         mass = design.total_mass()

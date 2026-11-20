@@ -113,6 +113,10 @@ class Session:
                                              for k, v in self.changes.items()},
                 "verifiers": self.decisions, "reused": reused,
                 "reused_within": self.stats, "fingerprint_seconds": self.fps.seconds,
+                "instances": {"parts": len(self.fps.parts),
+                              "unique": len({p.get("instance") for p in self.fps.parts.values()}),
+                              "note": "unique = distinct shape (placement aside), material, catalogue entry and ratings; "
+                                      "placement-independent checks run once per unique part"},
                 **({"notes": self.notes} if self.notes else {})}
 
 
@@ -277,6 +281,12 @@ def kernel_hash(code: tuple = ()) -> str:
 
 def shape_key(shape) -> str:
     return shape_fp(shape)
+
+
+def intrinsic_key(shape) -> str:
+    from .fingerprint import intrinsic_fp
+
+    return intrinsic_fp(shape)
 
 
 __all__ = ["Session", "TIERS", "QUICK", "DEPS", "active", "fea_case", "memo", "shape_key"]
