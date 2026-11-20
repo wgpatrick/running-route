@@ -1173,6 +1173,26 @@ def export_part_files(cx: Ctx, a: dict) -> dict:
     export_step(s_, str(p))
     out["step"] = p
     if proc == "sheet":
+        # bent parts: a true flat pattern (mechloop.unfold: BA = theta (r + K t), K from the shop), checked by area x t = volume
+        from mechloop.unfold import K_DEFAULT, K_FACTOR, unfold, unfold_check, write_flat_dxf
+
+        shop = (c.meta.get("dfm") or {}).get("shop") or cx.d.manufacturing.get("shop")
+        res = unfold(c.shape, K_FACTOR.get(shop, K_DEFAULT))
+        if res.get("bends"):
+            q = cx.out / "dxf" / f"{c.name}.dxf"
+            info = {k: res.get(k) for k in ("bends", "bend_allowance_mm", "k_factor", "angle_deg", "radius", "thickness", "error")}
+            if res.get("error"):
+                info["check"] = {"ok": False, "why": res["error"]}
+            else:
+                w = write_flat_dxf(res, q)
+                info.update(w)
+                info["check"] = unfold_check(w["area_mm2"], res["thickness"], float(c.shape.volume))
+                out["dxf"] = q
+            out["flat"] = info
+            if not info["check"].get("ok"):
+                raise SystemExit(f"build package: the flat pattern of bent part {c.name} fails its check ({info['check']}): not written as a "
+                                 "fabrication file")
+            return out
         D = float(a["size"][2])
         ex = ExportDXF(unit=Unit.MM)
         ex.add_layer("CUT")
@@ -1470,8 +1490,15 @@ def write_fabrication(cx: Ctx, drawings: bool = True) -> dict:
               + (f" Same size, volume and hole list as {', '.join(twins[n])} (same or mirror-image part: compare before sharing a file)." if n in twins else "")]
         if a["proc"] == "sheet":
             dc = dxfc.get(n, {})
-            T += [f"- Sheet {f2(mp.get('stock_mm'))} mm, {mp.get('cut_method')} cut, flat (no bends), through-cut only. Flat size {mp.get('flat_size_mm')} mm, cut length "
-                  f"{mp.get('cut_length_mm')} mm, {mp.get('pierces')} pierces (report)." + (f" DXF written here: {dc.get('entities')}, cut length {dc.get('cut_length_mm')} mm, extent {dc.get('extent')}." if dc else "")]
+            fl = (files.get(n) or {}).get("flat")
+            if fl:
+                T += [f"- Sheet {f2(mp.get('stock_mm'))} mm, {mp.get('cut_method')} cut, **BENT: {fl['bends']} bend(s)**, {fl['angle_deg']:.0f} degrees, inside radius "
+                      f"{fl['radius']:.2f} mm, K-factor {fl['k_factor']} (bend allowance {fl['bend_allowance_mm']} mm). The DXF is the unfolded flat pattern "
+                      f"({fl.get('extent_mm')} mm, cut on layer CUT, the bend line on layer BEND); flat area x thickness / part volume "
+                      f"{fl['check'].get('area_x_t_over_volume')} (checked within 2 %). Send the STEP with it and mark the bend direction on the order."]
+            else:
+                T += [f"- Sheet {f2(mp.get('stock_mm'))} mm, {mp.get('cut_method')} cut, flat (no bends), through-cut only. Flat size {mp.get('flat_size_mm')} mm, cut length "
+                      f"{mp.get('cut_length_mm')} mm, {mp.get('pierces')} pierces (report)." + (f" DXF written here: {dc.get('entities')}, cut length {dc.get('cut_length_mm')} mm, extent {dc.get('extent')}." if dc else "")]
         if a["proc"] == "machined":
             T += [f"- Stock: {mp.get('stock')}; {mp.get('setups_estimate')} set-up(s), cut from {mp.get('cut_from')}; smallest wall {mp.get('min_wall_mm')} mm; "
                   f"estimate {est.get('machining_min')} min machining ({est.get('basis', '')[:40]}...)."]

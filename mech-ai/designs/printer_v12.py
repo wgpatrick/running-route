@@ -479,8 +479,8 @@ def fillet_y(x, z, sx, sz, r, y0, y1):
 
 
 def round_profile(shape, r=1.0, t=None):
-    """Round the convex corners of a cut profile: the straight edges through the sheet's thickness t (an edge of length t
-    between two planar faces), where the profile turns outward. Laser cutting makes a radius for nothing
+    """Round the corners of a cut profile, convex AND concave (v12: the docstring said convex only; the code fillets every
+    straight edge through the sheet's thickness t, an edge of length t between two planar faces). Laser cutting makes a radius for nothing
     (DESIGN_GUIDELINES: no sharp corners). t defaults to the part's smallest bounding-box size (a flat part)."""
     if t is None:
         bb = shape.bounding_box()
