@@ -1115,9 +1115,9 @@ def build_electrical(d: Design) -> Electrical:
                           ("world", (-143.0, FRONT_Y, FZ - 90.0)),
                           ("world", (-143.0, FRONT_Y, 70.0)), ("world", (-140.0, FRONT_Y + 4.0, 26.0))])
     el.loom("front", [("world", (-140.0, FRONT_Y + 4.0, 26.0)), ("world", (60.0, FRONT_Y + 4.0, 26.0)), ("world", (72.0, -142.0, zt))])
-    el.loom("bed", [Waypoint("zbody", (-62.0, SQ_Y1 - 21.0, Z_SQ + 5.0), clamp="sq_rear"),
-                    Waypoint("zbody", (-62.0, SQ_Y1 - 21.0, Z_SQB - 2.0), clamp="sq_rear"),
-                    Waypoint("world", (-40.0, TRAY_Y1 - 1.0, Z_TRAY + 3.0), clamp="electronics_tray")], flex_length={1: 365.0})
+    el.loom("bed", [Waypoint("zbody", (62.0, SQ_Y1 - 21.0, Z_SQ + 5.0), clamp="sq_rear"),
+                    Waypoint("zbody", (62.0, SQ_Y1 - 21.0, Z_SQB - 2.0), clamp="sq_rear"),
+                    Waypoint("world", (40.0, TRAY_Y1 - 1.0, Z_TRAY + 3.0), clamp="electronics_tray")], flex_length={1: 365.0})
     el.loom("mains", [("world", (-115.0, 9.0, zt)), ("world", (-108.0, 44.0, zt)), ("world", (-100.0, 84.0, zt))])
     tool, left = ["tray_right", "drop_right", "toolhead"], ["front", "drop_left"]
     mk = dict(conductors=1, insulation="pvc105")
