@@ -563,3 +563,6 @@ Steps 1-5 fit inside the printer's ordering and lead-time window (print service 
   https://github.com/jsechovec/BCN3D-Moveo), DEXTER (5 axes, harmonic drives, carbon tubes), Koch v1.1 (Dynamixel, LeRobot;
   https://github.com/jess-moss/koch-v1-1), UtiliArm (fully printed, link to confirm), Forte (printed capstan drives,
   sub-mm measured; arXiv 2507.15693). Likely route: Moveo/DEXTER layout + LeRobot software conventions + capstan long joints.
+- Fixed cameras (owner comment, 2026-11-21): overhead plus 2-3 side cameras around both the printer and the arm (frame or
+  light stand) to watch moves, confirm picks/placements, see trays and stations, track the tool by its tag and give the twin
+  ground truth; the printer's two Pi cameras are part of the set, extra cameras over USB or on the arm computer.
