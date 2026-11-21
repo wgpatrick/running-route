@@ -19,9 +19,12 @@ from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DESIGN = sys.argv[1] if len(sys.argv) > 1 else "printer_v8"
+DESIGN = sys.argv[1] if len(sys.argv) > 1 and not sys.argv[1].startswith("--") else "printer_v8"
 PKG = ROOT / "docs" / "build" / DESIGN
-OUT = ROOT / "review"
+# --viewer DIR (default viewer/) and --out DIR (default review/): build a second review page without touching the live one
+_opt = lambda k, dflt: ROOT / sys.argv[sys.argv.index(k) + 1] if k in sys.argv else ROOT / dflt
+OUT = _opt("--out", "review")
+VIEWER = _opt("--viewer", "viewer")
 
 MATERIAL = {
     "al6061": "Aluminium 6061-T6",
@@ -152,7 +155,7 @@ def into_text(j, tapped, into_tnut, hw, parts_by_name) -> str:
 
 
 def main() -> None:
-    v = json.loads((ROOT / "viewer" / "data.json").read_text())
+    v = json.loads((VIEWER / "data.json").read_text())
     if v["design"] != DESIGN:
         sys.exit(f"viewer/ holds {v['design']}, not {DESIGN}: re-export the viewer first")
     plan = json.loads((PKG / "data" / "assembly_plan.json").read_text())
@@ -514,7 +517,7 @@ def main() -> None:
     print_html = md_block(fab_top.get("Printing", ""))
     data = {
         "design": DESIGN,
-        "generated_from": {"viewer": "viewer/data.json", "package": f"docs/build/{DESIGN}", "design_md5": plan["design_md5"]},
+        "generated_from": {"viewer": f"{VIEWER.name}/data.json", "package": f"docs/build/{DESIGN}", "design_md5": plan["design_md5"]},
         "summary": {"parts": len(out_parts), "custom": sum(1 for p in out_parts if p["kind"] == "fabricated"),
                     "joints": len(joint_list), "mass_kg": v["mass"], "bom_cost": v["bom_cost"],
                     "assembly_min": plan["metrics"]["estimated_time_min"],
@@ -550,7 +553,7 @@ def main() -> None:
     (OUT / "data.json").write_text(json.dumps(data, separators=(",", ":"), default=list))
     # the page loads the viewer's base64 meshes as two halves (the artifact host caps a file at 16 MB): split at a multiple of 4
     # characters so each half stays whole base64 groups. Git-ignored copies.
-    mt = (ROOT / "viewer" / "meshes.txt").read_text().strip()
+    mt = (VIEWER / "meshes.txt").read_text().strip()
     cut = (len(mt) // 2) // 4 * 4
     (OUT / "meshes_a.txt").write_text(mt[:cut])
     (OUT / "meshes_b.txt").write_text(mt[cut:])

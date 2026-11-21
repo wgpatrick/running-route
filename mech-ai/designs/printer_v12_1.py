@@ -934,13 +934,18 @@ def carriage_angle_local(z_blk):
     return s
 
 
-def motor_plate_arcs(x0, y0, posts, z_mf):
+MP_ALIGN_HOLE = 10.5     # znut-direct: oversize post holes (M5 + large washer, 15 OD): the plate slides +/-2.75 to line its screw up
+                         # with the now-fixed nut at assembly, then is clamped
+
+
+def motor_plate_arcs(x0, y0, posts, z_mf, post_hole=None):
     """v12.1 (rear-z-inside). Z motor plate, from its spec, drawn with true arcs (v12's was a hull of 40-gon circles).
 
     Spec
     - Function: holds one lead-screw motor (StepperOnline 17E19S1684AB4-330RA) square under it, on two posts on a bottom rail.
     - Interfaces / mates: the motor's 22 mm pilot in a 22.3 mm hole; four M3 clearance holes on the motor's 31 mm square
-      (drawing A4003); two M5 clearance holes on the posts' axes.
+      (drawing A4003); two holes on the posts' axes: M5 clearance, or (`post_hole`, znut-direct) 10.5 mm under large washers so the
+      plate can be slid to line its screw up with the fixed nut at assembly.
     - Loads: the motor's weight, the bed's thrust share (the screw pulls the motor up when the bed is pushed down), the drive torque.
     - Process: 6.35 mm 6061-T6 laser cut (SendCutSend).
     - Envelope: the convex hull of 6.5 mm round each motor screw and 8 mm round each post.
@@ -955,7 +960,7 @@ def motor_plate_arcs(x0, y0, posts, z_mf):
         for oy in (-h, h):
             s -= zc(x0 + ox, y0 + oy, z_mf, z_t, clearance_hole("M3") / 2)
     for px, py in posts:
-        s -= zc(px, py, z_mf, z_t, clearance_hole("M5") / 2)
+        s -= zc(px, py, z_mf, z_t, (post_hole or clearance_hole("M5")) / 2)
     return s
 
 
@@ -1437,8 +1442,13 @@ def build_z_mount(d, tag, x0, y0, turn, posts, rail, on_tray):
     z_mf, z_base, lens = (Z_MF_F, Z_BASE_F, POSTS_F) if on_tray else (Z_MF_R, Z_BASE_R, POSTS_R)
     z_t = z_mf + T_MP
     names = [plate, mot, scr]
-    if tag == "" and CH("rear-z-inside"):
-        sheet(d, plate, motor_plate_arcs(x0, y0, posts, z_mf), AL, description=(
+    if CH("znut-direct") and not (tag == "" and CH("rear-z-inside")):
+        sheet(d, plate, motor_plate_arcs(x0, y0, posts, z_mf, MP_ALIGN_HOLE), AL, description=(
+            f"Z motor plate (v12.1 znut-direct): 6.35 mm 6061, outline true arcs; the motor hung under it by its pilot and four M3; two "
+            f"10.5 mm holes over the posts, under large washers, so the plate (and the motor's screw) can be slid +/-2.75 mm to line "
+            f"up with the fixed nut at assembly (bed at the bottom of its travel, post bolts loose, then tightened)."))
+    elif tag == "" and CH("rear-z-inside"):
+        sheet(d, plate, motor_plate_arcs(x0, y0, posts, z_mf, MP_ALIGN_HOLE), AL, description=(
             f"Rear Z motor plate (v12.1): 6.35 mm 6061, the motor hung under it by its pilot and four M3, on two turned posts on the "
             f"bottom back rail (like the front plates, posts on the rail's line, the motor 15.5 mm inboard of it); outline true arcs."))
     else:
@@ -1470,7 +1480,7 @@ def build_z_mount(d, tag, x0, y0, turn, posts, rail, on_tray):
         sps = [sp]
         b = P(f"bolt_{i}")
         add_screw(d, b, "M5", 65, at=(px, py, z_t), direction=(0, 0, -1), clamps=(plate, *reversed(sps)) + (("electronics_tray",) if on_tray else ()),
-                  threads_into=rail, tnut=True, washer=True, locking="adhesive")
+                  threads_into=rail, tnut=True, washer="large" if CH("znut-direct") else True, locking="adhesive")
         names += sps + [b, f"{b}_washer"]
     return names
 
@@ -2561,7 +2571,13 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
                          "rear rail to a square; left and right rails tightened while the carrier is run up and down; what is left "
                          "goes into the carriage plates' webs"), mover="by hand, the carrier running on the loose rail" if CH("carriage-plate-rigid") else "",
                    lock="M3 rail screws into T-nuts, tightened top to bottom" if CH("carriage-plate-rigid") else ""),
-    ] + ([] if CH("znut-direct") else [Adjustment("floating lead screw nut", "float", range_mm=NUT_FLOAT - 0.2, joint="z")]) + [
+    ] + ([Adjustment("Z motor plates lined up with their fixed nuts at assembly", "float", range_mm=(MP_ALIGN_HOLE - 5.0) / 2 - 0.25, joint="z",
+                     note="v12.1 znut-direct: the nut is bolted to the carrier, so each motor plate is slid on its posts (10.5 mm holes, "
+                          "large washers) until its screw runs free in the nut with the bed at the BOTTOM of its travel (nut nearest the "
+                          "motor, where the screw is stiffest), then the post bolts are tightened. Not a running float: what is left over "
+                          "the travel (screw-to-rail angle) is taken by the screw bending, free at its top end",
+                     mover="the motor plate slid by hand on its posts", lock="two M5 post bolts with large washers, thread-locked")]
+         if CH("znut-direct") else [Adjustment("floating lead screw nut", "float", range_mm=NUT_FLOAT - 0.2, joint="z")]) + [
         Adjustment("x belt: the X motor plate slides in its two slots on the beam's T-nuts, pulled outward by hand, then the two M5 are tightened",
                    "belt_tension", range_mm=BELT_ADJ, joint="x"),
         Adjustment("y belts: each motor plate slides on its T-nuts, pushed by an M5 tension screw positioned by two jam nuts on a cast corner bracket",

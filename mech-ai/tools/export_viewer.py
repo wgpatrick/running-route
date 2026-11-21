@@ -259,7 +259,8 @@ def _placeholder_extra(sku: str, e: dict) -> dict:
 def main():
     path = sys.argv[1]
     d = load_design(path)
-    out = Path("viewer")
+    # --out DIR: write the export somewhere other than viewer/ (e.g. viewer_v12_1/ while viewer/ is in use)
+    out = Path(sys.argv[sys.argv.index("--out") + 1]) if "--out" in sys.argv else Path("viewer")
     out.mkdir(exist_ok=True)
     rep = json.loads((Path("out") / d.name / "report.json").read_text())
     m = rep["metrics"]

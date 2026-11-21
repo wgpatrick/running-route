@@ -74,6 +74,11 @@ def with_deps(cid: str, deps: dict) -> list[str]:
 def run_verify(design: str, on: list[str], name: str, base_name: str) -> Path:
     out = ROOT / "out" / name
     seed = ROOT / "out" / base_name / "verify_cache"
+    # the newest cache of a sibling variant (same design file) is usually fresher than the base's (its code manifest matches)
+    sib = sorted((p_ for p_ in (ROOT / "out").glob(name.split("+")[0] + "+*/verify_cache") if (p_.parent / "report.json").exists()),
+                 key=lambda p_: (p_.parent / "report.json").stat().st_mtime)
+    if sib:
+        seed = sib[-1]
     if not (out / "verify_cache").exists() and seed.exists():
         out.mkdir(parents=True, exist_ok=True)
         shutil.copytree(seed, out / "verify_cache")
@@ -88,7 +93,14 @@ def run_verify(design: str, on: list[str], name: str, base_name: str) -> Path:
 
 def summarize(rep: dict, base: dict | None, n_parts: int, n_base: int) -> str:
     def counts(r):
-        return {k: (s.get("errors", 0), s.get("warnings", 0)) for k, s in r["summary"].items() if isinstance(s, dict)}
+        import re as _re
+        out = {}
+        for k, s in r["summary"].items():
+            if isinstance(s, dict):
+                out[k] = (s.get("errors", 0), s.get("warnings", 0))
+            elif isinstance(s, str) and (m_ := _re.search(r"(\d+) errors?, (\d+) warnings?", s)):
+                out[k] = (int(m_.group(1)), int(m_.group(2)))
+        return out
 
     def failed_reqs(r):
         return {f["message"].split(":")[0][:90] for f in r["findings"] if f["verifier"] == "requirements" and f["severity"] == "error"}
@@ -109,25 +121,28 @@ def summarize(rep: dict, base: dict | None, n_parts: int, n_base: int) -> str:
         if fixed:
             parts.append("requirements now passing: " + "; ".join(fixed))
     tot_e = sum(e for e, _ in c.values())
-    parts.insert(0, f"verify ({'OK' if rep.get('ok') else 'FAILS'}): {tot_e} errors, {sum(w for _, w in c.values())} warnings")
+    tot_b = sum(e for e, _ in counts(base).values()) if base else None
+    parts.insert(0, f"verify ({'OK' if rep.get('ok') else 'FAILS'}): {tot_e} errors, {sum(w for _, w in c.values())} warnings"
+                 + (f" (v12: {tot_b} errors, {sum(w for _, w in counts(base).values())} warnings)" if base else ""))
     return "; ".join(parts)
 
 
-def part_quality_text(d, parts: list[str], removed: list[str]) -> str:
-    """The opt-in part-quality checks (mechloop/verifiers/part_quality.py) on the change's custom parts."""
-    if not parts:
-        return "part_quality: no custom part changed"
+def part_quality_text(d, parts: list[str], changed: list[str], removed: list[str]) -> str:
+    """The opt-in part-quality checks (mechloop/verifiers/part_quality.py): the per-part checks on the change's custom parts,
+    and the design-wide audits (allowed overlaps, joins by note, purchased-part holes) wherever they name a changed part."""
     from mechloop.verifiers.part_quality import verify_part_quality
 
-    res = verify_part_quality(d, parts)
-    mine = [f for f in res.findings if f.severity != "info" and ((f.data or {}).get("part") in parts or any(p in f.message for p in parts))]
+    res = verify_part_quality(d, parts or ["__none__"], audits=True)
+    names = set(changed)
+    mine = [f for f in res.findings if f.severity != "info"
+            and ((f.data or {}).get("part") in names or any(n in f.message for n in names))]
+    head = f"part_quality ({len(parts)} changed custom part(s), audits on every changed part)"
     if not mine:
-        return f"part_quality on the {len(parts)} changed custom part(s): clean (no errors or warnings)"
+        return head + ": clean (no errors or warnings)"
     by = {}
     for f in mine:
         by.setdefault(f.severity, []).append(f"{(f.data or {}).get('part', '?')} {f.code}")
-    return (f"part_quality on the {len(parts)} changed custom part(s): " +
-            "; ".join(f"{len(v)} {k}(s): {', '.join(sorted(set(v)))}" for k, v in sorted(by.items())))
+    return head + ": " + "; ".join(f"{len(v)} {k}(s): {', '.join(sorted(set(v)))}" for k, v in sorted(by.items()))
 
 
 def part_record(c, electronics, findings) -> tuple[dict, bytes, bytes]:
@@ -222,7 +237,7 @@ def main():
     (out / f"{a.change}.json").write_text(json.dumps({"mesh": f"changes/{a.change}.txt", "parts": recs}, separators=(",", ":"), default=str))
 
     checks = summarize(rep, brep, len(var.components), len(base.components)) if rep else "not verified (run with --verify)"
-    pq = part_quality_text(var, [n for n in modified + added if not sv[n].cots], removed)
+    pq = part_quality_text(var, [n for n in modified + added if not sv[n].cots], modified + added, removed)
     if pq:
         checks += "; " + pq
     if a.checks:
