@@ -1081,9 +1081,9 @@ def shaft_misumi_sfal8(l_plain: int) -> Stock:
 
 @part
 def dowel_pin_3x8_placeholder() -> Stock:
-    """PLACEHOLDER (owner, 2026-11-21): a 3 x 8 mm hardened dowel pin, product pending (McMaster / MISUMI number with CAD). Local frame:
+    """PLACEHOLDER (owner, 2026-11-21): a 4 x 8 mm hardened dowel pin, product pending (McMaster / MISUMI number with CAD). Local frame:
     axis Z, bottom at Z=0."""
-    s = Pos(0, 0, 4.0) * Cylinder(1.5, 8.0)
-    return Stock(s, "DOWEL-PIN-3x8", "Dowel pin 3 x 8 mm, hardened (placeholder)", 0.0005, material="steel", cost_usd=0.3,
+    s = Pos(0, 0, 4.0) * Cylinder(2.0, 8.0)
+    return Stock(s, "DOWEL-PIN-4x8", "Dowel pin 4 x 8 mm, hardened (placeholder)", 0.0008, material="steel", cost_usd=0.3,
                  ratings={"approximate": True},
-                 model={"kind": "proxy", "state": "stand-in", "source": "placeholder pin 3 x 8 (product to be named)"})
+                 model={"kind": "proxy", "state": "stand-in", "source": "placeholder pin 4 x 8 (product to be named)"})
