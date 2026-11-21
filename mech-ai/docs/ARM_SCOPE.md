@@ -532,3 +532,14 @@ caution: design is cheap, build late). Arm hardware is ordered only once the pri
 | 8 | Order and build after the printer's first closed loops; stage A first | - | - |
 
 Steps 1-5 fit inside the printer's ordering and lead-time window (print service 4-11 days; long-lead parts longer).
+
+## Owner decisions (2026-11-21)
+
+- Design our own arm, run through the same loop (digital twin, verifiers, pre-registered validation).
+- Load-bearing 3D-printed parts are fine for the arm (DG-01 arm exception in docs/DESIGN_GUIDELINES.md, with FEA on
+  printed properties, a creep check and a measured test as the safeguard).
+- Floor space for the cell is not a constraint (the front-loading Cartesian stays a candidate).
+- Printer changes adopted: flex-sheet locating pins and grip tab so the sheet slides out to be flexed; purge at the front;
+  hardwired e-stop and safety relay (added to printer_v12 now).
+- Budget: no hard ceiling, but a few thousand dollars or less for Arm Build 1.
+- Kinematics stay open as design research (SCARA, front-loading Cartesian, compact 5-axis carried forward).

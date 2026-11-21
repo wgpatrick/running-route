@@ -50,6 +50,12 @@ until a check exists.
   covers. Nothing that carries a guide, bearing, lead-screw nut, motor, belt tension, the bed's weight or a
   screw clamp in a load path. Check: `practice` DG-01 (`printed_load_path`), an error unless waived with a
   written reason (`d.waive("DG-01", part, reason=...)`).
+  Robot arm (owner, 2026-11-21): load-bearing printed parts are allowed in the arm (links, housings, printed
+  reducers and end-effectors), because the printer making the arm's parts is the point of the loop. The arm's
+  designs waive DG-01 per part with the reason, and replace it with: FEA on the printed part using its declared
+  print settings (not solid plastic), a creep/long-term-load check for parts under constant gravity load, and a
+  measured test of the printed part before it is relied on. Bearing seats and the highest-loaded interfaces stay
+  metal or bought where the FEA margin is thin. The printer itself keeps the DG-01 rule.
 - Printed parts declare print settings (material, walls, top/bottom layers, infill and pattern,
   orientation); mass and strength follow from them, not from solid plastic.
 
