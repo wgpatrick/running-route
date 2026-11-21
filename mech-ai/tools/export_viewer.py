@@ -283,7 +283,11 @@ def main():
     for c in comps:
         model = c.meta.get("model") or {"kind": "proxy" if c.cots else "design", "source": ""}
         # display the detail model (vendor / community CAD) where there is one; verifiers used c.shape
-        tm = detail_mesh(c) if c.detail is not None else to_trimesh(c.shape, 0.12, 0.45)
+        try:
+            tm = detail_mesh(c) if c.detail is not None else to_trimesh(c.shape, 0.12, 0.45)
+        except AttributeError:          # a supplier STEP with faces OCC cannot triangulate (zero-area slivers): show the simulation solid
+            print(f"  {c.name}: detail model would not tessellate; simulation solid shown", file=sys.stderr)
+            tm = to_trimesh(c.shape, 0.12, 0.45)
         shown_as = None
         if kind_of(c) == "fastener" and len(tm.faces) > FASTENER_TRI_BUDGET:
             full = len(tm.faces)
