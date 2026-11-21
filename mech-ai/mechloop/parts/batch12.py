@@ -966,14 +966,17 @@ def foot_levelling_m5_placeholder() -> Stock:
 
 @part
 def spool_1kg_placeholder() -> Stock:
-    """PLACEHOLDER (owner, 2026-11-20; maker drawing via Instinct REQ-018): a full 1 kg filament spool, about 200 OD, 52 hub bore,
-    68 wide, 1.25 kg with filament. Drawn as the full spool's envelope (flanges and wound filament as one solid). Local frame: axis
-    along Z, centred."""
-    s = Cylinder(100.0, 68.0) - Cylinder(26.0, 68.0)
-    return Stock(s, "SPOOL-1KG-FILAMENT", "1 kg filament spool, full (placeholder until REQ-018's drawing)", 1.25, material="pla",
-                 cost_usd=20.0, ratings={"approximate": True, "mass_full_kg": 1.25},
-                 interfaces={"hub_bore": 52.0, "od": 200.0, "width": 68.0},
-                 model={"kind": "proxy", "state": "stand-in", "source": "placeholder envelope: ~200 OD x 52 bore x 68 wide (owner's figures)"})
+    """A full 1 kg filament spool as the envelope of Prusa Research's Prusament spool STEP (REQ-018: 199.89 OD x 64.13 wide, ribbed hub
+    bore 51.25; 1 solid, 25 MB, too heavy for the verifier as a display model): 199.89 x 64.13 with a 51.25 bore, 1.25 kg with filament
+    (owner's figure). Local frame: axis along Z, centred."""
+    s = Cylinder(199.89 / 2, 64.13) - Cylinder(51.25 / 2, 64.13)
+    return Stock(s, "SPOOL-1KG-FILAMENT", "1 kg filament spool, full (envelope of the Prusament spool STEP)", 1.25, material="pla",
+                 cost_usd=29.99, ratings={"mass_full_kg": 1.25},
+                 interfaces={"hub_bore": 51.25, "od": 199.89, "width": 64.13},
+                 model={"kind": "generated to standard", "remade_from": "vendor_cad/staging/instinct_REQ-018/Prusament_dummy_spool_1kg.step.zip",
+                        "no_auto_features": True, "source": "envelope of Prusa's spool STEP: 199.89 OD, 64.13 wide, 51.25 bore"},
+                 real_part={"maker": "Prusa Research", "mpn": "Prusament PLA 1 kg (any colour)", "sellers": [{"name": "Prusa Research (US warehouse)",
+                            "checked": "2026-11-20", "note": "filament: the owner's choice; price to confirm"}], "sold_by_maker": True})
 
 
 @part
@@ -986,13 +989,16 @@ def spacer_tube_m8_placeholder(length: float) -> Stock:
 
 
 @part
-def ptfe_coupler_placeholder() -> Stock:
-    """PLACEHOLDER: a push-fit coupler for 4 mm OD PTFE tube (M10 / M6 thread class), product pending REQ-018. Drawn as a 10 x 12 mm
-    hex-and-collet envelope. Local frame: axis Z, the tube enters at +Z, the threaded end at Z=0."""
-    s = Pos(0, 0, 6.0) * Cylinder(5.0, 12.0)
-    return Stock(s, "PTFE-COUPLER-4MM", "push-fit coupler for 4 mm PTFE (placeholder)", 0.003, material="brass", cost_usd=2.0,
-                 ratings={"approximate": True},
-                 model={"kind": "proxy", "state": "stand-in", "source": "placeholder envelope (REQ-018)"})
+def coupler_mcmaster_2333n214() -> Stock:
+    """McMaster-Carr 2333N214 push-to-connect fitting for 4 mm OD tube, M10 x 1 male thread (3.0 mm path), $11.98 (REQ-018). Display
+    model: McMaster's STEP. The SFS V2's port thread is ASSUMED M10 x 1 (the common PC4-M10 port; BTT's manual does not state it):
+    check on arrival. Local frame: axis Z, centred, 19 long, 13 across the hex."""
+    from build123d import RegularPolygon
+    s = extrude(RegularPolygon(13.0 / 2, 6, major_radius=False), 19.0).moved(Pos(0, 0, -9.5))
+    return Stock(s, "MCMASTER-2333N214", "McMaster 2333N214 push-to-connect fitting, 4 mm tube, M10 x 1", 0.01, material="brass", cost_usd=11.98,
+                 model={"inbox": ["MCMASTER-2333N214"], "no_auto_features": True, "tolerance": {"volume_ratio": (0.8, 3.0), "mass_ratio": (0.2, 5.0)}},
+                 real_part={"maker": "McMaster-Carr", "mpn": "2333N214", "sellers": [{"name": "McMaster-Carr", "part_number": "2333N214", "catalogue": True,
+                            "checked": "2026-11-20", "note": "$11.98 each"}], "sold_by_maker": True})
 
 
 NFJN_PAGE = "vendor_docs/Misumi_NFJN_leveling-mounts_2019US_p3166-3167.pdf"
@@ -1012,3 +1018,30 @@ def foot_misumi_nfjn5_30() -> Stock:
                  real_part={"maker": "MISUMI", "mpn": "NFJN5-30", "sellers": [{"name": "MISUMI USA", "part_number": "NFJN5-30", "catalogue": True,
                                                                              "checked": CHECKED, "note": "$4.32 each, ships Nov 24 (REQ-017)"}],
                             "datasheet": NFJN_PAGE, "ratings_source": {"allowable_vertical_load_n": "MISUMI p.3166 table: NFJN5-30 1.5 kN"}})
+
+
+D2F_DS = "vendor_docs/Omron_D2F_datasheet_digikey_0318.pdf"
+
+
+@part
+def switch_omron_d2f_01l() -> Stock:
+    """OMRON D2F-01L hinge-lever subminiature switch (gold-alloy contacts, 0.1 A 30 VDC, PCB terminals), re-made from OMRON's D2F data
+    sheet (p.4): body 12.7 x 6.5 x 5.8, hinge lever free position 10 max / operating position 6.8 +/-1.5 from the mounting-hole line,
+    overtravel 0.55 min, two 2.0 mm holes on 5.2. The same local frame and operating interfaces as `endstop_switch()` (whose 20 x 12.5
+    board is now a separate fabricated carrier in the design), without the board: the switch's body lies on Z=1.6 (the carrier's
+    top), lever towards +Y."""
+    from . import details, endstop_switch
+
+    base = endstop_switch()
+    e = details.ENDSTOP
+    bxr, byr, bzr = e["body_x"], e["body_y"], e["body_z"]
+    body = Pos(0, (byr[0] + byr[1]) / 2, (bzr[0] + bzr[1]) / 2) * Box(bxr[1] - bxr[0], byr[1] - byr[0], bzr[1] - bzr[0])
+    iface = {k: v for k, v in base.interfaces.items() if k != "mount_holes_m3"}
+    return Stock(body, "ENDSTOP-OMRON-D2F-01L", "OMRON D2F-01L hinge-lever switch (gold contacts)", 0.0008, material="abs", cost_usd=1.44,
+                 ratings=dict(base.ratings), interfaces=iface,
+                 model={"kind": "generated to standard", "remade_from": D2F_DS, "no_auto_features": True,
+                        "source": "re-made from OMRON's D2F data sheet p.4: body 12.7 x 6.5 x 5.8; lever and terminals not drawn (the lever's "
+                                  "positions are interfaces: free, operating +/- spread, case limit)"},
+                 real_part={"maker": "OMRON", "mpn": "D2F-01L", "sellers": [{"name": "Digi-Key", "part_number": "D2F-01L", "catalogue": True,
+                            "checked": "2026-11-20", "note": "$1.44; Digi-Key and Mouser stock confirmed by the coordinator's API lookups"}],
+                            "datasheet": D2F_DS, "ratings_source": {"operating_force_n": "OMRON D2F data sheet p.4: OF 0.78 N max (D2F-01L)"}})

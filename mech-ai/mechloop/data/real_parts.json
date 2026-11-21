@@ -1000,6 +1000,23 @@
     "max_temp_c": "McMaster-Carr 90576A102 (nylon-insert locknut, class 8 steel): nylon insert to 250 degF (121 degC); RP1228 / PRACTICE FST-072: about 120 degC; 120 used"
    },
    "note": "seller and part number from the McMaster table (mcmaster_part)"
+  },
+  "BRG-608": {
+   "maker": "NSK",
+   "mpn": "608ZZ",
+   "sellers": [
+    {
+     "name": "MISUMI USA",
+     "part_number": "608ZZ (NSK)",
+     "catalogue": true,
+     "checked": "2026-11-20",
+     "note": "$2.54, 560 in stock (REQ-018)"
+    }
+   ],
+   "ratings_source": {
+    "dynamic_load_n": "SKF 608 product data (vendor_cad/staging/practice_refs/08_SKF_608_product_data.pdf): 3.45 kN (NSK 608ZZ via MISUMI: 3.3 kN; the spool load is about 12 N)",
+    "static_load_n": "SKF 608 product data: 1.37 kN"
+   }
   }
  }
 }

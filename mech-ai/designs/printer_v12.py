@@ -140,7 +140,7 @@ from mechloop.parts.hardware import WASHER, spacer_round
 from mechloop.parts.probes import add_probe_nuts, probe_omron_e2e
 from mechloop.parts.toolhead import extruder_roto, hotend_revo
 from mechloop.shops import assign
-from mechloop.parts.batch12 import (tnut_hntp5, foot_misumi_nfjn5_30, spool_1kg_placeholder, spacer_tube_m8_placeholder, ptfe_coupler_placeholder, add_bracket_misumi, adxl345_btt, cam_arducam_b0454, cob_led, contactor_finder_2232, din_endstop_wago,
+from mechloop.parts.batch12 import (tnut_hntp5, switch_omron_d2f_01l, foot_misumi_nfjn5_30, spool_1kg_placeholder, spacer_tube_m8_placeholder, coupler_mcmaster_2333n214, add_bracket_misumi, adxl345_btt, cam_arducam_b0454, cob_led, contactor_finder_2232, din_endstop_wago,
                                     din_rail_wago, heater_hydra_sq1451144, hiwin_mgn12_rail, hiwin_mgn12h_block, laser_vlm520, lens_cil062,
                                     leadscrew_motor_a4003, leadscrew_nut_pom_a4003, leadscrew_screw_a4003, picam3, pi5_host, probe_eddy_duo,
                                     relay_phoenix_1119897, sfs_v2, spacer_harwin, thermostat_cs7,
@@ -314,7 +314,7 @@ XI_X = X_CAR_MAX + X_CLAMP_HW + 2.5 + 12.2  # v12: 30T idler flange             
 XD_Z = Z_BEAM + 41.0   # v10: 8 mm higher than v9: the motor and the idler now stand outboard of the beam's ends, over the Y plates,
                        # and must clear the Y plates and the heads of the Y blocks' screws
 LUG_Z0 = FZ + 10.0 + 4.0  # v8.2: the X idler mount's lug and the X tension anchor's fin start 4 mm above the flush top front rail
-X_PG = 2.75
+X_PG = 3.0               # v12: 3.0 (was 2.75) so the X idler's spacer is a stock 10 mm (pulley and idler move together: belt square)
 XB_Y = YB0 - 10.0 + X_PG + P_BC(BWX)
 X_SP = XB_Y - I_C - (YB0 - 10.0)
 Z_XL = XD_Z - PR
@@ -1753,12 +1753,15 @@ def build() -> Design:
     # striker tab on the front tool plate's right edge works its lever at the right end of the travel (X homes at maximum).
     # Screws from above through board, spacer and the land's slot; large washer and nut under the land, 1.3 mm above the Y rail
     W3 = WASHER["normal"]["M3"][2]                      # a normal washer (7 mm) under the 3.6 mm slot: a large one would foul the Y block
-    xsw = place(d, "x_endstop", endstop_switch(),
-                Location(Plane(origin=(X_ES_X0, X_ES_Y0, zp1 + ES_SP_XS), x_dir=(0, 1, 0), z_dir=(0, 0, 1))), body="ybody")
-    for i, (hx, hy, hz) in enumerate(xsw.meta["interfaces"]["mount_holes_m3"]):
+    loc_x = Location(Plane(origin=(X_ES_X0, X_ES_Y0, zp1 + ES_SP_XS), x_dir=(0, 1, 0), z_dir=(0, 0, 1)))
+    xsw = place(d, "x_endstop", switch_omron_d2f_01l(), loc_x, body="ybody")
+    sheet(d, "x_endstop_carrier", loc_x * endstop_carrier_local(), AL, body="ybody",
+          description="v12: carrier for the OMRON D2F-01L (6061 .063, SendCutSend): the switch bonded on, its terminals through the slot")
+    d.join("x_endstop", "x_endstop_carrier", "bonded (epoxy); leads soldered to the terminals below")
+    for i, (hx, hy) in enumerate(((loc_x * Pos(x_, y_, 0)).position.X, (loc_x * Pos(x_, y_, 0)).position.Y) for x_, y_ in ENDSTOP_HOLES):
         place(d, f"x_endstop_spacer_{i}", spacer_harwin(int(ES_SP_XS), "nylon"), Location((hx, hy, zp1)), body="ybody")
         add_screw(d, f"x_endstop_screw_{i}", "M3", 16, at=(hx, hy, zp1 + ES_SP_XS + 1.6), direction=(0, 0, -1), body="ybody",
-                  clamps=("x_endstop", f"x_endstop_spacer_{i}", "y_plate_right"), washer=True)
+                  clamps=("x_endstop_carrier", f"x_endstop_spacer_{i}", "y_plate_right"), washer=True)
         add_washer(d, f"x_endstop_nwasher_{i}", "M3", (hx, hy, zp0), (0, 0, -1), body="ybody", screw=f"x_endstop_screw_{i}")
         add_nut(d, f"x_endstop_nut_{i}", "M3", at=(hx, hy, zp0 - W3), direction=(0, 0, -1), body="ybody", screw=f"x_endstop_screw_{i}")
         d.join(f"x_endstop_nut_{i}", "y_plate_right", "clamped through its washer")
@@ -1864,8 +1867,12 @@ def build() -> Design:
     YE_X0, YE_Y0 = 152.5, y_strike + ES_TRIG          # board origin: its holes at x 145 and 160
     T_YE, SO_H = G32, 8.0
     ze0, ze1 = Z_RAIL, Z_RAIL + T_YE
-    ysw = place(d, "y_endstop", endstop_switch(), Location(Plane(origin=(YE_X0, YE_Y0, ze1 + SO_H), x_dir=(-1, 0, 0), z_dir=(0, 0, 1))))
-    ys_holes = ysw.meta["interfaces"]["mount_holes_m3"]
+    loc_y = Location(Plane(origin=(YE_X0, YE_Y0, ze1 + SO_H), x_dir=(-1, 0, 0), z_dir=(0, 0, 1)))
+    ysw = place(d, "y_endstop", switch_omron_d2f_01l(), loc_y)
+    sheet(d, "y_endstop_carrier", loc_y * endstop_carrier_local(), AL,
+          description="v12: carrier for the OMRON D2F-01L (6061 .063, SendCutSend): the switch bonded on, its terminals through the slot")
+    d.join("y_endstop", "y_endstop_carrier", "bonded (epoxy); leads soldered to the terminals below")
+    ys_holes = [((loc_y * Pos(x_, y_, 0)).position.X, (loc_y * Pos(x_, y_, 0)).position.Y, 0.0) for x_, y_ in ENDSTOP_HOLES]
     YEM = (140.0, 152.0)                                # the plate's two M5, in the top slot behind the Y rail's end (y 121.5)
     ym = bx(139.5, RAIL_X + 9.0, Y_RAIL_C + 295.0 / 2 + 1.0, 160.0, ze0, ze1)      # v12: 1 mm behind the 295 mm rail's end
     for y in YEM:
@@ -1880,13 +1887,29 @@ def build() -> Design:
         place(d, f"y_endstop_spacer_{i}", spacer_harwin(int(SO_H), "nylon"), Location((hx, hy, ze1)))
         on_slot = abs(hx - RAIL_X) < 0.5
         add_screw(d, f"y_endstop_screw_{i}", "M3", 18, at=(hx, hy, ze1 + SO_H + 1.6), direction=(0, 0, -1), washer=True,
-                  clamps=("y_endstop", f"y_endstop_spacer_{i}", "y_endstop_mount"),
+                  clamps=("y_endstop_carrier", f"y_endstop_spacer_{i}", "y_endstop_mount"),
                   **({"threads_into": "frame_top_right", "tnut": True} if on_slot else {}))
         if not on_slot:       # the inboard hole: washer and nut under the plate, in the open space inside the frame
             add_washer(d, f"y_endstop_nwasher_{i}", "M3", (hx, hy, ze0), (0, 0, -1), screw=f"y_endstop_screw_{i}")
             add_nut(d, f"y_endstop_nut_{i}", "M3", at=(hx, hy, ze0 - WASHER["normal"]["M3"][2]), direction=(0, 0, -1), screw=f"y_endstop_screw_{i}")
             d.join(f"y_endstop_nut_{i}", "y_endstop_mount", "clamped through its washer")
     return finish_build(d, zs, bed_own, mounts, mount_parts)
+
+
+ENDSTOP_HOLES = ((-7.5, -4.2), (7.5, -4.2))      # the carrier's two M3 holes (the old generated board's), switch frame
+
+
+def endstop_carrier_local():
+    """v12: the D2F-01L's carrier, 20 x 12.5 x 1.6 mm 6061 (SendCutSend .063) in the switch's frame (the old generated board's outline
+    and M3 holes): a 4.5 x 13 mm slot under the terminal row keeps the three soldered terminals clear of the aluminium (also taped)."""
+    from mechloop.parts import details
+    e = details.ENDSTOP
+    w, dpt, t = e["pcb"]
+    b = Pos(0, (e["pcb_y"][0] + e["pcb_y"][1]) / 2, t / 2) * Box(w, dpt, t)
+    for x_, y_ in ENDSTOP_HOLES:
+        b -= Pos(x_, y_, t / 2) * Cylinder(clearance_hole("M3") / 2, t)
+    b -= Pos(0, -0.8, t / 2) * Box(13.0, 4.5, t)
+    return b
 
 
 FOOT_SCREW_IN = 5.0     # v12: the NFJN5-30's screw reaches 5 mm into the bottom rail (into a drop-in T-nut; 0.5 mm off the slot floor)
@@ -1907,14 +1930,14 @@ def add_feet(d):
             nm = f"foot_{n}_{'f' if sy < 0 else 'b'}"
             place(d, nm, foot, Location((sx * RAIL_X, y, FOOT_SCREW_IN - 40.5)))
             slot = d.get(f"frame_bot_{n}").meta["interfaces"]["slot"]
-            tn = place(d, f"{nm}_tnut", tnut_2020("M5"), Location(Plane(origin=(sx * RAIL_X, y, slot["lip"]), x_dir=(0, 1, 0), z_dir=(0, 0, -1))))
+            tn = place(d, f"{nm}_tnut", tnut_hntp5(), Location(Plane(origin=(sx * RAIL_X, y, slot["lip"]), x_dir=(0, 1, 0), z_dir=(0, 0, -1))))   # owner: MISUMI HNTP5-5
             add_nut(d, f"{nm}_nut", "M5", at=(sx * RAIL_X, y, 0.0), direction=(0, 0, -1), standard="din934")
             for o_ in (f"frame_bot_{n}", tn.name, f"{nm}_nut"):
                 d.allow_overlap(nm, o_)
             d.allow_overlap(tn.name, f"frame_bot_{n}")
-            d.join(nm, tn.name, "the mount's M5 screw in the T-nut")
+            d.join(nm, tn.name, "the levelling mount's own threaded stud turned into the spring nut")
             d.join(f"{nm}_nut", f"frame_bot_{n}", "jam nut against the rail's underside")
-            d.join(tn.name, f"frame_bot_{n}", "drop-in T-nut in the bottom slot")
+            d.join(tn.name, f"frame_bot_{n}", "spring nut held in the bottom slot under its lips")
 
 
 def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
@@ -2849,7 +2872,7 @@ def add_filament_supply(d):
     """v12 stage 3 (owner, 2026-11-20): a 1 kg spool behind the frame on a cantilevered M8 axle with two 608 bearings (the spool's hub
     rests on the bearings' outer races and rolls; it lifts off the free end: no tools), the axle in a flat 6061 plate on the top
     back rail's rear face; filament from the spool's top to the SFS V2's inlet (+X end), then a 4 mm PTFE tube from the SFS's outlet
-    to the Roto's inlet with push-fit couplers at both ends. Spool, M8 parts, sleeves and couplers are PLACEHOLDERS (REQ-018)."""
+    to the Roto's inlet with push-fit couplers at both ends. Spool, M8 parts, sleeves and couplers are PLACEHOLDERS where REQ-018 has not named them (M8 axle parts, sleeves, PTFE tube)."""
     xa, za = SPOOL_AX
     yb = FY / 2
     pl = bx(xa - 20.0, xa + 20.0, yb, yb + G32, za - 12.0, FZ + 10.0)
@@ -2858,10 +2881,10 @@ def add_filament_supply(d):
     pl -= Pos(xa, yb + G32 / 2, za) * ycyl(clearance_hole("M8") / 2, G32)
     sheet(d, "spool_plate", pl, AL, description="v12: spool holder plate (6061 .125, SendCutSend) on the top back rail's rear face")
     for i, xh in enumerate((xa - 13.0, xa + 13.0)):
-        add_screw(d, f"spool_plate_screw_{i}", "M5", 8, at=(xh, yb + G32, FZ), direction=(0, -1, 0), threads_into="frame_top_back", tnut=True,
-                  washer=True, clamps=("spool_plate",))
-    y_b1, y_b2 = SPOOL_Y0 + 9.0, SPOOL_Y0 + 59.0             # bearing centres inside the 68 mm hub
-    y_end = SPOOL_Y0 + 68.0 + 4.0
+        add_screw(d, f"spool_plate_screw_{i}", "M5", 8, at=(xh, yb + G32, FZ), direction=(0, -1, 0), threads_into="frame_top_back", tnut=True, tnut_stock=tnut_hntp5(),
+                  clamps=("spool_plate",))
+    y_b1, y_b2 = SPOOL_Y0 + 9.0, SPOOL_Y0 + 55.0             # bearing centres inside the 64 mm hub (Prusament)
+    y_end = SPOOL_Y0 + 64.13 + 4.0
     ax_len = 140.0
     # axle: M8 x 140 socket head at the free end (inside the 52 mm hub bore the spool slides over it), nut and washer on the plate's
     # inner face; sleeves hold the bearings
@@ -2879,19 +2902,18 @@ def add_filament_supply(d):
         d.join(f"spool_sleeve_{i}", "spool_axle", "sleeve on the axle")
         d.allow_overlap(f"spool_sleeve_{i}", "spool_axle")
     # the spool hangs on the bearings: hub bore 52 on the 22 mm outer races, centre 15 mm below the axle
-    place(d, "spool", spool_1kg_placeholder(), Location(Plane(origin=(xa, SPOOL_Y0 + 34.0, za - 15.0), z_dir=(0, 1, 0))))
+    place(d, "spool", spool_1kg_placeholder(), Location(Plane(origin=(xa, SPOOL_Y0 + 64.13 / 2, za - (51.25 - 22.0) / 2), z_dir=(0, 1, 0))))
     d.join("spool", "spool_bearing_0", "the hub rests on the outer races (rolls; lifts off the free end)")
-    # couplers: one in the SFS's outlet (its top), one in the Roto's inlet
+    # one McMaster 2333N214 (M10 x 1, port thread ASSUMED) in the SFS's outlet at its top
     sfs = d.get("filament_sensor").shape.bounding_box()
     out_pt = ((sfs.min.X + sfs.max.X) / 2, (sfs.min.Y + sfs.max.Y) / 2, sfs.max.Z)          # the outlet at the top
-    place(d, "ptfe_coupler_sfs", ptfe_coupler_placeholder(), Location(Plane(origin=(out_pt[0], out_pt[1], out_pt[2] - 3.0), z_dir=(0, 0, 1))))
+    place(d, "ptfe_coupler_sfs", coupler_mcmaster_2333n214(), Location(Plane(origin=(out_pt[0], out_pt[1], out_pt[2] + 9.5 - 4.0), z_dir=(0, 0, 1))))
     d.allow_overlap("ptfe_coupler_sfs", "filament_sensor")
     d.join("ptfe_coupler_sfs", "filament_sensor", "threaded into the sensor's outlet")
     ent = d.get("extruder").meta["interfaces"]["filament_entry"][0]       # the body's top at the filament (the lever box stands beside it)
-    place(d, "ptfe_coupler_roto", ptfe_coupler_placeholder(), Location(Plane(origin=(ent[0], ent[1], ent[2]), z_dir=(0, 0, 1))), body="xbody")
-    d.join("ptfe_coupler_roto", "extruder", "in the Roto's filament inlet")
-    d.printer["ptfe_path"] = {"start": (out_pt[0], out_pt[1], out_pt[2] + 9.0), "start_dir": (0.0, 0.0, 1.0),
-                              "end": (ent[0], ent[1], ent[2] + 9.0), "end_dir": (0.0, 0.0, 1.0)}
+    # the Roto's own bowdaptor collet takes the 4 mm tube directly (E3D reference CAD, REQ-018): no coupler at the extruder end
+    d.printer["ptfe_path"] = {"start": (out_pt[0], out_pt[1], out_pt[2] + 15.0), "start_dir": (0.0, 0.0, 1.0),
+                              "end": (ent[0], ent[1], ent[2] + 2.0), "end_dir": (0.0, 0.0, 1.0)}
     d.bom_extra("PTFE-TUBE-4x2-M (4 mm OD x 2 mm ID PTFE, by the metre; placeholder until REQ-018)", 1, 3.0, stage=3)
 
 
