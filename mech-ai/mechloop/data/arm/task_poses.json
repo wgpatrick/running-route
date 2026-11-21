@@ -1,0 +1,1993 @@
+{
+ "meta": {
+  "frame": "cell: x right, y into the printer, z up; origin on the bench under the frame's front-face centre; mm",
+  "z_ref": "'bed': z relative to the bed transfer height z_T (optimised per candidate); 'bench': absolute; 'station:<name>': x, y, z relative to that station's top centre (layouts in mechloop/arm/cell.py)",
+  "layouts": {
+   "ring": {
+    "inspection": [
+     -270.0,
+     -580.0
+    ],
+    "tool_rack": [
+     -133.0,
+     -773.0
+    ],
+    "parts_tray": [
+     333.0,
+     -773.0
+    ],
+    "screw_station": [
+     430.0,
+     -540.0
+    ],
+    "release_tray": [
+     360.0,
+     -330.0
+    ]
+   },
+   "row": {
+    "inspection": [
+     -430.0,
+     -360.0
+    ],
+    "tool_rack": [
+     -720.0,
+     -360.0
+    ],
+    "release_tray": [
+     380.0,
+     -350.0
+    ],
+    "screw_station": [
+     620.0,
+     -380.0
+    ],
+    "parts_tray": [
+     860.0,
+     -360.0
+    ]
+   }
+  },
+  "station_size_xyz_top": {
+   "inspection": [
+    260.0,
+    200.0,
+    80.0
+   ],
+   "tool_rack": [
+    280.0,
+    80.0,
+    150.0
+   ],
+   "parts_tray": [
+    200.0,
+    140.0,
+    40.0
+   ],
+   "screw_station": [
+    160.0,
+    160.0,
+    100.0
+   ],
+   "release_tray": [
+    200.0,
+    100.0,
+    60.0
+   ]
+  },
+  "force": "force ON THE TOOL from the environment, N; moment N\u00b7mm; payload includes the tool, kg",
+  "classes": {
+   "assembly": "3 sigma <= 0.2 mm lateral (provisional, test 4)",
+   "sheet": "3 sigma <= 1 mm 3D"
+  },
+  "tools": {
+   "hook_pin": {
+    "length_mm": 70.0,
+    "radius_mm": 14.0,
+    "mass_kg": 0.15,
+    "note": "est."
+   },
+   "gripper": {
+    "length_mm": 110.0,
+    "radius_mm": 30.0,
+    "mass_kg": 0.25,
+    "note": "est."
+   },
+   "screwdriver": {
+    "length_mm": 130.0,
+    "radius_mm": 25.0,
+    "mass_kg": 0.3,
+    "note": "est."
+   }
+  },
+  "generated_by": "python -m mechloop.arm.spike (mechloop/arm/poses.py)"
+ },
+ "poses": [
+  {
+   "id": "A1_tab_approach",
+   "stage": "A",
+   "task": "approach the grip tab from above",
+   "kind": "pose",
+   "points": [
+    [
+     -15.5,
+     57.0,
+     25.0
+    ]
+   ],
+   "z_ref": "bed",
+   "tool": "hook_pin",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [
+    90.0,
+    30.0
+   ],
+   "payload_kg": 0.2,
+   "force_n": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "sheet",
+   "approach": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 85.0,
+     "shelf_off": 0.0
+    }
+   ],
+   "contact": [
+    "bed",
+    "shelf",
+    "shelf_guides"
+   ],
+   "required": true,
+   "note": ""
+  },
+  {
+   "id": "A2_tab_engage",
+   "stage": "A",
+   "task": "pin into the tab hole",
+   "kind": "pose",
+   "points": [
+    [
+     -15.5,
+     57.0,
+     0.0
+    ]
+   ],
+   "z_ref": "bed",
+   "tool": "hook_pin",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [
+    90.0,
+    30.0
+   ],
+   "payload_kg": 0.2,
+   "force_n": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "sheet",
+   "approach": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 85.0,
+     "shelf_off": 0.0
+    }
+   ],
+   "contact": [
+    "bed",
+    "shelf",
+    "shelf_guides"
+   ],
+   "required": true,
+   "note": ""
+  },
+  {
+   "id": "A3_peel",
+   "stage": "A",
+   "task": "peel the front edge 8 mm off the magnet",
+   "kind": "path",
+   "points": [
+    [
+     -15.5,
+     57.0,
+     0.0
+    ],
+    [
+     -15.5,
+     57.0,
+     2.0
+    ],
+    [
+     -15.5,
+     57.0,
+     4.0
+    ],
+    [
+     -15.5,
+     57.0,
+     6.0
+    ],
+    [
+     -15.5,
+     57.0,
+     8.0
+    ]
+   ],
+   "z_ref": "bed",
+   "tool": "hook_pin",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [
+    90.0,
+    30.0
+   ],
+   "payload_kg": 1.0,
+   "force_n": [
+    0.0,
+    0.0,
+    -15.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "sheet",
+   "approach": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 85.0,
+     "shelf_off": 0.0
+    }
+   ],
+   "contact": [
+    "bed",
+    "shelf",
+    "shelf_guides"
+   ],
+   "required": true,
+   "note": "peel force 5-15 N est. (01 section 3); test 5 measures it"
+  },
+  {
+   "id": "A4_pull_240",
+   "stage": "A",
+   "task": "straight pull 240 mm (decisive-test minimum)",
+   "kind": "path",
+   "points": [
+    [
+     -15.5,
+     57.0,
+     8.0
+    ],
+    [
+     -15.5,
+     47.0,
+     8.0
+    ],
+    [
+     -15.5,
+     37.0,
+     8.0
+    ],
+    [
+     -15.5,
+     27.0,
+     8.0
+    ],
+    [
+     -15.5,
+     17.0,
+     8.0
+    ],
+    [
+     -15.5,
+     7.000000000000007,
+     8.0
+    ],
+    [
+     -15.5,
+     -3.0,
+     8.0
+    ],
+    [
+     -15.5,
+     -12.999999999999986,
+     8.0
+    ],
+    [
+     -15.5,
+     -23.0,
+     8.0
+    ],
+    [
+     -15.5,
+     -33.0,
+     8.0
+    ],
+    [
+     -15.5,
+     -42.999999999999986,
+     8.0
+    ],
+    [
+     -15.5,
+     -53.0,
+     8.0
+    ],
+    [
+     -15.5,
+     -63.0,
+     8.0
+    ],
+    [
+     -15.5,
+     -73.0,
+     8.0
+    ],
+    [
+     -15.5,
+     -82.99999999999997,
+     8.0
+    ],
+    [
+     -15.5,
+     -93.0,
+     8.0
+    ],
+    [
+     -15.5,
+     -103.0,
+     8.0
+    ],
+    [
+     -15.5,
+     -112.99999999999997,
+     8.0
+    ],
+    [
+     -15.5,
+     -123.0,
+     8.0
+    ],
+    [
+     -15.5,
+     -133.0,
+     8.0
+    ],
+    [
+     -15.5,
+     -142.99999999999997,
+     8.0
+    ],
+    [
+     -15.5,
+     -153.0,
+     8.0
+    ],
+    [
+     -15.5,
+     -163.0,
+     8.0
+    ],
+    [
+     -15.5,
+     -172.99999999999997,
+     8.0
+    ],
+    [
+     -15.5,
+     -183.0,
+     8.0
+    ]
+   ],
+   "z_ref": "bed",
+   "tool": "hook_pin",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [
+    90.0,
+    30.0
+   ],
+   "payload_kg": 1.0,
+   "force_n": [
+    0.0,
+    20.0,
+    0.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "sheet",
+   "approach": [
+    0.0,
+    -1.0,
+    0.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 85.0,
+     "shelf_off": 0.0
+    }
+   ],
+   "contact": [
+    "bed",
+    "shelf",
+    "shelf_guides"
+   ],
+   "required": true,
+   "note": "pull 5-20 N est. (01)"
+  },
+  {
+   "id": "A5_pull_full",
+   "stage": "A",
+   "task": "continue to 310 mm: sheet fully on the shelf",
+   "kind": "path",
+   "points": [
+    [
+     -15.5,
+     -183.0,
+     8.0
+    ],
+    [
+     -15.5,
+     -193.0,
+     8.0
+    ],
+    [
+     -15.5,
+     -203.0,
+     8.0
+    ],
+    [
+     -15.5,
+     -213.0,
+     8.0
+    ],
+    [
+     -15.5,
+     -223.0,
+     8.0
+    ],
+    [
+     -15.5,
+     -233.0,
+     8.0
+    ],
+    [
+     -15.5,
+     -243.0,
+     8.0
+    ],
+    [
+     -15.5,
+     -253.0,
+     8.0
+    ]
+   ],
+   "z_ref": "bed",
+   "tool": "hook_pin",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [
+    90.0,
+    30.0
+   ],
+   "payload_kg": 1.0,
+   "force_n": [
+    0.0,
+    20.0,
+    0.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "sheet",
+   "approach": [
+    0.0,
+    -1.0,
+    0.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 85.0,
+     "shelf_off": 0.0
+    }
+   ],
+   "contact": [
+    "bed",
+    "shelf",
+    "shelf_guides"
+   ],
+   "required": true,
+   "note": ""
+  },
+  {
+   "id": "A6_flex",
+   "stage": "A",
+   "task": "lift the tab end 35 mm against the shelf's clamp to flex the sheet",
+   "kind": "path",
+   "points": [
+    [
+     -15.5,
+     -253.0,
+     8.0
+    ],
+    [
+     -15.5,
+     -253.0,
+     11.0
+    ],
+    [
+     -15.5,
+     -253.0,
+     14.0
+    ],
+    [
+     -15.5,
+     -253.0,
+     17.0
+    ],
+    [
+     -15.5,
+     -253.0,
+     20.0
+    ],
+    [
+     -15.5,
+     -253.0,
+     23.0
+    ],
+    [
+     -15.5,
+     -253.0,
+     26.0
+    ],
+    [
+     -15.5,
+     -253.0,
+     28.999999999999996
+    ],
+    [
+     -15.5,
+     -253.0,
+     32.0
+    ],
+    [
+     -15.5,
+     -253.0,
+     35.0
+    ]
+   ],
+   "z_ref": "bed",
+   "tool": "hook_pin",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [
+    90.0,
+    30.0
+   ],
+   "payload_kg": 1.0,
+   "force_n": [
+    0.0,
+    0.0,
+    -15.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "sheet",
+   "approach": [
+    0.0,
+    0.0,
+    1.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 85.0,
+     "shelf_off": 0.0
+    }
+   ],
+   "contact": [
+    "bed",
+    "shelf",
+    "shelf_guides"
+   ],
+   "required": true,
+   "note": "flex force est.; shelf fixture does the bending"
+  },
+  {
+   "id": "A7_reseat_push",
+   "stage": "A",
+   "task": "push the sheet back onto the bed",
+   "kind": "path",
+   "points": [
+    [
+     -15.5,
+     -253.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -243.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -233.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -223.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -213.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -203.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -193.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -183.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -173.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -163.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -153.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -143.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -133.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -123.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -113.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -103.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -93.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -83.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -73.00000000000003,
+     6.0
+    ],
+    [
+     -15.5,
+     -63.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -53.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -43.00000000000003,
+     6.0
+    ],
+    [
+     -15.5,
+     -33.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -23.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -13.0,
+     6.0
+    ],
+    [
+     -15.5,
+     -3.0000000000000284,
+     6.0
+    ],
+    [
+     -15.5,
+     7.0,
+     6.0
+    ],
+    [
+     -15.5,
+     17.0,
+     6.0
+    ],
+    [
+     -15.5,
+     27.0,
+     6.0
+    ],
+    [
+     -15.5,
+     37.0,
+     6.0
+    ],
+    [
+     -15.5,
+     47.0,
+     6.0
+    ],
+    [
+     -15.5,
+     57.0,
+     6.0
+    ]
+   ],
+   "z_ref": "bed",
+   "tool": "hook_pin",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [
+    90.0,
+    30.0
+   ],
+   "payload_kg": 0.4,
+   "force_n": [
+    0.0,
+    -15.0,
+    0.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "sheet",
+   "approach": [
+    0.0,
+    1.0,
+    0.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 85.0,
+     "shelf_off": 0.0
+    }
+   ],
+   "contact": [
+    "bed",
+    "shelf",
+    "shelf_guides"
+   ],
+   "required": true,
+   "note": ""
+  },
+  {
+   "id": "A8_reseat_nudge",
+   "stage": "A",
+   "task": "nudge against the rear and left pins",
+   "kind": "pose",
+   "points": [
+    [
+     -18.5,
+     60.0,
+     4.0
+    ]
+   ],
+   "z_ref": "bed",
+   "tool": "hook_pin",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [
+    90.0,
+    30.0
+   ],
+   "payload_kg": 0.4,
+   "force_n": [
+    7.1,
+    -7.1,
+    0.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "sheet",
+   "approach": [
+    -0.7071,
+    0.7071,
+    0.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 85.0,
+     "shelf_off": 0.0
+    }
+   ],
+   "contact": [
+    "bed",
+    "shelf",
+    "shelf_guides"
+   ],
+   "required": true,
+   "note": "final location by the bed pins (+/-0.3 mm target is the pins', not the arm's)"
+  },
+  {
+   "id": "A0_door_open",
+   "stage": "A",
+   "task": "open the V13 door: pin in the free-edge loop, arc 0-85 deg",
+   "kind": "path",
+   "points": [
+    [
+     244.0,
+     -10.0,
+     200.0
+    ],
+    [
+     242.33327776418457,
+     -48.17421532347428,
+     200.0
+    ],
+    [
+     237.34579581934713,
+     -86.05790181811548,
+     200.0
+    ],
+    [
+     229.07551191461192,
+     -123.36274175490408,
+     200.0
+    ],
+    [
+     217.5853679042279,
+     -159.8048227766429,
+     200.0
+    ],
+    [
+     202.96281072205267,
+     -195.10679864242636,
+     200.0
+    ],
+    [
+     185.31912685758414,
+     -228.99999999999997,
+     200.0
+    ],
+    [
+     164.78859539857842,
+     -261.2264791217582,
+     200.0
+    ],
+    [
+     141.52746608611238,
+     -291.5409730427042,
+     200.0
+    ],
+    [
+     115.71277015970782,
+     -319.7127701597078,
+     200.0
+    ],
+    [
+     87.54097304270425,
+     -345.5274660861124,
+     200.0
+    ],
+    [
+     57.22647912175822,
+     -368.7885953985784,
+     200.0
+    ],
+    [
+     25.000000000000057,
+     -389.3191268575841,
+     200.0
+    ],
+    [
+     -8.893201357573645,
+     -406.96281072205267,
+     200.0
+    ],
+    [
+     -44.195177223357064,
+     -421.58536790422784,
+     200.0
+    ],
+    [
+     -80.63725824509592,
+     -433.0755119146119,
+     200.0
+    ],
+    [
+     -117.94209818188448,
+     -441.34579581934713,
+     200.0
+    ],
+    [
+     -155.82578467652573,
+     -446.3332777641846,
+     200.0
+    ]
+   ],
+   "z_ref": "bench",
+   "tool": "hook_pin",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [],
+   "payload_kg": 0.2,
+   "force_n": [
+    0.0,
+    20.0,
+    0.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "sheet",
+   "approach": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 0.0,
+     "shelf_off": 440.0
+    },
+    {
+     "door_deg": 5.0,
+     "shelf_off": 440.0
+    },
+    {
+     "door_deg": 10.0,
+     "shelf_off": 440.0
+    },
+    {
+     "door_deg": 15.0,
+     "shelf_off": 440.0
+    },
+    {
+     "door_deg": 20.0,
+     "shelf_off": 440.0
+    },
+    {
+     "door_deg": 25.0,
+     "shelf_off": 440.0
+    },
+    {
+     "door_deg": 30.0,
+     "shelf_off": 440.0
+    },
+    {
+     "door_deg": 35.0,
+     "shelf_off": 440.0
+    },
+    {
+     "door_deg": 40.0,
+     "shelf_off": 440.0
+    },
+    {
+     "door_deg": 45.0,
+     "shelf_off": 440.0
+    },
+    {
+     "door_deg": 50.0,
+     "shelf_off": 440.0
+    },
+    {
+     "door_deg": 55.0,
+     "shelf_off": 440.0
+    },
+    {
+     "door_deg": 60.0,
+     "shelf_off": 440.0
+    },
+    {
+     "door_deg": 65.0,
+     "shelf_off": 440.0
+    },
+    {
+     "door_deg": 70.0,
+     "shelf_off": 440.0
+    },
+    {
+     "door_deg": 75.0,
+     "shelf_off": 440.0
+    },
+    {
+     "door_deg": 80.0,
+     "shelf_off": 440.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 440.0
+    }
+   ],
+   "contact": [
+    "door"
+   ],
+   "required": true,
+   "note": "20 N latch break-away est. (magnetic catch); 5 N swinging; close = same path reversed",
+   "forces_n": [
+    [
+     0.0,
+     20.0,
+     0.0
+    ],
+    [
+     0.4357787137382908,
+     4.9809734904587275,
+     0.0
+    ],
+    [
+     0.8682408883346516,
+     4.92403876506104,
+     0.0
+    ],
+    [
+     1.2940952255126037,
+     4.8296291314453415,
+     0.0
+    ],
+    [
+     1.7101007166283435,
+     4.698463103929543,
+     0.0
+    ],
+    [
+     2.1130913087034973,
+     4.531538935183249,
+     0.0
+    ],
+    [
+     2.4999999999999996,
+     4.330127018922194,
+     0.0
+    ],
+    [
+     2.8678821817552302,
+     4.095760221444959,
+     0.0
+    ],
+    [
+     3.2139380484326963,
+     3.83022221559489,
+     0.0
+    ],
+    [
+     3.5355339059327373,
+     3.5355339059327378,
+     0.0
+    ],
+    [
+     3.83022221559489,
+     3.2139380484326967,
+     0.0
+    ],
+    [
+     4.095760221444959,
+     2.8678821817552307,
+     0.0
+    ],
+    [
+     4.330127018922193,
+     2.5000000000000004,
+     0.0
+    ],
+    [
+     4.531538935183249,
+     2.1130913087034973,
+     0.0
+    ],
+    [
+     4.698463103929542,
+     1.7101007166283442,
+     0.0
+    ],
+    [
+     4.8296291314453415,
+     1.2940952255126037,
+     0.0
+    ],
+    [
+     4.92403876506104,
+     0.8682408883346521,
+     0.0
+    ],
+    [
+     4.9809734904587275,
+     0.4357787137382907,
+     0.0
+    ]
+   ]
+  },
+  {
+   "id": "A0_shelf_deploy",
+   "stage": "A",
+   "task": "pull the stowable shelf 440 mm into place (stow = reverse)",
+   "kind": "path",
+   "points": [
+    [
+     360.0,
+     -265.0,
+     0.0
+    ],
+    [
+     338.0,
+     -265.0,
+     0.0
+    ],
+    [
+     316.0,
+     -265.0,
+     0.0
+    ],
+    [
+     294.0,
+     -265.0,
+     0.0
+    ],
+    [
+     272.0,
+     -265.0,
+     0.0
+    ],
+    [
+     250.0,
+     -265.0,
+     0.0
+    ],
+    [
+     228.0,
+     -265.0,
+     0.0
+    ],
+    [
+     206.0,
+     -265.0,
+     0.0
+    ],
+    [
+     184.0,
+     -265.0,
+     0.0
+    ],
+    [
+     162.0,
+     -265.0,
+     0.0
+    ],
+    [
+     140.0,
+     -265.0,
+     0.0
+    ],
+    [
+     118.0,
+     -265.0,
+     0.0
+    ],
+    [
+     96.0,
+     -265.0,
+     0.0
+    ],
+    [
+     74.0,
+     -265.0,
+     0.0
+    ],
+    [
+     52.0,
+     -265.0,
+     0.0
+    ],
+    [
+     30.0,
+     -265.0,
+     0.0
+    ],
+    [
+     8.0,
+     -265.0,
+     0.0
+    ],
+    [
+     -14.0,
+     -265.0,
+     0.0
+    ],
+    [
+     -36.0,
+     -265.0,
+     0.0
+    ],
+    [
+     -58.0,
+     -265.0,
+     0.0
+    ],
+    [
+     -80.0,
+     -265.0,
+     0.0
+    ]
+   ],
+   "z_ref": "bed",
+   "tool": "hook_pin",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [],
+   "payload_kg": 0.2,
+   "force_n": [
+    10.0,
+    0.0,
+    0.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "sheet",
+   "approach": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 85.0,
+     "shelf_off": 440.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 418.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 396.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 374.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 352.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 330.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 308.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 286.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 264.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 242.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 220.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 198.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 176.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 154.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 132.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 110.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 88.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 66.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 44.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 22.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 0.0
+    }
+   ],
+   "contact": [
+    "shelf",
+    "shelf_guides"
+   ],
+   "required": true,
+   "note": "shelf loop at the shelf top height; drawer friction 10 N est."
+  },
+  {
+   "id": "B1_pick_on_shelf",
+   "stage": "B",
+   "task": "pick a released part off the sheet on the shelf",
+   "kind": "pose",
+   "points": [
+    [
+     -15.5,
+     -125.0,
+     12.0
+    ]
+   ],
+   "z_ref": "bed",
+   "tool": "gripper",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [],
+   "payload_kg": 0.5,
+   "force_n": [
+    0.0,
+    0.0,
+    5.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "sheet",
+   "approach": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 85.0,
+     "shelf_off": 0.0
+    }
+   ],
+   "contact": [
+    "bed",
+    "shelf",
+    "shelf_guides"
+   ],
+   "required": true,
+   "note": ""
+  },
+  {
+   "id": "B2_release_tray_0",
+   "stage": "B",
+   "task": "pick from the release tray (camera-located, loose)",
+   "kind": "pose",
+   "points": [
+    [
+     -70.0,
+     -30.0,
+     -25.0
+    ]
+   ],
+   "z_ref": "station:release_tray",
+   "tool": "gripper",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [],
+   "payload_kg": 0.5,
+   "force_n": [
+    0.0,
+    0.0,
+    5.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "sheet",
+   "approach": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 0.0,
+     "shelf_off": 440.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 440.0
+    }
+   ],
+   "contact": [
+    "release_tray"
+   ],
+   "required": true,
+   "note": ""
+  },
+  {
+   "id": "B2_release_tray_1",
+   "stage": "B",
+   "task": "pick from the release tray (camera-located, loose)",
+   "kind": "pose",
+   "points": [
+    [
+     70.0,
+     20.0,
+     -25.0
+    ]
+   ],
+   "z_ref": "station:release_tray",
+   "tool": "gripper",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [],
+   "payload_kg": 0.5,
+   "force_n": [
+    0.0,
+    0.0,
+    5.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "sheet",
+   "approach": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 0.0,
+     "shelf_off": 440.0
+    },
+    {
+     "door_deg": 85.0,
+     "shelf_off": 440.0
+    }
+   ],
+   "contact": [
+    "release_tray"
+   ],
+   "required": true,
+   "note": ""
+  },
+  {
+   "id": "B3_present_0",
+   "stage": "B",
+   "task": "place a part on the scanner / camera stage",
+   "kind": "pose",
+   "points": [
+    [
+     -90.0,
+     -60.0,
+     15.0
+    ]
+   ],
+   "z_ref": "station:inspection",
+   "tool": "gripper",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [],
+   "payload_kg": 0.5,
+   "force_n": [
+    0.0,
+    0.0,
+    5.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "sheet",
+   "approach": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 0.0,
+     "shelf_off": 440.0
+    }
+   ],
+   "contact": [
+    "inspection"
+   ],
+   "required": true,
+   "note": "stage B: +/-1 mm, +/-2 deg"
+  },
+  {
+   "id": "B3_present_1",
+   "stage": "B",
+   "task": "place a part on the scanner / camera stage",
+   "kind": "pose",
+   "points": [
+    [
+     95.0,
+     65.0,
+     15.0
+    ]
+   ],
+   "z_ref": "station:inspection",
+   "tool": "gripper",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [],
+   "payload_kg": 0.5,
+   "force_n": [
+    0.0,
+    0.0,
+    5.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "sheet",
+   "approach": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 0.0,
+     "shelf_off": 440.0
+    }
+   ],
+   "contact": [
+    "inspection"
+   ],
+   "required": true,
+   "note": "stage B: +/-1 mm, +/-2 deg"
+  },
+  {
+   "id": "B4_present_tilted",
+   "stage": "B",
+   "task": "present a part tilted 45 deg to a side camera (optional generality pose)",
+   "kind": "pose",
+   "points": [
+    [
+     0.0,
+     0.0,
+     150.0
+    ]
+   ],
+   "z_ref": "station:inspection",
+   "tool": "gripper",
+   "tool_axis_tilt_deg": 45.0,
+   "alt_tilts_deg": [],
+   "payload_kg": 0.5,
+   "force_n": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "sheet",
+   "approach": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 0.0,
+     "shelf_off": 440.0
+    }
+   ],
+   "contact": [
+    "inspection"
+   ],
+   "required": false,
+   "note": ""
+  },
+  {
+   "id": "C1_tray_pick_0",
+   "stage": "C",
+   "task": "pick a printed part from a kinematic pocket",
+   "kind": "pose",
+   "points": [
+    [
+     -70.0,
+     -40.0,
+     5.0
+    ]
+   ],
+   "z_ref": "station:parts_tray",
+   "tool": "gripper",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [],
+   "payload_kg": 1.0,
+   "force_n": [
+    0.0,
+    0.0,
+    20.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "assembly",
+   "approach": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 0.0,
+     "shelf_off": 440.0
+    }
+   ],
+   "contact": [
+    "parts_tray"
+   ],
+   "required": true,
+   "note": ""
+  },
+  {
+   "id": "C1_tray_pick_1",
+   "stage": "C",
+   "task": "pick a printed part from a kinematic pocket",
+   "kind": "pose",
+   "points": [
+    [
+     70.0,
+     40.0,
+     5.0
+    ]
+   ],
+   "z_ref": "station:parts_tray",
+   "tool": "gripper",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [],
+   "payload_kg": 1.0,
+   "force_n": [
+    0.0,
+    0.0,
+    20.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "assembly",
+   "approach": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 0.0,
+     "shelf_off": 440.0
+    }
+   ],
+   "contact": [
+    "parts_tray"
+   ],
+   "required": true,
+   "note": ""
+  },
+  {
+   "id": "C2_place_in_nest",
+   "stage": "C",
+   "task": "place part in the screw-station nest",
+   "kind": "pose",
+   "points": [
+    [
+     0.0,
+     0.0,
+     15.0
+    ]
+   ],
+   "z_ref": "station:screw_station",
+   "tool": "gripper",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [],
+   "payload_kg": 1.0,
+   "force_n": [
+    0.0,
+    0.0,
+    20.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "assembly",
+   "approach": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 0.0,
+     "shelf_off": 440.0
+    }
+   ],
+   "contact": [
+    "screw_station"
+   ],
+   "required": true,
+   "note": ""
+  },
+  {
+   "id": "C3_nut_into_pocket",
+   "stage": "C",
+   "task": "drop an M3 nut into its printed pocket",
+   "kind": "pose",
+   "points": [
+    [
+     30.0,
+     0.0,
+     25.0
+    ]
+   ],
+   "z_ref": "station:screw_station",
+   "tool": "gripper",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [],
+   "payload_kg": 0.2,
+   "force_n": [
+    0.0,
+    0.0,
+    20.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "assembly",
+   "approach": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 0.0,
+     "shelf_off": 440.0
+    }
+   ],
+   "contact": [
+    "screw_station"
+   ],
+   "required": true,
+   "note": ""
+  },
+  {
+   "id": "C4_drive_screw",
+   "stage": "C",
+   "task": "start and drive an M3 screw (compliant driver)",
+   "kind": "pose",
+   "points": [
+    [
+     -30.0,
+     0.0,
+     30.0
+    ]
+   ],
+   "z_ref": "station:screw_station",
+   "tool": "screwdriver",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [],
+   "payload_kg": 0.3,
+   "force_n": [
+    0.0,
+    0.0,
+    20.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    1200.0
+   ],
+   "accuracy_class": "assembly",
+   "approach": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 0.0,
+     "shelf_off": 440.0
+    }
+   ],
+   "contact": [
+    "screw_station"
+   ],
+   "required": true,
+   "note": "20 N axial, 0.4-1.2 N\u00b7m reaction (ARM_SCOPE 2.3, est.)"
+  },
+  {
+   "id": "D1_tool_slot_first",
+   "stage": "D",
+   "task": "pick / place a tool on the kinematic coupling in a rack slot",
+   "kind": "pose",
+   "points": [
+    [
+     -105.0,
+     0.0,
+     10.0
+    ]
+   ],
+   "z_ref": "station:tool_rack",
+   "tool": "gripper",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [],
+   "payload_kg": 0.5,
+   "force_n": [
+    0.0,
+    0.0,
+    30.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "assembly",
+   "approach": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 0.0,
+     "shelf_off": 440.0
+    }
+   ],
+   "contact": [
+    "tool_rack"
+   ],
+   "required": true,
+   "note": "coupling capture +/-0.5-1 mm (01); held to the assembly class here"
+  },
+  {
+   "id": "D1_tool_slot_last",
+   "stage": "D",
+   "task": "pick / place a tool on the kinematic coupling in a rack slot",
+   "kind": "pose",
+   "points": [
+    [
+     105.0,
+     0.0,
+     10.0
+    ]
+   ],
+   "z_ref": "station:tool_rack",
+   "tool": "gripper",
+   "tool_axis_tilt_deg": 0.0,
+   "alt_tilts_deg": [],
+   "payload_kg": 0.5,
+   "force_n": [
+    0.0,
+    0.0,
+    30.0
+   ],
+   "moment_nmm": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "accuracy_class": "assembly",
+   "approach": [
+    0.0,
+    0.0,
+    -1.0
+   ],
+   "cell_states": [
+    {
+     "door_deg": 0.0,
+     "shelf_off": 440.0
+    }
+   ],
+   "contact": [
+    "tool_rack"
+   ],
+   "required": true,
+   "note": "coupling capture +/-0.5-1 mm (01); held to the assembly class here"
+  }
+ ]
+}
