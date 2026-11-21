@@ -1167,7 +1167,7 @@ def safety_relay_omron_g9se_201() -> Stock:
 
 # ------------------------------------------------------------------ v12.1 additions (new functions: v12's parts unchanged)
 @part
-def estop_omron_a22e_m_02_v2(panel_t: float = 3.175) -> Stock:
+def estop_omron_a22e_m_02_v2(panel_t: float = 3.175, piece: str = "all") -> Stock:
     """OMRON A22E-M-02 emergency stop (40 mm mushroom, push-lock turn-reset, 2 NC), re-made faithfully from OMRON's A22E data sheet
     p.41, drawing "A22E-M" (vendor_docs/Omron_A22E_e-stop_datasheet_extract_p33-36_p41-42.pdf; tolerance +/-0.8 unless stated).
     v12.1: replaces estop_omron_a22e_m_02, which put the 34 mm switch block straight from the panel's FRONT face, so in the model
@@ -1180,17 +1180,29 @@ def estop_omron_a22e_m_02_v2(panel_t: float = 3.175) -> Stock:
     NOT dimensioned (drawn as estimates, flagged): the barrel behind the head (dia 28 / 26), the bezel (dia 30), the bushing
     (dia 22, under the 22.3 cut-out), the knurled ring nut (dia 30 x 4), the switch block's width (taken 34, square).
     `panel_t`: the panel the switch is fitted in; the ring nut is drawn tight on its back face.
+    `piece`: "all" (one solid), or as it is fitted: "unit" (the operation unit: head, barrel, bezel, bushing; goes in from the front,
+    carries the price) and "block" (ring nut, latch and switch block, fitted from behind; part of the same item, no price).
     Local frame: the panel's FRONT face at Z=0, head towards +Z, everything behind the panel towards -Z."""
     if not 1.0 <= panel_t <= 6.0:
         raise ValueError("A22E: panel thickness 1 to 6 mm (data sheet)")
     cyl = lambda r, z0, z1: Pos(0, 0, (z0 + z1) / 2) * Cylinder(r, z1 - z0)
-    s = (cyl(20.0, 25.5, 32.0)              # mushroom head, dia 40 x 6.5
-         + cyl(14.0, 13.5, 25.5)            # skirt behind the head (18.5 from the head's front)
-         + cyl(13.0, 2.0, 13.5)             # barrel
-         + cyl(15.0, 0.0, 2.0)              # bezel on the gasket (gasket 0.5 included)
-         + cyl(11.0, -13.5, 0.0)            # threaded bushing through the 22.3 mm cut-out
-         + cyl(15.0, -panel_t - 4.0, -panel_t)   # knurled ring nut, tight on the panel's back face
-         + Pos(0, 0, -(13.5 + 54.7) / 2) * Box(34.0, 34.0, 54.7 - 13.5))   # switch block with its latch, 13.5 .. 54.7 behind
+    unit = (cyl(20.0, 25.5, 32.0)           # mushroom head, dia 40 x 6.5
+            + cyl(14.0, 13.5, 25.5)         # skirt behind the head (18.5 from the head's front)
+            + cyl(13.0, 2.0, 13.5)          # barrel
+            + cyl(15.0, 0.0, 2.0)           # bezel on the gasket (gasket 0.5 included)
+            + cyl(11.0, -13.5, 0.0))        # threaded bushing through the 22.3 mm cut-out
+    ring = cyl(15.0, -panel_t - 4.0, -panel_t) - cyl(11.0, -panel_t - 4.0, -panel_t)     # knurled ring nut, tight on the panel's back face
+    block = Pos(0, 0, -(13.5 + 54.7) / 2) * Box(34.0, 34.0, 54.7 - 13.5)                 # switch block with its latch, 13.5 .. 54.7 behind
+    if piece == "block":
+        s = ring + block
+        return Stock(s, "ESTOP-OMRON-A22E-M-02-BLOCK", "OMRON A22E-M-02: ring nut and 2 NC switch block (part of the e-stop item)", 0.02,
+                     material="abs", cost_usd=0.0, ratings={"bought_with": "A22E-M-02"},
+                     model={"kind": "generated to standard", "remade_from": A22E_DS, "no_auto_features": True,
+                            "source": "re-made from OMRON A22E data sheet p.41 (A22E-M): switch block 34 high, 13.5 .. 54.7 behind the panel's front"},
+                     real_part={"maker": "OMRON", "mpn": "A22E-M-02 (switch block and ring nut, supplied with it)",
+                                "sellers": [{"name": "Digi-Key", "part_number": "A22E-M-02", "catalogue": True, "checked": "2026-11-21",
+                                             "note": "one item: priced on the operation unit"}], "datasheet": A22E_DS})
+    s = unit if piece == "unit" else unit + ring + block
     return Stock(s, "ESTOP-OMRON-A22E-M-02", "OMRON A22E-M-02 emergency stop, 40 mm mushroom, twist release, 2 NC", 0.06, material="abs",
                  cost_usd=94.27, ratings={"contacts": "2 NC", "rated_a_110vac": 10.0},
                  interfaces={"panel_cutout_d": 22.3, "panel_cutout_source": "Digi-Key attribute (flagged until OMRON's page is read)",

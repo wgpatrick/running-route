@@ -2276,10 +2276,19 @@ def add_estop_v121(d, xe, yf, ze):
     for i, zb in enumerate((ze - 13.0, ze + 13.0)):
         add_screw(d, f"estop_bracket_screw_{i}", "M5", 12, at=(-160.0, yf - sp - t, zb), direction=(0, 1, 0), threads_into="post_lf", tnut=True,
                   tnut_stock=tnut_hntp5(), clamps=("estop_bracket", "estop_spacer"), washer=True)
+        # no washer here: M5 x 8 through 3.175 leaves 3.4 mm in the T-nut and the tip 1.2 mm off the slot floor (a washer would leave 2.3)
         add_screw(d, f"estop_bracket_screw_{i + 2}", "M5", 8, at=(RAIL_X_POST_R + t, FRONT_Y, zb), direction=(-1, 0, 0), threads_into="post_lf",
-                  tnut=True, tnut_stock=tnut_hntp5(), clamps=("estop_bracket",), washer=True)
-    place(d, "estop", estop_omron_a22e_m_02_v2(t), Location(Plane(origin=(xe, yf - sp - t, ze), z_dir=(0, -1, 0))))
-    d.join("estop", "estop_bracket", "held by its own ring nut on the panel's back face, through the 22.3 mm cut-out")
+                  tnut=True, tnut_stock=tnut_hntp5(), clamps=("estop_bracket",))
+    # two pieces as fitted: the operation unit goes in from the front through the cut-out, the ring nut and the switch block (with
+    # its latch) from behind; one item bought
+    loc = Location(Plane(origin=(xe, yf - sp - t, ze), z_dir=(0, -1, 0)))
+    place(d, "estop", estop_omron_a22e_m_02_v2(t, "unit"), loc)
+    place(d, "estop_block", estop_omron_a22e_m_02_v2(t, "block"), loc)
+    d.join("estop", "estop_bracket", "the operation unit's bezel on the panel's front face, its bushing through the 22.3 mm cut-out")
+    d.join("estop_block", "estop_bracket", "the ring nut tightened on the panel's back face")
+    d.join("estop_block", "estop", "the switch block latched onto the operation unit's bushing")
+    d.get("estop_block").meta["description"] = ("Ring nut and switch block (2 NC) of the OMRON A22E-M-02, fitted from behind the panel "
+                                                "onto the operation unit estop: part of the one item bought.")
     d.get("estop").meta["description"] = ("OMRON A22E-M-02 emergency stop (v12.1 model: switch block behind the panel, from the data "
                                           "sheet's A22E-M drawing), in estop_bracket's panel leg, head forward at hand height.")
 
@@ -3005,9 +3014,11 @@ def add_requirements(d, zs):
 
     def bent(dd):
         b = sorted(c.name for c in dd.components if not c.cots and c.material == "al5052")
-        return b == ["probe_mount", "x_belt_bracket"] or b == ["x_belt_bracket", "probe_mount"], (
+        want = sorted(["probe_mount", "x_belt_bracket"] + (["estop_bracket"] if CH("estop-mount") else []))
+        return b == want, (
             f"bent sheet parts: {b} (v10 / v10.1: eight: X belt bracket, X idler mount, X tension anchor, two Y motor mounts, two Y "
-            f"tension anchors, Y switch bracket; the owner keeps the X belt bracket bent; the probe holder is the one-bend L the owner asked for)")
+            f"tension anchors, Y switch bracket; the owner keeps the X belt bracket bent; the probe holder is the one-bend L the owner asked for"
+            + ("; v12.1: the e-stop's bent L, as the owner asked" if CH("estop-mount") else "") + ")")
     d.requirements.append(Requirement("v11: bent parts only where the owner asked: the X belt bracket (kept) and the probe L", bent))
 
     def stock_sizes(dd):
