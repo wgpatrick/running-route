@@ -7,8 +7,8 @@ Flags (env MECHLOOP_CHANGES="all" | "none" | "id1,id2" overrides the defaults):
   a bent 5052 L-bracket wrapping the front-left post's front-right corner, two M5 columns (front slot and right-side slot); the
   allow_overlap that hid the old model's block in its bracket is gone.
 - zmotor-holes: the Z motors' four M3 x 4.5 threads drawn in the motor solid (leadscrew_motor_a4003_tapped).
-- znut-direct: each POM nut's flange bolted straight to its nut plate (4 x M4 through the flange's own holes into steel thread
-  inserts in the plate); the floating keeper, its spacers / bolts and the anti-rotation pin removed. The integral screws are free
+- znut-direct: each POM nut's flange bolted straight to its nut plate (4 x M4 through the flange's own holes into threads tapped in
+  the plate); the floating keeper, its spacers / bolts and the anti-rotation pin removed; motor plates lined up with the nuts at assembly. The integral screws are free
   at the top and take small misalignment by bending (as on a Voron Trident).
 - carriage-plate-rigid: the 1.6 mm flexure carriage plates replaced by rigid 1/4 in 6061 angle brackets (stock angle, cut and
   drilled), the MGN12H block raised to sit right under the square; no guide_float flexure; rails aligned at assembly (datum rail,
@@ -197,9 +197,9 @@ CHANGE_INFO = {     # for the review page's Changes tab (tools/build_change.py)
                                 "nothing else changes.",
                      "threads": ["2c8e3d4c-9547-47ae-bfed-9c73c51af331"]},
     "znut-direct": {"title": "Z nuts bolted direct to the plate",
-                    "summary": "Each POM nut's flange is bolted to its nut plate with four M4 through its own holes into steel thread "
-                               "inserts. The floating keeper, spacers, keeper bolts and the anti-rotation pin are removed; the screw, "
-                               "free at its top, takes small misalignment.",
+                    "summary": "Each POM nut's flange is bolted to its nut plate with four M4 through its own holes into threads tapped "
+                               "in the plate. The floating keeper, spacers, keeper bolts and the anti-rotation pin are removed; each "
+                               "motor plate is lined up with its fixed nut at assembly and the screw, free at its top, takes the rest.",
                     "threads": ["10eab134-e341-4786-bae2-d085e018c34d"]},
     "carriage-plate-rigid": {"title": "Rigid carriage brackets (no flexure)",
                              "summary": "The 1.6 mm flexure plates become rigid brackets cut from 1/4 in 6061 angle, the guide block "
@@ -867,7 +867,10 @@ def carriage_plate_local(z_blk):
 NUT_FLANGE_HOLES = [(sx * 9.25, sy * 9.25) for sx in (-1, 1) for sy in (-1, 1)]   # A4003: 4-M4 on an 18.5 square (flange 26 sq)
 NP_R1_D = 17.0          # znut-direct: the plate's reach beyond the screw (flange half-width 13 + 4)
 NP_HOLE_D = 9.0         # znut-direct: the screw passes the plate with 0.5 mm all round (the nut, bolted under it, centres it)
-INSERT_M4_HOLE = 4.2    # tap drill for an M4 steel wire-thread insert (STI tap); the insert gives the M4 thread
+NUT_TAP_DRILL = 3.3     # the plate's four M4 threads: drilled 3.3 and tapped M4 by the builder AFTER cutting, through the nut's own flange
+                        # as the drilling template (a laser cannot cut 3.3 in 9.525 mm; SendCutSend taps M5 and up in 3/8 in). Not drawn
+                        # as geometry (the design convention for tapped holes: the screw overlaps the part, dfm_geom.tapped_holes)
+HEX_KEY_SHORT_ARM = 25.0   # M4 SHCS, 3 mm L-key: short arm 20.5 mm (ISO 2936) + head: the driver reach used for the nut screws
 NUT_SCREW_L = 12        # M4 x 12: 5 mm flange + 7 mm into the 9.525 mm plate's insert
 
 
@@ -879,11 +882,12 @@ def nut_plate_direct_local(z0, z1, nut_out=NUT_OUT, shift=0.0):
       holds the nut square to its screw (the nut is bolted to it: no float, no keeper, no anti-rotation pin).
     - Interfaces / mates: top face against the underside of the square's member (two M5 from below into T-nuts in the member's
       bottom slot, 40 mm apart, 10 mm in from the member's outer face); underside against the POM nut's 26 mm square flange
-      (StepperOnline drawing A4003): four M4 through the flange's own holes (18.5 mm square) into M4 steel thread inserts in
-      this plate (practice DG-02: no thread tapped straight into aluminium we make); the screw passes a 9 mm hole, open to the
-      plate's outer edge so the plate slides onto a screw whose motor already stands in the frame.
+      (StepperOnline drawing A4003): four M4 x 12 through the flange's own holes (18.5 mm square) into M4 threads tapped in this
+      plate, 7 mm of thread (1.75 d in 6061; the owner's choice of tapped holes, practice DG-02 flags it as a warning). The threads
+      are drilled 3.3 and tapped by the builder after cutting, through the flange as a template, so they are not drawn. The screw
+      passes a 9 mm hole, open to the plate's outer edge so the plate slides onto a screw whose motor already stands.
     - Loads: 3 x the bed's weight up through the flange (FEA nut_thrust); the drive torque reacted by the four M4.
-    - Process: 9.525 mm (3/8 in) 6061-T6 laser cut at SendCutSend; inserts fitted by the builder.
+    - Process: 9.525 mm (3/8 in) 6061-T6 laser cut at SendCutSend; four M4 drilled and tapped by the builder.
     - Envelope: under the member from its inner edge to `nut_out` + NP_R1_D beyond its outer face; 2 NP_U along the member
       (`shift`: plate and M5 moved that far along -x, e.g. where the member ends just beyond the screw; the plate still covers
       the flange).
@@ -894,8 +898,6 @@ def nut_plate_direct_local(z0, z1, nut_out=NUT_OUT, shift=0.0):
     s = Pos((u0 + u1) / 2, (y0 + y1) / 2, z0) * extrude(RectangleRounded(u1 - u0, y1 - y0, 3.0), h)
     s -= zc(0, 0, z0, z1, NP_HOLE_D / 2)
     s -= bx(-NP_HOLE_D / 2, NP_HOLE_D / 2, 0.0, y1 + 1.0, z0, z1)          # open outward: the plate slides onto the screw
-    for u, v in NUT_FLANGE_HOLES:
-        s -= zc(u, v, z0, z1, INSERT_M4_HOLE / 2)
     for u in (-NP_BOLT_U - shift, NP_BOLT_U - shift):
         s -= zc(u, -nut_out - 10.0, z0, z1, clearance_hole("M5") / 2)
     return s
@@ -934,8 +936,8 @@ def carriage_angle_local(z_blk):
     return s
 
 
-MP_ALIGN_HOLE = 10.5     # znut-direct: oversize post holes (M5 + large washer, 15 OD): the plate slides +/-2.75 to line its screw up
-                         # with the now-fixed nut at assembly, then is clamped
+MP_ALIGN_HOLE = 8.0      # znut-direct: oversize post holes (M5, its 10 mm washer covers them), inside the 10 mm post's face so the plate
+                         # bears on it: the plate slides +/-1.25 to line its screw up with the now-fixed nut at assembly, then is clamped
 
 
 def motor_plate_arcs(x0, y0, posts, z_mf, post_hole=None):
@@ -944,15 +946,16 @@ def motor_plate_arcs(x0, y0, posts, z_mf, post_hole=None):
     Spec
     - Function: holds one lead-screw motor (StepperOnline 17E19S1684AB4-330RA) square under it, on two posts on a bottom rail.
     - Interfaces / mates: the motor's 22 mm pilot in a 22.3 mm hole; four M3 clearance holes on the motor's 31 mm square
-      (drawing A4003); two holes on the posts' axes: M5 clearance, or (`post_hole`, znut-direct) 10.5 mm under large washers so the
+      (drawing A4003); two holes on the posts' axes: M5 clearance, or (`post_hole`, znut-direct) 8 mm under the M5 washers so the
       plate can be slid to line its screw up with the fixed nut at assembly.
     - Loads: the motor's weight, the bed's thrust share (the screw pulls the motor up when the bed is pushed down), the drive torque.
     - Process: 6.35 mm 6061-T6 laser cut (SendCutSend).
-    - Envelope: the convex hull of 6.5 mm round each motor screw and 8 mm round each post.
+    - Envelope: 8 mm round the convex hull of the motor screws' and the posts' centres (straight edges, true arcs at the corners).
     """
+    from build123d import Kind, offset
     h = 31.0 / 2
-    circles = [Pos(x0 + ox, y0 + oy) * Circle(6.5) for ox in (-h, h) for oy in (-h, h)] + [Pos(px, py) * Circle(8.0) for px, py in posts]
-    hull = make_hull([e for c in circles for e in c.edges()])
+    centres = [(x0 + ox, y0 + oy) for ox in (-h, h) for oy in (-h, h)] + list(posts)
+    hull = offset(Polygon(*convex_hull(centres), align=None), 8.0, kind=Kind.ARC)
     z_t = z_mf + T_MP
     s = Pos(0, 0, z_mf) * extrude(hull, T_MP)
     s -= zc(x0, y0, z_mf, z_t, MP_PILOT_HOLE / 2)
@@ -1445,7 +1448,7 @@ def build_z_mount(d, tag, x0, y0, turn, posts, rail, on_tray):
     if CH("znut-direct") and not (tag == "" and CH("rear-z-inside")):
         sheet(d, plate, motor_plate_arcs(x0, y0, posts, z_mf, MP_ALIGN_HOLE), AL, description=(
             f"Z motor plate (v12.1 znut-direct): 6.35 mm 6061, outline true arcs; the motor hung under it by its pilot and four M3; two "
-            f"10.5 mm holes over the posts, under large washers, so the plate (and the motor's screw) can be slid +/-2.75 mm to line "
+            f"8 mm holes over the posts (the M5's 10 mm washer covers them), so the plate (and the motor's screw) can be slid +/-1.25 mm to line "
             f"up with the fixed nut at assembly (bed at the bottom of its travel, post bolts loose, then tightened)."))
     elif tag == "" and CH("rear-z-inside"):
         sheet(d, plate, motor_plate_arcs(x0, y0, posts, z_mf, MP_ALIGN_HOLE), AL, description=(
@@ -1480,7 +1483,7 @@ def build_z_mount(d, tag, x0, y0, turn, posts, rail, on_tray):
         sps = [sp]
         b = P(f"bolt_{i}")
         add_screw(d, b, "M5", 65, at=(px, py, z_t), direction=(0, 0, -1), clamps=(plate, *reversed(sps)) + (("electronics_tray",) if on_tray else ()),
-                  threads_into=rail, tnut=True, washer="large" if CH("znut-direct") else True, locking="adhesive")
+                  threads_into=rail, tnut=True, washer=True, locking="adhesive")
         names += sps + [b, f"{b}_washer"]
     return names
 
@@ -1632,14 +1635,16 @@ def build_frame_z():
         place(d, f"z_nut{tg}", leadscrew_nut_pom_a4003(), Location((cx, cy, Z_TAB), (0, 0, ang)), body="zbody")
         for i, (u, v) in enumerate(NUT_FLANGE_HOLES):
             add_screw(d, f"z_nut{tg}_screw_{i}", "M4", NUT_SCREW_L, at=(*W(u, v), Z_TAB - NUT_FT), direction=(0, 0, 1), body="zbody",
-                      threads_into=f"nut_plate{tg}", clamps=(f"z_nut{tg}",), insert="steel", locking="adhesive")
+                      threads_into=f"nut_plate{tg}", clamps=(f"z_nut{tg}",), locking="adhesive")
+            d.fasteners[-1].tool_length = HEX_KEY_SHORT_ARM       # an L-key's short arm from below (the motor plate is 50 mm down)
             # A4003 marks the flange's holes "4-M4" without saying tapped or clear: drawn 4.0 (the catalogue part); if they are
             # tapped, drill them out to 4.5 at the bench (FLAGGED, docs/PRINTER_V12_1.md)
             d.allow_overlap(f"z_nut{tg}_screw_{i}", f"z_nut{tg}", max_volume=25.0)
-        d.join(f"z_nut{tg}", f"nut_plate{tg}", "bolted: 4 x M4 x 12 through the flange's own holes into steel thread inserts in the plate")
+        d.join(f"z_nut{tg}", f"nut_plate{tg}", "bolted: 4 x M4 x 12 through the flange's own holes into M4 threads tapped in the plate")
         how = (f"How the bed is lifted (v12.1): the POM anti-backlash nut z_nut{tg} (supplied on the motor's screw; StepperOnline drawing A4003: "
                f"26 mm square flange, 4-M4 on an 18.5 mm square) rides lead screw leadscrew{tg}. Its flange is bolted to the underside of this "
-               f"{T_NP:g} mm plate by four M4 x 12 through the flange's own holes into M4 steel thread inserts; the plate is bolted under the "
+               f"{T_NP:g} mm plate by four M4 x 12 through the flange's own holes into M4 threads tapped in the plate (drilled through the "
+               f"flange as a template by the builder); the plate is bolted under the "
                f"2020 square's member {member} (two M5 from below into T-nuts) and reaches {n_out:.1f} mm out to the screw. The nut is fixed: "
                f"the screw, held only by its motor and free at its top end, bends slightly to follow any misalignment (as on a Voron Trident). "
                f"The screw passes a 9 mm hole open to the plate's outer edge, so the plate slides onto a screw whose motor already stands.")
@@ -2581,11 +2586,11 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
                          "goes into the carriage plates' webs"), mover="by hand, the carrier running on the loose rail" if CH("carriage-plate-rigid") else "",
                    lock="M3 rail screws into T-nuts, tightened top to bottom" if CH("carriage-plate-rigid") else ""),
     ] + ([Adjustment("Z motor plates lined up with their fixed nuts at assembly", "float", range_mm=(MP_ALIGN_HOLE - 5.0) / 2 - 0.25, joint="z",
-                     note="v12.1 znut-direct: the nut is bolted to the carrier, so each motor plate is slid on its posts (10.5 mm holes, "
-                          "large washers) until its screw runs free in the nut with the bed at the BOTTOM of its travel (nut nearest the "
+                     note="v12.1 znut-direct: the nut is bolted to the carrier, so each motor plate is slid on its posts (8 mm holes, "
+                          "10 mm M5 washers) until its screw runs free in the nut with the bed at the BOTTOM of its travel (nut nearest the "
                           "motor, where the screw is stiffest), then the post bolts are tightened. Not a running float: what is left over "
                           "the travel (screw-to-rail angle) is taken by the screw bending, free at its top end",
-                     mover="the motor plate slid by hand on its posts", lock="two M5 post bolts with large washers, thread-locked")]
+                     mover="the motor plate slid by hand on its posts", lock="two M5 post bolts with washers, thread-locked")]
          if CH("znut-direct") else [Adjustment("floating lead screw nut", "float", range_mm=NUT_FLOAT - 0.2, joint="z")]) + [
         Adjustment("x belt: the X motor plate slides in its two slots on the beam's T-nuts, pulled outward by hand, then the two M5 are tightened",
                    "belt_tension", range_mm=BELT_ADJ, joint="x"),
@@ -2634,7 +2639,7 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
     d.loadcases.append(LoadCase("nut_thrust", f"nut_plate{tg}",
                                 fixed=lambda f: any(hole_at(x, y, clearance_hole("M5") / 2)(f) for x, y in fb),
                                 loaded=(hole_at(ncx, ncy, NP_HOLE / 2) if not CH("znut-direct") else
-                                        (lambda f: any(hole_at(*rxy(u, v, ncx, ncy, nang), INSERT_M4_HOLE / 2)(f) for u, v in NUT_FLANGE_HOLES))),
+                                        (lambda f: abs(f.center().Z - Z_TAB) < 1e-6 and f.area > 100)),
                                 force=(0.0, 0.0, w_bed), min_fos=3.0, max_deflection=0.05))
     # one carriage plate between its block and the square (the three are one shape), as a beam test of its web: 5 N on the
     # block square to the wall, the square's member held, the block FREE to turn (the harness cannot hold a face against

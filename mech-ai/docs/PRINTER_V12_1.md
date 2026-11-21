@@ -56,16 +56,32 @@ front face as 2.5 mm tap-drill holes 4.5 deep. Used for all three Z motors. Noth
 
 ### 3. `znut-direct`: the Z nuts bolted direct
 - Each POM nut's 26 mm square flange is bolted to the underside of its 9.525 mm nut plate by **four M4 x 12 through the flange's own
-  holes into M4 steel wire-thread inserts in the plate** (practice DG-02: no thread tapped straight into aluminium we make; the insert
-  is the owner's "tapped hole"). Flange hole pattern **confirmed from StepperOnline drawing A4003: 4-M4 on an 18.5 mm square** (the
-  part model already had it). **Flagged:** A4003 writes "4-M4" without saying tapped or clearance; if the flange holes turn out to be
-  tapped M4, drill them to 4.5 at the bench. The M4 heads clear the nut's 18 mm barrel by 0.6 mm (no washers there).
+  holes into M4 threads tapped in the plate** (7 mm of thread, 1.75 d in 6061). Flange hole pattern **confirmed from StepperOnline
+  drawing A4003: 4-M4 on an 18.5 mm square** (the part model already had it). The threads are drilled 3.3 and tapped by the builder
+  after cutting, **through the nut's own flange as the drilling template** (a laser cannot cut 3.3 mm in 9.525 mm plate and
+  SendCutSend taps M5 and up in 3/8 in), so, as the design's convention for tapped holes, they are not drawn. Practice DG-02 ("no
+  thread tapped in aluminium we make") flags it as a warning: the owner asked for tapped holes; a steel wire insert would satisfy
+  DG-02 but has no maker-backed catalogue part here (DG-07). **Flagged:** A4003 writes "4-M4" without saying tapped or clearance; if
+  the flange holes are tapped M4, drill them to 4.5 at the bench. The M4 heads clear the nut's 18 mm barrel by 0.6 mm (no washers);
+  they are driven from below with a 3 mm L-key's short arm. **New DG-07 placeholder:** SHCS-M4x12 has no McMaster number recorded in
+  mechloop/parts/vendor/mcmaster_fasteners.json (to add).
 - `nut_plate_direct_local()`: rebuilt from a spec (docstring): screw hole 9 mm (0.5 mm all round), **open to the plate's outer edge**
-  so the plate slides onto a screw whose motor already stands; four insert holes (4.2); two M5 into the member's bottom slot.
-- Removed, per corner: `nut_keeper*`, its two spacers, two keeper bolts with their washers and nuts, the anti-rotation `nut_pin*`
-  screw, its sleeve and nut. The joint now declares a bolted nut: reverse gap 0 (anti-backlash nut, assumed), no float adjustment, no
-  nut-tilt allowance (the nut cannot rock; the screw, free at its top end, bends instead, as on a Voron Trident).
-- FEA `nut_thrust` now loads the plate through the four insert holes.
+  so the plate slides onto a screw whose motor already stands; two M5 into the member's bottom slot.
+- **Motor plates lined up at assembly** (needed once the nut cannot float): the three motor plates are redrawn from a spec with true
+  arcs (`motor_plate_arcs()`, 8 mm round the hull of the motor screws and posts; v12's were hulls of 40-gons with slivers) and their
+  post holes are 8 mm (inside the 10 mm posts' faces, covered by the M5 washers): each plate slides +/-1.25 mm. Assembly: post bolts
+  loose, bed at the BOTTOM of its travel (nut nearest the motor, where the screw is stiffest), turn the screw by hand until it runs
+  free, tighten the post bolts. Declared to the tolerance model as the Z axis's alignment range.
+- Removed, per corner (42 parts in all): `nut_keeper*`, its two spacers, two keeper bolts with their washers and nuts, the
+  anti-rotation `nut_pin*` screw, its sleeve and nut. The joint now declares a bolted nut: reverse gap 0 (anti-backlash nut,
+  assumed), no nut-tilt allowance (the nut cannot rock; the screw, free at its top end, bends instead, as on a Voron Trident).
+- FEA `nut_thrust` loads the plate on its underside (where the flange bears).
+- **Z binding with the fixed nut** (tolerance model, 3000 builds, 99.7th percentile): the nut sits up to 0.16 mm off its screw at
+  the bottom of the travel (taken out by the motor-plate alignment) and the screw-to-rail angle adds up to 1.32 .. 1.73 mm over the
+  180 mm travel. That drift is met at the top of the travel, where the screw is a 227 mm cantilever from the motor's bearings:
+  3 E I x / L^3 with the 6.24 mm root (I = 74.5 mm4) gives at most **6.4 N sideways on the nut, about 1.3 N of drag (mu 0.2)
+  against 691 N of drive: 0.2 %** (hand calculation from the tolerance model's figures; the verifier's own bending model reports 0
+  because it counts the alignment range against the whole misalignment). v12's floating nut had the same small figure (0.27 N).
 
 ### 4. `carriage-plate-rigid`: rigid carriage brackets
 - **Deviation from "a straight 1/4 in plate":** the block's mounting face (x 137) and the square's outer face (x 135.4) are 1.6 mm
