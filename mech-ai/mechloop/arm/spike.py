@@ -24,6 +24,7 @@ from .candidates import ENCODERS, K_TILT, TRANSMISSIONS, linear_spec, rotary_spe
 ROOT = Path(__file__).resolve().parents[2]
 OUT_JSON = ROOT / "mechloop" / "data" / "arm" / "spike_results.json"
 FIG_DIR = ROOT / "docs" / "arm_spike"
+MARGIN = 0.9                  # design margin used to choose a configuration (worst error <= 0.9 x limit)
 TILT_UPGRADE_USD = 30.0       # est. per rotary joint: angular-contact pair + aluminium housing instead of printed
 # rest of the cell from the ARM_SCOPE section 11 budget table (midpoints of its ranges, est.)
 REST_OF_CELL = {"structure": 400, "controllers_computer": 275, "end_effectors": 250, "perception": 300, "safety": 350,
@@ -73,6 +74,28 @@ def apply_config(arm, cfg):
         arm.ram_sec = cfg["ram"]
 
 
+def joint_budget(arm, poses, res, joints, kind="R", hi=0.2, cls="assembly"):
+    """Largest +/-e (deg, or mm for linear axes) of uniform random error on `joints` (replacing their encoder / backlash
+    terms; other joints and all deflections as configured) at which every `cls` pose still passes."""
+    base = list(arm.joint_specs)
+    sub = [p for p in poses if p["accuracy_class"] == cls and p["required"]]
+
+    def passes(e):
+        arm.joint_specs = [dict(s, step=e, noise=0.0, backlash=0.0, k=None) if j in joints else s
+                           for j, s in enumerate(base)]
+        return all(r["passes"] for r in A.evaluate_arm(arm, sub, res, n=2000))
+
+    lo, top = 0.0, hi
+    if not passes(0.0):
+        arm.joint_specs = base
+        return 0.0
+    for _ in range(14):
+        mid = (lo + top) / 2
+        lo, top = (mid, top) if passes(mid) else (lo, mid)
+    arm.joint_specs = base
+    return lo
+
+
 # ---------------------------------------------------------------- figures
 def figure_workspace(results, arms, path):
     import matplotlib
@@ -80,7 +103,7 @@ def figure_workspace(results, arms, path):
     import matplotlib.pyplot as plt
     from matplotlib.patches import Arc, Rectangle
 
-    fig, axes = plt.subplots(1, 3, figsize=(16, 7.2), constrained_layout=True)
+    fig, axes = plt.subplots(1, 3, figsize=(16, 6.4), constrained_layout=True)
     poses = PZ.build_poses()
     for ax, (kind, arm) in zip(axes, arms.items()):
         res = results[kind]
@@ -133,7 +156,7 @@ def figure_workspace(results, arms, path):
                                    ec="#666", lw=0.8))
         ax.set_aspect("equal")
         ax.set_xlim(-1000, 1050)
-        ax.set_ylim(-950, 450)
+        ax.set_ylim(-1000, 450)
         s = res["summary"]
         ax.set_title(f"{arm.name}\nreach {'PASS' if s['reach_pass'] else 'FAIL'}, min clearance "
                      f"{s['min_clearance']:.0f} mm, z_T {z_t:.0f} mm", fontsize=10)
@@ -151,7 +174,9 @@ def figure_errors(results, path):
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    fig, axes = plt.subplots(1, 2, figsize=(13, 5.2), constrained_layout=True)
+    from matplotlib.ticker import FixedLocator, NullFormatter, NullLocator
+
+    fig, axes = plt.subplots(1, 2, figsize=(13, 5.6), constrained_layout=True, sharey=True)
     for ax, cls in zip(axes, ("assembly", "sheet")):
         labels, vals, cols = [], [], []
         for kind, res in results.items():
@@ -163,9 +188,18 @@ def figure_errors(results, path):
         ax.barh(y, vals, color=cols)
         ax.axvline(A.LIMITS[cls], color="k", ls="--", lw=1)
         ax.set_yticks(y)
-        ax.set_yticklabels(labels, fontsize=7)
-        ax.invert_yaxis()
+        if cls == "assembly":
+            ax.set_yticklabels(labels, fontsize=7)
+            ax.invert_yaxis()
         ax.set_xscale("log")
+        ticks = [0.05, 0.1, 0.2, 0.5, 1, 2, 5]
+        ax.xaxis.set_major_locator(FixedLocator(ticks))
+        ax.xaxis.set_minor_locator(NullLocator())
+        ax.xaxis.set_minor_formatter(NullFormatter())
+        ax.set_xticklabels([f"{t:g}" for t in ticks], fontsize=7)
+        ax.set_xlim(0.03, 8)
+        for yi, v in zip(y, vals):
+            ax.text(min(v, 7) * 1.05, yi, f"{v:.2f}", va="center", fontsize=6)
         ax.set_xlabel(f"worst 3-sigma error, mm ({'lateral' if cls == 'assembly' else '3D'}); limit {A.LIMITS[cls]} mm",
                       fontsize=8)
         ax.set_title(f"{cls} poses", fontsize=10)
@@ -200,7 +234,10 @@ def run(quick=False, log=print):
                         "passes": all(v["passes"] for v in s.values()),
                         "cfg": {k: v for k, v in cfg.items() if k not in ("specs",)},
                         "rows": [{k: (round(v, 4) if isinstance(v, float) else v) for k, v in r.items()} for r in rows]})
-        passing = [a for a in acc if a["passes"]]
+        # cheapest configuration that passes with a 10 % design margin on both classes (worst <= 0.9 x limit)
+        passing = [a for a in acc if all(v["worst_p3s"] <= MARGIN * v["limit"] for v in a["summary"].values())]
+        for a in acc:
+            a["passes_with_margin"] = a in passing
         chosen = min(passing, key=lambda a: a["cost_actuation_usd"]) if passing else \
             min(acc, key=lambda a: max(v["worst_p3s"] / v["limit"] for v in a["summary"].values()))
         apply_config(arm, [c for c in cfgs if c["label"] == chosen["label"]][0])
@@ -223,6 +260,11 @@ def run(quick=False, log=print):
             "cost": {"actuation_usd": chosen["cost_actuation_usd"], "rest_of_cell_usd": rest,
                      "total_usd": chosen["cost_actuation_usd"] + sum(rest.values())},
         }
+        jb = {"scara": ([0, 1], "deg"), "articulated5": ([0, 1, 2, 3], "deg"), "cartesian": ([0, 2], "mm")}[kind]
+        results[kind]["joint_budget"] = {"joints": jb[0], "unit": jb[1],
+                                         "assembly": joint_budget(arm, poses, res, jb[0]),
+                                         "sheet": joint_budget(arm, poses, res, jb[0], hi=2.0, cls="sheet")}
+        log(f"  joint budget {results[kind]['joint_budget']}")
         log(f"  chosen: {chosen['label']} passes={chosen['passes']} "
             f"{ {c: round(v['worst_p3s'], 3) for c, v in chosen['summary'].items()} } ${chosen['cost_actuation_usd']}")
     # highlight rows for the error figure: cheapest, chosen, and a few named variants per candidate
@@ -231,18 +273,22 @@ def run(quick=False, log=print):
         acc = res["accuracy"]
         want = {"scara": ["belt+motor-enc / printed bearings / al_60x30x2", "belt+AS5047P / printed bearings / al_60x30x2",
                           "belt+MT6835 / printed bearings / al_60x30x2", "belt+MT6835 / metal bearings / al_60x30x2",
-                          "belt+MT6835 / metal bearings / petg_60x30x3"],
+                          "belt+MT6835 / metal bearings / al_80x40x3", "belt+MT6835 / metal bearings / petg_60x30x3"],
                 "cartesian": [a["label"] for a in acc],
                 "articulated5": ["motor-enc proximal / wrist XL430 / printed bearings / al_60x30x2",
                                  "MT6835 proximal / wrist XL430 / printed bearings / al_60x30x2",
                                  "MT6835 proximal / wrist XM430 / printed bearings / al_60x30x2",
                                  "MT6835 proximal / wrist belt+AS5047P / printed bearings / al_60x30x2",
+                                 "MT6835 proximal / wrist belt+MT6835 / printed bearings / al_60x30x2",
                                  "MT6835 proximal / wrist strainwave_50 / metal bearings / al_60x30x2",
                                  "MT6835 proximal / wrist belt+AS5047P / metal bearings / petg_60x30x3"]}[kind]
         for a in acc:
             if a["label"] in want or a["label"] == res["accuracy_chosen"]["label"]:
-                hl.append({"short": a["label"].replace(" bearings", "").replace("al_60x30x2", "Al").replace(
-                    "petg_60x30x3", "PETG"), "assembly": a["summary"]["assembly"]["worst_p3s"],
+                short = a["label"].replace(" bearings", "")
+                for x, y in (("al_60x30x2", "Al 60x30"), ("al_80x40x3", "Al 80x40"), ("al_40x40x2", "Al 40x40"),
+                             ("petg_60x30x3", "PETG 60x30"), ("strainwave_50", "strain wave")):
+                    short = short.replace(x, y)
+                hl.append({"short": short, "assembly": a["summary"]["assembly"]["worst_p3s"],
                     "sheet": a["summary"]["sheet"]["worst_p3s"], "passes": a["passes"],
                     "cost": a["cost_actuation_usd"]})
         res["accuracy_highlights"] = hl
