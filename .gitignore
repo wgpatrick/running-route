@@ -4,3 +4,5 @@ node_modules/
 mech-ai/vendor_cad/staging/MANTA-M5P.step.gz_extracted/
 mech-ai/review/drawings/
 .claude/worktrees/
+mech-ai/review/meshes_a.txt
+mech-ai/review/meshes_b.txt
