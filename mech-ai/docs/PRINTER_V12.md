@@ -9,34 +9,29 @@ the v12 plan (HIWIN rails, 9 mm belts, stock bed heater, the full electronics ba
 "What changed"). Every part carries a build stage: **1** frame, electronics bay, bed and Z; **2** gantry and toolhead; **3**
 feedback (cameras, filament sensor, lights, laser, accelerometer).
 
-**Verify (all 13 verifiers, `--tier full --no-render`, on the final design, finished 2026-11-20 20:57 UTC): FAILS, 11 errors, 156
-warnings.** All 11 errors are the DG-07 purchased-part rule: **8 placeholder SKUs (13 parts)**, listed by stage in the
-next section. Every other verifier passes (geometry, interference, tolerance, manufacture, ratings, motion, subsystems,
-electrical, assemblability, FEA, printing, requirements). **41 of 41 requirements met.** Report: `out/printer_v12/report.json`.
+**Verify (all 13 verifiers, `--tier full --no-render`, on the final design): see "What was run" (VERIFY_LINE).** All errors are the
+DG-07 purchased-part rule (placeholders, listed by stage below). Every other verifier passes. Report: `out/printer_v12/report.json`.
 
 ## Build 1 stage-1 readiness
 
-**Gate: not yet clean.** Stage 1 (frame, bay, bed, Z) has 87 purchased SKUs; 83 are real parts with sourced geometry and
-ratings; **4 are still placeholders**. Its fabricated parts (16 sheet parts at SendCutSend, 6 turned posts at Xometry, 2
-printed covers at Hubs) pass every check, and their inspection plans are written.
+**Gate: not yet clean, but the stage-1 items left are ratings paperwork, not missing parts.** Owner (2026-11-20): the missing
+maker figures are being requested by email and are **non-blocking for the stage-1 ordering list**; they stay flagged.
+Stage-1 fabricated parts (16 sheet parts at SendCutSend, 6 turned posts at Xometry, 2 printed covers at Hubs) pass every
+check; their inspection plans are in `inspect_form/plans/printer_v12/`.
 
 | Stage | Placeholder SKU | What is missing | Who closes it |
 |---|---|---|---|
-| 1 | `HEATER-HYDRA-SQ1451144-210x210-24V-200W` | `max_temp_c` (no maker figure; 180 degC silicone class value). Geometry is a re-make of NPH drawing NPHSF365; its thickness (1.5 mm) is **assumed** (not dimensioned) | Hydra Research / NPH: max temperature; measure thickness on arrival |
-| 1 | `NEMA17-48-LEADSCREW-TR8x2-330-AB4` (x3) | `rotor_inertia_gcm2`, `efficiency` (not on StepperOnline drawing A4003) | StepperOnline |
-| 1 | `TR8x2-INTEGRAL-17E19S1684AB4-330RA` (x3) | `efficiency` (0.35 typical, not stated) | StepperOnline |
-| 1 | `CTRL-OCTOPUS-V1.1` | geometry: BTT publishes CAD for the V1.0 only (its PCB is surfaces, 92,000 faces, not a solid), none for V1.1; 4 ratings typical (logic power, max ambient, output resistance, thermistor pull-up) | BTT (V1.1 STEP, schematic figures), or the owner accepts the V1.0 CAD |
-| 2 | `EXTRUDER-E3D-ROTO` | 3 motor ratings (surface temperature, inductance, step angle) | E3D |
-| 2 | `HOTEND-REVO-24V-40W` | resistance at 23 degC, volts (PTC figures) | E3D |
-| 2 | `SPACER-AL-M5-10x5.1x9.75` | no real product at 9.75 mm (X idler spacer); no McMaster / MISUMI number confirmed | owner: pick a stock length (10 mm moves the belt 0.25 mm) |
-| 2 | `ENDSTOP-MICRO` (x2) | the OMRON D2F-01L sits on a generated 20 x 12.5 board: no bought module named | owner: a module with a D2F-01L, or the bare switch on its own M2 holes |
-| 3 | none | | |
+| 1 | `HEATER-HYDRA-SQ1451144-210x210-24V-200W` | `max_temp_c` (180 degC silicone class value). Geometry: re-make of NPH drawing NPHSF365, thickness 1.5 mm **assumed** (not dimensioned) | Hydra / NPH (email); measure on arrival |
+| 1 | `NEMA17-48-LEADSCREW-TR8x2-330-AB4` (x3) | `rotor_inertia_gcm2`, `efficiency` (not on drawing A4003) | StepperOnline (email) |
+| 1 | `TR8x2-INTEGRAL-17E19S1684AB4-330RA` (x3) | `efficiency` (0.35 typical) | StepperOnline (email) |
+| 1 | `CTRL-OCTOPUS-V1.1` | 4 typical ratings (logic power, max ambient, output resistance, thermistor pull-up). Geometry now BTT's V1.0 STEP, accepted by the owner for the V1.1 | BTT (email) |
+| 2 | `EXTRUDER-E3D-ROTO` | 3 motor ratings | E3D (email) |
+| 2 | `HOTEND-REVO-24V-40W` | resistance at 23 degC, volts | E3D (email) |
+| 2 | `SPACER-AL-M5-10x5.1x9.75` | no stock product at 9.75 mm; no McMaster / MISUMI number could be confirmed (digikey.com is outside this session's network; McMaster pages give no numbers to a search) | owner: a stock 10 mm M5 spacer (belt 0.25 mm off) or a part number |
+| 2 | `ENDSTOP-MICRO` (x2) | the OMRON D2F-01L sits on a generated 20 x 12.5 board; no bought module | owner: a module, or the bare D2F-01L on its own two 2.0 mm holes at 5.2 mm (needs M2 screws whose McMaster numbers are not in hand, and both switch mounts re-laid) |
+| 3 | `SPOOL-1KG-FILAMENT`, `SPACER-M8-12x8.4x43 / x58.32`, `PTFE-COUPLER-4MM` (x2), `SHCS-M8x140`, `NUT-M8`, `WASHER-M8`, `BRG-608` (x2), PTFE tube (BOM line) | the filament supply's products (REQ-018) | Instinct REQ-018 |
 
-Cost and lead times per stage: see "Sourcing and the Build 1 schedule" below (`out/sourcing/printer_v12/`).
-
-Critical path for stage 1: the four placeholders above are paperwork (ratings and one CAD file), not missing parts; the
-long-lead purchased items are listed in the schedule. The Hydra pad's thickness and the MIC-6 plate's flatness are
-receiving checks.
+Cost and lead times per stage: "Sourcing and the Build 1 schedule" below.
 
 ## The short answers
 
@@ -45,6 +40,7 @@ receiving checks.
 | X travel | **186.6 mm** (189.6 mechanical) on a stock HIWIN MGNR12R **245 mm** rail (5 mm of rail beyond the block at each end). v11: 191.6 on a 250 mm rail. |
 | Y travel | **208.1 mm** (v11: 214.5): the owner's 30T idlers (MISUMI AGTFW30) are 3.2 mm larger in radius; the Y idlers sit 0.7 mm further forward than v11's formula and the rear lead screw 0.9 mm forward (envelope 420 mm kept); front over-travel is 0.5 mm (soft limit) instead of 1.5. |
 | Z travel | 180 mm + 1.65 mm over-travel. HIWIN MGNR12R 295 mm Z rails. |
+| Size | Machine **388 x 419.5 x 475.9 mm** (inside the owner's 420 x 420 x 480). With the owner's later requests, the rear spool holder and the NFJN5-30 feet: **389 x 510.4 x 511.4 mm** (the design's envelope check is set to 420 x 515 x 515; a requirement holds the machine itself to 420 x 420 x 480). |
 | Print area | **186.6 x 208.1 mm** (388 cm2; v11: 411). On a 220 x 220 sheet: 80.2 % of it. |
 | Bed | **Hydra Research SQ1451144** 210 x 210 mm 24 V 200 W pad (owner, 2026-11-20; NPH drawing NPHSF365) under a **240 x 240 x 6.35 mm MIC-6** plate (v11: 232): the three studs moved out to 112 mm so their washers clear the pad by 2.5 mm; the pad covers 100 % of the print area. Cantherm CS712025Y thermostat in the rear-right corner (1.1 mm off the pad's corner). |
 | Bed limits | (a) 0.131 mm of 0.3; **(b) after the START_PRINT soak (3 carrier time constants, 30 min): 0.0026 mm** of 0.1 (cold-probed bound 0.085 mm; v11 failed (b) at 0.101); (c) 0.031 mm of 0.2. |
@@ -94,6 +90,35 @@ BTT Eddy Duo (stage 2); Arducam B0454 nozzle camera with a CIL062 lens; Quarton 
 and a Klipper output pin; Pi Camera 3 overview (top front rail) and top-down (top back rail) cameras; BTT ADXL345 V2 on USB;
 BTT SFS V2 on the top back rail; 24 V COB LEDs in printed clips. **Open item:** the nozzle camera, lens, laser, nozzle LEDs and
 toolhead ADXL are BOM lines only: their toolhead bracket is not drawn (the Eddy fills the rear view).
+
+### Feet (owner, 2026-11-20, stage 1; pending the owner's confirmation)
+Four **MISUMI NFJN5-30** levelling mounts (M5 x 30, 30 mm swivel foot, all metal, 1.5 kN, 15 g; MISUMI's STEP, catalogue p.3166).
+**The frame's corners are on the bottom side rails** (horizontal: the posts stand on them), so there is no downward end tap and
+no MISUMI end-tap alteration applies. Each mount screws into a drop-in T-nut (MISUMI HNTAJ5) in the rail's **bottom** slot, 25 mm
+in from the post, locked by a DIN 934 nut against the rail's underside; the screw reaches 5 mm into the slot (0.5 mm off its
+floor). Frame 35.5 mm above the floor; nothing hangs below the bottom rails, so that is also the clearance under the bay
+(the tray is on top of the rails). The outer side faces stay free for the enclosure. **Rocking mode (estimate):** 18.5 kg
+(with a full spool) on four feet 320 mm apart, CoG about 200 mm up: f = 15 Hz at 100 N/mm per foot, 26 at 300, 33 at 500, 47 at
+1000, about 67 at 2000. The all-metal NFJN is stiff in compression, but its swivel and a soft desk set the real figure:
+**anywhere from 30 to 70 Hz can land on the Y input shaper (MZV 58.6 Hz) or the X (EI 90.4 Hz) range: flag. Measure with the
+ADXL345 on the frame (TEST_RESONANCES with the chip on the frame) before trusting the shaper.** A rigid-body rocking moves nozzle
+and bed together, so its print error is smaller than its amplitude. Fallback: MISUMI HAJP5-2020-6 plate + McMaster 6301K78 M6
+rubber foot (both staged; needs the plate on a rail end, i.e. a frame change at the corners).
+
+### Filament supply (owner, 2026-11-20, stage 3)
+A 1 kg spool (placeholder: 200 OD, 52 bore, 68 wide, 1.25 kg) behind the frame, its front face at y 236 (clear of the rear nut
+plate and Y motors, which reach y 226), hanging by its hub on two 608 bearings on a cantilevered M8 x 140 axle (spool lifts off
+the free end: no tools), the axle clamped in a flat 6061 .125 plate (SendCutSend) on the top back rail's rear face, inboard of
+the right Y motor. Filament from the spool's top to the **SFS V2, now standing vertical** (in at the bottom, out at the top),
+then a 4 mm PTFE tube with push-fit couplers to the Roto's inlet. **Check (requirement):** the tube, taken as straight up from
+both ends joined by a half circle, touches no part over the whole X / Y travel; least bend radius **52 mm** (limit 50 until
+the datasheet: thin), at the rear corners; path 187 to 557 mm: **cut the tube about 610 mm**. Drag (estimate) under 2 N against
+the Roto's tens of newtons. Spool mass on the frame: 1.25 kg at the top rear (the frame-mode FEA is of the frame alone; the
+spool lowers the rocking mode above by about 3 %).
+
+### Enclosure (V13, owner): nothing added in v12. The outer faces used: the top front rail's top (overview camera), the top
+back rail's rear face (top-down camera, SFS, spool plate), the top right rail's top slot (Y switch), the bottom left rail's
+side (inlet panel, earth stud). The feet use the bottom slots.
 
 ### Printed parts
 PETG, all at Hubs (assigned per part); none in a load path: part duct, two mains covers, Eddy holder, two camera mounts, SFS
