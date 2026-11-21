@@ -554,3 +554,7 @@ Steps 1-5 fit inside the printer's ordering and lead-time window (print service 
 - Inspection method left open (owner comment, 2026-11-21): vision/scanning is the ideal, but contact tools (digital
   calipers, pin gauges, indicators) in an arm-loaded fixture, or by hand at first, may be needed; the arm presents each part
   to whichever method a dimension needs. See docs/INSPECTION_STRATEGY.md.
+- No dedicated work cell for now (owner comment, 2026-11-21): the arm is small and low-force, so it sits on the bench in
+  front of the printer with whatever stations a job needs. Kept: the Klipper/Moonraker handshake and light safety (shared
+  hardwired e-stop also cutting arm motor power, 24 V, current-limited joints, laser off with the arm inside). Detailed
+  cell layout, standards and guarded-cell items are deferred.
