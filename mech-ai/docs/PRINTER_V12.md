@@ -9,8 +9,9 @@ the v12 plan (HIWIN rails, 9 mm belts, stock bed heater, the full electronics ba
 "What changed"). Every part carries a build stage: **1** frame, electronics bay, bed and Z; **2** gantry and toolhead; **3**
 feedback (cameras, filament sensor, lights, laser, accelerometer).
 
-**Verify (all 13 verifiers, `--tier full --no-render`, on the final design): see "What was run" (VERIFY_LINE).** All errors are the
-DG-07 purchased-part rule (placeholders, listed by stage below). Every other verifier passes. Report: `out/printer_v12/report.json`.
+**Verify (final code, affected tier, finished 2026-11-21 04:02 UTC; earlier full runs in "What was run"): FAILS on the
+purchased-part rule only: 10 errors (7 placeholder SKUs, 13 parts), 171 warnings.** The other 12 verifiers pass; **45 of 45
+requirements met.** Report: `out/printer_v12/report.json`.
 
 ## Build 1 stage-1 readiness
 
@@ -25,6 +26,8 @@ check; their inspection plans are in `inspect_form/plans/printer_v12/`.
 | 1 | `NEMA17-48-LEADSCREW-TR8x2-330-AB4` (x3) | `rotor_inertia_gcm2`, `efficiency` (not on drawing A4003) | StepperOnline (email) |
 | 1 | `TR8x2-INTEGRAL-17E19S1684AB4-330RA` (x3) | `efficiency` (0.35 typical) | StepperOnline (email) |
 | 1 | `CTRL-OCTOPUS-V1.1` | 4 typical ratings (logic power, max ambient, output resistance, thermistor pull-up). Geometry now BTT's V1.0 STEP, accepted by the owner for the V1.1 | BTT (email) |
+| 1 | `ESTOP-MUSHROOM-22MM-LATCHING-NC`, `SAFETY-RELAY-24V-MANUAL-RESET` (BOM lines) | the owner's hardwired safety chain: products with CAD being found (REQ-021); placed in the bay in v12.1 with the supply change | Instinct REQ-021 |
+| 2 | `DOWEL-PIN-4x8` (x3) | the sheet's locating pins: product with CAD (REQ-021) | Instinct REQ-021 |
 | 2 | `EXTRUDER-E3D-ROTO` | 3 motor ratings | E3D (email) |
 | 2 | `HOTEND-REVO-24V-40W` | resistance at 23 degC, volts | E3D (email) |
 | 3 | none | the spool axle is MISUMI SFAL8-108-B15-S15 with McMaster 90592A022 nuts, NSK 608ZZ (MISUMI B608ZZ STEP), turned sleeves; the X idler spacer is McMaster 94669A079 | |
@@ -151,11 +154,11 @@ JST XH housings and headers (JST's STEPs; the SXH contact re-made from the datas
 
 | Stage | Purchased lines | Purchased $ (build of 1) | Earliest finish | Gated by |
 |---|---|---|---|---|
-| 1 frame, bay, bed, Z | 89 | SRC1 | SRCL1 | SRCG1 |
-| 2 gantry, toolhead | 28 | SRC2 | 11 business days | the printed Eddy holder and duct |
-| 3 feedback, filament supply | 22 | SRC3 | 11 business days | the printed camera / SFS mounts and LED clips |
+| 1 frame, bay, bed, Z | 91 | $2,391.06 | **138 business days** (11 with an in-stock supply) | the Mean Well LRS-350-24 (no stock); otherwise the printed mains covers |
+| 2 gantry, toolhead | 29 | $596.22 | 11 business days | the printed Eddy holder and duct |
+| 3 feedback, filament supply | 19 | $336.01 | 11 business days | the printed camera / SFS mounts and LED clips |
 
-Fabricated parts carry no live price (SendCutSend / Xometry / Hubs quotes are not automated: about $24 of design floors).
+Purchased total $3,323.29 for one machine (old verify estimate $2,353.92); fabricated parts carry no live price (SendCutSend / Xometry / Hubs quotes are not automated: about $24 of design floors).
 The purchased total is inflated by about $640: the 16 AWG silicone wire is priced as two 500 ft spools (the tool takes the
 smallest offer it found). **The Mean Well LRS-350-24 has no distributor stock (Mouser 0, 189-day lead) and sets a 138-business-day
 critical path.** Alternatives checked live the same day (`--list`, all universal input, no 115/230 switch needed):
@@ -188,7 +191,7 @@ critical path.** Alternatives checked live the same day (`--list`, all universal
 ## What was run (2026-11-20 / 21)
 - Full verifies (`--tier full --no-render`) on each major state: 20:57 (11 errors, all DG-07), then after the feet / spool /
   Octopus / JST changes (17 errors, DG-07 only, 01:49), then **affected-tier verifies after each later owner change, the last on
-  the final code: VERIFY_LINE**. Memory: two runs died (signal 9) when a second job ran beside a verify and when the full
+  the final code: FAILS on the purchased-part rule only: 10 errors (7 placeholder SKUs, 13 parts), 171 warnings; all other 12 verifiers pass; 45 of 45 requirements met (affected tier, finished 2026-11-21 04:02 UTC)**. Memory: two runs died (signal 9) when a second job ran beside a verify and when the full
   Octopus STEP was loaded; both fixed (one heavy job at a time; the Octopus display model reduced to BTT's 59 large solids).
 - `score --assembly`, `tune`, and the firmware-in-the-loop print (`out/printer_v12/fil/bracket/`) on the design before the feet
   and spool were added (the toolhead and gantry are unchanged since).
