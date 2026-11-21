@@ -34,6 +34,17 @@ h1{font:600 22px/1.2 var(--f-head);margin:0;letter-spacing:.01em}
 main{display:grid;grid-template-columns:300px minmax(0,1fr) minmax(0,42%);gap:0;height:calc(100% - var(--hh,120px))}
 @media (max-width:1100px){main{grid-template-columns:270px minmax(0,1fr);height:auto} .view{grid-column:1/-1;order:-1;height:46vh;position:relative!important;top:0!important}}
 @media (max-width:720px){main{grid-template-columns:minmax(0,1fr)} nav.side{max-height:44vh}}
+nav.side,section.detail{position:relative}
+nav.side .tabs{padding-right:34px}
+.pcol{position:absolute;top:5px;right:5px;z-index:6;width:26px;height:26px;border:1px solid var(--line);border-radius:4px;background:var(--panel);color:var(--muted);cursor:pointer;font:600 15px/1 var(--f-mono);padding:0;display:flex;align-items:center;justify-content:center}
+.pcol:hover{color:var(--accent);border-color:var(--accent)}
+section.detail>.pcol{position:sticky;top:0;float:right;margin:-10px 6px 0 0}
+main.navc nav.side>*:not(.pcol),main.detc section.detail>*:not(.pcol){display:none!important}
+main.navc nav.side>.pcol,main.detc section.detail>.pcol{position:static;float:none;margin:6px auto}
+main.navc nav.side,main.detc section.detail{overflow:hidden;padding-block:0;background:var(--panel)}
+@media (min-width:1101px){main.navc{grid-template-columns:38px minmax(0,1fr) minmax(0,42%)}main.detc{grid-template-columns:300px 38px minmax(0,1fr)}main.navc.detc{grid-template-columns:38px 38px minmax(0,1fr)}}
+@media (max-width:1100px) and (min-width:721px){main.navc{grid-template-columns:38px minmax(0,1fr)}main.detc{grid-template-columns:minmax(0,1fr) 38px}main.navc.detc{grid-template-columns:38px 38px}}
+@media (max-width:720px){main.navc nav.side,main.detc section.detail{max-height:40px}}
 nav.side{background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;overflow:hidden}
 .tabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto}
 .tabs button{flex:1;font:600 12px var(--f-head);letter-spacing:.06em;text-transform:uppercase;padding:10px 6px;border:0;background:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
@@ -260,6 +271,7 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
 
 <main id="main">
   <nav class="side" aria-label="Design navigator">
+    <button type="button" class="pcol" id="navcol" aria-expanded="true" aria-controls="list" title="Collapse the navigator">&lsaquo;</button>
     <div class="tabs" role="tablist">
       <button role="tab" data-tab="asm" aria-selected="true">Assemblies</button>
       <button role="tab" data-tab="parts" aria-selected="false">Parts</button>
@@ -278,7 +290,7 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
     <div class="list" id="list"></div>
   </nav>
 
-  <section class="detail" id="detail" aria-live="polite"><div class="wrap" id="dw"><p class="empty">Loading the design…</p></div></section>
+  <section class="detail" id="detail" aria-live="polite"><button type="button" class="pcol" id="detcol" aria-expanded="true" title="Collapse the details pane">&lsaquo;</button><div class="wrap" id="dw"><p class="empty">Loading the design…</p></div></section>
 
   <div class="view" id="view">
     <canvas id="gl" aria-label="3D view of the printer. Click a part to open it."></canvas>
@@ -961,5 +973,14 @@ $('mksend').onclick=async()=>{
   $('mkmsg').textContent=note.join(' ');
   if(saveR.status==='fulfilled'){$('mktext').value='';MK.marks=[];setTimeout(()=>{if($('mk').open)$('mk').close()},2600)} else $('mksend').disabled=false;
 };
+(function(){const m=$('main');
+ function apply(){const n=m.classList.contains('navc'),d=m.classList.contains('detc');
+  $('navcol').innerHTML=n?'&rsaquo;':'&lsaquo;';$('navcol').setAttribute('aria-expanded',!n);$('navcol').title=n?'Expand the navigator':'Collapse the navigator';
+  $('detcol').innerHTML=d?'&rsaquo;':'&lsaquo;';$('detcol').setAttribute('aria-expanded',!d);$('detcol').title=d?'Expand the details pane':'Collapse the details pane';
+  requestAnimationFrame(()=>{try{resize3D();sizeMain();placePanels()}catch(e){}})}
+ m.classList.toggle('navc',!!LS.get('navc',false));m.classList.toggle('detc',!!LS.get('detc',false));apply();
+ $('navcol').onclick=()=>{m.classList.toggle('navc');LS.set('navc',m.classList.contains('navc'));apply()};
+ $('detcol').onclick=()=>{m.classList.toggle('detc');LS.set('detc',m.classList.contains('detc'));apply()};
+})();
 initCaps();
 </script>
