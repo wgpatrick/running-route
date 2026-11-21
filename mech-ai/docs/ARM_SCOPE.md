@@ -571,3 +571,8 @@ Steps 1-5 fit inside the printer's ordering and lead-time window (print service 
 - Filament, spool and nozzle tasks: dropped from Arm Build 1 (owner, 2026-11-21).
 - Air (owner, 2026-11-21): no shop air; a small 12 V vacuum pump only if a suction tool earns its place; no compressor.
 - Compute (owner, 2026-11-21): a separate arm computer.
+- People in the room during unattended runs (owner, 2026-11-21): not a concern for now; deferred.
+- Stage targets and requirements (owner deferred to the design agent, 2026-11-21): keep the 1 kg payload, since the sheet
+  pull sets it (sheet + print + tool about 0.8 kg). Keep 0.2 mm (3 sigma) at assembly poses as a provisional target; test 4
+  (the printer used as a precise Cartesian robot) measures the real insertion window with chamfers and compliance, and that
+  number replaces it. A wider window (about 0.5 mm) would make printed rotary joints viable. Sheet poses: 1 mm.
