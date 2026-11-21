@@ -139,6 +139,7 @@ import math
 import re
 
 import numpy as np
+from build123d import Circle, make_hull
 from build123d import (Box, Cylinder, GeomType, Location, Plane, Polygon, Pos, RectangleRounded, RegularPolygon, Rot,
                        chamfer, extrude, fillet)
 
@@ -302,7 +303,11 @@ DECK_FIT, DECK_FREE = 4.3, 5.5
 LS_Y = 201.6           # v12: 0.9 forward (the 420 mm envelope with the Y idlers 0.7 forward); v11: 202.5, rear lead screw outboard of the back wall (v10: 170, on the bottom back rail)
 FS_X = 144.5           # v11: front lead screws inboard of the side rails (v10: 160, over them)
 FS_Y = -101.0
-NUT_OUT_R = LS_Y - SQ_Y1      # 57.1: the rear nut plate reaches out through the back wall
+if CH("rear-z-inside"):
+    # v12.1 rear-z-inside: the rear screw inside the frame, 1.5 mm from the back wall's inner face like the fronts from the side
+    # walls' (front screw x 144.5 + 4 = 148.5, wall 150): y = 160 - 5.5 = 154.5, 9.1 mm out from the square's rear face
+    LS_Y = Y_FACE - (WALL_X - FS_X)
+NUT_OUT_R = LS_Y - SQ_Y1      # 57.1: the rear nut plate reaches out through the back wall (rear-z-inside: 9.1, as the fronts)
 NUT_OUT_F = FS_X - SQ_X       # 9.1
 NUT_OUT = NUT_OUT_F
 NUT_PIN = (-9.25, 9.25)       # v12: a corner hole of the POM nut's flange (4 x M4 on 18.5, drawing A4003)         # v11: the anti-rotation pin in a corner hole of the POM nut's square flange
@@ -397,7 +402,16 @@ Z_SQB = Z_SQ - 10.0
 T_NP = G95                                        # v11: nut plates 9.525 mm 6061 (v10 6.35): the rear one reaches 57 mm out through the back wall
 Z_TAB = Z_SQB - T_NP                              # underside of the nut plates = top of each nut's flange
 ZC = Z_SQB - L_FLEX - 1.0 - 22.7                  # centre of the guide blocks (they hang below the square on the plates' webs)
-Z_RAIL_C = Z_RAIL_C_FIXED                            # v11: rails where v9 / v10 had them; the blocks ride 6.35 mm higher (11.5 mm of rail below, 8.5 above)
+# v12.1 carriage-plate-rigid: a rigid 1/4 in 6061 angle (stock, cut and drilled) per block. Leg A (ANG_A tall) on the block's
+# face, leg B (ANG_B) under the square's member, two M5 up into its bottom slot. The block rises to sit 1 mm under leg B; the
+# rails rise with it (Z_RAIL_DZ) so the block's travel on its rail is unchanged.
+T_ANG, ANG_A, ANG_B, ANG_L = G64, 50.8, 25.4, 50.0      # 2 x 1 x 1/4 in angle, cut 50 mm long
+ANG_R_IN = 6.35                                         # the angle's inside root radius (stock aluminium angle; ASSUMED = wall)
+ZC_V12 = ZC
+if CH("carriage-plate-rigid"):
+    ZC = Z_SQB - T_ANG - 1.0 - 22.7
+Z_RAIL_DZ = ZC - ZC_V12
+Z_RAIL_C = Z_RAIL_C_FIXED + Z_RAIL_DZ                            # v11: rails where v9 / v10 had them; the blocks ride 6.35 mm higher (11.5 mm of rail below, 8.5 above)
 NP_HOLE = 2 * (4.0 + NUT_FLOAT) + 0.8             # v11: the screw passes the plate with the nut's float (the POM nut's barrel hangs BELOW)
 KP_HOLE = 2 * (18.0 / 2 + NUT_FLOAT) + 0.8        # v12: the A4003 barrel, dia 18        # v11: the keeper's hole: the POM barrel (12.7, stand-in) with its float
 NP_U, NP_R1 = 27.75, 23.5                         # nut plate: half length along the member (v11: 27.75, clear of the posts' drivers), reach beyond the nut
@@ -808,6 +822,98 @@ def carriage_plate_local(z_blk):
     for u in (-10.0, 10.0):
         for v in (-10.0, 10.0):
             s -= Pos(u, z_blk + v, T_CP / 2) * Cylinder(clearance_hole("M3") / 2, T_CP)
+    return s
+
+
+NUT_FLANGE_HOLES = [(sx * 9.25, sy * 9.25) for sx in (-1, 1) for sy in (-1, 1)]   # A4003: 4-M4 on an 18.5 square (flange 26 sq)
+NP_R1_D = 17.0          # znut-direct: the plate's reach beyond the screw (flange half-width 13 + 4)
+NP_HOLE_D = 9.0         # znut-direct: the screw passes the plate with 0.5 mm all round (the nut, bolted under it, centres it)
+INSERT_M4_HOLE = 4.2    # tap drill for an M4 steel wire-thread insert (STI tap); the insert gives the M4 thread
+NUT_SCREW_L = 12        # M4 x 12: 5 mm flange + 7 mm into the 9.525 mm plate's insert
+
+
+def nut_plate_direct_local(z0, z1, nut_out=NUT_OUT):
+    """v12.1 znut-direct. Nut plate, rebuilt from its spec (not patched from the floating-nut plate).
+
+    Spec
+    - Function: carries the bed's share of weight and the Z thrust from the lead-screw nut into the carrier's 2020 square;
+      holds the nut square to its screw (the nut is bolted to it: no float, no keeper, no anti-rotation pin).
+    - Interfaces / mates: top face against the underside of the square's member (two M5 from below into T-nuts in the member's
+      bottom slot, 40 mm apart, 10 mm in from the member's outer face); underside against the POM nut's 26 mm square flange
+      (StepperOnline drawing A4003): four M4 through the flange's own holes (18.5 mm square) into M4 steel thread inserts in
+      this plate (practice DG-02: no thread tapped straight into aluminium we make); the screw passes a 9 mm hole, open to the
+      plate's outer edge so the plate slides onto a screw whose motor already stands in the frame.
+    - Loads: 3 x the bed's weight up through the flange (FEA nut_thrust); the drive torque reacted by the four M4.
+    - Process: 9.525 mm (3/8 in) 6061-T6 laser cut at SendCutSend; inserts fitted by the builder.
+    - Envelope: under the member from its inner edge to `nut_out` + NP_R1_D beyond its outer face; 2 NP_U along the member.
+    Local frame: x along the member, y outward from the square (the screw at the origin), z as given."""
+    h = z1 - z0
+    y0, y1 = -nut_out - 20.0, NP_R1_D
+    s = Pos(0, (y0 + y1) / 2, z0) * extrude(RectangleRounded(2 * NP_U, y1 - y0, 3.0), h)
+    s -= zc(0, 0, z0, z1, NP_HOLE_D / 2)
+    s -= bx(-NP_HOLE_D / 2, NP_HOLE_D / 2, 0.0, y1 + 1.0, z0, z1)          # open outward: the plate slides onto the screw
+    for u, v in NUT_FLANGE_HOLES:
+        s -= zc(u, v, z0, z1, INSERT_M4_HOLE / 2)
+    for u in (-NP_BOLT_U, NP_BOLT_U):
+        s -= zc(u, -nut_out - 10.0, z0, z1, clearance_hole("M5") / 2)
+    return s
+
+
+def carriage_angle_local(z_blk):
+    """v12.1 carriage-plate-rigid. Carriage bracket between one Z guide block and the carrier's square, from its spec.
+
+    Spec
+    - Function: ties the MGN12H block rigidly to the 2020 square (no flexure: the three rails are aligned at assembly, one rail
+      the datum, the others settled by running the carrier and then tightened top to bottom).
+    - Interfaces / mates: leg A on the block's mounting face, four M3 through it into the block's own threads (the block's hole
+      pattern, from HIWIN's interface data, passed in by the caller as z_blk and the 20 x 20 square); leg B under the square's
+      member, two M5 up into T-nuts in its bottom slot (the slot's centre line, T_CP + 10 mm in from the block's face).
+    - Loads: the carrier's moments about the rail (bed weight off-centre, Z_TILT_ADJUST tilt) and side loads from rail
+      misalignment left after the alignment; stiff in every direction.
+    - Process: a 50 mm length of 6061-T6 structural angle, 2 x 1 x 1/4 in (stock, root radius taken as 1/4 in), saw cut and
+      drilled (6 holes); no laser part can do it: a straight 1/4 in plate cannot sit between the block's face and the square's
+      outer face, which are 1.6 mm apart.
+    - Envelope: leg A between the block's face and 6.35 mm inboard, from the square's underside down 50.8; leg B under the
+      member, 25.4 inboard from the block's face; 50 along the wall.
+    Local frame as carriage_plate_local: x along the wall, y up (0 on the square's centre line), z from the block's face (0)
+    towards the square. z_blk: the block's centre, from the square's centre line."""
+    yt = -10.0                                                     # the square's underside
+    s = bx(-ANG_L / 2, ANG_L / 2, yt - ANG_A, yt, 0.0, T_ANG)        # leg A, on the block
+    s += bx(-ANG_L / 2, ANG_L / 2, yt - T_ANG, yt, 0.0, ANG_B)       # leg B, under the member
+    r = ANG_R_IN
+    root = bx(-ANG_L / 2, ANG_L / 2, yt - T_ANG - r, yt - T_ANG, T_ANG, T_ANG + r)
+    root -= Pos(0, yt - T_ANG - r, T_ANG + r) * Rot(0, 90, 0) * Cylinder(r, ANG_L)
+    s += root
+    for u in (-10.0, 10.0):
+        for v in (-10.0, 10.0):
+            s -= Pos(u, z_blk + v, T_ANG / 2) * Cylinder(clearance_hole("M3") / 2, T_ANG)
+    for u in (-CP_BOLT_U, CP_BOLT_U):
+        s -= Pos(u, yt - T_ANG / 2, T_CP + 10.0) * Rot(90, 0, 0) * Cylinder(clearance_hole("M5") / 2, T_ANG)
+    return s
+
+
+def motor_plate_arcs(x0, y0, posts, z_mf):
+    """v12.1 (rear-z-inside). Z motor plate, from its spec, drawn with true arcs (v12's was a hull of 40-gon circles).
+
+    Spec
+    - Function: holds one lead-screw motor (StepperOnline 17E19S1684AB4-330RA) square under it, on two posts on a bottom rail.
+    - Interfaces / mates: the motor's 22 mm pilot in a 22.3 mm hole; four M3 clearance holes on the motor's 31 mm square
+      (drawing A4003); two M5 clearance holes on the posts' axes.
+    - Loads: the motor's weight, the bed's thrust share (the screw pulls the motor up when the bed is pushed down), the drive torque.
+    - Process: 6.35 mm 6061-T6 laser cut (SendCutSend).
+    - Envelope: the convex hull of 6.5 mm round each motor screw and 8 mm round each post.
+    """
+    h = 31.0 / 2
+    circles = [Pos(x0 + ox, y0 + oy) * Circle(6.5) for ox in (-h, h) for oy in (-h, h)] + [Pos(px, py) * Circle(8.0) for px, py in posts]
+    hull = make_hull([e for c in circles for e in c.edges()])
+    z_t = z_mf + T_MP
+    s = Pos(0, 0, z_mf) * extrude(hull, T_MP)
+    s -= zc(x0, y0, z_mf, z_t, MP_PILOT_HOLE / 2)
+    for ox in (-h, h):
+        for oy in (-h, h):
+            s -= zc(x0 + ox, y0 + oy, z_mf, z_t, clearance_hole("M3") / 2)
+    for px, py in posts:
+        s -= zc(px, py, z_mf, z_t, clearance_hole("M5") / 2)
     return s
 
 
@@ -1289,8 +1395,13 @@ def build_z_mount(d, tag, x0, y0, turn, posts, rail, on_tray):
     z_mf, z_base, lens = (Z_MF_F, Z_BASE_F, POSTS_F) if on_tray else (Z_MF_R, Z_BASE_R, POSTS_R)
     z_t = z_mf + T_MP
     names = [plate, mot, scr]
-    sheet(d, plate, motor_plate_shape(x0, y0, posts, z_mf), AL)
-    place(d, mot, leadscrew_motor_a4003(), Location((x0, y0, z_mf), (0, 0, turn)))
+    if tag == "" and CH("rear-z-inside"):
+        sheet(d, plate, motor_plate_arcs(x0, y0, posts, z_mf), AL, description=(
+            f"Rear Z motor plate (v12.1): 6.35 mm 6061, the motor hung under it by its pilot and four M3, on two turned posts on the "
+            f"bottom back rail (like the front plates, posts on the rail's line, the motor 15.5 mm inboard of it); outline true arcs."))
+    else:
+        sheet(d, plate, motor_plate_shape(x0, y0, posts, z_mf), AL)
+    place(d, mot, leadscrew_motor_a4003_tapped() if CH("zmotor-holes") else leadscrew_motor_a4003(), Location((x0, y0, z_mf), (0, 0, turn)))
     place(d, scr, leadscrew_screw_a4003(Z_SCREW_ABOVE), Location((x0, y0, z_mf)))
     d.join(scr, mot, "integral screw: the motor's shaft")
     d.get(scr).meta["description"] = (f"Tr8x2 lead screw: the shaft of {mot} itself (StepperOnline 17E19S1684AB4-330RA), used as sold: "
@@ -1387,7 +1498,8 @@ def build_frame_z():
         car = place(d, f"z_carriage_{nm}", hiwin_mgn12h_block(), Location(plane(ZC)), body="zbody", guides="z")
         # the mount floats along the wall's normal on the plate's web (tolerance verifier: mechloop.tolerance._rail_set)
         E_, G_ = MATERIALS[AL].E, MATERIALS[AL].E / (2 * (1 + MATERIALS[AL].nu))
-        car.meta["guide_float"] = {"axis": tuple(nv), "stiffness_n_per_mm": round(K_FLEX, 1), "range_mm": FLEX_RANGE,
+        if not CH("carriage-plate-rigid"):
+          car.meta["guide_float"] = {"axis": tuple(nv), "stiffness_n_per_mm": round(K_FLEX, 1), "range_mm": FLEX_RANGE,
                                    # v10: the web itself, for the allowable screw tilt (bed_support.tilt_allowance): its
                                    # stress when the carrier is tilted against the block. kt: a flat bar stepping from
                                    # 50 to 24 mm with 3 mm radii, in bending (Peterson's charts give about 1.7; ASSUMED)
@@ -1399,8 +1511,30 @@ def build_frame_z():
                                                              "about_across": round(E_ * CP_WEB * T_CP ** 3 / 12 / L_FLEX),
                                                              "about_travel": round(G_ * CP_WEB * T_CP ** 3 / 3 / L_FLEX)}}
         face = np.array([bx_, by_, Z_SQ]) + RAIL_FACE * nv          # on the block's mounting plane, at the square's centre line
-        cp = Location(Plane(origin=tuple(face), x_dir=tuple(tv), z_dir=tuple(nv))) * carriage_plate_local(ZC - Z_SQ)
+        member = "sq_rear" if nm == "rear" else f"sq_{nm}"
         pl = f"carriage_plate_{nm}"
+        if CH("carriage-plate-rigid"):
+            frame = Location(Plane(origin=tuple(face), x_dir=tuple(tv), z_dir=tuple(nv)))
+            d.add(pl, frame * carriage_angle_local(ZC - Z_SQ), material=AL, body="zbody", process="machined", meta={
+                "finish": "bare", "form": "cut from stock angle", "edge_break_mm": 0.3, "dfm": {"shop": "xometry"},
+                "cnc_reason": "a 50 mm length of 6061-T6 structural angle 2 x 1 x 1/4 in, saw cut and drilled (6 holes): no flat laser "
+                              "part fits, the block's face and the square's outer face being 1.6 mm apart",
+                "description": (
+                    f"Carriage bracket ({nm}), v12.1: one of three identical rigid brackets cut from 6061 angle (2 x 1 x 1/4 in, 50 mm long). "
+                    f"Leg A is screwed to the guide block z_carriage_{nm} (four M3 x 10 into the block's own threads), leg B lies under the "
+                    f"2020 square's member {member} (two M5 x 12 up into T-nuts in its bottom slot). The block sits 1 mm under the square. "
+                    f"Rigid: the Z rails are aligned at assembly (rear rail the datum; left and right rails' screws left loose, the bed run "
+                    f"up and down so they settle, then tightened top to bottom).")})
+            for i, h in enumerate(car.meta["interfaces"]["mount_holes_m3"]):
+                add_screw(d, f"z_carriage_{nm}_screw_{i}", "M3", 10, at=tuple(np.array(h) + T_ANG * nv), direction=tuple(-nv), body="zbody",
+                          threads_into=f"z_carriage_{nm}", clamps=(pl,), washer=True, locking="adhesive")
+            for i, u in enumerate((-CP_BOLT_U, CP_BOLT_U)):
+                at = face + u * tv + (T_CP + 10.0) * nv + np.array([0.0, 0.0, -10.0 - T_ANG])
+                add_screw(d, f"{pl}_bolt_{i}", "M5", 12, at=tuple(at), direction=(0, 0, 1), body="zbody",
+                          threads_into=member, tnut=True, clamps=(pl,), washer=True, locking="adhesive")
+            guide_parts[nm] = (nv, np.array([bx_, by_]))
+            continue
+        cp = Location(Plane(origin=tuple(face), x_dir=tuple(tv), z_dir=tuple(nv))) * carriage_plate_local(ZC - Z_SQ)
         d.add(pl, cp, material=AL, body="zbody", process="sheet", meta={"finish": "bare", "description": (
             f"Carriage plate ({nm}): one of three identical flat 1.6 mm 6061 plates. Its top 20 mm is bolted to the 2020 square's "
             f"outer face (two M5, T-nuts); its bottom carries the guide block z_carriage_{nm} (four M3 x 5 into the block's own "
@@ -1410,7 +1544,6 @@ def build_frame_z():
         for i, h in enumerate(car.meta["interfaces"]["mount_holes_m3"]):
             add_screw(d, f"z_carriage_{nm}_screw_{i}", "M3", 5, at=tuple(np.array(h) + T_CP * nv), direction=tuple(-nv), body="zbody",
                       threads_into=f"z_carriage_{nm}", clamps=(pl,), washer=True, locking="adhesive")
-        member = "sq_rear" if nm == "rear" else f"sq_{nm}"
         for i, u in enumerate((-CP_BOLT_U, CP_BOLT_U)):
             add_screw(d, f"{pl}_bolt_{i}", "M5", 8, at=tuple(face + u * tv), direction=tuple(nv), body="zbody",
                       threads_into=member, tnut=True, clamps=(pl,), washer=True, locking="adhesive")
@@ -1433,7 +1566,33 @@ def build_frame_z():
 
     # ================= nut plates and captive floating POM nuts (v11) ==========
     zn0, zn1 = Z_TAB, Z_SQB
-    for tg, cx, cy, ang, member in NUTS:
+    for tg, cx, cy, ang, member in (NUTS if CH("znut-direct") else []):
+        # v12.1 znut-direct: the POM nut's flange bolted straight to the plate's underside (4 x M4 x 12 through the flange's own
+        # holes into steel thread inserts in the plate). No keeper, no spacers, no anti-rotation pin: the nut is fixed and the
+        # screw, held only at the motor and free at its top, bends to follow a carrier that is not exactly square to it
+        W = lambda u, r_: rxy(u, r_, cx, cy, ang)
+        n_out = NUT_OUT_R if tg == "" else NUT_OUT_F
+        d.add(f"nut_plate{tg}", rz(nut_plate_direct_local(zn0, zn1, n_out), cx, cy, ang), material=AL, body="zbody", process="sheet", meta={"finish": "bare"})
+        for i, u in enumerate((-NP_BOLT_U, NP_BOLT_U)):
+            add_screw(d, f"nut_plate{tg}_bolt_{i}", "M5", 16, at=(*W(u, -n_out - 10.0), zn0), direction=(0, 0, 1), body="zbody",
+                      threads_into=member, tnut=True, clamps=(f"nut_plate{tg}",), washer=True, locking="adhesive")
+        place(d, f"z_nut{tg}", leadscrew_nut_pom_a4003(), Location((cx, cy, Z_TAB), (0, 0, ang)), body="zbody")
+        for i, (u, v) in enumerate(NUT_FLANGE_HOLES):
+            add_screw(d, f"z_nut{tg}_screw_{i}", "M4", NUT_SCREW_L, at=(*W(u, v), Z_TAB - NUT_FT), direction=(0, 0, 1), body="zbody",
+                      threads_into=f"nut_plate{tg}", clamps=(f"z_nut{tg}",), insert="steel", locking="adhesive")
+            # A4003 marks the flange's holes "4-M4" without saying tapped or clear: drawn 4.0 (the catalogue part); if they are
+            # tapped, drill them out to 4.5 at the bench (FLAGGED, docs/PRINTER_V12_1.md)
+            d.allow_overlap(f"z_nut{tg}_screw_{i}", f"z_nut{tg}", max_volume=25.0)
+        d.join(f"z_nut{tg}", f"nut_plate{tg}", "bolted: 4 x M4 x 12 through the flange's own holes into steel thread inserts in the plate")
+        how = (f"How the bed is lifted (v12.1): the POM anti-backlash nut z_nut{tg} (supplied on the motor's screw; StepperOnline drawing A4003: "
+               f"26 mm square flange, 4-M4 on an 18.5 mm square) rides lead screw leadscrew{tg}. Its flange is bolted to the underside of this "
+               f"{T_NP:g} mm plate by four M4 x 12 through the flange's own holes into M4 steel thread inserts; the plate is bolted under the "
+               f"2020 square's member {member} (two M5 from below into T-nuts) and reaches {n_out:.1f} mm out to the screw. The nut is fixed: "
+               f"the screw, held only by its motor and free at its top end, bends slightly to follow any misalignment (as on a Voron Trident). "
+               f"The screw passes a 9 mm hole open to the plate's outer edge, so the plate slides onto a screw whose motor already stands.")
+        d.get(f"nut_plate{tg}").meta["description"] = "Laser-cut 6061 nut plate under the carrier's square. " + how
+        d.get(f"z_nut{tg}").meta["description"] = f"POM anti-backlash nut, bolted under nut_plate{tg}. " + how
+    for tg, cx, cy, ang, member in ([] if CH("znut-direct") else NUTS):
         W = lambda u, r_: rxy(u, r_, cx, cy, ang)
         n_out = NUT_OUT_R if tg == "" else NUT_OUT_F
         d.add(f"nut_plate{tg}", rz(nut_plate_local(zn0, zn1, n_out), cx, cy, ang), material=AL, body="zbody", process="sheet", meta={"finish": "bare"})
@@ -1545,10 +1704,10 @@ def build_frame_z():
     # ================= Z drive: three lead-screw motors, each on its own laser-cut plate ======
     mounts = []
     # v11: the rear motor stands outboard of the back wall; its plate's posts are in the bottom back rail's top slot (y 170)
-    rear_posts = [(-MP_POST_DX_R, FY / 2 - 10), (MP_POST_DX_R, FY / 2 - 10)]
+    rear_posts = [(-MP_POST_DX_R, FY / 2 - 10), (MP_POST_DX_R, FY / 2 - 10)]     # rear-z-inside: the same posts; the motor now 15.5 mm inboard of them
     # (tag, screw x, y, motor turn, posts, rail part, base: tray (front) or the rail (rear)). Connectors: rear to +X (along the
     # wall, clear of the rail), fronts inboard
-    mounts.append(("", 0.0, LS_Y, 0.0, rear_posts, "frame_bot_back", False))
+    mounts.append(("", 0.0, LS_Y, 270.0 if CH("rear-z-inside") else 0.0, rear_posts, "frame_bot_back", False))     # rear-z-inside: connector inboard (-Y)
     for sx, tg in ((-1, "_fl"), (1, "_fr")):
         # posts stay on the bottom side rail's centre line (x +/-160), the motor 15.5 mm inboard of it
         mounts.append((tg, sx * FS_X, FS_Y, 0.0 if sx < 0 else 270.0, [(sx * RAIL_X, FS_Y - MP_POST_DY), (sx * RAIL_X, FS_Y + MP_POST_DY - 1.0)],
@@ -1985,6 +2144,14 @@ def add_safety_chain(d):
     two spare input pairs: door interlock (future), smoke / heat detector (future)."""
     xe, ze = ESTOP_XZ
     yf = FRONT_Y - 10.0                                     # the front face of the front posts
+    if CH("estop-mount"):
+        add_estop_v121(d, xe, yf, ze)
+    else:
+        add_estop_v12(d, xe, yf, ze)
+    add_safety_relay(d)
+
+
+def add_estop_v12(d, xe, yf, ze):
     bp = bx(-212.0, -152.0, yf - G32, yf, ze - 25.0, ze + 25.0)
     bp -= Pos(xe, yf - G32 / 2, ze) * ycyl(22.3 / 2, G32)
     for zb in (ze - 13.0, ze + 13.0):
@@ -1996,6 +2163,76 @@ def add_safety_chain(d):
     place(d, "estop", estop_omron_a22e_m_02(), Location(Plane(origin=(xe, yf - G32, ze), z_dir=(0, -1, 0))))
     d.allow_overlap("estop", "estop_bracket")
     d.join("estop", "estop_bracket", "held by its own ring nut through the 22.3 mm hole")
+
+
+ESTOP_BRACKET_W = 50.0      # estop-mount: the L's width (height on the post), 5052 .125
+ESTOP_SLAP_N = 200.0        # estop-mount: a hard palm strike on the head (ASSUMED; EN ISO 13850 sets no force for the mount)
+
+
+def estop_bracket_local():
+    """v12.1 estop-mount. E-stop bracket, from its spec.
+
+    Spec
+    - Function: holds the OMRON A22E-M-02 (head forward, at hand height beside the front-left post) against a palm strike on its
+      head without rocking or bending noticeably.
+    - Interfaces / mates: an L wrapping the front-left post's front-RIGHT corner. Leg A (the panel) lies on the post's front face
+      and reaches left past the post to the e-stop's 22.3 mm cut-out (A22E panel 1 to 6 mm: this one 3.175); two M5 into T-nuts in
+      the post's FRONT slot. Leg B lies on the post's right-hand face, two M5 into T-nuts in its RIGHT slot. Two columns of screws
+      on two faces at 90 degrees: a push on the head is taken by leg B's screws in shear and leg A's in tension, nothing pivots
+      about one line of screws (v12's flat plate had both screws on one vertical line, 40 mm from the e-stop).
+    - Loads: ESTOP_SLAP_N on the head along +Y (assumed); FEA load case estop_slap.
+    - Process: 5052-H32 .125 in, laser cut and bent once at SendCutSend (3.18 mm inside radius, their only one for the gauge).
+      Not 6061: SendCutSend does not bend 6061 (its material page; the owner asked for 6061, flagged).
+    - Envelope: on the post's front and right faces at z 275 .. 325; leg A to x -214; the e-stop's body runs back outside the
+      frame's left side, 3 mm clear of the post.
+    Local frame of bent_L (outer corner at the origin; leg A along +Z, leg B along +X, width along Y); placed by one transform."""
+    t, r, w = B32, R_B32, ESTOP_BRACKET_W
+    xe, _ = ESTOP_XZ
+    corner_x = RAIL_X_POST_R + t                          # outer face of leg B
+    za = lambda x: corner_x - x                           # world x -> distance along leg A from the outer corner
+    xb = lambda y: y - (FRONT_Y - 10.0 - t)               # world y -> distance along leg B from the outer corner
+    holes_a = [(dz, za(-160.0), clearance_hole("M5")) for dz in (-13.0, 13.0)] + [(0.0, za(xe), 22.3)]
+    holes_b = [(xb(FRONT_Y), dz, clearance_hole("M5")) for dz in (-13.0, 13.0)]
+    return bent_L(t, r, za(-214.0), 30.0, w, holes_a=holes_a, holes_b=holes_b)
+
+
+RAIL_X_POST_R = -150.0      # the front-left post's right-hand face (x -150)
+
+
+def add_estop_v121(d, xe, yf, ze):
+    """v12.1 estop-mount: the A22E re-made with its block behind the panel, on the bent L (estop_bracket_local)."""
+    t = B32
+    corner = (RAIL_X_POST_R + t, yf - t, ze)
+    frame = Location(Plane(origin=corner, x_dir=(0, 1, 0), z_dir=(-1, 0, 0)))      # local Y -> world -Z (right-handed)
+    d.add("estop_bracket", frame * estop_bracket_local(), material="al5052", process="sheet", meta={
+        "finish": "bare", "bends": 1, "form": "bent",
+        "description": ("v12.1: e-stop bracket, 5052-H32 .125 in bent once (SendCutSend). An L round the front-left post's front-right "
+                        "corner: the panel leg on the post's front face carries the OMRON A22E-M-02 in its 22.3 mm cut-out, 30 mm left "
+                        "of the post; two M5 in the post's front slot and two in its right-hand slot (two columns, two faces).")})
+    for i, zb in enumerate((ze - 13.0, ze + 13.0)):
+        add_screw(d, f"estop_bracket_screw_{i}", "M5", 8, at=(-160.0, yf - t, zb), direction=(0, 1, 0), threads_into="post_lf", tnut=True,
+                  tnut_stock=tnut_hntp5(), clamps=("estop_bracket",), washer=True)
+        add_screw(d, f"estop_bracket_screw_{i + 2}", "M5", 8, at=(RAIL_X_POST_R + t, FRONT_Y, zb), direction=(-1, 0, 0), threads_into="post_lf",
+                  tnut=True, tnut_stock=tnut_hntp5(), clamps=("estop_bracket",), washer=True)
+    place(d, "estop", estop_omron_a22e_m_02_v2(t), Location(Plane(origin=(xe, yf - t, ze), z_dir=(0, -1, 0))))
+    d.join("estop", "estop_bracket", "held by its own ring nut on the panel's back face, through the 22.3 mm cut-out")
+    d.get("estop").meta["description"] = ("OMRON A22E-M-02 emergency stop (v12.1 model: switch block behind the panel, from the data "
+                                          "sheet's A22E-M drawing), in estop_bracket's panel leg, head forward at hand height.")
+
+    def sel_hole(dia):
+        def f(face):
+            if face.geom_type.name != "CYLINDER":
+                return False
+            try:
+                return abs(face.radius - dia / 2) < 0.05
+            except Exception:
+                return False
+        return f
+    d.loadcases.append(LoadCase("estop_slap", "estop_bracket", fixed=sel_hole(clearance_hole("M5")), loaded=sel_hole(22.3),
+                                force=(0.0, ESTOP_SLAP_N, 0.0), min_fos=2.0, max_deflection=0.5))
+
+
+def add_safety_relay(d):
     # safety relay: a horizontal WAGO rail across the back wall's rear faces (post_lb at x -160, upright_rear at x 65), at z 345: above
     # the rear nut plate's highest reach through the back wall (z 325) and under the top back rail
     yr = FY / 2
@@ -2230,6 +2467,12 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
                           drive={"motor": [f"z_motor{t}" for t in zs["tags"]], "kind": "leadscrew",
                                  "screw": [f"leadscrew{t}" for t in zs["tags"]],
                                  "nut": [f"z_nut{t}" for t in zs["tags"]], "sync": "independent", "nut_seating": "captive",
+                                 **({  # v12.1 znut-direct: the nut is bolted to its plate (4 x M4): nothing to move but the
+                                       # anti-backlash nut's own (spring-preloaded, assumed zero) backlash; it cannot rock, so the
+                                       # screw (free at its top end) bends to follow a tilted carrier instead (screw bending: tolerance)
+                                     "nut_reverse_gap_mm": 0.0,
+                                     "nut_reverse_gap_basis": "POM anti-backlash nut (no backlash: assumed) bolted to its plate (v12.1)"}
+                                    if CH("znut-direct") else {
                                  # v11: the POM anti-backlash nut has no backlash of its own (spring-preloaded: ASSUMED); what
                                  # it can move before bearing the other way is the keeper's 0.1 mm play
                                  "nut_reverse_gap_mm": KEEP_GAP,
@@ -2237,7 +2480,7 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
                                  # how far a nut's flange can rock between its plate and its keeper before the tilted carrier
                                  # forces the nut out of square with its screw (v11: the square flange, 23 mm, a stand-in figure)
                                  "nut_tilt_allowance_rad": KEEP_GAP / 26.0,
-                                 "nut_tilt_basis": f"keeper play {KEEP_GAP:g} mm over the POM nut's 26 mm flange (drawing A4003)"}))
+                                 "nut_tilt_basis": f"keeper play {KEEP_GAP:g} mm over the POM nut's 26 mm flange (drawing A4003)"})}))
     d.program = [{"to": {"z": PRINT_Z}},
                  {"to": {"x": -75, "y": -75}}, {"to": {"x": 75, "y": -75}}, {"to": {"x": 75, "y": 75}},
                  {"to": {"x": -75, "y": 75}}, {"to": {"x": -75, "y": -75}}, {"to": {"x": 0, "y": 0}},
@@ -2257,9 +2500,14 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
         Adjustment("y rails on sliding T-nuts", "rail_align", range_mm=1.6, joint="y",
                    note="an M3 in the 6.2 mm slot slides +/-1.6 mm: left rail to a straight edge, right rail tightened while the gantry runs"),
         Adjustment("z rails on sliding T-nuts", "rail_align", range_mm=1.6, joint="z",
-                   note="rear rail to a square; left and right rails tightened while the carrier is run up and down; what is left "
-                        "goes into the carriage plates' webs"),
-        Adjustment("floating lead screw nut", "float", range_mm=NUT_FLOAT - 0.2, joint="z"),
+                   note=("v12.1 (rigid carriage brackets): the rear rail is the datum, set to a square and tightened; the left and right "
+                         "rails' screws are left loose, the carrier (bed on) is run up and down its full travel two or three times so "
+                         "those rails settle where the carrier puts them, then their screws are tightened from the top down, the "
+                         "carrier moved to stay beside each screw being tightened" if CH("carriage-plate-rigid") else
+                         "rear rail to a square; left and right rails tightened while the carrier is run up and down; what is left "
+                         "goes into the carriage plates' webs"), mover="by hand, the carrier running on the loose rail" if CH("carriage-plate-rigid") else "",
+                   lock="M3 rail screws into T-nuts, tightened top to bottom" if CH("carriage-plate-rigid") else ""),
+    ] + ([] if CH("znut-direct") else [Adjustment("floating lead screw nut", "float", range_mm=NUT_FLOAT - 0.2, joint="z")]) + [
         Adjustment("x belt: the X motor plate slides in its two slots on the beam's T-nuts, pulled outward by hand, then the two M5 are tightened",
                    "belt_tension", range_mm=BELT_ADJ, joint="x"),
         Adjustment("y belts: each motor plate slides on its T-nuts, pushed by an M5 tension screw positioned by two jam nuts on a cast corner bracket",
@@ -2306,13 +2554,16 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
     fb = [rxy(u, -NUT_OUT_R - 10.0, ncx, ncy, nang) for u in (-NP_BOLT_U, NP_BOLT_U)]
     d.loadcases.append(LoadCase("nut_thrust", f"nut_plate{tg}",
                                 fixed=lambda f: any(hole_at(x, y, clearance_hole("M5") / 2)(f) for x, y in fb),
-                                loaded=hole_at(ncx, ncy, NP_HOLE / 2), force=(0.0, 0.0, w_bed), min_fos=3.0, max_deflection=0.05))
+                                loaded=(hole_at(ncx, ncy, NP_HOLE / 2) if not CH("znut-direct") else
+                                        (lambda f: any(hole_at(*rxy(u, v, ncx, ncy, nang), INSERT_M4_HOLE / 2)(f) for u, v in NUT_FLANGE_HOLES))),
+                                force=(0.0, 0.0, w_bed), min_fos=3.0, max_deflection=0.05))
     # one carriage plate between its block and the square (the three are one shape), as a beam test of its web: 5 N on the
     # block square to the wall, the square's member held, the block FREE to turn (the harness cannot hold a face against
     # turning only): a cantilever, whose deflection at the block's centre beam theory gives as
     # F (L^3 / 3 + L^2 a + L a^2) / (E I), a = 23.7 mm from the web's end to the block's centre: 0.418 mm. On its rail the
     # block cannot turn and the same web is 12 E I / L^3 = K_FLEX. A requirement compares the two.
-    d.assemblycases.append(AssemblyCase(
+    if not CH("carriage-plate-rigid"):
+      d.assemblycases.append(AssemblyCase(
         "carriage_plate_web", ["carriage_plate_right", "sq_right", "z_carriage_right"],
         fixed=[("sq_right", lambda f: abs(f.center().X - (SQ_X - 20.0)) < 1e-6)],
         loaded=("z_carriage_right", on_rail["z_carriage_right"]), force=(WEB_TEST_N, 0.0, 0.0),
@@ -2432,7 +2683,8 @@ def add_requirements(d, zs):
                     and c.shape.bounding_box().min.X < sb.max.X and c.shape.bounding_box().max.X > sb.min.X
                     and c.shape.bounding_box().min.Y < sb.max.Y and c.shape.bounding_box().max.Y > sb.min.Y]
             ok = ok and not over and not dd.get(f"leadscrew{t_}").ratings.get("cut_to_length")
-            gap = min(abs(sb.max.X - (FX / 2 - 20.0)), abs(sb.min.X + (FX / 2 - 20.0))) if t_ else sb.min.Y - (FY / 2)
+            gap = (min(abs(sb.max.X - (FX / 2 - 20.0)), abs(sb.min.X + (FX / 2 - 20.0))) if t_ else
+                   (Y_FACE - sb.max.Y) if CH("rear-z-inside") else sb.min.Y - (FY / 2))
             out.append(f"leadscrew{t_ or '_rear'}: top {sb.max.Z:.1f}, {'not cut' if not dd.get(f'leadscrew{t_}').ratings.get('cut_to_length') else 'CUT'}, "
                        f"{'under ' + ', '.join(over) if over else 'under no frame extrusion'}, {gap:.1f} mm from the wall it stands beside")
         rails = max(dd.get(n).shape.bounding_box().max.Z for n in ["z_rail_left", "z_rail_right", "z_rail_rear"])
@@ -2465,7 +2717,21 @@ def add_requirements(d, zs):
                     f"of 3 needed; as built the rails are up to {pr['parallelism_error_over_travel_mm_99']} mm out of parallel over the travel "
                     f"(aligned at assembly); with {aa.get('residual_between_rails_mm')} mm left a block carries {aa.get('side_load_on_blocks_n_99')} N "
                     f"sideways (allowed {pr['side_load_allowed_n']} N), webs bend {max(aa.get('float_used_mm_99', {0: 0}).values())} mm of {FLEX_RANGE}")
-    d.requirements.append(Requirement("v9: Z guided on three rails without over-constraint: three stiff directions, the rest on flexures", three_rails))
+    def three_rails_rigid(dd, m):
+        pr = m["tolerance"]["paired_rails"]["z"]
+        ic, aa = pr["in_plane_constraints"], pr.get("after_alignment", {})
+        ok = len(pr["rails"]) == 3 and not pr["floats"] and pr.get("aligned_at_assembly") and pr.get("alignment_needed_mm_99", 9) <= pr.get("alignment_available_mm", 0)
+        return ok, (f"{len(pr['rails'])} rails, rigid mounts (no flexure): {ic['stiff_directions_held']} stiff directions for the 3 a body needs; "
+                    f"as built the rails are up to {pr['parallelism_error_over_travel_mm_99']} mm out of parallel over the travel; the assembly "
+                    f"alignment (rear rail the datum, left / right settled by running the carrier, then tightened top to bottom) needs "
+                    f"{pr.get('alignment_needed_mm_99')} of {pr.get('alignment_available_mm')} mm; with {aa.get('residual_between_rails_mm')} mm left "
+                    f"(assumed) a block carries {aa.get('side_load_on_blocks_n_99')} N sideways (a rigid pair at the maker's allowable error: "
+                    f"{pr['side_load_allowed_n']} N; within: {aa.get('within_allowed_side_load')}), {aa.get('added_drag_n_99')} N of drag")
+    if CH("carriage-plate-rigid"):
+        d.requirements.append(Requirement("v12.1: Z guided on three rails on rigid brackets, aligned at assembly (datum rail; the others settled "
+                                          "by running the carrier, then tightened); the alignment's range covers the as-built error", three_rails_rigid))
+    else:
+        d.requirements.append(Requirement("v9: Z guided on three rails without over-constraint: three stiff directions, the rest on flexures", three_rails))
 
     def web_stiffness(dd, m):
         ac = m["fea"]["carriage_plate_web"]
@@ -2474,8 +2740,9 @@ def add_requirements(d, zs):
         return ok, (f"{WEB_TEST_N:g} N on a block free to turn: FEA {hi:.3f} mm bonded, {lo:.3f} mm with joints held round their screws; beam "
                     f"theory {WEB_TEST_MM:.3f} mm. The same web with the block held square by its rail: {K_FLEX:.0f} N/mm (declared), "
                     f"{K_FLEX * WEB_TEST_MM / lo:.0f} N/mm on the screwed bound")
-    d.requirements.append(Requirement("v9: the carriage plates' web is the flexure the tolerance model assumes (FEA within 15 % of beam theory)",
-                                      web_stiffness))
+    if not CH("carriage-plate-rigid"):
+        d.requirements.append(Requirement("v9: the carriage plates' web is the flexure the tolerance model assumes (FEA within 15 % of beam theory)",
+                                          web_stiffness))
 
     def carrier_square(dd):
         vol = lambda n: dd.get(n).shape.volume
@@ -2483,11 +2750,11 @@ def add_requirements(d, zs):
         cp = [vol(f"carriage_plate_{g[0]}") for g in GUIDES]
         npv = [vol(f"nut_plate{t[0]}") for t in NUTS]
         mpv = [vol(f"z_motor_plate{t[0]}") for t in NUTS]
-        kv = [vol(f"nut_keeper{t[0]}") for t in NUTS]
+        kv = [vol(f"nut_keeper{t[0]}") for t in NUTS] if any(c.name == "nut_keeper" for c in dd.components) else [1.0]
         same = lambda v: max(v) - min(v) < 1e-3 * max(v)
         dk = dd.get("z_deck").shape.bounding_box()
         ok = (all(c.sku.startswith("EXTRUSION-2020") or "2020" in c.sku for c in mem) and all(c.body == "zbody" for c in mem)
-              and same(cp) and same(npv[1:]) and same(mpv[1:]) and same(kv) and abs(dk.size.Z - 3.175) < 1e-6
+              and same(cp) and same(npv[1:] if not CH("rear-z-inside") else npv) and same(mpv[1:]) and same(kv) and abs(dk.size.Z - 3.175) < 1e-6
               and abs(dk.size.X - 270.8) < 1e-6 and abs(dk.size.Y - 281.8) < 1e-6)       # v10: the carrier is v9's, not resized
         return ok, (f"four 2020 members {2 * SQ_X:.1f} x {SQ_Y1 - SQ_Y0:.1f} mm outside; deck {dk.size.X:.1f} x {dk.size.Y:.1f} x {dk.size.Z:.3f} mm; "
                     f"three carriage plates one shape: {same(cp)}; nut plates: the two front ones one shape ({same(npv[1:])}), the rear one "

@@ -49,6 +49,7 @@ nav.side{background:var(--panel);border-right:1px solid var(--line);display:flex
 .tabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto}
 .tabs button{flex:1;font:600 12px var(--f-head);letter-spacing:.06em;text-transform:uppercase;padding:10px 6px;border:0;background:none;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap}
 .tabs button[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+nav.side .tabs button{font-size:11.5px;letter-spacing:.03em;padding-inline:3px}
 .navtools{padding:8px 10px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px}
 input[type=search],select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:4px;padding:6px 8px;width:100%;box-sizing:border-box}
 textarea{min-height:76px;resize:vertical}
@@ -214,7 +215,7 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
 .item.chg .nm{font:500 13px var(--f-body);white-space:normal;flex:1 1 100%}
 .item.chg .cmeta{display:flex;align-items:center;gap:8px}
 .cnt{font:500 11px var(--f-mono);color:var(--muted);white-space:nowrap}
-.cnt .r{color:var(--err)} .cnt .m{color:var(--warn)} .cnt .a{color:var(--ok)}
+.cnt .r{color:var(--err)} .cnt .m{color:var(--accent)} .cnt .a{color:var(--ok)}
 .cseg{display:inline-flex;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--panel)}
 .cseg button{border:0;border-right:1px solid var(--line);background:var(--panel);color:var(--ink);padding:5px 12px;cursor:pointer;font:500 12.5px var(--f-body)}
 .cseg button:last-child{border-right:0}
@@ -965,19 +966,19 @@ function chgTag(n,obj){const c=chg(OPEN.id);if(!c)return '';if(obj&&obj.userData
 /* runs at the end of highlight(): base meshes get the change's colours, its own parts show per mode */
 function applyChange(){
   const c=chg(OPEN.id); if(!c)return; const e=ensureChMeshes(c);
-  const col=n=>new THREE.Color(css(n)), cs=col('--sel'),ce=col('--err'),cw=col('--warn'),cg=col('--ok'),cb=col('--muted'),cf=col('--line');
+  const col=n=>new THREE.Color(css(n)), cs=col('--sel'),ce=col('--err'),ca=col('--accent'),cg=col('--ok'),cb=col('--muted'),cf=col('--line');
   const R=new Set(c.removed),Mo=new Set(c.modified),hideF=$('hidefast').checked,mode=CHV.mode,fp=OPEN.part;
   const paint=(m,color,op)=>{const mat=m.material,t=op<1;mat.color.copy(color);mat.transparent=t;mat.opacity=op;mat.depthWrite=!t;mat.needsUpdate=true};
   for(const [n,m] of Object.entries(meshes)){
     const p=P[n], focus=fp&&!fp.isNew&&fp.n===n;
-    if(R.has(n)||Mo.has(n)){m.visible=mode!=='after'; if(mode==='before')paint(m,focus?cs:R.has(n)?ce:cw,1); else paint(m,ce,0.3)}
+    if(R.has(n)||Mo.has(n)){m.visible=mode!=='after'; if(mode==='before')paint(m,focus?cs:R.has(n)?ce:ca,1); else paint(m,ce,0.3)}
     else if(focus){m.visible=true;paint(m,cs,1)}
     else{m.visible=!HIDP.has(n)&&!((hideF&&p.kind==='fastener')||HIDDEN.has(PART_ASM[n]));paint(m,p.kind==='fabricated'?cb:cf,CHV.ghost?0.12:1)}
     if(m.userData.cap)m.userData.cap.visible=SEC.on&&SEC.caps&&m.visible&&m.material.opacity===1;
   }
   Object.values(CHM).forEach(x=>{if(x.group)x.group.visible=x===e});
   if(e)for(const [n,m] of Object.entries(e.meshes)){m.visible=mode!=='before';m.material.side=THREE.DoubleSide;paint(m,fp&&fp.isNew&&fp.n===n?cs:cg,1)}
-  $('legend').innerHTML=mode==='before'?'<span><i class="ck" style="background:var(--err)"></i>removed</span><span><i class="ck" style="background:var(--warn)"></i>to be modified</span><span><i class="ck" style="background:var(--sel)"></i>selected</span>'
+  $('legend').innerHTML=mode==='before'?'<span><i class="ck" style="background:var(--err)"></i>removed</span><span><i class="ck" style="background:var(--accent)"></i>to be modified</span><span><i class="ck" style="background:var(--sel)"></i>selected</span>'
     :mode==='after'?'<span><i class="ck" style="background:var(--ok)"></i>new or changed</span><span><i class="ck" style="background:var(--sel)"></i>selected</span>'
     :'<span><i class="ck" style="background:var(--err);opacity:.45"></i>v12 original</span><span><i class="ck" style="background:var(--ok)"></i>new or changed</span><span><i class="ck" style="background:var(--sel)"></i>selected</span>';
 }
@@ -995,13 +996,13 @@ function openChange(id,refit=true){
   const c=chg(id); if(!c)return;
   if(!OPEN&&renderer)CHCAM={pos:camera.position.clone(),target:controls.target.clone()};   // restored exactly on close
   OPEN={id,part:null}; if(S.tab!=='chg')setTab('chg');
-  loadChangeMesh(c); renderList(); renderChange(); $('detail').scrollTop=0; syncChbar();
+  loadChangeMesh(c); renderList(); renderChange(); $('detail').scrollTop=0; syncChbar(); $('tray').hidden=true;   // the multi-select tray returns on close
   if(renderer){highlight(false);if(refit)fitChange()}
 }
 function closeChange(restoreCam=true,quiet=false){
   if(!OPEN)return; OPEN=null;
   Object.values(CHM).forEach(x=>{if(x.group)x.group.visible=false});
-  $('legend').innerHTML=LEGEND0; syncChbar();
+  $('legend').innerHTML=LEGEND0; syncChbar(); renderTray();
   if(restoreCam&&renderer&&CHCAM){camera.position.copy(CHCAM.pos);controls.target.copy(CHCAM.target);controls.update()}
   CHCAM=null;
   if(!quiet){renderList();renderDetail();highlight(false)}
@@ -1049,7 +1050,7 @@ function changeSheet(c,e){
   let h=`<div class="eyebrow">Proposed change · against ${esc(CHBASE||D.design)} · <span class="mono" style="text-transform:none;letter-spacing:0">${esc(c.id)}</span></div><h2>${esc(c.title||c.id)}</h2>`;
   h+=`<div class="chips" style="align-items:center">${pill(st)}${last?`<span class="note">${esc(last.verdict)} by ${esc(names[last.author]||'someone')}${last.at?' on '+esc(new Date(last.at).toLocaleDateString()):''}</span>`:''}${cnt(c)}</div>`;
   h+=`<div class="ctool">${segHTML()}<label title="Show the rest of the machine faintly"><input type="checkbox" data-cghost ${CHV.ghost?'checked':''}> Ghost the rest</label><button type="button" class="lnk" data-cfit>Fit to change</button><button type="button" class="lnk" data-cclose>Close change</button></div>`;
-  h+=`<div class="ckey"><span><b>Before</b>: v12 as it is, <i style="background:var(--err)"></i>removed and <i style="background:var(--warn)"></i>modified parts marked.</span><span><b>After</b>: originals hidden, <i style="background:var(--ok)"></i>new parts shown.</span><span><b>Overlay</b>: <i style="background:var(--err);opacity:.45"></i>originals ghosted over <i style="background:var(--ok)"></i>new parts.</span></div>`;
+  h+=`<div class="ckey"><span><b>Before</b>: v12 as it is, <i style="background:var(--err)"></i>removed and <i style="background:var(--accent)"></i>modified parts marked.</span><span><b>After</b>: originals hidden, <i style="background:var(--ok)"></i>new parts shown.</span><span><b>Overlay</b>: <i style="background:var(--err);opacity:.45"></i>originals ghosted over <i style="background:var(--ok)"></i>new parts.</span></div>`;
   if(e.state==='loading')h+='<p class="note">Loading the new geometry for this change…</p>';
   else if(e.state==='error')h+=`<div class="flag warning"><span class="r">Geometry</span><span>The new parts could not be loaded (${esc(e.err)}). Before still shows the affected v12 parts.</span></div>`;
   if(e.bad&&e.bad.length)h+=`<div class="flag warning"><span class="r">Geometry</span><span>No usable mesh for ${esc(e.bad.join(', '))}.</span></div>`;
@@ -1057,7 +1058,7 @@ function changeSheet(c,e){
   if(c.checks)h+=`<h3>Checks</h3><p class="pre">${esc(c.checks)}</p>`;
   h+=`<h3>Parts</h3><div class="chgparts">
     <div><div class="eyebrow"><i style="background:var(--err)"></i>Removed (${c.removed.length})</div><ul>${plist(c.removed,false,e)}</ul></div>
-    <div><div class="eyebrow"><i style="background:var(--warn)"></i>Modified (${c.modified.length})</div><ul>${plist(c.modified,true,e)}</ul></div>
+    <div><div class="eyebrow"><i style="background:var(--accent)"></i>Modified (${c.modified.length})</div><ul>${plist(c.modified,true,e)}</ul></div>
     <div><div class="eyebrow"><i style="background:var(--ok)"></i>Added (${c.added.length})</div><ul>${plist(c.added,true,e)}</ul></div></div>`;
   h+=`<h3>Review threads</h3>`+threadsHTML(c);
   h+=`<h3>Accept or reject</h3>`+reviewHTML(c);
