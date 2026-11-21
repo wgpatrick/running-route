@@ -1,0 +1,34 @@
+fastener,sku,kind,bears_on,process,material,thickness_mm,coverage,why,cast_bracket
+nut_pin,SHCS-M3x20,screw head,nut_pin_sleeve,purchased,al6061,9.8,0.5,on a slot or oversize hole (only 50% of the bearing ring has material under it),False
+nut_pin_fl,SHCS-M3x20,screw head,nut_pin_fl_sleeve,purchased,al6061,9.8,0.5,on a slot or oversize hole (only 50% of the bearing ring has material under it),False
+nut_pin_fr,SHCS-M3x20,screw head,nut_pin_fr_sleeve,purchased,al6061,9.8,0.5,on a slot or oversize hole (only 50% of the bearing ring has material under it),False
+y_plate_left_screw_0,SHCS-M3x8,screw head,y_plate_left,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+y_plate_left_screw_1,SHCS-M3x8,screw head,y_plate_left,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+y_plate_left_screw_2,SHCS-M3x8,screw head,y_plate_left,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+y_plate_left_screw_3,SHCS-M3x8,screw head,y_plate_left,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+y_plate_right_screw_0,SHCS-M3x8,screw head,y_plate_right,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+y_plate_right_screw_1,SHCS-M3x8,screw head,y_plate_right,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+y_plate_right_screw_2,SHCS-M3x8,screw head,y_plate_right,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+y_plate_right_screw_3,SHCS-M3x8,screw head,y_plate_right,sheet,al6061,4.5,1.0,on thin aluminium (4.5 mm al6061),False
+tool_screw_0,SHCS-M3x6,screw head,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+tool_screw_1,SHCS-M3x6,screw head,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+tool_screw_2,SHCS-M3x6,screw head,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+tool_screw_3,SHCS-M3x6,screw head,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+psu_screw_0,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+psu_screw_1,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+psu_screw_2,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+psu_screw_3,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+control_board_screw_0,SHCS-M3x16,screw head,control_board,purchased,abs,1.5,1.0,on a circuit board,False
+control_board_screw_1,SHCS-M3x16,screw head,control_board,purchased,abs,1.5,1.0,on a circuit board,False
+control_board_screw_2,SHCS-M3x16,screw head,control_board,purchased,abs,1.5,1.0,on a circuit board,False
+control_board_screw_3,SHCS-M3x16,screw head,control_board,purchased,abs,1.5,1.0,on a circuit board,False
+host_screw_0,SHCS-M2.5x12,screw head,host,purchased,abs,1.2,1.0,on a circuit board,False
+host_screw_3,SHCS-M2.5x12,screw head,host,purchased,abs,1.2,1.0,on a circuit board,False
+spool_plate_screw_0,SHCS-M5x8,screw head,spool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+spool_plate_screw_1,SHCS-M5x8,screw head,spool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+x_belt_bracket_nut_0,NUT-M3,nut,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+x_belt_bracket_nut_1,NUT-M3,nut,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+foot_left_f_nut,NUT-M5-DIN934,nut,frame_bot_left,extrusion,al6061,19.8,0.33,on a slot or oversize hole (only 33% of the bearing ring has material under it),False
+foot_left_b_nut,NUT-M5-DIN934,nut,frame_bot_left,extrusion,al6061,19.8,0.33,on a slot or oversize hole (only 33% of the bearing ring has material under it),False
+foot_right_f_nut,NUT-M5-DIN934,nut,frame_bot_right,extrusion,al6061,19.8,0.33,on a slot or oversize hole (only 33% of the bearing ring has material under it),False
+foot_right_b_nut,NUT-M5-DIN934,nut,frame_bot_right,extrusion,al6061,19.8,0.33,on a slot or oversize hole (only 33% of the bearing ring has material under it),False

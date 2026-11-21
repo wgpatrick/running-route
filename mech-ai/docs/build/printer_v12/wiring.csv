@@ -1,0 +1,27 @@
+wire,from,to,awg,mm2,conductors,insulation,length_mm,connector_from,connector_to,current_a,via,note,ampacity_a,protected_by
+mains L inlet-contactor,inlet.L,psu_relay.LIN,18,0.823,1,pvc105,100.0,faston-4.8,screw-box,5.19,,,13.71,inlet fuse T8A
+mains L contactor-supply,psu_relay.LOT,psu.L,18,0.823,1,pvc105,280.0,screw-box,screw-psu,5.19,mains,,10.97,inlet fuse T8A
+mains N inlet-contactor,inlet.N,psu_relay.NIN,18,0.823,1,pvc105,110.0,faston-4.8,screw-box,5.19,,,13.71,inlet fuse T8A
+mains N contactor-supply,psu_relay.NOT,psu.N,18,0.823,1,pvc105,290.0,screw-box,screw-psu,5.19,mains,,10.97,inlet fuse T8A
+contactor control,host.PWR,psu_relay.ctrl,22,0.326,2,pvc,310.0,dupont,screw-box,0.001,,"Pi GPIO26 -> 1 kOhm -> PN2222A base; collector to the Phoenix PLC-RSC-5DC/21 coil (5 V from the Pi's 5 V pin, 38 mA); the Phoenix contact switches the Finder's 120 V coil from the inlet's L after its fuse (A1) and N (A2). Moonraker [power printer] type gpio, off_when_shutdown True, locked_while_printing True. The coil circuit itself is mains: 18 AWG in the mains loom; this 2-core lead is the 5 V control side",6.42,board fuse not specified A (shared; no fuse per branch)
+earth to frame,inlet.PE,frame_earth.pe,16,1.309,1,pvc105,150.0,faston-4.8,ring-M5,0.0,,,18.22,protective earth: not fused
+earth stud to supply,frame_earth.pe,psu.FG,16,1.309,1,pvc105,330.0,ring-M5,screw-psu,0.0,mains,,14.58,protective earth: not fused
+24 V to board,psu.V+1,control_board.POWER,14,2.081,2,silicone,200.0,screw-psu,screw-5.08,11.277,,,18.34,none between supply and board (the supply's own current limit); board input fuse not specified A
+bed heater,control_board.HB,bed_tco.a,16,1.309,2,silicone,550.0,screw-5.08,ferrule,8.094,bed,,13.6,board fuse not specified A (shared; no fuse per branch)
+bed heater tail,bed_tco.b,bed_heater.in,16,1.309,2,silicone,90.0,ferrule,ferrule,8.094,,,13.6,board fuse not specified A (shared; no fuse per branch)
+bed thermistor,control_board.THB,bed_ntc.out,26,0.129,2,silicone,730.0,JST-XH,JST-XH,0.001,bed,,3.36,board fuse not specified A (shared; no fuse per branch)
+hotend heater,control_board.HE0,hotend.in,20,0.518,2,silicone,1630.0,screw-5.08,molex-microfit,1.649,tray_right; drop_right; toolhead,,4.61,board fuse not specified A (shared; no fuse per branch)
+hotend thermistor,control_board.TH0,hotend_thermistor.out,26,0.129,2,silicone,1520.0,JST-XH,molex-microfit,0.001,tray_right; drop_right; toolhead,,2.03,board fuse not specified A (shared; no fuse per branch)
+heat-sink fan 5 V,control_board.5V,hotend_fan.out,26,0.129,2,pvc,1460.0,dupont,JST-XH,0.14,tray_right; drop_right; toolhead,"the Roto's fan is a 5 V part: always on from the board's 5 V pins, never on a 24 V fan output",1.77,board fuse not specified A (shared; no fuse per branch)
+part fan,control_board.FAN0,part_fan.in,26,0.129,2,pvc,1580.0,JST-XH,JST-XH,0.11,tray_right; drop_right; toolhead,,1.77,board fuse not specified A (shared; no fuse per branch)
+bed probe USB,host.USB,bed_probe.out,26,0.129,4,silicone,1540.0,usb-a,JST-XH,0.001,tray_right; drop_right; toolhead,"high-flex 4-core lead (igus CF130 class) with the Eddy's 1.5 mm-pitch housing; 5 V, D-, D+, GND (BTT manual 4.15)",2.03,board fuse not specified A (shared; no fuse per branch)
+extruder motor,control_board.M4,extruder.coils,24,0.205,4,pvc,1500.0,JST-XH,molex-microfit,0.4,tray_right; drop_right; toolhead,,2.34,board fuse not specified A (shared; no fuse per branch)
+X motor,control_board.M0,x_motor.coils,24,0.205,4,pvc,1370.0,JST-XH,JST-XH,0.28,front; drop_left; gantry,,2.51,board fuse not specified A (shared; no fuse per branch)
+X endstop,control_board.STOP0,x_endstop.out,26,0.129,3,pvc,1580.0,JST-XH,JST-XH,0.001,front; drop_left; gantry; beam,"STOP0 (DIAG0) header, its DIAG jumper removed; in the X beam's top slot from the left end to the switch on the right Y plate",1.9,board fuse not specified A (shared; no fuse per branch)
+Y endstop,control_board.STOP1,y_endstop.out,26,0.129,3,pvc,960.0,JST-XH,JST-XH,0.001,tray_right; drop_right,"STOP1 (DIAG1) header, its DIAG jumper removed",1.77,board fuse not specified A (shared; no fuse per branch)
+Y motor left,control_board.M2,y_motor_l.coils,24,0.205,4,pvc,1310.0,JST-XH,JST-XH,1.2,front; drop_left; top_left,mirror-image motor on its own driver ([stepper_y1]): invert its dir_pin (or swap one coil pair) so both turn the belts the same way,2.51,board fuse not specified A (shared; no fuse per branch)
+Y motor right,control_board.M1,y_motor.coils,24,0.205,4,pvc,1120.0,JST-XH,JST-XH,1.2,tray_right; drop_right,,2.34,board fuse not specified A (shared; no fuse per branch)
+Z motor rear,control_board.M3,z_motor.coils,24,0.205,4,pvc,550.0,JST-XH,JST-XH,0.8,tray_right; back,,2.34,board fuse not specified A (shared; no fuse per branch)
+Z motor front left,control_board.M5,z_motor_fl.coils,24,0.205,4,pvc,560.0,JST-XH,JST-XH,0.8,front,,2.51,board fuse not specified A (shared; no fuse per branch)
+Z motor front right,control_board.M6,z_motor_fr.coils,24,0.205,4,pvc,150.0,JST-XH,JST-XH,0.8,,,3.14,board fuse not specified A (shared; no fuse per branch)
+host serial,control_board.RPI,host.GPIO,26,0.129,4,pvc,150.0,dupont,dupont,0.5,,"Octopus 'Raspberry Pi' header GND, PD6 RX, PD5 TX (USART2) to the Pi 5's GPIO 6/8/10; the 5 V conductor is cut back and insulated at the Pi end (NO 5 V: the Pi has its own 27 W supply (V12_PLAN); Klipper serial /dev/ttyAMA0 (enable the UART on the Pi 5)",3.66,board fuse not specified A (shared; no fuse per branch)
