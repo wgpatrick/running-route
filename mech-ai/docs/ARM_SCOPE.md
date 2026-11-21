@@ -558,3 +558,8 @@ Steps 1-5 fit inside the printer's ordering and lead-time window (print service 
   front of the printer with whatever stations a job needs. Kept: the Klipper/Moonraker handshake and light safety (shared
   hardwired e-stop also cutting arm motor power, 24 V, current-limited joints, laser off with the arm inside). Detailed
   cell layout, standards and guarded-cell items are deferred.
+- Open-source 5-axis references (owner comment, 2026-11-21): SO-100/SO-101 (5 + gripper, Feetech servos, LeRobot
+  ecosystem; https://github.com/TheRobotStudio/SO-ARM100), BCN3D Moveo (5 axes per BCN3D, printed;
+  https://github.com/jsechovec/BCN3D-Moveo), DEXTER (5 axes, harmonic drives, carbon tubes), Koch v1.1 (Dynamixel, LeRobot;
+  https://github.com/jess-moss/koch-v1-1), UtiliArm (fully printed, link to confirm), Forte (printed capstan drives,
+  sub-mm measured; arXiv 2507.15693). Likely route: Moveo/DEXTER layout + LeRobot software conventions + capstan long joints.
