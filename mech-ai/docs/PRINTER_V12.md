@@ -46,7 +46,8 @@ Cost and lead times per stage: "Sourcing and the Build 1 schedule" below.
 | Probe | **BTT Eddy Duo** on USB, coil face 2.5 mm above the tip, on a printed PETG holder on a one-bend 5052 L; no metal in its 5 mm coil band; temperature 55 degC nominal (60 degC rating), 67 degC in a hot case (open question). |
 | Toolhead (moving in X) | **0.401 kg** (target < 0.45). |
 | Electronics | Raspberry Pi 5 (+ active cooler, 27 W PSU) as host; mains through a Schurter DD11 inlet with a 4301.1405 fuse drawer (T8A), a Finder 22.32 contactor switched by a Phoenix PLC-RSC relay driven by a PN2222A from Pi GPIO26 (Moonraker power device); Octopus V1.1 with TMC2209 sticks; DIN-rail bay with covers; 16 AWG earth star. Firmware: Klipper with the Eddy, ADXL345, SFS V2, LED and laser pins, loaded by klippy offline with the RP2040 and Linux host-MCU dictionaries. |
-| Mass / BOM cost | **17.25 kg / $2,094.58** (BOM estimate in the verify; v11: 13.82 kg / $1,110.99). The increase is the electronics and feedback hardware (Pi 5, cameras, laser, Eddy, contactor bay), HIWIN rails and MISUMI idlers. |
+| Mass / BOM cost | **18.74 kg / $2,353.93** with the full spool and the safety-chain placeholders (BOM estimate in the verify; v11: 13.82 kg / $1,110.99). Live sourcing: see below. The increase is the electronics and feedback hardware (Pi 5, cameras, laser, Eddy, contactor bay), HIWIN rails, MISUMI idlers, feet and filament supply. |
+| Score (on the design before feet / spool) | resonance X 72.8 Hz, Y 58.7 Hz; acceleration an owner would run about 6,000 mm/s2; frame stiffness X 1,634 / Y 2,007 N/mm; toolhead 0.401 kg; assembly 166 min, 268 fasteners. Tune: X shaper EI 90.4 Hz, Y MZV 58.6 Hz, pressure advance 0.042, mesh RMS 0.018 mm. Firmware-in-the-loop print of the standard bracket on real Klipper: 3,891 s, nozzle within 0.060 mm of the path, no collision in 4,074 poses, one corner-bulge warning. |
 
 ## What changed and why
 
@@ -183,6 +184,18 @@ critical path.** Alternatives checked live the same day (`--list`, all universal
 3. The SFS V2's port thread (M10 x 1 assumed for the McMaster 2333N214): confirm on the part.
 4. A frame rocking mode on the feet may sit at 30 to 70 Hz (estimate): measure it with the ADXL345 on the frame before tuning.
 5. The stage-3 toolhead bracket for the nozzle camera, laser and LEDs: design it in v12.x, or move those items to Build 2?
+
+## What was run (2026-11-20 / 21)
+- Full verifies (`--tier full --no-render`) on each major state: 20:57 (11 errors, all DG-07), then after the feet / spool /
+  Octopus / JST changes (17 errors, DG-07 only, 01:49), then **affected-tier verifies after each later owner change, the last on
+  the final code: VERIFY_LINE**. Memory: two runs died (signal 9) when a second job ran beside a verify and when the full
+  Octopus STEP was loaded; both fixed (one heavy job at a time; the Octopus display model reduced to BTT's 59 large solids).
+- `score --assembly`, `tune`, and the firmware-in-the-loop print (`out/printer_v12/fil/bracket/`) on the design before the feet
+  and spool were added (the toolhead and gantry are unchanged since).
+- `python -m mechloop.sourcing --design designs/printer_v12.py` (live APIs) and a `--list` run of the supply alternatives.
+- Viewer export with the FIL print (`viewer/`), build package (`docs/build/printer_v12/`, STALE banner: the report has DG-07
+  errors), review data (`review/data.json`, `review/drawings/`, `review/meshes_a.txt` + `meshes_b.txt`), inspection plans for the
+  16 stage-1 sheet parts (`inspect_form/plans/printer_v12/`). `tests/test_v12_support.py`: 5 passed.
 
 ## Files
 - `designs/printer_v12.py`; `mechloop/parts/batch12.py`; `mechloop/unfold.py`; `tests/test_v12_support.py`
