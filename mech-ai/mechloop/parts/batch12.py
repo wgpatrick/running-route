@@ -1077,3 +1077,13 @@ def shaft_misumi_sfal8(l_plain: int) -> Stock:
                  real_part={"maker": "MISUMI", "mpn": f"SFAL8-{int(l_plain)}-B15-S15", "sellers": [{"name": "MISUMI USA", "part_number": f"SFAL8-{int(l_plain)}-B15-S15",
                             "catalogue": True, "checked": "2026-11-21", "note": "SFAL8-90 was $37.87 (REQ-020); this L to confirm"}],
                             "datasheet": SFAL_PAGE})
+
+
+@part
+def dowel_pin_3x8_placeholder() -> Stock:
+    """PLACEHOLDER (owner, 2026-11-21): a 3 x 8 mm hardened dowel pin, product pending (McMaster / MISUMI number with CAD). Local frame:
+    axis Z, bottom at Z=0."""
+    s = Pos(0, 0, 4.0) * Cylinder(1.5, 8.0)
+    return Stock(s, "DOWEL-PIN-3x8", "Dowel pin 3 x 8 mm, hardened (placeholder)", 0.0005, material="steel", cost_usd=0.3,
+                 ratings={"approximate": True},
+                 model={"kind": "proxy", "state": "stand-in", "source": "placeholder pin 3 x 8 (product to be named)"})

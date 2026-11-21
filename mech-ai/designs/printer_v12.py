@@ -140,7 +140,7 @@ from mechloop.parts.hardware import WASHER, spacer_round
 from mechloop.parts.probes import add_probe_nuts, probe_omron_e2e
 from mechloop.parts.toolhead import extruder_roto, hotend_revo
 from mechloop.shops import assign
-from mechloop.parts.batch12 import (tnut_hntp5, shaft_misumi_sfal8, spacer_mcmaster_94669a079, switch_omron_d2f_01l, foot_misumi_nfjn5_30, spool_1kg_placeholder, spacer_tube_m8_placeholder, coupler_mcmaster_2333n214, add_bracket_misumi, adxl345_btt, cam_arducam_b0454, cob_led, contactor_finder_2232, din_endstop_wago,
+from mechloop.parts.batch12 import (tnut_hntp5, dowel_pin_3x8_placeholder, shaft_misumi_sfal8, spacer_mcmaster_94669a079, switch_omron_d2f_01l, foot_misumi_nfjn5_30, spool_1kg_placeholder, spacer_tube_m8_placeholder, coupler_mcmaster_2333n214, add_bracket_misumi, adxl345_btt, cam_arducam_b0454, cob_led, contactor_finder_2232, din_endstop_wago,
                                     din_rail_wago, heater_hydra_sq1451144, hiwin_mgn12_rail, hiwin_mgn12h_block, laser_vlm520, lens_cil062,
                                     leadscrew_motor_a4003, leadscrew_nut_pom_a4003, leadscrew_screw_a4003, picam3, pi5_host, probe_eddy_duo,
                                     relay_phoenix_1119897, sfs_v2, spacer_harwin, thermostat_cs7,
@@ -213,6 +213,7 @@ BED_CX = NOZ_X         # centre of sheet and plate in X = centre of the nozzle's
 T_MAG = 1.0  # v12: Wham Bam base, 1 mm (maker page). v11: 1.5 stand-in.            # the sheet's magnetic base: NOT published by any seller read; 1.5 mm from other sellers' kits (stand-in)
 T_SHEET = 0.64  # v12: Wham Bam plate, 0.4 steel + 2 x 0.12 PEI. v11:          # spring steel (catalogue; a third-party figure)
 BED_CY = 4.5           # centre of sheet and plate in Y = centre of the gantry's (unchanged) nozzle reach, world y -102.75 .. 111.75
+SHEET_PINS = [(BED_CX - 60.0, BED_CY + 110.0 + 1.8), (BED_CX + 60.0, BED_CY + 110.0 + 1.8), (BED_CX - 110.0 - 1.8, BED_CY - 40.0)]   # v12: rear pair + left
 BED_Y0, BED_Y1 = BED_CY - BED / 2, BED_CY + BED / 2
 BED_X0, BED_X1 = BED_CX - BED / 2, BED_CX + BED / 2
 W5 = WASHER["normal"]["M5"][2]
@@ -692,6 +693,8 @@ def bed_shape_():
     b = bx(BED_X0, BED_X1, BED_Y0, BED_Y1, Z_BED, Z_BED + T_BED)
     for x, y in BED_MOUNTS:
         b -= countersink_z(x, y, Z_BED + T_BED, T_BED, CSK["M4"][0], clearance_hole("M4"))
+    for x, y in SHEET_PINS:      # v12 (owner): the sheet's three locating pins, 3 mm (slip fit, retained with Loctite 638)
+        b -= zc(x, y, Z_BED, Z_BED + T_BED, 3.05 / 2)
     return b
 
 
@@ -1431,6 +1434,12 @@ def build_frame_z():
     mag = whambam_base_220()      # v12: Wham Bam 220 magnetic base, 1 mm, 150 degC (maker page)
     place(d, "bed_magnet", mag, Location((BED_CX, BED_CY, Z_BED + T_BED)), body="zbody")
     place(d, "bed", whambam_plate_220(), Location((BED_CX, BED_CY, Z_BED + T_BED + T_MAG)), body="zbody")
+    # v12 (owner): the sheet slides out ~240 mm to the front for the future arm and re-seats against three pins (rear pair, left):
+    # pressed 6 mm into the plate, 2.0 mm proud (0.36 mm over the sheet's top; the Eddy passes 2.5 mm over the sheet)
+    for i, (x, y) in enumerate(SHEET_PINS):
+        place(d, f"sheet_pin_{i}", dowel_pin_3x8_placeholder(), Location((x, y, Z_BED + T_BED + 2.0 - 8.0)), body="zbody")
+        d.allow_overlap(f"sheet_pin_{i}", "bed_plate")
+        d.join(f"sheet_pin_{i}", "bed_plate", "press fit, retained with Loctite 638")
     d.join("bed_magnet", "bed_plate", "bond")
     d.join("bed", "bed_magnet", "magnet")
     place(d, "bed_heater", heater_hydra_sq1451144(), Location((BED_CX, BED_CY, Z_BED), (0, 0, 180)), body="zbody")
@@ -2686,6 +2695,40 @@ def add_requirements(d, zs):
                     f"Drag (estimate): PTFE on filament mu 0.1 to 0.2 over about 180 degrees of total bend, capstan factor 1.4 to 1.9 on the "
                     f"spool's own drag (608s: well under 1 N at the rim), so under 2 N against the Roto's tens of newtons of push")
     d.requirements.append(Requirement("v12 (owner): the PTFE tube clears every part over the X / Y travel, bends no tighter than its limit, and is long enough", ptfe_route))
+    def sheet_slide(dd, m):
+        # v12 (owner): the spring-steel sheet slides ~240 mm out to the front for the future arm. Its path (220 x 220 x 0.64 at the sheet's
+        # height, swept 240 mm forward) must cross nothing fixed, with the bed at the bottom and at the top of its travel
+        from build123d import Box as _B, Pos as _P
+        jz = next(j for j in dd.joints if j.name == "z")
+        hits = set()
+        z_s = Z_BED + T_BED + T_MAG
+        for zv in (jz.range[0], jz.range[1]):
+            path = _P(BED_CX, BED_CY - 120.0, z_s + T_SHEET / 2 + zv) * _B(SHEET + 2.0, SHEET + 240.0, T_SHEET + 0.6)
+            for c in dd.components:
+                if c.body == "zbody" or c.name.startswith(("bed", "sheet_pin")):
+                    continue
+                bb = c.shape.bounding_box(); pb = path.bounding_box()
+                if bb.max.X < pb.min.X or bb.min.X > pb.max.X or bb.max.Y < pb.min.Y or bb.min.Y > pb.max.Y or bb.max.Z < pb.min.Z or bb.min.Z > pb.max.Z:
+                    continue
+                if (c.shape & path).volume > 0.5:
+                    hits.add(c.name)
+        return not hits, (f"sheet slid 240 mm to the front through the front opening (no Z rail at the front; the door is the front panel): "
+                          f"parts in its path at Z {jz.range[0]:g} and {jz.range[1]:g}: {sorted(hits) or 'none'}; three locating pins (rear pair, left) re-seat it; "
+                          f"the sheet's grip tab is the Wham Bam plate's own front tab (check it on the bought plate)")
+    d.requirements.append(Requirement("v12 (owner): the print sheet slides out to the front and back again past nothing; three pins re-seat it", sheet_slide))
+
+    def safety_chain(dd, m):
+        # v12 (owner): the hardwired loop in series with the Finder contactor's coil. Reported: the e-stop and safety relay are BOM
+        # placeholders this revision (no maker CAD in hand) and are placed in the bay with the supply change (v12.1)
+        return True, ("mains contactor coil (Finder 22.32) = Phoenix PLC-RSC relay (Pi GPIO26 via PN2222A, Moonraker power device) IN SERIES with "
+                      "the safety relay's output contacts (manual reset) whose input loop is: e-stop NC (latching, twist release) + a spare "
+                      "terminal pair for a door interlock (future) + a spare pair for a smoke / heat detector contact (future). The GPIO path can only "
+                      "drop the contactor; after an e-stop, power returns only through the safety relay's manual reset. Heater runaway when the Pi "
+                      "or Klipper hangs: the Octopus's MCU turns its heater outputs off by itself when the host stops refreshing them (Klipper's "
+                      "max_duration on heater pins) and shuts down; the bed also has its CS712025Y thermostat (120 degC). If the MCU itself hangs "
+                      "with a heater output on, or a MOSFET fails shorted, NOTHING automatic cuts the hotend (the Revo PTC self-limits around 420 degC "
+                      "in the model: not safe) until someone presses the e-stop, or the future smoke / heat contact opens the loop")
+    d.requirements.append(Requirement("reported: the hardwired safety chain (e-stop + safety relay in series with the contactor coil)", safety_chain))
     STANDINS = []
     d.requirements.append(Requirement("target: no purchased part is a stand-in where the catalogue has a real one", lambda dd: (
         sorted(px := [c.name for c in dd.components if c.cots and not c.meta.get("catalog")]) == STANDINS,
@@ -2796,6 +2839,9 @@ BOM_V12 = [
 def add_v12_bom_lines(d):
     for sku, q, c, st, rp in BOM_V12:
         d.bom_extra(sku, q, c, real_part=rp, stage=st)
+    # v12 (owner, 2026-11-21): hardwired safety chain. PLACEHOLDERS until a maker with CAD / datasheet is chosen (Instinct)
+    d.bom_extra("ESTOP-MUSHROOM-22MM-LATCHING-NC (panel e-stop, twist release, 1-2 NC; IDEC / Schneider / Eaton / APEM class)", 1, 25.0, stage=1)
+    d.bom_extra("SAFETY-RELAY-24V-MANUAL-RESET (Phoenix PSR / Pilz PNOZ s / Omron G9SE class, 22.5 mm DIN)", 1, 120.0, stage=1)
     d.bom_extras.pop("GT2-BELT-9MM-OPEN-1M", None)
     d.bom_extras.pop("GT2-BELT-12MM-OPEN-1M", None)
     # the Eddy Duo's USB-A plug is on the 2.5 m lead BIGTREETECH ships with it (Eddy manual 1: cable length 2.5 m): not bought apart
@@ -2835,7 +2881,9 @@ def feedback_firmware(el, d):
         "# commissioning (owner, v11.1 plan): probe only after the bed has soaked at temperature",
         "[gcode_macro START_PRINT]", "gcode:",
         "    {% set BED = params.BED|default(60)|float %}", "    {% set SOAK = params.SOAK|default(" + f"{SOAK_S:.0f}" + ")|int %}",
-        "    M190 S{BED}", "    G4 P{SOAK * 1000}", "    G28", "    Z_TILT_ADJUST", "    BED_MESH_CALIBRATE", "",
+        "    M190 S{BED}", "    G4 P{SOAK * 1000}", "    G28", "    Z_TILT_ADJUST", "    BED_MESH_CALIBRATE",
+        "    # purge / prime line at the FRONT edge of the sheet (owner: the arm never needs the rear)",
+        "    G90", "    G1 X5 Y1.5 Z5 F9000", "    G1 Z0.3 F600", "    G92 E0", "    G1 X120 Y1.5 E18 F1500", "    G1 X150 Y1.5 E20 F3000", "    G1 Z2 F600", "",
         "[gcode_macro LASER_CAPTURE]", "gcode:", "    SET_PIN PIN=lights VALUE=0.1", "    SET_PIN PIN=nozzle_laser VALUE=1", "    G4 P2000",
         "    SET_PIN PIN=nozzle_laser VALUE=0", "    SET_PIN PIN=lights VALUE=0.5",
     ]
