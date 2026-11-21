@@ -83,3 +83,5 @@ stock and lead time before ordering.
 - Feet (owner, 2026-11-21): four Misumi NFJN5-30 levelling mounts (M5, all metal, swivel, 30 mm foot) in M5 end taps on
   the four corner extrusions (Misumi end-tap alteration added to those lengths). Rubber fallback if table noise is a problem:
   Misumi HAJP5-2020-6 plate + McMaster 6301K78.
+- Feet, revised (owner, 2026-11-21): the NFJN5-30 studs screw into HNTP5-5 spring T-nuts in the downward-facing slot of the
+  bottom rails near each corner; no end tapping (end-tap alteration dropped).
