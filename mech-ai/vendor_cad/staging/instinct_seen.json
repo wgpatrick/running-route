@@ -1,1623 +1,1623 @@
 {
- "folder_id": "1ZtlzfkmX-Yz92soEepnPbyNiPK0uQ43v",
- "folder": "mechloop handoff/results/REQ-001-supplier-cad-batch-3",
- "last_checked": "2026-11-21T05:13:00Z",
- "result_status": "partial (Misumi delivered and staged in instinct_REQ-001b; PEM S-M3-0 not fulfilled, owner decision pending)",
- "files": {
-  "1vwRHKJkIJW3gaI138gcNPCUbF5RF8TUX": {
-   "title": "91290A139.pdf",
-   "modifiedTime": "2026-11-20T00:30:24.080Z"
-  },
-  "1oRw_xoeLNExLJWHpt3N2pwlDrHDTUZ0e": {
-   "title": "91106A126.pdf",
-   "modifiedTime": "2026-11-20T00:30:21.324Z"
-  },
-  "1UtjWHO5Svm8cyewfmhkSzqgqjxEXOZVo": {
-   "title": "93925A260.pdf",
-   "modifiedTime": "2026-11-20T00:30:34.567Z"
-  },
-  "1q1oxfj24Qw-IL_EfEzz5P_Vv-CXic2fi": {
-   "title": "92137A412.pdf",
-   "modifiedTime": "2026-11-20T00:30:29.252Z"
-  },
-  "1o5qg9tzeWA5YmyrjvBn1pdOzuzwzp5xQ": {
-   "title": "E2B-M12KS04-WP-C1_datasheet.pdf",
-   "modifiedTime": "2026-11-20T00:30:42.543Z"
-  },
-  "1-cu9ybKIQxuNUATLI3g1taMCJol1zDGZ": {
-   "title": "E2B-M12KS04-WP-C1_STEP.zip",
-   "modifiedTime": "2026-11-20T00:30:38.753Z"
-  },
-  "1GDooS-jXc2BIrCE2abTg6Pql7LAiylSG": {
-   "title": "93925A420.pdf",
-   "modifiedTime": "2026-11-20T00:30:37.524Z"
-  },
-  "1GaEuFC5tAxugq5rTVSLFUGEQ0UXx4dLv": {
-   "title": "93925A420.step",
-   "modifiedTime": "2026-11-20T00:30:35.736Z"
-  },
-  "1dfWOk-qjUFVDHH99G6f3KVdWqu69jyvM": {
-   "title": "93925A260.step",
-   "modifiedTime": "2026-11-20T00:30:33.322Z"
-  },
-  "149gmDdCZXN3iNVZ_5sNAGaCX0chppqI1": {
-   "title": "92137A414.pdf",
-   "modifiedTime": "2026-11-20T00:30:31.802Z"
-  },
-  "14r32ADND5MWVy3gpO3Pvxahjqz2_Y-2w": {
-   "title": "92137A414.step",
-   "modifiedTime": "2026-11-20T00:30:30.708Z"
-  },
-  "1tZGI9TgU7qzTVw_8TfhumQ8yiyppb08M": {
-   "title": "92137A412.step",
-   "modifiedTime": "2026-11-20T00:30:27.894Z"
-  },
-  "1lsStF5pR_zfTeAqw9-eSSNrUgspPkVAO": {
-   "title": "91290A221.pdf",
-   "modifiedTime": "2026-11-20T00:30:26.483Z"
-  },
-  "1Qkb-0nMYxk14QJHV8hMezGDD575xcMnw": {
-   "title": "91290A221.step",
-   "modifiedTime": "2026-11-20T00:30:25.258Z"
-  },
-  "1q0I_u8i0dHrar0XwbDh2Vb5HaZdy-5Q8": {
-   "title": "91290A139.step",
-   "modifiedTime": "2026-11-20T00:30:22.716Z"
-  },
-  "1BE4-rcihV7Dg9YaGoxtdN_UAWjNA-CO7": {
-   "title": "91106A126.step",
-   "modifiedTime": "2026-11-20T00:30:20.111Z"
-  },
-  "1VOqzh6BxWnPp9dPDpXzqA731xyz9cBBL": {
-   "title": "91100A130.pdf",
-   "modifiedTime": "2026-11-20T00:30:18.257Z"
-  },
-  "1HZb0cVhKeAjXsZGuYojrsmVd4mrNLpsN": {
-   "title": "91100A130.step",
-   "modifiedTime": "2026-11-20T00:30:17.107Z"
-  },
-  "1AB46A9AuD90OUj9wxhMo_df1PWUlRyVh": {
-   "title": "91100A120.pdf",
-   "modifiedTime": "2026-11-20T00:30:15.867Z"
-  },
-  "11IQYSh9vKKSjzajHqHI8yjZFP_cRuQ0t": {
-   "title": "91100A120.step",
-   "modifiedTime": "2026-11-20T00:30:14.325Z"
-  },
-  "1fejF-rYkvSkkPuPXiRLh15wT455zHyRW": {
-   "title": "RESULT.md",
-   "modifiedTime": "2026-11-20T00:52:19.936Z"
-  },
-  "1Wl39ZBGucHvOfke0hSMmvl62QjKjAHND": {
-   "title": "HNTAJ5-3.stp",
-   "modifiedTime": "2026-11-20T00:36:37.438Z"
-  },
-  "1C9FyZQ532bsf4ipkm6zqDomnQwVpzm8X": {
-   "title": "HNTAJ5-3.pdf",
-   "modifiedTime": "2026-11-20T00:36:38.708Z"
-  },
-  "1T2bUkQ0dVZLbua5ntmUukdzdq8jqrJLx": {
-   "title": "HNTAJ5-5.stp",
-   "modifiedTime": "2026-11-20T00:49:56.894Z"
-  },
-  "1DXHroAOVfujpZGuubaOXyc0k2DRLsE_-": {
-   "title": "HNTAJ5-5.pdf",
-   "modifiedTime": "2026-11-20T00:49:58.097Z"
-  },
-  "1jM_P_jXaz5N8D-3LAwvR3FQE3Bs4BbUL": {
-   "title": "HBLFSNF5.stp",
-   "modifiedTime": "2026-11-20T00:52:08.025Z"
-  },
-  "16jSfHWA-cR6FprEEo_i6oU8lHy3JO0Ue": {
-   "title": "HBLFSNF5.pdf",
-   "modifiedTime": "2026-11-20T00:52:09.298Z"
-  }
- },
- "superseded": {
-  "1qGicnMheu4PMkvryH7cUO5eCvComTrGy": {
-   "title": "RESULT.md",
-   "modifiedTime": "2026-11-20T00:31:30.187Z",
-   "note": "earlier RESULT.md, no longer in the folder; replaced by 1fejF-rYkvSkkPuPXiRLh15wT455zHyRW"
-  },
-  "11LCfdfQthsy8zRuW0ZokIqrrjROKQ6t4": {
-   "title": "RESULT.md",
-   "size": 4261,
-   "note": "earlier RESULT.md (PARTIAL), no longer current; replaced by 1YYSNmXk69nqwFNP62z9wc8uxDoLIXNR3 (02:38Z). Still staged as instinct_REQ-020/RESULT_instinct_REQ-020_2026-11-21.md"
-  }
- },
- "other_folders": {
-  "1RI-CdoBbH9t_4mt2fioLIT-op7WBFLYL": {
-   "folder": "mechloop handoff/results/REQ-002-supplier-cad-batch-3-full",
-   "last_checked": "2026-11-20T07:20:00Z",
-   "staged_in": "vendor_cad/staging/instinct_REQ-002",
-   "result_status": "partial (02:47Z: 11 of 25 met; items 4/5/8/13/14/17/20/21/22/23/25)",
-   "files": {
-    "1ZZvUG19Du_tvAZpS9QN26cESMFvC710B": {
-     "title": "RESULT.md",
-     "modifiedTime": "2026-11-20T02:47:02.405Z",
-     "size": 11858,
-     "note": "re-downloaded at the 02:47:02Z revision (batch 5)"
+  "folder_id": "1ZtlzfkmX-Yz92soEepnPbyNiPK0uQ43v",
+  "folder": "mechloop handoff/results/REQ-001-supplier-cad-batch-3",
+  "last_checked": "2026-11-21T06:13:00Z",
+  "result_status": "partial (Misumi delivered and staged in instinct_REQ-001b; PEM S-M3-0 not fulfilled, owner decision pending)",
+  "files": {
+    "1vwRHKJkIJW3gaI138gcNPCUbF5RF8TUX": {
+      "title": "91290A139.pdf",
+      "modifiedTime": "2026-11-20T00:30:24.080Z"
     },
-    "1r9VLS8FEXUIRw246czgXSo3UNRJamtWq": {
-     "title": "90370A201__drawing.pdf",
-     "modifiedTime": "2026-11-20T01:26:05.751Z",
-     "size": 98872
+    "1oRw_xoeLNExLJWHpt3N2pwlDrHDTUZ0e": {
+      "title": "91106A126.pdf",
+      "modifiedTime": "2026-11-20T00:30:21.324Z"
     },
-    "1vEeXJAkndHb4vBQLDPAjFBW8sFd-t_js": {
-     "title": "RaspberryPi5__mechanical-drawing.pdf",
-     "modifiedTime": "2026-11-20T01:14:49.569Z",
-     "size": 174949
+    "1UtjWHO5Svm8cyewfmhkSzqgqjxEXOZVo": {
+      "title": "93925A260.pdf",
+      "modifiedTime": "2026-11-20T00:30:34.567Z"
     },
-    "1tUieyWNvWyzlfYH_nxEx_aAA-l9h9gQA": {
-     "title": "PiCameraModule3__schematic.pdf",
-     "modifiedTime": "2026-11-20T01:33:46.185Z",
-     "size": 264744
+    "1q1oxfj24Qw-IL_EfEzz5P_Vv-CXic2fi": {
+      "title": "92137A412.pdf",
+      "modifiedTime": "2026-11-20T00:30:29.252Z"
     },
-    "1CFrwYkYvGnZvoWcpA5QTIQjg2BFR1Lzb": {
-     "title": "RAF__catalog.pdf",
-     "modifiedTime": "2026-11-20T01:14:48.184Z",
-     "size": 235612
+    "1o5qg9tzeWA5YmyrjvBn1pdOzuzwzp5xQ": {
+      "title": "E2B-M12KS04-WP-C1_datasheet.pdf",
+      "modifiedTime": "2026-11-20T00:30:42.543Z"
     },
-    "1uo_qdaRFO46iL7ka10wWDORgwPwxdCTI": {
-     "title": "MIC-6__datasheet.pdf",
-     "modifiedTime": "2026-11-20T01:36:41.416Z",
-     "size": 914173
+    "1-cu9ybKIQxuNUATLI3g1taMCJol1zDGZ": {
+      "title": "E2B-M12KS04-WP-C1_STEP.zip",
+      "modifiedTime": "2026-11-20T00:30:38.753Z"
     },
-    "1FLO8hhzMgNr2VYgjXU93pJhclPnlT2AZ": {
-     "title": "Loctite243__tds.pdf",
-     "modifiedTime": "2026-11-20T01:35:42.811Z",
-     "size": 895678
+    "1GDooS-jXc2BIrCE2abTg6Pql7LAiylSG": {
+      "title": "93925A420.pdf",
+      "modifiedTime": "2026-11-20T00:30:37.524Z"
     },
-    "17u5C1fDI8QQq5oeooEt3tUPmyD2nmEpz": {
-     "title": "PLT1M-C__step.stp",
-     "modifiedTime": "2026-11-20T01:35:41.617Z",
-     "size": 246140
+    "1GaEuFC5tAxugq5rTVSLFUGEQ0UXx4dLv": {
+      "title": "93925A420.step",
+      "modifiedTime": "2026-11-20T00:30:35.736Z"
     },
-    "1F0xrT9YGzXfVndXef52r3Wf_uQy1cGOj": {
-     "title": "PLT1M-C__drawing.pdf",
-     "modifiedTime": "2026-11-20T01:35:40.432Z",
-     "size": 121029
+    "1dfWOk-qjUFVDHH99G6f3KVdWqu69jyvM": {
+      "title": "93925A260.step",
+      "modifiedTime": "2026-11-20T00:30:33.322Z"
     },
-    "1PORnNHedLCNyM9obN1GFnfDnIzrIFkfK": {
-     "title": "PowerGripGT2__design-manual.pdf",
-     "modifiedTime": "2026-11-20T01:34:47.071Z",
-     "size": 4246471
+    "149gmDdCZXN3iNVZ_5sNAGaCX0chppqI1": {
+      "title": "92137A414.pdf",
+      "modifiedTime": "2026-11-20T00:30:31.802Z"
     },
-    "1YFYG78jhmzgqGC0rSX2ilmsmH7eHmnXQ": {
-     "title": "PiCameraModule3__step.zip",
-     "modifiedTime": "2026-11-20T01:33:45.277Z",
-     "size": 9971996
+    "14r32ADND5MWVy3gpO3Pvxahjqz2_Y-2w": {
+      "title": "92137A414.step",
+      "modifiedTime": "2026-11-20T00:30:30.708Z"
     },
-    "1kxpxQ7DC2HTs9Cv4SbkHyZbZOwAppHHF": {
-     "title": "PiCameraModule3-wide__mechanical-drawing.pdf",
-     "modifiedTime": "2026-11-20T01:33:43.462Z",
-     "size": 946851
+    "1tZGI9TgU7qzTVw_8TfhumQ8yiyppb08M": {
+      "title": "92137A412.step",
+      "modifiedTime": "2026-11-20T00:30:27.894Z"
     },
-    "1dcus9Th10RNBM0CiNElf1sS22_xDiEFQ": {
-     "title": "PiCameraModule3-std__mechanical-drawing.pdf",
-     "modifiedTime": "2026-11-20T01:33:42.275Z",
-     "size": 949985
+    "1lsStF5pR_zfTeAqw9-eSSNrUgspPkVAO": {
+      "title": "91290A221.pdf",
+      "modifiedTime": "2026-11-20T00:30:26.483Z"
     },
-    "1809z7bYZn60khUO_H_qM-XzgsHafExSQ": {
-     "title": "PiCameraCable200mm__drawing.pdf",
-     "modifiedTime": "2026-11-20T01:33:41.159Z",
-     "size": 53662
+    "1Qkb-0nMYxk14QJHV8hMezGDD575xcMnw": {
+      "title": "91290A221.step",
+      "modifiedTime": "2026-11-20T00:30:25.258Z"
     },
-    "1CgeSMWyJqh1K8Ks6g1rluBQ2FDNynjPT": {
-     "title": "PiCameraModule3__product-brief.pdf",
-     "modifiedTime": "2026-11-20T01:33:40.110Z",
-     "size": 1244344
+    "1q0I_u8i0dHrar0XwbDh2Vb5HaZdy-5Q8": {
+      "title": "91290A139.step",
+      "modifiedTime": "2026-11-20T00:30:22.716Z"
     },
-    "1PNEwz4eu_nRxwh8Td7mJCFsQbVk11B1Y": {
-     "title": "PiHQCamera__schematics.pdf",
-     "modifiedTime": "2026-11-20T01:33:39.009Z",
-     "size": 316408
+    "1BE4-rcihV7Dg9YaGoxtdN_UAWjNA-CO7": {
+      "title": "91106A126.step",
+      "modifiedTime": "2026-11-20T00:30:20.111Z"
     },
-    "1ZuSmmAsfqFRKLeIKVMoBOAvpw0AZghc9": {
-     "title": "PiHQCamera-M12__mechanical-drawing.pdf",
-     "modifiedTime": "2026-11-20T01:33:37.686Z",
-     "size": 673300
+    "1VOqzh6BxWnPp9dPDpXzqA731xyz9cBBL": {
+      "title": "91100A130.pdf",
+      "modifiedTime": "2026-11-20T00:30:18.257Z"
     },
-    "1gxm7GMQA1w36Hqh8nCDqzZ3meFQ-hD16": {
-     "title": "PiHQCamera-CS__mechanical-drawing.pdf",
-     "modifiedTime": "2026-11-20T01:33:36.497Z",
-     "size": 524806
+    "1HZb0cVhKeAjXsZGuYojrsmVd4mrNLpsN": {
+      "title": "91100A130.step",
+      "modifiedTime": "2026-11-20T00:30:17.107Z"
     },
-    "1A0ZEyWinCd6E7QWohFM6OhXJV55TrWT9": {
-     "title": "CF880__datasheet.pdf",
-     "modifiedTime": "2026-11-20T01:31:54.845Z",
-     "size": 1096659
+    "1AB46A9AuD90OUj9wxhMo_df1PWUlRyVh": {
+      "title": "91100A120.pdf",
+      "modifiedTime": "2026-11-20T00:30:15.867Z"
     },
-    "1vYBW-Ki9gnBfFcTqJpe0fx-aaO6B5gmb": {
-     "title": "R30-6200614__datasheet.pdf",
-     "modifiedTime": "2026-11-20T01:31:01.377Z",
-     "size": 48081
+    "11IQYSh9vKKSjzajHqHI8yjZFP_cRuQ0t": {
+      "title": "91100A120.step",
+      "modifiedTime": "2026-11-20T00:30:14.325Z"
     },
-    "1T1LWNPYg5Vg1raPWsqUyoljhBRwe0GFK": {
-     "title": "39-01-2020__drawing.pdf",
-     "modifiedTime": "2026-11-20T01:29:51.446Z",
-     "size": 201853
+    "1fejF-rYkvSkkPuPXiRLh15wT455zHyRW": {
+      "title": "RESULT.md",
+      "modifiedTime": "2026-11-20T00:52:19.936Z"
     },
-    "1X3F-vBHrTnidlowkK2p30-epSSzpc1QL": {
-     "title": "43020-0200__drawing.pdf",
-     "modifiedTime": "2026-11-20T01:29:06.186Z",
-     "size": 189439
+    "1Wl39ZBGucHvOfke0hSMmvl62QjKjAHND": {
+      "title": "HNTAJ5-3.stp",
+      "modifiedTime": "2026-11-20T00:36:37.438Z"
     },
-    "1dz91JJB1fmv1qcVZLle8tSLKzrovSlbf": {
-     "title": "43020-0200__step.zip",
-     "modifiedTime": "2026-11-20T01:29:04.902Z",
-     "size": 22206
+    "1C9FyZQ532bsf4ipkm6zqDomnQwVpzm8X": {
+      "title": "HNTAJ5-3.pdf",
+      "modifiedTime": "2026-11-20T00:36:38.708Z"
     },
-    "1360aw4KcW3cnnOaoqnuyO9Syc05_9jHW": {
-     "title": "43031-0001__drawing.pdf",
-     "modifiedTime": "2026-11-20T01:29:03.284Z",
-     "size": 299659
+    "1T2bUkQ0dVZLbua5ntmUukdzdq8jqrJLx": {
+      "title": "HNTAJ5-5.stp",
+      "modifiedTime": "2026-11-20T00:49:56.894Z"
     },
-    "1HVvJT_5QmFfKAe1Lsy7yWON06w2HqQem": {
-     "title": "43030-0001__drawing.pdf",
-     "modifiedTime": "2026-11-20T01:29:01.516Z",
-     "size": 632077
+    "1DXHroAOVfujpZGuubaOXyc0k2DRLsE_-": {
+      "title": "HNTAJ5-5.pdf",
+      "modifiedTime": "2026-11-20T00:49:58.097Z"
     },
-    "1ra2PLQprh1wu_zTqllmTNJ6EouIZxCjt": {
-     "title": "43025-0200__drawing.pdf",
-     "modifiedTime": "2026-11-20T01:28:59.817Z",
-     "size": 201161
+    "1jM_P_jXaz5N8D-3LAwvR3FQE3Bs4BbUL": {
+      "title": "HBLFSNF5.stp",
+      "modifiedTime": "2026-11-20T00:52:08.025Z"
     },
-    "1WxpAv7KwlP9zcuWEYX27rGsZQihsBks6": {
-     "title": "43025-0200__step.zip",
-     "modifiedTime": "2026-11-20T01:28:58.449Z",
-     "size": 16181
-    },
-    "1l5bCc38jpC3UIjxDVBWqXquekmd3qeRK": {
-     "title": "218__datasheet.pdf",
-     "modifiedTime": "2026-11-20T01:28:08.597Z",
-     "size": 752754
-    },
-    "1iYz01S3vCp7nw0UMH4pXylUM7xC7yLo-": {
-     "title": "297__datasheet.pdf",
-     "modifiedTime": "2026-11-20T01:27:57.004Z",
-     "size": 366235
-    },
-    "1SeHqWIPttTl5GflrLxklsDRtHum0jNt9": {
-     "title": "91166A180__drawing.pdf",
-     "modifiedTime": "2026-11-20T01:26:12.152Z",
-     "size": 106887
-    },
-    "1qAC8sxepxyLBpwycYyb1tpOzYQN4DHs4": {
-     "title": "91166A180__step.step",
-     "modifiedTime": "2026-11-20T01:26:10.717Z",
-     "size": 234904
-    },
-    "1zIqWcvpKWSv4Op7EY_zkakfpEbuWPFT8": {
-     "title": "90128A208__drawing.pdf",
-     "modifiedTime": "2026-11-20T01:26:09.396Z",
-     "size": 220551
-    },
-    "1LgWRIYbEi2oNMtjBNoikQb0O4SV1c6wt": {
-     "title": "90128A208__step.step",
-     "modifiedTime": "2026-11-20T01:26:07.914Z",
-     "size": 9052924
-    },
-    "1oBm_hw-PaYg6afjT1S2tvd-rt0-jIvZs": {
-     "title": "90370A201__step.step",
-     "modifiedTime": "2026-11-20T01:26:04.468Z",
-     "size": 350475
-    },
-    "1y-PD-qiOgilDCiDsb5L7RTIQDJr7lZeI": {
-     "title": "91290A270__drawing.pdf",
-     "modifiedTime": "2026-11-20T01:26:02.629Z",
-     "size": 152211
-    },
-    "1ULUBr_SFwpBcIZXzO9BYYWuZgYD3ok68": {
-     "title": "91290A270__step.step",
-     "modifiedTime": "2026-11-20T01:26:00.538Z",
-     "size": 2128014
-    },
-    "1Q0xCoV2JzsrqEqQxXMg7O4EFKkhyZBrN": {
-     "title": "91290A232__drawing.pdf",
-     "modifiedTime": "2026-11-20T01:25:58.836Z",
-     "size": 155389
-    },
-    "1nzrrzGywybb1nyuk1BkS3mHGt6w5UxvR": {
-     "title": "91290A232__step.step",
-     "modifiedTime": "2026-11-20T01:25:54.695Z",
-     "size": 1853671
-    },
-    "1v6oE1cCm-oxQkk8sm8_rD7vBQ33O2lkD": {
-     "title": "91290A125__drawing.pdf",
-     "modifiedTime": "2026-11-20T01:25:53.121Z",
-     "size": 162954
-    },
-    "1pOOjvtH70ipuh7tznmtZP7RT68lYcGDy": {
-     "title": "91290A125__step.step",
-     "modifiedTime": "2026-11-20T01:25:51.600Z",
-     "size": 2147256
-    },
-    "1wsutxjE9ZqKhlbhDsg8mTZ0fFUmo5j_0": {
-     "title": "91290A108__drawing.pdf",
-     "modifiedTime": "2026-11-20T01:25:49.703Z",
-     "size": 139673
-    },
-    "1eF11Jm7HuPKvNaEMyufRLl6QB5vB9A5P": {
-     "title": "91290A108__step.step",
-     "modifiedTime": "2026-11-20T01:25:47.592Z",
-     "size": 1381378
-    },
-    "12PwJuI30LkFS_XdSiw8su7dUU8OxcV5p": {
-     "title": "91290A049__drawing.pdf",
-     "modifiedTime": "2026-11-20T01:25:46.062Z",
-     "size": 135766
-    },
-    "1f3WSlZYYZVy4nPrpVhRmNvahUYP6a3Tm": {
-     "title": "91290A049__step.step",
-     "modifiedTime": "2026-11-20T01:25:44.610Z",
-     "size": 1508255
-    },
-    "1L7aovWmm4hQD-HvERZywt_98eD8pLi9P": {
-     "title": "91290A221__drawing.pdf",
-     "modifiedTime": "2026-11-20T01:25:42.808Z",
-     "size": 134550
-    },
-    "1_W6Tcxqq6NJupllXulyePv0wpvkaG8YQ": {
-     "title": "91290A221__step.step",
-     "modifiedTime": "2026-11-20T01:25:41.225Z",
-     "size": 1504336
-    },
-    "1-M6tG1YTNsOmxGq8OUAe3P9prmeBa0I7": {
-     "title": "XH__datasheet.pdf",
-     "modifiedTime": "2026-11-20T01:14:50.864Z",
-     "size": 175724
-    },
-    "1o0I8Kb9JS26hJ9Q4HH39LAEFaQ1wdwF_": {
-     "title": "PiHQCamera__product-brief.pdf",
-     "modifiedTime": "2026-11-20T01:14:46.783Z",
-     "size": 827678
-    },
-    "1Km9vGjcEG4SGHLIXRHyS7qqksrsuST6J": {
-     "title": "PiActiveCooler__product-brief.pdf",
-     "modifiedTime": "2026-11-20T01:14:45.299Z",
-     "size": 1509055
-    },
-    "1HbxWFqmuI3hsMerSMuAqqGv08GSM3sLt": {
-     "title": "Pi27W-PSU__product-brief.pdf",
-     "modifiedTime": "2026-11-20T01:14:44.090Z",
-     "size": 1233433
-    },
-    "1CPD3PZf8Kjexj_4QwS5YMPXOpPxlbSgi": {
-     "title": "DD11.0114.1111__datasheet.pdf",
-     "modifiedTime": "2026-11-20T01:14:42.923Z",
-     "size": 450651
-    },
-    "18sEM1pqteFtqP9LNAAZcL_5O1FeBsTxG": {
-     "title": "BAT85S__datasheet.pdf",
-     "modifiedTime": "2026-11-20T01:14:41.458Z",
-     "size": 91557
-    },
-    "1w3TyDm9UrTMCNOcO7Lp1jkhdhZJTxyi-": {
-     "title": "22.32__step.stp",
-     "modifiedTime": "2026-11-20T01:14:40.103Z",
-     "size": 3945793,
-     "note": "not staged: content is the Finder 022.3x auxiliary contact block, not 22.32"
-    },
-    "1S5WhQt3MJ5AJZFw765WqJ2-JRW5cjU4b": {
-     "title": "22.32__datasheet.pdf",
-     "modifiedTime": "2026-11-20T01:14:38.697Z",
-     "size": 3661031
-    },
-    "1EaxdIJmEIQO74983qX9_4gocx5C7iqN0": {
-     "title": "HPLW-M3-A2__step.stp",
-     "modifiedTime": "2026-11-20T02:10:37.297Z",
-     "size": 6914
-    },
-    "1I9kUSmpc7au3XVwLyw3zLPPkS-ihqV5E": {
-     "title": "HPLW-M4-A2__step.stp",
-     "modifiedTime": "2026-11-20T02:10:39.247Z",
-     "size": 6909
-    },
-    "1i2UNFCF3_LtTAykJZpPatwpXfMadp-vR": {
-     "title": "KeenovoCustomHeater__page.pdf",
-     "modifiedTime": "2026-11-20T02:06:10.996Z",
-     "size": 139362
-    },
-    "1H1QRkmweOT_9K32k8YR2vPTLhxjjVgzh": {
-     "title": "HIWIN_MG__catalog.pdf",
-     "modifiedTime": "2026-11-20T02:01:48.421Z",
-     "size": 17883962,
-     "note": "NOT downloaded: over the Drive connector 10 MB limit; same size as REQ-004 HIWIN_LinearGuideway__catalog.pdf"
-    },
-    "1YWG81Fgcm9Tz5SNSvjbVO4stsOPIk_GL": {
-     "title": "WhamBam_magnetic-base-220__page.pdf",
-     "modifiedTime": "2026-11-20T02:36:41.443Z",
-     "size": 1291502
-    },
-    "10XTpt-94FpMtNhulxvdcFsNYJ3Ga2cBB": {
-     "title": "WhamBam_PEI-plate-220__page.pdf",
-     "modifiedTime": "2026-11-20T02:36:40.215Z",
-     "size": 3254213
-    },
-    "1_SKlr0pl7f-WcHpQ5OjixZz-mOnWuehD": {
-     "title": "DJ-8X20YCS__drawing.pdf",
-     "modifiedTime": "2026-11-20T02:33:07.816Z",
-     "size": 308926
-    },
-    "1XrRZtxvpR30Znx9ImK1m7UH8gzaUB88C": {
-     "title": "Omron_D2F-01L__datasheet.pdf",
-     "modifiedTime": "2026-11-20T02:27:25.687Z",
-     "size": 850668,
-     "note": "not copied: same sha256 as vendor_docs/ENDSTOP-MICRO_datasheet.pdf"
+    "16jSfHWA-cR6FprEEo_i6oU8lHy3JO0Ue": {
+      "title": "HBLFSNF5.pdf",
+      "modifiedTime": "2026-11-20T00:52:09.298Z"
     }
-   }
   },
-  "1s3685ayrJbVVh85GEsWXSuDuLJB_npFE": {
-   "folder": "mechloop handoff/results/REQ-003-build1-additions",
-   "last_checked": "2026-11-20T07:20:00Z",
-   "result_status": "partial (done 3/5/7/8/9; partial 1/2/6; blocked 4; waiting 10)",
-   "files": {
-    "1u_vFWTdr8u1_3ZBFfv90YcNsTppWhvIv": {
-     "title": "RESULT.md",
-     "modifiedTime": "2026-11-20T02:46:31.411Z",
-     "size": 10153
+  "superseded": {
+    "1qGicnMheu4PMkvryH7cUO5eCvComTrGy": {
+      "title": "RESULT.md",
+      "modifiedTime": "2026-11-20T00:31:30.187Z",
+      "note": "earlier RESULT.md, no longer in the folder; replaced by 1fejF-rYkvSkkPuPXiRLh15wT455zHyRW"
     },
-    "1u_fK6cj9Z8Gl0W4AyB5La7OKcIoY9KTy": {
-     "title": "Gates_LL2MR09__page.pdf",
-     "modifiedTime": "2026-11-20T02:45:50.035Z",
-     "size": 924445
-    },
-    "1KMsrEyglH0z3sY4QCX2GfmviWMo6OwoS": {
-     "title": "WAGO_249-117__page.pdf",
-     "modifiedTime": "2026-11-20T02:43:48.237Z",
-     "size": 254857
-    },
-    "17Tt5iK1Q0mkx5vSySV5ba8OAgWGMnI-E": {
-     "title": "WAGO_249-117__datasheet.pdf",
-     "modifiedTime": "2026-11-20T02:43:47.129Z",
-     "size": 1575661
-    },
-    "1gwLddtXGdLnDG5-rrYjoR15H2aSzUqid": {
-     "title": "WAGO_210-112__page.pdf",
-     "modifiedTime": "2026-11-20T02:43:46.138Z",
-     "size": 250399
-    },
-    "1RXXZXMQZxUvlosnj3i0vwUxDtabsvT3B": {
-     "title": "WAGO_210-112__datasheet.pdf",
-     "modifiedTime": "2026-11-20T02:43:44.945Z",
-     "size": 801108
-    },
-    "1dqymlVTiJsfn9EHS7oWPl-xfKaMei_tz": {
-     "title": "InspiredLED_RadiantEdge__page.pdf",
-     "modifiedTime": "2026-11-20T02:42:32.926Z",
-     "size": 830905
-    },
-    "1NbSTK2ExhmmWu-yf0EXphx4dbhhtGk3C": {
-     "title": "InspiredLED_RadiantEdge-short__datasheet.pdf",
-     "modifiedTime": "2026-11-20T02:42:31.857Z",
-     "size": 770165
-    },
-    "1GTGWbKdhrOaPMQKi0bdFoyBHmlr87hiK": {
-     "title": "InspiredLED_24V-COB__page.pdf",
-     "modifiedTime": "2026-11-20T02:42:30.844Z",
-     "size": 1381343
-    },
-    "1wCD7lrHrBqlr8OLiCNBSxN-vJD6KPor-": {
-     "title": "InspiredLED_24V-COB__datasheet.pdf",
-     "modifiedTime": "2026-11-20T02:42:29.770Z",
-     "size": 312523,
-     "note": "not copied: same sha256 as vendor_docs/InspiredLED_24V-COB_flex_spec.pdf"
-    },
-    "166LkJoRf9C0MPWBq9Sh29saEIFk-dz7W": {
-     "title": "Keenovo_NTC-Thermistor-R-T-Table.pdf",
-     "modifiedTime": "2026-11-20T02:41:23.644Z",
-     "size": 49725
-    },
-    "1USQC_B9USPTOiNeIrbRlpYq1wLfjMTdk": {
-     "title": "Keenovo_200x200-24V-200W__page.pdf",
-     "modifiedTime": "2026-11-20T02:41:22.609Z",
-     "size": 953748
-    },
-    "17GJWwF-V01_TDpdRB7G_UMvz0ydXQVL8": {
-     "title": "Arducam_B0506__page.pdf",
-     "modifiedTime": "2026-11-20T02:40:04.575Z",
-     "size": 556586
-    },
-    "1iPasmWx7b4elNjuDH3IFOOkUcXK1rL7b": {
-     "title": "Arducam_B0506__datasheet.pdf",
-     "modifiedTime": "2026-11-20T02:40:03.535Z",
-     "size": 697051
-    },
-    "1RPUrCzdNzbqz40NJUJc_AJbqdcZPyF6g": {
-     "title": "Arducam_B0454__page.pdf",
-     "modifiedTime": "2026-11-20T02:40:02.382Z",
-     "size": 512823
-    },
-    "1D5JVIA26DTQof78Gsqm5dCcuUVewG4PH": {
-     "title": "Arducam_B0454__datasheet.pdf",
-     "modifiedTime": "2026-11-20T02:40:01.200Z",
-     "size": 528763
-    },
-    "1FVeXyBmW0DGQbB9RHcS1Omm4vf1gdqMK": {
-     "title": "Adafruit_ADXL345-1231__datasheet.pdf",
-     "modifiedTime": "2026-11-20T02:38:56.435Z",
-     "size": 875736
-    },
-    "1vg6QyjkaE_HRayTBz9hYFpgp5k6v5pB6": {
-     "title": "Adafruit_ADXL345-1231__page.pdf",
-     "modifiedTime": "2026-11-20T02:38:55.240Z",
-     "size": 1623378
-    },
-    "119hCtOEN0RdNzgKIAfRF-pbKrY9Iztam": {
-     "title": "BTT-ADXL345-V2.0__step.zip",
-     "modifiedTime": "2026-11-20T02:38:09.542Z",
-     "size": 6039443
-    },
-    "1ppDEoQSvLY8C501fjQBvR0hlNTQu3rTZ": {
-     "title": "BTT-ADXL345-V2.0__manual.pdf",
-     "modifiedTime": "2026-11-20T02:37:59.811Z",
-     "size": 1418286
-    },
-    "1XQaG8s-fqUJzy6oTNrZY0B9OVsadUGrg": {
-     "title": "BTT-ADXL345-V2.0__drawing.pdf",
-     "modifiedTime": "2026-11-20T02:37:58.575Z",
-     "size": 218804,
-     "note": "not copied: contains document-level and bookmark JavaScript (Altium _FindWord); scratch only"
+    "11LCfdfQthsy8zRuW0ZokIqrrjROKQ6t4": {
+      "title": "RESULT.md",
+      "size": 4261,
+      "note": "earlier RESULT.md (PARTIAL), no longer current; replaced by 1YYSNmXk69nqwFNP62z9wc8uxDoLIXNR3 (02:38Z). Still staged as instinct_REQ-020/RESULT_instinct_REQ-020_2026-11-21.md"
     }
-   },
-   "staged_in": "vendor_cad/staging/instinct_REQ-003"
   },
-  "1kA7gZ9hvMN84ooDXTnAgeoRObBQE0Tg0": {
-   "folder": "mechloop handoff/results/REQ-004-linear-rail-alternatives",
-   "last_checked": "2026-11-20T07:20:00Z",
-   "staged_in": "vendor_cad/staging/instinct_REQ-004",
-   "result_status": "partial (research finished; no STEP; CPC long block unpriced)",
-   "files": {
-    "14IiM0CvyDN2qWlpJ3A1QhuC1JQiO7VdS": {
-     "title": "RESULT.md",
-     "modifiedTime": "2026-11-20T02:47:03.666Z",
-     "size": 10627,
-     "note": "re-downloaded at the 02:47:03Z revision (batch 5)"
+  "other_folders": {
+    "1RI-CdoBbH9t_4mt2fioLIT-op7WBFLYL": {
+      "folder": "mechloop handoff/results/REQ-002-supplier-cad-batch-3-full",
+      "last_checked": "2026-11-20T07:20:00Z",
+      "staged_in": "vendor_cad/staging/instinct_REQ-002",
+      "result_status": "partial (02:47Z: 11 of 25 met; items 4/5/8/13/14/17/20/21/22/23/25)",
+      "files": {
+        "1ZZvUG19Du_tvAZpS9QN26cESMFvC710B": {
+          "title": "RESULT.md",
+          "modifiedTime": "2026-11-20T02:47:02.405Z",
+          "size": 11858,
+          "note": "re-downloaded at the 02:47:02Z revision (batch 5)"
+        },
+        "1r9VLS8FEXUIRw246czgXSo3UNRJamtWq": {
+          "title": "90370A201__drawing.pdf",
+          "modifiedTime": "2026-11-20T01:26:05.751Z",
+          "size": 98872
+        },
+        "1vEeXJAkndHb4vBQLDPAjFBW8sFd-t_js": {
+          "title": "RaspberryPi5__mechanical-drawing.pdf",
+          "modifiedTime": "2026-11-20T01:14:49.569Z",
+          "size": 174949
+        },
+        "1tUieyWNvWyzlfYH_nxEx_aAA-l9h9gQA": {
+          "title": "PiCameraModule3__schematic.pdf",
+          "modifiedTime": "2026-11-20T01:33:46.185Z",
+          "size": 264744
+        },
+        "1CFrwYkYvGnZvoWcpA5QTIQjg2BFR1Lzb": {
+          "title": "RAF__catalog.pdf",
+          "modifiedTime": "2026-11-20T01:14:48.184Z",
+          "size": 235612
+        },
+        "1uo_qdaRFO46iL7ka10wWDORgwPwxdCTI": {
+          "title": "MIC-6__datasheet.pdf",
+          "modifiedTime": "2026-11-20T01:36:41.416Z",
+          "size": 914173
+        },
+        "1FLO8hhzMgNr2VYgjXU93pJhclPnlT2AZ": {
+          "title": "Loctite243__tds.pdf",
+          "modifiedTime": "2026-11-20T01:35:42.811Z",
+          "size": 895678
+        },
+        "17u5C1fDI8QQq5oeooEt3tUPmyD2nmEpz": {
+          "title": "PLT1M-C__step.stp",
+          "modifiedTime": "2026-11-20T01:35:41.617Z",
+          "size": 246140
+        },
+        "1F0xrT9YGzXfVndXef52r3Wf_uQy1cGOj": {
+          "title": "PLT1M-C__drawing.pdf",
+          "modifiedTime": "2026-11-20T01:35:40.432Z",
+          "size": 121029
+        },
+        "1PORnNHedLCNyM9obN1GFnfDnIzrIFkfK": {
+          "title": "PowerGripGT2__design-manual.pdf",
+          "modifiedTime": "2026-11-20T01:34:47.071Z",
+          "size": 4246471
+        },
+        "1YFYG78jhmzgqGC0rSX2ilmsmH7eHmnXQ": {
+          "title": "PiCameraModule3__step.zip",
+          "modifiedTime": "2026-11-20T01:33:45.277Z",
+          "size": 9971996
+        },
+        "1kxpxQ7DC2HTs9Cv4SbkHyZbZOwAppHHF": {
+          "title": "PiCameraModule3-wide__mechanical-drawing.pdf",
+          "modifiedTime": "2026-11-20T01:33:43.462Z",
+          "size": 946851
+        },
+        "1dcus9Th10RNBM0CiNElf1sS22_xDiEFQ": {
+          "title": "PiCameraModule3-std__mechanical-drawing.pdf",
+          "modifiedTime": "2026-11-20T01:33:42.275Z",
+          "size": 949985
+        },
+        "1809z7bYZn60khUO_H_qM-XzgsHafExSQ": {
+          "title": "PiCameraCable200mm__drawing.pdf",
+          "modifiedTime": "2026-11-20T01:33:41.159Z",
+          "size": 53662
+        },
+        "1CgeSMWyJqh1K8Ks6g1rluBQ2FDNynjPT": {
+          "title": "PiCameraModule3__product-brief.pdf",
+          "modifiedTime": "2026-11-20T01:33:40.110Z",
+          "size": 1244344
+        },
+        "1PNEwz4eu_nRxwh8Td7mJCFsQbVk11B1Y": {
+          "title": "PiHQCamera__schematics.pdf",
+          "modifiedTime": "2026-11-20T01:33:39.009Z",
+          "size": 316408
+        },
+        "1ZuSmmAsfqFRKLeIKVMoBOAvpw0AZghc9": {
+          "title": "PiHQCamera-M12__mechanical-drawing.pdf",
+          "modifiedTime": "2026-11-20T01:33:37.686Z",
+          "size": 673300
+        },
+        "1gxm7GMQA1w36Hqh8nCDqzZ3meFQ-hD16": {
+          "title": "PiHQCamera-CS__mechanical-drawing.pdf",
+          "modifiedTime": "2026-11-20T01:33:36.497Z",
+          "size": 524806
+        },
+        "1A0ZEyWinCd6E7QWohFM6OhXJV55TrWT9": {
+          "title": "CF880__datasheet.pdf",
+          "modifiedTime": "2026-11-20T01:31:54.845Z",
+          "size": 1096659
+        },
+        "1vYBW-Ki9gnBfFcTqJpe0fx-aaO6B5gmb": {
+          "title": "R30-6200614__datasheet.pdf",
+          "modifiedTime": "2026-11-20T01:31:01.377Z",
+          "size": 48081
+        },
+        "1T1LWNPYg5Vg1raPWsqUyoljhBRwe0GFK": {
+          "title": "39-01-2020__drawing.pdf",
+          "modifiedTime": "2026-11-20T01:29:51.446Z",
+          "size": 201853
+        },
+        "1X3F-vBHrTnidlowkK2p30-epSSzpc1QL": {
+          "title": "43020-0200__drawing.pdf",
+          "modifiedTime": "2026-11-20T01:29:06.186Z",
+          "size": 189439
+        },
+        "1dz91JJB1fmv1qcVZLle8tSLKzrovSlbf": {
+          "title": "43020-0200__step.zip",
+          "modifiedTime": "2026-11-20T01:29:04.902Z",
+          "size": 22206
+        },
+        "1360aw4KcW3cnnOaoqnuyO9Syc05_9jHW": {
+          "title": "43031-0001__drawing.pdf",
+          "modifiedTime": "2026-11-20T01:29:03.284Z",
+          "size": 299659
+        },
+        "1HVvJT_5QmFfKAe1Lsy7yWON06w2HqQem": {
+          "title": "43030-0001__drawing.pdf",
+          "modifiedTime": "2026-11-20T01:29:01.516Z",
+          "size": 632077
+        },
+        "1ra2PLQprh1wu_zTqllmTNJ6EouIZxCjt": {
+          "title": "43025-0200__drawing.pdf",
+          "modifiedTime": "2026-11-20T01:28:59.817Z",
+          "size": 201161
+        },
+        "1WxpAv7KwlP9zcuWEYX27rGsZQihsBks6": {
+          "title": "43025-0200__step.zip",
+          "modifiedTime": "2026-11-20T01:28:58.449Z",
+          "size": 16181
+        },
+        "1l5bCc38jpC3UIjxDVBWqXquekmd3qeRK": {
+          "title": "218__datasheet.pdf",
+          "modifiedTime": "2026-11-20T01:28:08.597Z",
+          "size": 752754
+        },
+        "1iYz01S3vCp7nw0UMH4pXylUM7xC7yLo-": {
+          "title": "297__datasheet.pdf",
+          "modifiedTime": "2026-11-20T01:27:57.004Z",
+          "size": 366235
+        },
+        "1SeHqWIPttTl5GflrLxklsDRtHum0jNt9": {
+          "title": "91166A180__drawing.pdf",
+          "modifiedTime": "2026-11-20T01:26:12.152Z",
+          "size": 106887
+        },
+        "1qAC8sxepxyLBpwycYyb1tpOzYQN4DHs4": {
+          "title": "91166A180__step.step",
+          "modifiedTime": "2026-11-20T01:26:10.717Z",
+          "size": 234904
+        },
+        "1zIqWcvpKWSv4Op7EY_zkakfpEbuWPFT8": {
+          "title": "90128A208__drawing.pdf",
+          "modifiedTime": "2026-11-20T01:26:09.396Z",
+          "size": 220551
+        },
+        "1LgWRIYbEi2oNMtjBNoikQb0O4SV1c6wt": {
+          "title": "90128A208__step.step",
+          "modifiedTime": "2026-11-20T01:26:07.914Z",
+          "size": 9052924
+        },
+        "1oBm_hw-PaYg6afjT1S2tvd-rt0-jIvZs": {
+          "title": "90370A201__step.step",
+          "modifiedTime": "2026-11-20T01:26:04.468Z",
+          "size": 350475
+        },
+        "1y-PD-qiOgilDCiDsb5L7RTIQDJr7lZeI": {
+          "title": "91290A270__drawing.pdf",
+          "modifiedTime": "2026-11-20T01:26:02.629Z",
+          "size": 152211
+        },
+        "1ULUBr_SFwpBcIZXzO9BYYWuZgYD3ok68": {
+          "title": "91290A270__step.step",
+          "modifiedTime": "2026-11-20T01:26:00.538Z",
+          "size": 2128014
+        },
+        "1Q0xCoV2JzsrqEqQxXMg7O4EFKkhyZBrN": {
+          "title": "91290A232__drawing.pdf",
+          "modifiedTime": "2026-11-20T01:25:58.836Z",
+          "size": 155389
+        },
+        "1nzrrzGywybb1nyuk1BkS3mHGt6w5UxvR": {
+          "title": "91290A232__step.step",
+          "modifiedTime": "2026-11-20T01:25:54.695Z",
+          "size": 1853671
+        },
+        "1v6oE1cCm-oxQkk8sm8_rD7vBQ33O2lkD": {
+          "title": "91290A125__drawing.pdf",
+          "modifiedTime": "2026-11-20T01:25:53.121Z",
+          "size": 162954
+        },
+        "1pOOjvtH70ipuh7tznmtZP7RT68lYcGDy": {
+          "title": "91290A125__step.step",
+          "modifiedTime": "2026-11-20T01:25:51.600Z",
+          "size": 2147256
+        },
+        "1wsutxjE9ZqKhlbhDsg8mTZ0fFUmo5j_0": {
+          "title": "91290A108__drawing.pdf",
+          "modifiedTime": "2026-11-20T01:25:49.703Z",
+          "size": 139673
+        },
+        "1eF11Jm7HuPKvNaEMyufRLl6QB5vB9A5P": {
+          "title": "91290A108__step.step",
+          "modifiedTime": "2026-11-20T01:25:47.592Z",
+          "size": 1381378
+        },
+        "12PwJuI30LkFS_XdSiw8su7dUU8OxcV5p": {
+          "title": "91290A049__drawing.pdf",
+          "modifiedTime": "2026-11-20T01:25:46.062Z",
+          "size": 135766
+        },
+        "1f3WSlZYYZVy4nPrpVhRmNvahUYP6a3Tm": {
+          "title": "91290A049__step.step",
+          "modifiedTime": "2026-11-20T01:25:44.610Z",
+          "size": 1508255
+        },
+        "1L7aovWmm4hQD-HvERZywt_98eD8pLi9P": {
+          "title": "91290A221__drawing.pdf",
+          "modifiedTime": "2026-11-20T01:25:42.808Z",
+          "size": 134550
+        },
+        "1_W6Tcxqq6NJupllXulyePv0wpvkaG8YQ": {
+          "title": "91290A221__step.step",
+          "modifiedTime": "2026-11-20T01:25:41.225Z",
+          "size": 1504336
+        },
+        "1-M6tG1YTNsOmxGq8OUAe3P9prmeBa0I7": {
+          "title": "XH__datasheet.pdf",
+          "modifiedTime": "2026-11-20T01:14:50.864Z",
+          "size": 175724
+        },
+        "1o0I8Kb9JS26hJ9Q4HH39LAEFaQ1wdwF_": {
+          "title": "PiHQCamera__product-brief.pdf",
+          "modifiedTime": "2026-11-20T01:14:46.783Z",
+          "size": 827678
+        },
+        "1Km9vGjcEG4SGHLIXRHyS7qqksrsuST6J": {
+          "title": "PiActiveCooler__product-brief.pdf",
+          "modifiedTime": "2026-11-20T01:14:45.299Z",
+          "size": 1509055
+        },
+        "1HbxWFqmuI3hsMerSMuAqqGv08GSM3sLt": {
+          "title": "Pi27W-PSU__product-brief.pdf",
+          "modifiedTime": "2026-11-20T01:14:44.090Z",
+          "size": 1233433
+        },
+        "1CPD3PZf8Kjexj_4QwS5YMPXOpPxlbSgi": {
+          "title": "DD11.0114.1111__datasheet.pdf",
+          "modifiedTime": "2026-11-20T01:14:42.923Z",
+          "size": 450651
+        },
+        "18sEM1pqteFtqP9LNAAZcL_5O1FeBsTxG": {
+          "title": "BAT85S__datasheet.pdf",
+          "modifiedTime": "2026-11-20T01:14:41.458Z",
+          "size": 91557
+        },
+        "1w3TyDm9UrTMCNOcO7Lp1jkhdhZJTxyi-": {
+          "title": "22.32__step.stp",
+          "modifiedTime": "2026-11-20T01:14:40.103Z",
+          "size": 3945793,
+          "note": "not staged: content is the Finder 022.3x auxiliary contact block, not 22.32"
+        },
+        "1S5WhQt3MJ5AJZFw765WqJ2-JRW5cjU4b": {
+          "title": "22.32__datasheet.pdf",
+          "modifiedTime": "2026-11-20T01:14:38.697Z",
+          "size": 3661031
+        },
+        "1EaxdIJmEIQO74983qX9_4gocx5C7iqN0": {
+          "title": "HPLW-M3-A2__step.stp",
+          "modifiedTime": "2026-11-20T02:10:37.297Z",
+          "size": 6914
+        },
+        "1I9kUSmpc7au3XVwLyw3zLPPkS-ihqV5E": {
+          "title": "HPLW-M4-A2__step.stp",
+          "modifiedTime": "2026-11-20T02:10:39.247Z",
+          "size": 6909
+        },
+        "1i2UNFCF3_LtTAykJZpPatwpXfMadp-vR": {
+          "title": "KeenovoCustomHeater__page.pdf",
+          "modifiedTime": "2026-11-20T02:06:10.996Z",
+          "size": 139362
+        },
+        "1H1QRkmweOT_9K32k8YR2vPTLhxjjVgzh": {
+          "title": "HIWIN_MG__catalog.pdf",
+          "modifiedTime": "2026-11-20T02:01:48.421Z",
+          "size": 17883962,
+          "note": "NOT downloaded: over the Drive connector 10 MB limit; same size as REQ-004 HIWIN_LinearGuideway__catalog.pdf"
+        },
+        "1YWG81Fgcm9Tz5SNSvjbVO4stsOPIk_GL": {
+          "title": "WhamBam_magnetic-base-220__page.pdf",
+          "modifiedTime": "2026-11-20T02:36:41.443Z",
+          "size": 1291502
+        },
+        "10XTpt-94FpMtNhulxvdcFsNYJ3Ga2cBB": {
+          "title": "WhamBam_PEI-plate-220__page.pdf",
+          "modifiedTime": "2026-11-20T02:36:40.215Z",
+          "size": 3254213
+        },
+        "1_SKlr0pl7f-WcHpQ5OjixZz-mOnWuehD": {
+          "title": "DJ-8X20YCS__drawing.pdf",
+          "modifiedTime": "2026-11-20T02:33:07.816Z",
+          "size": 308926
+        },
+        "1XrRZtxvpR30Znx9ImK1m7UH8gzaUB88C": {
+          "title": "Omron_D2F-01L__datasheet.pdf",
+          "modifiedTime": "2026-11-20T02:27:25.687Z",
+          "size": 850668,
+          "note": "not copied: same sha256 as vendor_docs/ENDSTOP-MICRO_datasheet.pdf"
+        }
+      }
     },
-    "1CsVQVhnvErxtYwQrLP3_XbEw3dCOxbDz": {
-     "title": "LDO_MGN12H__drawing.pdf",
-     "modifiedTime": "2026-11-20T01:49:53.407Z",
-     "size": 237171
+    "1s3685ayrJbVVh85GEsWXSuDuLJB_npFE": {
+      "folder": "mechloop handoff/results/REQ-003-build1-additions",
+      "last_checked": "2026-11-20T07:20:00Z",
+      "result_status": "partial (done 3/5/7/8/9; partial 1/2/6; blocked 4; waiting 10)",
+      "files": {
+        "1u_vFWTdr8u1_3ZBFfv90YcNsTppWhvIv": {
+          "title": "RESULT.md",
+          "modifiedTime": "2026-11-20T02:46:31.411Z",
+          "size": 10153
+        },
+        "1u_fK6cj9Z8Gl0W4AyB5La7OKcIoY9KTy": {
+          "title": "Gates_LL2MR09__page.pdf",
+          "modifiedTime": "2026-11-20T02:45:50.035Z",
+          "size": 924445
+        },
+        "1KMsrEyglH0z3sY4QCX2GfmviWMo6OwoS": {
+          "title": "WAGO_249-117__page.pdf",
+          "modifiedTime": "2026-11-20T02:43:48.237Z",
+          "size": 254857
+        },
+        "17Tt5iK1Q0mkx5vSySV5ba8OAgWGMnI-E": {
+          "title": "WAGO_249-117__datasheet.pdf",
+          "modifiedTime": "2026-11-20T02:43:47.129Z",
+          "size": 1575661
+        },
+        "1gwLddtXGdLnDG5-rrYjoR15H2aSzUqid": {
+          "title": "WAGO_210-112__page.pdf",
+          "modifiedTime": "2026-11-20T02:43:46.138Z",
+          "size": 250399
+        },
+        "1RXXZXMQZxUvlosnj3i0vwUxDtabsvT3B": {
+          "title": "WAGO_210-112__datasheet.pdf",
+          "modifiedTime": "2026-11-20T02:43:44.945Z",
+          "size": 801108
+        },
+        "1dqymlVTiJsfn9EHS7oWPl-xfKaMei_tz": {
+          "title": "InspiredLED_RadiantEdge__page.pdf",
+          "modifiedTime": "2026-11-20T02:42:32.926Z",
+          "size": 830905
+        },
+        "1NbSTK2ExhmmWu-yf0EXphx4dbhhtGk3C": {
+          "title": "InspiredLED_RadiantEdge-short__datasheet.pdf",
+          "modifiedTime": "2026-11-20T02:42:31.857Z",
+          "size": 770165
+        },
+        "1GTGWbKdhrOaPMQKi0bdFoyBHmlr87hiK": {
+          "title": "InspiredLED_24V-COB__page.pdf",
+          "modifiedTime": "2026-11-20T02:42:30.844Z",
+          "size": 1381343
+        },
+        "1wCD7lrHrBqlr8OLiCNBSxN-vJD6KPor-": {
+          "title": "InspiredLED_24V-COB__datasheet.pdf",
+          "modifiedTime": "2026-11-20T02:42:29.770Z",
+          "size": 312523,
+          "note": "not copied: same sha256 as vendor_docs/InspiredLED_24V-COB_flex_spec.pdf"
+        },
+        "166LkJoRf9C0MPWBq9Sh29saEIFk-dz7W": {
+          "title": "Keenovo_NTC-Thermistor-R-T-Table.pdf",
+          "modifiedTime": "2026-11-20T02:41:23.644Z",
+          "size": 49725
+        },
+        "1USQC_B9USPTOiNeIrbRlpYq1wLfjMTdk": {
+          "title": "Keenovo_200x200-24V-200W__page.pdf",
+          "modifiedTime": "2026-11-20T02:41:22.609Z",
+          "size": 953748
+        },
+        "17GJWwF-V01_TDpdRB7G_UMvz0ydXQVL8": {
+          "title": "Arducam_B0506__page.pdf",
+          "modifiedTime": "2026-11-20T02:40:04.575Z",
+          "size": 556586
+        },
+        "1iPasmWx7b4elNjuDH3IFOOkUcXK1rL7b": {
+          "title": "Arducam_B0506__datasheet.pdf",
+          "modifiedTime": "2026-11-20T02:40:03.535Z",
+          "size": 697051
+        },
+        "1RPUrCzdNzbqz40NJUJc_AJbqdcZPyF6g": {
+          "title": "Arducam_B0454__page.pdf",
+          "modifiedTime": "2026-11-20T02:40:02.382Z",
+          "size": 512823
+        },
+        "1D5JVIA26DTQof78Gsqm5dCcuUVewG4PH": {
+          "title": "Arducam_B0454__datasheet.pdf",
+          "modifiedTime": "2026-11-20T02:40:01.200Z",
+          "size": 528763
+        },
+        "1FVeXyBmW0DGQbB9RHcS1Omm4vf1gdqMK": {
+          "title": "Adafruit_ADXL345-1231__datasheet.pdf",
+          "modifiedTime": "2026-11-20T02:38:56.435Z",
+          "size": 875736
+        },
+        "1vg6QyjkaE_HRayTBz9hYFpgp5k6v5pB6": {
+          "title": "Adafruit_ADXL345-1231__page.pdf",
+          "modifiedTime": "2026-11-20T02:38:55.240Z",
+          "size": 1623378
+        },
+        "119hCtOEN0RdNzgKIAfRF-pbKrY9Iztam": {
+          "title": "BTT-ADXL345-V2.0__step.zip",
+          "modifiedTime": "2026-11-20T02:38:09.542Z",
+          "size": 6039443
+        },
+        "1ppDEoQSvLY8C501fjQBvR0hlNTQu3rTZ": {
+          "title": "BTT-ADXL345-V2.0__manual.pdf",
+          "modifiedTime": "2026-11-20T02:37:59.811Z",
+          "size": 1418286
+        },
+        "1XQaG8s-fqUJzy6oTNrZY0B9OVsadUGrg": {
+          "title": "BTT-ADXL345-V2.0__drawing.pdf",
+          "modifiedTime": "2026-11-20T02:37:58.575Z",
+          "size": 218804,
+          "note": "not copied: contains document-level and bookmark JavaScript (Altium _FindWord); scratch only"
+        }
+      },
+      "staged_in": "vendor_cad/staging/instinct_REQ-003"
     },
-    "1aUN-A4BBltUOiOdnNR7yVYvCx2cM3bVc": {
-     "title": "TBI_LinearGuide__catalog.pdf",
-     "modifiedTime": "2026-11-20T01:49:52.146Z",
-     "size": 3521727
+    "1kA7gZ9hvMN84ooDXTnAgeoRObBQE0Tg0": {
+      "folder": "mechloop handoff/results/REQ-004-linear-rail-alternatives",
+      "last_checked": "2026-11-20T07:20:00Z",
+      "staged_in": "vendor_cad/staging/instinct_REQ-004",
+      "result_status": "partial (research finished; no STEP; CPC long block unpriced)",
+      "files": {
+        "14IiM0CvyDN2qWlpJ3A1QhuC1JQiO7VdS": {
+          "title": "RESULT.md",
+          "modifiedTime": "2026-11-20T02:47:03.666Z",
+          "size": 10627,
+          "note": "re-downloaded at the 02:47:03Z revision (batch 5)"
+        },
+        "1CsVQVhnvErxtYwQrLP3_XbEw3dCOxbDz": {
+          "title": "LDO_MGN12H__drawing.pdf",
+          "modifiedTime": "2026-11-20T01:49:53.407Z",
+          "size": 237171
+        },
+        "1aUN-A4BBltUOiOdnNR7yVYvCx2cM3bVc": {
+          "title": "TBI_LinearGuide__catalog.pdf",
+          "modifiedTime": "2026-11-20T01:49:52.146Z",
+          "size": 3521727
+        },
+        "1j1DTQUwsO9D5uKyhp_IV-_1AX2kvkyr1": {
+          "title": "IKO_LWL__datasheet.pdf",
+          "modifiedTime": "2026-11-20T01:49:50.625Z",
+          "size": 82515
+        },
+        "1USudnWIUVO03vcILGO_1E07jBuQqwh2B": {
+          "title": "RobotDigg_MGN__drawing.jpg",
+          "modifiedTime": "2026-11-20T01:57:34.330Z",
+          "size": 1288722
+        },
+        "1okLUDgRJDVQh3FZgNAcvoTYHAqDt52_m": {
+          "title": "RobotDigg_MGN12C__cad.stl",
+          "modifiedTime": "2026-11-20T01:57:36.356Z",
+          "size": 1864384
+        },
+        "1nLhcWPPMHDSD7lfzsgsLEAqElCGcxKJr": {
+          "title": "RobotDigg_MGN-rail__cad.stl",
+          "modifiedTime": "2026-11-20T01:57:37.832Z",
+          "size": 5894884
+        },
+        "1x1ESZ16r61U9q4ILeUl3p3gd4CSfi7Mz": {
+          "title": "CPC_MiniatureGuides__catalog.pdf",
+          "modifiedTime": "2026-11-20T01:57:39.299Z",
+          "size": 5052498
+        },
+        "1tTzZKMOUw4zNbuCRhpfgdzmVF6NdB4KJ": {
+          "title": "THK_SRS__catalog.pdf",
+          "modifiedTime": "2026-11-20T02:02:00.918Z",
+          "size": 779970
+        },
+        "1o7llYwkcqUEEEDX-NcDycJxqwqw2X1ac": {
+          "title": "NSK_PU_PE__datasheet.pdf",
+          "modifiedTime": "2026-11-20T02:01:59.820Z",
+          "size": 3566765,
+          "note": "not copied: same sha256 as vendor_docs/NSK_PU-PE_miniature_E3327e.pdf"
+        },
+        "1tes9dKwSdToGkvQj_JneN1rjWZ2MNjMe": {
+          "title": "HIWIN_LinearGuideway__catalog.pdf",
+          "modifiedTime": "2026-11-20T02:01:46.805Z",
+          "size": 17883962,
+          "note": "NOT downloaded: over the Drive connector 10 MB limit"
+        },
+        "1wf9psuDU7OkiMsGvFGNxdmMLXmBSo7eV": {
+          "title": "PMI_LinearGuideways__catalog.pdf",
+          "modifiedTime": "2026-11-20T02:05:49.776Z",
+          "size": 14262623,
+          "note": "NOT downloaded: over the Drive connector 10 MB limit"
+        },
+        "1YrOGrXet9R78WQ89zTxk2ZaD7hLCdQB0": {
+          "title": "igus_NW-01-27__datasheet.pdf",
+          "modifiedTime": "2026-11-20T02:25:50.131Z",
+          "size": 541443
+        },
+        "1m6Ovzsj-3GyVLpvDCq3vm4adNX9YmUfW": {
+          "title": "igus_NS-01-27__datasheet.pdf",
+          "modifiedTime": "2026-11-20T02:25:48.840Z",
+          "size": 30534
+        }
+      }
     },
-    "1j1DTQUwsO9D5uKyhp_IV-_1AX2kvkyr1": {
-     "title": "IKO_LWL__datasheet.pdf",
-     "modifiedTime": "2026-11-20T01:49:50.625Z",
-     "size": 82515
+    "1_-rIetDBexZ6IT3MwJJwYEeNrE4yaU8_": {
+      "folder": "mechloop handoff/results/REQ-005-rails-addendum-helix-hiwin",
+      "last_checked": "2026-11-20T07:20:00Z",
+      "staged_in": "vendor_cad/staging/instinct_REQ-005",
+      "result_status": "partial (05:06Z: official HIWIN STEP for 245/300 rails and MGN12H+300 rail assembly; MGN12C drawing only)",
+      "files": {
+        "16Gb-GFdnwpOnZ1EnuJ6fW6bBQXbNCqKG": {
+          "title": "CPC-MR12__spec.pdf",
+          "modifiedTime": "2026-11-20T03:01:33.281Z",
+          "size": 617899
+        },
+        "1KmJ9mzxx1vi8KCl8_JNGA5QaZjWm9D7O": {
+          "title": "CPC-MR__catalog.pdf",
+          "modifiedTime": "2026-11-20T03:01:32.066Z",
+          "size": 2297272
+        },
+        "1V33NlRfFMaSqjcR8jul4VohBwxOKoyRK": {
+          "title": "Helix-Miniature-Linear-Guides__catalog.pdf",
+          "modifiedTime": "2026-11-20T03:01:30.584Z",
+          "size": 2487286
+        },
+        "1xgxLAJCwLrfp6DcnJug0FK5bGGN4xpgD": {
+          "title": "RESULT.md",
+          "modifiedTime": "2026-11-20T05:06:20Z",
+          "size": 11704,
+          "note": "revised 05:06Z (batch 6); staged copy overwritten, sha256 c728ca12...; 03:29Z version was b4b0cfd0..."
+        },
+        "1ywgI4JQIELlVafLIpT4GQ1PUeQOD2-AV": {
+          "title": "PU12UR__datasheet.pdf",
+          "modifiedTime": "2026-11-20T03:16:17.089Z",
+          "size": 3566765,
+          "note": "not copied: same sha256 as vendor_docs/NSK_PU-PE_miniature_E3327e.pdf"
+        },
+        "1lhgrPyR9xKfs5m25gbQmfH8GaCU7BdL7": {
+          "title": "MGN12H__catalog.pdf",
+          "modifiedTime": "2026-11-20T03:16:19.366Z",
+          "size": 17883962,
+          "note": "NOT downloaded: over the Drive connector 10 MB limit; same size as the HIWIN catalogue REQ-007 reports as sha256 b9445d5a..."
+        },
+        "1uSJ2xRBPbvRWEaqSBnPxhvXQUqA9nIJH": {
+          "title": "MGNR12R-245__cad.step",
+          "modifiedTime": "2026-11-20T04:47:58.330Z",
+          "size": 610622,
+          "note": "staged as instinct_REQ-005/HIWIN_MGNR-12-R0245-H-M.step"
+        },
+        "1eKpVi-n7BxlSHnGlrUJOUz_j3ovWt9Ib": {
+          "title": "MGNR12R-245__drawing.pdf",
+          "modifiedTime": "2026-11-20T04:47:59.550Z",
+          "size": 132947,
+          "note": "vendor_docs/HIWIN_MGNR-12-R0245-H-M_drawing.pdf"
+        },
+        "1IlQDTMt2T6CooyAnwxVtnJirlm3-tUz3": {
+          "title": "MGNR12R-300__cad.step",
+          "modifiedTime": "2026-11-20T04:53:03.412Z",
+          "size": 633483,
+          "note": "staged as instinct_REQ-005/HIWIN_MGNR-12-R0300-H-M.step"
+        },
+        "1Gt4Mw7JKLecF9IMjblrez-535124LkMh": {
+          "title": "MGNR12R-300__drawing.pdf",
+          "modifiedTime": "2026-11-20T04:53:04.655Z",
+          "size": 132518,
+          "note": "vendor_docs/HIWIN_MGNR-12-R0300-H-M_drawing.pdf"
+        },
+        "1nPALJXCuGGyfbAMiwPmpoSG_VF2DNj1T": {
+          "title": "MGN-12-H-1R0300-ZF-H-M__cad-block-rail-assembly.step",
+          "modifiedTime": "2026-11-20T04:31:28.971Z",
+          "size": 3671174,
+          "note": "staged as instinct_REQ-005/HIWIN_MGN-12-H-1R0300-ZF-H-M_block-rail-assembly.step"
+        },
+        "1VFvpP2mbM2wvAuRhEpnUMPwMywUsgSSy": {
+          "title": "MGN-12-H-1R0300-ZF-H-M__drawing-block-rail-assembly.pdf",
+          "modifiedTime": "2026-11-20T04:31:30.314Z",
+          "size": 141524,
+          "note": "vendor_docs/HIWIN_MGN-12-H-1R0300-ZF-H-M_drawing.pdf"
+        },
+        "1Do9Thq3pNOsfJPuV8yU1ER8Ds6GPHR1w": {
+          "title": "MGN-12-C-1R0300-ZF-H-M__drawing-block-rail-assembly.pdf",
+          "modifiedTime": "2026-11-20T05:03:34.049Z",
+          "size": 142597,
+          "note": "vendor_docs/HIWIN_MGN-12-C-1R0300-ZF-H-M_drawing.pdf"
+        }
+      },
+      "superseded": {
+        "1K8lJfvr6bYH6tYjfS1_xbbXJCoYIsuV3": {
+          "title": "RESULT.md",
+          "modifiedTime": "2026-11-20T03:01:58.216Z",
+          "size": 3646,
+          "note": "interim RESULT.md, no longer in the folder; replaced by 1xgxLAJCwLrfp6DcnJug0FK5bGGN4xpgD"
+        }
+      }
     },
-    "1USudnWIUVO03vcILGO_1E07jBuQqwh2B": {
-     "title": "RobotDigg_MGN__drawing.jpg",
-     "modifiedTime": "2026-11-20T01:57:34.330Z",
-     "size": 1288722
+    "1V98cQYkRxEybCp9m66I013GLNnZCbgX3": {
+      "folder": "mechloop handoff/results/REQ-006-corrections-from-REQ-002",
+      "last_checked": "2026-11-20T07:20:00Z",
+      "staged_in": "vendor_cad/staging/instinct_REQ-006",
+      "result_status": "partial (1 of 7 met: item 4; STEPs for 5/6 blocked on TraceParts)",
+      "files": {
+        "1CxODVBdJdQgyfKfOfuWMfeEs1krHMkP7": {
+          "title": "RESULT.md",
+          "modifiedTime": "2026-11-20T02:56:31.936Z",
+          "size": 4993
+        },
+        "1s1Afv3eGuyfXfK7ac8JXSmfDO4zHIqlJ": {
+          "title": "45750-3111__drawing.pdf",
+          "modifiedTime": "2026-11-20T02:55:35.473Z",
+          "size": 625328
+        },
+        "1TKzYW_tFfg2nd41J4uIGsiaZ7HeQIXIt": {
+          "title": "43020-0201__drawing.pdf",
+          "modifiedTime": "2026-11-20T02:55:34.350Z",
+          "size": 376731
+        },
+        "1UzEKmnOdLzq5agskD5GUKO8RfXi2oKTG": {
+          "title": "91828A111__drawing.pdf",
+          "modifiedTime": "2026-11-20T02:55:33.246Z",
+          "size": 99764
+        },
+        "1G5QIUbz3ogu4Q_h3HABMeq8iVM_6URS3": {
+          "title": "91828A111__step.step",
+          "modifiedTime": "2026-11-20T02:55:32.048Z",
+          "size": 463149
+        },
+        "1OjOioruOiGE-s8FFdqCnC-daYWu_PqzP": {
+          "title": "PiCameraCable-Pi5__page.pdf",
+          "modifiedTime": "2026-11-20T02:52:15.940Z",
+          "size": 660320
+        },
+        "1NuEPcKYtriJWf4OnDJ8dDtovE63DWwv8": {
+          "title": "Harwin_R30-6700694__page.pdf",
+          "modifiedTime": "2026-11-20T02:52:15.013Z",
+          "size": 128652
+        },
+        "1pBG34bG9s2D6z3snJp65grq1gLZQv2fp": {
+          "title": "Harwin_R30-6700694__drawing.pdf",
+          "modifiedTime": "2026-11-20T02:52:13.891Z",
+          "size": 62613
+        },
+        "1xCoDY-k1gHzUuMIkIvFmvQh2uRtNbIXV": {
+          "title": "Finder_22.32.0.120.4320__page.pdf",
+          "modifiedTime": "2026-11-20T02:52:12.818Z",
+          "size": 481427
+        },
+        "190se9JyNmPUrCfrv4-i2nvhJx9WT-qJb": {
+          "title": "Finder_22-series__catalog.pdf",
+          "modifiedTime": "2026-11-20T02:52:11.710Z",
+          "size": 3661031,
+          "note": "not copied: same sha256 as vendor_docs/Finder_22-series_datasheet.pdf"
+        },
+        "1jIyKBNfoU3z_l_cfJdRErt_oQQVFMNsJ": {
+          "title": "Finder_22.32__step.zip",
+          "modifiedTime": "2026-11-20T02:52:10.517Z",
+          "size": 2107600
+        }
+      }
     },
-    "1okLUDgRJDVQh3FZgNAcvoTYHAqDt52_m": {
-     "title": "RobotDigg_MGN12C__cad.stl",
-     "modifiedTime": "2026-11-20T01:57:36.356Z",
-     "size": 1864384
+    "1UHTvkSuE-UD7yO0c_LZRAy47z2P6sY9H": {
+      "folder": "mechloop handoff/results/REQ-007-resend-large-catalogues",
+      "last_checked": "2026-11-20T07:20:00Z",
+      "staged_in": "vendor_cad/staging/instinct_REQ-007",
+      "result_status": "done",
+      "files": {
+        "11OZcITTkZmiFmVvbKSC7rnEQ0O08UUv-": {
+          "title": "RESULT.md",
+          "modifiedTime": "2026-11-20T03:22:41.094Z",
+          "size": 1957
+        },
+        "1BILMAPNndAV0HfCQ9V4B3CJcZiwyx1Jm": {
+          "title": "PMI_MSC-MSD__catalog_excerpt.pdf",
+          "modifiedTime": "2026-11-20T03:22:39.903Z",
+          "size": 602096
+        },
+        "1amlHcEFV46oqom-3LXlmeAYZ37N9U9p-": {
+          "title": "HIWIN_MG__catalog_excerpt.pdf",
+          "modifiedTime": "2026-11-20T03:22:38.834Z",
+          "size": 558800
+        }
+      }
     },
-    "1nLhcWPPMHDSD7lfzsgsLEAqElCGcxKJr": {
-     "title": "RobotDigg_MGN-rail__cad.stl",
-     "modifiedTime": "2026-11-20T01:57:37.832Z",
-     "size": 5894884
+    "1W3K9YtzrWAnS2H6KbsBgHhr6L_M__EcD": {
+      "folder": "mechloop handoff/results/REQ-008-priority-queue",
+      "last_checked": "2026-11-20T14:20:00Z",
+      "staged_in": "vendor_cad/staging/instinct_REQ-008",
+      "result_status": "partial (07:22Z: items 1, 2, 3, 12, 16 delivered; item 14 pulley delivered, idler not available; item 4 blocked)",
+      "files": {
+        "1sj3kBNRTE9p_aGhdKOtaj0Fow2kYnAf-": {
+          "title": "RESULT.md",
+          "modifiedTime": "2026-11-20T07:22:27.287Z",
+          "size": 7516,
+          "note": "revised 07:22Z (batch 10: items 2/14/16 updated); staged copy overwritten, sha256 95a01a7e...; 06:30Z was 8ed3ec95..., 05:33Z 150fc3d2..., 03:29Z a307c60b..."
+        },
+        "1BqZSA4BMbvxczYMxDruGG7CZOZOK7Gmh": {
+          "title": "DD11.0114.1111__cad.step",
+          "modifiedTime": "2026-11-20T05:21:29.391Z",
+          "size": 2998289,
+          "note": "not staged: byte-identical (sha256 4f86626e...) to vendor_cad/inbox/INLET-C14-SW-FUSE-T8A.step"
+        },
+        "1gLRypTZVjF-iHDKl0lZx6TkDxfBembon": {
+          "title": "DD11.0114.1111__datasheet.pdf",
+          "modifiedTime": "2026-11-20T05:21:30.620Z",
+          "size": 450651,
+          "note": "not copied: same sha256 as vendor_docs/INLET-C14-SW-FUSE-T8A_datasheet.pdf"
+        },
+        "1s6Hn6w97aEDFbsVukw7Q51XDG-9dpFDP": {
+          "title": "4301.1401__cad.step",
+          "modifiedTime": "2026-11-20T05:21:32.192Z",
+          "size": 5763499,
+          "note": "staged as instinct_REQ-008/Schurter_4301.1401_fusedrawer-2-pole-fingergrip.step"
+        },
+        "1zPe-l482dlQwx5qZHihM0Yl5dYompB66": {
+          "title": "4301.1401__datasheet.pdf",
+          "modifiedTime": "2026-11-20T05:21:33.236Z",
+          "size": 324460,
+          "note": "vendor_docs/Schurter_Fusedrawer-2_4301.1401_datasheet.pdf"
+        },
+        "1jtqd2ApEFRZKuM228T0bTubN2FNO0ste": {
+          "title": "0001.2513__cad.step",
+          "modifiedTime": "2026-11-20T05:21:34.351Z",
+          "size": 41166,
+          "note": "staged as instinct_REQ-008/Schurter_0001.2513_SPT-5x20-T8A.step (pigtail-type surface model)"
+        },
+        "1ciJ8JVJ_PxJ0Sk9PxPHXpOncW7DfJhEH": {
+          "title": "0001.2511__cad.step",
+          "modifiedTime": "2026-11-20T05:21:35.471Z",
+          "size": 41166,
+          "note": "staged as instinct_REQ-008/Schurter_0001.2511_SPT-5x20-T5A.step (pigtail-type surface model)"
+        },
+        "1ekr-UXrA34L5HhRhbUOjLd95xQomoLKe": {
+          "title": "SPT-5x20__datasheet.pdf",
+          "modifiedTime": "2026-11-20T05:21:36.562Z",
+          "size": 348362,
+          "note": "vendor_docs/Schurter_SPT-5x20_fuse_datasheet.pdf"
+        },
+        "1ls7lm2T5f_kVfSdo4zW4VkAciZGDl5KX": {
+          "title": "1119897__datasheet.pdf",
+          "modifiedTime": "2026-11-20T05:33:09.518Z",
+          "size": 606036,
+          "note": "vendor_docs/Phoenix_1119897_PLC-RSC-5DC-21_datasheet.pdf"
+        },
+        "1HK-rglviy89WDNPHkJyUKsUwZ9kxeiV2": {
+          "title": "1119897__cad.stp",
+          "modifiedTime": "2026-11-20T05:33:10.706Z",
+          "size": 674112,
+          "note": "staged as instinct_REQ-008/Phoenix_1119897_PLC-RSC-5DC-21.stp"
+        },
+        "15ovyvGT0a3xsqiBbY87jgLduX0a_KO5u": {
+          "title": "DD11.0124.1111__cad.step",
+          "modifiedTime": "2026-11-20T06:29:34.536Z",
+          "size": 2998289,
+          "note": "not staged: byte-identical (sha256 4f86626e...) to vendor_cad/inbox/INLET-C14-SW-FUSE-T8A.step (family model 0100.2571)"
+        },
+        "1iyr9HDluKtGykXGcrvnuw8DUalr6WkLV": {
+          "title": "DD11.0124.1111__datasheet.pdf",
+          "modifiedTime": "2026-11-20T06:29:34.547Z",
+          "size": 450651,
+          "note": "not copied: same sha256 (1db97cff...) as vendor_docs/INLET-C14-SW-FUSE-T8A_datasheet.pdf"
+        },
+        "1Bv5ga8Kff1OdYiA7WFj4PDWUNfX7fK-f": {
+          "title": "GPA20GT2090-A-H5__cad.step",
+          "modifiedTime": "2026-11-20T07:19:08.652Z",
+          "size": 242830,
+          "note": "staged as instinct_REQ-008/Misumi_GPA20GT2090-A-H5_2GT-20T-9mm_H5.step (3 valid solids, dims match catalogue, H bore no set screw)"
+        },
+        "1uljkb1-LPG0Vcl1MSgSxiyBE2d9WvqQx": {
+          "title": "GPA20GT2090-A-H5__drawing.pdf",
+          "modifiedTime": "2026-11-20T07:19:08.757Z",
+          "size": 491898,
+          "note": "vendor_docs/Misumi_GPA_GT2090_2GT_high-torque_pulley_2019US_p1340.pdf (series catalogue page, not per-part)"
+        },
+        "1lom8oZFer03VEb6A_j-FykioO2TrJcNh": {
+          "title": "TMC2209__datasheet.pdf",
+          "modifiedTime": "2026-11-20T07:22:22.646Z",
+          "size": 1629829,
+          "note": "rev 1.08 (older than owner-supplied vendor_docs/ADI_TMC2209_datasheet_rev1.09.pdf); kept as vendor_docs/ADI_TMC2209_datasheet_rev1.08_digikey-copy_OLDER.pdf"
+        }
+      }
     },
-    "1x1ESZ16r61U9q4ILeUl3p3gd4CSfi7Mz": {
-     "title": "CPC_MiniatureGuides__catalog.pdf",
-     "modifiedTime": "2026-11-20T01:57:39.299Z",
-     "size": 5052498
+    "139_eg79lbNnZBGYFWbkDnVLuqJ9jExlk": {
+      "folder": "mechloop handoff/results/REQ-009-us-rail-options",
+      "staged_in": "vendor_cad/staging/instinct_REQ-009",
+      "result_status": "partial (comparison done; LDO/onetwo3D US shipping cost + delivery time not obtained)",
+      "files": {
+        "1rJwVJwLuE9FTyk19rgRB_YNTmEa12QYW": {
+          "title": "RESULT.md",
+          "modifiedTime": "2026-11-20T06:23:19.835Z",
+          "size": 11234,
+          "note": "staged as RESULT_instinct_REQ-009_2026-11-20.md, sha256 91f458de..."
+        }
+      },
+      "last_checked": "2026-11-20T07:20:00Z"
     },
-    "1tTzZKMOUw4zNbuCRhpfgdzmVF6NdB4KJ": {
-     "title": "THK_SRS__catalog.pdf",
-     "modifiedTime": "2026-11-20T02:02:00.918Z",
-     "size": 779970
+    "1brBo3_WLt7nddDDs3jj_VGjoD7pfgF-h": {
+      "folder": "mechloop handoff/results/REQ-010-nozzle-camera-files",
+      "staged_in": "vendor_cad/staging/instinct_REQ-010",
+      "result_status": "partial (06:49Z: B0454 STEP + datasheet; B045401 = B0454 datasheet, no B045401 STEP/drawing; B0292 datasheet 40 mm-inf; no board meets all criteria per Instinct)",
+      "files": {
+        "1OC2R0nqrUErLsO4LhkA41PXpsfjm9hbN": {
+          "title": "RESULT.md",
+          "modifiedTime": "2026-11-20T06:49:59.125Z",
+          "size": 6659,
+          "note": "staged as RESULT_instinct_REQ-010_2026-11-20.md, sha256 8c0b5a88..."
+        },
+        "1omzNquUKcTaHC-r8nmEZwPfGdu5VCtcg": {
+          "title": "B0454__cad.zip",
+          "modifiedTime": "2026-11-20T06:49:59.132Z",
+          "size": 1780541,
+          "note": "sha256 7dabce09...; member B0454.STEP staged as Arducam_B0454.STEP (sha256 82915bca...)"
+        },
+        "1gGhAgqOKjOnatQFADF3XQ0M632TYwNCW": {
+          "title": "B0454__datasheet.pdf",
+          "modifiedTime": "2026-11-20T06:50:00.209Z",
+          "size": 528763,
+          "note": "not copied: same sha256 (5c7f92c2...) as vendor_docs/Arducam_B0454_datasheet.pdf"
+        },
+        "18_CVS-0AklmStldFO8qs_TYJD2JLXnIm": {
+          "title": "B045401__datasheet.pdf",
+          "modifiedTime": "2026-11-20T06:49:59.090Z",
+          "size": 528763,
+          "note": "not copied: byte-identical to B0454__datasheet.pdf (sha256 5c7f92c2...); it is the B0454 datasheet"
+        },
+        "1sYPC2Chu-ncSuk61Lkr3tw8GHfhcHgh1": {
+          "title": "B0292__datasheet.pdf",
+          "modifiedTime": "2026-11-20T06:49:59.147Z",
+          "size": 536536,
+          "note": "copied to vendor_docs/Arducam_B0292_datasheet.pdf, sha256 09e0214f..."
+        }
+      },
+      "last_checked": "2026-11-20T07:20:00Z"
     },
-    "1o7llYwkcqUEEEDX-NcDycJxqwqw2X1ac": {
-     "title": "NSK_PU_PE__datasheet.pdf",
-     "modifiedTime": "2026-11-20T02:01:59.820Z",
-     "size": 3566765,
-     "note": "not copied: same sha256 as vendor_docs/NSK_PU-PE_miniature_E3327e.pdf"
+    "1kT1X5r2vV3Iaawm4a3emZOVvhrecwDR7": {
+      "folder": "mechloop handoff/results/NOTE-pcbway-review-status",
+      "staged_in": "reference_parts/batch01/results/pcbway_status_2026-11-20.md (note content as data; not in vendor_cad/staging)",
+      "result_status": "info (PCBWay review: RP04 passed $12.45; RP03 failed on thickness, revised 2.5 mm STEP requested; RP01/RP02 in review)",
+      "files": {
+        "10B1hI-MHF3MTObwhS7bSy3xKfCZWlvKq": {
+          "title": "RESULT.md",
+          "modifiedTime": "2026-11-20T06:47:12.691Z",
+          "size": 1550,
+          "note": "sha256 b7fa6ac7...; copied verbatim into pcbway_status_2026-11-20.md"
+        }
+      },
+      "last_checked": "2026-11-20T07:20:00Z"
     },
-    "1tes9dKwSdToGkvQj_JneN1rjWZ2MNjMe": {
-     "title": "HIWIN_LinearGuideway__catalog.pdf",
-     "modifiedTime": "2026-11-20T02:01:46.805Z",
-     "size": 17883962,
-     "note": "NOT downloaded: over the Drive connector 10 MB limit"
+    "1RSn4een7VDFnwBik_X16-DVTen4bA-v1": {
+      "folder": "mechloop handoff/results/REQ-012-pcbway-rp03-2.5mm",
+      "last_checked": "2026-11-20T14:20:00Z",
+      "staged_in": "vendor_cad/staging/instinct_REQ-012",
+      "result_status": "partial (RP03 2.5 mm re-uploaded to C-CN24W734350A, \"Being reviewed\"; DFM result and qty-10 price pending)",
+      "files": {
+        "14fsBt-s7I1wpItpQDbqzgd86_Y5wGVHX": {
+          "title": "RESULT.md",
+          "modifiedTime": "2026-11-20T07:52:49.849Z",
+          "size": 2039,
+          "note": "staged as instinct_REQ-012/RESULT_instinct_REQ-012_2026-11-20.md, sha256 55227ede..."
+        }
+      }
     },
-    "1wf9psuDU7OkiMsGvFGNxdmMLXmBSo7eV": {
-     "title": "PMI_LinearGuideways__catalog.pdf",
-     "modifiedTime": "2026-11-20T02:05:49.776Z",
-     "size": 14262623,
-     "note": "NOT downloaded: over the Drive connector 10 MB limit"
+    "15LKAJDQN7rX38zy_DSCVmA9h3BzBjwIv": {
+      "folder": "mechloop handoff/results/REQ-013-build1-queue-refresh",
+      "last_checked": "2026-11-20T18:15:00Z",
+      "staged_in": "vendor_cad/staging/instinct_REQ-013",
+      "result_status": "partial (17:58Z: LED DigiKey price/stock captured; KLUS channel price still blocked; PEI 2nd candidate West3D 235x235; Molex/Phoenix STEP delivered under REQ-015; JST held; 11 awaits address; 12 held; no REQ-016/belt-seller/RP04 content)",
+      "files": {
+        "11zPs7IGKw2-44Di7ERwitIclD__sz6sQ": {
+          "title": "RESULT.md",
+          "modifiedTime": "2026-11-20T15:10:43.818Z",
+          "size": 7767,
+          "note": "staged as instinct_REQ-013/RESULT_instinct_REQ-013_2026-11-20.md, sha256 6918ff08..."
+        },
+        "1FQ_YqahnAFh3Oq_btmcuL4SQxyW-zBwl": {
+          "title": "4301.1405__cad.step",
+          "modifiedTime": "2026-11-20T14:28:57.329Z",
+          "size": 6006141,
+          "note": "staged as Schurter_4301.1405.step"
+        },
+        "1Eyvs5p0juAFeVTd-20NBPHlZkl27qLyz": {
+          "title": "4301.1405__datasheet.pdf",
+          "modifiedTime": "2026-11-20T14:27:52.987Z",
+          "size": 324460,
+          "note": "duplicate of vendor_docs/Schurter_Fusedrawer-2_4301.1401_datasheet.pdf; not copied"
+        },
+        "1T5RK9CySVLeHxf6AhvKCfIHvXgl3I3y-": {
+          "title": "HBLFSN5__cad.step",
+          "modifiedTime": "2026-11-20T14:45:33.622Z",
+          "size": 157476,
+          "note": "staged as Misumi_HBLFSN5.step"
+        },
+        "1H-wIxHH6SNPPfpDzHUltDjpLmSVXDW1i": {
+          "title": "HBLFSN5-SEP__cad.step",
+          "modifiedTime": "2026-11-20T14:45:34.736Z",
+          "size": 320761,
+          "note": "staged as Misumi_HBLFSN5-SEP.step"
+        },
+        "1tQY3GtZN__kgglSSOpD-1CqBOPsRE_gP": {
+          "title": "HNTP5-5__cad.step",
+          "modifiedTime": "2026-11-20T14:45:35.800Z",
+          "size": 74923,
+          "note": "staged as Misumi_HNTP5-5.step"
+        },
+        "13L0EZcg9AW1jrlXsnkuH3H2rQrN8nzcN": {
+          "title": "CBM5-10__cad.step",
+          "modifiedTime": "2026-11-20T14:45:36.938Z",
+          "size": 38485,
+          "note": "staged as Misumi_CBM5-10.step; geometry is a socket head cap screw, not a button head (flag)"
+        },
+        "1rX1XIpSXMvXW1v-tUrMrCgVhcLk8qZ4P": {
+          "title": "AGTFW30-GT2090-5__cad.step",
+          "modifiedTime": "2026-11-20T14:45:32.304Z",
+          "size": 384381,
+          "note": "staged as Misumi_AGTFW30-GT2090-5.step"
+        },
+        "144wHBEM7fuuqfLrQHgu3P52HkiwQWsDT": {
+          "title": "AGTFW30-GT2090-5__datasheet.pdf",
+          "modifiedTime": "2026-11-20T14:46:29.693Z",
+          "size": 340142,
+          "note": "vendor_docs/Misumi_AGTFW_flanged-idlers-with-teeth_catalog_p1424-1425.pdf"
+        },
+        "1ZGQ4wIbYkfRuSom6MIW2oEzLezhvdNAS": {
+          "title": "GPA32GT2090-B-P5__cad.step",
+          "modifiedTime": "2026-11-20T14:45:31.157Z",
+          "size": 438746,
+          "note": "staged as Misumi_GPA32GT2090-B-P5.step"
+        },
+        "1OLgy6kQkx90m5mh-op_BcQRxAEEpTYfI": {
+          "title": "GPA32GT2090-A-P5__cad.step",
+          "modifiedTime": "2026-11-20T14:56:35.407Z",
+          "size": 477652,
+          "note": "staged as Misumi_GPA32GT2090-A-P5.step"
+        },
+        "1Kx1PJIGU__xxoKpVY-IOSvP9cm-rl40T": {
+          "title": "3684N13__cad.step",
+          "modifiedTime": "2026-11-20T15:01:51.779Z",
+          "size": 1455421,
+          "note": "staged as McMaster_3684N13.step; has 2 set screws (Instinct says 1)"
+        },
+        "17HxNwwJ-v31MYUpz0IHO7Ylw5oqqHdc1": {
+          "title": "3684N13__drawing.pdf",
+          "modifiedTime": "2026-11-20T15:02:54.302Z",
+          "size": 150030,
+          "note": "vendor_docs/McMaster_3684N13_drawing.pdf"
+        },
+        "1cmnh1hiGXldqMv0WGb0hE-ZPmePuvQOw": {
+          "title": "SC1432__drawing.pdf",
+          "modifiedTime": "2026-11-20T14:27:59.429Z",
+          "size": 174949,
+          "note": "duplicate of vendor_docs/RaspberryPi_Pi5_mechanical_drawing.pdf; not copied"
+        },
+        "1Pst3kHg-0knihkucMZwAM3txriiiZIMp": {
+          "title": "SC1148__drawing.pdf",
+          "modifiedTime": "2026-11-20T14:27:56.026Z",
+          "size": 233138,
+          "note": "vendor_docs/RaspberryPi_Active-Cooler_SC1148_mechanical_drawing.pdf"
+        },
+        "1eUzIuahNzfEu9I9gj2fuO4pGCsLXs5n8": {
+          "title": "SC1153__datasheet.pdf",
+          "modifiedTime": "2026-11-20T14:27:57.139Z",
+          "size": 1233433,
+          "note": "duplicate of vendor_docs/RaspberryPi_27W-USB-C-PSU_product_brief.pdf; not copied"
+        },
+        "1bUOrT19gmH33jhmZMAgRQtH3lTCEZiPu": {
+          "title": "SC1223__datasheet.pdf",
+          "modifiedTime": "2026-11-20T14:27:58.412Z",
+          "size": 1244344,
+          "note": "duplicate of vendor_docs/RaspberryPi_Camera-Module-3_product_brief.pdf; not copied"
+        },
+        "1xSw-uvAkasNQkazVN-CM7CznvMRw0PRB": {
+          "title": "EDDY-DUO__drawing.jpg",
+          "modifiedTime": "2026-11-20T14:27:54.289Z",
+          "size": 58592,
+          "note": "duplicate of vendor_docs/BTT_Eddy_dimensions.jpg; not copied"
+        },
+        "145BHsPihkMcremUFhk-IuzFxHXTUpJCm": {
+          "title": "VLM-520-56-LPO-D30-F10__datasheet.pdf",
+          "modifiedTime": "2026-11-20T14:34:19.315Z",
+          "size": 1183645,
+          "note": "vendor_docs/Quarton_VLM-520-56-30deg-series_manual.pdf"
+        },
+        "1fTAdX50EgbC7P9ydgZogiR3sCWkcpB-E": {
+          "title": "CS712025Y__datasheet.pdf",
+          "modifiedTime": "2026-11-20T14:33:25.643Z",
+          "size": 1392761,
+          "note": "vendor_docs/Cantherm_R53_CS712025Y_datasheet_rev2017-04.pdf (newer revision than Cantherm_CS7_R53_thermostat_datasheet.pdf)"
+        },
+        "1sdqUn-xpdYox-SQWpIRtOi4laBlrIFSb": {
+          "title": "104NT-4-R025H42G__datasheet.pdf",
+          "modifiedTime": "2026-11-20T14:27:51.811Z",
+          "size": 96355,
+          "note": "duplicate of vendor_docs/Semitec_NT-4_thermistor_datasheet.pdf; not copied"
+        },
+        "1492bLgym35NMwQ0j7GqsczDz3_2Qz7a9": {
+          "title": "D2F-01L__datasheet.pdf",
+          "modifiedTime": "2026-11-20T14:32:08.249Z",
+          "size": 850668,
+          "note": "duplicate of vendor_docs/ENDSTOP-MICRO_datasheet.pdf; not copied (owner-password encrypted, joboptions attachment)"
+        },
+        "1Mz6RgneOs-56AsUrBrxJvua1exKPuwvf": {
+          "title": "RESULT.md",
+          "modifiedTime": "2026-11-20T15:50:42.988Z",
+          "size": 11198,
+          "note": "new file id; staged as instinct_REQ-013/RESULT_instinct_REQ-013_2026-11-20_1550Z.md, sha256 3c717a1c...; earlier id 11zPs... not re-checked (folder not listed in batch 12)"
+        },
+        "1tUfLo3vKrz2DQeTLmzWDruqadlq7snRY": {
+          "title": "39-01-2020__drawing.pdf",
+          "modifiedTime": "2026-11-20T15:46:38.132Z",
+          "size": 201853,
+          "note": "byte-identical to vendor_docs/Molex_39-01-2020_drawing.pdf; not copied"
+        },
+        "1vQQxaNUP2wW9YaDR-InKrA63_RItCs65": {
+          "title": "ADXL345__drawing.pdf",
+          "modifiedTime": "2026-11-20T15:45:01.346Z",
+          "size": 218804,
+          "note": "not copied: Altium bookmark JavaScript; same sha256 (8a412937...) as the drawing rejected under instinct_REQ-003"
+        },
+        "1od93b3guxet2MzgxMI_L32oKsSR6n1B-": {
+          "title": "LL2MR09__datasheet.pdf",
+          "modifiedTime": "2026-11-20T15:44:22.741Z",
+          "size": 184552,
+          "note": "vendor_docs/Gates_LPP-manual_2mm-GT3_long-length_extract_for_LL2MR09.pdf; extract names 2MGT/GT3, not LL2MR09"
+        },
+        "1F4XTfDRpBYiwztAlOPoNon5wYjyCR87R": {
+          "title": "RESULT.md",
+          "modifiedTime": "2026-11-20T17:10Z",
+          "size": 15679,
+          "note": "new file id; staged as instinct_REQ-013/RESULT_instinct_REQ-013_2026-11-20_1710Z.md, sha256 f8116da4...; modifiedTime per caller (17:10Z), not read from Drive metadata"
+        },
+        "1UuRHPUsdOL9JQVgjPWri3sZEN5DByDQL": {
+          "title": "0801733__datasheet.pdf",
+          "size": 50066,
+          "note": "vendor_docs/Phoenix_0801733_NS35-7.5-PERF_datasheet.pdf (batch 13)"
+        },
+        "1RL1e-jhoWPxMZt98RUXgKA2TFJ8SYROZ": {
+          "title": "PDS-4-ALU__datasheet.pdf",
+          "size": 569880,
+          "note": "vendor_docs/KLUS_PDS-4-ALU_A01718_datasheet.pdf (batch 13)"
+        },
+        "1ZNsCGivzeBH7k41iXCzE-cv6K-MxhGZR": {
+          "title": "24V-COB-4000K__datasheet.pdf",
+          "size": 312523,
+          "note": "byte-identical to vendor_docs/InspiredLED_24V-COB_flex_spec.pdf (2b0101b9...); not copied"
+        },
+        "1FMLBrT-r_GLRrJgE0m_rtRU8F2o5_2RT": {
+          "title": "RESULT.md",
+          "modifiedTime": "2026-11-20T17:58Z",
+          "size": 17305,
+          "note": "new file id; staged as instinct_REQ-013/RESULT_instinct_REQ-013_2026-11-20_1758Z.md, sha256 51d20fc2...; modifiedTime per caller (17:58Z), not read from Drive metadata"
+        }
+      }
     },
-    "1YrOGrXet9R78WQ89zTxk2ZaD7hLCdQB0": {
-     "title": "igus_NW-01-27__datasheet.pdf",
-     "modifiedTime": "2026-11-20T02:25:50.131Z",
-     "size": 541443
+    "1q3mYOgMuesTlqiKL3pHd0fxZDrbDfdLU": {
+      "folder": "mechloop handoff/results/REQ-014-bossard-pem-and-sendcutsend-cart",
+      "last_checked": "2026-11-20T16:15:00Z",
+      "staged_in": "vendor_cad/staging/instinct_REQ-014",
+      "result_status": "partial (item 1 resolved per Instinct via owner-approved S-M3-0ZI, approval unverified; McMaster 95185A520 STEP + drawing delivered and staged; items 2-3 from existing batch01 records; SendCutSend shipping unknown)",
+      "files": {
+        "1o3MXYPd8IoYfY1XjdygDAofhF46ZVrjF": {
+          "title": "RESULT.md",
+          "modifiedTime": "2026-11-20T15:10:42.649Z",
+          "size": 5996,
+          "note": "staged as instinct_REQ-014/RESULT_instinct_REQ-014_2026-11-20.md, sha256 493f4128..."
+        },
+        "1gDZObejlT0rxwMj5M6IW0Bja3ZPzYifo": {
+          "title": "S-M3-0ZI__cad.step",
+          "modifiedTime": "2026-11-20T15:56:14.575Z",
+          "size": 765355,
+          "note": "staged as McMaster_95185A520_PEM-S-M3-0ZI.step; 1 valid solid, 6.35 x 6.35 x 2.27, matches S-M3-0 dims"
+        },
+        "1FavqgaxpsqPUehM56AnHJiuG45Dl_Mb-": {
+          "title": "S-M3-0ZI__drawing.pdf",
+          "modifiedTime": "2026-11-20T15:56:15.745Z",
+          "size": 102125,
+          "note": "vendor_docs/McMaster_95185A520_PEM-S-M3-0ZI_drawing.pdf"
+        },
+        "1o8MTud_uP3sb3cvOxEXmnpdfu2fT3UvU": {
+          "title": "RESULT.md",
+          "modifiedTime": "2026-11-20T15:56:28.881Z",
+          "size": 6009,
+          "note": "new file id; staged as instinct_REQ-014/RESULT_instinct_REQ-014_2026-11-20_1556Z.md, sha256 69347ed5...; earlier id 1o3MX... not re-checked (folder not listed in batch 12)"
+        }
+      }
     },
-    "1m6Ovzsj-3GyVLpvDCq3vm4adNX9YmUfW": {
-     "title": "igus_NS-01-27__datasheet.pdf",
-     "modifiedTime": "2026-11-20T02:25:48.840Z",
-     "size": 30534
+    "1VCBDeYJwDDkOHQIvsY4zNF4tm7ejUW7f": {
+      "files": {
+        "1TxwVop47Q3ucqMQbzZ-kYx1lG6qQXMLD": {
+          "title": "39-01-2020__cad.step",
+          "size": 108730,
+          "note": "staged as instinct_REQ-015/Molex_39-01-2020.step, sha256 014d90a1...; 1 valid solid 5.4x19.6x14.4, simplified envelope (no terminal cavities); CADENAS order 22026112018464072700088d0b6156e"
+        },
+        "1x5W4YSOZ2vpmiPrTn1tOagMVOJ9drbMc": {
+          "title": "0801733__cad.step",
+          "size": 521901,
+          "note": "staged as instinct_REQ-015/Phoenix_0801733_NS35-7.5-PERF-2000.step, sha256 41c4b189...; 1 valid solid 2000x35x7.5, 79 slots 15x6.2 @25, 1.0 thick; CADENAS order 22026112018380171964729d0b6156e"
+        },
+        "17pQEfTUBp5cTfuZCZ10qpNZV4VsVqI4s": {
+          "title": "XHP-2__cad.step",
+          "size": 132958,
+          "note": "staged as instinct_REQ-015/JST_XHP-2.step, sha256 ea771cad...; 1 valid solid 7.3x7.75x5.7, matches datasheet"
+        },
+        "1cYg76-vFxVo9wQlbz7YgDofQMQU40L2a": {
+          "title": "XHP-3__cad.step",
+          "size": 171979,
+          "note": "staged as instinct_REQ-015/JST_XHP-3.step, sha256 04536e74...; 1 valid solid 9.8x7.75x5.7, matches datasheet"
+        },
+        "1e79-c7bVUdc-14kQQLpgZdpm7bDGSAGO": {
+          "title": "XHP-4__cad.step",
+          "size": 211340,
+          "note": "staged as instinct_REQ-015/JST_XHP-4.step, sha256 e71354a6...; 1 valid solid 12.3x7.75x5.7, matches datasheet"
+        },
+        "1TcqO5U1hmwOskNB0Zi5-mjv2vrXiZEQL": {
+          "title": "B2B-XH-A__cad.step",
+          "size": 108814,
+          "note": "staged as instinct_REQ-015/JST_B2B-XH-A.step, sha256 8a8a83d1...; 1 valid solid 7.4x10.4x5.75, 2 posts 0.64 sq @2.5, matches"
+        },
+        "1R4cG_qcP4znGZ3p1Az2jkvt_PkvLZtdL": {
+          "title": "B3B-XH-A__cad.step",
+          "size": 150210,
+          "note": "staged as instinct_REQ-015/JST_B3B-XH-A.step, sha256 85e95848...; 1 valid solid 9.9x10.4x5.75, 3 posts 0.64 sq @2.5, matches"
+        },
+        "1bY8utyGMivIL_pnasAKTJyKBI1rDBQ4t": {
+          "title": "B4B-XH-A__cad.step",
+          "size": 181746,
+          "note": "staged as instinct_REQ-015/JST_B4B-XH-A.step, sha256 30e21987...; 1 valid solid 12.4x10.4x5.75, 4 posts 0.64 sq @2.5, matches"
+        },
+        "1AMslGT2H4rd2BGQex7Y8JEXET-yjVvmh": {
+          "title": "SXH-001T-P0.6__datasheet.pdf",
+          "size": 44267,
+          "note": "staged as vendor_docs/JST_SXH-001T-P0.6_contact_drawing.pdf, sha256 10608d1a...; empty-user-password encryption, no active content"
+        },
+        "1Y8-NoBsgMS3-yeS80KYyyU-RJ4gckQij": {
+          "title": "RESULT.md",
+          "size": 5449,
+          "modifiedTime": "2026-11-21T00:12:00Z",
+          "note": "00:12Z revision; staged as instinct_REQ-015/RESULT_instinct_REQ-015_2026-11-21_0012Z.md, sha256 1b53dbcc...; adds owner folder-placement decision, JST clause-2 AI-processing question unresolved"
+        }
+      },
+      "folder": "mechloop handoff/results/REQ-015-jst-molex-phoenix-step",
+      "last_checked": "2026-11-21T00:15:00Z",
+      "result_status": "done per Instinct (JST XH via jst-mfg.com, licence accepted 2026-11-20 on claimed owner approval - not verified; REQ-016 RESULT still lists it as approval hold)",
+      "staged_in": "vendor_cad/staging/instinct_REQ-015",
+      "superseded": {
+        "1Y8-NoBsgMS3-yeS80KYyyU-RJ4gckQij@pre-1853Z": {
+          "title": "RESULT.md",
+          "size": 3175,
+          "note": "staged as instinct_REQ-015/RESULT_instinct_REQ-015_2026-11-20.md, sha256 b7adcdf5...; earlier revision of the same id, replaced by the 18:53Z revision (batch 15)"
+        },
+        "1Y8-NoBsgMS3-yeS80KYyyU-RJ4gckQij@1853Z": {
+          "title": "RESULT.md",
+          "size": 4959,
+          "note": "18:53Z revision; staged as instinct_REQ-015/RESULT_instinct_REQ-015_2026-11-20_1853Z.md, sha256 65c9932d...; replaced by the 00:12Z revision (batch 17)"
+        }
+      }
+    },
+    "1BeMQ4Ht3vBni77XNBWDA79ked_VyUhZp": {
+      "files": {
+        "183Q7dPIe8xFwDFVrOgG49K6GG4SIBV0C": {
+          "title": "RESULT.md",
+          "size": 5230,
+          "note": "staged as instinct_REQ-016/RESULT_instinct_REQ-016_2026-11-20.md, sha256 3360f571..."
+        },
+        "1G36ArzVOjj7EXRrceIaoJuo4NDfuNkTX": {
+          "title": "SQ1451144__datasheet.pdf",
+          "size": 113588,
+          "note": "staged as vendor_docs/NPH_NPHSF365_HydraResearch-SQ1451144_24V-200W-210x210_heater_drawing.pdf, sha256 4e7ec26e...; 210x210, leads 130+/-15, Molex 43640-0401, no thickness"
+        },
+        "1aTs99AqBTZA1cBi123Z91dZdj7fGKhzN": {
+          "title": "10133__datasheet.pdf",
+          "size": 2337635,
+          "note": "staged as vendor_docs/Keenovo_flexible-heaters_users-manual.pdf, sha256 e9ebcb25...; general manual, not part-specific"
+        },
+        "195cPebECjvnD534nL6XgestJgTxU8Djf": {
+          "title": "NTC-100K-RT__datasheet.pdf",
+          "size": 49725,
+          "note": "not staged: byte-identical to vendor_docs/Keenovo_NTC-100K-B3950_R-T_table.pdf (sha256 2d7ae3c0...)"
+        }
+      },
+      "folder": "mechloop handoff/results/REQ-016-bed-heater-24v",
+      "last_checked": "2026-11-20T19:15:00Z",
+      "result_status": "partial (Keenovo 10133 confirmed; Hydra SQ1451144 alternative with NPH drawing; Gulfcoast price/stock not captured)",
+      "staged_in": "vendor_cad/staging/instinct_REQ-016"
+    },
+    "1oTmOZq2zwA42wp-kq_f6DTyidvPqnw8e": {
+      "files": {
+        "1S4rpFB43LfQ2Odm9mI_khVKfjDDGYD0o": {
+          "title": "RESULT.md",
+          "size": 5055,
+          "note": "staged as instinct_REQ-017/RESULT_instinct_REQ-017_2026-11-20.md, sha256 61f483ca..."
+        },
+        "19resH6P5BZC0G4oRLNNMvJSadFDcHYSj": {
+          "title": "6301K78__cad.step",
+          "size": 1164569,
+          "note": "staged as instinct_REQ-017/McMaster_6301K78_swivel-leveling-mount_M6.step, sha256 3f670eea...; 4 solids valid, 19x41x19, matches drawing"
+        },
+        "11fytjz4doReU6hrNldvJ4s3u34F6jQC5": {
+          "title": "6301K78__datasheet.pdf",
+          "size": 47856,
+          "note": "staged as vendor_docs/McMaster_6301K78_drawing.pdf, sha256 0ac2a2b1...; Instinct GIF-to-PDF conversion of McMaster drawing image"
+        },
+        "1306vwGq_b6djhcEdBHOW4Mu8lSBzFLX-": {
+          "title": "6301K79__cad.step",
+          "size": 1226081,
+          "note": "staged as instinct_REQ-017/McMaster_6301K79_swivel-leveling-mount_M8.step, sha256 4f4faa12...; 4 solids valid, 25x52x25, matches drawing"
+        },
+        "1pmlCZmQ8wcOoAtaC9kbPm_GfJT9lp6W3": {
+          "title": "6301K79__datasheet.pdf",
+          "size": 48401,
+          "note": "staged as vendor_docs/McMaster_6301K79_drawing.pdf, sha256 064d234d...; Instinct GIF-to-PDF conversion"
+        },
+        "18SZUQX5PzHOEW5LbQrKEFIw_LcA4Cv_I": {
+          "title": "NFJN5-30__cad.step",
+          "size": 97399,
+          "note": "staged as instinct_REQ-017/Misumi_NFJN5-30_leveling-mount_M5.step, sha256 301747c2...; 3 solids valid, 30x40.5x30, matches M5 table; simplified (no thread, solid foot)"
+        },
+        "13nQoPkRtmYHmKdMr8gqxZmvn_3uk5Jss": {
+          "title": "NFJN5-30__datasheet.pdf",
+          "size": 300865,
+          "note": "staged as vendor_docs/Misumi_NFJN_leveling-mounts_2019US_p3166-3167.pdf, sha256 4924f3a1...; catalog spread"
+        }
+      },
+      "folder": "mechloop handoff/results/REQ-017-printer-feet",
+      "last_checked": "2026-11-20T23:15:00Z",
+      "result_status": "done (McMaster 6301K78 M6 / 6301K79 M8 rubber-pad swivel feet; Misumi NFJN5-30 M5 all-metal; no M5 rubber-pad foot found)",
+      "staged_in": "vendor_cad/staging/instinct_REQ-017"
+    },
+    "1LUF4BGyRvbsBEL23O5ovpvjlOsvmyYrf": {
+      "files": {
+        "1Xd6q51QZ-nGX2bJTv1bws0IbmIcM52Um": {
+          "title": "RESULT.md",
+          "size": 7241,
+          "note": "SKF-update revision (Instinct: '2026-11-20 ~8:00 PM' PST); staged as instinct_REQ-018/RESULT_instinct_REQ-018_2026-11-21_SKF-update.md, sha256 60edfcdf...; diff vs 23:49Z: 608 item only - SKF 608-2Z, SKF account created 'with owner approval' (unconfirmed here), CAD blocked by TraceParts widget, no PDF/STEP"
+        },
+        "11jigV_zJ8yyulWn5kw3aWR7o7UB4jRpH": {
+          "title": "prusament-dummy-spool__cad.step.zip",
+          "size": 3978634,
+          "note": "staged zipped as instinct_REQ-018/Prusament_dummy_spool_1kg.step.zip, sha256 7c43c16b...; 1 member (25,441,235 B, sha256 b8dbb4ef...), no traversal; 1 valid solid OD 199.89 x W 64.13, hub bore 51.25; author Jiri Bilek, Inventor 2019; licence not stated"
+        },
+        "1LVphpqcJnyEC4kY_d3sZ3Rp5f_6kNt1Z": {
+          "title": "e3d-roto-bowden-reference-cad.step",
+          "size": 1411826,
+          "note": "byte-identical to staging/E3D_Roto_Bowden_reference.step (sha256 1a8ac7dc...), not re-staged; inlet = bowdaptor with integral E3D collet, 6.0 spigot in 6.2 recess, no thread modelled"
+        },
+        "1TdFWRZaff6OUdA4VGVtcJQ-OthYx1rgp": {
+          "title": "2333N197__cad.step",
+          "size": 713378,
+          "note": "staged as instinct_REQ-018/McMaster_2333N197_push-to-connect_4mm_M5x0.8.step, sha256 717e927e...; 3 valid solids, L/hex/4.000 socket match drawing"
+        },
+        "1e_hwVRzPTMG5L_RJOKmlNMIXkHyGEpu9": {
+          "title": "2333N197__datasheet.pdf",
+          "size": 55439,
+          "note": "staged as vendor_docs/McMaster_2333N197_push-to-connect_4mm_M5x0.8_drawing.pdf, sha256 ca37866d...; Instinct-made raster wrapper of McMaster drawing, no active content"
+        },
+        "182finrZxvyN344qrjZJoKzWrNdNuHQyi": {
+          "title": "2333N202__cad.step",
+          "size": 631576,
+          "note": "staged as instinct_REQ-018/McMaster_2333N202_push-to-connect_4mm_M6x1.step, sha256 cfe12e53...; 3 valid solids, L/hex/4.000 socket match drawing"
+        },
+        "1tHSIUo9_7NkBgTWXDJK6i7FA-0yJa0mR": {
+          "title": "2333N202__datasheet.pdf",
+          "size": 60246,
+          "note": "staged as vendor_docs/McMaster_2333N202_push-to-connect_4mm_M6x1_drawing.pdf, sha256 0b472ac3...; Instinct-made raster wrapper of McMaster drawing, no active content"
+        },
+        "1k2a5cZ5LfFNV243xSWAyunT2N6zRehCv": {
+          "title": "2333N211__cad.step",
+          "size": 738965,
+          "note": "staged as instinct_REQ-018/McMaster_2333N211_push-to-connect_4mm_M8x1.step, sha256 b69c7c9a...; 3 valid solids, L/hex/4.000 socket match drawing"
+        },
+        "1nK1vyFF3118oC6hyeB0D84tMa7SgMhyZ": {
+          "title": "2333N211__datasheet.pdf",
+          "size": 57799,
+          "note": "staged as vendor_docs/McMaster_2333N211_push-to-connect_4mm_M8x1_drawing.pdf, sha256 291af4e9...; Instinct-made raster wrapper of McMaster drawing, no active content"
+        },
+        "1pwUiwkIny47tvytRCux1gu3lUAAfPcdl": {
+          "title": "2333N214__cad.step",
+          "size": 766063,
+          "note": "staged as instinct_REQ-018/McMaster_2333N214_push-to-connect_4mm_M10x1.step, sha256 ca54ec1d...; 3 valid solids, L/hex/4.000 socket match drawing"
+        },
+        "1_GpiDq7VtazdCbbxZknpXuS_SBFYJcev": {
+          "title": "2333N214__datasheet.pdf",
+          "size": 58853,
+          "note": "staged as vendor_docs/McMaster_2333N214_push-to-connect_4mm_M10x1_drawing.pdf, sha256 1dc39d02...; Instinct-made raster wrapper of McMaster drawing, no active content"
+        }
+      },
+      "folder": "mechloop handoff/results/REQ-018-spool-and-filament-path",
+      "last_checked": "2026-11-21T04:15:00Z",
+      "result_status": "partial (SKF-update revision: SKF account reportedly created with owner approval, still no SKF 608 PDF/STEP - TraceParts widget dead-end; spool STEP, PTFE, 4 McMaster couplers delivered earlier; Roto thread inference wrong per our CAD check)",
+      "staged_in": "vendor_cad/staging/instinct_REQ-018",
+      "superseded": {
+        "1Xd6q51QZ-nGX2bJTv1bws0IbmIcM52Um@interim": {
+          "title": "RESULT.md",
+          "size": 3676,
+          "note": "staged as instinct_REQ-018/RESULT_instinct_REQ-018_2026-11-20.md, sha256 26941a6b...; interim, text only; earlier revision of the same id, replaced by the 23:49Z revision (batch 17)"
+        },
+        "1Xd6q51QZ-nGX2bJTv1bws0IbmIcM52Um@2349Z": {
+          "title": "RESULT.md",
+          "size": 6470,
+          "note": "23:49Z revision, staged as instinct_REQ-018/RESULT_instinct_REQ-018_2026-11-20_2349Z.md, sha256 3bdaf6c0...; replaced by the SKF-update revision of the same id (batch 21)"
+        }
+      }
+    },
+    "1SmfNo_qxoAv9bozvZ9X_EJO-rnPIY3kR": {
+      "files": {
+        "1f9mY5XHHlE1nnYeuQNNEw5JRUbQCWqhF": {
+          "title": "RESULT.md",
+          "size": 4035,
+          "note": "staged as instinct_REQ-019/RESULT_instinct_REQ-019_2026-11-21.md, sha256 9a8002c6...; STATUS done, 2 candidates, no purchase"
+        },
+        "1LQ1C0ngNR8njC0hsdEaOISxO-axMimv_": {
+          "title": "94669A079__cad.step",
+          "size": 264576,
+          "note": "staged as instinct_REQ-019/McMaster_94669A079_Al_spacer_M5_10OD_5.3ID_10L.step, sha256 c0f7992b...; 1 valid solid OD 10.000 / ID 5.300 / L 10.000, matches drawing; 132 degenerate zero-area faces (harmless)"
+        },
+        "1w52ZIUGEAGZo9_xPdupGiptt2MStPjG6": {
+          "title": "94669A079__datasheet.pdf",
+          "size": 51329,
+          "note": "staged as vendor_docs/McMaster_94669A079_Al_spacer_M5_10x10_drawing.pdf, sha256 e7526189...; Instinct-made raster wrapper of McMaster drawing, no active content"
+        },
+        "1XZwUqlxEC9QQdqJKak3vEde7FaB6BTFM": {
+          "title": "FWSA-D10-V5.5-T10__cad.step",
+          "size": 15931,
+          "note": "staged as instinct_REQ-019/Misumi_FWSA-D10-V5.5-T10_Al_spacer_10OD_5.5ID_10L.step, sha256 ea195dec...; 1 valid solid OD 10.000 / ID 5.500 / L 10.000, matches config; header org Amazon.com/EC2"
+        },
+        "1uJeLIuP4vkSPE50VOgEJxc3x1t-VC9uq": {
+          "title": "FWSA-D10-V5.5-T10__datasheet.pdf",
+          "size": 44383,
+          "note": "staged as vendor_docs/Misumi_FWSA_plain-spacer_series_drawing_capture.pdf, sha256 f3fc034d...; Instinct screenshot of series drawing, Al material row cut off; no active content"
+        }
+      },
+      "folder": "mechloop handoff/results/REQ-019-m5-spacer",
+      "last_checked": "2026-11-21T01:15:00Z",
+      "result_status": "done (McMaster 94669A079 10x5.30x10 Al, $2.53, next-day: best fit, bore tol to 5.60; Misumi FWSA-D10-V5.5-T10 bore 5.5, $2.03, ships Nov 30)",
+      "staged_in": "vendor_cad/staging/instinct_REQ-019"
+    },
+    "1Hb0hdn7QnB6Aj_PTwVviq8tBm2b4Kdud": {
+      "files": {
+        "1udqtJhZUDMps8mvla5-8VNGpUs141pDV": {
+          "title": "nsk-608zz1mc3-dimension-page.pdf",
+          "size": 66796,
+          "note": "staged as vendor_docs/NSK_608ZZ1MC3_dimension_page_capture.pdf, sha256 5252937d...; Instinct raster wrapper of NSK page (8x22x7, r0.3), no active content"
+        },
+        "1zGzlwQyYmlqjGuVxu4V0XzRNZXt2prtN": {
+          "title": "B608ZZ__cad.step",
+          "size": 27505,
+          "note": "staged as instinct_REQ-020/Misumi_B608ZZ_bearing_8x22x7_ZZ.step, sha256 de78759b...; MISUMI-made (not NSK), 1 valid solid 8/22/7 r0.3, matches NSK page"
+        },
+        "18KoU0RmWsmDxUEqqYr9lrhn1AYEEeFez": {
+          "title": "SFAL8-90-B15-S15__cad.step",
+          "size": 8774,
+          "note": "staged as instinct_REQ-020/Misumi_SFAL8-90-B15-S15_shaft_D8_L90_M8-both-ends_120OA.step, sha256 57de8b9f...; plain dia 8 x 120 overall (L90 + 2x15 thread), matches config, threads not modelled"
+        },
+        "1rMaZBe-_OehKnO4fvwXbyR19kzrxymA_": {
+          "title": "SFAL8-90-B15-S15__datasheet.pdf",
+          "size": 345391,
+          "note": "staged as vendor_docs/Misumi_SFAL_both-ends-threaded_shaft_catalog_p228-229.pdf, sha256 447fff1c...; genuine MISUMI catalog spread, no active content"
+        },
+        "1mkHXZrWDxBAYAI66zcoJOUyjgZ7VYVD2": {
+          "title": "90592A022__cad.step",
+          "size": 496969,
+          "note": "staged as instinct_REQ-020/McMaster_90592A022_hex_nut_M8x1.25_13AF_6.5H.step, sha256 48616150...; 1 valid solid 13 AF x 6.5, bore 8, matches drawing"
+        },
+        "1FAEGwU0QcP8HfeLIiVI_SaZexaRa6Lt-": {
+          "title": "90592A022__datasheet.pdf",
+          "size": 58136,
+          "note": "staged as vendor_docs/McMaster_90592A022_M8_hex_nut_drawing.pdf, sha256 2104b6e3...; Instinct raster wrapper of McMaster drawing, no active content"
+        },
+        "12JsP2HmbWmeVkQG0V-1ihr1rChEctXw8": {
+          "title": "WSF20__cad.step",
+          "size": 12845,
+          "note": "staged as instinct_REQ-020/Misumi_WSF20_shaft_end_washer_20OD_8ID_5T.step, sha256 6b57ab2d...; 1 valid solid 20/8/5, matches catalog at nominal (bore 8.0 vs 8.1-8.3 tol)"
+        },
+        "1-widAeU-ijcI893hxAnydqxNUpGsK_d8": {
+          "title": "WSF20__datasheet.pdf",
+          "size": 57981,
+          "note": "staged as vendor_docs/Misumi_WSF_linear_shaft_washer_catalog_p289_capture.pdf, sha256 e9f6a3f4...; Instinct raster wrapper of MISUMI p289, no active content"
+        },
+        "1YYSNmXk69nqwFNP62z9wc8uxDoLIXNR3": {
+          "title": "RESULT.md",
+          "size": 5696,
+          "modifiedTime": "2026-11-21T02:38Z (approx, per handoff)",
+          "note": "staged as instinct_REQ-020/RESULT_instinct_REQ-020_2026-11-21_0238Z.md, sha256 8238370e...; STATUS COMPLETE as sourcing (WSF20 + CLBSS28-10 are candidates, not verified fits); diff vs 02:15Z copy: STATUS line + item 3 only; no purchase"
+        },
+        "1PnKRH4QKa7D7-O5rTo8ImIMdC4v8BMlP": {
+          "title": "CLBSS28-10__cad.step",
+          "size": 12880,
+          "note": "staged as instinct_REQ-020/Misumi_CLBSS28-10_bearing_outer-ring_spacer_D28_d22_L10_304SS.step, sha256 814fb734...; MISUMI-generated, 1 valid solid OD 28 / bore 22 / L 10, C0.5 bore chamfers; matches catalog at nominal; outer-race spacer for 28 OD bearings, not a v12 inner-ring sleeve replacement"
+        },
+        "1DyVSwVmYIAvHxH_uZfIlz2PGk42pKovu": {
+          "title": "CLBSS28-10__datasheet.pdf",
+          "size": 211357,
+          "note": "staged as vendor_docs/Misumi_CLB_bearing_spacers_inner-outer-ring_catalog_p1064-1065.pdf, sha256 123e4773...; genuine MISUMI catalog spread (InDesign 2019), text layer, no active content"
+        }
+      },
+      "folder": "mechloop handoff/results/REQ-020-spool-hardware",
+      "last_checked": "2026-11-21T03:15:00Z",
+      "result_status": "complete as sourcing (608ZZ: NSK page + Misumi-made B608ZZ STEP; axle SFAL8-90-B15-S15, 120 mm overall; nut 90592A022; washer WSF20 candidate; item 3 sleeve Misumi CLBSS28-10 304SS 28/22/L10 $31.91 candidate, slip-over use outside catalog purpose, does not fit the v12 inner-ring sleeve layout)",
+      "staged_in": "vendor_cad/staging/instinct_REQ-020"
+    },
+    "1X6xRLtdp1Wd1vM7ifQ8xnZ9CeSHqKEnL": {
+      "files": {
+        "1OeDe1OT0Z6cqAb6ueMnpRqmsF5eWsVj1": {
+          "title": "RESULT.md",
+          "size": 8129,
+          "note": "staged as instinct_REQ-021/RESULT_instinct_REQ-021_2026-11-21.md, sha256 5207c8ae...; STATUS PARTIAL (dowels + PSU alternatives complete; e-stop/safety relay candidates without maker STEP)"
+        },
+        "1Ce1RhE_tSRipaSt7zOcPvpoNpgiBW_sX": {
+          "title": "RSP-320-24__cad.step",
+          "size": 2865925,
+          "note": "staged as instinct_REQ-021/MeanWell_RSP-320-24_series-model_RSP-320_215x115x30.step, sha256 efaba049...; 21 solids (main shell flagged invalid), 215x115x30.9, LRS-350-identical case/holes/terminals/fan"
+        },
+        "1jw-dwNdQKWAF-0nRs8eDqeXZ7hSZZN_b": {
+          "title": "RSP-320-24__datasheet.pdf",
+          "size": 702316,
+          "note": "staged as vendor_docs/MeanWell_RSP-320-SPEC_2026-09-04.pdf, sha256 1576cdce...; 215x115x30, 13.4 A; URI links only"
+        },
+        "1pD8GY9IiAta-IWsjxZh5fhSDphLH5r5J": {
+          "title": "UHP-350-24__cad.step",
+          "size": 3198834,
+          "note": "staged as instinct_REQ-021/MeanWell_UHP-350-24_series-model_UHP-350_220x62x31.step, sha256 396c4416...; 35 valid solids, 220x62x31.3; not a drop-in"
+        },
+        "1CJm0uCGUcvpWyr9KesLanG2lPB3BZHwH": {
+          "title": "UHP-350-24__datasheet.pdf",
+          "size": 806601,
+          "note": "staged as vendor_docs/MeanWell_UHP-350-SPEC_2024-11-23.pdf, sha256 57e24e9a...; fanless, needs 450x450 Al plate; URI links only"
+        },
+        "1M_5cxp9h6ui9jfVxBbTZ4jKViD55_d-V": {
+          "title": "LBA350PS24__cad.step",
+          "size": 4558485,
+          "note": "staged as instinct_REQ-021/XPPower_LBA350PS24_series-model_LBA350_215x115x30.step, sha256 47d88213...; 22 valid solids, 215x115x30; base/side M4 pattern and terminal block match LRS-350 -> drop-in"
+        },
+        "1Z57z1i8uj7cao2dieV5E_76JFDMZkYqY": {
+          "title": "LBA350PS24__datasheet.pdf",
+          "size": 940863,
+          "note": "staged as vendor_docs/XPPower_LBA350_datasheet_2026-03-07.pdf, sha256 9b4d3375...; 90-264 VAC PFC, 14.6 A, same hole pattern; URI links only"
+        },
+        "19BXOsjnc0P9ZxhnEAdqkScz_JMJ63JpU": {
+          "title": "A22E-M-02__datasheet.pdf",
+          "size": 1140216,
+          "note": "staged as vendor_docs/Omron_A22E_e-stop_datasheet_extract_p33-36_p41-42.pdf, sha256 169b4528...; Instinct raster extract, no text layer; 32 front / 54.7 behind panel; cutout not in extract"
+        },
+        "1Om5yH-SmsYX65xoZPnFxodgrkzX3oAnl": {
+          "title": "M22-PVT-K02__datasheet.pdf",
+          "size": 52205,
+          "note": "staged as vendor_docs/Eaton_M22-PVT-K02_e-stop_2NC_spec_sheet.pdf, sha256 28e85817...; 22.5 hole; says '1 NO-2 NC' in a field (inconsistent); URI links only"
+        },
+        "1Lu-INOUmJd4v3CWoIgmm6gVfrtUhcvSN": {
+          "title": "M22-PVT__datasheet.pdf",
+          "size": 136972,
+          "note": "staged as vendor_docs/Eaton_M22-PVT_e-stop_operator_datasheet.pdf, sha256 650fea88...; 38 mm mushroom operator; no active content"
+        },
+        "1grd4-uRN3hPGra8bzMB6Xy3yCP-kAnlX": {
+          "title": "G9SE-201__datasheet.pdf",
+          "size": 4656765,
+          "note": "staged as vendor_docs/Omron_G9SE_safety_relay_datasheet_J198-E1-04.pdf, sha256 f6c7b523...; owner-password encrypted, OpenAction GoTo, empty AcroForm (benign); 17.5 W x 111.6 D, Push-In Plus terminals"
+        },
+        "1-18AlP96SAIQIjRhE5n0CgdfHmgyqnRG": {
+          "title": "PSR-SCP-24DC-ESP4-2X1-1X2__datasheet.pdf",
+          "size": 64932,
+          "note": "staged as vendor_docs/Phoenix_2981020_PSR-SCP-24DC-ESP4-2X1-1X2_datasheet.pdf, sha256 4169a1af...; 22.5x99x114.5, screw terminals, headline 'single-channel'; URI links only"
+        },
+        "1S0eoBB4XtDwHjWV2D1inQF6czKrhi5Nb": {
+          "title": "91595A150__cad.step",
+          "size": 19752,
+          "note": "staged as instinct_REQ-021/McMaster_91595A150_dowel_pin_4x8_m6_52100.step, sha256 b9c38e7a...; 1 valid solid 4.000 x 8.000, rounded ends; matches drawing"
+        },
+        "1SbrNEmjjikQhJAVTOoZkxeRCrQTkda0P": {
+          "title": "91595A150__datasheet.pdf",
+          "size": 47006,
+          "note": "staged as vendor_docs/McMaster_91595A150_dowel_pin_drawing.pdf, sha256 6acbb666...; Instinct raster wrapper of McMaster drawing; no active content"
+        }
+      },
+      "folder": "mechloop handoff/results/REQ-021-safety-chain-and-dowels",
+      "last_checked": "2026-11-21T04:15:00Z",
+      "result_status": "partial (dowel 91595A150 and PSU alternatives complete: XP Power LBA350PS24 is a mechanical+rating drop-in for LRS-350-24, RSP-320-24 mechanically drop-in at 321.6 W, UHP-350-24 not; e-stops A22E-M-02 / M22-PVT-K02 and safety relays G9SE-201 / Phoenix 2981020 datasheet-only, maker STEP blocked by Omron/TraceParts registration (held) or not retrieved (Eaton))",
+      "staged_in": "vendor_cad/staging/instinct_REQ-021"
     }
-   }
   },
-  "1_-rIetDBexZ6IT3MwJJwYEeNrE4yaU8_": {
-   "folder": "mechloop handoff/results/REQ-005-rails-addendum-helix-hiwin",
-   "last_checked": "2026-11-20T07:20:00Z",
-   "staged_in": "vendor_cad/staging/instinct_REQ-005",
-   "result_status": "partial (05:06Z: official HIWIN STEP for 245/300 rails and MGN12H+300 rail assembly; MGN12C drawing only)",
-   "files": {
-    "16Gb-GFdnwpOnZ1EnuJ6fW6bBQXbNCqKG": {
-     "title": "CPC-MR12__spec.pdf",
-     "modifiedTime": "2026-11-20T03:01:33.281Z",
-     "size": 617899
-    },
-    "1KmJ9mzxx1vi8KCl8_JNGA5QaZjWm9D7O": {
-     "title": "CPC-MR__catalog.pdf",
-     "modifiedTime": "2026-11-20T03:01:32.066Z",
-     "size": 2297272
-    },
-    "1V33NlRfFMaSqjcR8jul4VohBwxOKoyRK": {
-     "title": "Helix-Miniature-Linear-Guides__catalog.pdf",
-     "modifiedTime": "2026-11-20T03:01:30.584Z",
-     "size": 2487286
-    },
-    "1xgxLAJCwLrfp6DcnJug0FK5bGGN4xpgD": {
-     "title": "RESULT.md",
-     "modifiedTime": "2026-11-20T05:06:20Z",
-     "size": 11704,
-     "note": "revised 05:06Z (batch 6); staged copy overwritten, sha256 c728ca12...; 03:29Z version was b4b0cfd0..."
-    },
-    "1ywgI4JQIELlVafLIpT4GQ1PUeQOD2-AV": {
-     "title": "PU12UR__datasheet.pdf",
-     "modifiedTime": "2026-11-20T03:16:17.089Z",
-     "size": 3566765,
-     "note": "not copied: same sha256 as vendor_docs/NSK_PU-PE_miniature_E3327e.pdf"
-    },
-    "1lhgrPyR9xKfs5m25gbQmfH8GaCU7BdL7": {
-     "title": "MGN12H__catalog.pdf",
-     "modifiedTime": "2026-11-20T03:16:19.366Z",
-     "size": 17883962,
-     "note": "NOT downloaded: over the Drive connector 10 MB limit; same size as the HIWIN catalogue REQ-007 reports as sha256 b9445d5a..."
-    },
-    "1uSJ2xRBPbvRWEaqSBnPxhvXQUqA9nIJH": {
-     "title": "MGNR12R-245__cad.step",
-     "modifiedTime": "2026-11-20T04:47:58.330Z",
-     "size": 610622,
-     "note": "staged as instinct_REQ-005/HIWIN_MGNR-12-R0245-H-M.step"
-    },
-    "1eKpVi-n7BxlSHnGlrUJOUz_j3ovWt9Ib": {
-     "title": "MGNR12R-245__drawing.pdf",
-     "modifiedTime": "2026-11-20T04:47:59.550Z",
-     "size": 132947,
-     "note": "vendor_docs/HIWIN_MGNR-12-R0245-H-M_drawing.pdf"
-    },
-    "1IlQDTMt2T6CooyAnwxVtnJirlm3-tUz3": {
-     "title": "MGNR12R-300__cad.step",
-     "modifiedTime": "2026-11-20T04:53:03.412Z",
-     "size": 633483,
-     "note": "staged as instinct_REQ-005/HIWIN_MGNR-12-R0300-H-M.step"
-    },
-    "1Gt4Mw7JKLecF9IMjblrez-535124LkMh": {
-     "title": "MGNR12R-300__drawing.pdf",
-     "modifiedTime": "2026-11-20T04:53:04.655Z",
-     "size": 132518,
-     "note": "vendor_docs/HIWIN_MGNR-12-R0300-H-M_drawing.pdf"
-    },
-    "1nPALJXCuGGyfbAMiwPmpoSG_VF2DNj1T": {
-     "title": "MGN-12-H-1R0300-ZF-H-M__cad-block-rail-assembly.step",
-     "modifiedTime": "2026-11-20T04:31:28.971Z",
-     "size": 3671174,
-     "note": "staged as instinct_REQ-005/HIWIN_MGN-12-H-1R0300-ZF-H-M_block-rail-assembly.step"
-    },
-    "1VFvpP2mbM2wvAuRhEpnUMPwMywUsgSSy": {
-     "title": "MGN-12-H-1R0300-ZF-H-M__drawing-block-rail-assembly.pdf",
-     "modifiedTime": "2026-11-20T04:31:30.314Z",
-     "size": 141524,
-     "note": "vendor_docs/HIWIN_MGN-12-H-1R0300-ZF-H-M_drawing.pdf"
-    },
-    "1Do9Thq3pNOsfJPuV8yU1ER8Ds6GPHR1w": {
-     "title": "MGN-12-C-1R0300-ZF-H-M__drawing-block-rail-assembly.pdf",
-     "modifiedTime": "2026-11-20T05:03:34.049Z",
-     "size": 142597,
-     "note": "vendor_docs/HIWIN_MGN-12-C-1R0300-ZF-H-M_drawing.pdf"
-    }
-   },
-   "superseded": {
-    "1K8lJfvr6bYH6tYjfS1_xbbXJCoYIsuV3": {
-     "title": "RESULT.md",
-     "modifiedTime": "2026-11-20T03:01:58.216Z",
-     "size": 3646,
-     "note": "interim RESULT.md, no longer in the folder; replaced by 1xgxLAJCwLrfp6DcnJug0FK5bGGN4xpgD"
-    }
-   }
-  },
-  "1V98cQYkRxEybCp9m66I013GLNnZCbgX3": {
-   "folder": "mechloop handoff/results/REQ-006-corrections-from-REQ-002",
-   "last_checked": "2026-11-20T07:20:00Z",
-   "staged_in": "vendor_cad/staging/instinct_REQ-006",
-   "result_status": "partial (1 of 7 met: item 4; STEPs for 5/6 blocked on TraceParts)",
-   "files": {
-    "1CxODVBdJdQgyfKfOfuWMfeEs1krHMkP7": {
-     "title": "RESULT.md",
-     "modifiedTime": "2026-11-20T02:56:31.936Z",
-     "size": 4993
-    },
-    "1s1Afv3eGuyfXfK7ac8JXSmfDO4zHIqlJ": {
-     "title": "45750-3111__drawing.pdf",
-     "modifiedTime": "2026-11-20T02:55:35.473Z",
-     "size": 625328
-    },
-    "1TKzYW_tFfg2nd41J4uIGsiaZ7HeQIXIt": {
-     "title": "43020-0201__drawing.pdf",
-     "modifiedTime": "2026-11-20T02:55:34.350Z",
-     "size": 376731
-    },
-    "1UzEKmnOdLzq5agskD5GUKO8RfXi2oKTG": {
-     "title": "91828A111__drawing.pdf",
-     "modifiedTime": "2026-11-20T02:55:33.246Z",
-     "size": 99764
-    },
-    "1G5QIUbz3ogu4Q_h3HABMeq8iVM_6URS3": {
-     "title": "91828A111__step.step",
-     "modifiedTime": "2026-11-20T02:55:32.048Z",
-     "size": 463149
-    },
-    "1OjOioruOiGE-s8FFdqCnC-daYWu_PqzP": {
-     "title": "PiCameraCable-Pi5__page.pdf",
-     "modifiedTime": "2026-11-20T02:52:15.940Z",
-     "size": 660320
-    },
-    "1NuEPcKYtriJWf4OnDJ8dDtovE63DWwv8": {
-     "title": "Harwin_R30-6700694__page.pdf",
-     "modifiedTime": "2026-11-20T02:52:15.013Z",
-     "size": 128652
-    },
-    "1pBG34bG9s2D6z3snJp65grq1gLZQv2fp": {
-     "title": "Harwin_R30-6700694__drawing.pdf",
-     "modifiedTime": "2026-11-20T02:52:13.891Z",
-     "size": 62613
-    },
-    "1xCoDY-k1gHzUuMIkIvFmvQh2uRtNbIXV": {
-     "title": "Finder_22.32.0.120.4320__page.pdf",
-     "modifiedTime": "2026-11-20T02:52:12.818Z",
-     "size": 481427
-    },
-    "190se9JyNmPUrCfrv4-i2nvhJx9WT-qJb": {
-     "title": "Finder_22-series__catalog.pdf",
-     "modifiedTime": "2026-11-20T02:52:11.710Z",
-     "size": 3661031,
-     "note": "not copied: same sha256 as vendor_docs/Finder_22-series_datasheet.pdf"
-    },
-    "1jIyKBNfoU3z_l_cfJdRErt_oQQVFMNsJ": {
-     "title": "Finder_22.32__step.zip",
-     "modifiedTime": "2026-11-20T02:52:10.517Z",
-     "size": 2107600
-    }
-   }
-  },
-  "1UHTvkSuE-UD7yO0c_LZRAy47z2P6sY9H": {
-   "folder": "mechloop handoff/results/REQ-007-resend-large-catalogues",
-   "last_checked": "2026-11-20T07:20:00Z",
-   "staged_in": "vendor_cad/staging/instinct_REQ-007",
-   "result_status": "done",
-   "files": {
-    "11OZcITTkZmiFmVvbKSC7rnEQ0O08UUv-": {
-     "title": "RESULT.md",
-     "modifiedTime": "2026-11-20T03:22:41.094Z",
-     "size": 1957
-    },
-    "1BILMAPNndAV0HfCQ9V4B3CJcZiwyx1Jm": {
-     "title": "PMI_MSC-MSD__catalog_excerpt.pdf",
-     "modifiedTime": "2026-11-20T03:22:39.903Z",
-     "size": 602096
-    },
-    "1amlHcEFV46oqom-3LXlmeAYZ37N9U9p-": {
-     "title": "HIWIN_MG__catalog_excerpt.pdf",
-     "modifiedTime": "2026-11-20T03:22:38.834Z",
-     "size": 558800
-    }
-   }
-  },
-  "1W3K9YtzrWAnS2H6KbsBgHhr6L_M__EcD": {
-   "folder": "mechloop handoff/results/REQ-008-priority-queue",
-   "last_checked": "2026-11-20T14:20:00Z",
-   "staged_in": "vendor_cad/staging/instinct_REQ-008",
-   "result_status": "partial (07:22Z: items 1, 2, 3, 12, 16 delivered; item 14 pulley delivered, idler not available; item 4 blocked)",
-   "files": {
-    "1sj3kBNRTE9p_aGhdKOtaj0Fow2kYnAf-": {
-     "title": "RESULT.md",
-     "modifiedTime": "2026-11-20T07:22:27.287Z",
-     "size": 7516,
-     "note": "revised 07:22Z (batch 10: items 2/14/16 updated); staged copy overwritten, sha256 95a01a7e...; 06:30Z was 8ed3ec95..., 05:33Z 150fc3d2..., 03:29Z a307c60b..."
-    },
-    "1BqZSA4BMbvxczYMxDruGG7CZOZOK7Gmh": {
-     "title": "DD11.0114.1111__cad.step",
-     "modifiedTime": "2026-11-20T05:21:29.391Z",
-     "size": 2998289,
-     "note": "not staged: byte-identical (sha256 4f86626e...) to vendor_cad/inbox/INLET-C14-SW-FUSE-T8A.step"
-    },
-    "1gLRypTZVjF-iHDKl0lZx6TkDxfBembon": {
-     "title": "DD11.0114.1111__datasheet.pdf",
-     "modifiedTime": "2026-11-20T05:21:30.620Z",
-     "size": 450651,
-     "note": "not copied: same sha256 as vendor_docs/INLET-C14-SW-FUSE-T8A_datasheet.pdf"
-    },
-    "1s6Hn6w97aEDFbsVukw7Q51XDG-9dpFDP": {
-     "title": "4301.1401__cad.step",
-     "modifiedTime": "2026-11-20T05:21:32.192Z",
-     "size": 5763499,
-     "note": "staged as instinct_REQ-008/Schurter_4301.1401_fusedrawer-2-pole-fingergrip.step"
-    },
-    "1zPe-l482dlQwx5qZHihM0Yl5dYompB66": {
-     "title": "4301.1401__datasheet.pdf",
-     "modifiedTime": "2026-11-20T05:21:33.236Z",
-     "size": 324460,
-     "note": "vendor_docs/Schurter_Fusedrawer-2_4301.1401_datasheet.pdf"
-    },
-    "1jtqd2ApEFRZKuM228T0bTubN2FNO0ste": {
-     "title": "0001.2513__cad.step",
-     "modifiedTime": "2026-11-20T05:21:34.351Z",
-     "size": 41166,
-     "note": "staged as instinct_REQ-008/Schurter_0001.2513_SPT-5x20-T8A.step (pigtail-type surface model)"
-    },
-    "1ciJ8JVJ_PxJ0Sk9PxPHXpOncW7DfJhEH": {
-     "title": "0001.2511__cad.step",
-     "modifiedTime": "2026-11-20T05:21:35.471Z",
-     "size": 41166,
-     "note": "staged as instinct_REQ-008/Schurter_0001.2511_SPT-5x20-T5A.step (pigtail-type surface model)"
-    },
-    "1ekr-UXrA34L5HhRhbUOjLd95xQomoLKe": {
-     "title": "SPT-5x20__datasheet.pdf",
-     "modifiedTime": "2026-11-20T05:21:36.562Z",
-     "size": 348362,
-     "note": "vendor_docs/Schurter_SPT-5x20_fuse_datasheet.pdf"
-    },
-    "1ls7lm2T5f_kVfSdo4zW4VkAciZGDl5KX": {
-     "title": "1119897__datasheet.pdf",
-     "modifiedTime": "2026-11-20T05:33:09.518Z",
-     "size": 606036,
-     "note": "vendor_docs/Phoenix_1119897_PLC-RSC-5DC-21_datasheet.pdf"
-    },
-    "1HK-rglviy89WDNPHkJyUKsUwZ9kxeiV2": {
-     "title": "1119897__cad.stp",
-     "modifiedTime": "2026-11-20T05:33:10.706Z",
-     "size": 674112,
-     "note": "staged as instinct_REQ-008/Phoenix_1119897_PLC-RSC-5DC-21.stp"
-    },
-    "15ovyvGT0a3xsqiBbY87jgLduX0a_KO5u": {
-     "title": "DD11.0124.1111__cad.step",
-     "modifiedTime": "2026-11-20T06:29:34.536Z",
-     "size": 2998289,
-     "note": "not staged: byte-identical (sha256 4f86626e...) to vendor_cad/inbox/INLET-C14-SW-FUSE-T8A.step (family model 0100.2571)"
-    },
-    "1iyr9HDluKtGykXGcrvnuw8DUalr6WkLV": {
-     "title": "DD11.0124.1111__datasheet.pdf",
-     "modifiedTime": "2026-11-20T06:29:34.547Z",
-     "size": 450651,
-     "note": "not copied: same sha256 (1db97cff...) as vendor_docs/INLET-C14-SW-FUSE-T8A_datasheet.pdf"
-    },
-    "1Bv5ga8Kff1OdYiA7WFj4PDWUNfX7fK-f": {
-     "title": "GPA20GT2090-A-H5__cad.step",
-     "modifiedTime": "2026-11-20T07:19:08.652Z",
-     "size": 242830,
-     "note": "staged as instinct_REQ-008/Misumi_GPA20GT2090-A-H5_2GT-20T-9mm_H5.step (3 valid solids, dims match catalogue, H bore no set screw)"
-    },
-    "1uljkb1-LPG0Vcl1MSgSxiyBE2d9WvqQx": {
-     "title": "GPA20GT2090-A-H5__drawing.pdf",
-     "modifiedTime": "2026-11-20T07:19:08.757Z",
-     "size": 491898,
-     "note": "vendor_docs/Misumi_GPA_GT2090_2GT_high-torque_pulley_2019US_p1340.pdf (series catalogue page, not per-part)"
-    },
-    "1lom8oZFer03VEb6A_j-FykioO2TrJcNh": {
-     "title": "TMC2209__datasheet.pdf",
-     "modifiedTime": "2026-11-20T07:22:22.646Z",
-     "size": 1629829,
-     "note": "rev 1.08 (older than owner-supplied vendor_docs/ADI_TMC2209_datasheet_rev1.09.pdf); kept as vendor_docs/ADI_TMC2209_datasheet_rev1.08_digikey-copy_OLDER.pdf"
-    }
-   }
-  },
-  "139_eg79lbNnZBGYFWbkDnVLuqJ9jExlk": {
-   "folder": "mechloop handoff/results/REQ-009-us-rail-options",
-   "staged_in": "vendor_cad/staging/instinct_REQ-009",
-   "result_status": "partial (comparison done; LDO/onetwo3D US shipping cost + delivery time not obtained)",
-   "files": {
-    "1rJwVJwLuE9FTyk19rgRB_YNTmEa12QYW": {
-     "title": "RESULT.md",
-     "modifiedTime": "2026-11-20T06:23:19.835Z",
-     "size": 11234,
-     "note": "staged as RESULT_instinct_REQ-009_2026-11-20.md, sha256 91f458de..."
-    }
-   },
-   "last_checked": "2026-11-20T07:20:00Z"
-  },
-  "1brBo3_WLt7nddDDs3jj_VGjoD7pfgF-h": {
-   "folder": "mechloop handoff/results/REQ-010-nozzle-camera-files",
-   "staged_in": "vendor_cad/staging/instinct_REQ-010",
-   "result_status": "partial (06:49Z: B0454 STEP + datasheet; B045401 = B0454 datasheet, no B045401 STEP/drawing; B0292 datasheet 40 mm-inf; no board meets all criteria per Instinct)",
-   "files": {
-    "1OC2R0nqrUErLsO4LhkA41PXpsfjm9hbN": {
-     "title": "RESULT.md",
-     "modifiedTime": "2026-11-20T06:49:59.125Z",
-     "size": 6659,
-     "note": "staged as RESULT_instinct_REQ-010_2026-11-20.md, sha256 8c0b5a88..."
-    },
-    "1omzNquUKcTaHC-r8nmEZwPfGdu5VCtcg": {
-     "title": "B0454__cad.zip",
-     "modifiedTime": "2026-11-20T06:49:59.132Z",
-     "size": 1780541,
-     "note": "sha256 7dabce09...; member B0454.STEP staged as Arducam_B0454.STEP (sha256 82915bca...)"
-    },
-    "1gGhAgqOKjOnatQFADF3XQ0M632TYwNCW": {
-     "title": "B0454__datasheet.pdf",
-     "modifiedTime": "2026-11-20T06:50:00.209Z",
-     "size": 528763,
-     "note": "not copied: same sha256 (5c7f92c2...) as vendor_docs/Arducam_B0454_datasheet.pdf"
-    },
-    "18_CVS-0AklmStldFO8qs_TYJD2JLXnIm": {
-     "title": "B045401__datasheet.pdf",
-     "modifiedTime": "2026-11-20T06:49:59.090Z",
-     "size": 528763,
-     "note": "not copied: byte-identical to B0454__datasheet.pdf (sha256 5c7f92c2...); it is the B0454 datasheet"
-    },
-    "1sYPC2Chu-ncSuk61Lkr3tw8GHfhcHgh1": {
-     "title": "B0292__datasheet.pdf",
-     "modifiedTime": "2026-11-20T06:49:59.147Z",
-     "size": 536536,
-     "note": "copied to vendor_docs/Arducam_B0292_datasheet.pdf, sha256 09e0214f..."
-    }
-   },
-   "last_checked": "2026-11-20T07:20:00Z"
-  },
-  "1kT1X5r2vV3Iaawm4a3emZOVvhrecwDR7": {
-   "folder": "mechloop handoff/results/NOTE-pcbway-review-status",
-   "staged_in": "reference_parts/batch01/results/pcbway_status_2026-11-20.md (note content as data; not in vendor_cad/staging)",
-   "result_status": "info (PCBWay review: RP04 passed $12.45; RP03 failed on thickness, revised 2.5 mm STEP requested; RP01/RP02 in review)",
-   "files": {
-    "10B1hI-MHF3MTObwhS7bSy3xKfCZWlvKq": {
-     "title": "RESULT.md",
-     "modifiedTime": "2026-11-20T06:47:12.691Z",
-     "size": 1550,
-     "note": "sha256 b7fa6ac7...; copied verbatim into pcbway_status_2026-11-20.md"
-    }
-   },
-   "last_checked": "2026-11-20T07:20:00Z"
-  },
-  "1RSn4een7VDFnwBik_X16-DVTen4bA-v1": {
-   "folder": "mechloop handoff/results/REQ-012-pcbway-rp03-2.5mm",
-   "last_checked": "2026-11-20T14:20:00Z",
-   "staged_in": "vendor_cad/staging/instinct_REQ-012",
-   "result_status": "partial (RP03 2.5 mm re-uploaded to C-CN24W734350A, \"Being reviewed\"; DFM result and qty-10 price pending)",
-   "files": {
-    "14fsBt-s7I1wpItpQDbqzgd86_Y5wGVHX": {
-     "title": "RESULT.md",
-     "modifiedTime": "2026-11-20T07:52:49.849Z",
-     "size": 2039,
-     "note": "staged as instinct_REQ-012/RESULT_instinct_REQ-012_2026-11-20.md, sha256 55227ede..."
-    }
-   }
-  },
-  "15LKAJDQN7rX38zy_DSCVmA9h3BzBjwIv": {
-   "folder": "mechloop handoff/results/REQ-013-build1-queue-refresh",
-   "last_checked": "2026-11-20T18:15:00Z",
-   "staged_in": "vendor_cad/staging/instinct_REQ-013",
-   "result_status": "partial (17:58Z: LED DigiKey price/stock captured; KLUS channel price still blocked; PEI 2nd candidate West3D 235x235; Molex/Phoenix STEP delivered under REQ-015; JST held; 11 awaits address; 12 held; no REQ-016/belt-seller/RP04 content)",
-   "files": {
-    "11zPs7IGKw2-44Di7ERwitIclD__sz6sQ": {
-     "title": "RESULT.md",
-     "modifiedTime": "2026-11-20T15:10:43.818Z",
-     "size": 7767,
-     "note": "staged as instinct_REQ-013/RESULT_instinct_REQ-013_2026-11-20.md, sha256 6918ff08..."
-    },
-    "1FQ_YqahnAFh3Oq_btmcuL4SQxyW-zBwl": {
-     "title": "4301.1405__cad.step",
-     "modifiedTime": "2026-11-20T14:28:57.329Z",
-     "size": 6006141,
-     "note": "staged as Schurter_4301.1405.step"
-    },
-    "1Eyvs5p0juAFeVTd-20NBPHlZkl27qLyz": {
-     "title": "4301.1405__datasheet.pdf",
-     "modifiedTime": "2026-11-20T14:27:52.987Z",
-     "size": 324460,
-     "note": "duplicate of vendor_docs/Schurter_Fusedrawer-2_4301.1401_datasheet.pdf; not copied"
-    },
-    "1T5RK9CySVLeHxf6AhvKCfIHvXgl3I3y-": {
-     "title": "HBLFSN5__cad.step",
-     "modifiedTime": "2026-11-20T14:45:33.622Z",
-     "size": 157476,
-     "note": "staged as Misumi_HBLFSN5.step"
-    },
-    "1H-wIxHH6SNPPfpDzHUltDjpLmSVXDW1i": {
-     "title": "HBLFSN5-SEP__cad.step",
-     "modifiedTime": "2026-11-20T14:45:34.736Z",
-     "size": 320761,
-     "note": "staged as Misumi_HBLFSN5-SEP.step"
-    },
-    "1tQY3GtZN__kgglSSOpD-1CqBOPsRE_gP": {
-     "title": "HNTP5-5__cad.step",
-     "modifiedTime": "2026-11-20T14:45:35.800Z",
-     "size": 74923,
-     "note": "staged as Misumi_HNTP5-5.step"
-    },
-    "13L0EZcg9AW1jrlXsnkuH3H2rQrN8nzcN": {
-     "title": "CBM5-10__cad.step",
-     "modifiedTime": "2026-11-20T14:45:36.938Z",
-     "size": 38485,
-     "note": "staged as Misumi_CBM5-10.step; geometry is a socket head cap screw, not a button head (flag)"
-    },
-    "1rX1XIpSXMvXW1v-tUrMrCgVhcLk8qZ4P": {
-     "title": "AGTFW30-GT2090-5__cad.step",
-     "modifiedTime": "2026-11-20T14:45:32.304Z",
-     "size": 384381,
-     "note": "staged as Misumi_AGTFW30-GT2090-5.step"
-    },
-    "144wHBEM7fuuqfLrQHgu3P52HkiwQWsDT": {
-     "title": "AGTFW30-GT2090-5__datasheet.pdf",
-     "modifiedTime": "2026-11-20T14:46:29.693Z",
-     "size": 340142,
-     "note": "vendor_docs/Misumi_AGTFW_flanged-idlers-with-teeth_catalog_p1424-1425.pdf"
-    },
-    "1ZGQ4wIbYkfRuSom6MIW2oEzLezhvdNAS": {
-     "title": "GPA32GT2090-B-P5__cad.step",
-     "modifiedTime": "2026-11-20T14:45:31.157Z",
-     "size": 438746,
-     "note": "staged as Misumi_GPA32GT2090-B-P5.step"
-    },
-    "1OLgy6kQkx90m5mh-op_BcQRxAEEpTYfI": {
-     "title": "GPA32GT2090-A-P5__cad.step",
-     "modifiedTime": "2026-11-20T14:56:35.407Z",
-     "size": 477652,
-     "note": "staged as Misumi_GPA32GT2090-A-P5.step"
-    },
-    "1Kx1PJIGU__xxoKpVY-IOSvP9cm-rl40T": {
-     "title": "3684N13__cad.step",
-     "modifiedTime": "2026-11-20T15:01:51.779Z",
-     "size": 1455421,
-     "note": "staged as McMaster_3684N13.step; has 2 set screws (Instinct says 1)"
-    },
-    "17HxNwwJ-v31MYUpz0IHO7Ylw5oqqHdc1": {
-     "title": "3684N13__drawing.pdf",
-     "modifiedTime": "2026-11-20T15:02:54.302Z",
-     "size": 150030,
-     "note": "vendor_docs/McMaster_3684N13_drawing.pdf"
-    },
-    "1cmnh1hiGXldqMv0WGb0hE-ZPmePuvQOw": {
-     "title": "SC1432__drawing.pdf",
-     "modifiedTime": "2026-11-20T14:27:59.429Z",
-     "size": 174949,
-     "note": "duplicate of vendor_docs/RaspberryPi_Pi5_mechanical_drawing.pdf; not copied"
-    },
-    "1Pst3kHg-0knihkucMZwAM3txriiiZIMp": {
-     "title": "SC1148__drawing.pdf",
-     "modifiedTime": "2026-11-20T14:27:56.026Z",
-     "size": 233138,
-     "note": "vendor_docs/RaspberryPi_Active-Cooler_SC1148_mechanical_drawing.pdf"
-    },
-    "1eUzIuahNzfEu9I9gj2fuO4pGCsLXs5n8": {
-     "title": "SC1153__datasheet.pdf",
-     "modifiedTime": "2026-11-20T14:27:57.139Z",
-     "size": 1233433,
-     "note": "duplicate of vendor_docs/RaspberryPi_27W-USB-C-PSU_product_brief.pdf; not copied"
-    },
-    "1bUOrT19gmH33jhmZMAgRQtH3lTCEZiPu": {
-     "title": "SC1223__datasheet.pdf",
-     "modifiedTime": "2026-11-20T14:27:58.412Z",
-     "size": 1244344,
-     "note": "duplicate of vendor_docs/RaspberryPi_Camera-Module-3_product_brief.pdf; not copied"
-    },
-    "1xSw-uvAkasNQkazVN-CM7CznvMRw0PRB": {
-     "title": "EDDY-DUO__drawing.jpg",
-     "modifiedTime": "2026-11-20T14:27:54.289Z",
-     "size": 58592,
-     "note": "duplicate of vendor_docs/BTT_Eddy_dimensions.jpg; not copied"
-    },
-    "145BHsPihkMcremUFhk-IuzFxHXTUpJCm": {
-     "title": "VLM-520-56-LPO-D30-F10__datasheet.pdf",
-     "modifiedTime": "2026-11-20T14:34:19.315Z",
-     "size": 1183645,
-     "note": "vendor_docs/Quarton_VLM-520-56-30deg-series_manual.pdf"
-    },
-    "1fTAdX50EgbC7P9ydgZogiR3sCWkcpB-E": {
-     "title": "CS712025Y__datasheet.pdf",
-     "modifiedTime": "2026-11-20T14:33:25.643Z",
-     "size": 1392761,
-     "note": "vendor_docs/Cantherm_R53_CS712025Y_datasheet_rev2017-04.pdf (newer revision than Cantherm_CS7_R53_thermostat_datasheet.pdf)"
-    },
-    "1sdqUn-xpdYox-SQWpIRtOi4laBlrIFSb": {
-     "title": "104NT-4-R025H42G__datasheet.pdf",
-     "modifiedTime": "2026-11-20T14:27:51.811Z",
-     "size": 96355,
-     "note": "duplicate of vendor_docs/Semitec_NT-4_thermistor_datasheet.pdf; not copied"
-    },
-    "1492bLgym35NMwQ0j7GqsczDz3_2Qz7a9": {
-     "title": "D2F-01L__datasheet.pdf",
-     "modifiedTime": "2026-11-20T14:32:08.249Z",
-     "size": 850668,
-     "note": "duplicate of vendor_docs/ENDSTOP-MICRO_datasheet.pdf; not copied (owner-password encrypted, joboptions attachment)"
-    },
-    "1Mz6RgneOs-56AsUrBrxJvua1exKPuwvf": {
-     "title": "RESULT.md",
-     "modifiedTime": "2026-11-20T15:50:42.988Z",
-     "size": 11198,
-     "note": "new file id; staged as instinct_REQ-013/RESULT_instinct_REQ-013_2026-11-20_1550Z.md, sha256 3c717a1c...; earlier id 11zPs... not re-checked (folder not listed in batch 12)"
-    },
-    "1tUfLo3vKrz2DQeTLmzWDruqadlq7snRY": {
-     "title": "39-01-2020__drawing.pdf",
-     "modifiedTime": "2026-11-20T15:46:38.132Z",
-     "size": 201853,
-     "note": "byte-identical to vendor_docs/Molex_39-01-2020_drawing.pdf; not copied"
-    },
-    "1vQQxaNUP2wW9YaDR-InKrA63_RItCs65": {
-     "title": "ADXL345__drawing.pdf",
-     "modifiedTime": "2026-11-20T15:45:01.346Z",
-     "size": 218804,
-     "note": "not copied: Altium bookmark JavaScript; same sha256 (8a412937...) as the drawing rejected under instinct_REQ-003"
-    },
-    "1od93b3guxet2MzgxMI_L32oKsSR6n1B-": {
-     "title": "LL2MR09__datasheet.pdf",
-     "modifiedTime": "2026-11-20T15:44:22.741Z",
-     "size": 184552,
-     "note": "vendor_docs/Gates_LPP-manual_2mm-GT3_long-length_extract_for_LL2MR09.pdf; extract names 2MGT/GT3, not LL2MR09"
-    },
-    "1F4XTfDRpBYiwztAlOPoNon5wYjyCR87R": {
-     "title": "RESULT.md",
-     "modifiedTime": "2026-11-20T17:10Z",
-     "size": 15679,
-     "note": "new file id; staged as instinct_REQ-013/RESULT_instinct_REQ-013_2026-11-20_1710Z.md, sha256 f8116da4...; modifiedTime per caller (17:10Z), not read from Drive metadata"
-    },
-    "1UuRHPUsdOL9JQVgjPWri3sZEN5DByDQL": {
-     "title": "0801733__datasheet.pdf",
-     "size": 50066,
-     "note": "vendor_docs/Phoenix_0801733_NS35-7.5-PERF_datasheet.pdf (batch 13)"
-    },
-    "1RL1e-jhoWPxMZt98RUXgKA2TFJ8SYROZ": {
-     "title": "PDS-4-ALU__datasheet.pdf",
-     "size": 569880,
-     "note": "vendor_docs/KLUS_PDS-4-ALU_A01718_datasheet.pdf (batch 13)"
-    },
-    "1ZNsCGivzeBH7k41iXCzE-cv6K-MxhGZR": {
-     "title": "24V-COB-4000K__datasheet.pdf",
-     "size": 312523,
-     "note": "byte-identical to vendor_docs/InspiredLED_24V-COB_flex_spec.pdf (2b0101b9...); not copied"
-    },
-    "1FMLBrT-r_GLRrJgE0m_rtRU8F2o5_2RT": {
-     "title": "RESULT.md",
-     "modifiedTime": "2026-11-20T17:58Z",
-     "size": 17305,
-     "note": "new file id; staged as instinct_REQ-013/RESULT_instinct_REQ-013_2026-11-20_1758Z.md, sha256 51d20fc2...; modifiedTime per caller (17:58Z), not read from Drive metadata"
-    }
-   }
-  },
-  "1q3mYOgMuesTlqiKL3pHd0fxZDrbDfdLU": {
-   "folder": "mechloop handoff/results/REQ-014-bossard-pem-and-sendcutsend-cart",
-   "last_checked": "2026-11-20T16:15:00Z",
-   "staged_in": "vendor_cad/staging/instinct_REQ-014",
-   "result_status": "partial (item 1 resolved per Instinct via owner-approved S-M3-0ZI, approval unverified; McMaster 95185A520 STEP + drawing delivered and staged; items 2-3 from existing batch01 records; SendCutSend shipping unknown)",
-   "files": {
-    "1o3MXYPd8IoYfY1XjdygDAofhF46ZVrjF": {
-     "title": "RESULT.md",
-     "modifiedTime": "2026-11-20T15:10:42.649Z",
-     "size": 5996,
-     "note": "staged as instinct_REQ-014/RESULT_instinct_REQ-014_2026-11-20.md, sha256 493f4128..."
-    },
-    "1gDZObejlT0rxwMj5M6IW0Bja3ZPzYifo": {
-     "title": "S-M3-0ZI__cad.step",
-     "modifiedTime": "2026-11-20T15:56:14.575Z",
-     "size": 765355,
-     "note": "staged as McMaster_95185A520_PEM-S-M3-0ZI.step; 1 valid solid, 6.35 x 6.35 x 2.27, matches S-M3-0 dims"
-    },
-    "1FavqgaxpsqPUehM56AnHJiuG45Dl_Mb-": {
-     "title": "S-M3-0ZI__drawing.pdf",
-     "modifiedTime": "2026-11-20T15:56:15.745Z",
-     "size": 102125,
-     "note": "vendor_docs/McMaster_95185A520_PEM-S-M3-0ZI_drawing.pdf"
-    },
-    "1o8MTud_uP3sb3cvOxEXmnpdfu2fT3UvU": {
-     "title": "RESULT.md",
-     "modifiedTime": "2026-11-20T15:56:28.881Z",
-     "size": 6009,
-     "note": "new file id; staged as instinct_REQ-014/RESULT_instinct_REQ-014_2026-11-20_1556Z.md, sha256 69347ed5...; earlier id 1o3MX... not re-checked (folder not listed in batch 12)"
-    }
-   }
-  },
-  "1VCBDeYJwDDkOHQIvsY4zNF4tm7ejUW7f": {
-   "files": {
-    "1TxwVop47Q3ucqMQbzZ-kYx1lG6qQXMLD": {
-     "title": "39-01-2020__cad.step",
-     "size": 108730,
-     "note": "staged as instinct_REQ-015/Molex_39-01-2020.step, sha256 014d90a1...; 1 valid solid 5.4x19.6x14.4, simplified envelope (no terminal cavities); CADENAS order 22026112018464072700088d0b6156e"
-    },
-    "1x5W4YSOZ2vpmiPrTn1tOagMVOJ9drbMc": {
-     "title": "0801733__cad.step",
-     "size": 521901,
-     "note": "staged as instinct_REQ-015/Phoenix_0801733_NS35-7.5-PERF-2000.step, sha256 41c4b189...; 1 valid solid 2000x35x7.5, 79 slots 15x6.2 @25, 1.0 thick; CADENAS order 22026112018380171964729d0b6156e"
-    },
-    "17pQEfTUBp5cTfuZCZ10qpNZV4VsVqI4s": {
-     "title": "XHP-2__cad.step",
-     "size": 132958,
-     "note": "staged as instinct_REQ-015/JST_XHP-2.step, sha256 ea771cad...; 1 valid solid 7.3x7.75x5.7, matches datasheet"
-    },
-    "1cYg76-vFxVo9wQlbz7YgDofQMQU40L2a": {
-     "title": "XHP-3__cad.step",
-     "size": 171979,
-     "note": "staged as instinct_REQ-015/JST_XHP-3.step, sha256 04536e74...; 1 valid solid 9.8x7.75x5.7, matches datasheet"
-    },
-    "1e79-c7bVUdc-14kQQLpgZdpm7bDGSAGO": {
-     "title": "XHP-4__cad.step",
-     "size": 211340,
-     "note": "staged as instinct_REQ-015/JST_XHP-4.step, sha256 e71354a6...; 1 valid solid 12.3x7.75x5.7, matches datasheet"
-    },
-    "1TcqO5U1hmwOskNB0Zi5-mjv2vrXiZEQL": {
-     "title": "B2B-XH-A__cad.step",
-     "size": 108814,
-     "note": "staged as instinct_REQ-015/JST_B2B-XH-A.step, sha256 8a8a83d1...; 1 valid solid 7.4x10.4x5.75, 2 posts 0.64 sq @2.5, matches"
-    },
-    "1R4cG_qcP4znGZ3p1Az2jkvt_PkvLZtdL": {
-     "title": "B3B-XH-A__cad.step",
-     "size": 150210,
-     "note": "staged as instinct_REQ-015/JST_B3B-XH-A.step, sha256 85e95848...; 1 valid solid 9.9x10.4x5.75, 3 posts 0.64 sq @2.5, matches"
-    },
-    "1bY8utyGMivIL_pnasAKTJyKBI1rDBQ4t": {
-     "title": "B4B-XH-A__cad.step",
-     "size": 181746,
-     "note": "staged as instinct_REQ-015/JST_B4B-XH-A.step, sha256 30e21987...; 1 valid solid 12.4x10.4x5.75, 4 posts 0.64 sq @2.5, matches"
-    },
-    "1AMslGT2H4rd2BGQex7Y8JEXET-yjVvmh": {
-     "title": "SXH-001T-P0.6__datasheet.pdf",
-     "size": 44267,
-     "note": "staged as vendor_docs/JST_SXH-001T-P0.6_contact_drawing.pdf, sha256 10608d1a...; empty-user-password encryption, no active content"
-    },
-    "1Y8-NoBsgMS3-yeS80KYyyU-RJ4gckQij": {
-     "title": "RESULT.md",
-     "size": 5449,
-     "modifiedTime": "2026-11-21T00:12:00Z",
-     "note": "00:12Z revision; staged as instinct_REQ-015/RESULT_instinct_REQ-015_2026-11-21_0012Z.md, sha256 1b53dbcc...; adds owner folder-placement decision, JST clause-2 AI-processing question unresolved"
-    }
-   },
-   "folder": "mechloop handoff/results/REQ-015-jst-molex-phoenix-step",
-   "last_checked": "2026-11-21T00:15:00Z",
-   "result_status": "done per Instinct (JST XH via jst-mfg.com, licence accepted 2026-11-20 on claimed owner approval - not verified; REQ-016 RESULT still lists it as approval hold)",
-   "staged_in": "vendor_cad/staging/instinct_REQ-015",
-   "superseded": {
-    "1Y8-NoBsgMS3-yeS80KYyyU-RJ4gckQij@pre-1853Z": {
-     "title": "RESULT.md",
-     "size": 3175,
-     "note": "staged as instinct_REQ-015/RESULT_instinct_REQ-015_2026-11-20.md, sha256 b7adcdf5...; earlier revision of the same id, replaced by the 18:53Z revision (batch 15)"
-    },
-    "1Y8-NoBsgMS3-yeS80KYyyU-RJ4gckQij@1853Z": {
-     "title": "RESULT.md",
-     "size": 4959,
-     "note": "18:53Z revision; staged as instinct_REQ-015/RESULT_instinct_REQ-015_2026-11-20_1853Z.md, sha256 65c9932d...; replaced by the 00:12Z revision (batch 17)"
-    }
-   }
-  },
-  "1BeMQ4Ht3vBni77XNBWDA79ked_VyUhZp": {
-   "files": {
-    "183Q7dPIe8xFwDFVrOgG49K6GG4SIBV0C": {
-     "title": "RESULT.md",
-     "size": 5230,
-     "note": "staged as instinct_REQ-016/RESULT_instinct_REQ-016_2026-11-20.md, sha256 3360f571..."
-    },
-    "1G36ArzVOjj7EXRrceIaoJuo4NDfuNkTX": {
-     "title": "SQ1451144__datasheet.pdf",
-     "size": 113588,
-     "note": "staged as vendor_docs/NPH_NPHSF365_HydraResearch-SQ1451144_24V-200W-210x210_heater_drawing.pdf, sha256 4e7ec26e...; 210x210, leads 130+/-15, Molex 43640-0401, no thickness"
-    },
-    "1aTs99AqBTZA1cBi123Z91dZdj7fGKhzN": {
-     "title": "10133__datasheet.pdf",
-     "size": 2337635,
-     "note": "staged as vendor_docs/Keenovo_flexible-heaters_users-manual.pdf, sha256 e9ebcb25...; general manual, not part-specific"
-    },
-    "195cPebECjvnD534nL6XgestJgTxU8Djf": {
-     "title": "NTC-100K-RT__datasheet.pdf",
-     "size": 49725,
-     "note": "not staged: byte-identical to vendor_docs/Keenovo_NTC-100K-B3950_R-T_table.pdf (sha256 2d7ae3c0...)"
-    }
-   },
-   "folder": "mechloop handoff/results/REQ-016-bed-heater-24v",
-   "last_checked": "2026-11-20T19:15:00Z",
-   "result_status": "partial (Keenovo 10133 confirmed; Hydra SQ1451144 alternative with NPH drawing; Gulfcoast price/stock not captured)",
-   "staged_in": "vendor_cad/staging/instinct_REQ-016"
-  },
-  "1oTmOZq2zwA42wp-kq_f6DTyidvPqnw8e": {
-   "files": {
-    "1S4rpFB43LfQ2Odm9mI_khVKfjDDGYD0o": {
-     "title": "RESULT.md",
-     "size": 5055,
-     "note": "staged as instinct_REQ-017/RESULT_instinct_REQ-017_2026-11-20.md, sha256 61f483ca..."
-    },
-    "19resH6P5BZC0G4oRLNNMvJSadFDcHYSj": {
-     "title": "6301K78__cad.step",
-     "size": 1164569,
-     "note": "staged as instinct_REQ-017/McMaster_6301K78_swivel-leveling-mount_M6.step, sha256 3f670eea...; 4 solids valid, 19x41x19, matches drawing"
-    },
-    "11fytjz4doReU6hrNldvJ4s3u34F6jQC5": {
-     "title": "6301K78__datasheet.pdf",
-     "size": 47856,
-     "note": "staged as vendor_docs/McMaster_6301K78_drawing.pdf, sha256 0ac2a2b1...; Instinct GIF-to-PDF conversion of McMaster drawing image"
-    },
-    "1306vwGq_b6djhcEdBHOW4Mu8lSBzFLX-": {
-     "title": "6301K79__cad.step",
-     "size": 1226081,
-     "note": "staged as instinct_REQ-017/McMaster_6301K79_swivel-leveling-mount_M8.step, sha256 4f4faa12...; 4 solids valid, 25x52x25, matches drawing"
-    },
-    "1pmlCZmQ8wcOoAtaC9kbPm_GfJT9lp6W3": {
-     "title": "6301K79__datasheet.pdf",
-     "size": 48401,
-     "note": "staged as vendor_docs/McMaster_6301K79_drawing.pdf, sha256 064d234d...; Instinct GIF-to-PDF conversion"
-    },
-    "18SZUQX5PzHOEW5LbQrKEFIw_LcA4Cv_I": {
-     "title": "NFJN5-30__cad.step",
-     "size": 97399,
-     "note": "staged as instinct_REQ-017/Misumi_NFJN5-30_leveling-mount_M5.step, sha256 301747c2...; 3 solids valid, 30x40.5x30, matches M5 table; simplified (no thread, solid foot)"
-    },
-    "13nQoPkRtmYHmKdMr8gqxZmvn_3uk5Jss": {
-     "title": "NFJN5-30__datasheet.pdf",
-     "size": 300865,
-     "note": "staged as vendor_docs/Misumi_NFJN_leveling-mounts_2019US_p3166-3167.pdf, sha256 4924f3a1...; catalog spread"
-    }
-   },
-   "folder": "mechloop handoff/results/REQ-017-printer-feet",
-   "last_checked": "2026-11-20T23:15:00Z",
-   "result_status": "done (McMaster 6301K78 M6 / 6301K79 M8 rubber-pad swivel feet; Misumi NFJN5-30 M5 all-metal; no M5 rubber-pad foot found)",
-   "staged_in": "vendor_cad/staging/instinct_REQ-017"
-  },
-  "1LUF4BGyRvbsBEL23O5ovpvjlOsvmyYrf": {
-   "files": {
-    "1Xd6q51QZ-nGX2bJTv1bws0IbmIcM52Um": {
-     "title": "RESULT.md",
-     "size": 7241,
-     "note": "SKF-update revision (Instinct: '2026-11-20 ~8:00 PM' PST); staged as instinct_REQ-018/RESULT_instinct_REQ-018_2026-11-21_SKF-update.md, sha256 60edfcdf...; diff vs 23:49Z: 608 item only - SKF 608-2Z, SKF account created 'with owner approval' (unconfirmed here), CAD blocked by TraceParts widget, no PDF/STEP"
-    },
-    "11jigV_zJ8yyulWn5kw3aWR7o7UB4jRpH": {
-     "title": "prusament-dummy-spool__cad.step.zip",
-     "size": 3978634,
-     "note": "staged zipped as instinct_REQ-018/Prusament_dummy_spool_1kg.step.zip, sha256 7c43c16b...; 1 member (25,441,235 B, sha256 b8dbb4ef...), no traversal; 1 valid solid OD 199.89 x W 64.13, hub bore 51.25; author Jiri Bilek, Inventor 2019; licence not stated"
-    },
-    "1LVphpqcJnyEC4kY_d3sZ3Rp5f_6kNt1Z": {
-     "title": "e3d-roto-bowden-reference-cad.step",
-     "size": 1411826,
-     "note": "byte-identical to staging/E3D_Roto_Bowden_reference.step (sha256 1a8ac7dc...), not re-staged; inlet = bowdaptor with integral E3D collet, 6.0 spigot in 6.2 recess, no thread modelled"
-    },
-    "1TdFWRZaff6OUdA4VGVtcJQ-OthYx1rgp": {
-     "title": "2333N197__cad.step",
-     "size": 713378,
-     "note": "staged as instinct_REQ-018/McMaster_2333N197_push-to-connect_4mm_M5x0.8.step, sha256 717e927e...; 3 valid solids, L/hex/4.000 socket match drawing"
-    },
-    "1e_hwVRzPTMG5L_RJOKmlNMIXkHyGEpu9": {
-     "title": "2333N197__datasheet.pdf",
-     "size": 55439,
-     "note": "staged as vendor_docs/McMaster_2333N197_push-to-connect_4mm_M5x0.8_drawing.pdf, sha256 ca37866d...; Instinct-made raster wrapper of McMaster drawing, no active content"
-    },
-    "182finrZxvyN344qrjZJoKzWrNdNuHQyi": {
-     "title": "2333N202__cad.step",
-     "size": 631576,
-     "note": "staged as instinct_REQ-018/McMaster_2333N202_push-to-connect_4mm_M6x1.step, sha256 cfe12e53...; 3 valid solids, L/hex/4.000 socket match drawing"
-    },
-    "1tHSIUo9_7NkBgTWXDJK6i7FA-0yJa0mR": {
-     "title": "2333N202__datasheet.pdf",
-     "size": 60246,
-     "note": "staged as vendor_docs/McMaster_2333N202_push-to-connect_4mm_M6x1_drawing.pdf, sha256 0b472ac3...; Instinct-made raster wrapper of McMaster drawing, no active content"
-    },
-    "1k2a5cZ5LfFNV243xSWAyunT2N6zRehCv": {
-     "title": "2333N211__cad.step",
-     "size": 738965,
-     "note": "staged as instinct_REQ-018/McMaster_2333N211_push-to-connect_4mm_M8x1.step, sha256 b69c7c9a...; 3 valid solids, L/hex/4.000 socket match drawing"
-    },
-    "1nK1vyFF3118oC6hyeB0D84tMa7SgMhyZ": {
-     "title": "2333N211__datasheet.pdf",
-     "size": 57799,
-     "note": "staged as vendor_docs/McMaster_2333N211_push-to-connect_4mm_M8x1_drawing.pdf, sha256 291af4e9...; Instinct-made raster wrapper of McMaster drawing, no active content"
-    },
-    "1pwUiwkIny47tvytRCux1gu3lUAAfPcdl": {
-     "title": "2333N214__cad.step",
-     "size": 766063,
-     "note": "staged as instinct_REQ-018/McMaster_2333N214_push-to-connect_4mm_M10x1.step, sha256 ca54ec1d...; 3 valid solids, L/hex/4.000 socket match drawing"
-    },
-    "1_GpiDq7VtazdCbbxZknpXuS_SBFYJcev": {
-     "title": "2333N214__datasheet.pdf",
-     "size": 58853,
-     "note": "staged as vendor_docs/McMaster_2333N214_push-to-connect_4mm_M10x1_drawing.pdf, sha256 1dc39d02...; Instinct-made raster wrapper of McMaster drawing, no active content"
-    }
-   },
-   "folder": "mechloop handoff/results/REQ-018-spool-and-filament-path",
-   "last_checked": "2026-11-21T04:15:00Z",
-   "result_status": "partial (SKF-update revision: SKF account reportedly created with owner approval, still no SKF 608 PDF/STEP - TraceParts widget dead-end; spool STEP, PTFE, 4 McMaster couplers delivered earlier; Roto thread inference wrong per our CAD check)",
-   "staged_in": "vendor_cad/staging/instinct_REQ-018",
-   "superseded": {
-    "1Xd6q51QZ-nGX2bJTv1bws0IbmIcM52Um@interim": {
-     "title": "RESULT.md",
-     "size": 3676,
-     "note": "staged as instinct_REQ-018/RESULT_instinct_REQ-018_2026-11-20.md, sha256 26941a6b...; interim, text only; earlier revision of the same id, replaced by the 23:49Z revision (batch 17)"
-    },
-    "1Xd6q51QZ-nGX2bJTv1bws0IbmIcM52Um@2349Z": {
-     "title": "RESULT.md",
-     "size": 6470,
-     "note": "23:49Z revision, staged as instinct_REQ-018/RESULT_instinct_REQ-018_2026-11-20_2349Z.md, sha256 3bdaf6c0...; replaced by the SKF-update revision of the same id (batch 21)"
-    }
-   }
-  },
-  "1SmfNo_qxoAv9bozvZ9X_EJO-rnPIY3kR": {
-   "files": {
-    "1f9mY5XHHlE1nnYeuQNNEw5JRUbQCWqhF": {
-     "title": "RESULT.md",
-     "size": 4035,
-     "note": "staged as instinct_REQ-019/RESULT_instinct_REQ-019_2026-11-21.md, sha256 9a8002c6...; STATUS done, 2 candidates, no purchase"
-    },
-    "1LQ1C0ngNR8njC0hsdEaOISxO-axMimv_": {
-     "title": "94669A079__cad.step",
-     "size": 264576,
-     "note": "staged as instinct_REQ-019/McMaster_94669A079_Al_spacer_M5_10OD_5.3ID_10L.step, sha256 c0f7992b...; 1 valid solid OD 10.000 / ID 5.300 / L 10.000, matches drawing; 132 degenerate zero-area faces (harmless)"
-    },
-    "1w52ZIUGEAGZo9_xPdupGiptt2MStPjG6": {
-     "title": "94669A079__datasheet.pdf",
-     "size": 51329,
-     "note": "staged as vendor_docs/McMaster_94669A079_Al_spacer_M5_10x10_drawing.pdf, sha256 e7526189...; Instinct-made raster wrapper of McMaster drawing, no active content"
-    },
-    "1XZwUqlxEC9QQdqJKak3vEde7FaB6BTFM": {
-     "title": "FWSA-D10-V5.5-T10__cad.step",
-     "size": 15931,
-     "note": "staged as instinct_REQ-019/Misumi_FWSA-D10-V5.5-T10_Al_spacer_10OD_5.5ID_10L.step, sha256 ea195dec...; 1 valid solid OD 10.000 / ID 5.500 / L 10.000, matches config; header org Amazon.com/EC2"
-    },
-    "1uJeLIuP4vkSPE50VOgEJxc3x1t-VC9uq": {
-     "title": "FWSA-D10-V5.5-T10__datasheet.pdf",
-     "size": 44383,
-     "note": "staged as vendor_docs/Misumi_FWSA_plain-spacer_series_drawing_capture.pdf, sha256 f3fc034d...; Instinct screenshot of series drawing, Al material row cut off; no active content"
-    }
-   },
-   "folder": "mechloop handoff/results/REQ-019-m5-spacer",
-   "last_checked": "2026-11-21T01:15:00Z",
-   "result_status": "done (McMaster 94669A079 10x5.30x10 Al, $2.53, next-day: best fit, bore tol to 5.60; Misumi FWSA-D10-V5.5-T10 bore 5.5, $2.03, ships Nov 30)",
-   "staged_in": "vendor_cad/staging/instinct_REQ-019"
-  },
-  "1Hb0hdn7QnB6Aj_PTwVviq8tBm2b4Kdud": {
-   "files": {
-    "1udqtJhZUDMps8mvla5-8VNGpUs141pDV": {
-     "title": "nsk-608zz1mc3-dimension-page.pdf",
-     "size": 66796,
-     "note": "staged as vendor_docs/NSK_608ZZ1MC3_dimension_page_capture.pdf, sha256 5252937d...; Instinct raster wrapper of NSK page (8x22x7, r0.3), no active content"
-    },
-    "1zGzlwQyYmlqjGuVxu4V0XzRNZXt2prtN": {
-     "title": "B608ZZ__cad.step",
-     "size": 27505,
-     "note": "staged as instinct_REQ-020/Misumi_B608ZZ_bearing_8x22x7_ZZ.step, sha256 de78759b...; MISUMI-made (not NSK), 1 valid solid 8/22/7 r0.3, matches NSK page"
-    },
-    "18KoU0RmWsmDxUEqqYr9lrhn1AYEEeFez": {
-     "title": "SFAL8-90-B15-S15__cad.step",
-     "size": 8774,
-     "note": "staged as instinct_REQ-020/Misumi_SFAL8-90-B15-S15_shaft_D8_L90_M8-both-ends_120OA.step, sha256 57de8b9f...; plain dia 8 x 120 overall (L90 + 2x15 thread), matches config, threads not modelled"
-    },
-    "1rMaZBe-_OehKnO4fvwXbyR19kzrxymA_": {
-     "title": "SFAL8-90-B15-S15__datasheet.pdf",
-     "size": 345391,
-     "note": "staged as vendor_docs/Misumi_SFAL_both-ends-threaded_shaft_catalog_p228-229.pdf, sha256 447fff1c...; genuine MISUMI catalog spread, no active content"
-    },
-    "1mkHXZrWDxBAYAI66zcoJOUyjgZ7VYVD2": {
-     "title": "90592A022__cad.step",
-     "size": 496969,
-     "note": "staged as instinct_REQ-020/McMaster_90592A022_hex_nut_M8x1.25_13AF_6.5H.step, sha256 48616150...; 1 valid solid 13 AF x 6.5, bore 8, matches drawing"
-    },
-    "1FAEGwU0QcP8HfeLIiVI_SaZexaRa6Lt-": {
-     "title": "90592A022__datasheet.pdf",
-     "size": 58136,
-     "note": "staged as vendor_docs/McMaster_90592A022_M8_hex_nut_drawing.pdf, sha256 2104b6e3...; Instinct raster wrapper of McMaster drawing, no active content"
-    },
-    "12JsP2HmbWmeVkQG0V-1ihr1rChEctXw8": {
-     "title": "WSF20__cad.step",
-     "size": 12845,
-     "note": "staged as instinct_REQ-020/Misumi_WSF20_shaft_end_washer_20OD_8ID_5T.step, sha256 6b57ab2d...; 1 valid solid 20/8/5, matches catalog at nominal (bore 8.0 vs 8.1-8.3 tol)"
-    },
-    "1-widAeU-ijcI893hxAnydqxNUpGsK_d8": {
-     "title": "WSF20__datasheet.pdf",
-     "size": 57981,
-     "note": "staged as vendor_docs/Misumi_WSF_linear_shaft_washer_catalog_p289_capture.pdf, sha256 e9f6a3f4...; Instinct raster wrapper of MISUMI p289, no active content"
-    },
-    "1YYSNmXk69nqwFNP62z9wc8uxDoLIXNR3": {
-     "title": "RESULT.md",
-     "size": 5696,
-     "modifiedTime": "2026-11-21T02:38Z (approx, per handoff)",
-     "note": "staged as instinct_REQ-020/RESULT_instinct_REQ-020_2026-11-21_0238Z.md, sha256 8238370e...; STATUS COMPLETE as sourcing (WSF20 + CLBSS28-10 are candidates, not verified fits); diff vs 02:15Z copy: STATUS line + item 3 only; no purchase"
-    },
-    "1PnKRH4QKa7D7-O5rTo8ImIMdC4v8BMlP": {
-     "title": "CLBSS28-10__cad.step",
-     "size": 12880,
-     "note": "staged as instinct_REQ-020/Misumi_CLBSS28-10_bearing_outer-ring_spacer_D28_d22_L10_304SS.step, sha256 814fb734...; MISUMI-generated, 1 valid solid OD 28 / bore 22 / L 10, C0.5 bore chamfers; matches catalog at nominal; outer-race spacer for 28 OD bearings, not a v12 inner-ring sleeve replacement"
-    },
-    "1DyVSwVmYIAvHxH_uZfIlz2PGk42pKovu": {
-     "title": "CLBSS28-10__datasheet.pdf",
-     "size": 211357,
-     "note": "staged as vendor_docs/Misumi_CLB_bearing_spacers_inner-outer-ring_catalog_p1064-1065.pdf, sha256 123e4773...; genuine MISUMI catalog spread (InDesign 2019), text layer, no active content"
-    }
-   },
-   "folder": "mechloop handoff/results/REQ-020-spool-hardware",
-   "last_checked": "2026-11-21T03:15:00Z",
-   "result_status": "complete as sourcing (608ZZ: NSK page + Misumi-made B608ZZ STEP; axle SFAL8-90-B15-S15, 120 mm overall; nut 90592A022; washer WSF20 candidate; item 3 sleeve Misumi CLBSS28-10 304SS 28/22/L10 $31.91 candidate, slip-over use outside catalog purpose, does not fit the v12 inner-ring sleeve layout)",
-   "staged_in": "vendor_cad/staging/instinct_REQ-020"
-  },
-  "1X6xRLtdp1Wd1vM7ifQ8xnZ9CeSHqKEnL": {
-   "files": {
-    "1OeDe1OT0Z6cqAb6ueMnpRqmsF5eWsVj1": {
-     "title": "RESULT.md",
-     "size": 8129,
-     "note": "staged as instinct_REQ-021/RESULT_instinct_REQ-021_2026-11-21.md, sha256 5207c8ae...; STATUS PARTIAL (dowels + PSU alternatives complete; e-stop/safety relay candidates without maker STEP)"
-    },
-    "1Ce1RhE_tSRipaSt7zOcPvpoNpgiBW_sX": {
-     "title": "RSP-320-24__cad.step",
-     "size": 2865925,
-     "note": "staged as instinct_REQ-021/MeanWell_RSP-320-24_series-model_RSP-320_215x115x30.step, sha256 efaba049...; 21 solids (main shell flagged invalid), 215x115x30.9, LRS-350-identical case/holes/terminals/fan"
-    },
-    "1jw-dwNdQKWAF-0nRs8eDqeXZ7hSZZN_b": {
-     "title": "RSP-320-24__datasheet.pdf",
-     "size": 702316,
-     "note": "staged as vendor_docs/MeanWell_RSP-320-SPEC_2026-09-04.pdf, sha256 1576cdce...; 215x115x30, 13.4 A; URI links only"
-    },
-    "1pD8GY9IiAta-IWsjxZh5fhSDphLH5r5J": {
-     "title": "UHP-350-24__cad.step",
-     "size": 3198834,
-     "note": "staged as instinct_REQ-021/MeanWell_UHP-350-24_series-model_UHP-350_220x62x31.step, sha256 396c4416...; 35 valid solids, 220x62x31.3; not a drop-in"
-    },
-    "1CJm0uCGUcvpWyr9KesLanG2lPB3BZHwH": {
-     "title": "UHP-350-24__datasheet.pdf",
-     "size": 806601,
-     "note": "staged as vendor_docs/MeanWell_UHP-350-SPEC_2024-11-23.pdf, sha256 57e24e9a...; fanless, needs 450x450 Al plate; URI links only"
-    },
-    "1M_5cxp9h6ui9jfVxBbTZ4jKViD55_d-V": {
-     "title": "LBA350PS24__cad.step",
-     "size": 4558485,
-     "note": "staged as instinct_REQ-021/XPPower_LBA350PS24_series-model_LBA350_215x115x30.step, sha256 47d88213...; 22 valid solids, 215x115x30; base/side M4 pattern and terminal block match LRS-350 -> drop-in"
-    },
-    "1Z57z1i8uj7cao2dieV5E_76JFDMZkYqY": {
-     "title": "LBA350PS24__datasheet.pdf",
-     "size": 940863,
-     "note": "staged as vendor_docs/XPPower_LBA350_datasheet_2026-03-07.pdf, sha256 9b4d3375...; 90-264 VAC PFC, 14.6 A, same hole pattern; URI links only"
-    },
-    "19BXOsjnc0P9ZxhnEAdqkScz_JMJ63JpU": {
-     "title": "A22E-M-02__datasheet.pdf",
-     "size": 1140216,
-     "note": "staged as vendor_docs/Omron_A22E_e-stop_datasheet_extract_p33-36_p41-42.pdf, sha256 169b4528...; Instinct raster extract, no text layer; 32 front / 54.7 behind panel; cutout not in extract"
-    },
-    "1Om5yH-SmsYX65xoZPnFxodgrkzX3oAnl": {
-     "title": "M22-PVT-K02__datasheet.pdf",
-     "size": 52205,
-     "note": "staged as vendor_docs/Eaton_M22-PVT-K02_e-stop_2NC_spec_sheet.pdf, sha256 28e85817...; 22.5 hole; says '1 NO-2 NC' in a field (inconsistent); URI links only"
-    },
-    "1Lu-INOUmJd4v3CWoIgmm6gVfrtUhcvSN": {
-     "title": "M22-PVT__datasheet.pdf",
-     "size": 136972,
-     "note": "staged as vendor_docs/Eaton_M22-PVT_e-stop_operator_datasheet.pdf, sha256 650fea88...; 38 mm mushroom operator; no active content"
-    },
-    "1grd4-uRN3hPGra8bzMB6Xy3yCP-kAnlX": {
-     "title": "G9SE-201__datasheet.pdf",
-     "size": 4656765,
-     "note": "staged as vendor_docs/Omron_G9SE_safety_relay_datasheet_J198-E1-04.pdf, sha256 f6c7b523...; owner-password encrypted, OpenAction GoTo, empty AcroForm (benign); 17.5 W x 111.6 D, Push-In Plus terminals"
-    },
-    "1-18AlP96SAIQIjRhE5n0CgdfHmgyqnRG": {
-     "title": "PSR-SCP-24DC-ESP4-2X1-1X2__datasheet.pdf",
-     "size": 64932,
-     "note": "staged as vendor_docs/Phoenix_2981020_PSR-SCP-24DC-ESP4-2X1-1X2_datasheet.pdf, sha256 4169a1af...; 22.5x99x114.5, screw terminals, headline 'single-channel'; URI links only"
-    },
-    "1S0eoBB4XtDwHjWV2D1inQF6czKrhi5Nb": {
-     "title": "91595A150__cad.step",
-     "size": 19752,
-     "note": "staged as instinct_REQ-021/McMaster_91595A150_dowel_pin_4x8_m6_52100.step, sha256 b9c38e7a...; 1 valid solid 4.000 x 8.000, rounded ends; matches drawing"
-    },
-    "1SbrNEmjjikQhJAVTOoZkxeRCrQTkda0P": {
-     "title": "91595A150__datasheet.pdf",
-     "size": 47006,
-     "note": "staged as vendor_docs/McMaster_91595A150_dowel_pin_drawing.pdf, sha256 6acbb666...; Instinct raster wrapper of McMaster drawing; no active content"
-    }
-   },
-   "folder": "mechloop handoff/results/REQ-021-safety-chain-and-dowels",
-   "last_checked": "2026-11-21T04:15:00Z",
-   "result_status": "partial (dowel 91595A150 and PSU alternatives complete: XP Power LBA350PS24 is a mechanical+rating drop-in for LRS-350-24, RSP-320-24 mechanically drop-in at 321.6 W, UHP-350-24 not; e-stops A22E-M-02 / M22-PVT-K02 and safety relays G9SE-201 / Phoenix 2981020 datasheet-only, maker STEP blocked by Omron/TraceParts registration (held) or not retrieved (Eaton))",
-   "staged_in": "vendor_cad/staging/instinct_REQ-021"
-  }
- },
- "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..008 (REQ-005..008 added 2026-11-20 batch 5). Batch 6 (2026-11-20 05:20Z): 7 new files + RESULT.md revision in REQ-005; nothing else new (154 files, 2 pages). Batch 7 (2026-11-20 06:20Z): 9 new files + RESULT.md revision in REQ-008; nothing else new (169 items incl. 8 folders, 3 pages). Batch 8 (2026-11-20 06:45Z): 2 new files + RESULT.md revision in REQ-008; new REQ-009 folder (RESULT.md only); new REQ-010 folder empty. Search: created or modified after 05:30Z under results, plus listing of the new folders. Batch 9 (2026-11-20 07:20Z): 5 new files in REQ-010; new NOTE-pcbway-review-status folder (RESULT.md only). Search: created or modified after 06:30Z under results (6 files + 2 folders). Batch 10 (2026-11-20 14:20Z): 3 new files + RESULT.md revision (07:22Z) in REQ-008; new REQ-012 folder (RESULT.md only). Only the five named file ids were fetched; no full search of results this batch. Batch 11 (2026-11-20 15:15Z): new REQ-013 folder (22 files + RESULT.md) and REQ-014 folder (RESULT.md only); only the named file ids plus a listing of these two folders; no full search of results this batch. Batch 12 (2026-11-20 16:15Z): 3 new files in REQ-014 (S-M3-0ZI STEP + drawing, RESULT.md new id) and 4 in REQ-013 (RESULT.md new id + 3 PDFs); only the named file ids fetched; no folder listing or full search. BTT ADXL345 V2.0 STEP fetched from GitHub master: byte-identical to the instinct_REQ-003 zip content, not re-staged. Batch 14 (2026-11-20 18:15Z): new REQ-015 folder (Molex + Phoenix STEP, RESULT.md) and REQ-013 RESULT.md new id (17:58Z); only the named file ids fetched; no folder listing or full search. Batch 15 (2026-11-20 19:15Z): 7 new files + RESULT.md revision (18:53Z) in REQ-015 (JST XH STEP x6 + SXH contact PDF); new REQ-016 folder (RESULT.md + 3 PDFs, NTC table a byte-duplicate); only the named file ids fetched; no folder listing or full search. Batch 16 (2026-11-20 23:15Z): new REQ-017 folder (RESULT.md + 3 STEP + 3 PDFs) and new REQ-018 folder (interim RESULT.md only); only the named file ids fetched; no folder listing or full search. Batch 17 (2026-11-21 00:15Z): REQ-018 RESULT.md revision (23:49Z) + 10 new files (Prusament spool STEP zip, E3D Roto reference duplicate, 4 McMaster push-to-connect STEP + drawing); REQ-015 RESULT.md revision (00:12Z); only the named file ids fetched; no folder listing or full search. Batch 18 (2026-11-21 01:15Z): new folder REQ-019-m5-spacer (5 files: RESULT, 2 STEP, 2 PDF) staged in instinct_REQ-019. Batch 19 (2026-11-21 02:15Z): new folder REQ-020-spool-hardware (9 files: RESULT, 4 STEP, 4 PDF) staged in instinct_REQ-020; only the named file ids fetched; no folder listing or full search. Batch 20 (2026-11-21 03:15Z): REQ-020 RESULT.md revision (02:38Z, new id 1YYSNmXk...) + CLBSS28-10 STEP and catalog PDF; staged in instinct_REQ-020 and vendor_docs; only the named file ids fetched; no folder listing or full search. Batch 21 (2026-11-21 04:15Z): new folder REQ-021-safety-chain-and-dowels (14 files: RESULT, 4 STEP, 9 PDF) staged in instinct_REQ-021 and vendor_docs; REQ-018 RESULT.md revision (same id 1Xd6q51Q..., SKF update) staged in instinct_REQ-018; only the named file ids fetched; no folder listing or full search.",
- "last_checked_all": "2026-11-21T04:15:00Z",
- "_note_not_downloaded": "Files with 'NOT downloaded' notes are recorded as seen but were never fetched; retry them if a larger download route exists."
+  "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..008 (REQ-005..008 added 2026-11-20 batch 5). Batch 6 (2026-11-20 05:20Z): 7 new files + RESULT.md revision in REQ-005; nothing else new (154 files, 2 pages). Batch 7 (2026-11-20 06:20Z): 9 new files + RESULT.md revision in REQ-008; nothing else new (169 items incl. 8 folders, 3 pages). Batch 8 (2026-11-20 06:45Z): 2 new files + RESULT.md revision in REQ-008; new REQ-009 folder (RESULT.md only); new REQ-010 folder empty. Search: created or modified after 05:30Z under results, plus listing of the new folders. Batch 9 (2026-11-20 07:20Z): 5 new files in REQ-010; new NOTE-pcbway-review-status folder (RESULT.md only). Search: created or modified after 06:30Z under results (6 files + 2 folders). Batch 10 (2026-11-20 14:20Z): 3 new files + RESULT.md revision (07:22Z) in REQ-008; new REQ-012 folder (RESULT.md only). Only the five named file ids were fetched; no full search of results this batch. Batch 11 (2026-11-20 15:15Z): new REQ-013 folder (22 files + RESULT.md) and REQ-014 folder (RESULT.md only); only the named file ids plus a listing of these two folders; no full search of results this batch. Batch 12 (2026-11-20 16:15Z): 3 new files in REQ-014 (S-M3-0ZI STEP + drawing, RESULT.md new id) and 4 in REQ-013 (RESULT.md new id + 3 PDFs); only the named file ids fetched; no folder listing or full search. BTT ADXL345 V2.0 STEP fetched from GitHub master: byte-identical to the instinct_REQ-003 zip content, not re-staged. Batch 14 (2026-11-20 18:15Z): new REQ-015 folder (Molex + Phoenix STEP, RESULT.md) and REQ-013 RESULT.md new id (17:58Z); only the named file ids fetched; no folder listing or full search. Batch 15 (2026-11-20 19:15Z): 7 new files + RESULT.md revision (18:53Z) in REQ-015 (JST XH STEP x6 + SXH contact PDF); new REQ-016 folder (RESULT.md + 3 PDFs, NTC table a byte-duplicate); only the named file ids fetched; no folder listing or full search. Batch 16 (2026-11-20 23:15Z): new REQ-017 folder (RESULT.md + 3 STEP + 3 PDFs) and new REQ-018 folder (interim RESULT.md only); only the named file ids fetched; no folder listing or full search. Batch 17 (2026-11-21 00:15Z): REQ-018 RESULT.md revision (23:49Z) + 10 new files (Prusament spool STEP zip, E3D Roto reference duplicate, 4 McMaster push-to-connect STEP + drawing); REQ-015 RESULT.md revision (00:12Z); only the named file ids fetched; no folder listing or full search. Batch 18 (2026-11-21 01:15Z): new folder REQ-019-m5-spacer (5 files: RESULT, 2 STEP, 2 PDF) staged in instinct_REQ-019. Batch 19 (2026-11-21 02:15Z): new folder REQ-020-spool-hardware (9 files: RESULT, 4 STEP, 4 PDF) staged in instinct_REQ-020; only the named file ids fetched; no folder listing or full search. Batch 20 (2026-11-21 03:15Z): REQ-020 RESULT.md revision (02:38Z, new id 1YYSNmXk...) + CLBSS28-10 STEP and catalog PDF; staged in instinct_REQ-020 and vendor_docs; only the named file ids fetched; no folder listing or full search. Batch 21 (2026-11-21 04:15Z): new folder REQ-021-safety-chain-and-dowels (14 files: RESULT, 4 STEP, 9 PDF) staged in instinct_REQ-021 and vendor_docs; REQ-018 RESULT.md revision (same id 1Xd6q51Q..., SKF update) staged in instinct_REQ-018; only the named file ids fetched; no folder listing or full search.",
+  "last_checked_all": "2026-11-21T06:13:00Z",
+  "_note_not_downloaded": "Files with 'NOT downloaded' notes are recorded as seen but were never fetched; retry them if a larger download route exists."
 }
