@@ -1,7 +1,7 @@
 ISO-10303-21;
 HEADER;
 FILE_DESCRIPTION(('Open CASCADE Model'),'2;1');
-FILE_NAME('cam_overview_mount','2026-11-21T04:20:02',('Author'),(
+FILE_NAME('cam_overview_mount','2026-11-21T06:34:16',('Author'),(
     'Open CASCADE'),'Open CASCADE STEP processor 8.0','build123d',
   'Unknown');
 FILE_SCHEMA(('AUTOMOTIVE_DESIGN { 1 0 10303 214 1 1 1 1 }'));
@@ -1220,7 +1220,7 @@ SHAPE_REPRESENTATION_RELATIONSHIP() );
 #1034 = ITEM_DEFINED_TRANSFORMATION('','',#11,#15);
 #1035 = PRODUCT_DEFINITION_SHAPE('Placement','Placement of an item',
   #1036);
-#1036 = NEXT_ASSEMBLY_USAGE_OCCURRENCE('43','cam_overview_mount','',#5,
+#1036 = NEXT_ASSEMBLY_USAGE_OCCURRENCE('44','cam_overview_mount','',#5,
   #27,$);
 #1037 = PRODUCT_RELATED_PRODUCT_CATEGORY('part',$,(#29));
 ENDSEC;

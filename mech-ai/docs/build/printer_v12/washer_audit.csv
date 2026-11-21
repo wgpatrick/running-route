@@ -14,6 +14,8 @@ tool_screw_0,SHCS-M3x6,screw head,tool_plate,sheet,al6061,3.0,1.0,on thin alumin
 tool_screw_1,SHCS-M3x6,screw head,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
 tool_screw_2,SHCS-M3x6,screw head,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
 tool_screw_3,SHCS-M3x6,screw head,tool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+estop_bracket_screw_0,SHCS-M5x8,screw head,estop_bracket,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
+estop_bracket_screw_1,SHCS-M5x8,screw head,estop_bracket,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
 psu_screw_0,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
 psu_screw_1,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
 psu_screw_2,SHCS-M4x6,screw head,electronics_tray,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False
@@ -32,3 +34,4 @@ foot_left_f_nut,NUT-M5-DIN934,nut,frame_bot_left,extrusion,al6061,19.8,0.33,on a
 foot_left_b_nut,NUT-M5-DIN934,nut,frame_bot_left,extrusion,al6061,19.8,0.33,on a slot or oversize hole (only 33% of the bearing ring has material under it),False
 foot_right_f_nut,NUT-M5-DIN934,nut,frame_bot_right,extrusion,al6061,19.8,0.33,on a slot or oversize hole (only 33% of the bearing ring has material under it),False
 foot_right_b_nut,NUT-M5-DIN934,nut,frame_bot_right,extrusion,al6061,19.8,0.33,on a slot or oversize hole (only 33% of the bearing ring has material under it),False
+spool_axle_nut,NUT-M8,nut,spool_plate,sheet,al6061,3.0,1.0,on thin aluminium (3.0 mm al6061),False

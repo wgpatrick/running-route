@@ -1,37 +1,37 @@
 {
  "design": "printer_v12",
- "design_md5": "ddbc1d9b2fc8c7acd9200a8153176ba7",
- "report_md5": "d9d11a04a1238e83e065de2f9e3dc304",
- "report_time": "2026-11-21 01:49:36",
+ "design_md5": "03103a85c92cc28587e7b2f674ea9ec8",
+ "report_md5": "6f02684f79985eed7e6f6cadce45ba8b",
+ "report_time": "2026-11-21 06:17:18",
  "stale": [
   "the report is not a pass (errors present)"
  ],
  "warnings": [],
  "recon": {
-  "components": 884,
-  "purchased_components": 836,
-  "custom_components": 48,
-  "bom_lines": 139,
-  "report_skus": 139,
-  "qty_modelled": 836,
-  "qty_bom_only": 283,
-  "cost": 2172.23,
-  "report_cost": 2172.23,
+  "components": 904,
+  "purchased_components": 852,
+  "custom_components": 52,
+  "bom_lines": 141,
+  "report_skus": 141,
+  "qty_modelled": 852,
+  "qty_bom_only": 284,
+  "cost": 2607.98,
+  "report_cost": 2607.98,
   "sku_quantities_equal_report": true,
   "modelled_equals_components": true
  },
  "custom_by_process": {
-  "sheet": 33,
-  "machined": 6,
+  "sheet": 34,
+  "machined": 9,
   "printed": 9
  },
  "standins": [],
  "open_items": {
   "A": 12,
-  "B": 171,
-  "C": 20
+  "B": 178,
+  "C": 21
  },
- "washer_audit_rows": 33,
+ "washer_audit_rows": 36,
  "commissioning_steps": 37,
  "dxf_cut_length_check": {
   "carriage_plate_left": {
@@ -75,7 +75,7 @@
    "report_mm": null
   },
   "bed_plate": {
-   "written_mm": 1041.0,
+   "written_mm": 1076.8,
    "report_mm": null
   },
   "z_motor_plate": {
@@ -152,6 +152,10 @@
   },
   "y_endstop_mount": {
    "written_mm": 192.2,
+   "report_mm": null
+  },
+  "estop_bracket": {
+   "written_mm": 322.9,
    "report_mm": null
   },
   "electronics_tray": {

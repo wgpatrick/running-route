@@ -1,7 +1,7 @@
 ISO-10303-21;
 HEADER;
 FILE_DESCRIPTION(('Open CASCADE Model'),'2;1');
-FILE_NAME('electronics_tray','2026-11-21T04:19:56',('Author'),(
+FILE_NAME('electronics_tray','2026-11-21T06:34:12',('Author'),(
     'Open CASCADE'),'Open CASCADE STEP processor 8.0','build123d',
   'Unknown');
 FILE_SCHEMA(('AUTOMOTIVE_DESIGN { 1 0 10303 214 1 1 1 1 }'));
@@ -4303,7 +4303,7 @@ SHAPE_REPRESENTATION_RELATIONSHIP() );
 #3658 = ITEM_DEFINED_TRANSFORMATION('','',#11,#15);
 #3659 = PRODUCT_DEFINITION_SHAPE('Placement','Placement of an item',
   #3660);
-#3660 = NEXT_ASSEMBLY_USAGE_OCCURRENCE('40','electronics_tray','',#5,#27
+#3660 = NEXT_ASSEMBLY_USAGE_OCCURRENCE('41','electronics_tray','',#5,#27
   ,$);
 #3661 = PRODUCT_RELATED_PRODUCT_CATEGORY('part',$,(#29));
 ENDSEC;

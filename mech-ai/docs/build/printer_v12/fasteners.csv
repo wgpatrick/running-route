@@ -15,8 +15,8 @@ SHCS-M3x30,cap screw ISO 4762,M3,30,2,0,2,3,2.5,91290A171,confirmed by the deliv
 SHCS-M3x45,cap screw ISO 4762,M3,45,2,0,2,3,2.5,91290A079,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
 SHCS-M3x50,cap screw ISO 4762,M3,50,2,0,2,3,2.5,91290A137,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
 SHCS-M4x6,cap screw ISO 4762,M4,6,4,0,4,5,3,91290A139,"confirmed: McMaster's drawing and STEP of this number collected for the owner (Instinct, 2026-11-20; vendor_cad/staging/instinct_REQ-00x/MANIFEST.md)"
-SHCS-M5x6,cap screw ISO 4762,M5,6,1,0,1,2,4,91290A221,"confirmed: McMaster's drawing and STEP of this number collected for the owner (Instinct, 2026-11-20; vendor_cad/staging/instinct_REQ-00x/MANIFEST.md)"
-SHCS-M5x8,cap screw ISO 4762,M5,8,36,0,36,40,4,91290A222,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+SHCS-M5x6,cap screw ISO 4762,M5,6,3,0,3,4,4,91290A221,"confirmed: McMaster's drawing and STEP of this number collected for the owner (Instinct, 2026-11-20; vendor_cad/staging/instinct_REQ-00x/MANIFEST.md)"
+SHCS-M5x8,cap screw ISO 4762,M5,8,38,0,38,42,4,91290A222,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
 SHCS-M5x12,cap screw ISO 4762,M5,12,6,0,6,7,4,91290A228,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
 SHCS-M5x16,cap screw ISO 4762,M5,16,6,0,6,7,4,91290A232,"confirmed: McMaster's drawing and STEP of this number collected for the owner (Instinct, 2026-11-20; vendor_cad/staging/instinct_REQ-00x/MANIFEST.md)"
 SHCS-M5x30,cap screw ISO 4762,M5,30,4,0,4,5,4,91290A194,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
@@ -36,5 +36,5 @@ WASHER-M3,star washer,M3,,79,0,79,87,,91166A210,confirmed on McMaster's product 
 WASHER-M3-LARGE,star washer,M3,,20,0,20,22,,,
 WASHER-M4,star washer,M4,,6,0,6,7,,91166A230,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
 WASHER-M4-LARGE,star washer,M4,,3,0,3,4,,,
-WASHER-M5,star washer,M5,,67,0,67,74,,91166A240,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
+WASHER-M5,star washer,M5,,69,0,69,76,,91166A240,confirmed on McMaster's product page (supplier CAD batch 2026-11-18)
 WASHER-M5-SERRATED,star washer,M5,,1,0,1,2,,91106A126,"confirmed: McMaster's drawing and STEP of this number collected for the owner (Instinct, 2026-11-20; vendor_cad/staging/instinct_REQ-00x/MANIFEST.md)"

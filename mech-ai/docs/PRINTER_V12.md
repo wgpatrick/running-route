@@ -9,8 +9,8 @@ the v12 plan (HIWIN rails, 9 mm belts, stock bed heater, the full electronics ba
 "What changed"). Every part carries a build stage: **1** frame, electronics bay, bed and Z; **2** gantry and toolhead; **3**
 feedback (cameras, filament sensor, lights, laser, accelerometer).
 
-**Verify (final code, affected tier, finished 2026-11-21 04:02 UTC; earlier full runs in "What was run"): FAILS on the
-purchased-part rule only: 10 errors (7 placeholder SKUs, 13 parts), 171 warnings.** The other 12 verifiers pass; **45 of 45
+**Verify (final code, affected tier, finished 2026-11-21 06:17 UTC; earlier full runs in "What was run"): FAILS on the
+purchased-part rule only: 7 errors (6 placeholder SKUs, 10 parts), 174 warnings.** The other 12 verifiers pass; **45 of 45
 requirements met.** Report: `out/printer_v12/report.json`.
 
 ## Build 1 stage-1 readiness
@@ -40,7 +40,7 @@ Cost and lead times per stage: "Sourcing and the Build 1 schedule" below.
 | X travel | **186.6 mm** (189.6 mechanical) on a stock HIWIN MGNR12R **245 mm** rail (5 mm of rail beyond the block at each end). v11: 191.6 on a 250 mm rail. |
 | Y travel | **208.1 mm** (v11: 214.5): the owner's 30T idlers (MISUMI AGTFW30) are 3.2 mm larger in radius; the Y idlers sit 0.7 mm further forward than v11's formula and the rear lead screw 0.9 mm forward (envelope 420 mm kept); front over-travel is 0.5 mm (soft limit) instead of 1.5. |
 | Z travel | 180 mm + 1.65 mm over-travel. HIWIN MGNR12R 295 mm Z rails. |
-| Size | Machine **388 x 419.5 x 475.9 mm** (inside the owner's 420 x 420 x 480). With the owner's later requests, the rear spool holder and the NFJN5-30 feet: **389 x 510.4 x 511.4 mm** (the design's envelope check is set to 420 x 515 x 515; a requirement holds the machine itself to 420 x 420 x 480). |
+| Size | Machine **388 x 419.5 x 475.9 mm** (inside the owner's 420 x 420 x 480). With the owner's later add-ons (rear spool holder, NFJN5-30 feet, the e-stop 35 mm in front of the front-left post, the safety relay behind the back wall): **406.9 x 539.4 x 511.4 mm** (the envelope check is set to 425 x 545 x 515; a requirement holds the machine without the add-ons to 420 x 420 x 480). |
 | Print area | **186.6 x 208.1 mm** (388 cm2; v11: 411). On a 220 x 220 sheet: 80.2 % of it. |
 | Bed | **Hydra Research SQ1451144** 210 x 210 mm 24 V 200 W pad (owner, 2026-11-20; NPH drawing NPHSF365) under a **240 x 240 x 6.35 mm MIC-6** plate (v11: 232): the three studs moved out to 112 mm so their washers clear the pad by 2.5 mm; the pad covers 100 % of the print area. Cantherm CS712025Y thermostat in the rear-right corner (1.1 mm off the pad's corner). |
 | Bed limits | (a) 0.131 mm of 0.3; **(b) after the START_PRINT soak (3 carrier time constants, 30 min): 0.0026 mm** of 0.1 (cold-probed bound 0.085 mm; v11 failed (b) at 0.101); (c) 0.031 mm of 0.2. |
@@ -48,7 +48,7 @@ Cost and lead times per stage: "Sourcing and the Build 1 schedule" below.
 | Probe | **BTT Eddy Duo** on USB, coil face 2.5 mm above the tip, on a printed PETG holder on a one-bend 5052 L; no metal in its 5 mm coil band; temperature 55 degC nominal (60 degC rating), 67 degC in a hot case (open question). |
 | Toolhead (moving in X) | **0.401 kg** (target < 0.45). |
 | Electronics | Raspberry Pi 5 (+ active cooler, 27 W PSU) as host; **XP Power LBA350PS24** 24 V 350 W supply (owner, 2026-11-21: a drop-in for the out-of-stock LRS-350-24; universal input, no selector; inrush 30 / 60 A at 115 / 230 VAC); mains through a Schurter DD11 inlet with a 4301.1405 fuse drawer (T8A), a Finder 22.32 contactor switched by a Phoenix PLC-RSC relay driven by a PN2222A from Pi GPIO26 (Moonraker power device); Octopus V1.1 with TMC2209 sticks; DIN-rail bay with covers; 16 AWG earth star. Firmware: Klipper with the Eddy, ADXL345, SFS V2, LED and laser pins, loaded by klippy offline with the RP2040 and Linux host-MCU dictionaries. |
-| Mass / BOM cost | **18.74 kg / $2,353.93** with the full spool and the safety-chain placeholders (BOM estimate in the verify; v11: 13.82 kg / $1,110.99). Live sourcing: see below. The increase is the electronics and feedback hardware (Pi 5, cameras, laser, Eddy, contactor bay), HIWIN rails, MISUMI idlers, feet and filament supply. |
+| Mass / BOM cost | **19.18 kg / $2,607.98** with the full spool and the safety chain (BOM estimate in the verify; v11: 13.82 kg / $1,110.99). Live sourcing: see below. The increase is the electronics and feedback hardware (Pi 5, cameras, laser, Eddy, contactor bay), HIWIN rails, MISUMI idlers, feet and filament supply. |
 | Score (on the design before feet / spool) | resonance X 72.8 Hz, Y 58.7 Hz; acceleration an owner would run about 6,000 mm/s2; frame stiffness X 1,634 / Y 2,007 N/mm; toolhead 0.401 kg; assembly 166 min, 268 fasteners. Tune: X shaper EI 90.4 Hz, Y MZV 58.6 Hz, pressure advance 0.042, mesh RMS 0.018 mm. Firmware-in-the-loop print of the standard bracket on real Klipper: 3,891 s, nozzle within 0.060 mm of the path, no collision in 4,074 poses, one corner-bulge warning. |
 
 ## What changed and why
@@ -168,14 +168,13 @@ JST XH housings and headers (JST's STEPs; the SXH contact re-made from the datas
 
 | Stage | Purchased lines | Purchased $ (build of 1) | Earliest finish | Gated by |
 |---|---|---|---|---|
-| 1 frame, bay, bed, Z | 91 | $2,391.06 | **138 business days** (11 with an in-stock supply) | the Mean Well LRS-350-24 (no stock); otherwise the printed mains covers |
-| 2 gantry, toolhead | 29 | $596.22 | 11 business days | the printed Eddy holder and duct |
+| 1 frame, bay, bed, Z, safety chain | 93 | $2,657.46 | 11 business days (order 2026-11-23, parts by 2026-12-08) | the printed mains covers |
+| 2 gantry, toolhead | 29 | $597.12 | 11 business days | the printed Eddy holder and duct |
 | 3 feedback, filament supply | 19 | $336.01 | 11 business days | the printed camera / SFS mounts and LED clips |
 
-Purchased total $3,323.29 for one machine (old verify estimate $2,353.92); fabricated parts carry no live price (SendCutSend / Xometry / Hubs quotes are not automated: about $24 of design floors).
+Purchased total $3,590.59 for one machine (verify estimate $2,607.97); fabricated parts carry no live price (SendCutSend / Xometry / Hubs quotes are not automated: about $24 of design floors).
 The purchased total is inflated by about $640: the 16 AWG silicone wire is priced as two 500 ft spools (the tool takes the
-smallest offer it found). **The Mean Well LRS-350-24 has no distributor stock (Mouser 0, 189-day lead) and sets a 138-business-day
-critical path.** Alternatives checked live the same day (`--list`, all universal input, no 115/230 switch needed):
+smallest offer it found). The Mean Well LRS-350-24 had no distributor stock (Mouser 0, 189-day lead: a 138-business-day critical path); **the owner picked the XP Power LBA350PS24**, now drawn. Alternatives checked live the same day (`--list`):
 
 | Supply | Best offer | Stock | Price | Note |
 |---|---|---|---|---|
@@ -206,7 +205,7 @@ critical path.** Alternatives checked live the same day (`--list`, all universal
 ## What was run (2026-11-20 / 21)
 - Full verifies (`--tier full --no-render`) on each major state: 20:57 (11 errors, all DG-07), then after the feet / spool /
   Octopus / JST changes (17 errors, DG-07 only, 01:49), then **affected-tier verifies after each later owner change, the last on
-  the final code: FAILS on the purchased-part rule only: 10 errors (7 placeholder SKUs, 13 parts), 171 warnings; all other 12 verifiers pass; 45 of 45 requirements met (affected tier, finished 2026-11-21 04:02 UTC)**. Memory: two runs died (signal 9) when a second job ran beside a verify and when the full
+  the final code: FAILS on the purchased-part rule only: 7 errors (6 placeholder SKUs, 10 parts), 174 warnings; all other 12 verifiers pass; 45 of 45 requirements met (affected tier, finished 2026-11-21 06:17 UTC)**. Memory: two runs died (signal 9) when a second job ran beside a verify and when the full
   Octopus STEP was loaded; both fixed (one heavy job at a time; the Octopus display model reduced to BTT's 59 large solids).
 - `score --assembly`, `tune`, and the firmware-in-the-loop print (`out/printer_v12/fil/bracket/`) on the design before the feet
   and spool were added (the toolhead and gantry are unchanged since).

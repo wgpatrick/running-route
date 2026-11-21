@@ -1,8 +1,8 @@
 wire,from,to,awg,mm2,conductors,insulation,length_mm,connector_from,connector_to,current_a,via,note,ampacity_a,protected_by
-mains L inlet-contactor,inlet.L,psu_relay.LIN,18,0.823,1,pvc105,100.0,faston-4.8,screw-box,5.19,,,13.71,inlet fuse T8A
-mains L contactor-supply,psu_relay.LOT,psu.L,18,0.823,1,pvc105,280.0,screw-box,screw-psu,5.19,mains,,10.97,inlet fuse T8A
-mains N inlet-contactor,inlet.N,psu_relay.NIN,18,0.823,1,pvc105,110.0,faston-4.8,screw-box,5.19,,,13.71,inlet fuse T8A
-mains N contactor-supply,psu_relay.NOT,psu.N,18,0.823,1,pvc105,290.0,screw-box,screw-psu,5.19,mains,,10.97,inlet fuse T8A
+mains L inlet-contactor,inlet.L,psu_relay.LIN,18,0.823,1,pvc105,100.0,faston-4.8,screw-box,3.44,,,13.71,inlet fuse T8A
+mains L contactor-supply,psu_relay.LOT,psu.L,18,0.823,1,pvc105,280.0,screw-box,screw-psu,3.44,mains,,10.97,inlet fuse T8A
+mains N inlet-contactor,inlet.N,psu_relay.NIN,18,0.823,1,pvc105,110.0,faston-4.8,screw-box,3.44,,,13.71,inlet fuse T8A
+mains N contactor-supply,psu_relay.NOT,psu.N,18,0.823,1,pvc105,290.0,screw-box,screw-psu,3.44,mains,,10.97,inlet fuse T8A
 contactor control,host.PWR,psu_relay.ctrl,22,0.326,2,pvc,310.0,dupont,screw-box,0.001,,"Pi GPIO26 -> 1 kOhm -> PN2222A base; collector to the Phoenix PLC-RSC-5DC/21 coil (5 V from the Pi's 5 V pin, 38 mA); the Phoenix contact switches the Finder's 120 V coil from the inlet's L after its fuse (A1) and N (A2). Moonraker [power printer] type gpio, off_when_shutdown True, locked_while_printing True. The coil circuit itself is mains: 18 AWG in the mains loom; this 2-core lead is the 5 V control side",6.42,board fuse not specified A (shared; no fuse per branch)
 earth to frame,inlet.PE,frame_earth.pe,16,1.309,1,pvc105,150.0,faston-4.8,ring-M5,0.0,,,18.22,protective earth: not fused
 earth stud to supply,frame_earth.pe,psu.FG,16,1.309,1,pvc105,330.0,ring-M5,screw-psu,0.0,mains,,14.58,protective earth: not fused
