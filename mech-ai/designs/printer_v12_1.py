@@ -186,6 +186,32 @@ for _k, _deps in CHANGE_DEPENDS.items():
     if CHANGES[_k] and not all(CHANGES[d_] for d_ in _deps):
         raise ValueError(f"change {_k} needs {_deps}")
 CH = lambda k: CHANGES[k]
+CHANGE_INFO = {     # for the review page's Changes tab (tools/build_change.py)
+    "estop-mount": {"title": "E-stop re-made faithfully, on a stiffer bent L-bracket",
+                    "summary": "The OMRON A22E-M-02 model is re-made from its data sheet with the switch block behind the panel (it passed "
+                               "through the bracket before, hidden by an allowed overlap, now removed). The flat plate is replaced by a "
+                               "bent 5052 L round the front-left post's corner, screwed into two slots (front and right side).",
+                    "threads": ["2f0e34d2-c001-48b0-b638-0124835243d0"]},
+    "zmotor-holes": {"title": "Z motors: M3 mounting threads drawn",
+                     "summary": "The four M3 x 4.5 threads on the 31 mm square (drawing A4003) are cut into each Z motor's solid; "
+                                "nothing else changes.",
+                     "threads": ["2c8e3d4c-9547-47ae-bfed-9c73c51af331"]},
+    "znut-direct": {"title": "Z nuts bolted direct to the plate",
+                    "summary": "Each POM nut's flange is bolted to its nut plate with four M4 through its own holes into steel thread "
+                               "inserts. The floating keeper, spacers, keeper bolts and the anti-rotation pin are removed; the screw, "
+                               "free at its top, takes small misalignment.",
+                    "threads": ["10eab134-e341-4786-bae2-d085e018c34d"]},
+    "carriage-plate-rigid": {"title": "Rigid carriage brackets (no flexure)",
+                             "summary": "The 1.6 mm flexure plates become rigid brackets cut from 1/4 in 6061 angle, the guide block "
+                                        "raised to sit right under the square (rails raised with it). A flat 1/4 in plate cannot fit: "
+                                        "block face and square face are 1.6 mm apart. Rails aligned at assembly from a datum rail.",
+                             "threads": ["13a834f6-56df-4aa7-aa8e-9cdb9fec30e1", "9f8b0379-a448-4333-a410-5e3f42595fe6"]},
+    "rear-z-inside": {"title": "Rear Z screw inside the frame, like the fronts",
+                      "summary": "The rear screw moves inside the back wall (y 154.5, 9.1 mm from the square like the fronts), with "
+                                 "the fronts' short direct-bolted nut plate and its motor on posts on the bottom back rail. Needs "
+                                 "znut-direct.",
+                      "threads": ["cc37dd59-6fa9-4d22-91dc-1ba874609e41"]},
+}
 _on_ids = [k for k in CHANGE_IDS if CHANGES[k]]
 DESIGN_NAME = ("printer_v12_1" if len(_on_ids) == len(CHANGE_IDS) else "printer_v12_1-base" if not _on_ids
                else "printer_v12_1+" + "+".join(_on_ids))
