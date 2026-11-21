@@ -551,3 +551,6 @@ Steps 1-5 fit inside the printer's ordering and lead-time window (print service 
   generalized (parametric, standard coupling, documented capabilities and limits) and kept in a reusable tool library; new
   jobs check the library first. Success needs at least one tool reused on a job it was not first built for; tool reuse
   (jobs served per tool) is a loop metric.
+- Inspection method left open (owner comment, 2026-11-21): vision/scanning is the ideal, but contact tools (digital
+  calipers, pin gauges, indicators) in an arm-loaded fixture, or by hand at first, may be needed; the arm presents each part
+  to whichever method a dimension needs. See docs/INSPECTION_STRATEGY.md.
