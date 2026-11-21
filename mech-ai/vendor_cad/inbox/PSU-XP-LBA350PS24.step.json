@@ -1,0 +1,3 @@
+{"rot": [0, 0, 180], "pos": [107.234, 11.822, -192.894],
+ "source": "XP Power's STEP of the LBA350 series (REQ-021), unchanged",
+ "note": "turned 180 degrees about Z so its terminal strip is at -X like the LRS-350 it replaces (strip 9.9 mm off centre towards -Y after the turn, as the LRS's 9.5), base on Z=0, centred"}

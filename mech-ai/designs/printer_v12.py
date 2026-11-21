@@ -140,7 +140,7 @@ from mechloop.parts.hardware import WASHER, spacer_round
 from mechloop.parts.probes import add_probe_nuts, probe_omron_e2e
 from mechloop.parts.toolhead import extruder_roto, hotend_revo
 from mechloop.shops import assign
-from mechloop.parts.batch12 import (tnut_hntp5, dowel_pin_3x8_placeholder, shaft_misumi_sfal8, spacer_mcmaster_94669a079, switch_omron_d2f_01l, foot_misumi_nfjn5_30, spool_1kg_placeholder, spacer_tube_m8_placeholder, coupler_mcmaster_2333n214, add_bracket_misumi, adxl345_btt, cam_arducam_b0454, cob_led, contactor_finder_2232, din_endstop_wago,
+from mechloop.parts.batch12 import (tnut_hntp5, psu_xp_lba350ps24, estop_omron_a22e_m_02, safety_relay_omron_g9se_201, dowel_pin_3x8_placeholder, shaft_misumi_sfal8, spacer_mcmaster_94669a079, switch_omron_d2f_01l, foot_misumi_nfjn5_30, spool_1kg_placeholder, spacer_tube_m8_placeholder, coupler_mcmaster_2333n214, add_bracket_misumi, adxl345_btt, cam_arducam_b0454, cob_led, contactor_finder_2232, din_endstop_wago,
                                     din_rail_wago, heater_hydra_sq1451144, hiwin_mgn12_rail, hiwin_mgn12h_block, laser_vlm520, lens_cil062,
                                     leadscrew_motor_a4003, leadscrew_nut_pom_a4003, leadscrew_screw_a4003, picam3, pi5_host, probe_eddy_duo,
                                     relay_phoenix_1119897, sfs_v2, spacer_harwin, thermostat_cs7,
@@ -153,13 +153,13 @@ PAYLOAD_KG = 1.0
 V_XY, A_XY = 250.0, 4000.0
 V_Z, A_Z = 12.0, 200.0
 MARGIN = 3.0
-ENVELOPE = (420.0, 515.0, 515.0)    # v12: with the owner's rear spool (Y) and levelling feet (Z), 2026-11-20; the machine without them is held to 420 x 420 x 480 by a requirement
+ENVELOPE = (425.0, 545.0, 515.0)    # v12: with the owner's rear spool (Y) and levelling feet (Z), 2026-11-20; the machine without them is held to 420 x 420 x 480 by a requirement
 MAX_TOOLHEAD_KG, MIN_BELT_IN_PLANE = 0.45, 0.98   # v12 (owner, Q9): toolhead under 0.45 kg with the new sensors
 
 # ---- electrical choices -----------------------------------------------------------
 BED_W = 200.0          # v12: the Hydra SQ1451144 pad, 200 W (8.3 A at 24 V) on the Octopus HB output, 10 A blade fuse          # 180 W pad on the board's own bed output (7.5 A of 8 A allowed), as v7 / v8
 BED_MAX_C = 80.0       # v11 (owner): PLA and PETG only, no enclosure, max bed 80 degC; the magnetic base is to be bought rated 120 degC continuous
-PSU_MODEL = "LRS-350-24"
+PSU_MODEL = "LRS-350-24"           # v12: the drawn supply is now XP Power LBA350PS24 (same case and holes; LRS out of stock)
 BED_AWG, BED_INS = 16, "silicone"
 RUN_CURRENT = {"x": 0.28, "y": 1.20, "z": 0.80, "extruder": 0.40}   # z: per motor, three motors (rated 1.68 A)
 BOARD_XY = (94.5, 5.0)  # BTT Octopus V1.1, turned so its motor connectors face +X (the right-hand rail)
@@ -1922,6 +1922,46 @@ def endstop_carrier_local():
     return b
 
 
+ESTOP_XZ = (-190.0, 300.0)      # v12 (owner): the e-stop beside the front-left post, at hand height, head facing the front
+
+
+def add_safety_chain(d):
+    """v12 (owner, 2026-11-21): OMRON A22E-M-02 e-stop on a flat 6061 bracket on the front-left post's FRONT face (left of the post,
+    head forward; its body runs back outside the frame's left side) and the OMRON G9SE-201 safety relay (111.6 deep: it cannot stand
+    in the bay under the carrier, which comes down to z 142) on a WAGO DIN rail across the back wall's rear faces (post_lb, upright_rear),
+    outside the frame. Both bracket and rail through the posts' T-slots (MISUMI HNTP5-5), no drilling. Loop (series, manual reset):
+    e-stop NC -> G9SE inputs; G9SE safety outputs in series with the Finder contactor's coil (after the Phoenix PLC-RSC contact);
+    two spare input pairs: door interlock (future), smoke / heat detector (future)."""
+    xe, ze = ESTOP_XZ
+    yf = FRONT_Y - 10.0                                     # the front face of the front posts
+    bp = bx(-212.0, -152.0, yf - G32, yf, ze - 25.0, ze + 25.0)
+    bp -= Pos(xe, yf - G32 / 2, ze) * ycyl(22.3 / 2, G32)
+    for zb in (ze - 13.0, ze + 13.0):
+        bp -= Pos(-160.0, yf - G32 / 2, zb) * ycyl(clearance_hole("M5") / 2, G32)
+    sheet(d, "estop_bracket", bp, AL, description="v12: e-stop bracket (6061 .125, SendCutSend) on the front-left post's front face")
+    for i, zb in enumerate((ze - 13.0, ze + 13.0)):
+        add_screw(d, f"estop_bracket_screw_{i}", "M5", 8, at=(-160.0, yf - G32, zb), direction=(0, 1, 0), threads_into="post_lf", tnut=True,
+                  tnut_stock=tnut_hntp5(), clamps=("estop_bracket",))
+    place(d, "estop", estop_omron_a22e_m_02(), Location(Plane(origin=(xe, yf - G32, ze), z_dir=(0, -1, 0))))
+    d.allow_overlap("estop", "estop_bracket")
+    d.join("estop", "estop_bracket", "held by its own ring nut through the 22.3 mm hole")
+    # safety relay: a horizontal WAGO rail across the back wall's rear faces (post_lb at x -160, upright_rear at x 65), at z 345: above
+    # the rear nut plate's highest reach through the back wall (z 325) and under the top back rail
+    yr = FY / 2
+    rail_l, rail_xc, rail_z = 246.0, -49.5, 345.0          # ends 1.5 mm short of the spool plate; screws in the rail's end slots
+    place(d, "sr_din_rail", din_rail_wago(rail_l), Location(Plane(origin=(rail_xc, yr, rail_z), x_dir=(1, 0, 0), z_dir=(0, 1, 0))))
+    for i, (xb_, post_) in enumerate(((-160.0, "post_lb"), (65.0, "upright_rear"))):
+        add_screw(d, f"sr_din_rail_screw_{i}", "M5", 6, at=(xb_, yr + 1.0, rail_z), direction=(0, -1, 0), threads_into=post_, tnut=True,
+                  tnut_stock=tnut_hntp5(), clamps=("sr_din_rail",), washer=True)
+    xsr = -100.0
+    place(d, "safety_relay", safety_relay_omron_g9se_201(), Location(Plane(origin=(xsr, yr + 7.5, rail_z), x_dir=(1, 0, 0), z_dir=(0, 1, 0))))
+    d.allow_overlap("safety_relay", "sr_din_rail", max_volume=200.0)
+    d.join("safety_relay", "sr_din_rail", "snapped on the rail")
+    for k_, xs_ in enumerate((xsr - 8.75 - 5.0, xsr + 8.75 + 5.0)):
+        place(d, f"sr_din_end_{k_}", din_endstop_wago(), Location(Plane(origin=(xs_, yr + 7.5, rail_z), x_dir=(1, 0, 0), z_dir=(0, 1, 0))))
+        d.join(f"sr_din_end_{k_}", "sr_din_rail", "snapped on the rail")
+
+
 FOOT_SCREW_IN = 5.0     # v12: the NFJN5-30's screw reaches 5 mm into the bottom rail (into a drop-in T-nut; 0.5 mm off the slot floor)
 
 
@@ -1952,10 +1992,11 @@ def add_feet(d):
 
 def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
     add_feet(d)
+    add_safety_chain(d)
     # ================= electronics bay: tray across the bottom rails =============
     tray = Pos(0, (TRAY_Y0 + TRAY_Y1) / 2, 20 + T_TRAY / 2) * Box(FX, TRAY_Y1 - TRAY_Y0, T_TRAY)
     grp = ["electronics_tray"]
-    psu = place(d, "psu", psu_lrs(PSU_MODEL), Location((-28.0, -30.0, Z_TRAY), (0, 0, -90)))
+    psu = place(d, "psu", psu_xp_lba350ps24(), Location((-28.0, -30.0, Z_TRAY), (0, 0, -90)))     # owner (2026-11-21): XP Power LBA350PS24, a drop-in for the LRS-350-24
     # v8.2: BTT Octopus V1.1 (eight drivers: X, Y, Y1, three Z, E, one spare) beside the supply, its motor connectors along
     # the right-hand edge; the Pi Zero 2 W in front of it, where the SKR Mini sat
     board = place(d, "control_board", octopus_v11(), Location((BOARD_XY[0], BOARD_XY[1], Z_TRAY + 6.0), (0, 0, -90)))
@@ -2645,12 +2686,12 @@ def add_requirements(d, zs):
     def machine_envelope(dd, m):
         import numpy as np
         from mechloop.geom import bbox_of
-        lo, hi = bbox_of([c.shape for c in dd.components if not c.name.startswith(("spool", "ptfe_coupler_sfs", "foot_"))])
+        lo, hi = bbox_of([c.shape for c in dd.components if not c.name.startswith(("spool", "ptfe_coupler_sfs", "foot_", "estop", "safety_relay", "sr_din"))])
         size = (hi - lo).round(1).tolist()
         allb = bbox_of([c.shape for c in dd.components])
         return all(a_ <= b_ + 1e-6 for a_, b_ in zip(size, (420.0, 420.0, 480.0))), (
-            f"machine without the spool holder and the feet: {size[0]:g} x {size[1]:g} x {size[2]:g} mm (owner's envelope 420 x 420 x 480); with the rear "
-            f"spool and the feet: {(allb[1] - allb[0]).round(1).tolist()} (owner's requests: spool at the rear, outside the enclosure's panel planes; NFJN5-30 feet, frame 35.5 mm above the floor)")
+            f"machine without the owner's add-ons (spool holder, feet, e-stop, the safety relay behind the back wall): {size[0]:g} x {size[1]:g} x {size[2]:g} mm (owner's envelope 420 x 420 x 480); with the rear "
+            f"add-ons (the e-stop's head 35 mm in front of the front-left post; the safety relay 112 mm deep behind the back wall, inside the spool's footprint): {(allb[1] - allb[0]).round(1).tolist()} (owner's requests: spool at the rear, outside the enclosure's panel planes; NFJN5-30 feet, frame 35.5 mm above the floor)")
     d.requirements.append(Requirement("the machine stays in the owner's 420 x 420 x 480 envelope; the rear spool holder and the feet are reported", machine_envelope))
 
     def ptfe_route(dd, m):
@@ -2718,17 +2759,26 @@ def add_requirements(d, zs):
     d.requirements.append(Requirement("v12 (owner): the print sheet slides out to the front and back again past nothing; three pins re-seat it", sheet_slide))
 
     def safety_chain(dd, m):
-        # v12 (owner): the hardwired loop in series with the Finder contactor's coil. Reported: the e-stop and safety relay are BOM
-        # placeholders this revision (no maker CAD in hand) and are placed in the bay with the supply change (v12.1)
-        return True, ("mains contactor coil (Finder 22.32) = Phoenix PLC-RSC relay (Pi GPIO26 via PN2222A, Moonraker power device) IN SERIES with "
-                      "the safety relay's output contacts (manual reset) whose input loop is: e-stop NC (latching, twist release) + a spare "
-                      "terminal pair for a door interlock (future) + a spare pair for a smoke / heat detector contact (future). The GPIO path can only "
-                      "drop the contactor; after an e-stop, power returns only through the safety relay's manual reset. Heater runaway when the Pi "
-                      "or Klipper hangs: the Octopus's MCU turns its heater outputs off by itself when the host stops refreshing them (Klipper's "
-                      "max_duration on heater pins) and shuts down; the bed also has its CS712025Y thermostat (120 degC). If the MCU itself hangs "
-                      "with a heater output on, or a MOSFET fails shorted, NOTHING automatic cuts the hotend (the Revo PTC self-limits around 420 degC "
-                      "in the model: not safe) until someone presses the e-stop, or the future smoke / heat contact opens the loop")
-    d.requirements.append(Requirement("reported: the hardwired safety chain (e-stop + safety relay in series with the contactor coil)", safety_chain))
+        # v12 (owner): the hardwired loop in series with the Finder contactor's coil, drawn: OMRON A22E-M-02 e-stop (2 NC) and OMRON
+        # G9SE-201 safety relay (2 NO, 5 A, manual reset). Checked here: both are in the model, real parts, and the relay's outputs carry
+        # the contactor coil's current with margin (the electrical verifier's own model still switches the coil from the Phoenix relay)
+        es, sr, k = dd.get("estop"), dd.get("safety_relay"), dd.get("psu_relay")
+        ok = es is not None and sr is not None and k is not None
+        coil_a = 0.05          # Finder 22.32 coil at 120 VAC: about 2.5 VA (Finder 22 series data sheet), well under 0.1 A
+        out_a = sr.ratings.get("output_a", 0.0) if sr is not None else 0.0
+        ok = ok and out_a >= 10 * coil_a
+        return ok, ("loop: mains L -> inlet fuse -> Phoenix PLC-RSC contact (Pi GPIO26 via PN2222A, Moonraker power device) -> G9SE-201 safety "
+                    f"outputs 13-14 and 23-24 in series (5 A each vs about {coil_a:g} A of coil) -> Finder 22.32 coil A1/A2. G9SE input loop: "
+                    "A22E-M-02 NC contacts (two channels) + spare pair 1: door interlock (future) + spare pair 2: smoke / heat detector "
+                    "(future); manual reset button on T33/T34. The GPIO path can only drop the contactor; after an e-stop, power returns "
+                    "only through the G9SE's manual reset. Heater runaway when the Pi or Klipper hangs: the Octopus's MCU turns its "
+                    "heater outputs off by itself when the host stops refreshing them (Klipper max_duration) and shuts down; the bed "
+                    "also has its CS712025Y thermostat (120 degC). If the MCU itself hangs with a heater on, or a MOSFET fails shorted, "
+                    "nothing automatic cuts the hotend (the Revo PTC self-limits near 420 degC in the model) until the e-stop is pressed "
+                    "or the future smoke / heat contact opens the loop. The e-stop is on the front-left post (head forward, 35 mm proud); "
+                    "the G9SE is outside the back wall (z 283-407, inside the spool's footprint): its 111.6 mm depth cannot stand in the "
+                    "bay under the carrier (which comes down to z 142)")
+    d.requirements.append(Requirement("v12 (owner): the hardwired safety chain: e-stop and safety relay drawn, the relay's outputs in series with the contactor coil", safety_chain))
     STANDINS = []
     d.requirements.append(Requirement("target: no purchased part is a stand-in where the catalogue has a real one", lambda dd: (
         sorted(px := [c.name for c in dd.components if c.cots and not c.meta.get("catalog")]) == STANDINS,
@@ -2840,8 +2890,8 @@ def add_v12_bom_lines(d):
     for sku, q, c, st, rp in BOM_V12:
         d.bom_extra(sku, q, c, real_part=rp, stage=st)
     # v12 (owner, 2026-11-21): hardwired safety chain. PLACEHOLDERS until a maker with CAD / datasheet is chosen (Instinct)
-    d.bom_extra("ESTOP-MUSHROOM-22MM-LATCHING-NC (panel e-stop, twist release, 1-2 NC; IDEC / Schneider / Eaton / APEM class)", 1, 25.0, stage=1)
-    d.bom_extra("SAFETY-RELAY-24V-MANUAL-RESET (Phoenix PSR / Pilz PNOZ s / Omron G9SE class, 22.5 mm DIN)", 1, 120.0, stage=1)
+    # v12 (owner): the e-stop (OMRON A22E-M-02) and safety relay (OMRON G9SE-201) are drawn parts: add_safety_chain()
+    d.bom_extra("RESET-PUSHBUTTON-22MM-1NO (the G9SE-201 manual reset button, T33/T34; product to name, beside the e-stop)", 1, 15.0, stage=1)
     d.bom_extras.pop("GT2-BELT-9MM-OPEN-1M", None)
     d.bom_extras.pop("GT2-BELT-12MM-OPEN-1M", None)
     # the Eddy Duo's USB-A plug is on the 2.5 m lead BIGTREETECH ships with it (Eddy manual 1: cable length 2.5 m): not bought apart
@@ -3071,7 +3121,7 @@ def add_feedback_hardware(d):
 STAGE_RULES = [  # (stage, name prefixes): first match wins; screws, nuts, washers and T-nuts are named after what they fix
     (3, ("cam_", "led_", "sfs_", "filament_sensor", "adxl", "sensor_plate", "spool", "ptfe_")),
     (2, ("y_", "x_", "tool_", "extruder", "hotend", "part_", "beam_bolt", "bed_probe", "eddy", "probe_mount")),
-    (1, ("frame_", "foot_", "post_", "bracket_", "brkt_up_", "upright_", "z_", "sq_", "carriage_plate", "nut_", "bed", "leadscrew", "electronics",
+    (1, ("frame_", "foot_", "estop", "sr_din", "safety_relay", "post_", "bracket_", "brkt_up_", "upright_", "z_", "sq_", "carriage_plate", "nut_", "bed", "leadscrew", "electronics",
          "psu", "control_board", "host", "inlet", "mains_", "earth", "tray", "din_", "iface_", "z_mount")),
 ]
 

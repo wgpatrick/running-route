@@ -1088,3 +1088,78 @@ def dowel_pin_3x8_placeholder() -> Stock:
                  model={"inbox": ["MCMASTER-91595A150"], "no_auto_features": True},
                  real_part={"maker": "McMaster-Carr", "mpn": "91595A150", "sellers": [{"name": "McMaster-Carr", "part_number": "91595A150", "catalogue": True,
                             "checked": "2026-11-21"}], "sold_by_maker": True})
+
+
+LBA_DS = "vendor_docs/XPPower_LBA350_datasheet_2026-03-07.pdf"
+
+
+@part
+def psu_xp_lba350ps24() -> Stock:
+    """XP Power LBA350PS24: 24 V 14.6 A 350 W enclosed supply, fan cooled, active PFC, universal 90-264 VAC (no selector), 215 x 115 x 30,
+    the LRS-350-24's case, hole pattern (4 x M4 on 150 x 50), terminal strip and fan position (REQ-021: a mechanical drop-in). Electrical
+    figures from XP's data sheet (2026-03-07): efficiency 88 %, input current 4.5 A at 115 / 2.2 A at 230 VAC, inrush 30 A at 115 / 60 A
+    at 230 VAC cold start, leakage 1.0 mA at 240 VAC, full load to +50 degC then 60 % at +70 degC, 80 % at 90 VAC (100 % from 110),
+    800 g, internal T6.3A fuse. Same local frame as `psu_lrs`. Display model: XP Power's STEP."""
+    from .electrical import psu_lrs
+
+    base = psu_lrs("LRS-350-24")
+    e = dict(base.ratings["electrical"])
+    r = dict(e["ratings"])
+    r.update({"watts": 350.0, "amps": 14.6, "efficiency": 0.88, "ac_current_a": {115: 4.5, 230: 2.2}, "inrush_a": 60.0,
+              "full_load_ambient_c": 50.0, "derate_to_frac_at_70c": 0.6, "has_fan": True, "leakage_current_ma_max": 1.0,
+              "leakage_current_at_vac": 240.0, "full_load_min_vac": 110.0, "derate_to_frac_at_90vac": 0.8})
+    src = {k: f"XP Power LBA350 data sheet ({LBA_DS})" for k in r}
+    src.update({"inrush_a": "XP LBA350 data sheet: 30 A at 115 VAC, 60 A at 230 VAC, cold start, 25 degC (the larger used)",
+                "full_load_ambient_c": "XP LBA350 data sheet p.4 temperature derating: 100 % to +50 degC, 60 % at +70 degC",
+                "derate_to_frac_at_90vac": "XP LBA350 data sheet: derate linearly from 100 % at 110 VAC to 80 % at 90 VAC"})
+    e.update({"ratings": r, "sources": {**e["sources"], **src},
+              "product": dict(product="XP Power LBA350PS24", vendor="XP Power", part_number="LBA350PS24", form="module", off_the_shelf=True,
+                              custom_pcb=False, builder_work="universal input: no selector; ring or fork terminals on mains, earth and DC wires")})
+    return Stock(base.shape, "PSU-XP-LBA350PS24", "XP Power LBA350PS24: 24 V 14.6 A 350 W enclosed supply (universal input)", 0.80,
+                 material="steel", ratings={"electrical": e, "watts": 350.0}, interfaces=dict(base.interfaces), cost_usd=44.75,
+                 model={"inbox": ["PSU-XP-LBA350PS24"], "no_auto_features": True, "assembly": True, "tolerance": {"volume_ratio": (0.6, 6.0)}},
+                 real_part={"maker": "XP Power", "mpn": "LBA350PS24", "sellers": [{"name": "Digi-Key", "part_number": "LBA350PS24", "catalogue": True,
+                            "checked": "2026-11-21", "note": "$44.75, 63 in stock (REQ-021)"}], "datasheet": LBA_DS,
+                            "ratings_source": {"watts": "XP LBA350 data sheet: 350 W"}})
+
+
+A22E_DS = "vendor_docs/Omron_A22E_e-stop_datasheet_extract_p33-36_p41-42.pdf"
+G9SE_DS = "vendor_docs/Omron_G9SE_safety_relay_datasheet_J198-E1-04.pdf"
+
+
+@part
+def estop_omron_a22e_m_02() -> Stock:
+    """OMRON A22E-M-02 emergency stop, 40 mm mushroom, push-lock turn-reset, 2 NC (10 A 110 VAC / 24 VDC resistive), IP65: re-made
+    from OMRON's A22E data sheet p.41 (A22E-M): head dia 40 x 6.5, 32 in front of the panel, 54.7 behind it (switch block 34 high).
+    Panel cut-out 22.3 (Digi-Key's figure: FLAGGED until read on OMRON's own page). Local frame: the panel's front face at Z=0, head
+    towards +Z, body behind towards -Z."""
+    s = Pos(0, 0, 32.0 - 3.25) * Cylinder(20.0, 6.5) + Pos(0, 0, 12.75) * Cylinder(14.5, 25.5) + \
+        Pos(0, 0, -54.7 / 2) * Box(34.0, 34.0, 54.7)
+    return Stock(s, "ESTOP-OMRON-A22E-M-02", "OMRON A22E-M-02 emergency stop, 40 mm mushroom, twist release, 2 NC", 0.06, material="abs",
+                 cost_usd=94.27, ratings={"contacts": "2 NC", "rated_a_110vac": 10.0},
+                 interfaces={"panel_cutout_d": 22.3, "panel_cutout_source": "Digi-Key attribute (flagged until OMRON's page is read)",
+                             "panel_thickness_range": (1.0, 6.0)},
+                 model={"kind": "generated to standard", "remade_from": A22E_DS, "no_auto_features": True,
+                        "source": "re-made from OMRON A22E data sheet p.41 (A22E-M): 40 / 6.5 / 32 in front, 54.7 behind, block 34"},
+                 real_part={"maker": "OMRON", "mpn": "A22E-M-02", "sellers": [{"name": "Digi-Key", "part_number": "A22E-M-02", "catalogue": True,
+                            "checked": "2026-11-21", "note": "$94.27, 343 in stock (REQ-021)"}], "datasheet": A22E_DS,
+                            "ratings_source": {"rated_a_110vac": "OMRON A22E data sheet: 10 A at 110 VAC resistive"}})
+
+
+@part
+def safety_relay_omron_g9se_201() -> Stock:
+    """OMRON G9SE-201 safety relay unit, 24 VDC, 2 NO safety outputs (5 A), manual or automatic reset, Push-In Plus terminals, DIN rail
+    or two M4 screws: re-made from OMRON's G9SE data sheet J198-E1-04 p.12: 17.5 wide, 124 high, 111.6 deep (109 body), M4 tabs at
+    133 +/-0.3 (144.5 overall). Local frame: its mounting face on Z=0 (on the DIN rail's top), depth +Z, the 124 across the rail along
+    Y, the 17.5 along the rail (X)."""
+    s = Pos(0, 0, 111.6 / 2) * Box(17.5, 124.0, 111.6) + Pos(0, 0, 2.0) * Box(9.0, 144.5, 4.0)
+    for y in (-66.5, 66.5):
+        s -= Pos(0, y, 2.0) * Cylinder(2.1, 4.0)
+    return Stock(s, "RELAY-SAFETY-OMRON-G9SE-201", "OMRON G9SE-201 safety relay unit, 24 VDC, 2 NO, manual reset", 0.15, material="abs",
+                 cost_usd=275.29, ratings={"coil_v": 24.0, "outputs": "2 NO", "output_a": 5.0},
+                 interfaces={"width": 17.5, "height": 124.0, "depth": 111.6},
+                 model={"kind": "generated to standard", "remade_from": G9SE_DS, "no_auto_features": True,
+                        "source": "re-made from OMRON G9SE data sheet p.12: 17.5 x 124 x 111.6, tabs 144.5 with M4 at 133"},
+                 real_part={"maker": "OMRON", "mpn": "G9SE-201 DC24", "sellers": [{"name": "Digi-Key", "part_number": "G9SE-201", "catalogue": True,
+                            "checked": "2026-11-21", "note": "$275.29, 279 in stock (REQ-021)"}], "datasheet": G9SE_DS,
+                            "ratings_source": {"output_a": "OMRON G9SE data sheet: safety outputs 5 A", "coil_v": "G9SE-201 DC24: 24 VDC"}})
