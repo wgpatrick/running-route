@@ -213,7 +213,7 @@ BED_CX = NOZ_X         # centre of sheet and plate in X = centre of the nozzle's
 T_MAG = 1.0  # v12: Wham Bam base, 1 mm (maker page). v11: 1.5 stand-in.            # the sheet's magnetic base: NOT published by any seller read; 1.5 mm from other sellers' kits (stand-in)
 T_SHEET = 0.64  # v12: Wham Bam plate, 0.4 steel + 2 x 0.12 PEI. v11:          # spring steel (catalogue; a third-party figure)
 BED_CY = 4.5           # centre of sheet and plate in Y = centre of the gantry's (unchanged) nozzle reach, world y -102.75 .. 111.75
-SHEET_PINS = [(BED_CX - 60.0, BED_CY + 110.0 + 2.3), (BED_CX + 60.0, BED_CY + 110.0 + 2.3), (BED_CX - 110.0 - 2.3, BED_CY - 40.0)]   # v12: rear pair + left
+SHEET_PINS = [(BED_CX - 60.0, BED_CY + 110.0 + 2.65), (BED_CX + 60.0, BED_CY + 110.0 + 2.65), (BED_CX - 110.0 - 2.65, BED_CY - 40.0)]   # 0.65 off the sheet's nominal edge: it is pushed against them   # v12: rear pair + left
 BED_Y0, BED_Y1 = BED_CY - BED / 2, BED_CY + BED / 2
 BED_X0, BED_X1 = BED_CX - BED / 2, BED_CX + BED / 2
 W5 = WASHER["normal"]["M5"][2]
@@ -694,7 +694,7 @@ def bed_shape_():
     for x, y in BED_MOUNTS:
         b -= countersink_z(x, y, Z_BED + T_BED, T_BED, CSK["M4"][0], clearance_hole("M4"))
     for x, y in SHEET_PINS:      # v12 (owner): the sheet's three locating pins, 3 mm (slip fit, retained with Loctite 638)
-        b -= zc(x, y, Z_BED, Z_BED + T_BED, 4.0 / 2)        # 4 mm pins, press fit in the laser-cut hole (finish it with a 4 mm reamer)
+        b -= zc(x, y, Z_BED, Z_BED + T_BED, 3.8 / 2)        # 4 mm pins: laser-cut 3.8, reamed to 3.97 for the press fit
     return b
 
 
@@ -1438,6 +1438,7 @@ def build_frame_z():
     # 4 x 10, pressed 6.35 through the plate... 2.0 mm proud (0.36 mm over the sheet's top; the Eddy passes 2.5 mm over the sheet)
     for i, (x, y) in enumerate(SHEET_PINS):
         place(d, f"sheet_pin_{i}", dowel_pin_3x8_placeholder(), Location((x, y, Z_BED + T_BED + 2.0 - 8.0)), body="zbody")
+        d.allow_overlap(f"sheet_pin_{i}", "bed_plate", max_volume=10.0)
         d.join(f"sheet_pin_{i}", "bed_plate", "press fit, retained with Loctite 638")
     d.join("bed_magnet", "bed_plate", "bond")
     d.join("bed", "bed_magnet", "magnet")
