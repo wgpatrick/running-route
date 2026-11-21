@@ -22,10 +22,13 @@ import hashlib
 import json
 import math
 import time
+import warnings
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 import numpy as np
+
+from . import predictions as P
 
 ROOT = Path(__file__).resolve().parents[2]
 RECORD = ROOT / "mechloop" / "data" / "measurements" / "measurements.jsonl"
@@ -141,14 +144,58 @@ def add_order(order: str, supplier: str, parts: list[str], placed: str, received
 
 
 # ------------------------------------------------------------------------------------------------- comparison
-def compare(rows: list[dict]) -> list[dict]:
-    """Each measurement against nominal and prediction: dev_nominal, dev_predicted, in_tolerance, prediction_better."""
+class PredictionWarning(UserWarning):
+    """A measurement scored against an unfrozen prediction, or refused against one frozen after it."""
+
+
+def _frozen_prediction(r: dict, pred_dir, cache: dict, warned: set):
+    """(status, frozen entry or None) for a measurement row; warns once per (part, order) and status."""
+    part, order = r.get("part"), r.get("order")
+    if (part, order) not in cache:
+        rec = P.load(part, order, pred_dir)
+        cache[(part, order)] = rec
+    rec = cache[(part, order)]
+    st = P.status(rec, r.get("when"))
+    if st != "frozen" and (part, order, st) not in warned:
+        warned.add((part, order, st))
+        msg = {"unfrozen": "scored against the plan's current prediction, which was never frozen (post hoc risk)",
+               "hash_mismatch": "frozen prediction file fails its sha256 check: prediction not scored",
+               "frozen_after_measurement": "prediction frozen after the measurement was taken: prediction not scored",
+               "no_date": "measurement or freeze has no usable date: prediction not scored"}[st]
+        warnings.warn(f"{part} / order {order}: {msg}", PredictionWarning, stacklevel=3)
+    return st, (P.prediction(rec, r.get("dimension_key")) if st == "frozen" else None)
+
+
+def compare(rows: list[dict], pred_dir=None) -> list[dict]:
+    """Each measurement against nominal and prediction: dev_nominal, dev_predicted, in_tolerance, prediction_better.
+
+    The prediction comes from the frozen file for the row's part and order (mechloop.inspect.predictions) when there is
+    one: it is scored only if the file verifies and was frozen no later than the measurement (`prediction_status`
+    "frozen"); otherwise the prediction is refused (dev_predicted None). With no frozen file the row's copied plan
+    prediction is used, with a PredictionWarning (`prediction_status` "unfrozen")."""
+    pred_dir = P.PRED_DIR if pred_dir is None else pred_dir
+    cache: dict = {}
+    warned: set = set()
     out = []
     for r in rows:
         m, n, p, tol = r.get("measured"), r.get("nominal"), r.get("predicted"), r.get("tol_pm")
         if m is None:
             continue
         c = dict(r)
+        st, fp = _frozen_prediction(r, pred_dir, cache, warned)
+        c["prediction_status"] = st
+        if st == "frozen" and fp is not None:
+            p = fp.get("predicted")
+            c["predicted"], c["pred_sigma"] = p, fp.get("sigma")
+            u = r.get("u") or 0.0
+            if p is not None and fp.get("sigma"):
+                c["z"] = round((m - p) / math.sqrt(fp["sigma"] ** 2 + u ** 2), 3)
+        else:
+            if st == "frozen":                  # the order is frozen but this quantity was not in it
+                c["prediction_status"] = "not_in_frozen_record"
+            if st != "unfrozen":
+                p = None
+                c["predicted"] = None
         c["dev_nominal"] = None if n is None else round(m - n, 4)
         c["dev_predicted"] = None if p is None else round(m - p, 4)
         c["in_tolerance"] = None if (n is None or tol is None) else bool(abs(m - n) <= tol + 1e-9)
