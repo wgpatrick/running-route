@@ -42,6 +42,7 @@ Design-wide audits (any part, COTS included):
              warning   allowed_overlap_large      a `design.allow_overlap` pair whose real overlap is large and not
                                                   explained by a thread (screw in its threaded hole / nut / T-nut);
                                                   the volume of every pair is in the metrics
+             info      slot_nut_overlap           T-nuts / spring nuts overlapping their extrusion (one summary line)
              warning   screw_through_solid        a threaded pair where the screw fills the other part's material
                                                   (no hole drawn: fill > 0.6 of the screw's section)
              warning   attachment_not_drawn       two parts declared joined by hardware the join note names (a nut, a
@@ -921,7 +922,16 @@ def overlap_audit(design, r) -> dict:
         sig = (row["join"], round(row["volume_mm3"]), tuple(sorted(str(comps[n].sku or re.sub(r"\d+", "#", n))
                                                                     for n in (row["a"], row["b"]))))
         groups[sig].append((row, ext))
+    slot_nuts = {k: m for k, m in groups.items() if re.search(r"t-?nut|spring nut", k[0].lower())}
+    if slot_nuts:     # how the catalogue T-nuts are drawn (COTS against COTS): one summary line, not a warning each
+        n = sum(len(m) for m in slot_nuts.values())
+        vols = sorted({k[1] for k in slot_nuts})
+        r.add("info", "slot_nut_overlap", f"{n} T-nut / spring-nut pairs overlap their extrusion by {', '.join(map(str, vols))} mm3 "
+              f"each (allowed): the nut solid cuts into the slot's lips or the section has no slot there; a modelling "
+              f"compromise of purchased parts, hidden from the interference check", count=n, volumes_mm3=vols, check_class="purchased")
     for (kind, v, pat), members in groups.items():
+        if (kind, v, pat) in slot_nuts:
+            continue
         row, ext = members[0]
         names = [row["a"], row["b"]]
         part = next((n for n in names if not comps[n].cots), names[0])
