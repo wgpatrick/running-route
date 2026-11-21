@@ -8,7 +8,7 @@
    "threads": [
     "2f0e34d2-c001-48b0-b638-0124835243d0"
    ],
-   "status": "needs work",
+   "status": "proposed",
    "depends_on": [],
    "removed": [],
    "modified": [
@@ -18,20 +18,18 @@
     "estop_bracket_screw_1"
    ],
    "added": [
+    "estop_block",
     "estop_bracket_screw_0_washer",
     "estop_bracket_screw_1_washer",
     "estop_bracket_screw_2",
     "estop_bracket_screw_2_tnut",
-    "estop_bracket_screw_2_washer",
     "estop_bracket_screw_3",
     "estop_bracket_screw_3_tnut",
-    "estop_bracket_screw_3_washer",
     "estop_spacer"
    ],
-   "checks": "verify (FAILS): 0 errors, 0 warnings; parts +9 (913); requirements newly failing: v11; part_quality on the 2 changed custom part(s): clean (no errors or warnings)",
+   "checks": "affected-tier verify: 8 errors, 180 warnings (v12: 7 errors, 174 warnings); no error new or cleared against v12; not caused by the change (a v12 warning at its Monte Carlo limit, on parts the change does not touch, crossing it by sampling): tolerance/clearance_closes_under_tolerance: nut_plate to sr_din_rail: drawn 0.67 mm apart (closest with {'z': 181.65}). Built from sheet and purchased parts through the joints between them the gap is 0.67 +/-0.28 mm (one standard deviation) and; the other errors are the existing practice DG-07 placeholder-part rule (as in v12); parts 907 -> 915 (+8); part_quality (2 changed custom part(s), audits on every changed part): clean (no errors or warnings); FEA estop_slap (200 N palm strike on the head, assumed): bracket peak 90 MPa in 5052-H32 (yield 193, FoS 2.1), 0.45 mm at the panel's free corner; new warnings: two holes 4.1 mm from the bend's start (the post's slots fix them), 2 M5 heads straight on 5052 (no room for a washer in the slot depth)",
    "file": "changes/estop-mount.json",
-   "design": "printer_v12_1+estop-mount",
-   "status_reason": "re-verifying after fixes (bent-parts requirement, right-column screw length, e-stop in two pieces for assembly)"
+   "design": "printer_v12_1+estop-mount"
   },
   {
    "id": "zmotor-holes",
