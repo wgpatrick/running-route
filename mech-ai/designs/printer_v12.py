@@ -135,7 +135,7 @@ from mechloop.parts.batch10 import blower_bfb0524hh, blower_flow_estimate_pa, le
 from mechloop.parts.hardware import washer_toothed
 from mechloop.parts.electrical import (THERMISTORS, add_electrical_bom, bed_heater_pad, device_from, embedded_device,
                                        iec_inlet_c14, psu_lrs, raspberry_pi_zero2w, relay_btt_v12, thermal_fuse)
-from mechloop.parts import BRACKET_CAD_SLOT, BRACKET_SLOT_LEG, CSK, bearing, corner_bracket_2020
+from mechloop.parts import BRACKET_CAD_SLOT, BRACKET_SLOT_LEG, CSK, NUT, bearing, corner_bracket_2020
 from mechloop.parts.hardware import WASHER, spacer_round
 from mechloop.parts.probes import add_probe_nuts, probe_omron_e2e
 from mechloop.parts.toolhead import extruder_roto, hotend_revo
@@ -2690,7 +2690,7 @@ def add_requirements(d, zs):
     d.requirements.append(Requirement("target: no purchased part is a stand-in where the catalogue has a real one", lambda dd: (
         sorted(px := [c.name for c in dd.components if c.cots and not c.meta.get("catalog")]) == STANDINS,
         f"hand-made purchased parts: {px or 'none'} (v12: the Wham Bam magnetic base is a catalogue part)")))
-    PRINTED = ["part_duct", "mains_cover_psu", "mains_cover_inlet", "eddy_holder", "cam_overview_mount", "cam_topdown_mount", "sfs_mount", "spool_sleeve_0", "spool_sleeve_1", "spool_end_spacer",
+    PRINTED = ["part_duct", "mains_cover_psu", "mains_cover_inlet", "eddy_holder", "cam_overview_mount", "cam_topdown_mount", "sfs_mount",
                "led_clip_0", "led_clip_1"]
     d.requirements.append(Requirement("no printed part in a load path (owner's guideline): printed parts are the duct, covers and sensor holders", lambda dd: (
         sorted(pp := [c.name for c in dd.components if c.material in ("abs", "petg", "pla") and not c.cots]) == sorted(PRINTED), f"printed: {pp}")))
@@ -2889,26 +2889,32 @@ def add_filament_supply(d):
     # 90592A022 nut on the plate's inner face; on the rod, printed PETG sleeves (10 OD: they bear on the 608s' inner rings only, NSK's
     # abutment) and the bearings, a printed end spacer, and a second nut on the front thread clamps the stack against the plate.
     # The spool slides over the free end (hub 51.25 > the 13 mm nut): no tools.
-    t_n = 6.5
+    t_n = NUT["M8"][1]                                      # 6.8 (ISO 4032 table; McMaster 90592A022 6.5)
     y_rear = yb - t_n                                        # the rod's rear end: flush with the inner nut's back face
     l_plain = 108
     place(d, "spool_axle", shaft_misumi_sfal8(l_plain), Location(Plane(origin=(xa, y_rear, za), z_dir=(0, 1, 0))))
-    add_nut(d, "spool_axle_nut", "M8", at=(xa, yb, za), direction=(0, -1, 0), standard="din934")
+    add_nut(d, "spool_axle_nut", "M8", at=(xa, yb, za), direction=(0, -1, 0))
     d.join("spool_axle_nut", "spool_plate", "clamps the rod's rear thread against the plate")
     d.join("spool_axle", "spool_plate", "rear thread through the plate, nuts each side of the stack")
     d.allow_overlap("spool_axle_nut", "spool_axle")
     sleeves = [("spool_sleeve_0", yb + G32, y_b1 - 3.5), ("spool_sleeve_1", y_b1 + 3.5, y_b2 - 3.5), ("spool_end_spacer", y_b2 + 3.5, y_b2 + 3.5 + 8.0)]
     for nm_, y0_, y1_ in sleeves:
         sl = Pos(xa, (y0_ + y1_) / 2, za) * (ycyl(5.0, y1_ - y0_) - ycyl(8.4 / 2, y1_ - y0_))
-        d.add(nm_, sl, material=COOL, process="printed", meta={"print_up": "+Y", "print": {**PRINT_ABS, "orientation": "+Y", "infill": 1.0},
-                                                              "description": "v12: printed PETG sleeve on the spool axle (10 OD: bears on the 608s' inner rings only)"})
+        if nm_ == "spool_end_spacer":          # stepped: 10 OD for 2 mm at the bearing, then 15 OD under the front nut
+            sl = Pos(xa, y0_ + 1.0, za) * (ycyl(5.0, 2.0) - ycyl(4.2, 2.0)) + \
+                Pos(xa, (y0_ + 2.0 + y1_) / 2, za) * (ycyl(7.5, y1_ - y0_ - 2.0) - ycyl(4.2, y1_ - y0_ - 2.0))
+        # turned 6061 (Xometry), not printed: they carry the bearings' inner rings (DG-01 keeps printing out of load paths)
+        d.add(nm_, sl, material=AL, process="machined",
+              meta={"cnc_reason": "a short 8.4 bore sleeve on the spool axle: no stocked part bears only on a 608's inner ring (REQ-020)",
+                    "edge_break_mm": 0.3, "form": "turned", "dfm": {"shop": "xometry"},
+                    "description": "v12: turned 6061 sleeve on the spool axle (10 OD at the bearings: inner rings only, NSK abutment)"})
         d.allow_overlap(nm_, "spool_axle")
         d.join(nm_, "spool_axle", "on the rod, clamped in the stack")
     for i, yy in enumerate((y_b1, y_b2)):
         place(d, f"spool_bearing_{i}", bearing("608"), Location(Plane(origin=(xa, yy, za), z_dir=(0, 1, 0))))
         d.join(f"spool_bearing_{i}", "spool_axle", "on the rod, inner ring clamped between the sleeves")
     y_fn = y_b2 + 3.5 + 8.0
-    add_nut(d, "spool_axle_fnut", "M8", at=(xa, y_fn, za), direction=(0, 1, 0), standard="din934")
+    add_nut(d, "spool_axle_fnut", "M8", at=(xa, y_fn, za), direction=(0, 1, 0))
     d.allow_overlap("spool_axle_fnut", "spool_axle")
     d.join("spool_axle_fnut", "spool_end_spacer", "front nut clamps the stack")
     rod_end = y_rear + l_plain + 30.0

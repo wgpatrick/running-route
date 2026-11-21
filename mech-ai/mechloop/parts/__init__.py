@@ -745,7 +745,7 @@ def fhcs(size: str = "M5", length: float = 16.0) -> Stock:
 NUT = {"M2": (4.0, 1.6), "M2.5": (5.0, 2.0), "M3": (5.5, 2.4), "M4": (7.0, 3.2), "M5": (8.0, 4.7), "M6": (10.0, 5.2), "M8": (13.0, 6.8)}
 
 
-NUT_DIN934 = {"M5": 4.0, "M8": 6.5}      # where DIN 934 (what McMaster's 90591A series is) differs in height from ISO 4032
+NUT_DIN934 = {"M5": 4.0}      # where DIN 934 (what McMaster's 90591A series is) differs in height from ISO 4032
 # Prevailing-torque hex nuts with a nylon insert, ISO 10511 (the thin type; DIN 985 has the same heights): height m max, mm.
 # Across flats as ISO 4032. RECALLED from the standard's table (not fetched): check against the nut you buy.
 NUT_ISO10511 = {"M3": 4.0, "M4": 5.0, "M5": 5.0, "M6": 6.0, "M8": 8.0}
