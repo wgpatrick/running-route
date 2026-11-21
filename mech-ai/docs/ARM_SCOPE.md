@@ -89,9 +89,9 @@ changer). Defer them to a later build; Klipper's own unload macro covers the unl
 | Place a part face-down on the flatbed scanner glass, scan, pick it up | <0.3 kg | <5 N (do not press the glass) | +/-1 mm, +/-2 deg; part flat | scanner station, glass ~220 x 300 mm | 30 s handling + scan time | camera confirms placement; scan result itself |
 | Lid handling | - | lift a hinged lid | +/-3 mm | scanner | 5 s | - |
 
-The scanner lid is a problem for an arm. Options for the spike: remove the lid and use a fixed dark hood over the glass
-(the scan pipeline needs a dark part on a light background, docs/INSPECTION.md: so a light hood instead); or let the arm
-lift it with a hook. A camera stage (fixed camera over a backlit plate, calibration target in view) is the fallback for
+The scanner lid is a problem for an arm. Options for the spike: remove the lid and fit a fixed, open-sided light hood over the
+glass (the scan pipeline needs the part dark against a light lid, docs/INSPECTION.md); or let the arm lift the lid with a
+hook. A camera stage (fixed camera over a backlit plate, calibration target in view) is the fallback for
 parts that are not flat.
 
 ### 2.3 Assembly

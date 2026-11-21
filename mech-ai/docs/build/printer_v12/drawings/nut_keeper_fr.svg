@@ -9131,8 +9131,8 @@ L 464.88189 171.240945
 " clip-path="url(#p3b37b60a2d)" style="fill: none; stroke: #111111; stroke-width: 0.2; stroke-linecap: square"/>
    </g>
    <g id="line2d_254">
-    <path d="M 461.384499 170.224701 
-L 460.218702 165.548945 
+    <path d="M 467.143415 169.973261 
+L 467.897256 165.213692 
 " clip-path="url(#p3b37b60a2d)" style="fill: none; stroke: #111111; stroke-width: 0.2; stroke-linecap: square"/>
    </g>
    <g id="line2d_255">
@@ -9283,19 +9283,19 @@ z
    </g>
    <g id="text_14">
     <g id="patch_13">
-     <path d="M 456.489688 166.408455 
-L 462.713344 166.408455 
-Q 463.265344 166.408455 463.265344 165.856455 
-L 463.265344 160.290635 
-Q 463.265344 159.738635 462.713344 159.738635 
-L 456.489688 159.738635 
-Q 455.937688 159.738635 455.937688 160.290635 
-L 455.937688 165.856455 
-Q 455.937688 166.408455 456.489688 166.408455 
+     <path d="M 465.184521 166.028831 
+L 471.408177 166.028831 
+Q 471.960177 166.028831 471.960177 165.476831 
+L 471.960177 159.91101 
+Q 471.960177 159.35901 471.408177 159.35901 
+L 465.184521 159.35901 
+Q 464.632521 159.35901 464.632521 159.91101 
+L 464.632521 165.476831 
+Q 464.632521 166.028831 465.184521 166.028831 
 z
 " style="fill: #ffffff; stroke: #111111; stroke-width: 0.3; stroke-linejoin: miter"/>
     </g>
-    <text style="font-size: 4.6px; font-family: 'Inter', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: middle; fill: #111111" x="459.601516" y="164.746885" transform="rotate(-0 459.601516 164.746885)">H2</text>
+    <text style="font-size: 4.6px; font-family: 'Inter', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: middle; fill: #111111" x="468.296349" y="164.36726" transform="rotate(-0 468.296349 164.36726)">H2</text>
    </g>
    <g id="text_15">
     <text style="font-weight: 700; font-size: 5.6px; font-family: 'Inter', 'DejaVu Sans', 'Bitstream Vera Sans', 'Computer Modern Sans Serif', 'Lucida Grande', 'Verdana', 'Geneva', 'Lucid', 'Arial', 'Helvetica', 'Avant Garde', sans-serif; text-anchor: start; fill: #111111" x="759.685039" y="184.251969" transform="rotate(-0 759.685039 184.251969)">HOLES AND SLOTS  (centre X, Y, Z in mm from datums C, B, A; red = critical, see notes)</text>

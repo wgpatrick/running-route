@@ -93,3 +93,14 @@ if the link drops the printer continues in a conservative mode.
 
 Design consequence: from v12 the printer carries the camera mounts, lighting, accelerometer, nozzle-camera
 bracket, filament sensor and Pi wiring, checked like every other part.
+
+## Next machine: robot arm (scoping, 2026-11-21)
+
+After the printer, the next machine is a robot arm that we design ourselves with the same mechloop loop. It unloads the
+printer (lifting the flex sheet), presents parts to the scanner and camera, assembles printed parts with purchased ones
+(heat-set inserts, screws, bearings, magnets) and changes its own end-effectors, which the printer makes: an end-effector
+improvement loop with no human between design change and measured result. Kinematics are left open and compared by
+simulation (SCARA, Cartesian with a ram and 6-DOF articulated carried into concept design). Scope, staged plan (A unload,
+B inspect, C assemble, D tool change), work cell, verifiers and twin, budget and open questions: docs/ARM_SCOPE.md; detailed
+research in docs/arm_research/. Concept design runs in parallel with the printer build; arm hardware waits until the printer
+runs.
