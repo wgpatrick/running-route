@@ -80,3 +80,6 @@ stock and lead time before ordering.
   (REQ-016), with a US-stocked 24 V alternative as fallback. The 120 V AC pads stocked in the US were rejected: mains on the
   moving bed would need a solid-state relay, more insulation and a re-done bed wiring safety case.
 - BTT Octopus V1.1: owner accepts BTT's V1.0 CAD as its geometry (same outline and mounting holes), 2026-11-20.
+- Feet (owner, 2026-11-21): four Misumi NFJN5-30 levelling mounts (M5, all metal, swivel, 30 mm foot) in M5 end taps on
+  the four corner extrusions (Misumi end-tap alteration added to those lengths). Rubber fallback if table noise is a problem:
+  Misumi HAJP5-2020-6 plate + McMaster 6301K78.
