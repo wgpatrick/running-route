@@ -48,9 +48,11 @@ Design-wide audits (any part, COTS included):
                                                   clip, a ring nut ...) with no drawn fastener between them
              info      attachment_by_note         a join with no drawn fastener (press fit, bond, snap ...): fine when
                                                   that is how it is held; listed so it can be read
-             warning   stock_hole_missing         a purchased part's interfaces list a hole its solid does not have
-             warning   stock_hole_misaligned      a listed hole of a purchased part with no matching hole in the custom
-                                                  part it sits on
+             warning   stock_hole_missing         a purchased part's interfaces list a hole (key with "hole", not "pin")
+                                                  that neither its solid nor its detailed CAD has (info when only the
+                                                  simulation solid dropped it)
+             warning   stock_hole_misaligned      a purchased part screwed to a custom part where NONE of its listed holes
+                                                  meets a hole in that part (info: single unused holes, or no drawn screw)
 
 The checks of one part's own shape do not depend on where it is: they are memoised on the part's intrinsic fingerprint
 (identical instances are checked once, also across runs in an incremental verify). Hole tracing, overlaps and joins
@@ -97,7 +99,7 @@ MESH_TOL = 0.02
 MESH_ANG = 0.25
 MAX_RAYS = 4000
 
-_THREADISH = ("thread", "tnut", "t-nut", "spring nut", "insert", "pem", "self-clinching", "integral screw", "stud")
+_THREADISH = ("thread", "insert", "pem", "self-clinching", "integral screw", "stud")   # a T-nut in its slot is NOT a thread
 _HARDWARE_WORDS = ("nut", "screw", "bolt", "clip", "rivet", "pin", "circlip", "ring nut", "stud", "zip tie", "cable tie")
 _FIXING_NOTE = ("integral", "press", "bond", "epoxy", "glue", "snap", "magnet", "sliding", "slide", "rests", "sits", "captive", "float",
                 "spring", "solder", "on the rod", "axle", "held in", "clamp", "located", "pilot", "set_screw", "set screw")
@@ -843,6 +845,19 @@ def _is_hardware(c) -> bool:
                        or bool(c.meta.get("threads_into")) or "washer" in c.name or c.name.endswith(("_nut", "_tnut")))
 
 
+def _is_nut(c) -> bool:
+    """A nut, T-nut or insert: whatever a thread runs into (an allowed overlap with it is the thread)."""
+    return c.cots and (bool(re.search(r"(nut|insert)$", c.name.rstrip("_0123456789")))
+                       or (c.sku or "").upper().startswith(("NUT", "TNUT", "INSERT", "PEM")))
+
+
+def _is_screwlike(c, fast) -> bool:
+    """A screw, stud, threaded rod or axle: what a nut runs on."""
+    s = f"{c.name} {c.sku or ''}".lower()
+    return c.name in fast or bool(c.meta.get("threads_into")) or any(w in s for w in ("screw", "shcs", "bhcs", "fhcs", "stud", "rod",
+                                                                                     "axle", "thread", "bolt"))
+
+
 def _screw_d(c) -> float | None:
     m = re.search(r"M(\d+(?:\.\d+)?)", c.sku or "")
     return float(m.group(1)) if m else None
@@ -853,7 +868,7 @@ def overlap_audit(design, r) -> dict:
 
     comps = {c.name: c for c in design.components}
     fast = {f.name: f for f in design.fasteners}
-    rows = []
+    rows, flagged = [], []
     for pair, maxv in design.allowed_overlaps.items():
         names = sorted(pair)
         if len(names) != 2 or any(n not in comps for n in names):
@@ -878,8 +893,8 @@ def overlap_audit(design, r) -> dict:
         kind = str(design.joins.get(pair, ""))
         threadish = any(w in kind.lower() for w in _THREADISH)
         screw = next((x for x in (a, b) if x.name in fast), None)
-        nutlike = next((x for x in (a, b) if _is_hardware(x) and re.search(r"(nut|tnut|insert)$", x.name.rstrip("_0123456789")
-                                                                               ) or (x.sku or "").upper().startswith(("NUT", "TNUT"))), None)
+        nutlike = next((x for x in (a, b) if _is_nut(x)), None)
+        on_thread = nutlike is not None and _is_screwlike(b if nutlike is a else a, fast)
         other = b if screw is a else a
         fill = None
         if screw is not None and vol > 1e-3 and ext is not None:
@@ -890,7 +905,7 @@ def overlap_audit(design, r) -> dict:
             if d and L > 0.1:
                 fill = vol / (math.pi * d * d / 4 * L)
         row = {"a": names[0], "b": names[1], "volume_mm3": round(vol, 3), "declared_max_mm3": None if maxv >= 1e8 else maxv,
-               "join": kind, "threaded": threadish or screw is not None or nutlike is not None, "screw_fill": None if fill is None else round(fill, 3),
+               "join": kind, "threaded": threadish or screw is not None or on_thread, "screw_fill": None if fill is None else round(fill, 3),
                "custom": [n for n in names if not comps[n].cots]}
         rows.append(row)
         if fill is not None and fill > SCREW_FILL and not other.cots:
@@ -898,13 +913,33 @@ def overlap_audit(design, r) -> dict:
                   f"{screw.name} fills {fill:.0%} of its section inside {other.name} ({vol:.0f} mm3): no hole is drawn "
                   f"where it passes (a threaded hole overlaps ~30 %)", part=other.name, screw=screw.name, volume_mm3=round(vol, 1),
                   fill=round(fill, 3), check_class="weird")
-        elif vol > OVERLAP_WARN_MM3 and not (screw is not None or threadish or nutlike is not None):
+        elif vol > OVERLAP_WARN_MM3 and not row["threaded"]:
+            flagged.append((row, ext))
+    # the same overlap repeated on many identical pairs (every drop-in T-nut in its slot) is one finding
+    groups = defaultdict(list)
+    for row, ext in flagged:
+        sig = (row["join"], round(row["volume_mm3"]), tuple(sorted(str(comps[n].sku or re.sub(r"\d+", "#", n))
+                                                                    for n in (row["a"], row["b"]))))
+        groups[sig].append((row, ext))
+    for (kind, v, pat), members in groups.items():
+        row, ext = members[0]
+        names = [row["a"], row["b"]]
+        part = next((n for n in names if not comps[n].cots), names[0])
+        at = _pt([(ext[0] + ext[3]) / 2, (ext[1] + ext[4]) / 2, (ext[2] + ext[5]) / 2]) if ext else None
+        if len(members) >= 3:
             r.add("warning", "allowed_overlap_large",
-                  f"{a.name} and {b.name} are allowed to overlap and do by {vol:.0f} mm3 (join: {kind or 'none'}): only a "
-                  f"thread, a press fit or a panel cut-out should overlap; this hides a clash from the interference check",
-                  part=next((n for n in names if not comps[n].cots), names[0]), other=names[1] if comps[names[0]].cots is False else names[0],
-                  pair=names, volume_mm3=round(vol, 1), join=kind, check_class="weird",
-                  at=_pt([(ext[0] + ext[3]) / 2, (ext[1] + ext[4]) / 2, (ext[2] + ext[5]) / 2]) if ext else None)
+                  f"{len(members)} pairs like {names[0]} / {names[1]} are allowed to overlap and each does by {v} mm3 (join: "
+                  f"{kind or 'none'}): not a thread; the solids clash and allow_overlap hides it from the interference check",
+                  part=part, pair=names, count=len(members), volume_mm3=row["volume_mm3"], join=kind, at=at, check_class="weird")
+        else:
+            for row, ext in members:
+                names = [row["a"], row["b"]]
+                r.add("warning", "allowed_overlap_large",
+                      f"{names[0]} and {names[1]} are allowed to overlap and do by {row['volume_mm3']:.0f} mm3 (join: "
+                      f"{row['join'] or 'none'}): only a thread, a press fit or a panel cut-out should overlap; this hides a "
+                      f"clash from the interference check", part=next((n for n in names if not comps[n].cots), names[0]),
+                      pair=names, volume_mm3=row["volume_mm3"], join=row["join"], check_class="weird",
+                      at=_pt([(ext[0] + ext[3]) / 2, (ext[1] + ext[4]) / 2, (ext[2] + ext[5]) / 2]) if ext else None)
     rows.sort(key=lambda x: -x["volume_mm3"])
     return {"pairs": len(rows), "nonzero": sum(x["volume_mm3"] > 1e-3 for x in rows),
             "flagged": sum(1 for x in rows if x["volume_mm3"] > OVERLAP_WARN_MM3 and not x["threaded"]),
@@ -1029,12 +1064,14 @@ def stock_hole_audit(design, r, scene) -> dict:
         if not c.cots:
             continue
         for key, v in (c.meta.get("interfaces") or {}).items():
-            if "hole" not in key or not isinstance(v, list):
+            # "pin_holes" (a switch's terminals) are where pins come OUT of the part, not holes in it
+            if "hole" not in key or "pin" in key or not isinstance(v, list):
                 continue
             pts = [np.array(p, float) for p in v if isinstance(p, (tuple, list)) and len(p) == 3]
             if not pts:
                 continue
             missing, missing_detail, mis = [], [], []
+            matched: dict = {}
             for p in pts:
                 ok, off, _ = _hole_near_point(c.shape, p, faces_cache=holes_of(c))
                 if not ok:
@@ -1051,14 +1088,15 @@ def stock_hole_audit(design, r, scene) -> dict:
                     from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeVertex
                     from OCP.gp import gp_Pnt
 
+                    okm, offm, dm = _hole_near_point(m.shape, p, tol_axis=0.3, reach=6.0, faces_cache=holes_of(m))
+                    if okm:     # (the listed point sits on the hole's axis, in its mouth: no material within a radius)
+                        matched[m.name] = matched.get(m.name, 0) + 1
+                        continue
                     vx = BRepBuilderAPI_MakeVertex(gp_Pnt(*map(float, p))).Vertex()
                     dd = BRepExtrema_DistShapeShape(vx, m.shape.wrapped)
-                    if not dd.IsDone() or dd.Value() > 1.0:
-                        continue
-                    okm, offm, dm = _hole_near_point(m.shape, p, tol_axis=0.3, reach=6.0, faces_cache=holes_of(m))
-                    if not okm:
-                        mis.append({"fastened": _fastened_together(design, c.name, m.name), "mate": m.name, "at": _pt(p), "nearest_hole_axis_mm": None if offm == math.inf else round(offm, 3),
-                                    "nearest_d": dm})
+                    if dd.IsDone() and dd.Value() <= 1.0:
+                        mis.append({"fastened": _fastened_together(design, c.name, m.name), "mate": m.name, "at": _pt(p),
+                                    "nearest_hole_axis_mm": None if offm == math.inf else round(offm, 3), "nearest_d": dm})
             row = {"part": c.name, "sku": c.sku, "key": key, "listed": len(pts), "missing_in_solid": len(missing),
                    "missing_in_detail": len(missing_detail) if c.detail is not None else None, "misaligned": mis}
             rows.append(row)
@@ -1071,10 +1109,15 @@ def stock_hole_audit(design, r, scene) -> dict:
                       f"{c.name} ({c.sku}): interfaces['{key}'] lists {len(pts)} holes, {len(missing)} not in its solid{det}",
                       part=c.name, key=key, missing=len(missing), at=_pt(missing[0]), check_class="purchased")
             for mm in mis:
-                r.add("warning" if mm["fastened"] else "info", "stock_hole_misaligned",
+                # a warning only when the two are screwed together and NONE of the listed holes meets a hole in the mate (a
+                # camera on two of its four holes leaves the other two blind, which is fine)
+                broken = mm["fastened"] and not matched.get(mm["mate"])
+                why = ("" if broken else "; no drawn screw fastens the two, so the listed holes are unused" if not mm["fastened"]
+                       else f"; {matched.get(mm['mate'])} other listed hole(s) do line up: this one is just not used")
+                r.add("warning" if broken else "info", "stock_hole_misaligned",
                       f"{c.name}'s listed hole ('{key}') at {mm['at']} has no matching hole in {mm['mate']}"
                       + (f" (nearest hole axis {mm['nearest_hole_axis_mm']} mm away)" if mm["nearest_hole_axis_mm"] is not None else "")
-                      + ("" if mm["fastened"] else "; no drawn screw fastens the two, so the listed holes are unused"),
+                      + why,
                       part=mm["mate"], stock=c.name, key=key, at=mm["at"], check_class="purchased")
     return {"interfaces_checked": len(rows), "rows": rows}
 
