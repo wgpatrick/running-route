@@ -1,0 +1,224 @@
+"""Build, check and export ONE design change as a review-page change set (docs/OPERATING_MODES.md, iterative mode).
+
+    .venv/bin/python tools/build_change.py designs/printer_v12_1.py <change-id> [--verify] [--checks "extra text"]
+                                           [--out review_v12_1/changes] [--base-report out/printer_v12/report.json]
+
+The design file declares its change flags (CHANGE_IDS, CHANGE_DEPENDS, CHANGE_INFO) and reads MECHLOOP_CHANGES from the
+environment ("none" = the base, "a,b" = the base plus those changes). This tool
+
+1. with --verify: seeds out/<variant>/verify_cache from the base's cache (so the affected tier re-runs only what the change
+   touches) and runs `python -m mechloop verify <design> --tier affected --no-render` for base + the change (+ the changes it
+   depends on). One heavy job: run nothing else beside it.
+2. builds the base (all flags off) and the variant in this process, diffs them part by part (name, SKU, material, volume,
+   bounding box): removed / modified / added;
+3. writes <out>/<id>.json (part records with the review page's fields and "v"/"t" offsets), <out>/<id>.txt (base64 of float32
+   vertices + uint32 triangles for the modified and added parts only, offsets from 0) and merges the entry into <out>/index.json.
+
+"checks" in the index is generated from the variant's report against the base report (verifier errors / warnings and failed
+requirements, part count), plus --checks text.
+"""
+from __future__ import annotations
+
+import argparse
+import base64
+import json
+import os
+import shutil
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+import numpy as np
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "tools"))
+sys.path.insert(0, str(ROOT))
+
+MAX_TXT_BYTES = 12_000_000          # keep each change blob well under the host's 16 MB per file
+
+
+def build(design: str, on: list[str]):
+    from mechloop.runner import load_design
+
+    os.environ["MECHLOOP_CHANGES"] = ",".join(on) if on else "none"
+    return load_design(design)
+
+
+def design_module(design: str):
+    import importlib.util
+
+    os.environ["MECHLOOP_CHANGES"] = "none"
+    spec = importlib.util.spec_from_file_location("design_flags_probe", Path(design).resolve())
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+def signature(c) -> tuple:
+    bb = c.shape.bounding_box()
+    return (c.sku, c.material, round(float(c.shape.volume), 1),
+            tuple(round(v, 2) for v in (bb.min.X, bb.min.Y, bb.min.Z, bb.max.X, bb.max.Y, bb.max.Z)))
+
+
+def with_deps(cid: str, deps: dict) -> list[str]:
+    out, todo = [], [cid]
+    while todo:
+        k = todo.pop()
+        if k not in out:
+            out.append(k)
+            todo += list(deps.get(k, ()))
+    return out
+
+
+def run_verify(design: str, on: list[str], name: str, base_name: str) -> Path:
+    out = ROOT / "out" / name
+    seed = ROOT / "out" / base_name / "verify_cache"
+    if not (out / "verify_cache").exists() and seed.exists():
+        out.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(seed, out / "verify_cache")
+    env = dict(os.environ, MECHLOOP_CHANGES=",".join(on))
+    t = time.time()
+    r = subprocess.run([sys.executable, "-m", "mechloop", "verify", design, "--tier", "affected", "--no-render"],
+                       cwd=ROOT, env=env, capture_output=True, text=True, timeout=7200)
+    (out / "build_change_verify.log").write_text(r.stdout[-20000:] + "\n---\n" + r.stderr[-20000:])
+    print(f"verify {name}: exit {r.returncode} in {time.time() - t:.0f} s")
+    return out / "report.json"
+
+
+def summarize(rep: dict, base: dict | None, n_parts: int, n_base: int) -> str:
+    def counts(r):
+        return {k: (s.get("errors", 0), s.get("warnings", 0)) for k, s in r["summary"].items() if isinstance(s, dict)}
+
+    def failed_reqs(r):
+        return {f["message"].split(":")[0][:90] for f in r["findings"] if f["verifier"] == "requirements" and f["severity"] == "error"}
+
+    c = counts(rep)
+    parts = [f"parts {n_parts - n_base:+d} ({n_parts})"]
+    if base:
+        b = counts(base)
+        for k in sorted(c):
+            e, w = c[k]
+            e0, w0 = b.get(k, (0, 0))
+            if (e, w) != (e0, w0):
+                parts.append(f"{k}: {e} err ({e - e0:+d}), {w} warn ({w - w0:+d})")
+        new_fail = sorted(failed_reqs(rep) - failed_reqs(base))
+        fixed = sorted(failed_reqs(base) - failed_reqs(rep))
+        if new_fail:
+            parts.append("requirements newly failing: " + "; ".join(new_fail))
+        if fixed:
+            parts.append("requirements now passing: " + "; ".join(fixed))
+    tot_e = sum(e for e, _ in c.values())
+    parts.insert(0, f"verify ({'OK' if rep.get('ok') else 'FAILS'}): {tot_e} errors, {sum(w for _, w in c.values())} warnings")
+    return "; ".join(parts)
+
+
+def part_record(c, electronics, findings) -> tuple[dict, bytes, bytes]:
+    from export_viewer import FASTENER_TRI_BUDGET, _placeholder, d_density, detail_mesh, group_of, kind_of, light_fastener_mesh
+    from build_review import MATERIAL, PROCESS, SHOP
+    from mechloop.geom import to_trimesh
+
+    try:
+        tm = detail_mesh(c) if c.detail is not None else to_trimesh(c.shape, 0.12, 0.45)
+    except AttributeError:
+        tm = to_trimesh(c.shape, 0.12, 0.45)
+    if kind_of(c) == "fastener" and len(tm.faces) > FASTENER_TRI_BUDGET:
+        tm, _ = light_fastener_mesh(c)
+    v = np.asarray(tm.vertices, dtype=np.float32)
+    t = np.asarray(tm.faces, dtype=np.uint32)
+    bb = c.shape.bounding_box()
+    kind = kind_of(c)
+    proc = c.meta.get("process") or c.process if hasattr(c, "process") else c.meta.get("process")
+    model = c.meta.get("model") or {"kind": "proxy" if c.cots else "design", "source": ""}
+    rec = {"name": c.name, "kind": kind, "group": group_of(c, electronics), "sku": c.sku, "desc": c.meta.get("description", ""),
+           "cost": c.meta.get("cost_usd"), "mass": round(float(c.mass_kg or c.shape.volume * 1e-9 * d_density(c)), 4),
+           "bbox": [round(x, 2) for x in (bb.min.X, bb.min.Y, bb.min.Z, bb.max.X, bb.max.Y, bb.max.Z)], "body": c.body,
+           "material_code": c.material, "material": MATERIAL.get(c.material, c.material),
+           "process": PROCESS.get(proc) if kind == "fabricated" else None, "process_code": proc,
+           "shop": SHOP.get(proc) if kind == "fabricated" else None, "model": model.get("kind"), "model_source": model.get("source", ""),
+           "findings": findings.get(c.name, []), "color": c.color}
+    rec.update({k: v_ for k, v_ in _placeholder(c).items() if k in ("real_part_state", "placeholder", "placeholder_why", "color")})
+    return rec, v.tobytes(), t.tobytes()
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("design")
+    ap.add_argument("change")
+    ap.add_argument("--verify", action="store_true")
+    ap.add_argument("--checks", default="")
+    ap.add_argument("--out", default="review_v12_1/changes")
+    ap.add_argument("--base-report", default=None, help="report of the base design (default out/<base name>/report.json)")
+    ap.add_argument("--base-name", default="printer_v12", help="the base revision's design name (its out/ folder)")
+    ap.add_argument("--status", default="proposed")
+    a = ap.parse_args()
+
+    mod = design_module(a.design)
+    ids, deps, info = mod.CHANGE_IDS, getattr(mod, "CHANGE_DEPENDS", {}), getattr(mod, "CHANGE_INFO", {})
+    if a.change not in ids:
+        sys.exit(f"{a.change} is not a change of {a.design}: {ids}")
+    on = [k for k in ids if k in with_deps(a.change, deps)]
+
+    rep_path = None
+    if a.verify:
+        probe = build(a.design, on)
+        rep_path = run_verify(a.design, on, probe.name, a.base_name)
+        del probe
+    base = build(a.design, [])
+    var = build(a.design, on)
+    sb = {c.name: signature(c) for c in base.components}
+    sv = {c.name: c for c in var.components}
+    removed = sorted(n for n in sb if n not in sv)
+    added = sorted(n for n in sv if n not in sb)
+    modified = sorted(n for n in sv if n in sb and signature(sv[n]) != sb[n])
+    print(f"{a.change} (flags {on}): removed {len(removed)}, modified {len(modified)}, added {len(added)}")
+
+    rep = None
+    rp = Path(rep_path) if rep_path else ROOT / "out" / var.name / "report.json"
+    if rp.exists():
+        rep = json.loads(rp.read_text())
+    findings = {}
+    if rep:
+        for f in rep["findings"]:
+            p = (f.get("data") or {}).get("part")
+            if p:
+                findings.setdefault(p, []).append({k: f[k] for k in ("verifier", "severity", "code", "message")} | {"hint": (f.get("data") or {}).get("hint", "")})
+    bpath = Path(a.base_report) if a.base_report else ROOT / "out" / a.base_name / "report.json"
+    brep = json.loads(bpath.read_text()) if bpath.exists() else None
+
+    electronics = set(var.subassemblies.get("electronics", []))
+    out = ROOT / a.out
+    out.mkdir(parents=True, exist_ok=True)
+    blob, recs, off = [], [], 0
+    for n in modified + added:
+        rec, vb, tb = part_record(sv[n], electronics, findings)
+        rec["change"] = "modified" if n in modified else "added"
+        rec["v"] = [off, len(vb) // 12]
+        rec["t"] = [off + len(vb), len(tb) // 12]
+        blob += [vb, tb]
+        off += len(vb) + len(tb)
+        recs.append(rec)
+    txt = base64.b64encode(b"".join(blob)).decode()
+    if len(txt) > MAX_TXT_BYTES:
+        print(f"WARNING: {a.change}.txt is {len(txt) / 1e6:.1f} MB (limit {MAX_TXT_BYTES / 1e6:.0f})")
+    (out / f"{a.change}.txt").write_text(txt)
+    (out / f"{a.change}.json").write_text(json.dumps({"mesh": f"changes/{a.change}.txt", "parts": recs}, separators=(",", ":"), default=str))
+
+    checks = summarize(rep, brep, len(var.components), len(base.components)) if rep else "not verified (run with --verify)"
+    if a.checks:
+        checks += "; " + a.checks
+    ci = info.get(a.change, {})
+    entry = {"id": a.change, "title": ci.get("title", a.change), "summary": ci.get("summary", ""), "threads": ci.get("threads", []),
+             "status": a.status, "depends_on": [k for k in on if k != a.change], "removed": removed, "modified": modified,
+             "added": added, "checks": checks, "file": f"changes/{a.change}.json", "design": var.name}
+    ip = out / "index.json"
+    idx = json.loads(ip.read_text()) if ip.exists() else {"base": a.base_name, "changes": []}
+    idx["changes"] = [c for c in idx["changes"] if c["id"] != a.change] + [entry]
+    order = {k: i for i, k in enumerate(ids)}
+    idx["changes"].sort(key=lambda c: order.get(c["id"], 99))
+    ip.write_text(json.dumps(idx, indent=1))
+    print(f"wrote {out}/{a.change}.json ({len(recs)} parts), {a.change}.txt ({len(txt) / 1e6:.2f} MB); checks: {checks}")
+
+
+if __name__ == "__main__":
+    main()
