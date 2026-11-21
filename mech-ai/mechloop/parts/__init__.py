@@ -411,8 +411,8 @@ def bearing(designation: str = "608") -> Stock:
         iface.update({"da_min": 10.0, "d1": 12.15, "D2": 19.2, "Da_max": 20.0, "axial_limit_n": 0.25 * C0})
     model = {}
     if designation == "608":    # v12: a plain ring at the ISO 15 boundary dimensions (8 x 22 x 7) is the bearing's whole envelope
-        model = {"kind": "generated to standard", "remade_from": "ISO 15 boundary dimensions 608: 8 x 22 x 7 (SKF / NSK tables)",
-                 "no_auto_features": True, "source": "ring 8 x 22 x 7, shields and chamfers left out"}
+        model = {"kind": "proxy", "state": "stand-in", "source": "ring 8 x 22 x 7: the NSK 608ZZ page / CAD is awaited (REQ-018); "
+                 "a re-make must cite the maker's own drawing"}
     return Stock(ring, f"BRG-{designation}", f"Ball bearing {designation} ({d}x{D}x{B})", m,
                  ratings={"dynamic_load_n": C, "static_load_n": C0}, interfaces=iface,
                  cost_usd=1.0, model=model)

@@ -140,7 +140,7 @@ from mechloop.parts.hardware import WASHER, spacer_round
 from mechloop.parts.probes import add_probe_nuts, probe_omron_e2e
 from mechloop.parts.toolhead import extruder_roto, hotend_revo
 from mechloop.shops import assign
-from mechloop.parts.batch12 import (tnut_hntp5, switch_omron_d2f_01l, foot_misumi_nfjn5_30, spool_1kg_placeholder, spacer_tube_m8_placeholder, coupler_mcmaster_2333n214, add_bracket_misumi, adxl345_btt, cam_arducam_b0454, cob_led, contactor_finder_2232, din_endstop_wago,
+from mechloop.parts.batch12 import (tnut_hntp5, spacer_mcmaster_94669a079, switch_omron_d2f_01l, foot_misumi_nfjn5_30, spool_1kg_placeholder, spacer_tube_m8_placeholder, coupler_mcmaster_2333n214, add_bracket_misumi, adxl345_btt, cam_arducam_b0454, cob_led, contactor_finder_2232, din_endstop_wago,
                                     din_rail_wago, heater_hydra_sq1451144, hiwin_mgn12_rail, hiwin_mgn12h_block, laser_vlm520, lens_cil062,
                                     leadscrew_motor_a4003, leadscrew_nut_pom_a4003, leadscrew_screw_a4003, picam3, pi5_host, probe_eddy_duo,
                                     relay_phoenix_1119897, sfs_v2, spacer_harwin, thermostat_cs7,
@@ -1741,7 +1741,8 @@ def build() -> Design:
     for i, x in enumerate(XIM_BOLTS):
         add_screw(d, f"x_idler_mount_bolt_{i}", "M5", 8, at=(x, yb_f, Z_BEAM), direction=(0, 1, 0), body="ybody",
                   threads_into="x_beam", tnut=True, clamps=("x_idler_mount",), washer=True)
-    place(d, "x_idler_spacer", spacer_round("M5", X_SP, "aluminium"), fwd(XI_X, yb_r, XD_Z_I), body="ybody")
+    assert abs(X_SP - 10.0) < 1e-9
+    place(d, "x_idler_spacer", spacer_mcmaster_94669a079(), fwd(XI_X, yb_r, XD_Z_I), body="ybody")     # McMaster 94669A079, 10 x 5.3 x 10
     place(d, "x_idler", idler_misumi_agtfw30(), fwd(XI_X, yb_r + X_SP, XD_Z_I), body="ybody")
     add_screw(d, "x_idler_bolt", "M5", 35, at=(XI_X, yb_f, XD_Z_I), direction=(0, 1, 0), body="ybody",
               clamps=("x_idler_mount", "x_idler_spacer"), washer=True)
@@ -2914,7 +2915,9 @@ def add_filament_supply(d):
     # the Roto's own bowdaptor collet takes the 4 mm tube directly (E3D reference CAD, REQ-018): no coupler at the extruder end
     d.printer["ptfe_path"] = {"start": (out_pt[0], out_pt[1], out_pt[2] + 15.0), "start_dir": (0.0, 0.0, 1.0),
                               "end": (ent[0], ent[1], ent[2] + 2.0), "end_dir": (0.0, 0.0, 1.0)}
-    d.bom_extra("PTFE-TUBE-4x2-M (4 mm OD x 2 mm ID PTFE, by the metre; placeholder until REQ-018)", 1, 3.0, stage=3)
+    d.bom_extra("PTFE-CAPRICORN-XS-1.9x3.95-M (Capricorn XS PTFE, 1.9 ID x 3.95 OD, by the metre; about 0.61 m used)", 1, 12.18, stage=3,
+                real_part={"maker": "Capricorn", "mpn": "XS series 1.9 ID / 3.95 OD", "sellers": [{"name": "RobotShop (US)", "checked": "2026-11-21",
+                           "note": "$12.18 per metre"}], "datasheet": "captubes.com XS series specification (maker page)"})
 
 
 def ptfe_curve(p0, p3, rise=10.0, n=80):
@@ -2966,7 +2969,8 @@ def add_feedback_hardware(d):
     yb = FY / 2                                          # the rail's rear face
     for nm, xb in (("cam_topdown", -60.0), ("sfs", 40.0)):     # sfs: 40, clear of the rear lead screw (x 0)
         br = bx(xb - 22.0, xb + 22.0, yb, yb + 6.0, FZ - 9.0, FZ + 9.0)
-        br -= Pos(xb - 16.0, yb + 3.0, FZ) * ycyl(PH3 / 2, 6.0) + Pos(xb + 16.0, yb + 3.0, FZ) * ycyl(PH3 / 2, 6.0)
+        sxh = 18.5 if nm == "sfs" else 16.0          # sfs: heads clear of the vertical sensor (16 closed in 1 % of builds)
+        br -= Pos(xb - sxh, yb + 3.0, FZ) * ycyl(PH3 / 2, 6.0) + Pos(xb + sxh, yb + 3.0, FZ) * ycyl(PH3 / 2, 6.0)
         if nm == "sfs":              # a pad between the screws that the sensor sits on
             br += bx(xb - 10.0, xb + 10.0, yb + 6.0, yb + 10.0, FZ - 9.0, FZ + 9.0)
         if nm == "cam_topdown":      # a ledge back from the plate and a column carrying the camera above the rail, lens towards the bed
@@ -2974,7 +2978,7 @@ def add_feedback_hardware(d):
             for xh in (-10.5, 10.5):
                 br -= Pos(xb + xh, yb + 17.0, FZ + 30.0) * ycyl(2.4 / 2, 6.0)
         d.add(f"{nm}_mount", br, material=COOL, process="printed", meta={"print_up": "+Z", "print": {**PRINT_ABS, "orientation": "+Z", "infill": 0.4}})
-        for i, xh in enumerate((-16.0, 16.0)):
+        for i, xh in enumerate((-sxh, sxh)):
             add_screw(d, f"{nm}_mount_screw_{i}", "M3", 10, at=(xb + xh, yb + 6.0, FZ), direction=(0, -1, 0), threads_into="frame_top_back", tnut=True,
                       washer=True, clamps=(f"{nm}_mount",))
     yc = yb + 14.0

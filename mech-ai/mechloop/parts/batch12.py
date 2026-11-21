@@ -1045,3 +1045,16 @@ def switch_omron_d2f_01l() -> Stock:
                  real_part={"maker": "OMRON", "mpn": "D2F-01L", "sellers": [{"name": "Digi-Key", "part_number": "D2F-01L", "catalogue": True,
                             "checked": "2026-11-20", "note": "$1.44; Digi-Key and Mouser stock confirmed by the coordinator's API lookups"}],
                             "datasheet": D2F_DS, "ratings_source": {"operating_force_n": "OMRON D2F data sheet p.4: OF 0.78 N max (D2F-01L)"}})
+
+
+@part
+def spacer_mcmaster_94669a079() -> Stock:
+    """McMaster-Carr 94669A079 aluminium unthreaded spacer for M5: OD 10.00, bore 5.30 (+0.30/0), length 10.00, $2.53 (REQ-019; drawing
+    vendor_docs/McMaster_94669A079_Al_spacer_M5_10x10_drawing.pdf). Display model: McMaster's STEP. Local frame: axis Z, bottom Z=0."""
+    s = Pos(0, 0, 5.0) * (Cylinder(5.0, 10.0) - Cylinder(2.65, 10.0))
+    return Stock(s, "MCMASTER-94669A079", "McMaster 94669A079 aluminium spacer M5, 10 OD x 5.3 ID x 10", 0.0015, material="al6061", cost_usd=2.53,
+                 interfaces={"od": 10.0, "bore": 5.3, "length": 10.0, "top": [(0.0, 0.0, 10.0)]},
+                 model={"inbox": ["MCMASTER-94669A079"], "no_auto_features": True},
+                 real_part={"maker": "McMaster-Carr", "mpn": "94669A079", "sellers": [{"name": "McMaster-Carr", "part_number": "94669A079", "catalogue": True,
+                            "checked": "2026-11-21", "note": "$2.53"}], "sold_by_maker": True,
+                            "datasheet": "vendor_docs/McMaster_94669A079_Al_spacer_M5_10x10_drawing.pdf"})
