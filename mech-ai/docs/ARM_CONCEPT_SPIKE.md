@@ -21,7 +21,7 @@ arm. Tests 3, 4 and 5 have to confirm them.
 | What it needs to pass with 10 % margin | 21-bit output encoders (MT6835) on theta1 and theta2; angular-contact bearings in aluminium housings; 80 x 40 x 3 Al link cores (link1 torsion dominates) | printer-class parts: closed-loop NEMA17 on 9 mm GT2 belts (X, Y ram), T8 leadscrew Z, 40 x 40 x 2 Al ram | MT6835 on base, shoulder and elbow outputs; a **belt-reduced wrist pitch with its own MT6835** (a Dynamixel wrist fails at 0.68 mm); Al 60 x 30 link cores |
 | Allowed joint / axis repeatability (all budget joints at once, assembly class) | +/-0.015 deg | +/-0.13 mm | +/-0.016 deg |
 | Actuation, est. | $435 | $579 | $568 |
-| Whole cell, est. (actuation + ARM_SCOPE budget-table midpoints) | **~$2,200** | **~$2,300** | **~$2,350** |
+| Whole cell, est. (actuation + ARM_SCOPE budget-table midpoints) | **~$2,210** | **~$2,280** | **~$2,340** |
 | Recommendation | **drop** (reasons in section 7) | **keep: lead** | **keep: generality hedge** |
 
 Figures: [top view of each candidate over the cell](arm_spike/workspace_top.png) and
@@ -265,10 +265,12 @@ What dominates (the worst pose of the chosen configuration, `breakdown` in the J
   - At sheet poses, the peel at full ram extension: ram bending 0.43, mast 0.13, Z carriage 0.12 mm.
   - It is far inside both limits.
 - **5-axis:**
-  - At assembly, the random part dominates (0.14-0.16 mm), led by the wrist pitch.
   - With an XL430 on the wrist pitch, its 0.25 deg backlash over the 130 mm wrist-to-tool distance gives about 0.6 mm
     alone. **No smart servo fits on the wrist pitch**; it needs the same treatment as the proximal joints.
-  - Deflection is small (0.05-0.09 mm), because the pitch joints' output encoders correct the in-plane windup.
+  - With a belt + AS5047P wrist pitch, the random part still dominates (0.16 mm, mostly that joint).
+  - With an MT6835 on the wrist pitch, the random part drops to 0.06 mm, and deflection leads at the screw station
+    (1 kg + 20 N + 1.2 N·m): 0.085 mm, from upper-arm bending and shoulder and elbow bearing tilt.
+  - Deflection stays small because the pitch joints' output encoders correct the in-plane windup.
 - **Printed-only links (PETG box) fail everywhere** (1.3-3.5 mm). The DG-01 arm exception allows printed load-bearing
   parts, but long links need aluminium cores with printed joints and housings, as 01 section 4.3 expected.
 - **14-bit encoders (AS5047P) fail on both rotary arms.** One count at 600 mm is 0.23 mm. 21-bit-class output encoders

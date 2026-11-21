@@ -533,6 +533,9 @@ caution: design is cheap, build late). Arm hardware is ordered only once the pri
 
 Steps 1-5 fit inside the printer's ordering and lead-time window (print service 4-11 days; long-lead parts longer).
 
+**Steps 1-3 done (2026-11-21):** [ARM_CONCEPT_SPIKE.md](ARM_CONCEPT_SPIKE.md). All three skeletons pass tests 1 and 2 only with
+the parts listed there; recommendation: keep the Cartesian (lead) and the 5-axis, drop the SCARA; tighten test 3 to about +/-0.016 deg.
+
 ## Owner decisions (2026-11-21)
 
 - Design our own arm, run through the same loop (digital twin, verifiers, pre-registered validation).
