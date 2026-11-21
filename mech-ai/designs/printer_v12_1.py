@@ -432,7 +432,8 @@ ZC = Z_SQB - L_FLEX - 1.0 - 22.7                  # centre of the guide blocks (
 # face, leg B (ANG_B) under the square's member, two M5 up into its bottom slot. The block rises to sit 1 mm under leg B; the
 # rails rise with it (Z_RAIL_DZ) so the block's travel on its rail is unchanged.
 T_ANG, ANG_A, ANG_B, ANG_L = G64, 50.8, 25.4, 50.0      # 2 x 1 x 1/4 in angle, cut 50 mm long
-ANG_R_IN = 6.35                                         # the angle's inside root radius (stock aluminium angle; ASSUMED = wall)
+ANG_R_IN = 0.25        # inside root radius: a SHARP-corner angle is needed (the M5 washers under leg B sit 0.25 mm from leg A's inner face):
+                       # FLAGGED, confirm on the stock bought; with a rounded-root angle spot-face 1 mm of the root under the two M5 heads
 ZC_V12 = ZC
 if CH("carriage-plate-rigid"):
     ZC = Z_SQB - T_ANG - 1.0 - 22.7
@@ -896,7 +897,7 @@ def carriage_angle_local(z_blk):
       member, two M5 up into T-nuts in its bottom slot (the slot's centre line, T_CP + 10 mm in from the block's face).
     - Loads: the carrier's moments about the rail (bed weight off-centre, Z_TILT_ADJUST tilt) and side loads from rail
       misalignment left after the alignment; stiff in every direction.
-    - Process: a 50 mm length of 6061-T6 structural angle, 2 x 1 x 1/4 in (stock, root radius taken as 1/4 in), saw cut and
+    - Process: a 50 mm length of 6061-T6 sharp-corner angle, 2 x 1 x 1/4 in (stock; root radius <= 0.25 mm, FLAGGED), saw cut and
       drilled (6 holes); no laser part can do it: a straight 1/4 in plate cannot sit between the block's face and the square's
       outer face, which are 1.6 mm apart.
     - Envelope: leg A between the block's face and 6.35 mm inboard, from the square's underside down 50.8; leg B under the
@@ -2216,31 +2217,38 @@ def estop_bracket_local():
     xe, _ = ESTOP_XZ
     corner_x = RAIL_X_POST_R + t                          # outer face of leg B
     za = lambda x: corner_x - x                           # world x -> distance along leg A from the outer corner
-    xb = lambda y: y - (FRONT_Y - 10.0 - t)               # world y -> distance along leg B from the outer corner
+    xb = lambda y: y - (FRONT_Y - 10.0 - ESTOP_SPACER_T - t)   # world y -> distance along leg B from the outer corner
     holes_a = [(dz, za(-160.0), clearance_hole("M5")) for dz in (-13.0, 13.0)] + [(0.0, za(xe), 22.3)]
     holes_b = [(xb(FRONT_Y), dz, clearance_hole("M5")) for dz in (-13.0, 13.0)]
     return bent_L(t, r, za(-214.0), 30.0, w, holes_a=holes_a, holes_b=holes_b)
 
 
 RAIL_X_POST_R = -150.0      # the front-left post's right-hand face (x -150)
+ESTOP_SPACER_T = G32        # the bend's 3.18 mm inside radius cannot hug the post's square corner: leg A stands off the post's front
+                            # face by one 3.175 mm 6061 spacer plate (estop_spacer, laser cut) under the front column of screws
 
 
 def add_estop_v121(d, xe, yf, ze):
     """v12.1 estop-mount: the A22E re-made with its block behind the panel, on the bent L (estop_bracket_local)."""
-    t = B32
-    corner = (RAIL_X_POST_R + t, yf - t, ze)
+    t, sp = B32, ESTOP_SPACER_T
+    corner = (RAIL_X_POST_R + t, yf - sp - t, ze)
     frame = Location(Plane(origin=corner, x_dir=(0, 1, 0), z_dir=(-1, 0, 0)))      # local Y -> world -Z (right-handed)
     d.add("estop_bracket", frame * estop_bracket_local(), material="al5052", process="sheet", meta={
         "finish": "bare", "bends": 1, "form": "bent",
         "description": ("v12.1: e-stop bracket, 5052-H32 .125 in bent once (SendCutSend). An L round the front-left post's front-right "
                         "corner: the panel leg on the post's front face carries the OMRON A22E-M-02 in its 22.3 mm cut-out, 30 mm left "
                         "of the post; two M5 in the post's front slot and two in its right-hand slot (two columns, two faces).")})
+    spc = bx(-170.0, RAIL_X_POST_R - R_B32 - 0.5, yf - sp, yf, ze - ESTOP_BRACKET_W / 2, ze + ESTOP_BRACKET_W / 2)
+    for zb in (ze - 13.0, ze + 13.0):
+        spc -= Pos(-160.0, yf - sp / 2, zb) * Rot(90, 0, 0) * Cylinder(clearance_hole("M5") / 2, sp)
+    sheet(d, "estop_spacer", spc, AL, description="v12.1: spacer plate, 6061 .125 (SendCutSend), between the e-stop bracket's panel leg and "
+                                                  "the front-left post's front face: the bracket's bend radius cannot hug the post's corner")
     for i, zb in enumerate((ze - 13.0, ze + 13.0)):
-        add_screw(d, f"estop_bracket_screw_{i}", "M5", 8, at=(-160.0, yf - t, zb), direction=(0, 1, 0), threads_into="post_lf", tnut=True,
-                  tnut_stock=tnut_hntp5(), clamps=("estop_bracket",), washer=True)
+        add_screw(d, f"estop_bracket_screw_{i}", "M5", 12, at=(-160.0, yf - sp - t, zb), direction=(0, 1, 0), threads_into="post_lf", tnut=True,
+                  tnut_stock=tnut_hntp5(), clamps=("estop_bracket", "estop_spacer"), washer=True)
         add_screw(d, f"estop_bracket_screw_{i + 2}", "M5", 8, at=(RAIL_X_POST_R + t, FRONT_Y, zb), direction=(-1, 0, 0), threads_into="post_lf",
                   tnut=True, tnut_stock=tnut_hntp5(), clamps=("estop_bracket",), washer=True)
-    place(d, "estop", estop_omron_a22e_m_02_v2(t), Location(Plane(origin=(xe, yf - t, ze), z_dir=(0, -1, 0))))
+    place(d, "estop", estop_omron_a22e_m_02_v2(t), Location(Plane(origin=(xe, yf - sp - t, ze), z_dir=(0, -1, 0))))
     d.join("estop", "estop_bracket", "held by its own ring nut on the panel's back face, through the 22.3 mm cut-out")
     d.get("estop").meta["description"] = ("OMRON A22E-M-02 emergency stop (v12.1 model: switch block behind the panel, from the data "
                                           "sheet's A22E-M drawing), in estop_bracket's panel leg, head forward at hand height.")
