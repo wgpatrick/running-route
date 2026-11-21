@@ -100,6 +100,7 @@ a.lnk,button.lnk{color:var(--accent);background:none;border:0;padding:0;font:inh
 .rank{font:600 10px var(--f-mono);border-radius:3px;padding:0 5px;margin-right:6px}
 .rank.A{background:var(--err-soft);color:var(--err)} .rank.B{background:var(--warn-soft);color:var(--warn)} .rank.C{background:var(--info-soft);color:var(--info)}
 .fb{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;margin-top:8px}
+.fbtags{display:flex;gap:6px;margin-bottom:8px}.fbtags select{flex:1;min-width:0}
 .verdicts{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
 .verdicts label{display:flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:4px;padding:4px 10px;cursor:pointer;font-size:13px}
 .verdicts input{accent-color:var(--accent)}
@@ -393,6 +394,7 @@ const GEN_TOL={sheet:'Position ±0.16 mm, pattern ±0.08 mm, hole ±0.08 mm, fla
   machined:'Position ±0.08 mm, pattern ±0.04 mm, hole ±0.04 mm, mating-face flatness 0.04 mm. Xometry default ±0.127 mm unless called out.',
   printed:'Position ±0.24 mm, pattern ±0.10 mm, holes drawn oversize for 0.15 mm shrink (±0.14), flatness 0.20 mm.'};
 const VERDICT={ok:'Looks good',question:'Question',change:'Change needed'};
+const FBKIND={broken:'Broken model',weird:'Weird artefact',poor:'Poor design idea',other:'Other'};const SEV={minor:'Minor',major:'Major',blocker:'Blocker'};
 let D, P={}, J={}, A={}, OI={}, sel=null, FB=[], db=null, user=null, me=null, names={};
 const S={tab:'asm',q:'',kind:'custom'};
 /* view state: SET = parts picked with multi-select; VM = what happens to everything else; HIDDEN = assemblies switched off */
@@ -596,15 +598,15 @@ function renderFB(){
   else h+=`<p class="note">No feedback on this ${sel.t==='asm'?'assembly':sel.t} yet.</p>`;
   if(db){
     const dv=draft[k]||{v:'change',t:''};
-    h+=`<form id="fbform" style="margin-top:10px"><div class="verdicts" role="radiogroup" aria-label="Verdict">${Object.entries(VERDICT).map(([v,l])=>`<label><input type="radio" name="vd" id="vd-${v}" value="${v}" ${dv.v===v?'checked':''}>${l}</label>`).join('')}</div><textarea id="fbtext" placeholder="What should change, or what you checked. Name a feature (hole H5, the slot, the edge) where you can.">${esc(dv.t)}</textarea><div class="fbrow"><button class="btn" id="fbsend" type="submit">Save feedback</button><span class="note" id="fbmsg">Saved feedback is shared with everyone who can open this page, and Claude reads it for the next revision.</span></div></form>`;
+    h+=`<form id="fbform" style="margin-top:10px"><div class="verdicts" role="radiogroup" aria-label="Verdict">${Object.entries(VERDICT).map(([v,l])=>`<label><input type="radio" name="vd" id="vd-${v}" value="${v}" ${dv.v===v?'checked':''}>${l}</label>`).join('')}</div><div class="fbtags"><select id="fbkind" aria-label="Issue type"><option value="">Issue type (optional)</option>${Object.entries(FBKIND).map(([v,l])=>`<option value="${v}" ${dv.k===v?'selected':''}>${l}</option>`).join('')}</select><select id="fbsev" aria-label="Severity"><option value="">Severity (optional)</option>${Object.entries(SEV).map(([v,l])=>`<option value="${v}" ${dv.s===v?'selected':''}>${l}</option>`).join('')}</select></div><textarea id="fbtext" placeholder="What should change, or what you checked. Name a feature (hole H5, the slot, the edge) where you can.">${esc(dv.t)}</textarea><div class="fbrow"><button class="btn" id="fbsend" type="submit">Save feedback</button><span class="note" id="fbmsg">Saved feedback is shared with everyone who can open this page, and Claude reads it for the next revision.</span></div></form>`;
   } else h+=`<p class="note" style="margin-top:8px">${fbReady?'Feedback can be saved when this page is opened on claude.ai while signed in.':'Connecting to feedback storage…'}</p>`;
   box.innerHTML=h;
   const form=$('fbform'); if(!form)return;
-  form.oninput=()=>{draft[k]={v:form.querySelector('input[name=vd]:checked')?.value||'change',t:$('fbtext').value}};
+  form.oninput=()=>{draft[k]={v:form.querySelector('input[name=vd]:checked')?.value||'change',t:$('fbtext').value,k:$('fbkind').value,s:$('fbsev').value}};
   form.onsubmit=async e=>{e.preventDefault(); const text=$('fbtext').value.trim(); const v=form.querySelector('input[name=vd]:checked')?.value||'change';
     if(!text&&v!=='ok'){$('fbmsg').textContent='Write a note first (a bare "Looks good" needs no text).';return}
     $('fbsend').disabled=true;
-    try{await db.collection('feedback').add({target:k,targetName:targetName(k),verdict:v,text,author:me||null,at:new Date().toISOString(),status:'open',design:D.design});
+    try{await db.collection('feedback').add({target:k,targetName:targetName(k),verdict:v,text,kind:$('fbkind').value||null,severity:$('fbsev').value||null,author:me||null,at:new Date().toISOString(),status:'open',design:D.design});
       delete draft[k]; $('fbmsg').textContent='Saved.';}
     catch(err){$('fbmsg').textContent='Not saved: '+(err.code==='not_granted'?'you need edit or contributor access to this page.':(err.message||err.code));$('fbsend').disabled=false}
   };
