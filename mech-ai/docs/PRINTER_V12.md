@@ -27,9 +27,8 @@ check; their inspection plans are in `inspect_form/plans/printer_v12/`.
 | 1 | `CTRL-OCTOPUS-V1.1` | 4 typical ratings (logic power, max ambient, output resistance, thermistor pull-up). Geometry now BTT's V1.0 STEP, accepted by the owner for the V1.1 | BTT (email) |
 | 2 | `EXTRUDER-E3D-ROTO` | 3 motor ratings | E3D (email) |
 | 2 | `HOTEND-REVO-24V-40W` | resistance at 23 degC, volts | E3D (email) |
-| 2 | `SPACER-AL-M5-10x5.1x9.75` | no stock product at 9.75 mm; no McMaster / MISUMI number could be confirmed (digikey.com is outside this session's network; McMaster pages give no numbers to a search) | owner: a stock 10 mm M5 spacer (belt 0.25 mm off) or a part number |
-| 2 | `ENDSTOP-MICRO` (x2) | the OMRON D2F-01L sits on a generated 20 x 12.5 board; no bought module | owner: a module, or the bare D2F-01L on its own two 2.0 mm holes at 5.2 mm (needs M2 screws whose McMaster numbers are not in hand, and both switch mounts re-laid) |
-| 3 | `SPOOL-1KG-FILAMENT`, `SPACER-M8-12x8.4x43 / x58.32`, `PTFE-COUPLER-4MM` (x2), `SHCS-M8x140`, `NUT-M8`, `WASHER-M8`, `BRG-608` (x2), PTFE tube (BOM line) | the filament supply's products (REQ-018) | Instinct REQ-018 |
+| 2 | `SPACER-AL-M5-10x5.1x10` | the X idler spacer is now a stock **10 mm** (the drive pulley's gap went 2.75 -> 3.0 so the belt stays square); the product (McMaster / MISUMI, 10 OD, 5.1-5.3 bore) is being found | Instinct |
+| 3 | `SHCS-M8x140`, `NUT-M8`, `WASHER-M8`, `SPACER-M8-12x8.4x39 / x58.32`, PTFE tube (BOM line) | the spool axle's hardware and sleeves, and the tube | Instinct REQ-018 follow-up |
 
 Cost and lead times per stage: "Sourcing and the Build 1 schedule" below.
 
@@ -106,11 +105,11 @@ and bed together, so its print error is smaller than its amplitude. Fallback: MI
 rubber foot (both staged; needs the plate on a rail end, i.e. a frame change at the corners).
 
 ### Filament supply (owner, 2026-11-20, stage 3)
-A 1 kg spool (placeholder: 200 OD, 52 bore, 68 wide, 1.25 kg) behind the frame, its front face at y 236 (clear of the rear nut
-plate and Y motors, which reach y 226), hanging by its hub on two 608 bearings on a cantilevered M8 x 140 axle (spool lifts off
+A 1 kg spool (the envelope of Prusa's Prusament spool STEP: 199.89 OD, 51.25 bore, 64.13 wide; 1.25 kg full) behind the frame, its front face at y 236 (clear of the rear nut
+plate and Y motors, which reach y 226), hanging by its hub on two NSK 608ZZ bearings (MISUMI) on a cantilevered M8 x 140 axle (spool lifts off
 the free end: no tools), the axle clamped in a flat 6061 .125 plate (SendCutSend) on the top back rail's rear face, inboard of
 the right Y motor. Filament from the spool's top to the **SFS V2, now standing vertical** (in at the bottom, out at the top),
-then a 4 mm PTFE tube with push-fit couplers to the Roto's inlet. **Check (requirement):** the tube, taken as straight up from
+then a 4 mm PTFE tube from a McMaster 2333N214 push-fit (M10 x 1; the SFS's port thread is **assumed**, BTT does not state it: check on arrival) straight into the Roto's own bowdaptor collet (E3D's reference CAD: no coupler there). **Check (requirement):** the tube, taken as straight up from
 both ends joined by a half circle, touches no part over the whole X / Y travel; least bend radius **52 mm** (limit 50 until
 the datasheet: thin), at the rear corners; path 187 to 557 mm: **cut the tube about 610 mm**. Drag (estimate) under 2 N against
 the Roto's tens of newtons. Spool mass on the frame: 1.25 kg at the top rear (the frame-mode FEA is of the frame alone; the
@@ -119,6 +118,13 @@ spool lowers the rocking mode above by about 3 %).
 ### Enclosure (V13, owner): nothing added in v12. The outer faces used: the top front rail's top (overview camera), the top
 back rail's rear face (top-down camera, SFS, spool plate), the top right rail's top slot (Y switch), the bottom left rail's
 side (inlet panel, earth stud). The feet use the bottom slots.
+
+### Endstops (v12)
+Each endstop is now the real **OMRON D2F-01L** (Digi-Key, $1.44; re-made from OMRON's D2F data sheet: body 12.7 x 6.5 x 5.8,
+operating position 6.8 +/-1.5 from the hole line, overtravel 0.55) **bonded (epoxy) to a fabricated 20 x 12.5 x 1.6 mm 6061
+carrier** (SendCutSend) that keeps the old generated board's outline and M3 holes, so both switch mounts and their screw stacks
+are unchanged; the terminals pass through a 4.5 x 13 mm slot (tape them) and the leads are soldered on. The switch's own
+2.0 mm holes (M2) are not used: no McMaster M2 numbers of the right length are in hand.
 
 ### Printed parts
 PETG, all at Hubs (assigned per part); none in a load path: part duct, two mains covers, Eddy holder, two camera mounts, SFS
