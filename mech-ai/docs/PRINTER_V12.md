@@ -26,7 +26,7 @@ check; their inspection plans are in `inspect_form/plans/printer_v12/`.
 | 1 | `NEMA17-48-LEADSCREW-TR8x2-330-AB4` (x3) | `rotor_inertia_gcm2`, `efficiency` (not on drawing A4003) | StepperOnline (email) |
 | 1 | `TR8x2-INTEGRAL-17E19S1684AB4-330RA` (x3) | `efficiency` (0.35 typical) | StepperOnline (email) |
 | 1 | `CTRL-OCTOPUS-V1.1` | 4 typical ratings (logic power, max ambient, output resistance, thermistor pull-up). Geometry now BTT's V1.0 STEP, accepted by the owner for the V1.1 | BTT (email) |
-| 1 | `ESTOP-MUSHROOM-22MM-LATCHING-NC`, `SAFETY-RELAY-24V-MANUAL-RESET` (BOM lines) | the owner's hardwired safety chain: products with CAD being found (REQ-021); placed in the bay in v12.1 with the supply change | Instinct REQ-021 |
+| 1 | `RESET-PUSHBUTTON-22MM-1NO` (BOM line) | the G9SE-201's manual-reset button (T33/T34), to sit beside the e-stop: product to name | Instinct |
 | 2 | `EXTRUDER-E3D-ROTO` | 3 motor ratings | E3D (email) |
 | 2 | `HOTEND-REVO-24V-40W` | resistance at 23 degC, volts | E3D (email) |
 | 3 | none | the spool axle is MISUMI SFAL8-108-B15-S15 with McMaster 90592A022 nuts, NSK 608ZZ (MISUMI B608ZZ STEP), turned sleeves; the X idler spacer is McMaster 94669A079 | |
@@ -47,7 +47,7 @@ Cost and lead times per stage: "Sourcing and the Build 1 schedule" below.
 | Bed current | 200 W at 24 V = 8.33 A on the Octopus HB output (12.5 A, 67 %), a Littelfuse 0297010 10 A MINI blade fuse and the CS712025Y (10 A): **both 10 A parts are at 83 % (81 % with Klipper `max_power: 0.95`): THIN.** Heater voltage drop 3.0 % or less (passes): 189 W delivered. |
 | Probe | **BTT Eddy Duo** on USB, coil face 2.5 mm above the tip, on a printed PETG holder on a one-bend 5052 L; no metal in its 5 mm coil band; temperature 55 degC nominal (60 degC rating), 67 degC in a hot case (open question). |
 | Toolhead (moving in X) | **0.401 kg** (target < 0.45). |
-| Electronics | Raspberry Pi 5 (+ active cooler, 27 W PSU) as host; mains through a Schurter DD11 inlet with a 4301.1405 fuse drawer (T8A), a Finder 22.32 contactor switched by a Phoenix PLC-RSC relay driven by a PN2222A from Pi GPIO26 (Moonraker power device); Octopus V1.1 with TMC2209 sticks; DIN-rail bay with covers; 16 AWG earth star. Firmware: Klipper with the Eddy, ADXL345, SFS V2, LED and laser pins, loaded by klippy offline with the RP2040 and Linux host-MCU dictionaries. |
+| Electronics | Raspberry Pi 5 (+ active cooler, 27 W PSU) as host; **XP Power LBA350PS24** 24 V 350 W supply (owner, 2026-11-21: a drop-in for the out-of-stock LRS-350-24; universal input, no selector; inrush 30 / 60 A at 115 / 230 VAC); mains through a Schurter DD11 inlet with a 4301.1405 fuse drawer (T8A), a Finder 22.32 contactor switched by a Phoenix PLC-RSC relay driven by a PN2222A from Pi GPIO26 (Moonraker power device); Octopus V1.1 with TMC2209 sticks; DIN-rail bay with covers; 16 AWG earth star. Firmware: Klipper with the Eddy, ADXL345, SFS V2, LED and laser pins, loaded by klippy offline with the RP2040 and Linux host-MCU dictionaries. |
 | Mass / BOM cost | **18.74 kg / $2,353.93** with the full spool and the safety-chain placeholders (BOM estimate in the verify; v11: 13.82 kg / $1,110.99). Live sourcing: see below. The increase is the electronics and feedback hardware (Pi 5, cameras, laser, Eddy, contactor bay), HIWIN rails, MISUMI idlers, feet and filament supply. |
 | Score (on the design before feet / spool) | resonance X 72.8 Hz, Y 58.7 Hz; acceleration an owner would run about 6,000 mm/s2; frame stiffness X 1,634 / Y 2,007 N/mm; toolhead 0.401 kg; assembly 166 min, 268 fasteners. Tune: X shaper EI 90.4 Hz, Y MZV 58.6 Hz, pressure advance 0.042, mesh RMS 0.018 mm. Firmware-in-the-loop print of the standard bracket on real Klipper: 3,891 s, nozzle within 0.060 mm of the path, no collision in 4,074 poses, one corner-bulge warning. |
 
@@ -85,6 +85,21 @@ and igus CF880 / chainflex in the moving looms; LAPP 16 AWG earth, one conductor
 cut by the builder) with WAGO end stops; mains covers printed in PETG with cord grips; the bay re-laid out. Klipper's
 config is generated (`out/printer_v12/electrical/printer.cfg`) and loaded by klippy with three MCUs (Octopus, Eddy RP2040,
 ADXL RP2040) plus the Pi's host MCU.
+
+### Safety chain (owner, 2026-11-21, stage 1)
+**OMRON A22E-M-02** e-stop (40 mm mushroom, twist release, 2 NC; re-made from OMRON's A22E data sheet; panel cut-out 22.3 mm is
+Digi-Key's figure, flagged until read on OMRON's page) on a flat 6061 bracket on the **front face of the front-left post**,
+left of the post, head forward at z 300 (35 mm proud of the frame's front), its body running back outside the frame's left side.
+**OMRON G9SE-201** safety relay (17.5 x 124 x 111.6, 2 NO 5 A, manual reset; re-made from data sheet J198) on a WAGO rail across the
+back wall's rear faces (post_lb and upright_rear) at z 345, **outside the frame**: at 111.6 mm deep it cannot stand in the bay
+under the carrier (the carrier comes down to z 142), and its rail sits above the rear nut plate's highest reach through the back
+wall. Bracket and rail are held through the T-slots (MISUMI HNTP5-5), nothing drilled. Loop: Phoenix PLC-RSC contact (GPIO path) in
+series with the G9SE's two safety outputs in series with the Finder coil; G9SE inputs: the e-stop's two NC channels, a spare pair
+for a door interlock (future) and one for a smoke / heat detector contact (future); a reset button (BOM placeholder). The GPIO path
+can only drop the contactor. A requirement checks the parts are drawn and real and the outputs carry the coil; **the electrical
+verifier's own circuit model still switches the coil from the Phoenix relay alone** (the series loop is not in its netlist).
+What covers heater runaway: as the requirement says (Klipper's MCU-side max_duration and the bed thermostat; nothing automatic
+for the hotend if the MCU itself hangs with a heater on).
 
 ### Sensing and feedback (v12, stage 3 unless noted)
 BTT Eddy Duo (stage 2); Arducam B0454 nozzle camera with a CIL062 lens; Quarton VLM-520 line laser with an insulating clamp
@@ -179,9 +194,8 @@ critical path.** Alternatives checked live the same day (`--list`, all universal
 - Eddy hot-case temperature 67 degC over its 60 degC rating (estimate).
 
 ## Questions for the owner
-0. The 24 V supply: XP Power LBA350PS24 (Digi-Key, 63 in stock, $44.75; a mechanical drop-in for the out-of-stock LRS-350-24) or
-   Mean Well RSP-320-24 (Mouser 921, $53.20)? The bay re-layout with the Omron G9SE-201 safety relay (17.5 mm) and the A22E-M-02
-   e-stop follows in v12.1.
+0. The safety relay sits outside the back wall and the e-stop's head 35 mm in front of the frame: acceptable, or should v12.1 re-lay
+   the bay (e.g. a side box) to bring the G9SE inside?
 1. Accept the 10 A blade fuse and 10 A thermostat at 81 to 83 % on the 200 W bed, or cap the bed at `max_power: 0.8` (6.7 A,
    80 %: slower heat-up), or fit a 15 A fuse with a 14 AWG bed run (then the Mini-Fit HCS, 16 AWG max, must change)?
 2. The rear spool and the feet take the machine to 389 x 510 x 511 mm: acceptable against the 420 x 420 x 480 envelope?
