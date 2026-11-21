@@ -85,7 +85,7 @@ def run_verify(design: str, on: list[str], name: str, base_name: str, fast: bool
         (root / name).mkdir(parents=True, exist_ok=True)
         (root / name / "build_change_verify.log").write_text(r.stdout[-20000:] + "\n---\n" + r.stderr[-20000:])
         print(f"fast verify {name}: exit {r.returncode} in {time.time() - t:.0f} s")
-        return root / name / "report.json"
+        return root / name / "report_partial.json"      # an --only run writes the partial report
     out = ROOT / "out" / name
     seed = ROOT / "out" / base_name / "verify_cache"
     # the newest cache of a sibling variant (same design file) is usually fresher than the base's (its code manifest matches)
@@ -229,6 +229,8 @@ def main():
     ap.add_argument("--base-report", default=None, help="report of the base design (default out/<base name>/report.json)")
     ap.add_argument("--base-name", default="printer_v12", help="the base revision's design name (its out/ folder)")
     ap.add_argument("--status", default="proposed")
+    ap.add_argument("--report", default=None, help="use this report (e.g. out/fast/<name>/report_partial.json) instead of verifying")
+    ap.add_argument("--fast-report", action="store_true", help="with --report: it is a fast-lane report")
     a = ap.parse_args()
 
     mod = design_module(a.design)
@@ -237,7 +239,7 @@ def main():
         sys.exit(f"{a.change} is not a change of {a.design}: {ids}")
     on = [k for k in ids if k in with_deps(a.change, deps)]
 
-    rep_path = None
+    rep_path = a.report
     if a.verify or a.fast:
         probe = build(a.design, on)
         rep_path = run_verify(a.design, on, probe.name, a.base_name, fast=a.fast and not a.verify)
@@ -263,7 +265,7 @@ def main():
                 findings.setdefault(p, []).append({k: f[k] for k in ("verifier", "severity", "code", "message")} | {"hint": (f.get("data") or {}).get("hint", "")})
     bpath = Path(a.base_report) if a.base_report else ROOT / "out" / a.base_name / "report.json"
     brep = json.loads(bpath.read_text()) if bpath.exists() else None
-    fast = a.fast and not a.verify
+    fast = (a.fast or a.fast_report) and not a.verify
     if fast and rep and brep:          # compare like with like: only the verifiers the fast lane ran
         if "part_quality" not in brep["summary"]:     # v12's report has no part_quality: that is compared part by part below
             rep = {**rep, "findings": [f for f in rep["findings"] if f["verifier"] != "part_quality"],

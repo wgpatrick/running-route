@@ -54,11 +54,12 @@
   {
    "id": "znut-direct",
    "title": "Z nuts bolted direct to the plate",
-   "summary": "Each POM nut's flange is bolted to its nut plate with four M4 through its own holes into steel thread inserts. The floating keeper, spacers, keeper bolts and the anti-rotation pin are removed; the screw, free at its top, takes small misalignment.",
+   "summary": "Each POM nut's flange is bolted to its nut plate with four M4 through its own holes into threads tapped in the plate. The floating keeper, spacers, keeper bolts and the anti-rotation pin are removed; each motor plate is lined up with its fixed nut at assembly and the screw, free at its top, takes the rest.",
    "threads": [
     "10eab134-e341-4786-bae2-d085e018c34d"
    ],
    "status": "needs work",
+   "status_reason": "not verified",
    "depends_on": [],
    "removed": [
     "nut_keeper",
@@ -110,19 +111,7 @@
     "nut_plate_fr",
     "z_motor_plate",
     "z_motor_plate_fl",
-    "z_motor_plate_fr",
-    "z_mount_fl_bolt_0",
-    "z_mount_fl_bolt_0_washer",
-    "z_mount_fl_bolt_1",
-    "z_mount_fl_bolt_1_washer",
-    "z_mount_fr_bolt_0",
-    "z_mount_fr_bolt_0_washer",
-    "z_mount_fr_bolt_1",
-    "z_mount_fr_bolt_1_washer",
-    "z_mount_rear_bolt_0",
-    "z_mount_rear_bolt_0_washer",
-    "z_mount_rear_bolt_1",
-    "z_mount_rear_bolt_1_washer"
+    "z_motor_plate_fr"
    ],
    "added": [
     "z_nut_fl_screw_0",
@@ -138,10 +127,9 @@
     "z_nut_screw_2",
     "z_nut_screw_3"
    ],
-   "checks": "affected-tier verify: 112 errors, 165 warnings (v12: 7 errors, 174 warnings; warnings -9); NEW errors: assemblability/tool_access_blocked: Fastener bracket_10_screw cannot be driven: the screw and a 6 mm x 50 mm driver along its axis are blocked by ['z_motor_fr', 'z_mount_fr_bolt_0', 'z_mount_fr_sp; assemblability/tool_access_blocked: Fastener bracket_2_screw cannot be driven: the screw and a 6 mm x 50 mm driver along its axis are blocked by ['z_motor_fl', 'z_mount_fl_bolt_0', 'z_mount_fl_spa; assemblability/tool_access_blocked: Fastener brkt_up_bot_a_left_screw cannot be driven: the screw and a 6 mm x 50 mm driver along its axis are blocked by ['brkt_up_bot_a_left_screw_a'], which must; assemblability/tool_access_blocked: Fastener brkt_up_bot_a_left_screw_a cannot be driven: the screw and a 6 mm x 50 mm driver along its axis are blocked by ['z_motor_fl'], which must already be in; assemblability/tool_access_blocked: Fastener brkt_up_bot_a_rear_screw cannot be driven: the screw and a 6 mm x 50 mm driver along its axis are blocked by ['brkt_up_bot_a_rear_screw_a'], which must; assemblability/tool_access_blocked: Fastener brkt_up_bot_a_rear_screw_a cannot be driven: the screw and a 6 mm x 50 mm driver along its axis are blocked by ['z_mount_rear_bolt_1', 'z_mount_rear_sp; parts 907 -> 877 (-30); part_quality (6 changed custom part(s), audits on every changed part): 6 error(s): z_motor_plate sliver_face, z_motor_plate tiny_edge, z_motor_plate_fl sliver_face, z_motor_plate_fl tiny_edge, z_motor_plate_fr sliver_face, z_motor_plate_fr tiny_edge; 2 warning(s): z_motor_plate_fl near_parallel_faces, z_motor_plate_fr near_parallel_faces; cleared against v12: z_motor_plate_fl small_step, z_motor_plate_fr small_step",
+   "checks": "fast checks (geometry, interference, manufacture, assemblability, practice, part_quality): not verified (run with --verify); part_quality (6 changed custom part(s), audits on every changed part): clean (no errors or warnings); cleared against v12: z_motor_plate_fl near_parallel_faces, z_motor_plate_fl small_step, z_motor_plate_fr near_parallel_faces, z_motor_plate_fr small_step; full checks running",
    "file": "changes/znut-direct.json",
-   "design": "printer_v12_1+znut-direct",
-   "status_reason": "112 errors not in v12 (thread engagement of the M4s, tool access, motor-plate webs): being fixed"
+   "design": "printer_v12_1+znut-direct"
   }
  ]
 }
