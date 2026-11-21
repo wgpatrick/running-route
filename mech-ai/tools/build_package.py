@@ -1473,7 +1473,7 @@ def write_fabrication(cx: Ctx, drawings: bool = True) -> dict:
                   " x ".join(f2(x) for x in a["size"]), f"{a['c'].mass():.3f}" + ("*" if a["c"].mass_kg else ""),
                   f"{sum(1 for f in a['feats'] if f['kind'] == 'hole')} / {sum(1 for f in a['feats'] if f['kind'] == 'slot')}",
                   sum(1 for f in a["feats"] if f["flags"]), ", ".join(twins.get(n, [])) or "-",
-                  " ".join(f"[{k}]({p.relative_to(cx.out)})" for k, p in ([("svg", cx.out / 'drawings' / f'{n}.svg'), ("pdf", cx.out / 'drawings' / f'{n}.pdf')] + sorted(files.get(n, {}).items())))]
+                  " ".join(f"[{k}]({p.relative_to(cx.out)})" for k, p in ([("svg", cx.out / 'drawings' / f'{n}.svg'), ("pdf", cx.out / 'drawings' / f'{n}.pdf')] + sorted((k_, v_) for k_, v_ in files.get(n, {}).items() if hasattr(v_, 'relative_to'))))]
                  for n, a in parts.items()]), "",
           "\\* mass includes a payload mass declared on the part in the design. For flat sheet a mirror-image part is the same cut part turned over: one DXF serves both.", ""]
     rework = _end_work(cx, [c.name for c in d.components if (c.sku or "").startswith("EXT2020")])
