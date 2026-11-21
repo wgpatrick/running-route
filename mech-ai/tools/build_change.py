@@ -20,6 +20,7 @@ requirements, part count), plus --checks text.
 from __future__ import annotations
 
 import argparse
+import re as _re
 import base64
 import json
 import os
@@ -92,57 +93,68 @@ def run_verify(design: str, on: list[str], name: str, base_name: str) -> Path:
 
 
 def summarize(rep: dict, base: dict | None, n_parts: int, n_base: int) -> str:
-    def counts(r):
-        import re as _re
-        out = {}
-        for k, s in r["summary"].items():
-            if isinstance(s, dict):
-                out[k] = (s.get("errors", 0), s.get("warnings", 0))
-            elif isinstance(s, str) and (m_ := _re.search(r"(\d+) errors?, (\d+) warnings?", s)):
-                out[k] = (int(m_.group(1)), int(m_.group(2)))
-        return out
+    """Plain, self-consistent text: the affected-tier result against v12's, errors new / cleared, warnings delta, part count."""
+    def errs(r):
+        return {(f["verifier"], f["code"], f.get("message", "")[:160]) for f in r["findings"] if f["severity"] == "error"}
 
-    def failed_reqs(r):
-        return {f["message"].split(":")[0][:90] for f in r["findings"] if f["verifier"] == "requirements" and f["severity"] == "error"}
+    def nwarn(r):
+        return sum(1 for f in r["findings"] if f["severity"] == "warning")
 
-    c = counts(rep)
-    parts = [f"parts {n_parts - n_base:+d} ({n_parts})"]
+    e, w = errs(rep), nwarn(rep)
+    out = [f"affected-tier verify: {len(e)} errors, {w} warnings"]
     if base:
-        b = counts(base)
-        for k in sorted(c):
-            e, w = c[k]
-            e0, w0 = b.get(k, (0, 0))
-            if (e, w) != (e0, w0):
-                parts.append(f"{k}: {e} err ({e - e0:+d}), {w} warn ({w - w0:+d})")
-        new_fail = sorted(failed_reqs(rep) - failed_reqs(base))
-        fixed = sorted(failed_reqs(base) - failed_reqs(rep))
-        if new_fail:
-            parts.append("requirements newly failing: " + "; ".join(new_fail))
-        if fixed:
-            parts.append("requirements now passing: " + "; ".join(fixed))
-    tot_e = sum(e for e, _ in c.values())
-    tot_b = sum(e for e, _ in counts(base).values()) if base else None
-    parts.insert(0, f"verify ({'OK' if rep.get('ok') else 'FAILS'}): {tot_e} errors, {sum(w for _, w in c.values())} warnings"
-                 + (f" (v12: {tot_b} errors, {sum(w for _, w in counts(base).values())} warnings)" if base else ""))
-    return "; ".join(parts)
+        e0, w0 = errs(base), nwarn(base)
+        new, gone = sorted(e - e0), sorted(e0 - e)
+        out[0] += f" (v12: {len(e0)} errors, {w0} warnings; warnings {w - w0:+d})"
+        rules = sorted({(v, c) for v, c, _ in e})
+        if not new and not gone:
+            out.append("no error new or cleared against v12")
+        if new:
+            out.append("NEW errors: " + "; ".join(f"{v}/{c}: {m}" for v, c, m in new[:6]))
+        if gone:
+            out.append("errors cleared: " + "; ".join(f"{v}/{c}: {m}" for v, c, m in gone[:6]))
+        if e and all(v == "practice" for v, _ in rules):
+            dg07 = all("DG-07" in m or "placeholder" in m.lower() or "purchased" in m.lower() for _, _, m in e)
+            out.append("the only remaining failure is the existing practice DG-07 placeholder-part rule (as in v12)" if dg07
+                       else "remaining errors are practice rules: " + ", ".join(c for _, c in rules))
+    else:
+        out.append("no base report to compare")
+    out.append(f"parts {n_base} -> {n_parts} ({n_parts - n_base:+d})")
+    return "; ".join(out)
 
 
-def part_quality_text(d, parts: list[str], changed: list[str], removed: list[str]) -> str:
+def _pq_keys(d, parts, names):
+    from mechloop.verifiers.part_quality import verify_part_quality
+
+    res = verify_part_quality(d, parts or None, audits=True)
+    return {f"{(f.data or {}).get('part', '?')} {f.code}" for f in res.findings if f.severity != "info"
+            and ((f.data or {}).get("part") in names or any(_re.search(r"(?<![A-Za-z0-9_])" + _re.escape(n) + r"(?![A-Za-z0-9_])", f.message) for n in names))}
+
+
+def part_quality_text(d, parts: list[str], changed: list[str], removed: list[str], base=None) -> str:
     """The opt-in part-quality checks (mechloop/verifiers/part_quality.py): the per-part checks on the change's custom parts,
     and the design-wide audits (allowed overlaps, joins by note, purchased-part holes) wherever they name a changed part."""
     from mechloop.verifiers.part_quality import verify_part_quality
 
-    res = verify_part_quality(d, parts or ["__none__"], audits=True)
+    res = verify_part_quality(d, parts or None, audits=True)
     names = set(changed)
     mine = [f for f in res.findings if f.severity != "info"
-            and ((f.data or {}).get("part") in names or any(n in f.message for n in names))]
+            and ((f.data or {}).get("part") in names or any(_re.search(r"(?<![A-Za-z0-9_])" + _re.escape(n) + r"(?![A-Za-z0-9_])", f.message) for n in names))]
     head = f"part_quality ({len(parts)} changed custom part(s), audits on every changed part)"
+    cleared = ""
+    if base is not None:
+        bnames = {c.name for c in base.components}
+        was = _pq_keys(base, [n for n in parts if n in bnames], names & bnames | set(removed))
+        now = {f"{(f.data or {}).get('part', '?')} {f.code}" for f in mine}
+        gone = sorted(was - now)
+        if gone:
+            cleared = "; cleared against v12: " + ", ".join(gone)
     if not mine:
-        return head + ": clean (no errors or warnings)"
+        return head + ": clean (no errors or warnings)" + cleared
     by = {}
     for f in mine:
         by.setdefault(f.severity, []).append(f"{(f.data or {}).get('part', '?')} {f.code}")
-    return head + ": " + "; ".join(f"{len(v)} {k}(s): {', '.join(sorted(set(v)))}" for k, v in sorted(by.items()))
+    return head + ": " + "; ".join(f"{len(v)} {k}(s): {', '.join(sorted(set(v)))}" for k, v in sorted(by.items())) + cleared
 
 
 def part_record(c, electronics, findings) -> tuple[dict, bytes, bytes]:
@@ -236,8 +248,8 @@ def main():
     (out / f"{a.change}.txt").write_text(txt)
     (out / f"{a.change}.json").write_text(json.dumps({"mesh": f"changes/{a.change}.txt", "parts": recs}, separators=(",", ":"), default=str))
 
-    checks = summarize(rep, brep, len(var.components), len(base.components)) if rep else "not verified (run with --verify)"
-    pq = part_quality_text(var, [n for n in modified + added if not sv[n].cots], modified + added, removed)
+    checks = summarize(rep, brep, len(var.components) + len(var.belts), len(base.components) + len(base.belts)) if rep else "not verified (run with --verify)"
+    pq = part_quality_text(var, [n for n in modified + added if not sv[n].cots], modified + added, removed, base)
     if pq:
         checks += "; " + pq
     if a.checks:

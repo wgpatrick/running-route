@@ -17,7 +17,7 @@
     "z_motor_fr"
    ],
    "added": [],
-   "checks": "verify (FAILS): 0 errors, 0 warnings; parts +0 (904); part_quality: no custom part changed",
+   "checks": "affected-tier verify: 7 errors, 174 warnings (v12: 7 errors, 174 warnings; warnings +0); no error new or cleared against v12; the only remaining failure is the existing practice DG-07 placeholder-part rule (as in v12); parts 907 -> 907 (+0); part_quality (0 changed custom part(s), audits on every changed part): clean (no errors or warnings); cleared against v12: z_motor stock_hole_missing, z_motor_fl stock_hole_missing, z_motor_fr stock_hole_missing",
    "file": "changes/zmotor-holes.json",
    "design": "printer_v12_1+zmotor-holes"
   }
