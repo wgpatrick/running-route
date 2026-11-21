@@ -1075,6 +1075,14 @@ def build_electrical(d: Design) -> Electrical:
                     sources={"current_a": "E3D Roto data sheet, 'Fan Specification': 5 V, 0.14 A"})
     add_board_5v_port(el, "control_board")
     device_from(el, d, "bed_tco")
+    # v12 (owner): the G9SE-201 safety relay, a device of the hardwired loop. Its outputs sit in series with the Finder coil; this circuit
+    # model has no element for a series contact in a control line, so it carries the relay as a device with its ratings and no wires
+    # (the loop is checked by the safety-chain requirement)
+    from mechloop.electrical import Device as _Dev
+    el.add(_Dev("safety_relay", "relay", "safety_relay", {}, {"output_a": 5.0, "coil_v": 24.0}, {"output_a": "OMRON G9SE data sheet: 5 A",
+                "coil_v": "G9SE-201 DC24"}, {"role": "safety relay: outputs in series with the contactor coil (hardwired loop)"},
+                {"product": "OMRON G9SE-201 DC24", "vendor": "OMRON", "part_number": "G9SE-201", "form": "module", "off_the_shelf": True,
+                 "custom_pcb": False, "builder_work": "wire the e-stop loop, the spare door / smoke pairs and the reset button"}))
     device_from(el, d, "psu_relay")
     el.add(Device("frame_earth", "earth_point", "earth_stud",
                   {"pe": Port("pe", "pe", "ring-M5", 20.0, at=(-FX / 2 - 6.0, 80.0, 10.0), multi=True, extra={"body": "world"})},
