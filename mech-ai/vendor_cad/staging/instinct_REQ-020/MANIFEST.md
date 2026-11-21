@@ -55,3 +55,47 @@ Notes:
   ring needs about 10 to 10.5 OD contact (or a stepped spacer). This agrees with Instinct's own "not a verified fit" caveat.
 - **Bearing CAD source.** B608ZZ is Misumi-made, same 8x22x7 ZZ envelope as NSK 608ZZ; fine for layout, not NSK-authored.
 - **Item 3 still open.** Centering sleeves: no stock part and no fabricate verdict yet. Instinct says it will report next run.
+
+---
+
+## Batch 20 (2026-11-21, about 03:15Z): RESULT.md revision + item 3 sleeve candidate (Misumi CLBSS28-10)
+
+Fetched by Drive id only, from the same folder (1Hb0hdn7QnB6Aj_PTwVviq8tBm2b4Kdud). Each file in its own empty scratch directory, read with `python -I`.
+Untrusted data. Nothing went to `vendor_cad/inbox/` and nothing was committed. Instinct's STATUS is now **COMPLETE as sourcing**, with
+WSF20 and CLBSS28-10 described as candidates, not verified fits. Nothing purchased.
+
+| Delivered as (Drive id, size) | Staged as | sha256 |
+|---|---|---|
+| RESULT.md (1YYSNmXk69nqwFNP62z9wc8uxDoLIXNR3, 5,696 B, 02:38Z) | RESULT_instinct_REQ-020_2026-11-21_0238Z.md (supersedes RESULT_instinct_REQ-020_2026-11-21.md, kept for history) | 8238370e50704b0f2e5c36af0e2dfbd3aa266a3481405ece4bfe0f5cc704455d |
+| CLBSS28-10__cad.step (1PnKRH4QKa7D7-O5rTo8ImIMdC4v8BMlP, 12,880 B) | Misumi_CLBSS28-10_bearing_outer-ring_spacer_D28_d22_L10_304SS.step | 814fb734ea912c6bb228c11b78ea42d5f0ecf07e5942f3db2788dd839843a781 |
+| CLBSS28-10__datasheet.pdf (1DyVSwVmYIAvHxH_uZfIlz2PGk42pKovu, 211,357 B) | vendor_docs/Misumi_CLB_bearing_spacers_inner-outer-ring_catalog_p1064-1065.pdf | 123e4773cc72c2e230cc820621d3b4a4e6913c3c27fb25bfb63ce97e8439dae7 |
+
+**RESULT.md diff vs the 02:15Z copy.** Only two hunks: the STATUS line (PARTIAL -> COMPLETE as sourcing; L = 10 mm was Instinct's own
+assumption, re-deliverable at another L) and the item 3 section ("NOT COMPLETE" -> the CLBSS28-10 candidate). Items 1, 2, 4 and Notes unchanged.
+Instinct's stated data (not verified): 304 stainless, bore 22 +0.31/+0.11, OD 28 -0.1/-0.2, L 10 (3-100 in 0.1 steps, negative L tolerance);
+$31.91 each (1-4), $28.71 (5-9), $22.06 (10-19), $14.77 (20-200); ships Mon Nov 30, 2026. Instinct itself flags the use as an adaptation.
+
+**STEP header.** AP214, SolidWorks 2016 / SwSTEP 2.0, 2026-11-21T02:36:49, author "EC2" / org "Amazon.com" (MISUMI cloud CAD generator, as in
+B608ZZ and SFAL). PRODUCT 'CLBSS28-10'. No material in the file.
+
+**PDF.** Genuine MISUMI catalog spread pp. 1064-1065 "Bearing Spacers, Bearing Inner / Outer Rings" (Adobe InDesign 14.0, 2019-06-12), 1 page,
+text layer present, 2 images. pypdf full object walk: no JavaScript, JS, OpenAction, AA, Launch, EmbeddedFile(s), RichMedia, XFA, AcroForm, URI,
+SubmitForm, GoToR or ImportData. Not encrypted.
+
+### Geometry vs catalog (build123d, python -I)
+
+| Part | Catalog (outer-ring table, row D 28) | STEP | Result |
+|---|---|---|---|
+| CLBSS28-10 | D 28 -0.1/-0.2 (27.8-27.9), d 22 +0.3/+0.1 (22.1-22.3), Dh 23, L 10 (negative tol 0/-0.1), C0.5, 304 SS, listed for 6001ZZ / 6902ZZ | 1 valid solid; OD 28.000, bore 22.000, L 10.000, bore chamfers C0.5 both ends (23.0 at faces), no OD chamfer; axis X; vol 2338.65 mm3 | **Match at nominal** (bore modelled at 22.0, below the 22.1-22.3 band; material not in STEP, per catalog only) |
+
+Notes:
+- **What the part is.** In MISUMI's outer-ring table the part-number D is the *bearing OD / housing bore* the spacer serves. CLBSS28 is the
+  outer-race spacer for 28 mm OD bearings (6001ZZ, 6902ZZ). The 608ZZ row is CLBSS22 (OD about 22, ID 17). Instinct uses CLBSS28 as a sleeve that
+  slips over the 608's 22 mm OD (0.1 to 0.3 mm clearance per catalog), outside its catalog purpose.
+- **Against the v12 design (turned 6061 sleeves: 10 OD at the 608 inner ring, ID 8 on the 8 mm axle, stepping to 15 OD under the front nut,
+  centring a ~51-52 mm spool hub on the bearings).** CLBSS28-10 cannot replace these: its 22 bore does not sit on the 8 mm axle, it would contact
+  the outer ring rather than only the inner ring, it has no 15 mm step, and its 28 OD does not reach a 51-52 hub (about 11.5-12 mm radial gap).
+  It addresses the REQ text's "ID fits 22 mm bearing OD, OD <= 50" concept, not the v12 inner-ring layout.
+- **Closest catalog-stock alternative on the same sheet (not delivered, no CAD).** Inner-ring table row for 608ZZ: d 8 / D 11 (Ds 10), L 1-50,
+  e.g. CLBUS (304 SS) or CLBU (aluminium). It is a plain tube, so it could cover the inner-ring spacer but not the 10->15 stepped profile; its
+  11 OD is above the 10 OD in v12 and above NSK's db max 10.5 noted in batch 19 (it still clears the 12.2 shield recess per the B608ZZ CAD). Not verified.
