@@ -566,3 +566,6 @@ Steps 1-5 fit inside the printer's ordering and lead-time window (print service 
 - Fixed cameras (owner comment, 2026-11-21): overhead plus 2-3 side cameras around both the printer and the arm (frame or
   light stand) to watch moves, confirm picks/placements, see trays and stations, track the tool by its tag and give the twin
   ground truth; the printer's two Pi cameras are part of the set, extra cameras over USB or on the arm computer.
+- Door (owner comment, 2026-11-21): the arm opens the V13 door; it stays a plain manual door so a person can open it too
+  (no Klipper door actuator).
+- Filament, spool and nozzle tasks: dropped from Arm Build 1 (owner, 2026-11-21).
