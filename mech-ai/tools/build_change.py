@@ -72,7 +72,20 @@ def with_deps(cid: str, deps: dict) -> list[str]:
     return out
 
 
-def run_verify(design: str, on: list[str], name: str, base_name: str) -> Path:
+FAST = ["geometry", "interference", "manufacture", "assemblability", "practice", "part_quality"]     # docs/FAST_LANE.md
+
+
+def run_verify(design: str, on: list[str], name: str, base_name: str, fast: bool = False) -> Path:
+    if fast:      # the fast lane: these verifiers only, into their own folder (the full report is not overwritten)
+        root = ROOT / "out" / "fast"
+        env = dict(os.environ, MECHLOOP_CHANGES=",".join(on))
+        t = time.time()
+        r = subprocess.run([str(ROOT / "tools" / "heavy.sh"), sys.executable, "-m", "mechloop", "verify", design, "--only", *FAST,
+                            "--no-render", "--no-cache", "--out", str(root)], cwd=ROOT, env=env, capture_output=True, text=True, timeout=7200)
+        (root / name).mkdir(parents=True, exist_ok=True)
+        (root / name / "build_change_verify.log").write_text(r.stdout[-20000:] + "\n---\n" + r.stderr[-20000:])
+        print(f"fast verify {name}: exit {r.returncode} in {time.time() - t:.0f} s")
+        return root / name / "report.json"
     out = ROOT / "out" / name
     seed = ROOT / "out" / base_name / "verify_cache"
     # the newest cache of a sibling variant (same design file) is usually fresher than the base's (its code manifest matches)
@@ -85,7 +98,7 @@ def run_verify(design: str, on: list[str], name: str, base_name: str) -> Path:
         shutil.copytree(seed, out / "verify_cache")
     env = dict(os.environ, MECHLOOP_CHANGES=",".join(on))
     t = time.time()
-    r = subprocess.run([sys.executable, "-m", "mechloop", "verify", design, "--tier", "affected", "--no-render"],
+    r = subprocess.run([str(ROOT / "tools" / "heavy.sh"), sys.executable, "-m", "mechloop", "verify", design, "--tier", "affected", "--no-render"],
                        cwd=ROOT, env=env, capture_output=True, text=True, timeout=7200)
     (out / "build_change_verify.log").write_text(r.stdout[-20000:] + "\n---\n" + r.stderr[-20000:])
     print(f"verify {name}: exit {r.returncode} in {time.time() - t:.0f} s")
@@ -209,7 +222,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("design")
     ap.add_argument("change")
-    ap.add_argument("--verify", action="store_true")
+    ap.add_argument("--verify", action="store_true", help="full affected-tier verify (slow)")
+    ap.add_argument("--fast", action="store_true", help="fast lane: geometry interference manufacture assemblability practice part_quality")
     ap.add_argument("--checks", default="")
     ap.add_argument("--out", default="review_v12_1/changes")
     ap.add_argument("--base-report", default=None, help="report of the base design (default out/<base name>/report.json)")
@@ -224,9 +238,9 @@ def main():
     on = [k for k in ids if k in with_deps(a.change, deps)]
 
     rep_path = None
-    if a.verify:
+    if a.verify or a.fast:
         probe = build(a.design, on)
-        rep_path = run_verify(a.design, on, probe.name, a.base_name)
+        rep_path = run_verify(a.design, on, probe.name, a.base_name, fast=a.fast and not a.verify)
         del probe
     base = build(a.design, [])
     var = build(a.design, on)
@@ -249,6 +263,14 @@ def main():
                 findings.setdefault(p, []).append({k: f[k] for k in ("verifier", "severity", "code", "message")} | {"hint": (f.get("data") or {}).get("hint", "")})
     bpath = Path(a.base_report) if a.base_report else ROOT / "out" / a.base_name / "report.json"
     brep = json.loads(bpath.read_text()) if bpath.exists() else None
+    fast = a.fast and not a.verify
+    if fast and rep and brep:          # compare like with like: only the verifiers the fast lane ran
+        if "part_quality" not in brep["summary"]:     # v12's report has no part_quality: that is compared part by part below
+            rep = {**rep, "findings": [f for f in rep["findings"] if f["verifier"] != "part_quality"],
+                   "summary": {k: v for k, v in rep["summary"].items() if k != "part_quality"}}
+        ran = set(rep["summary"])
+        brep = {**brep, "findings": [f for f in brep["findings"] if f["verifier"] in ran],
+                "summary": {k: v for k, v in brep["summary"].items() if k in ran}}
 
     electronics = set(var.subassemblies.get("electronics", []))
     out = ROOT / a.out
@@ -272,8 +294,12 @@ def main():
     pq = part_quality_text(var, [n for n in modified + added if not sv[n].cots], modified + added, removed, base)
     if pq:
         checks += "; " + pq
+    if fast:
+        checks = "fast checks (" + ", ".join(FAST) + "): " + checks.replace("affected-tier verify: ", "")
     if a.checks:
         checks += "; " + a.checks
+    if fast:
+        checks += "; full checks running"
     status, why = a.status, None
     if rep and brep:
         new, _ = new_errors(rep, brep, set(modified + added + removed))
