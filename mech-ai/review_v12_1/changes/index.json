@@ -1,0 +1,25 @@
+{
+ "base": "printer_v12",
+ "changes": [
+  {
+   "id": "zmotor-holes",
+   "title": "Z motors: M3 mounting threads drawn",
+   "summary": "The four M3 x 4.5 threads on the 31 mm square (drawing A4003) are cut into each Z motor's solid; nothing else changes.",
+   "threads": [
+    "2c8e3d4c-9547-47ae-bfed-9c73c51af331"
+   ],
+   "status": "proposed",
+   "depends_on": [],
+   "removed": [],
+   "modified": [
+    "z_motor",
+    "z_motor_fl",
+    "z_motor_fr"
+   ],
+   "added": [],
+   "checks": "verify (FAILS): 0 errors, 0 warnings; parts +0 (904); part_quality: no custom part changed",
+   "file": "changes/zmotor-holes.json",
+   "design": "printer_v12_1+zmotor-holes"
+  }
+ ]
+}
