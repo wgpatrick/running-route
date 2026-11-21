@@ -206,10 +206,11 @@ CHANGE_INFO = {     # for the review page's Changes tab (tools/build_change.py)
                                         "raised to sit right under the square (rails raised with it). A flat 1/4 in plate cannot fit: "
                                         "block face and square face are 1.6 mm apart. Rails aligned at assembly from a datum rail.",
                              "threads": ["13a834f6-56df-4aa7-aa8e-9cdb9fec30e1", "9f8b0379-a448-4333-a410-5e3f42595fe6"]},
-    "rear-z-inside": {"title": "Rear Z screw inside the frame, like the fronts",
-                      "summary": "The rear screw moves inside the back wall (y 154.5, 9.1 mm from the square like the fronts), with "
-                                 "the fronts' short direct-bolted nut plate and its motor on posts on the bottom back rail. Needs "
-                                 "znut-direct.",
+    "rear-z-inside": {"title": "Rear Z screw inside the frame (rear-left: x 0 collides with the toolhead)",
+                      "summary": "Inside the back wall at x 0 the as-sold screw (top z 401) is hit by the Eddy probe and part duct "
+                                 "at the rear of the Y travel, for any X. The rear screw therefore stands at the rear-left, on the "
+                                 "front-left screw's line (x -144.5, y 137), with the fronts' direct-bolted nut plate and its motor "
+                                 "on posts on the bottom back rail. Needs znut-direct.",
                       "threads": ["cc37dd59-6fa9-4d22-91dc-1ba874609e41"]},
 }
 _on_ids = [k for k in CHANGE_IDS if CHANGES[k]]
@@ -329,11 +330,21 @@ DECK_FIT, DECK_FREE = 4.3, 5.5
 LS_Y = 201.6           # v12: 0.9 forward (the 420 mm envelope with the Y idlers 0.7 forward); v11: 202.5, rear lead screw outboard of the back wall (v10: 170, on the bottom back rail)
 FS_X = 144.5           # v11: front lead screws inboard of the side rails (v10: 160, over them)
 FS_Y = -101.0
+LS_X = 0.0
 if CH("rear-z-inside"):
-    # v12.1 rear-z-inside: the rear screw inside the frame, 1.5 mm from the back wall's inner face like the fronts from the side
-    # walls' (front screw x 144.5 + 4 = 148.5, wall 150): y = 160 - 5.5 = 154.5, 9.1 mm out from the square's rear face
-    LS_Y = Y_FACE - (WALL_X - FS_X)
-NUT_OUT_R = LS_Y - SQ_Y1      # 57.1: the rear nut plate reaches out through the back wall (rear-z-inside: 9.1, as the fronts)
+    # v12.1 rear-z-inside. The owner's first choice, x 0, y 154.5 (inside the back wall, 9.1 mm from the square's rear face like the
+    # fronts), COLLIDES: at the rear end of the Y travel the toolhead's Eddy probe, its holder and the part duct (down to z 376) pass
+    # over y 150.5 .. 158.5 for every X from -138 to +128 (swept), and the as-sold screw's top is at 401. No y inside the back wall
+    # helps (the toolhead reaches y 161 there) and moving the square forward does not move the toolhead. What fits: the toolhead
+    # never reaches x < -140.5 at any Y (the front screws prove it), so the rear screw stands at the REAR-LEFT, on the front-left
+    # screw's line (x -144.5, 9.1 mm outside the square's left face, 1.5 mm from the side wall's inner face), as far back as its
+    # motor allows: y 137 (the motor body ends 1.8 mm short of post_lb). Its nut plate is the fronts' plate under sq_left, shifted
+    # 20 mm forward along the member (the member ends at y 145.4); its motor on two posts on the bottom back rail's top.
+    LS_X, LS_Y = -FS_X, 137.0
+NUT_OUT_R = LS_Y - SQ_Y1      # 57.1: the rear nut plate reaches out through the back wall
+if CH("rear-z-inside"):
+    NUT_OUT_R = FS_X - SQ_X   # 9.1, as the fronts (out from the square's left face)
+NP_SHIFT_R = 20.0 if CH("rear-z-inside") else 0.0     # the rear nut plate and its two M5 shifted forward along sq_left
 NUT_OUT_F = FS_X - SQ_X       # 9.1
 NUT_OUT = NUT_OUT_F
 NUT_PIN = (-9.25, 9.25)       # v12: a corner hole of the POM nut's flange (4 x M4 on 18.5, drawing A4003)         # v11: the anti-rotation pin in a corner hole of the POM nut's square flange
@@ -492,7 +503,7 @@ TY_F = TY                                       # v9: the print area is the whol
 YI_Y = YB0 - 24.0 - (TY_F + ES_OT) - 11.2      # v12: 0.7 further forward (0.22 mm to the 30T idler closed in 26% of builds); as v8.1 (same place in the frame as v8.2: the home pose moved, the travel did not)
 # Klipper [z_tilt]: firmware X = world x - NOZ_X + TX (0 at the left end of the nozzle's travel; X homes at the right end), firmware Y = world y - (nozzle's home y) + TY_F
 _FW = lambda x, y: (round(x - NOZ_X + TX, 2), round(y - (YB0 + HOT_OFF) + TY_F, 2))
-Z_TILT = {"z_positions": [_FW(0.0, LS_Y), _FW(-FS_X, FS_Y), _FW(FS_X, FS_Y)],       # rear, front-left, front-right screw
+Z_TILT = {"z_positions": [_FW(LS_X, LS_Y), _FW(-FS_X, FS_Y), _FW(FS_X, FS_Y)],       # rear, front-left, front-right screw
           "points": [(TX, 185.0), (10.0, 5.0), (2 * TX - 10.0, 5.0)],                 # nozzle; probe 34.5 mm behind it
           "speed": 100, "horizontal_move_z": 5, "retries": 5, "retry_tolerance": 0.0075}
 Z_PRB = Z_NOZZLE + PRB_H
@@ -859,7 +870,7 @@ INSERT_M4_HOLE = 4.2    # tap drill for an M4 steel wire-thread insert (STI tap)
 NUT_SCREW_L = 12        # M4 x 12: 5 mm flange + 7 mm into the 9.525 mm plate's insert
 
 
-def nut_plate_direct_local(z0, z1, nut_out=NUT_OUT):
+def nut_plate_direct_local(z0, z1, nut_out=NUT_OUT, shift=0.0):
     """v12.1 znut-direct. Nut plate, rebuilt from its spec (not patched from the floating-nut plate).
 
     Spec
@@ -872,16 +883,19 @@ def nut_plate_direct_local(z0, z1, nut_out=NUT_OUT):
       plate's outer edge so the plate slides onto a screw whose motor already stands in the frame.
     - Loads: 3 x the bed's weight up through the flange (FEA nut_thrust); the drive torque reacted by the four M4.
     - Process: 9.525 mm (3/8 in) 6061-T6 laser cut at SendCutSend; inserts fitted by the builder.
-    - Envelope: under the member from its inner edge to `nut_out` + NP_R1_D beyond its outer face; 2 NP_U along the member.
+    - Envelope: under the member from its inner edge to `nut_out` + NP_R1_D beyond its outer face; 2 NP_U along the member
+      (`shift`: plate and M5 moved that far along -x, e.g. where the member ends just beyond the screw; the plate still covers
+      the flange).
     Local frame: x along the member, y outward from the square (the screw at the origin), z as given."""
     h = z1 - z0
     y0, y1 = -nut_out - 20.0, NP_R1_D
-    s = Pos(0, (y0 + y1) / 2, z0) * extrude(RectangleRounded(2 * NP_U, y1 - y0, 3.0), h)
+    u0, u1 = -NP_U - shift, max(NP_U - shift, 13.0 + 4.0)
+    s = Pos((u0 + u1) / 2, (y0 + y1) / 2, z0) * extrude(RectangleRounded(u1 - u0, y1 - y0, 3.0), h)
     s -= zc(0, 0, z0, z1, NP_HOLE_D / 2)
     s -= bx(-NP_HOLE_D / 2, NP_HOLE_D / 2, 0.0, y1 + 1.0, z0, z1)          # open outward: the plate slides onto the screw
     for u, v in NUT_FLANGE_HOLES:
         s -= zc(u, v, z0, z1, INSERT_M4_HOLE / 2)
-    for u in (-NP_BOLT_U, NP_BOLT_U):
+    for u in (-NP_BOLT_U - shift, NP_BOLT_U - shift):
         s -= zc(u, -nut_out - 10.0, z0, z1, clearance_hole("M5") / 2)
     return s
 
@@ -967,7 +981,7 @@ DECK_BOLTS = ([(sx * (SQ_X - 10.0), BED_CY + dy) for sx in (-1, 1) for dy in (-1
 GUIDES = [("left", (-WALL_X, UP_S_Y), (1.0, 0.0, 0.0), "left"), ("right", (WALL_X, UP_S_Y), (-1.0, 0.0, 0.0), "right"),
           ("rear", (UP_R_X, Y_FACE), (0.0, -1.0, 0.0), "back")]
 # the three nuts: (tag, screw x, y, turn of the nut plate about Z (local y = outward), member it bolts under)
-NUTS = [("", 0.0, LS_Y, 0.0, "sq_rear"), ("_fl", -FS_X, FS_Y, 90.0, "sq_left"), ("_fr", FS_X, FS_Y, -90.0, "sq_right")]
+NUTS = [("", LS_X, LS_Y, 90.0, "sq_left") if CH("rear-z-inside") else ("", 0.0, LS_Y, 0.0, "sq_rear"), ("_fl", -FS_X, FS_Y, 90.0, "sq_left"), ("_fr", FS_X, FS_Y, -90.0, "sq_right")]
 
 
 def tool_plate_outline(y0, y1, striker=True):
@@ -1599,8 +1613,9 @@ def build_frame_z():
         # screw, held only at the motor and free at its top, bends to follow a carrier that is not exactly square to it
         W = lambda u, r_: rxy(u, r_, cx, cy, ang)
         n_out = NUT_OUT_R if tg == "" else NUT_OUT_F
-        d.add(f"nut_plate{tg}", rz(nut_plate_direct_local(zn0, zn1, n_out), cx, cy, ang), material=AL, body="zbody", process="sheet", meta={"finish": "bare"})
-        for i, u in enumerate((-NP_BOLT_U, NP_BOLT_U)):
+        sh_ = NP_SHIFT_R if tg == "" else 0.0
+        d.add(f"nut_plate{tg}", rz(nut_plate_direct_local(zn0, zn1, n_out, sh_), cx, cy, ang), material=AL, body="zbody", process="sheet", meta={"finish": "bare"})
+        for i, u in enumerate((-NP_BOLT_U - sh_, NP_BOLT_U - sh_)):
             add_screw(d, f"nut_plate{tg}_bolt_{i}", "M5", 16, at=(*W(u, -n_out - 10.0), zn0), direction=(0, 0, 1), body="zbody",
                       threads_into=member, tnut=True, clamps=(f"nut_plate{tg}",), washer=True, locking="adhesive")
         place(d, f"z_nut{tg}", leadscrew_nut_pom_a4003(), Location((cx, cy, Z_TAB), (0, 0, ang)), body="zbody")
@@ -1734,7 +1749,11 @@ def build_frame_z():
     rear_posts = [(-MP_POST_DX_R, FY / 2 - 10), (MP_POST_DX_R, FY / 2 - 10)]     # rear-z-inside: the same posts; the motor now 15.5 mm inboard of them
     # (tag, screw x, y, motor turn, posts, rail part, base: tray (front) or the rail (rear)). Connectors: rear to +X (along the
     # wall, clear of the rail), fronts inboard
-    mounts.append(("", 0.0, LS_Y, 270.0 if CH("rear-z-inside") else 0.0, rear_posts, "frame_bot_back", False))     # rear-z-inside: connector inboard (-Y)
+    if CH("rear-z-inside"):
+        # the motor beside the left side wall, its two posts on the bottom back rail's top slot (x -140 and -110; the corner bracket
+        # at post_lb sits on the rails' inner faces, the rear upright's brackets at x 35 .. 95), connector inboard (+X)
+        rear_posts = [(-140.0, FY / 2 - 10), (-110.0, FY / 2 - 10)]
+    mounts.append(("", LS_X, LS_Y, 0.0, rear_posts, "frame_bot_back", False))
     for sx, tg in ((-1, "_fl"), (1, "_fr")):
         # posts stay on the bottom side rail's centre line (x +/-160), the motor 15.5 mm inboard of it
         mounts.append((tg, sx * FS_X, FS_Y, 0.0 if sx < 0 else 270.0, [(sx * RAIL_X, FS_Y - MP_POST_DY), (sx * RAIL_X, FS_Y + MP_POST_DY - 1.0)],
@@ -2585,7 +2604,7 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
         return sel
     # one nut plate (the three are one shape) under three times the whole bed's weight, held at its two M5 holes
     tg, ncx, ncy, nang, _ = NUTS[0]        # v11: the rear one, which reaches 57 mm out through the back wall
-    fb = [rxy(u, -NUT_OUT_R - 10.0, ncx, ncy, nang) for u in (-NP_BOLT_U, NP_BOLT_U)]
+    fb = [rxy(u, -NUT_OUT_R - 10.0, ncx, ncy, nang) for u in (-NP_BOLT_U - NP_SHIFT_R, NP_BOLT_U - NP_SHIFT_R)]
     d.loadcases.append(LoadCase("nut_thrust", f"nut_plate{tg}",
                                 fixed=lambda f: any(hole_at(x, y, clearance_hole("M5") / 2)(f) for x, y in fb),
                                 loaded=(hole_at(ncx, ncy, NP_HOLE / 2) if not CH("znut-direct") else
@@ -2717,8 +2736,8 @@ def add_requirements(d, zs):
                     and c.shape.bounding_box().min.X < sb.max.X and c.shape.bounding_box().max.X > sb.min.X
                     and c.shape.bounding_box().min.Y < sb.max.Y and c.shape.bounding_box().max.Y > sb.min.Y]
             ok = ok and not over and not dd.get(f"leadscrew{t_}").ratings.get("cut_to_length")
-            gap = (min(abs(sb.max.X - (FX / 2 - 20.0)), abs(sb.min.X + (FX / 2 - 20.0))) if t_ else
-                   (Y_FACE - sb.max.Y) if CH("rear-z-inside") else sb.min.Y - (FY / 2))
+            gap = (min(abs(sb.max.X - (FX / 2 - 20.0)), abs(sb.min.X + (FX / 2 - 20.0))) if (t_ or CH("rear-z-inside")) else
+                   sb.min.Y - (FY / 2))
             out.append(f"leadscrew{t_ or '_rear'}: top {sb.max.Z:.1f}, {'not cut' if not dd.get(f'leadscrew{t_}').ratings.get('cut_to_length') else 'CUT'}, "
                        f"{'under ' + ', '.join(over) if over else 'under no frame extrusion'}, {gap:.1f} mm from the wall it stands beside")
         rails = max(dd.get(n).shape.bounding_box().max.Z for n in ["z_rail_left", "z_rail_right", "z_rail_rear"])
@@ -2788,7 +2807,7 @@ def add_requirements(d, zs):
         same = lambda v: max(v) - min(v) < 1e-3 * max(v)
         dk = dd.get("z_deck").shape.bounding_box()
         ok = (all(c.sku.startswith("EXTRUSION-2020") or "2020" in c.sku for c in mem) and all(c.body == "zbody" for c in mem)
-              and same(cp) and same(npv[1:] if not CH("rear-z-inside") else npv) and same(mpv[1:]) and same(kv) and abs(dk.size.Z - 3.175) < 1e-6
+              and same(cp) and same(npv[1:]) and same(mpv[1:]) and same(kv) and abs(dk.size.Z - 3.175) < 1e-6
               and abs(dk.size.X - 270.8) < 1e-6 and abs(dk.size.Y - 281.8) < 1e-6)       # v10: the carrier is v9's, not resized
         return ok, (f"four 2020 members {2 * SQ_X:.1f} x {SQ_Y1 - SQ_Y0:.1f} mm outside; deck {dk.size.X:.1f} x {dk.size.Y:.1f} x {dk.size.Z:.3f} mm; "
                     f"three carriage plates one shape: {same(cp)}; nut plates: the two front ones one shape ({same(npv[1:])}), the rear one "
