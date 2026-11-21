@@ -2701,7 +2701,7 @@ def add_requirements(d, zs):
         jz = next(j for j in dd.joints if j.name == "z")
         hits = set()
         z_s = Z_BED + T_BED + T_MAG
-        for zv in (20.0, jz.range[1]):
+        for zv in (jz.range[0], PRINT_Z - 20.0):
             path = _P(BED_CX, BED_CY - 120.0, z_s + T_SHEET / 2 + zv) * _B(SHEET + 2.0, SHEET + 240.0, T_SHEET + 0.6)
             for c in dd.components:
                 if c.body == "zbody" or c.name.startswith(("bed", "sheet_pin")):
@@ -2712,7 +2712,7 @@ def add_requirements(d, zs):
                 if (c.shape & path).volume > 0.5:
                     hits.add(c.name)
         return not hits, (f"sheet slid 240 mm to the front through the front opening (no Z rail at the front; the door is the front panel): "
-                          f"parts in its path with the bed lowered 20 mm and at the bottom (Z 20 and {jz.range[1]:g}): {sorted(hits) or 'none'}; three locating pins (rear pair, left) re-seat it; "
+                          f"parts in its path with the bed at the bottom and 20 mm under the nozzle (Z {jz.range[0]:g} and {PRINT_Z - 20.0:g}): {sorted(hits) or 'none'}; three locating pins (rear pair, left) re-seat it; "
                           f"the sheet's grip tab is the Wham Bam plate's own front tab (check it on the bought plate)")
     d.requirements.append(Requirement("v12 (owner): the print sheet slides out to the front and back again past nothing; three pins re-seat it", sheet_slide))
 
