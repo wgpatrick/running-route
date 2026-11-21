@@ -905,6 +905,206 @@ $('hidefast').onchange=()=>highlight(false);
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>highlight(false));
 new MutationObserver(()=>highlight(false)).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
 
+/* ---------- proposed changes: changes/index.json lists them; each change's parts load lazily into CHM (never into meshes) ---------- */
+let CH=null, CHERR=null, CHBASE=null, CR=[], CRERR=null, OPEN=null, CHCAM=null, CRMSG={}; const CHM={}, CRDRAFT={};
+const CHV={mode:LS.get('chmode','overlay'),ghost:LS.get('chghost',true)}; const CHMODE={before:'Before',after:'After',overlay:'Overlay'};
+if(!CHMODE[CHV.mode])CHV.mode='overlay';
+const strs=x=>Array.isArray(x)?x.filter(v=>v!=null).map(String):[];
+const chg=id=>CH&&CH.find(c=>c.id===id);
+function loadChanges(){
+  // a missing index (404, or the host's HTML fallback) means no proposed changes; only a malformed JSON file is reported
+  fetch('changes/index.json',{cache:'no-cache'}).then(r=>r.ok?r.text():null).then(t=>{
+    CH=[]; if(t==null||!/^\s*\{/.test(t))return;
+    let j; try{j=JSON.parse(t)}catch(e){CHERR='changes/index.json could not be read: '+e.message;return}
+    CHBASE=j.base||null;
+    CH=(Array.isArray(j.changes)?j.changes:[]).filter(c=>c&&c.id!=null).map(c=>({...c,id:String(c.id),removed:strs(c.removed),modified:strs(c.modified),added:strs(c.added),threads:strs(c.threads)}));
+  }).catch(()=>{CH=[]}).finally(()=>{if(!CH)CH=[];if(S.tab==='chg')renderList()});
+}
+function chReviews(id){return CR.filter(r=>r.change_id===id).sort((a,b)=>(b.at||'').localeCompare(a.at||''))}
+function chStatus(c){const r=chReviews(c.id)[0];return r&&(r.verdict==='accepted'||r.verdict==='rejected')?r.verdict:String(c.status||'proposed')}
+const pill=s=>`<span class="vd ${s==='accepted'||s==='rejected'?s:'proposed'}">${esc(s)}</span>`;
+const cnt=c=>`<span class="cnt" title="${c.removed.length} removed, ${c.modified.length} modified, ${c.added.length} added"><span class="r">−${c.removed.length}</span> <span class="m">~${c.modified.length}</span> <span class="a">+${c.added.length}</span></span>`;
+function chgListHTML(){
+  if(CH==null)return '<p class="note" style="padding:12px">Loading proposed changes…</p>';
+  let h=CHERR?`<p class="note" style="padding:12px;color:var(--warn)">${esc(CHERR)}</p>`:'';
+  if(!CH.length)return h+'<p class="note" style="padding:12px">No proposed changes yet.</p>';
+  CH.filter(c=>match(c.title,c.id,c.summary,...c.removed,...c.modified,...c.added)).forEach(c=>{
+    h+=`<div class="item chg${OPEN&&OPEN.id===c.id?' on':''}" tabindex="0" data-chg="${esc(c.id)}"><span class="nm">${esc(c.title||c.id)}</span><span class="cmeta">${pill(chStatus(c))}${cnt(c)}</span></div>`});
+  return h;
+}
+function loadChangeMesh(c){
+  if(CHM[c.id])return; const e=CHM[c.id]={state:'loading',parts:[],rec:{}};
+  const file=c.file||`changes/${c.id}.json`;
+  fetch(file).then(r=>{if(!r.ok)throw new Error(file+' returned '+r.status);return r.json()}).then(j=>{
+    e.parts=(Array.isArray(j.parts)?j.parts:[]).filter(p=>p&&p.name!=null); e.parts.forEach(p=>{p.name=String(p.name);e.rec[p.name]=p});
+    if(!e.parts.length)return;
+    const mf=j.mesh||`changes/${c.id}.txt`;
+    return fetch(mf).then(r=>{if(!r.ok)throw new Error(mf+' returned '+r.status);return r.text()}).then(t=>{const bin=atob(t.replace(/\s+/g,'')),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);e.buf=u.buffer});
+  }).then(()=>{e.state='ready'}).catch(err=>{e.state='error';e.err=err.message||String(err)})
+  .finally(()=>{if(OPEN&&OPEN.id===c.id){renderChange();if(renderer){highlight(false);if(!OPEN.part)fitChange()}}});
+}
+function ensureChMeshes(c){
+  const e=CHM[c.id]; if(!e||e.state!=='ready'||!scene)return e&&e.group?e:null;
+  if(e.group)return e;
+  const g=new THREE.Group(); e.group=g; e.meshes={}; e.bad=[]; const buf=e.buf, L=buf?buf.byteLength:0;
+  e.parts.forEach(p=>{
+    const ok=buf&&Array.isArray(p.v)&&Array.isArray(p.t)&&p.v[1]>0&&p.t[1]>0&&p.v[0]>=0&&p.t[0]>=0&&p.v[0]+p.v[1]*12<=L&&p.t[0]+p.t[1]*12<=L;
+    if(!ok){e.bad.push(p.name);return}
+    const geo=new THREE.BufferGeometry();
+    geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(buf.slice(p.v[0],p.v[0]+p.v[1]*12)),3));
+    geo.setIndex(new THREE.BufferAttribute(new Uint32Array(buf.slice(p.t[0],p.t[0]+p.t[1]*12)),1));
+    geo.computeVertexNormals(); geo.computeBoundingBox();
+    const m=new THREE.Mesh(geo,new THREE.MeshStandardMaterial({roughness:.65,metalness:.1,side:THREE.DoubleSide}));
+    m.userData={name:p.name,chg:c.id}; m.visible=false; g.add(m); e.meshes[p.name]=m;
+  });
+  scene.add(g); return e;
+}
+function pickables(){const a=Object.values(meshes),e=OPEN&&CHM[OPEN.id];if(e&&e.meshes)a.push(...Object.values(e.meshes));return a}
+function chgTag(n,obj){const c=chg(OPEN.id);if(!c)return '';if(obj&&obj.userData.chg)return c.added.includes(n)?' · added':' · new version';
+  return c.removed.includes(n)?' · removed':c.modified.includes(n)?' · v12 original':''}
+/* runs at the end of highlight(): base meshes get the change's colours, its own parts show per mode */
+function applyChange(){
+  const c=chg(OPEN.id); if(!c)return; const e=ensureChMeshes(c);
+  const col=n=>new THREE.Color(css(n)), cs=col('--sel'),ce=col('--err'),cw=col('--warn'),cg=col('--ok'),cb=col('--muted'),cf=col('--line');
+  const R=new Set(c.removed),Mo=new Set(c.modified),hideF=$('hidefast').checked,mode=CHV.mode,fp=OPEN.part;
+  const paint=(m,color,op)=>{const mat=m.material,t=op<1;mat.color.copy(color);mat.transparent=t;mat.opacity=op;mat.depthWrite=!t;mat.needsUpdate=true};
+  for(const [n,m] of Object.entries(meshes)){
+    const p=P[n], focus=fp&&!fp.isNew&&fp.n===n;
+    if(R.has(n)||Mo.has(n)){m.visible=mode!=='after'; if(mode==='before')paint(m,focus?cs:R.has(n)?ce:cw,1); else paint(m,ce,0.3)}
+    else if(focus){m.visible=true;paint(m,cs,1)}
+    else{m.visible=!HIDP.has(n)&&!((hideF&&p.kind==='fastener')||HIDDEN.has(PART_ASM[n]));paint(m,p.kind==='fabricated'?cb:cf,CHV.ghost?0.12:1)}
+    if(m.userData.cap)m.userData.cap.visible=SEC.on&&SEC.caps&&m.visible&&m.material.opacity===1;
+  }
+  Object.values(CHM).forEach(x=>{if(x.group)x.group.visible=x===e});
+  if(e)for(const [n,m] of Object.entries(e.meshes)){m.visible=mode!=='before';m.material.side=THREE.DoubleSide;paint(m,fp&&fp.isNew&&fp.n===n?cs:cg,1)}
+  $('legend').innerHTML=mode==='before'?'<span><i class="ck" style="background:var(--err)"></i>removed</span><span><i class="ck" style="background:var(--warn)"></i>to be modified</span><span><i class="ck" style="background:var(--sel)"></i>selected</span>'
+    :mode==='after'?'<span><i class="ck" style="background:var(--ok)"></i>new or changed</span><span><i class="ck" style="background:var(--sel)"></i>selected</span>'
+    :'<span><i class="ck" style="background:var(--err);opacity:.45"></i>v12 original</span><span><i class="ck" style="background:var(--ok)"></i>new or changed</span><span><i class="ck" style="background:var(--sel)"></i>selected</span>';
+}
+function fitBox(b){const c=b.getCenter(new THREE.Vector3()), r=Math.max(b.getSize(new THREE.Vector3()).length()/2,30);
+  const dir=camera.position.clone().sub(controls.target).normalize(), dist=r/Math.sin(THREE.MathUtils.degToRad(camera.fov/2))*1.05;
+  controls.target.copy(c); camera.position.copy(c.clone().add(dir.multiplyScalar(dist))); controls.update(); draw()}
+function fitChange(){
+  if(!renderer||!OPEN)return; const c=chg(OPEN.id); if(!c)return; const e=CHM[c.id], b=new THREE.Box3();
+  if(OPEN.part){const m=OPEN.part.isNew?(e&&e.meshes&&e.meshes[OPEN.part.n]):meshes[OPEN.part.n];if(m)b.expandByObject(m)}
+  if(b.isEmpty()){c.removed.concat(c.modified).forEach(n=>meshes[n]&&b.expandByObject(meshes[n]));if(e&&e.meshes)Object.values(e.meshes).forEach(m=>b.expandByObject(m))}
+  fitBox(b.isEmpty()?box3:b);
+}
+const LEGEND0=$('legend').innerHTML;
+function openChange(id,refit=true){
+  const c=chg(id); if(!c)return;
+  if(!OPEN&&renderer)CHCAM={pos:camera.position.clone(),target:controls.target.clone()};   // restored exactly on close
+  OPEN={id,part:null}; if(S.tab!=='chg')setTab('chg');
+  loadChangeMesh(c); renderList(); renderChange(); $('detail').scrollTop=0; syncChbar();
+  if(renderer){highlight(false);if(refit)fitChange()}
+}
+function closeChange(restoreCam=true,quiet=false){
+  if(!OPEN)return; OPEN=null;
+  Object.values(CHM).forEach(x=>{if(x.group)x.group.visible=false});
+  $('legend').innerHTML=LEGEND0; syncChbar();
+  if(restoreCam&&renderer&&CHCAM){camera.position.copy(CHCAM.pos);controls.target.copy(CHCAM.target);controls.update()}
+  CHCAM=null;
+  if(!quiet){renderList();renderDetail();highlight(false)}
+}
+function focusChangePart(n,isNew,refit=true){if(!OPEN)return;OPEN.part={n,isNew};renderChange();$('detail').scrollTop=0;highlight(false);if(refit)fitChange()}
+function setChMode(m){if(!CHMODE[m])return;CHV.mode=m;LS.set('chmode',m);document.querySelectorAll('[data-cmode]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.cmode===m));highlight(false)}
+function setChGhost(on){CHV.ghost=on;LS.set('chghost',on);document.querySelectorAll('[data-cghost]').forEach(b=>b.checked=on);highlight(false)}
+const segHTML=()=>`<div class="cseg" role="group" aria-label="Compare">${Object.entries(CHMODE).map(([m,l])=>`<button type="button" data-cmode="${m}" aria-pressed="${CHV.mode===m}">${l}</button>`).join('')}</div>`;
+function syncChbar(){const b=$('chbar'),c=OPEN&&chg(OPEN.id);
+  if(!c){b.hidden=true;b.innerHTML='';placePanels();return}
+  b.hidden=false; b.innerHTML=`<span class="t" title="${esc(c.title||c.id)}">${esc(c.title||c.id)}</span>${segHTML()}<label title="Show the rest of the machine faintly"><input type="checkbox" data-cghost ${CHV.ghost?'checked':''}> Ghost rest</label><button type="button" class="x" data-cclose aria-label="Close this change" title="Close this change">×</button>`;
+  placePanels()}
+function plist(ns,isNew,e,cls){if(!ns.length)return '<li class="note">none</li>';
+  return ns.map(n=>{const known=isNew?!!(e.rec&&e.rec[n])||e.state!=='ready':!!P[n];
+    return `<li>${known?`<button type="button" class="lnk mono" data-cpart="${esc(n)}" data-new="${isNew?1:0}">${esc(n)}</button>`:`<span class="mono">${esc(n)}</span> <span class="note">${isNew?'(no record in the change file)':'(not in v12)'}</span>`}</li>`}).join('')}
+function threadsHTML(c){
+  if(!c.threads.length)return '<p class="note">No review threads listed.</p>';
+  return `<ul class="thr">${c.threads.map(t=>{const f=FB.find(x=>x.id===t||x.claude_thread===t);
+    return f?`<li><span class="vd ${esc(f.verdict)}">${esc(VERDICT[f.verdict]||f.verdict)}</span> <button type="button" class="lnk" data-fbgo="${esc(f.id)}">${f.kind==='view'?'📷 ':''}${esc(f.targetName||t)}</button><div class="note">${esc(String(f.text||'').slice(0,160))}${String(f.text||'').length>160?'…':''} <span class="mono">${esc(t)}</span></div></li>`
+      :`<li><span class="mono">${esc(t)}</span></li>`}).join('')}</ul>${db?'':'<p class="note">Thread links appear when the page is opened on claude.ai, where the review feedback loads.</p>'}`;
+}
+function reviewHTML(c){
+  const rs=chReviews(c.id);
+  const msg=CRMSG[c.id]||(db?'Saved with the review; Claude reads it before building the next version.':fbReady?'Accept and Reject are saved when this page is opened on claude.ai while signed in.':'Connecting to review storage…');
+  return `<div class="fb"><textarea id="crnote" maxlength="2000" placeholder="Optional note: why, or what to adjust before it goes into the next version.">${esc(CRDRAFT[c.id]||'')}</textarea>
+    <div class="fbrow"><button type="button" class="btn okb" data-cverdict="accepted">Accept</button><button type="button" class="btn nob" data-cverdict="rejected">Reject</button><span class="note" id="crmsg">${esc(msg)}</span></div>
+    ${CRERR?`<p class="note">Reviews could not load: ${esc(CRERR)}.</p>`:''}
+    ${rs.length?`<div style="margin-top:8px">${rs.map(r=>`<div class="cm"><div class="h">${pill(r.verdict)}<b>${esc(names[r.author]||'Someone')}</b><span>${r.at?new Date(r.at).toLocaleString():''}</span>${r.base?`<span class="mono">${esc(r.base)}</span>`:''}</div>${r.note?`<div class="x">${esc(r.note)}</div>`:''}</div>`).join('')}</div>`:''}</div>`;
+}
+function bboxTxt(b){return Array.isArray(b)&&b.length===6?`${fx(b[3]-b[0],1)} × ${fx(b[4]-b[1],1)} × ${fx(b[5]-b[2],1)} mm`:'–'}
+function partFocusHTML(c,e){
+  const {n,isNew}=OPEN.part, rec=isNew?e.rec&&e.rec[n]:P[n];
+  const role=c.added.includes(n)?'added':c.modified.includes(n)?(isNew?'modified · new version':'modified · v12 original'):c.removed.includes(n)?'removed':'unchanged v12 part';
+  let h=`<button type="button" class="lnk" data-cback>← Back to the change</button><div class="eyebrow" style="margin-top:10px">${esc(c.title||c.id)} · ${esc(role)}</div>`;
+  if(c.modified.includes(n)&&P[n]&&e.rec&&e.rec[n]){const a=P[n].bbox,b=e.rec[n].bbox;
+    const d=Array.isArray(a)&&Array.isArray(b)&&a.length===6&&b.length===6?[0,1,2].map(i=>((b[i]+b[i+3])-(a[i]+a[i+3]))/2):null;
+    h+=factsHTML([['v12 envelope',bboxTxt(a)],['New envelope',bboxTxt(b)],['Centre moved',d?`ΔX ${fx(d[0],2)}, ΔY ${fx(d[1],2)}, ΔZ ${fx(d[2],2)} mm`:'–'],['Compare',`<button type="button" class="lnk" data-cpart="${esc(n)}" data-new="${isNew?0:1}">${isNew?'Show the v12 record':'Show the new record'}</button>`]]);
+  }
+  if(!rec)return h+`<p class="empty">No record for <span class="mono">${esc(n)}</span>.</p>`;
+  try{h+=partSheet(rec)}catch(err){h+=`<h2 class="mono">${esc(n)}</h2>`+factsHTML([['Kind',esc(rec.kind)],['Material',esc(rec.material)],['Envelope',bboxTxt(rec.bbox)],['Description',esc(rec.desc)]])}
+  return h;
+}
+function changeSheet(c,e){
+  const st=chStatus(c), last=chReviews(c.id)[0];
+  let h=`<div class="eyebrow">Proposed change · against ${esc(CHBASE||D.design)} · <span class="mono" style="text-transform:none;letter-spacing:0">${esc(c.id)}</span></div><h2>${esc(c.title||c.id)}</h2>`;
+  h+=`<div class="chips" style="align-items:center">${pill(st)}${last?`<span class="note">${esc(last.verdict)} by ${esc(names[last.author]||'someone')}${last.at?' on '+esc(new Date(last.at).toLocaleDateString()):''}</span>`:''}${cnt(c)}</div>`;
+  h+=`<div class="ctool">${segHTML()}<label title="Show the rest of the machine faintly"><input type="checkbox" data-cghost ${CHV.ghost?'checked':''}> Ghost the rest</label><button type="button" class="lnk" data-cfit>Fit to change</button><button type="button" class="lnk" data-cclose>Close change</button></div>`;
+  h+=`<div class="ckey"><span><b>Before</b>: v12 as it is, <i style="background:var(--err)"></i>removed and <i style="background:var(--warn)"></i>modified parts marked.</span><span><b>After</b>: originals hidden, <i style="background:var(--ok)"></i>new parts shown.</span><span><b>Overlay</b>: <i style="background:var(--err);opacity:.45"></i>originals ghosted over <i style="background:var(--ok)"></i>new parts.</span></div>`;
+  if(e.state==='loading')h+='<p class="note">Loading the new geometry for this change…</p>';
+  else if(e.state==='error')h+=`<div class="flag warning"><span class="r">Geometry</span><span>The new parts could not be loaded (${esc(e.err)}). Before still shows the affected v12 parts.</span></div>`;
+  if(e.bad&&e.bad.length)h+=`<div class="flag warning"><span class="r">Geometry</span><span>No usable mesh for ${esc(e.bad.join(', '))}.</span></div>`;
+  if(c.summary)h+=`<p class="pre">${esc(c.summary)}</p>`;
+  if(c.checks)h+=`<h3>Checks</h3><p class="pre">${esc(c.checks)}</p>`;
+  h+=`<h3>Parts</h3><div class="chgparts">
+    <div><div class="eyebrow"><i style="background:var(--err)"></i>Removed (${c.removed.length})</div><ul>${plist(c.removed,false,e)}</ul></div>
+    <div><div class="eyebrow"><i style="background:var(--warn)"></i>Modified (${c.modified.length})</div><ul>${plist(c.modified,true,e)}</ul></div>
+    <div><div class="eyebrow"><i style="background:var(--ok)"></i>Added (${c.added.length})</div><ul>${plist(c.added,true,e)}</ul></div></div>`;
+  h+=`<h3>Review threads</h3>`+threadsHTML(c);
+  h+=`<h3>Accept or reject</h3>`+reviewHTML(c);
+  return h;
+}
+function renderChange(){
+  if(!OPEN||!D)return; const c=chg(OPEN.id); if(!c){closeChange();return}
+  const e=CHM[c.id]||{state:'loading',rec:{}};
+  const a=document.activeElement, keep=a&&a.id==='crnote'?[a.selectionStart,a.selectionEnd]:null;   // feedback snapshots re-render this; keep the caret
+  $('dw').innerHTML=OPEN.part?partFocusHTML(c,e):changeSheet(c,e);
+  if(keep&&$('crnote')){const t=$('crnote');t.focus();try{t.setSelectionRange(keep[0],keep[1])}catch(_){}}
+}
+function chUI(e){
+  const m=e.target.closest('[data-cmode]'); if(m){setChMode(m.dataset.cmode);return true}
+  if(e.target.closest('[data-cclose]')){closeChange();return true}
+  if(e.target.closest('[data-cfit]')){fitChange();return true}
+  return false;
+}
+$('chbar').addEventListener('click',chUI);
+$('chbar').addEventListener('change',e=>{if(e.target.matches('[data-cghost]'))setChGhost(e.target.checked)});
+$('dw').addEventListener('change',e=>{if(e.target.matches('[data-cghost]'))setChGhost(e.target.checked)});
+$('dw').addEventListener('input',e=>{if(e.target.id==='crnote'&&OPEN)CRDRAFT[OPEN.id]=e.target.value});
+$('dw').addEventListener('click',async e=>{
+  if(!OPEN||chUI(e))return;
+  const p=e.target.closest('[data-cpart]'); if(p){focusChangePart(p.dataset.cpart,p.dataset.new==='1');return}
+  if(e.target.closest('[data-cback]')){OPEN.part=null;renderChange();$('detail').scrollTop=0;highlight(false);return}
+  const g=e.target.closest('[data-fbgo]'); if(g){const f=FB.find(x=>x.id===g.dataset.fbgo);if(!f)return;closeChange(false,true);
+    if(f.kind==='view')restoreView(f); else{const [t,...r]=String(f.target).split(':');const id=r.join(':');if((t==='part'&&P[id])||(t==='joint'&&J[id])||(t==='asm'&&A[id]))go(t,id);else{renderList();renderDetail();highlight(false)}} return}
+  const v=e.target.closest('[data-cverdict]'); if(!v)return;
+  const id=OPEN.id, note=($('crnote')?.value||'').trim(), verdict=v.dataset.cverdict;
+  if(!db){$('crmsg').textContent='Not saved: review storage is not available in this view. Open the page on claude.ai while signed in to accept or reject.';return}
+  document.querySelectorAll('[data-cverdict]').forEach(b=>b.disabled=true); $('crmsg').textContent='Saving…';
+  try{await db.collection('change_reviews').add({change_id:id,verdict,note,author:me||null,at:new Date().toISOString(),base:CHBASE||D.design});
+    delete CRDRAFT[id]; CRMSG[id]=`Saved: ${verdict}.`; if(OPEN&&OPEN.id===id&&!OPEN.part)renderChange(); renderList()}
+  catch(err){CRMSG[id]='Not saved: '+(err.code==='not_granted'?'you need edit or contributor access to this page.':(err.message||err.code));
+    if(OPEN&&OPEN.id===id&&!OPEN.part){$('crmsg').textContent=CRMSG[id];document.querySelectorAll('[data-cverdict]').forEach(b=>b.disabled=false)}}
+});
+function watchChangeReviews(){
+  if(!db)return;
+  try{db.collection('change_reviews').onSnapshot(async snap=>{
+    CR=snap.docs.map(d=>({id:d.id,...d.data()})); CRERR=null;
+    const ids=[...new Set(CR.map(r=>r.author).filter(i=>i&&!names[i]))];
+    if(user&&ids.length){try{const ps=await user.profiles(ids);ids.forEach(i=>names[i]=(ps[i]&&ps[i].name)||'Someone')}catch(e){}}
+    if(S.tab==='chg')renderList(); if(OPEN&&!OPEN.part)renderChange();
+  },err=>{CRERR=err.message||err.code;if(OPEN&&!OPEN.part)renderChange()})}catch(e){CRERR=e.message}
+}
+
 /* ---------- comment on view: capture, mark up, send to Claude ---------- */
 let dragId=null;
 let MK=null; const MKS={tool:'arrow',col:'#e5322d'}; let assetsNS=null, commentsNS=null, dictNS=null;

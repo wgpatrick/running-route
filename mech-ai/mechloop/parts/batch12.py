@@ -1163,3 +1163,56 @@ def safety_relay_omron_g9se_201() -> Stock:
                  real_part={"maker": "OMRON", "mpn": "G9SE-201 DC24", "sellers": [{"name": "Digi-Key", "part_number": "G9SE-201", "catalogue": True,
                             "checked": "2026-11-21", "note": "$275.29, 279 in stock (REQ-021)"}], "datasheet": G9SE_DS,
                             "ratings_source": {"output_a": "OMRON G9SE data sheet: safety outputs 5 A", "coil_v": "G9SE-201 DC24: 24 VDC"}})
+
+
+# ------------------------------------------------------------------ v12.1 additions (new functions: v12's parts unchanged)
+@part
+def estop_omron_a22e_m_02_v2(panel_t: float = 3.175) -> Stock:
+    """OMRON A22E-M-02 emergency stop (40 mm mushroom, push-lock turn-reset, 2 NC), re-made faithfully from OMRON's A22E data sheet
+    p.41, drawing "A22E-M" (vendor_docs/Omron_A22E_e-stop_datasheet_extract_p33-36_p41-42.pdf; tolerance +/-0.8 unless stated).
+    v12.1: replaces estop_omron_a22e_m_02, which put the 34 mm switch block straight from the panel's FRONT face, so in the model
+    it passed through its own panel.
+
+    Read from the drawing, from the panel's front face: head dia 40, rim 6.5, 32 in front of the panel (18.5 from the head's
+    front to the step behind it); (0.5) gasket on the panel's front; the threaded bushing passes the 22.3 mm cut-out; the ring
+    (lock) nut and mounting latch behind the panel; the switch block 41.2 long ending 54.7 behind the panel's front face, so it
+    starts 13.5 behind it (the panel, 1 to 6 mm, and the ring nut take that 13.5); switch block 34 high.
+    NOT dimensioned (drawn as estimates, flagged): the barrel behind the head (dia 28 / 26), the bezel (dia 30), the bushing
+    (dia 22, under the 22.3 cut-out), the knurled ring nut (dia 30 x 4), the switch block's width (taken 34, square).
+    `panel_t`: the panel the switch is fitted in; the ring nut is drawn tight on its back face.
+    Local frame: the panel's FRONT face at Z=0, head towards +Z, everything behind the panel towards -Z."""
+    if not 1.0 <= panel_t <= 6.0:
+        raise ValueError("A22E: panel thickness 1 to 6 mm (data sheet)")
+    cyl = lambda r, z0, z1: Pos(0, 0, (z0 + z1) / 2) * Cylinder(r, z1 - z0)
+    s = (cyl(20.0, 25.5, 32.0)              # mushroom head, dia 40 x 6.5
+         + cyl(14.0, 13.5, 25.5)            # skirt behind the head (18.5 from the head's front)
+         + cyl(13.0, 2.0, 13.5)             # barrel
+         + cyl(15.0, 0.0, 2.0)              # bezel on the gasket (gasket 0.5 included)
+         + cyl(11.0, -13.5, 0.0)            # threaded bushing through the 22.3 mm cut-out
+         + cyl(15.0, -panel_t - 4.0, -panel_t)   # knurled ring nut, tight on the panel's back face
+         + Pos(0, 0, -(13.5 + 54.7) / 2) * Box(34.0, 34.0, 54.7 - 13.5))   # switch block with its latch, 13.5 .. 54.7 behind
+    return Stock(s, "ESTOP-OMRON-A22E-M-02", "OMRON A22E-M-02 emergency stop, 40 mm mushroom, twist release, 2 NC", 0.06, material="abs",
+                 cost_usd=94.27, ratings={"contacts": "2 NC", "rated_a_110vac": 10.0},
+                 interfaces={"panel_cutout_d": 22.3, "panel_cutout_source": "Digi-Key attribute (flagged until OMRON's page is read)",
+                             "panel_thickness_range": (1.0, 6.0), "panel_t": panel_t, "block_from_panel_front": 13.5,
+                             "behind_panel": 54.7, "in_front_of_panel": 32.0, "ring_nut_dia": 30.0},
+                 model={"kind": "generated to standard", "remade_from": A22E_DS, "no_auto_features": True,
+                        "source": "re-made from OMRON A22E data sheet p.41 (A22E-M): head 40 / 6.5 / 32 in front; switch block 34 high, "
+                                  "41.2 long, ending 54.7 behind the panel's front (starts 13.5 behind it); barrel, bushing, ring nut and "
+                                  "block width not dimensioned (estimates)"},
+                 real_part={"maker": "OMRON", "mpn": "A22E-M-02", "sellers": [{"name": "Digi-Key", "part_number": "A22E-M-02", "catalogue": True,
+                            "checked": "2026-11-21", "note": "$94.27, 343 in stock (REQ-021)"}], "datasheet": A22E_DS,
+                            "ratings_source": {"rated_a_110vac": "OMRON A22E data sheet: 10 A at 110 VAC resistive"}})
+
+
+@part
+def leadscrew_motor_a4003_tapped() -> Stock:
+    """leadscrew_motor_a4003 with its four M3 mounting threads drawn: 4 x M3, DEPTH 4.5 MIN on a 31 +/-0.1 square (drawing A4003),
+    cut into the body's front face as tap-drill holes (2.5 mm, 4.5 deep). v12's leadscrew_motor_a4003 recorded them as interfaces
+    only. Same SKU, ratings and interfaces."""
+    st = leadscrew_motor_a4003()
+    s = st.shape
+    for x, y, _ in st.interfaces["mount_holes_m3"]:
+        s = s - Pos(x, y, -4.5 / 2) * Cylinder(2.5 / 2, 4.5)
+    return dataclasses.replace(st, shape=s, detail=None if st.detail is None else s,
+                               model={**st.model, "source": (st.model.get("source", "") + "; 4 x M3 x 4.5 drawn (v12.1)").lstrip("; ")})

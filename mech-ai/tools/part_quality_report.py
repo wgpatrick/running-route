@@ -76,7 +76,12 @@ NOTES = r"""
     are now matched first; cameras use two of their four holes, so a listed hole is a warning only when NONE of the
     part's listed holes lines up with a hole in the part it is screwed to;
   - `pin_holes` of the D2F switch are where its terminals come out, not holes: keys with "pin" are skipped;
-  - "integral screw" (the lead screw that is the motor's shaft) and a bearing's "inner ring" are not undrawn hardware.
+  - "integral screw" (the lead screw that is the motor's shaft) and a bearing's "inner ring" are not undrawn hardware;
+    a hardware word that names one of the two parts ("held in the clip's channel" of led_clip_0) is that part;
+  - the y_plate_left/right 4.8 x 10 mm slots looked empty: the Y belt's ends are looped through them, and belts are
+    not solids. Belt ends (15 mm round the anchor point), belt spans (12 mm off the line between pulley centres) and
+    cable ends (10 mm) now count as using a hole. With that, `hole_unused` finds nothing in v12. To make sure it still
+    can, a run with estop_bracket_screw_0 and its Fastener record deleted flags that 5.5 mm hole (and the tests cover it).
 - Likely still false or debatable in this run:
   - `allowed_overlap_large` on **foot_*/foot_*_nut** (79 mm3 each): the levelling foot's threaded stud and its jam nut,
     i.e. a thread, but the foot is not recognisable as a screw from its name or SKU;
@@ -85,8 +90,6 @@ NOTES = r"""
   - `attachment_not_drawn` on **filament_sensor / sfs_mount** (two cable ties) and **spool_axle / spool_plate** (nuts
     each side of the plate: the nuts are drawn but not joined to the plate): correct by the rule, the owner may accept
     a cable tie as drawn-by-note;
-  - `hole_unused` on the **y_plate_left/right** 4.8 x 10 mm slots: nothing is in them in v12; either adjustment slots
-    for something removed, or genuinely left over. Worth a look in the review.
 
 ## What each check cannot catch
 

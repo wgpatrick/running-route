@@ -28,8 +28,9 @@ review asked for (see docs/CAD_QUALITY_PLAN.md):
              warning   near_parallel_faces        two adjacent planar faces at a tiny angle        0.02 deg < a < 2 deg
              warning   weak_attachment            a feature joined to the body through a contact   width < 0.8 mm and
                                                   patch that is thin and a small share of it        < 15 % of its area
-             warning   hole_unused                a hole (1.5 - 25 mm) with nothing in it: no
-                                                  screw, pin, shaft, spacer or tool axis
+             warning   hole_unused                a hole or slot (1.5 - 25 mm) with nothing in it: no
+                                                  screw, pin, shaft, spacer, tool axis, belt
+                                                  (end within 15 mm, span within 12 mm) or cable end
              warning   outside_envelope           material outside the part's declared envelope    meta["envelope"]
                                                   or inside a declared keep-out                     meta["keep_out"]
   odd dims   info      odd_dimension              overall size (in the part's own axes) off the    0.1 mm grid
@@ -784,6 +785,43 @@ def _hole_features(shape):
     return full
 
 
+BELT_ANCHOR_REACH = 15.0     # a belt end is looped / clamped through slots within this distance of its anchor point
+BELT_SPAN_REACH = 12.0       # a belt span runs this far off the line between pulley centres (pulley radius + belt)
+CABLE_END_REACH = 10.0
+
+
+def _seg_dist(p, a, b) -> float:
+    ab = b - a
+    t = float(np.clip(np.dot(p - a, ab) / (np.dot(ab, ab) or 1.0), 0.0, 1.0))
+    return float(np.linalg.norm(p - (a + t * ab)))
+
+
+def _flexible_through(design, scene, h):
+    """The belt or cable that passes through hole h (belts and cables are not solids: Belt / Cable records)."""
+    pts = [h["center"]] + ([h["slot_to"]] if "slot_to" in h else [])
+    names = {c.name: i for i, c in enumerate(scene.comps)}
+    for b in design.belts:
+        nodes = []
+        for n in b.path:
+            if n[0] == "anchor":
+                q = np.array(n[2], float)
+                if any(np.linalg.norm(p - q) < BELT_ANCHOR_REACH for p in pts):
+                    return f"belt {b.name} (end)"
+                nodes.append(q)
+            elif n[1] in names:
+                bb = scene.bb[names[n[1]]]
+                nodes.append((bb[:3] + bb[3:]) / 2)
+        for a, c in zip(nodes, nodes[1:]):
+            if any(_seg_dist(p, a, c) < BELT_SPAN_REACH + h["r"] for p in pts):
+                return f"belt {b.name}"
+    for cb in design.cables:
+        for end in (cb.a, cb.b):
+            q = np.array(end[1], float)
+            if any(np.linalg.norm(p - q) < CABLE_END_REACH for p in pts):
+                return f"cable {cb.name}"
+    return None
+
+
 def trace_holes(design, c, scene) -> list[dict]:
     """Holes of part c that nothing in the assembly passes through or mates with."""
     out = []
@@ -797,6 +835,8 @@ def trace_holes(design, c, scene) -> list[dict]:
             if scene.inside_any(o, pts):
                 used_by = o.name
                 break
+        if used_by is None:     # a belt end looped through slots, a belt span or a cable end (not solids in the model)
+            used_by = _flexible_through(design, scene, h)
         if used_by is None:     # a tool access hole: a screw axis runs through it
             for hc, ax in tool_axes:
                 if abs(abs(np.dot(ax, h["axis_d"])) - 1) < 0.004:
