@@ -113,6 +113,23 @@ def summarize(rep: dict, base: dict | None, n_parts: int, n_base: int) -> str:
     return "; ".join(parts)
 
 
+def part_quality_text(d, parts: list[str], removed: list[str]) -> str:
+    """The opt-in part-quality checks (mechloop/verifiers/part_quality.py) on the change's custom parts."""
+    if not parts:
+        return "part_quality: no custom part changed"
+    from mechloop.verifiers.part_quality import verify_part_quality
+
+    res = verify_part_quality(d, parts)
+    mine = [f for f in res.findings if f.severity != "info" and ((f.data or {}).get("part") in parts or any(p in f.message for p in parts))]
+    if not mine:
+        return f"part_quality on the {len(parts)} changed custom part(s): clean (no errors or warnings)"
+    by = {}
+    for f in mine:
+        by.setdefault(f.severity, []).append(f"{(f.data or {}).get('part', '?')} {f.code}")
+    return (f"part_quality on the {len(parts)} changed custom part(s): " +
+            "; ".join(f"{len(v)} {k}(s): {', '.join(sorted(set(v)))}" for k, v in sorted(by.items())))
+
+
 def part_record(c, electronics, findings) -> tuple[dict, bytes, bytes]:
     from export_viewer import FASTENER_TRI_BUDGET, _placeholder, d_density, detail_mesh, group_of, kind_of, light_fastener_mesh
     from build_review import MATERIAL, PROCESS, SHOP
@@ -205,6 +222,9 @@ def main():
     (out / f"{a.change}.json").write_text(json.dumps({"mesh": f"changes/{a.change}.txt", "parts": recs}, separators=(",", ":"), default=str))
 
     checks = summarize(rep, brep, len(var.components), len(base.components)) if rep else "not verified (run with --verify)"
+    pq = part_quality_text(var, [n for n in modified + added if not sv[n].cots], removed)
+    if pq:
+        checks += "; " + pq
     if a.checks:
         checks += "; " + a.checks
     ci = info.get(a.change, {})

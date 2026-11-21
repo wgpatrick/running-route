@@ -209,7 +209,7 @@ CHANGE_INFO = {     # for the review page's Changes tab (tools/build_change.py)
     "rear-z-inside": {"title": "Rear Z screw inside the frame (rear-left: x 0 collides with the toolhead)",
                       "summary": "Inside the back wall at x 0 the as-sold screw (top z 401) is hit by the Eddy probe and part duct "
                                  "at the rear of the Y travel, for any X. The rear screw therefore stands at the rear-left, on the "
-                                 "front-left screw's line (x -144.5, y 137), with the fronts' direct-bolted nut plate and its motor "
+                                 "front-left screw's line (x -144.5, y 108), with the fronts' direct-bolted nut plate and its motor "
                                  "on posts on the bottom back rail. Needs znut-direct.",
                       "threads": ["cc37dd59-6fa9-4d22-91dc-1ba874609e41"]},
 }
@@ -338,13 +338,14 @@ if CH("rear-z-inside"):
     # helps (the toolhead reaches y 161 there) and moving the square forward does not move the toolhead. What fits: the toolhead
     # never reaches x < -140.5 at any Y (the front screws prove it), so the rear screw stands at the REAR-LEFT, on the front-left
     # screw's line (x -144.5, 9.1 mm outside the square's left face, 1.5 mm from the side wall's inner face), as far back as its
-    # motor allows: y 137 (the motor body ends 1.8 mm short of post_lb). Its nut plate is the fronts' plate under sq_left, shifted
-    # 20 mm forward along the member (the member ends at y 145.4); its motor on two posts on the bottom back rail's top.
-    LS_X, LS_Y = -FS_X, 137.0
+    # motor allows: y 108 (its 42.3 mm body overhangs the bottom left rail like the fronts' and must end in front of the frame's
+    # corner bracket bracket_6, which stands on that rail from y 130 to 160, z 20 to 50). Its nut plate is the fronts' plate
+    # under sq_left; its motor on two posts on the bottom back rail's top slot.
+    LS_X, LS_Y = -FS_X, 108.0
 NUT_OUT_R = LS_Y - SQ_Y1      # 57.1: the rear nut plate reaches out through the back wall
 if CH("rear-z-inside"):
     NUT_OUT_R = FS_X - SQ_X   # 9.1, as the fronts (out from the square's left face)
-NP_SHIFT_R = 20.0 if CH("rear-z-inside") else 0.0     # the rear nut plate and its two M5 shifted forward along sq_left
+NP_SHIFT_R = 0.0       # (a forward shift along sq_left is supported by nut_plate_direct_local; not needed at y 108)
 NUT_OUT_F = FS_X - SQ_X       # 9.1
 NUT_OUT = NUT_OUT_F
 NUT_PIN = (-9.25, 9.25)       # v12: a corner hole of the POM nut's flange (4 x M4 on 18.5, drawing A4003)         # v11: the anti-rotation pin in a corner hole of the POM nut's square flange
@@ -1750,9 +1751,9 @@ def build_frame_z():
     # (tag, screw x, y, motor turn, posts, rail part, base: tray (front) or the rail (rear)). Connectors: rear to +X (along the
     # wall, clear of the rail), fronts inboard
     if CH("rear-z-inside"):
-        # the motor beside the left side wall, its two posts on the bottom back rail's top slot (x -140 and -110; the corner bracket
+        # the motor beside the left side wall, its two posts on the bottom back rail's top slot (x -125 and -95; the corner bracket
         # at post_lb sits on the rails' inner faces, the rear upright's brackets at x 35 .. 95), connector inboard (+X)
-        rear_posts = [(-140.0, FY / 2 - 10), (-110.0, FY / 2 - 10)]
+        rear_posts = [(-125.0, FY / 2 - 10), (-95.0, FY / 2 - 10)]
     mounts.append(("", LS_X, LS_Y, 0.0, rear_posts, "frame_bot_back", False))
     for sx, tg in ((-1, "_fl"), (1, "_fr")):
         # posts stay on the bottom side rail's centre line (x +/-160), the motor 15.5 mm inboard of it
