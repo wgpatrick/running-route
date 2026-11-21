@@ -810,17 +810,30 @@
   },
   {
    "verifier": "part_quality",
+   "severity": "info",
+   "code": "slot_nut_overlap",
+   "message": "174 T-nut / spring-nut pairs overlap their extrusion by 43, 131 mm3 each (allowed): the nut solid cuts into the slot's lips or the section has no slot there; a modelling compromise of purchased parts, hidden from the interference check",
+   "data": {
+    "count": 174,
+    "volumes_mm3": [
+     43,
+     131
+    ],
+    "check_class": "purchased"
+   }
+  },
+  {
+   "verifier": "part_quality",
    "severity": "warning",
    "code": "allowed_overlap_large",
    "message": "extruder and hotend are allowed to overlap and do by 28 mm3 (join: clamp): only a thread, a press fit or a panel cut-out should overlap; this hides a clash from the interference check",
    "data": {
     "part": "extruder",
-    "other": "extruder",
     "pair": [
      "extruder",
      "hotend"
     ],
-    "volume_mm3": 28.3,
+    "volume_mm3": 28.274,
     "join": "clamp",
     "check_class": "weird",
     "at": [
@@ -834,15 +847,36 @@
    "verifier": "part_quality",
    "severity": "warning",
    "code": "allowed_overlap_large",
+   "message": "4 pairs like foot_left_f / foot_left_f_nut are allowed to overlap and each does by 79 mm3 (join: none): not a thread; the solids clash and allow_overlap hides it from the interference check",
+   "data": {
+    "part": "foot_left_f",
+    "pair": [
+     "foot_left_f",
+     "foot_left_f_nut"
+    ],
+    "count": 4,
+    "volume_mm3": 78.54,
+    "join": "",
+    "at": [
+     -160.0,
+     -158.0,
+     -2.0
+    ],
+    "check_class": "weird"
+   }
+  },
+  {
+   "verifier": "part_quality",
+   "severity": "warning",
+   "code": "allowed_overlap_large",
    "message": "estop and estop_bracket are allowed to overlap and do by 2430 mm3 (join: held by its own ring nut through the 22.3 mm hole): only a thread, a press fit or a panel cut-out should overlap; this hides a clash from the interference check",
    "data": {
     "part": "estop_bracket",
-    "other": "estop",
     "pair": [
      "estop",
      "estop_bracket"
     ],
-    "volume_mm3": 2430.2,
+    "volume_mm3": 2430.238,
     "join": "held by its own ring nut through the 22.3 mm hole",
     "check_class": "weird",
     "at": [
@@ -1229,9 +1263,9 @@
   },
   {
    "verifier": "part_quality",
-   "severity": "warning",
-   "code": "attachment_not_drawn",
-   "message": "led_clip_0 and led_overview are declared joined ('held in the clip's channel') but the clip that would hold them is not drawn and no drawn fastener connects them: nothing shows how it attaches",
+   "severity": "info",
+   "code": "attachment_by_note",
+   "message": "led_clip_0 and led_overview: held only by a join note ('held in the clip's channel'), no drawn fastener",
    "data": {
     "part": "led_clip_0",
     "pair": [
@@ -1244,9 +1278,9 @@
   },
   {
    "verifier": "part_quality",
-   "severity": "warning",
-   "code": "attachment_not_drawn",
-   "message": "led_clip_1 and led_overview are declared joined ('held in the clip's channel') but the clip that would hold them is not drawn and no drawn fastener connects them: nothing shows how it attaches",
+   "severity": "info",
+   "code": "attachment_by_note",
+   "message": "led_clip_1 and led_overview: held only by a join note ('held in the clip's channel'), no drawn fastener",
    "data": {
     "part": "led_clip_1",
     "pair": [
@@ -2198,9 +2232,10 @@
    "odd_hole_diameter": 1,
    "tiny_edge": 1,
    "thin_wall": 3,
-   "allowed_overlap_large": 2,
-   "attachment_by_note": 31,
-   "attachment_not_drawn": 4,
+   "slot_nut_overlap": 1,
+   "allowed_overlap_large": 3,
+   "attachment_by_note": 33,
+   "attachment_not_drawn": 2,
    "stock_hole_missing": 13,
    "stock_hole_misaligned": 13
   },
@@ -2233,7 +2268,7 @@
   "overlaps": {
    "pairs": 660,
    "nonzero": 566,
-   "flagged": 2,
+   "flagged": 180,
    "screws_filling_cots_part": 361,
    "rows": [
     {
@@ -2284,7 +2319,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2294,7 +2329,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2304,7 +2339,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2314,7 +2349,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2324,7 +2359,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2334,7 +2369,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2344,7 +2379,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2354,7 +2389,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2364,7 +2399,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2374,7 +2409,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2384,7 +2419,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2394,7 +2429,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2404,7 +2439,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2414,7 +2449,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2424,7 +2459,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2434,7 +2469,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2444,7 +2479,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2454,7 +2489,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2464,7 +2499,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2474,7 +2509,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2484,7 +2519,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2494,7 +2529,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2504,7 +2539,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2514,7 +2549,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2524,7 +2559,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2534,7 +2569,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2544,7 +2579,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2554,7 +2589,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2564,7 +2599,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2574,7 +2609,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2584,7 +2619,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2594,7 +2629,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2604,7 +2639,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2614,7 +2649,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2624,7 +2659,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2634,7 +2669,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2644,7 +2679,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2654,7 +2689,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2664,7 +2699,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2674,7 +2709,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2684,7 +2719,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2694,7 +2729,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2704,7 +2739,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2714,7 +2749,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2724,7 +2759,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2734,7 +2769,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2744,7 +2779,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2754,7 +2789,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2764,7 +2799,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2774,7 +2809,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2784,7 +2819,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2794,7 +2829,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2804,7 +2839,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2814,7 +2849,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2824,7 +2859,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2834,7 +2869,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2844,7 +2879,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2854,7 +2889,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2864,7 +2899,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2874,7 +2909,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2884,7 +2919,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2894,7 +2929,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2904,7 +2939,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2914,7 +2949,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2924,7 +2959,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2934,7 +2969,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2944,7 +2979,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": null,
      "join": "spring nut held in the bottom slot under its lips",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2954,7 +2989,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": null,
      "join": "spring nut held in the bottom slot under its lips",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2964,7 +2999,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": null,
      "join": "spring nut held in the bottom slot under its lips",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2974,7 +3009,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": null,
      "join": "spring nut held in the bottom slot under its lips",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2984,7 +3019,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -2994,7 +3029,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -3004,7 +3039,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -3014,7 +3049,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -3024,7 +3059,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -3034,7 +3069,7 @@
      "volume_mm3": 131.07,
      "declared_max_mm3": 507.43000000000006,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -3174,7 +3209,7 @@
      "volume_mm3": 78.54,
      "declared_max_mm3": null,
      "join": "",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -3184,7 +3219,7 @@
      "volume_mm3": 78.54,
      "declared_max_mm3": null,
      "join": "",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -3194,7 +3229,7 @@
      "volume_mm3": 78.54,
      "declared_max_mm3": null,
      "join": "",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -3204,7 +3239,7 @@
      "volume_mm3": 78.54,
      "declared_max_mm3": null,
      "join": "",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4504,7 +4539,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4514,7 +4549,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4524,7 +4559,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4534,7 +4569,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4544,7 +4579,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4554,7 +4589,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4564,7 +4599,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4574,7 +4609,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4584,7 +4619,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4594,7 +4629,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4604,7 +4639,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4614,7 +4649,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4624,7 +4659,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4634,7 +4669,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4644,7 +4679,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4654,7 +4689,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4664,7 +4699,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4674,7 +4709,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4684,7 +4719,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4694,7 +4729,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4704,7 +4739,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4714,7 +4749,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4724,7 +4759,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4734,7 +4769,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4744,7 +4779,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4754,7 +4789,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4764,7 +4799,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4774,7 +4809,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4784,7 +4819,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4794,7 +4829,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4804,7 +4839,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4814,7 +4849,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4824,7 +4859,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4834,7 +4869,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4844,7 +4879,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4854,7 +4889,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4864,7 +4899,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4874,7 +4909,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4884,7 +4919,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4894,7 +4929,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4904,7 +4939,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4914,7 +4949,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4924,7 +4959,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4934,7 +4969,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4944,7 +4979,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4954,7 +4989,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4964,7 +4999,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4974,7 +5009,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4984,7 +5019,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -4994,7 +5029,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5004,7 +5039,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5014,7 +5049,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5024,7 +5059,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5034,7 +5069,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5044,7 +5079,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5054,7 +5089,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5064,7 +5099,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5074,7 +5109,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5084,7 +5119,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5094,7 +5129,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5104,7 +5139,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5114,7 +5149,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5124,7 +5159,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5134,7 +5169,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5144,7 +5179,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5154,7 +5189,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5164,7 +5199,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5174,7 +5209,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5184,7 +5219,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5194,7 +5229,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5204,7 +5239,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5214,7 +5249,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5224,7 +5259,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5234,7 +5269,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5244,7 +5279,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5254,7 +5289,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5264,7 +5299,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5274,7 +5309,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5284,7 +5319,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5294,7 +5329,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5304,7 +5339,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5314,7 +5349,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5324,7 +5359,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5334,7 +5369,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5344,7 +5379,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5354,7 +5389,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5364,7 +5399,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5374,7 +5409,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5384,7 +5419,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5394,7 +5429,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5404,7 +5439,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5414,7 +5449,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5424,7 +5459,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5434,7 +5469,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5444,7 +5479,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5454,7 +5489,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5464,7 +5499,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -5474,7 +5509,7 @@
      "volume_mm3": 43.2,
      "declared_max_mm3": 239.39999999999998,
      "join": "drop-in T-nut in the slot",
-     "threaded": true,
+     "threaded": false,
      "screw_fill": null,
      "custom": []
     },
@@ -8927,9 +8962,7 @@
      "a": "leadscrew",
      "b": "z_motor",
      "join": "integral screw: the motor's shaft",
-     "hardware_named": [
-      "screw"
-     ],
+     "hardware_named": [],
      "fixing_note": true,
      "custom": []
     },
@@ -8937,9 +8970,7 @@
      "a": "leadscrew_fl",
      "b": "z_motor_fl",
      "join": "integral screw: the motor's shaft",
-     "hardware_named": [
-      "screw"
-     ],
+     "hardware_named": [],
      "fixing_note": true,
      "custom": []
     },
@@ -8947,9 +8978,7 @@
      "a": "leadscrew_fr",
      "b": "z_motor_fr",
      "join": "integral screw: the motor's shaft",
-     "hardware_named": [
-      "screw"
-     ],
+     "hardware_named": [],
      "fixing_note": true,
      "custom": []
     },
@@ -9090,9 +9119,7 @@
      "a": "led_clip_0",
      "b": "led_overview",
      "join": "held in the clip's channel",
-     "hardware_named": [
-      "clip"
-     ],
+     "hardware_named": [],
      "fixing_note": true,
      "custom": [
       "led_clip_0"
@@ -9102,9 +9129,7 @@
      "a": "led_clip_1",
      "b": "led_overview",
      "join": "held in the clip's channel",
-     "hardware_named": [
-      "clip"
-     ],
+     "hardware_named": [],
      "fixing_note": true,
      "custom": [
       "led_clip_1"
@@ -9610,5 +9635,5 @@
    ]
   }
  },
- "seconds": 25.8
+ "seconds": 23.5
 }

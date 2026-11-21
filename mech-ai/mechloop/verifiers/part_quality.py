@@ -1008,7 +1008,8 @@ def join_audit(design, r) -> dict:
         if _is_hardware(a) or _is_hardware(b) or tuple(names) in fastened:
             continue
         kl = str(kind).lower()
-        words = [w for w in _HARDWARE_WORDS if re.search(rf"\b{re.escape(w)}s?\b", kl)]
+        words = [w for w in _HARDWARE_WORDS if re.search(rf"\b{re.escape(w)}s?\b", kl)
+                 and w.replace(" ", "_") not in f"{a.name} {b.name}".lower()]      # "held in the clip's channel" of led_clip_0
         fixing = any(w in kl for w in _FIXING_NOTE)
         rows.append({"a": names[0], "b": names[1], "join": str(kind), "hardware_named": words, "fixing_note": fixing,
                      "custom": [n for n in names if not comps[n].cots]})

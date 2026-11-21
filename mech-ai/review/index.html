@@ -208,6 +208,35 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
 .mlabels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .mlabel{position:absolute;transform:translate(-50%,-130%);font:600 12px var(--f-mono);background:#b0126a;color:#fff;border-radius:4px;padding:1px 6px;white-space:nowrap}
 .mlabel i{font-style:normal;opacity:.7;margin-right:4px}
+/* proposed changes: navigator rows, compare toggle, part lists, in-view bar */
+.vd.proposed{background:var(--info-soft);color:var(--info)} .vd.accepted{background:var(--ok-soft);color:var(--ok)} .vd.rejected{background:var(--err-soft);color:var(--err)}
+.item.chg{flex-wrap:wrap;row-gap:3px;padding-block:7px}
+.item.chg .nm{font:500 13px var(--f-body);white-space:normal;flex:1 1 100%}
+.item.chg .cmeta{display:flex;align-items:center;gap:8px}
+.cnt{font:500 11px var(--f-mono);color:var(--muted);white-space:nowrap}
+.cnt .r{color:var(--err)} .cnt .m{color:var(--warn)} .cnt .a{color:var(--ok)}
+.cseg{display:inline-flex;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:var(--panel)}
+.cseg button{border:0;border-right:1px solid var(--line);background:var(--panel);color:var(--ink);padding:5px 12px;cursor:pointer;font:500 12.5px var(--f-body)}
+.cseg button:last-child{border-right:0}
+.cseg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.ctool{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:10px 0}
+.ctool label{display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer}
+.ctool input,.chbar input{accent-color:var(--accent)}
+.ckey{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:var(--muted);margin:6px 0}
+.ckey i,.legend i.ck{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.chgparts{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:4px 16px}
+.chgparts ul{list-style:none;margin:2px 0 6px;padding:0}
+.chgparts li{margin:3px 0;overflow-wrap:anywhere}
+.chgparts .eyebrow i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}
+.pre{white-space:pre-wrap;overflow-wrap:anywhere}
+.thr{list-style:none;margin:0;padding:0}.thr li{padding:4px 0;border-top:1px solid var(--line)}.thr li:first-child{border-top:0}
+.btn.okb{background:var(--ok)} .btn.nob{background:var(--err)}
+.chbar{position:absolute;left:10px;top:52px;background:var(--panel);border:1px solid var(--accent);border-radius:6px;padding:5px 8px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;font-size:12px;z-index:3;max-width:calc(100% - 20px)}
+.chbar .t{font:600 12px var(--f-head);letter-spacing:.04em;text-transform:uppercase;color:var(--accent);max-width:26ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chbar .cseg button{padding:3px 10px;font-size:12px}
+.chbar label{display:flex;align-items:center;gap:4px;cursor:pointer}
+.chbar .x{border:0;background:none;color:var(--muted);cursor:pointer;font-size:16px;line-height:1;padding:0 4px}
+.chbar .x:hover{color:var(--accent)}
 /* phone layout: keep last so it overrides the desktop rules above */
 .cfab{position:absolute;right:10px;top:10px;font:600 13px var(--f-body);background:var(--accent);color:var(--panel);border:0;border-radius:6px;padding:7px 12px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18);z-index:4}
 .vtools{right:190px;max-width:none!important}
@@ -259,6 +288,10 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
   #mk .side textarea{min-height:90px;font-size:16px}
   dialog{width:100vw;max-width:100vw;max-height:100svh;margin:auto 0}
   input[type=search],select,textarea{font-size:16px}
+  .chbar{left:8px;right:8px;max-width:none}
+  .chbar .cseg button{padding:7px 12px}
+  .cseg button{padding:8px 14px}
+  .item.chg{padding-block:10px}
 }
 
 </style>
@@ -280,6 +313,7 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
       <button role="tab" data-tab="parts" aria-selected="false">Parts</button>
       <button role="tab" data-tab="joints" aria-selected="false">Joints</button>
       <button role="tab" data-tab="fb" aria-selected="false">Feedback</button>
+      <button role="tab" data-tab="chg" aria-selected="false">Changes</button>
     </div>
     <div class="navtools">
       <input type="search" id="q" placeholder="Filter by name, SKU or material" aria-label="Filter">
@@ -339,8 +373,9 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
       <button type="button" id="secflip" title="Keep the other side">Flip</button>
       <label title="Colour the cut faces"><input type="checkbox" id="seccap" checked> Caps</label>
     </div>
+    <div class="chbar" id="chbar" hidden></div>
     <div class="hover" id="hover" hidden></div>
-    <div class="legend"><span><i style="background:var(--sel)"></i>selected</span><span><i style="background:var(--accent)"></i>related</span></div>
+    <div class="legend" id="legend"><span><i style="background:var(--sel)"></i>selected</span><span><i style="background:var(--accent)"></i>related</span></div>
     <div class="vhelp" id="vhelp"><button type="button" id="vhelpb" aria-expanded="false" aria-controls="vhelpc">Controls</button><div id="vhelpc" role="tooltip"><table><tr><th>Rotate</th><td>drag with the left button</td></tr><tr><th>Pan</th><td>drag with the right button, or Ctrl / Shift + drag</td></tr><tr><th>Zoom</th><td>scroll wheel</td></tr><tr><th>Open a part</th><td>click it</td></tr><tr><th>Select several</th><td>Shift + click, or turn on Multi-select</td></tr><tr><th>Hide selection</th><td>H &nbsp;(Alt + H shows everything again)</td></tr><tr><th>Measure</th><td>M, then click points &nbsp;(Esc cancels)</td></tr><tr><th>Fit / section</th><td>buttons at the top of the view</td></tr></table></div></div>
     <div class="vmsg" id="vmsg">Loading 3D model (23 MB)…</div>
   </div>
@@ -409,7 +444,7 @@ const SEC={on:false,ax:'x',t:0.5,flip:false,caps:true,lo:0,hi:1};
 const slug=s=>s.replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,'');
 let BYSLUG={};
 function key(t,id){return t+':'+id}
-function go(t,id,push=true){sel={t,id}; SET.clear(); if(t==='part'&&HIDP.has(id)){HIDP.delete(id);LS.set('hidp',[...HIDP])} renderTray(); renderDetail(); renderList(); highlight(); if(push){const h=t[0]+'-'+slug(id); if(location.hash!=='#'+h) history.replaceState(null,'','#'+h);} }
+function go(t,id,push=true){if(OPEN)closeChange(false,true); sel={t,id}; SET.clear(); if(t==='part'&&HIDP.has(id)){HIDP.delete(id);LS.set('hidp',[...HIDP])} renderTray(); renderDetail(); renderList(); highlight(); if(push){const h=t[0]+'-'+slug(id); if(location.hash!=='#'+h) history.replaceState(null,'','#'+h);} }
 function fromHash(){const h=location.hash.slice(1); const r=BYSLUG[h]; if(r) go(r.t,r.id,false); else if(D) go('asm',D.assemblies[0].id,false);}
 addEventListener('hashchange',fromHash);
 
@@ -422,13 +457,14 @@ fetch('data.json').then(r=>r.json()).then(d=>{
   [...HIDDEN].forEach(id=>{if(!A[id])HIDDEN.delete(id)}); [...HIDP].forEach(n=>{if(!P[n])HIDP.delete(n)});
   const s=d.summary;
   $('stats').innerHTML=`<span><b>${s.parts}</b> parts</span><span><b>${s.custom}</b> custom</span><span><b>${s.joints}</b> bolted joints</span><span><b>${fx(s.mass_kg,2)}</b> kg</span><span>BOM <b>$${fx(s.bom_cost,0)}</b></span><span>assembly <b>${fx(s.assembly_min,0)}</b> min</span><span>resonance X <b>${s.resonance_hz.x}</b> / Y <b>${s.resonance_hz.y}</b> Hz</span><span id="fbstat"></span>`;
-  sizeMain(); fromHash(); renderList(); initFeedback(); load3D();
+  sizeMain(); fromHash(); renderList(); initFeedback(); load3D(); loadChanges();
 }).catch(e=>{$('dw').innerHTML='<p class="empty">Could not load the design data: '+esc(e.message)+'</p>'});
 function sizeMain(){document.documentElement.style.setProperty('--hh',$('hdr').offsetHeight+'px')}
 addEventListener('resize',()=>{sizeMain();resize3D()});
 
 /* ---------- navigator ---------- */
-document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x===b));$('kindf').hidden=S.tab!=='parts';renderList()});
+function setTab(t){if(t!=='chg'&&OPEN)closeChange();S.tab=t;document.querySelectorAll('.tabs button').forEach(x=>x.setAttribute('aria-selected',x.dataset.tab===t));$('kindf').hidden=t!=='parts';renderList()}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
 $('kindf').hidden=true;
 $('q').oninput=e=>{S.q=e.target.value.toLowerCase();renderList()};
 $('kindf').onchange=e=>{S.kind=e.target.value;renderList()};
@@ -464,6 +500,8 @@ function renderList(){
       h+=`<div class="grp"><span>${esc(a.name)}</span><span>${js.length}</span></div>`;
       js.forEach(j=>{const n=Object.values(j.hardware).reduce((s,x)=>s+x,0);h+=itemHTML('joint',j.id,j.name,n+' pcs',null,j.flags)});
     });
+  } else if(S.tab==='chg'){
+    h+=chgListHTML();
   } else {
     const rows=FB.filter(f=>match(f.targetName,f.text)).slice().sort((a,b)=>(b.at||'').localeCompare(a.at||''));
     if(!db) h+=`<p class="note" style="padding:12px">${fbReady?'Feedback storage is not available in this view (sign in to claude.ai to leave and see feedback).':'Connecting to feedback storage…'}</p>`;
@@ -476,10 +514,11 @@ $('list').addEventListener('click',e=>{
   const eye=e.target.closest('[data-eye]'); if(eye){e.stopPropagation();toggleAsm(eye.dataset.eye);return}
   const pe=e.target.closest('[data-peye]'); if(pe){e.stopPropagation();setHidden([pe.dataset.peye],!HIDP.has(pe.dataset.peye));return}
   const it=e.target.closest('.item'); if(!it)return;
+  if(it.dataset.chg){openChange(it.dataset.chg);return}
   if(it.dataset.fb){const f=FB.find(x=>x.id===it.dataset.fb);if(f){restoreView(f);return}}
   if(it.dataset.t==='part'&&(MULTI||e.shiftKey||e.ctrlKey||e.metaKey)){togglePick(it.dataset.id);return}
   go(it.dataset.t,it.dataset.id)});
-$('list').addEventListener('keydown',e=>{if(e.key==='Enter'){const it=e.target.closest('.item');if(it)go(it.dataset.t,it.dataset.id)}});
+$('list').addEventListener('keydown',e=>{if(e.key==='Enter'){const it=e.target.closest('.item');if(it){if(it.dataset.chg)openChange(it.dataset.chg);else go(it.dataset.t,it.dataset.id)}}});
 
 /* ---------- detail sheets ---------- */
 const plink=n=>P[n]?`<button class="lnk mono" data-go="part" data-id="${esc(n)}">${esc(n)}</button>`:`<span class="mono">${esc(n)}</span>`;
@@ -553,6 +592,7 @@ function asmSheet(a){
   return h;
 }
 function renderDetail(){
+  if(OPEN&&D){renderChange();return}
   if(!sel||!D)return; let h='';
   const k=key(sel.t,sel.id);
   if(sel.t==='part'&&P[sel.id])h=partSheet(P[sel.id]);
@@ -588,10 +628,12 @@ async function initFeedback(){
       $('fbstat').innerHTML=`feedback <b>${FB.length}</b>`;
       renderFB(); renderList();
     },err=>{$('fbbox')&&($('fbbox').innerHTML=`<p class="note">Feedback could not load: ${esc(err.message||err.code)}.</p>`)});
+    watchChangeReviews();
   }catch(e){clearTimeout(timer);fbReady=true;renderFB()}
 }
 const draft={};
 function renderFB(){
+  if(OPEN)renderChange();
   const box=$('fbbox'); if(!box||!sel)return; const k=key(sel.t,sel.id);
   const items=FB.filter(f=>f.target===k||(sel.t==='part'&&Array.isArray(f.parts)&&f.parts.includes(sel.id))).sort((a,b)=>(a.at||'').localeCompare(b.at||''));
   let h='';
@@ -646,15 +688,16 @@ function init3D(buf){
   addEventListener('pointermove',e=>{if(dragId!=null&&e.pointerType==='mouse'&&e.buttons===0)endDrag()},true);
   addEventListener('blur',endDrag);document.addEventListener('pointerleave',endDrag);document.addEventListener('visibilitychange',endDrag);
   c.addEventListener('pointerup',e=>{if(MEAS.on||e.button!==0||!downAt||Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1])>(e.pointerType==='touch'?10:4))return;const n=pick(e,MULTI||e.shiftKey||e.ctrlKey||e.metaKey);if(!n)return;
+    if(OPEN){focusChangePart(n,!!(pick.obj&&pick.obj.userData.chg),false);return}
     if(MULTI||e.shiftKey||e.ctrlKey||e.metaKey)togglePick(n); else go('part',n)});
   c.addEventListener('pointerup',e=>{if(!MEAS.on||e.button!==0||!downAt||Math.hypot(e.clientX-downAt[0],e.clientY-downAt[1])>(e.pointerType==='touch'?10:4))return;measClick(e)},true);
-  c.addEventListener('pointermove',e=>{if(e.buttons)return;const n=pick(e,MULTI||e.shiftKey);const hv=$('hover');if(n){hv.hidden=false;hv.textContent=n}else hv.hidden=true});
+  c.addEventListener('pointermove',e=>{if(e.buttons)return;const n=pick(e,MULTI||e.shiftKey);const hv=$('hover');if(n){hv.hidden=false;hv.textContent=n+(OPEN?chgTag(n,pick.obj):'')}else hv.hidden=true});
   c.addEventListener('pointerleave',()=>$('hover').hidden=true);
   resize3D(); fit(true); highlight();
   if(window.ResizeObserver)new ResizeObserver(()=>resize3D()).observe($('view'));
 }
 function pick(e,adding=false){const r=$('gl').getBoundingClientRect();ptr.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ptr,camera);
-  const hits=secKeep(ray.intersectObjects(Object.values(meshes).filter(m=>m.visible&&(adding||m.material.opacity>0.5)),false));return hits.length?hits[0].object.userData.name:null}
+  const hits=secKeep(ray.intersectObjects(pickables().filter(m=>m.visible&&(adding||m.material.opacity>0.5)),false));pick.obj=hits.length?hits[0].object:null;return hits.length?hits[0].object.userData.name:null}
 function resize3D(){if(!renderer)return;const v=$('view');const w=v.clientWidth,h=v.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/Math.max(h,1);camera.updateProjectionMatrix();draw()}
 function draw(){if(renderer){renderer.render(scene,camera);if(window.measLabels)measLabels()}}
 function selection(){
@@ -680,6 +723,7 @@ function highlight(refit=true){
     if(m.userData.cap){m.userData.cap.visible=SEC.on&&SEC.caps&&m.visible&&mat.opacity===1}
   }
   $('unhide').hidden=!HIDP.size; $('unhide').textContent=`Show hidden (${HIDP.size})`;
+  if(OPEN)applyChange();   // an open proposed change overrides the colours and visibility set above
   if(any&&refit)fit(false); else draw();
 }
 /* ---------- multi-select, view modes, assembly visibility ---------- */
@@ -717,6 +761,7 @@ $('asmpanel').addEventListener('click',e=>{
   LS.set('hidden',[...HIDDEN]);renderAsmPanel();renderList();highlight(false)});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('asmpanel').hidden){$('asmpanel').hidden=true;$('asmbtn').setAttribute('aria-expanded',false)}});
 function restoreView(f){
+  if(OPEN)closeChange(false,true);
   if(f.target&&f.target.includes(':')){const [t,...r]=f.target.split(':');const id=r.join(':');if((t==='part'&&P[id])||(t==='joint'&&J[id])||(t==='asm'&&A[id])){sel={t,id};renderDetail()}}
   SET.clear(); if(Array.isArray(f.parts)&&f.parts.length>1)f.parts.forEach(n=>P[n]&&SET.add(n));
   if(f.viewMode)setVMsilent(f.viewMode);
@@ -726,6 +771,7 @@ function restoreView(f){
   if(Array.isArray(f.measurements)){measClear();f.measurements.forEach(measLoad)}
   if(f.section&&['x','y','z'].includes(f.section.axis)&&typeof f.section.at_mm==='number'){setSection(true,f.section.axis,f.section.at_mm,f.section.keep==='above')} else if(f.kind==='view')setSection(false);
   renderTray(); renderList(); highlight(false);
+  if(f.change&&chg(f.change.id)){if(CHMODE[f.change.mode])CHV.mode=f.change.mode;openChange(f.change.id,false)}
   const c=f.camera; if(renderer&&c&&Array.isArray(c.pos)&&Array.isArray(c.target)){camera.position.fromArray(c.pos);controls.target.fromArray(c.target);controls.update();draw()}
 }
 /* ---------- hide / show individual parts ---------- */
@@ -758,7 +804,7 @@ function applySection(){
 }
 function secKeep(hits){return SEC.on&&SEC.plane?hits.filter(h=>SEC.plane.distanceToPoint(h.point)>=-1e-3):hits}
 const MOB=matchMedia('(max-width:720px)');
-function placePanels(){const ps=['secpanel','measpanel','asmpanel'].map(id=>$(id));
+function placePanels(){const ps=['chbar','secpanel','measpanel','asmpanel'].map(id=>$(id));
   if(MOB.matches){let y=54;ps.forEach(p=>{p.style.top='auto';p.style.bottom=y+'px';if(!p.hidden)y+=p.offsetHeight+6});return}
   const t=$('view').querySelector('.vtools');let y=t.offsetTop+t.offsetHeight+6;ps.forEach(p=>{p.style.bottom='auto';p.style.top=y+'px';if(!p.hidden)y+=p.offsetHeight+6})}
 addEventListener('resize',placePanels);
@@ -782,7 +828,7 @@ const MEAS={on:false,mode:'dist',pts:[],list:[],group:null};
 const MHINT={dist:'Tap two points. Snap jumps to the nearest mesh corner.',face:'Tap two faces: parallel faces give the gap, any two give the angle.',dia:'Tap three points round a hole or a round edge.'};
 const f2=v=>(Math.abs(v)<0.005?0:v).toFixed(2);
 function pickHit(e){const r=$('gl').getBoundingClientRect();ptr.set((e.clientX-r.left)/r.width*2-1,-(e.clientY-r.top)/r.height*2+1);ray.setFromCamera(ptr,camera);
-  const hits=secKeep(ray.intersectObjects(Object.values(meshes).filter(m=>m.visible&&m.material.opacity>0.5),false));return hits[0]||null}
+  const hits=secKeep(ray.intersectObjects(pickables().filter(m=>m.visible&&m.material.opacity>0.5),false));return hits[0]||null}
 function toScreen(v){const r=$('gl').getBoundingClientRect();const p=v.clone().project(camera);return {x:(p.x+1)/2*r.width,y:(1-p.y)/2*r.height,z:p.z}}
 function measClick(e){
   const h=pickHit(e); if(!h)return;
@@ -847,7 +893,7 @@ $('msize').onclick=()=>{const {main}=selection();if(!main.length){$('mhint').tex
     text:`size ${f2(s.x)} × ${f2(s.y)} × ${f2(s.z)} mm (X × Y × Z bounding box of ${name}; diagonal ${f2(s.length())})`});measRebuild()};
 function setVMsilent(v){if(!['all','ghost','hide'].includes(v))return;VM=v;LS.set('vm',v);document.querySelectorAll('[data-vm]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.vm===v))}
 function fit(whole){
-  if(!renderer)return; const b=new THREE.Box3(); const {main,rel}=selection();
+  if(!renderer)return; if(!whole&&OPEN){fitChange();return} const b=new THREE.Box3(); const {main,rel}=selection();
   const ns=whole?Object.keys(meshes):(main.length?main.concat(sel&&sel.t==='part'?[]:rel):[]);
   if(!ns.length){b.copy(box3)} else ns.forEach(n=>meshes[n]&&b.expandByObject(meshes[n]));
   const c=b.getCenter(new THREE.Vector3()), r=Math.max(b.getSize(new THREE.Vector3()).length()/2,30);
@@ -873,7 +919,7 @@ async function initCaps(){
 }
 $('mic').onclick=()=>{if(!dictNS)return;if($('mic').getAttribute('aria-pressed')==='true'){dictNS.stop().catch(()=>{});return}
   dictNS.start().catch(e=>{$('micmsg').textContent=e&&e.code==='not_granted'?'Dictation is off for this page.':'Dictation could not start.'})};
-function viewParts(){const {main}=selection();return main.filter(n=>meshes[n]?meshes[n].visible:true)}   // hidden parts are not what the viewer is looking at
+function viewParts(){if(OPEN)return OPEN.part?[OPEN.part.n]:[];const {main}=selection();return main.filter(n=>meshes[n]?meshes[n].visible:true)}   // hidden parts are not what the viewer is looking at
 $('snap').onclick=()=>{
   if(!renderer){return}
   draw(); const src=$('gl'); const W=src.width,H=src.height;
@@ -884,7 +930,7 @@ $('snap').onclick=()=>{
   MK={base,W,H,marks:[],cur:null,parts,
       camera:{pos:camera.position.toArray().map(v=>+v.toFixed(2)),target:controls.target.toArray().map(v=>+v.toFixed(2)),fov:camera.fov,aspect:+camera.aspect.toFixed(4)},
       cam:camera.clone(),
-      target:sel&&!(sel.t==='part'&&meshes[sel.id]&&!meshes[sel.id].visible)?key(sel.t,sel.id):null, meas:MEAS.list.map(measSave), section:SEC.on?{axis:SEC.ax,at_mm:+secMM().toFixed(1),keep:SEC.flip?'above':'below'}:null};
+      change:OPEN?{id:OPEN.id,mode:CHV.mode}:null, target:sel&&!(sel.t==='part'&&meshes[sel.id]&&!meshes[sel.id].visible)?key(sel.t,sel.id):null, meas:MEAS.list.map(measSave), section:SEC.on?{axis:SEC.ax,at_mm:+secMM().toFixed(1),keep:SEC.flip?'above':'below'}:null};
   const c=$('mkc'); c.width=W; c.height=H;
   $('mkparts').textContent=parts.length?parts.join(', '):'None selected: the comment is about the whole view.';
   $('mkmsg').textContent=db?'The marked-up image, the camera, the parts and your text are saved with the review, and a comment thread is opened for Claude.':'Saving needs this page open on claude.ai while signed in.';
@@ -934,7 +980,7 @@ function redrawMK(){const c=$('mkc'),x=c.getContext('2d');x.clearRect(0,0,c.widt
 /* the point a mark "points at": arrow tip, circle centre, callout dot, start of a pen stroke */
 function tipOf(m){const p=m.pts;if(m.type==='arrow')return p[1];if(m.type==='circle')return [(p[0][0]+p[1][0])/2,(p[0][1]+p[1][1])/2];return p[0]}
 function partAt(nx,ny){if(!MK||!MK.cam)return null;const v=new THREE.Vector2(nx*2-1,-(ny*2-1));ray.setFromCamera(v,MK.cam);
-  let hits=ray.intersectObjects(Object.values(meshes).filter(m=>m.visible&&m.material.opacity>0.5),false);
+  let hits=ray.intersectObjects(pickables().filter(m=>m.visible&&m.material.opacity>0.5),false);
   hits=secKeep(hits);
   return hits.length?{part:hits[0].object.userData.name,xyz:hits[0].point.toArray().map(v=>+v.toFixed(1))}:null}
 const MKNAME={arrow:'arrow',circle:'circle',pen:'sketch',callout:'callout'};
@@ -953,7 +999,7 @@ $('mksend').onclick=async()=>{
   // what Claude reads in the thread: enough to act on even before it opens the saved record
   let msg=`[View feedback ${fid} · ${D.design} · ${VERDICT[verdict]}]\n${text||'(no text)'}\n\nParts (${parts.length}): ${parts.slice(0,40).join(', ')||'none selected'}${parts.length>40?' …':''}`;
   if(marks.length)msg+=`\nMarkup: `+marks.map(m=>`${m.n} ${m.type} → ${m.at||'background'}${m.xyz?' @'+m.xyz.join(','):''}`).join('; ');
-  msg+=`\nView: ${({all:'show all',ghost:'rest ghosted',hide:'isolated'})[VM]}${HIDDEN.size?`, hidden assemblies: ${[...HIDDEN].map(id=>A[id]?A[id].name:id).join(', ')}`:''}${HIDP.size?`, ${HIDP.size} parts hidden`:''}${MK.section?`, section ${MK.section.axis.toUpperCase()} ${MK.section.keep} ${MK.section.at_mm} mm`:''}.${MK.meas.length?`\nMeasurements: `+MK.meas.map((m,i)=>`M${i+1} ${m.text}`).join('; '):''}\nScreenshot and camera are in feedback/${fid}.`;
+  msg+=`\nView: ${({all:'show all',ghost:'rest ghosted',hide:'isolated'})[VM]}${HIDDEN.size?`, hidden assemblies: ${[...HIDDEN].map(id=>A[id]?A[id].name:id).join(', ')}`:''}${HIDP.size?`, ${HIDP.size} parts hidden`:''}${MK.section?`, section ${MK.section.axis.toUpperCase()} ${MK.section.keep} ${MK.section.at_mm} mm`:''}.${MK.meas.length?`\nMeasurements: `+MK.meas.map((m,i)=>`M${i+1} ${m.text}`).join('; '):''}${MK.change?`\nProposed change: ${MK.change.id}, shown ${MK.change.mode}.`:''}\nScreenshot and camera are in feedback/${fid}.`;
   if(new TextEncoder().encode(msg).length>4000)msg=msg.slice(0,3900)+'…';
   // send first, straight from the click (Send to Claude must follow the viewer's gesture); upload and save in parallel
   let sendP=Promise.resolve(null); const sendState=MK.sendState||'off';
@@ -963,7 +1009,7 @@ $('mksend').onclick=async()=>{
     let image=null, imgErr=null;
     if(assetsNS){try{const blob=await new Promise(r=>out.toBlob(r,'image/png'));const up=await assetsNS.upload(blob,{type:'image/png'});image=up.id}catch(e){imgErr=e.code||e.message}}
     else imgErr='image storage needs edit access';
-    await ref.set({kind:'view',target,targetName:tname,verdict,text,parts,marks,image,camera:MK.camera,viewMode:VM,hiddenAsm:[...HIDDEN],hiddenParts:[...HIDP],section:MK.section,measurements:MK.meas,hideFasteners:$('hidefast').checked,
+    await ref.set({kind:'view',target,targetName:tname,verdict,text,parts,marks,image,camera:MK.camera,viewMode:VM,hiddenAsm:[...HIDDEN],hiddenParts:[...HIDP],section:MK.section,measurements:MK.meas,hideFasteners:$('hidefast').checked,change:MK.change,
       viewport:[MK.W,MK.H],author:me||null,at:new Date().toISOString(),status:'open',design:D.design});
     return imgErr;
   })();
