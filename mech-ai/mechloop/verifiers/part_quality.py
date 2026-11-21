@@ -88,6 +88,9 @@ WEAK_WIDTH = 0.8
 WEAK_SHARE = 0.15
 HOLE_D = (1.5, 25.0)
 GRID = 0.1
+# stock plate / sheet thicknesses that are not on the metric grid (inch gauges as SendCutSend / MISUMI / McMaster sell them)
+STOCK_GAUGES = (0.508, 0.635, 0.8128, 1.016, 1.27, 1.524, 1.88, 2.032, 2.286, 2.54, 3.175, 4.75, 4.7625, 6.35, 9.525, 12.7, 15.875,
+                19.05, 25.4)
 OVERLAP_WARN_MM3 = 20.0       # an allowed overlap above this that no thread explains
 SCREW_FILL = 0.6
 MESH_TOL = 0.02
@@ -95,8 +98,8 @@ MESH_ANG = 0.25
 MAX_RAYS = 4000
 
 _THREADISH = ("thread", "tnut", "t-nut", "spring nut", "insert", "pem", "self-clinching", "integral screw", "stud")
-_HARDWARE_WORDS = ("nut", "screw", "bolt", "clip", "rivet", "pin", "circlip", "ring", "stud", "zip tie", "cable tie")
-_FIXING_NOTE = ("press", "bond", "epoxy", "glue", "snap", "magnet", "sliding", "slide", "rests", "sits", "captive", "float",
+_HARDWARE_WORDS = ("nut", "screw", "bolt", "clip", "rivet", "pin", "circlip", "ring nut", "stud", "zip tie", "cable tie")
+_FIXING_NOTE = ("integral", "press", "bond", "epoxy", "glue", "snap", "magnet", "sliding", "slide", "rests", "sits", "captive", "float",
                 "spring", "solder", "on the rod", "axle", "held in", "clamp", "located", "pilot", "set_screw", "set screw")
 
 
@@ -469,7 +472,8 @@ def _ray_checks(shape, m, fidx, process, add):
     opp = np.full(len(idx), False)
     ok = tt >= 0
     opp[ok] = np.einsum("ij,ij->i", n[tt[ok]], nn[ok]) < -0.5
-    thin = finite & opp & (thick < lim - 1e-3)
+    # the triangulation cuts each curved wall by up to MESH_TOL: a wall exactly at the minimum must not trip it
+    thin = finite & opp & (thick < lim - 2 * MESH_TOL - 0.01)
     a_thin = float(tri_area[idx][thin].sum())
     if thin.any() and a_thin >= THIN_MIN_AREA:
         k = int(np.argmin(np.where(thin, thick, np.inf)))
@@ -649,18 +653,18 @@ def _principal_axes(shape):
 
 def _extents(shape, R):
     """Size of the shape along the three rows of R (exact: an optimal bounding box of the rotated shape)."""
-    from build123d import Location
     from OCP.Bnd import Bnd_Box
+    from OCP.TopLoc import TopLoc_Location
     from OCP.BRepBndLib import BRepBndLib
     from OCP.gp import gp_Trsf
 
     t = gp_Trsf()
     t.SetValues(*R[0], 0.0, *R[1], 0.0, *R[2], 0.0)
-    moved = shape.wrapped.Moved(Location(t).wrapped) if np.allclose(R @ R.T, np.eye(3)) and np.linalg.det(R) > 0 else shape.wrapped
+    moved = shape.wrapped.Moved(TopLoc_Location(t)) if np.allclose(R @ R.T, np.eye(3)) and np.linalg.det(R) > 0 else shape.wrapped
     b = Bnd_Box()
     BRepBndLib.AddOptimal_s(moved, b, False, False)
-    x0, y0, z0, x1, y1, z1 = b.Get()
-    return [x1 - x0, y1 - y0, z1 - z0]
+    lo, hi = b.CornerMin(), b.CornerMax()
+    return [hi.X() - lo.X(), hi.Y() - lo.Y(), hi.Z() - lo.Z()]
 
 
 def _off_grid(x: float) -> bool:
@@ -673,7 +677,7 @@ def _odd_dims(shape, add):
         dims = sorted((round(v, 3) for v in _extents(shape, R)), reverse=True)
     except Exception:
         return
-    odd = [v for v in dims if _off_grid(v)]
+    odd = [v for v in dims if _off_grid(v) and not any(abs(v - g) < 2e-3 for g in STOCK_GAUGES)]
     if odd:
         add("info", "odd_dimension", f"overall size {' x '.join(f'{v:g}' for v in dims)} mm: "
                                      f"{', '.join(f'{v:g}' for v in odd)} not on the {GRID} mm grid", dims=dims, odd=odd)
@@ -727,6 +731,10 @@ class _Scene:
 
 
 def _hole_probe_points(h):
+    if "slot_to" in h:     # a slot: probe its whole length
+        pts = [_hole_probe_points({**{k: v for k, v in h.items() if k != "slot_to"},
+                                   "axis_p": h["axis_p"] + (h["slot_to"] - h["center"]) * f}) for f in (0.0, 0.5, 1.0)]
+        return np.vstack(pts)
     d = h["axis_d"]
     a = np.cross(d, [1, 0, 0] if abs(d[0]) < 0.9 else [0, 1, 0])
     a /= np.linalg.norm(a)
@@ -742,10 +750,41 @@ def _hole_probe_points(h):
     return np.array(pts)
 
 
+def _hole_features(shape):
+    """Holes (concave cylinders of at least half a turn) of hole-like size, with the two half-round ends of a slot
+    merged into one feature (probed along its length). A concave quarter-round is an inside corner, not a hole."""
+    hs = [h for h in _holes(shape) if HOLE_D[0] <= h["d"] <= HOLE_D[1] and h["arc_deg"] >= 170]
+    full = [h for h in hs if h["arc_deg"] > 300]
+    half = [h for h in hs if h["arc_deg"] <= 300]
+    used = set()
+    for i, a in enumerate(half):
+        if i in used:
+            continue
+        best = None
+        for j in range(i + 1, len(half)):
+            b = half[j]
+            if j in used or abs(a["r"] - b["r"]) > 1e-4 or abs(abs(np.dot(a["axis_d"], b["axis_d"])) - 1) > 1e-6:
+                continue
+            w = b["center"] - a["center"]
+            if abs(np.dot(w, a["axis_d"])) > 1e-3:
+                continue
+            L = float(np.linalg.norm(w))
+            if L < 60 and (best is None or L < best[0]):
+                best = (L, j)
+        if best is not None:
+            used.update((i, best[1]))
+            b = half[best[1]]
+            full.append({**a, "slot_to": b["center"], "arc_deg": 360.0, "slot_len": best[0]})
+        else:
+            used.add(i)
+            full.append(a)
+    return full
+
+
 def trace_holes(design, c, scene) -> list[dict]:
     """Holes of part c that nothing in the assembly passes through or mates with."""
     out = []
-    holes = [h for h in _holes(c.shape) if HOLE_D[0] <= h["d"] <= HOLE_D[1] and h["arc_deg"] > 90]
+    holes = _hole_features(c.shape)
     tool_axes = [(np.array(f.head_center, float), np.array(f.axis, float) / (np.linalg.norm(f.axis) or 1.0))
                  for f in design.fasteners]
     for h in holes:
@@ -763,8 +802,9 @@ def trace_holes(design, c, scene) -> list[dict]:
                         used_by = "tool axis"
                         break
         if used_by is None:
+            kind = f"{h['d']:.2f} x {h['slot_len'] + h['d']:.2f} mm slot" if "slot_to" in h else f"{h['d']:.2f} mm hole"
             out.append({"severity": "warning", "code": "hole_unused",
-                        "message": f"{h['d']:.2f} mm hole with nothing in it (no screw, pin, shaft, spacer, part or tool "
+                        "message": f"{kind} with nothing in it (no screw, pin, shaft, spacer, part or tool "
                                    f"axis passes through): a left-over or a missing part?",
                         "data": {"at": _pt(h["center"]), "d_mm": round(h["d"], 3), "axis": _pt(h["axis_d"]),
                                  "arc_deg": round(h["arc_deg"], 1)}})
@@ -838,6 +878,8 @@ def overlap_audit(design, r) -> dict:
         kind = str(design.joins.get(pair, ""))
         threadish = any(w in kind.lower() for w in _THREADISH)
         screw = next((x for x in (a, b) if x.name in fast), None)
+        nutlike = next((x for x in (a, b) if _is_hardware(x) and re.search(r"(nut|tnut|insert)$", x.name.rstrip("_0123456789")
+                                                                               ) or (x.sku or "").upper().startswith(("NUT", "TNUT"))), None)
         other = b if screw is a else a
         fill = None
         if screw is not None and vol > 1e-3 and ext is not None:
@@ -848,15 +890,15 @@ def overlap_audit(design, r) -> dict:
             if d and L > 0.1:
                 fill = vol / (math.pi * d * d / 4 * L)
         row = {"a": names[0], "b": names[1], "volume_mm3": round(vol, 3), "declared_max_mm3": None if maxv >= 1e8 else maxv,
-               "join": kind, "threaded": threadish or (screw is not None and kind == ""), "screw_fill": None if fill is None else round(fill, 3),
+               "join": kind, "threaded": threadish or screw is not None or nutlike is not None, "screw_fill": None if fill is None else round(fill, 3),
                "custom": [n for n in names if not comps[n].cots]}
         rows.append(row)
-        if fill is not None and fill > SCREW_FILL:
+        if fill is not None and fill > SCREW_FILL and not other.cots:
             r.add("warning", "screw_through_solid",
                   f"{screw.name} fills {fill:.0%} of its section inside {other.name} ({vol:.0f} mm3): no hole is drawn "
                   f"where it passes (a threaded hole overlaps ~30 %)", part=other.name, screw=screw.name, volume_mm3=round(vol, 1),
                   fill=round(fill, 3), check_class="weird")
-        elif vol > OVERLAP_WARN_MM3 and not (screw is not None or threadish):
+        elif vol > OVERLAP_WARN_MM3 and not (screw is not None or threadish or nutlike is not None):
             r.add("warning", "allowed_overlap_large",
                   f"{a.name} and {b.name} are allowed to overlap and do by {vol:.0f} mm3 (join: {kind or 'none'}): only a "
                   f"thread, a press fit or a panel cut-out should overlap; this hides a clash from the interference check",
@@ -865,7 +907,32 @@ def overlap_audit(design, r) -> dict:
                   at=_pt([(ext[0] + ext[3]) / 2, (ext[1] + ext[4]) / 2, (ext[2] + ext[5]) / 2]) if ext else None)
     rows.sort(key=lambda x: -x["volume_mm3"])
     return {"pairs": len(rows), "nonzero": sum(x["volume_mm3"] > 1e-3 for x in rows),
-            "flagged": sum(1 for x in rows if x["volume_mm3"] > OVERLAP_WARN_MM3 and not x["threaded"]), "rows": rows}
+            "flagged": sum(1 for x in rows if x["volume_mm3"] > OVERLAP_WARN_MM3 and not x["threaded"]),
+            "screws_filling_cots_part": sum(1 for x in rows if (x["screw_fill"] or 0) > SCREW_FILL and not x["custom"]),
+            "rows": rows}
+
+
+def _hardware_nearby(design, comps, a, b) -> bool:
+    """A drawn nut / screw / washer tied (joined or allowed to overlap) to one of the two parts and touching the other."""
+    from OCP.BRepExtrema import BRepExtrema_DistShapeShape
+
+    rel = defaultdict(set)
+    for pr in list(design.joins) + list(design.allowed_overlaps):
+        n = sorted(pr)
+        if len(n) == 2:
+            rel[n[0]].add(n[1])
+            rel[n[1]].add(n[0])
+    for x, y in ((a, b), (b, a)):
+        for h in rel[x.name]:
+            hc = comps.get(h)
+            if hc is None or not _is_hardware(hc) or h == y.name:
+                continue
+            if y.name in rel[h]:
+                return True
+            dd = BRepExtrema_DistShapeShape(hc.shape.wrapped, y.shape.wrapped)
+            if dd.IsDone() and dd.Value() < 0.2:
+                return True
+    return False
 
 
 def join_audit(design, r) -> dict:
@@ -901,7 +968,7 @@ def join_audit(design, r) -> dict:
         rows.append({"a": names[0], "b": names[1], "join": str(kind), "hardware_named": words,
                      "custom": [n for n in names if not comps[n].cots]})
         part = next((n for n in names if not comps[n].cots), None)
-        if words and not (fixing and not any(w in ("nut", "screw", "bolt", "ring") for w in words)):
+        if words and "integral" not in kl and not _hardware_nearby(design, comps, a, b):
             r.add("warning", "attachment_not_drawn",
                   f"{names[0]} and {names[1]} are declared joined ('{kind}') but the {', '.join(words)} that would hold them "
                   f"is not drawn and no drawn fastener connects them: nothing shows how it attaches",
@@ -927,6 +994,18 @@ def _hole_near_point(shape, p, tol_axis=0.5, reach=3.0, faces_cache=None):
         if off < best[0]:
             best = (off, h["d"])
     return best[0] <= tol_axis, best[0], best[1]
+
+
+def _fastened_together(design, a: str, b: str) -> bool:
+    for f in design.fasteners:
+        g = {f.name, *f.clamps}
+        try:
+            g |= set(design.get(f.name).meta.get("threads_into") or [])
+        except KeyError:
+            pass
+        if a in g and b in g:
+            return True
+    return False
 
 
 def stock_hole_audit(design, r, scene) -> dict:
@@ -978,22 +1057,24 @@ def stock_hole_audit(design, r, scene) -> dict:
                         continue
                     okm, offm, dm = _hole_near_point(m.shape, p, tol_axis=0.3, reach=6.0, faces_cache=holes_of(m))
                     if not okm:
-                        mis.append({"mate": m.name, "at": _pt(p), "nearest_hole_axis_mm": None if offm == math.inf else round(offm, 3),
+                        mis.append({"fastened": _fastened_together(design, c.name, m.name), "mate": m.name, "at": _pt(p), "nearest_hole_axis_mm": None if offm == math.inf else round(offm, 3),
                                     "nearest_d": dm})
             row = {"part": c.name, "sku": c.sku, "key": key, "listed": len(pts), "missing_in_solid": len(missing),
                    "missing_in_detail": len(missing_detail) if c.detail is not None else None, "misaligned": mis}
             rows.append(row)
             if missing:
+                sev = "info" if (c.detail is not None and not missing_detail) else "warning"
                 det = ("" if c.detail is None else
                        (" nor in its detailed CAD" if missing_detail else " (its detailed CAD has them: the simulation solid "
                                                                            "dropped them)"))
-                r.add("warning", "stock_hole_missing",
+                r.add(sev, "stock_hole_missing",
                       f"{c.name} ({c.sku}): interfaces['{key}'] lists {len(pts)} holes, {len(missing)} not in its solid{det}",
                       part=c.name, key=key, missing=len(missing), at=_pt(missing[0]), check_class="purchased")
             for mm in mis:
-                r.add("warning", "stock_hole_misaligned",
+                r.add("warning" if mm["fastened"] else "info", "stock_hole_misaligned",
                       f"{c.name}'s listed hole ('{key}') at {mm['at']} has no matching hole in {mm['mate']}"
-                      + (f" (nearest hole axis {mm['nearest_hole_axis_mm']} mm away)" if mm["nearest_hole_axis_mm"] is not None else ""),
+                      + (f" (nearest hole axis {mm['nearest_hole_axis_mm']} mm away)" if mm["nearest_hole_axis_mm"] is not None else "")
+                      + ("" if mm["fastened"] else "; no drawn screw fastens the two, so the listed holes are unused"),
                       part=mm["mate"], stock=c.name, key=key, at=mm["at"], check_class="purchased")
     return {"interfaces_checked": len(rows), "rows": rows}
 

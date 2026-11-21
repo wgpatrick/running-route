@@ -41,6 +41,10 @@ _MECH = ("joints", "fasteners", "joins", "allowed_overlaps", "min_clearances", "
          "tnut_style", "manufacturing", "gravity", "printer", "electrical", "bom_extras")
 
 DEPS: dict[str, Deps] = {
+    "part_quality": Deps("mechloop.verifiers.part_quality",
+                         fields=("joints", "fasteners", "joins", "allowed_overlaps", "name"),
+                         note="opt-in (runner.OPTIONAL): clean-solid and feature-purpose checks per custom part (memoised on the "
+                              "part's intrinsic fingerprint), allowed-overlap / join-note / purchased-part hole audits"),
     "geometry": Deps("mechloop.verifiers.geometry",
                      fields=("envelope", "max_mass_kg", "manufacturing", "allowed_overlaps", "name"), quick=True,
                      note="per-part validity, overall size and mass (printed parts' mass reads the print settings), "

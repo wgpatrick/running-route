@@ -19,6 +19,12 @@ except Exception:       # pragma: no cover
     pass
 
 ORDER = ["geometry", "interference", "tolerance", "manufacture", "practice", "ratings", "motion", "subsystems", "electrical", "assemblability", "fea", "printing"]
+# Opt-in verifiers: run only when named in `only` (mechloop verify --only part_quality); never part of a plain verify.
+OPTIONAL = ["part_quality"]
+
+
+def _names(only) -> list[str]:
+    return ORDER + [n for n in OPTIONAL if only and n in only]
 
 
 def load_design(path: str | Path) -> Design:
@@ -50,8 +56,9 @@ def _verifiers():
     from .verifiers.practice import verify_practice
     from .verifiers.subsystems import verify_subsystems
     from .verifiers.electrical import verify_electrical
+    from .verifiers.part_quality import verify_part_quality
 
-    return {"geometry": verify_geometry, "interference": verify_interference, "tolerance": verify_tolerance,
+    return {"part_quality": verify_part_quality,"geometry": verify_geometry, "interference": verify_interference, "tolerance": verify_tolerance,
             "manufacture": verify_manufacture, "practice": verify_practice, "ratings": verify_ratings,
             "motion": verify_motion, "subsystems": verify_subsystems, "electrical": verify_electrical, "assemblability": verify_assemblability, "fea": verify_fea,
             "printing": verify_printing}
@@ -131,7 +138,7 @@ def _verify(design: Design, only, stop_on_geometry_error: bool, session) -> Repo
     vs = _verifiers()
     blocked = False
     prof = rep.profile.setdefault("verifiers", {})
-    for name in ORDER:
+    for name in _names(only):
         if only and name not in only:
             continue
         if blocked:
@@ -243,7 +250,7 @@ def _verify_parallel(design: Design, only, stop_on_geometry_error: bool, session
     rep = Report(design.name)
     vs = _verifiers()
     t_start = time.time()
-    names = [n for n in ORDER if not only or n in only]
+    names = [n for n in _names(only) if not only or n in only]
     results: dict[str, VerifierResult] = {}
     prof = rep.profile.setdefault("verifiers", {})
     sched = parallel.Scheduler(jobs, budget_mb or parallel.DEFAULT_BUDGET_MB,
@@ -256,7 +263,7 @@ def _verify_parallel(design: Design, only, stop_on_geometry_error: bool, session
     fea_units_list, fea_parts, fea_t0, fea_ready = None, {}, None, None
 
     def metrics_now():
-        return {n: results[n].metrics for n in ORDER if n in results}
+        return {n: results[n].metrics for n in _names(only) if n in results}
 
     def deps_done(n):
         if n == "printing":

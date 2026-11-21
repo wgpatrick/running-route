@@ -26,7 +26,7 @@ def main(argv=None) -> int:
     sub = p.add_subparsers(dest="cmd", required=True)
     v = sub.add_parser("verify", help="build a design script and run the verifiers")
     v.add_argument("design", help="python file defining build() -> Design")
-    v.add_argument("--only", nargs="*", help="subset of: geometry interference tolerance manufacture practice ratings motion subsystems electrical assemblability fea printing requirements")
+    v.add_argument("--only", nargs="*", help="subset of: geometry interference tolerance manufacture practice ratings motion subsystems electrical assemblability fea printing requirements; opt-in (only when named): part_quality")
     v.add_argument("--out", default="out", help=OUT_HELP)
     v.add_argument("--no-render", action="store_true")
     v.add_argument("--max-findings", type=int, default=25)
@@ -96,9 +96,9 @@ def main(argv=None) -> int:
     if a.cmd == "verify":
         from .runner import run
 
-        from .runner import ORDER
+        from .runner import OPTIONAL, ORDER
         only = [n for item in (a.only or []) for n in item.split(",") if n] or None
-        known = [o if isinstance(o, str) else o[0] for o in ORDER] + ["requirements"]
+        known = [o if isinstance(o, str) else o[0] for o in ORDER] + ["requirements"] + OPTIONAL
         bad = [n for n in (only or []) if n not in known]
         if bad:
             sys.exit(f"unknown verifier(s) {bad}; choose from: {' '.join(known)}")
