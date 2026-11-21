@@ -1,4 +1,4 @@
-<title>Printer v10.1 Design Review</title>
+<title>Printer v12 Design Review</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
@@ -251,7 +251,7 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
 
 <header class="top wrap" id="hdr">
   <div class="row">
-    <h1>Printer v10.1 design review</h1>
+    <h1>Printer v12 design review</h1>
     <span class="sub">Bed-slinger, 180 mm cube, three-screw Z. Pick an assembly, part or bolted joint; leave feedback on any of them.</span>
   </div>
   <div class="stats" id="stats"></div>
@@ -327,7 +327,7 @@ button:focus-visible,.item:focus-visible,input:focus-visible,select:focus-visibl
     <div class="hover" id="hover" hidden></div>
     <div class="legend"><span><i style="background:var(--sel)"></i>selected</span><span><i style="background:var(--accent)"></i>related</span></div>
     <div class="vhelp" id="vhelp"><button type="button" id="vhelpb" aria-expanded="false" aria-controls="vhelpc">Controls</button><div id="vhelpc" role="tooltip"><table><tr><th>Rotate</th><td>drag with the left button</td></tr><tr><th>Pan</th><td>drag with the right button, or Ctrl / Shift + drag</td></tr><tr><th>Zoom</th><td>scroll wheel</td></tr><tr><th>Open a part</th><td>click it</td></tr><tr><th>Select several</th><td>Shift + click, or turn on Multi-select</td></tr><tr><th>Hide selection</th><td>H &nbsp;(Alt + H shows everything again)</td></tr><tr><th>Measure</th><td>M, then click points &nbsp;(Esc cancels)</td></tr><tr><th>Fit / section</th><td>buttons at the top of the view</td></tr></table></div></div>
-    <div class="vmsg" id="vmsg">Loading 3D model (11 MB)…</div>
+    <div class="vmsg" id="vmsg">Loading 3D model (23 MB)…</div>
   </div>
 </main>
 
@@ -605,7 +605,7 @@ function renderFB(){
 let scene,camera,renderer,controls,meshes={},ray,box3,ptr=null,downAt=null;
 function load3D(){
   if(!window.THREE){$('vmsg').textContent='3D library did not load.';return}
-  fetch('meshes.txt').then(r=>r.text()).then(t=>{const bin=atob(t),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);init3D(u.buffer);$('vmsg').remove()}).catch(e=>{$('vmsg').textContent='Could not load the 3D model: '+e.message});
+  Promise.all(['meshes_a.txt','meshes_b.txt'].map(f=>fetch(f).then(r=>{if(!r.ok)throw new Error(f+' '+r.status);return r.text()}))).then(a=>a.map(x=>x.trim()).join('')).then(t=>{const bin=atob(t),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);init3D(u.buffer);$('vmsg').remove()}).catch(e=>{$('vmsg').textContent='Could not load the 3D model: '+e.message});
 }
 function init3D(buf){
   renderer=new THREE.WebGLRenderer({canvas:$('gl'),antialias:true,alpha:true}); renderer.setPixelRatio(Math.min(devicePixelRatio,2));
