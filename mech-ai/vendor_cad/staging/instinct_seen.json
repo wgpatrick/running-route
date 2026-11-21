@@ -1268,12 +1268,13 @@
     },
     "1Y8-NoBsgMS3-yeS80KYyyU-RJ4gckQij": {
      "title": "RESULT.md",
-     "size": 4959,
-     "note": "18:53Z revision; staged as instinct_REQ-015/RESULT_instinct_REQ-015_2026-11-20_1853Z.md, sha256 65c9932d..."
+     "size": 5449,
+     "modifiedTime": "2026-11-21T00:12:00Z",
+     "note": "00:12Z revision; staged as instinct_REQ-015/RESULT_instinct_REQ-015_2026-11-21_0012Z.md, sha256 1b53dbcc...; adds owner folder-placement decision, JST clause-2 AI-processing question unresolved"
     }
    },
    "folder": "mechloop handoff/results/REQ-015-jst-molex-phoenix-step",
-   "last_checked": "2026-11-20T19:15:00Z",
+   "last_checked": "2026-11-21T00:15:00Z",
    "result_status": "done per Instinct (JST XH via jst-mfg.com, licence accepted 2026-11-20 on claimed owner approval - not verified; REQ-016 RESULT still lists it as approval hold)",
    "staged_in": "vendor_cad/staging/instinct_REQ-015",
    "superseded": {
@@ -1281,6 +1282,11 @@
      "title": "RESULT.md",
      "size": 3175,
      "note": "staged as instinct_REQ-015/RESULT_instinct_REQ-015_2026-11-20.md, sha256 b7adcdf5...; earlier revision of the same id, replaced by the 18:53Z revision (batch 15)"
+    },
+    "1Y8-NoBsgMS3-yeS80KYyyU-RJ4gckQij@1853Z": {
+     "title": "RESULT.md",
+     "size": 4959,
+     "note": "18:53Z revision; staged as instinct_REQ-015/RESULT_instinct_REQ-015_2026-11-20_1853Z.md, sha256 65c9932d...; replaced by the 00:12Z revision (batch 17)"
     }
    }
   },
@@ -1359,17 +1365,74 @@
    "files": {
     "1Xd6q51QZ-nGX2bJTv1bws0IbmIcM52Um": {
      "title": "RESULT.md",
-     "size": 3676,
-     "note": "staged as instinct_REQ-018/RESULT_instinct_REQ-018_2026-11-20.md, sha256 26941a6b...; interim, text only"
+     "size": 6470,
+     "note": "23:49Z revision; staged as instinct_REQ-018/RESULT_instinct_REQ-018_2026-11-20_2349Z.md, sha256 3bdaf6c0...; Roto M8x1 thread inference contradicted by our measurement (see MANIFEST batch 17)"
+    },
+    "11jigV_zJ8yyulWn5kw3aWR7o7UB4jRpH": {
+     "title": "prusament-dummy-spool__cad.step.zip",
+     "size": 3978634,
+     "note": "staged zipped as instinct_REQ-018/Prusament_dummy_spool_1kg.step.zip, sha256 7c43c16b...; 1 member (25,441,235 B, sha256 b8dbb4ef...), no traversal; 1 valid solid OD 199.89 x W 64.13, hub bore 51.25; author Jiri Bilek, Inventor 2019; licence not stated"
+    },
+    "1LVphpqcJnyEC4kY_d3sZ3Rp5f_6kNt1Z": {
+     "title": "e3d-roto-bowden-reference-cad.step",
+     "size": 1411826,
+     "note": "byte-identical to staging/E3D_Roto_Bowden_reference.step (sha256 1a8ac7dc...), not re-staged; inlet = bowdaptor with integral E3D collet, 6.0 spigot in 6.2 recess, no thread modelled"
+    },
+    "1TdFWRZaff6OUdA4VGVtcJQ-OthYx1rgp": {
+     "title": "2333N197__cad.step",
+     "size": 713378,
+     "note": "staged as instinct_REQ-018/McMaster_2333N197_push-to-connect_4mm_M5x0.8.step, sha256 717e927e...; 3 valid solids, L/hex/4.000 socket match drawing"
+    },
+    "1e_hwVRzPTMG5L_RJOKmlNMIXkHyGEpu9": {
+     "title": "2333N197__datasheet.pdf",
+     "size": 55439,
+     "note": "staged as vendor_docs/McMaster_2333N197_push-to-connect_4mm_M5x0.8_drawing.pdf, sha256 ca37866d...; Instinct-made raster wrapper of McMaster drawing, no active content"
+    },
+    "182finrZxvyN344qrjZJoKzWrNdNuHQyi": {
+     "title": "2333N202__cad.step",
+     "size": 631576,
+     "note": "staged as instinct_REQ-018/McMaster_2333N202_push-to-connect_4mm_M6x1.step, sha256 cfe12e53...; 3 valid solids, L/hex/4.000 socket match drawing"
+    },
+    "1tHSIUo9_7NkBgTWXDJK6i7FA-0yJa0mR": {
+     "title": "2333N202__datasheet.pdf",
+     "size": 60246,
+     "note": "staged as vendor_docs/McMaster_2333N202_push-to-connect_4mm_M6x1_drawing.pdf, sha256 0b472ac3...; Instinct-made raster wrapper of McMaster drawing, no active content"
+    },
+    "1k2a5cZ5LfFNV243xSWAyunT2N6zRehCv": {
+     "title": "2333N211__cad.step",
+     "size": 738965,
+     "note": "staged as instinct_REQ-018/McMaster_2333N211_push-to-connect_4mm_M8x1.step, sha256 b69c7c9a...; 3 valid solids, L/hex/4.000 socket match drawing"
+    },
+    "1nK1vyFF3118oC6hyeB0D84tMa7SgMhyZ": {
+     "title": "2333N211__datasheet.pdf",
+     "size": 57799,
+     "note": "staged as vendor_docs/McMaster_2333N211_push-to-connect_4mm_M8x1_drawing.pdf, sha256 291af4e9...; Instinct-made raster wrapper of McMaster drawing, no active content"
+    },
+    "1pwUiwkIny47tvytRCux1gu3lUAAfPcdl": {
+     "title": "2333N214__cad.step",
+     "size": 766063,
+     "note": "staged as instinct_REQ-018/McMaster_2333N214_push-to-connect_4mm_M10x1.step, sha256 ca54ec1d...; 3 valid solids, L/hex/4.000 socket match drawing"
+    },
+    "1_GpiDq7VtazdCbbxZknpXuS_SBFYJcev": {
+     "title": "2333N214__datasheet.pdf",
+     "size": 58853,
+     "note": "staged as vendor_docs/McMaster_2333N214_push-to-connect_4mm_M10x1_drawing.pdf, sha256 1dc39d02...; Instinct-made raster wrapper of McMaster drawing, no active content"
     }
    },
    "folder": "mechloop handoff/results/REQ-018-spool-and-filament-path",
-   "last_checked": "2026-11-20T23:15:00Z",
-   "result_status": "partial (PTFE done; spool drawing, couplers, 608 CAD open)",
-   "staged_in": "vendor_cad/staging/instinct_REQ-018"
+   "last_checked": "2026-11-21T00:15:00Z",
+   "result_status": "partial (23:49Z: spool STEP, PTFE, 4 McMaster couplers delivered; 608 CAD blocked pending owner OK for SKF account; Roto thread inference wrong per our CAD check)",
+   "staged_in": "vendor_cad/staging/instinct_REQ-018",
+   "superseded": {
+    "1Xd6q51QZ-nGX2bJTv1bws0IbmIcM52Um@interim": {
+     "title": "RESULT.md",
+     "size": 3676,
+     "note": "staged as instinct_REQ-018/RESULT_instinct_REQ-018_2026-11-20.md, sha256 26941a6b...; interim, text only; earlier revision of the same id, replaced by the 23:49Z revision (batch 17)"
+    }
+   }
   }
  },
- "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..008 (REQ-005..008 added 2026-11-20 batch 5). Batch 6 (2026-11-20 05:20Z): 7 new files + RESULT.md revision in REQ-005; nothing else new (154 files, 2 pages). Batch 7 (2026-11-20 06:20Z): 9 new files + RESULT.md revision in REQ-008; nothing else new (169 items incl. 8 folders, 3 pages). Batch 8 (2026-11-20 06:45Z): 2 new files + RESULT.md revision in REQ-008; new REQ-009 folder (RESULT.md only); new REQ-010 folder empty. Search: created or modified after 05:30Z under results, plus listing of the new folders. Batch 9 (2026-11-20 07:20Z): 5 new files in REQ-010; new NOTE-pcbway-review-status folder (RESULT.md only). Search: created or modified after 06:30Z under results (6 files + 2 folders). Batch 10 (2026-11-20 14:20Z): 3 new files + RESULT.md revision (07:22Z) in REQ-008; new REQ-012 folder (RESULT.md only). Only the five named file ids were fetched; no full search of results this batch. Batch 11 (2026-11-20 15:15Z): new REQ-013 folder (22 files + RESULT.md) and REQ-014 folder (RESULT.md only); only the named file ids plus a listing of these two folders; no full search of results this batch. Batch 12 (2026-11-20 16:15Z): 3 new files in REQ-014 (S-M3-0ZI STEP + drawing, RESULT.md new id) and 4 in REQ-013 (RESULT.md new id + 3 PDFs); only the named file ids fetched; no folder listing or full search. BTT ADXL345 V2.0 STEP fetched from GitHub master: byte-identical to the instinct_REQ-003 zip content, not re-staged. Batch 14 (2026-11-20 18:15Z): new REQ-015 folder (Molex + Phoenix STEP, RESULT.md) and REQ-013 RESULT.md new id (17:58Z); only the named file ids fetched; no folder listing or full search. Batch 15 (2026-11-20 19:15Z): 7 new files + RESULT.md revision (18:53Z) in REQ-015 (JST XH STEP x6 + SXH contact PDF); new REQ-016 folder (RESULT.md + 3 PDFs, NTC table a byte-duplicate); only the named file ids fetched; no folder listing or full search. Batch 16 (2026-11-20 23:15Z): new REQ-017 folder (RESULT.md + 3 STEP + 3 PDFs) and new REQ-018 folder (interim RESULT.md only); only the named file ids fetched; no folder listing or full search.",
+ "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..008 (REQ-005..008 added 2026-11-20 batch 5). Batch 6 (2026-11-20 05:20Z): 7 new files + RESULT.md revision in REQ-005; nothing else new (154 files, 2 pages). Batch 7 (2026-11-20 06:20Z): 9 new files + RESULT.md revision in REQ-008; nothing else new (169 items incl. 8 folders, 3 pages). Batch 8 (2026-11-20 06:45Z): 2 new files + RESULT.md revision in REQ-008; new REQ-009 folder (RESULT.md only); new REQ-010 folder empty. Search: created or modified after 05:30Z under results, plus listing of the new folders. Batch 9 (2026-11-20 07:20Z): 5 new files in REQ-010; new NOTE-pcbway-review-status folder (RESULT.md only). Search: created or modified after 06:30Z under results (6 files + 2 folders). Batch 10 (2026-11-20 14:20Z): 3 new files + RESULT.md revision (07:22Z) in REQ-008; new REQ-012 folder (RESULT.md only). Only the five named file ids were fetched; no full search of results this batch. Batch 11 (2026-11-20 15:15Z): new REQ-013 folder (22 files + RESULT.md) and REQ-014 folder (RESULT.md only); only the named file ids plus a listing of these two folders; no full search of results this batch. Batch 12 (2026-11-20 16:15Z): 3 new files in REQ-014 (S-M3-0ZI STEP + drawing, RESULT.md new id) and 4 in REQ-013 (RESULT.md new id + 3 PDFs); only the named file ids fetched; no folder listing or full search. BTT ADXL345 V2.0 STEP fetched from GitHub master: byte-identical to the instinct_REQ-003 zip content, not re-staged. Batch 14 (2026-11-20 18:15Z): new REQ-015 folder (Molex + Phoenix STEP, RESULT.md) and REQ-013 RESULT.md new id (17:58Z); only the named file ids fetched; no folder listing or full search. Batch 15 (2026-11-20 19:15Z): 7 new files + RESULT.md revision (18:53Z) in REQ-015 (JST XH STEP x6 + SXH contact PDF); new REQ-016 folder (RESULT.md + 3 PDFs, NTC table a byte-duplicate); only the named file ids fetched; no folder listing or full search. Batch 16 (2026-11-20 23:15Z): new REQ-017 folder (RESULT.md + 3 STEP + 3 PDFs) and new REQ-018 folder (interim RESULT.md only); only the named file ids fetched; no folder listing or full search. Batch 17 (2026-11-21 00:15Z): REQ-018 RESULT.md revision (23:49Z) + 10 new files (Prusament spool STEP zip, E3D Roto reference duplicate, 4 McMaster push-to-connect STEP + drawing); REQ-015 RESULT.md revision (00:12Z); only the named file ids fetched; no folder listing or full search.",
  "last_checked_all": "2026-11-20T07:20:00Z",
  "_note_not_downloaded": "Files with 'NOT downloaded' notes are recorded as seen but were never fetched; retry them if a larger download route exists."
 }

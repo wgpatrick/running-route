@@ -88,3 +88,14 @@ B = 2.5(n-1)+4.9 (7.4 / 9.9 / 12.4), depth 5.75, 7 above the board, posts 0.64 s
 
 Verdict: the six JST STEPs are accepted as manufacturer CAD. All dimensions checked match the XH datasheet. Instinct says the SXH contact has
 no STEP on jst-mfg.com, so the contact remains the re-made envelope in batch12.
+
+## 2026-11-21 batch 17 (ingested about 00:15Z): RESULT.md revision 00:12Z
+
+| Delivered as (Drive id, size) | Staged as | sha256 |
+|---|---|---|
+| RESULT.md (1Y8-NoBsgMS3-yeS80KYyyU-RJ4gckQij, 5,449 B, modified 00:12Z) | RESULT_instinct_REQ-015_2026-11-21_0012Z.md (the 18:53Z copy is kept) | 1b53dbcc4922d8eb4198a0b0c5e7e9e0c8185c88beb770e67d4c569392f01258 |
+
+Diff against the 18:53Z revision: one bullet was added under the JST licence section, plus a trailing blank line. Nothing else changed. The new bullet records an
+**owner decision (2026-11-20 about 4:12 PM PDT, "his own channel")**: keep the JST files in the normal handoff folder, and make no separate private copy. It also states that whether
+JST licence clause 2 permits AI processing of the downloaded Documents **remains unresolved**, and that the folder preference is a placement decision, not a reading of the licence.
+This is Instinct's report of an owner instruction and is not verified here. The JST STEPs already staged are unchanged.
