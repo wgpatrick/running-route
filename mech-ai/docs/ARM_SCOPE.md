@@ -547,3 +547,7 @@ Steps 1-5 fit inside the printer's ordering and lead-time window (print service 
   into captured nuts) and grow in complexity. Which further operations and stations come next (heat-set inserts, press-fit
   bearings, magnets, others) stays open, added only when a target assembly needs them. The live, commentable version of
   this scope is the Claude Doc "Robot Arm Scope" (https://claude.ai/artifact/96CZGsQoQJbsV2aMJt1LwS).
+- Stage D reframed (owner comment, 2026-11-21): "building tools for itself". Each tool starts from a concrete goal, is then
+  generalized (parametric, standard coupling, documented capabilities and limits) and kept in a reusable tool library; new
+  jobs check the library first. Success needs at least one tool reused on a job it was not first built for; tool reuse
+  (jobs served per tool) is a loop metric.
