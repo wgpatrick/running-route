@@ -8,7 +8,7 @@
    "threads": [
     "2f0e34d2-c001-48b0-b638-0124835243d0"
    ],
-   "status": "proposed",
+   "status": "needs work",
    "depends_on": [],
    "removed": [],
    "modified": [
@@ -30,7 +30,8 @@
    ],
    "checks": "verify (FAILS): 0 errors, 0 warnings; parts +9 (913); requirements newly failing: v11; part_quality on the 2 changed custom part(s): clean (no errors or warnings)",
    "file": "changes/estop-mount.json",
-   "design": "printer_v12_1+estop-mount"
+   "design": "printer_v12_1+estop-mount",
+   "status_reason": "re-verifying after fixes (bent-parts requirement, right-column screw length, e-stop in two pieces for assembly)"
   },
   {
    "id": "zmotor-holes",
@@ -59,7 +60,7 @@
    "threads": [
     "10eab134-e341-4786-bae2-d085e018c34d"
    ],
-   "status": "proposed",
+   "status": "needs work",
    "depends_on": [],
    "removed": [
     "nut_keeper",
@@ -141,7 +142,8 @@
    ],
    "checks": "affected-tier verify: 112 errors, 165 warnings (v12: 7 errors, 174 warnings; warnings -9); NEW errors: assemblability/tool_access_blocked: Fastener bracket_10_screw cannot be driven: the screw and a 6 mm x 50 mm driver along its axis are blocked by ['z_motor_fr', 'z_mount_fr_bolt_0', 'z_mount_fr_sp; assemblability/tool_access_blocked: Fastener bracket_2_screw cannot be driven: the screw and a 6 mm x 50 mm driver along its axis are blocked by ['z_motor_fl', 'z_mount_fl_bolt_0', 'z_mount_fl_spa; assemblability/tool_access_blocked: Fastener brkt_up_bot_a_left_screw cannot be driven: the screw and a 6 mm x 50 mm driver along its axis are blocked by ['brkt_up_bot_a_left_screw_a'], which must; assemblability/tool_access_blocked: Fastener brkt_up_bot_a_left_screw_a cannot be driven: the screw and a 6 mm x 50 mm driver along its axis are blocked by ['z_motor_fl'], which must already be in; assemblability/tool_access_blocked: Fastener brkt_up_bot_a_rear_screw cannot be driven: the screw and a 6 mm x 50 mm driver along its axis are blocked by ['brkt_up_bot_a_rear_screw_a'], which must; assemblability/tool_access_blocked: Fastener brkt_up_bot_a_rear_screw_a cannot be driven: the screw and a 6 mm x 50 mm driver along its axis are blocked by ['z_mount_rear_bolt_1', 'z_mount_rear_sp; parts 907 -> 877 (-30); part_quality (6 changed custom part(s), audits on every changed part): 6 error(s): z_motor_plate sliver_face, z_motor_plate tiny_edge, z_motor_plate_fl sliver_face, z_motor_plate_fl tiny_edge, z_motor_plate_fr sliver_face, z_motor_plate_fr tiny_edge; 2 warning(s): z_motor_plate_fl near_parallel_faces, z_motor_plate_fr near_parallel_faces; cleared against v12: z_motor_plate_fl small_step, z_motor_plate_fr small_step",
    "file": "changes/znut-direct.json",
-   "design": "printer_v12_1+znut-direct"
+   "design": "printer_v12_1+znut-direct",
+   "status_reason": "112 errors not in v12 (thread engagement of the M4s, tool access, motor-plate webs): being fixed"
   }
  ]
 }

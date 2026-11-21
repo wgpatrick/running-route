@@ -254,9 +254,20 @@ def main():
         checks += "; " + pq
     if a.checks:
         checks += "; " + a.checks
+    status, why = a.status, None
+    if rep and brep:
+        e_new = sorted({(f["verifier"], f["code"]) for f in rep["findings"] if f["severity"] == "error"}
+                       - {(f["verifier"], f["code"]) for f in brep["findings"] if f["severity"] == "error"})
+        new_msgs = {f["message"][:160] for f in rep["findings"] if f["severity"] == "error"} - {f["message"][:160] for f in brep["findings"] if f["severity"] == "error"}
+        if new_msgs:
+            status = "needs work"
+            why = f"{len(new_msgs)} error(s) not in v12 ({', '.join(f'{v}/{c}' for v, c in e_new[:4]) or 'same rules, new parts'})"
+    elif not rep:
+        status = "needs work"
+        why = "not verified"
     ci = info.get(a.change, {})
     entry = {"id": a.change, "title": ci.get("title", a.change), "summary": ci.get("summary", ""), "threads": ci.get("threads", []),
-             "status": a.status, "depends_on": [k for k in on if k != a.change], "removed": removed, "modified": modified,
+             "status": status, **({"status_reason": why} if why else {}), "depends_on": [k for k in on if k != a.change], "removed": removed, "modified": modified,
              "added": added, "checks": checks, "file": f"changes/{a.change}.json", "design": var.name}
     ip = out / "index.json"
     idx = json.loads(ip.read_text()) if ip.exists() else {"base": a.base_name, "changes": []}
