@@ -965,7 +965,7 @@ def join_audit(design, r) -> dict:
         kl = str(kind).lower()
         words = [w for w in _HARDWARE_WORDS if re.search(rf"\b{re.escape(w)}s?\b", kl)]
         fixing = any(w in kl for w in _FIXING_NOTE)
-        rows.append({"a": names[0], "b": names[1], "join": str(kind), "hardware_named": words,
+        rows.append({"a": names[0], "b": names[1], "join": str(kind), "hardware_named": words, "fixing_note": fixing,
                      "custom": [n for n in names if not comps[n].cots]})
         part = next((n for n in names if not comps[n].cots), None)
         if words and "integral" not in kl and not _hardware_nearby(design, comps, a, b):
