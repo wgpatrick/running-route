@@ -85,3 +85,7 @@ stock and lead time before ordering.
   Misumi HAJP5-2020-6 plate + McMaster 6301K78.
 - Feet, revised (owner, 2026-11-21): the NFJN5-30 studs screw into HNTP5-5 spring T-nuts in the downward-facing slot of the
   bottom rails near each corner; no end tapping (end-tap alteration dropped).
+- Power supply (owner, 2026-11-21): XP Power LBA350PS24 replaces the Mean Well LRS-350-24 (zero stock, 138-day lead). Same
+  case, mounting holes, terminal and fan positions; 24 V 14.6 A 350 W; universal input. DigiKey $44.75.
+- Safety chain parts (owner, 2026-11-21): Omron A22E-M-02 e-stop and Omron G9SE-201 safety relay, drawn as faithful re-makes
+  from the Omron datasheets (Omron CAD needs an account registration; not done).
