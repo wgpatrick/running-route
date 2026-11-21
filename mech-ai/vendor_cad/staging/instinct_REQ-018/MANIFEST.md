@@ -86,3 +86,16 @@ filament axis (assembly Y axis, X = Z = 0).
   internal and lies about 5 mm away from the heatsink interface. The heatsink interface is a plain 6.0-in-6.2 locating spigot. **No thread is modelled anywhere on the inlet.**
   The inlet already takes 4 mm OD PTFE directly through E3D's integrated collet (4.1 bore). None of the four McMaster adapters is indicated for the Roto inlet. The M8x1 2333N211 has
   no basis as a "Roto fit". These couplers are only for other ends of the feed path, such as a spool-side bulkhead in a tapped printed or metal part.
+
+## 2026-11-21 batch 21 (ingested about 04:15Z): RESULT.md revision (SKF update)
+Same Drive id 1Xd6q51QZ-nGX2bJTv1bws0IbmIcM52Um, new content: 7,241 B, sha256 60edfcdf2633e4043f2b0026ef2df50aef25f5abfdf38be02fad833a16122529.
+Staged as `RESULT_instinct_REQ-018_2026-11-21_SKF-update.md`. The 23:49Z copy (3bdaf6c0...) is kept. Untrusted data, read with `python -I`.
+Diff against 23:49Z: two lines only (item on the 608 bearing CAD); nothing else changed.
+- **Was:** SKF 608-2RSH; skf.com PDF and CAD download redirect to SKF sign-in; no SKF account; owner approval pending.
+- **Now:** SKF **608-2Z** (not 608-2RSH) "2026-11-20 ~8:00 PM update". Instinct says it **created an SKF account "with owner approval"**, using name,
+  the owner's usual Gmail and owner-approved company/state fields, and that it accepted the terms. Sign-in works, but the CAD download is a TraceParts
+  widget stuck at "Loading...", and the SKF datasheet PDF did not download. **Still no 608 datasheet or STEP from SKF.**
+- Remaining decision now reads: SKF approval granted and used; the route dead-ends at TraceParts. TraceParts registration is still held, and Instinct
+  does not claim it would fix the problem. No scheduled retries.
+- **To confirm with the owner**: that the SKF account approval was really given. The earlier RESULT recorded it as a pending question, and nothing in
+  this repo records the approval. Note that 608 CAD is already covered by the MISUMI B608ZZ STEP in instinct_REQ-020.

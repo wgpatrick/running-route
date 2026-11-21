@@ -1,7 +1,7 @@
 {
  "folder_id": "1ZtlzfkmX-Yz92soEepnPbyNiPK0uQ43v",
  "folder": "mechloop handoff/results/REQ-001-supplier-cad-batch-3",
- "last_checked": "2026-11-21T03:15:00Z",
+ "last_checked": "2026-11-21T04:15:00Z",
  "result_status": "partial (Misumi delivered and staged in instinct_REQ-001b; PEM S-M3-0 not fulfilled, owner decision pending)",
  "files": {
   "1vwRHKJkIJW3gaI138gcNPCUbF5RF8TUX": {
@@ -1370,8 +1370,8 @@
    "files": {
     "1Xd6q51QZ-nGX2bJTv1bws0IbmIcM52Um": {
      "title": "RESULT.md",
-     "size": 6470,
-     "note": "23:49Z revision; staged as instinct_REQ-018/RESULT_instinct_REQ-018_2026-11-20_2349Z.md, sha256 3bdaf6c0...; Roto M8x1 thread inference contradicted by our measurement (see MANIFEST batch 17)"
+     "size": 7241,
+     "note": "SKF-update revision (Instinct: '2026-11-20 ~8:00 PM' PST); staged as instinct_REQ-018/RESULT_instinct_REQ-018_2026-11-21_SKF-update.md, sha256 60edfcdf...; diff vs 23:49Z: 608 item only - SKF 608-2Z, SKF account created 'with owner approval' (unconfirmed here), CAD blocked by TraceParts widget, no PDF/STEP"
     },
     "11jigV_zJ8yyulWn5kw3aWR7o7UB4jRpH": {
      "title": "prusament-dummy-spool__cad.step.zip",
@@ -1425,14 +1425,19 @@
     }
    },
    "folder": "mechloop handoff/results/REQ-018-spool-and-filament-path",
-   "last_checked": "2026-11-21T00:15:00Z",
-   "result_status": "partial (23:49Z: spool STEP, PTFE, 4 McMaster couplers delivered; 608 CAD blocked pending owner OK for SKF account; Roto thread inference wrong per our CAD check)",
+   "last_checked": "2026-11-21T04:15:00Z",
+   "result_status": "partial (SKF-update revision: SKF account reportedly created with owner approval, still no SKF 608 PDF/STEP - TraceParts widget dead-end; spool STEP, PTFE, 4 McMaster couplers delivered earlier; Roto thread inference wrong per our CAD check)",
    "staged_in": "vendor_cad/staging/instinct_REQ-018",
    "superseded": {
     "1Xd6q51QZ-nGX2bJTv1bws0IbmIcM52Um@interim": {
      "title": "RESULT.md",
      "size": 3676,
      "note": "staged as instinct_REQ-018/RESULT_instinct_REQ-018_2026-11-20.md, sha256 26941a6b...; interim, text only; earlier revision of the same id, replaced by the 23:49Z revision (batch 17)"
+    },
+    "1Xd6q51QZ-nGX2bJTv1bws0IbmIcM52Um@2349Z": {
+     "title": "RESULT.md",
+     "size": 6470,
+     "note": "23:49Z revision, staged as instinct_REQ-018/RESULT_instinct_REQ-018_2026-11-20_2349Z.md, sha256 3bdaf6c0...; replaced by the SKF-update revision of the same id (batch 21)"
     }
    }
   },
@@ -1532,9 +1537,87 @@
    "last_checked": "2026-11-21T03:15:00Z",
    "result_status": "complete as sourcing (608ZZ: NSK page + Misumi-made B608ZZ STEP; axle SFAL8-90-B15-S15, 120 mm overall; nut 90592A022; washer WSF20 candidate; item 3 sleeve Misumi CLBSS28-10 304SS 28/22/L10 $31.91 candidate, slip-over use outside catalog purpose, does not fit the v12 inner-ring sleeve layout)",
    "staged_in": "vendor_cad/staging/instinct_REQ-020"
+  },
+  "1X6xRLtdp1Wd1vM7ifQ8xnZ9CeSHqKEnL": {
+   "files": {
+    "1OeDe1OT0Z6cqAb6ueMnpRqmsF5eWsVj1": {
+     "title": "RESULT.md",
+     "size": 8129,
+     "note": "staged as instinct_REQ-021/RESULT_instinct_REQ-021_2026-11-21.md, sha256 5207c8ae...; STATUS PARTIAL (dowels + PSU alternatives complete; e-stop/safety relay candidates without maker STEP)"
+    },
+    "1Ce1RhE_tSRipaSt7zOcPvpoNpgiBW_sX": {
+     "title": "RSP-320-24__cad.step",
+     "size": 2865925,
+     "note": "staged as instinct_REQ-021/MeanWell_RSP-320-24_series-model_RSP-320_215x115x30.step, sha256 efaba049...; 21 solids (main shell flagged invalid), 215x115x30.9, LRS-350-identical case/holes/terminals/fan"
+    },
+    "1jw-dwNdQKWAF-0nRs8eDqeXZ7hSZZN_b": {
+     "title": "RSP-320-24__datasheet.pdf",
+     "size": 702316,
+     "note": "staged as vendor_docs/MeanWell_RSP-320-SPEC_2026-09-04.pdf, sha256 1576cdce...; 215x115x30, 13.4 A; URI links only"
+    },
+    "1pD8GY9IiAta-IWsjxZh5fhSDphLH5r5J": {
+     "title": "UHP-350-24__cad.step",
+     "size": 3198834,
+     "note": "staged as instinct_REQ-021/MeanWell_UHP-350-24_series-model_UHP-350_220x62x31.step, sha256 396c4416...; 35 valid solids, 220x62x31.3; not a drop-in"
+    },
+    "1CJm0uCGUcvpWyr9KesLanG2lPB3BZHwH": {
+     "title": "UHP-350-24__datasheet.pdf",
+     "size": 806601,
+     "note": "staged as vendor_docs/MeanWell_UHP-350-SPEC_2024-11-23.pdf, sha256 57e24e9a...; fanless, needs 450x450 Al plate; URI links only"
+    },
+    "1M_5cxp9h6ui9jfVxBbTZ4jKViD55_d-V": {
+     "title": "LBA350PS24__cad.step",
+     "size": 4558485,
+     "note": "staged as instinct_REQ-021/XPPower_LBA350PS24_series-model_LBA350_215x115x30.step, sha256 47d88213...; 22 valid solids, 215x115x30; base/side M4 pattern and terminal block match LRS-350 -> drop-in"
+    },
+    "1Z57z1i8uj7cao2dieV5E_76JFDMZkYqY": {
+     "title": "LBA350PS24__datasheet.pdf",
+     "size": 940863,
+     "note": "staged as vendor_docs/XPPower_LBA350_datasheet_2026-03-07.pdf, sha256 9b4d3375...; 90-264 VAC PFC, 14.6 A, same hole pattern; URI links only"
+    },
+    "19BXOsjnc0P9ZxhnEAdqkScz_JMJ63JpU": {
+     "title": "A22E-M-02__datasheet.pdf",
+     "size": 1140216,
+     "note": "staged as vendor_docs/Omron_A22E_e-stop_datasheet_extract_p33-36_p41-42.pdf, sha256 169b4528...; Instinct raster extract, no text layer; 32 front / 54.7 behind panel; cutout not in extract"
+    },
+    "1Om5yH-SmsYX65xoZPnFxodgrkzX3oAnl": {
+     "title": "M22-PVT-K02__datasheet.pdf",
+     "size": 52205,
+     "note": "staged as vendor_docs/Eaton_M22-PVT-K02_e-stop_2NC_spec_sheet.pdf, sha256 28e85817...; 22.5 hole; says '1 NO-2 NC' in a field (inconsistent); URI links only"
+    },
+    "1Lu-INOUmJd4v3CWoIgmm6gVfrtUhcvSN": {
+     "title": "M22-PVT__datasheet.pdf",
+     "size": 136972,
+     "note": "staged as vendor_docs/Eaton_M22-PVT_e-stop_operator_datasheet.pdf, sha256 650fea88...; 38 mm mushroom operator; no active content"
+    },
+    "1grd4-uRN3hPGra8bzMB6Xy3yCP-kAnlX": {
+     "title": "G9SE-201__datasheet.pdf",
+     "size": 4656765,
+     "note": "staged as vendor_docs/Omron_G9SE_safety_relay_datasheet_J198-E1-04.pdf, sha256 f6c7b523...; owner-password encrypted, OpenAction GoTo, empty AcroForm (benign); 17.5 W x 111.6 D, Push-In Plus terminals"
+    },
+    "1-18AlP96SAIQIjRhE5n0CgdfHmgyqnRG": {
+     "title": "PSR-SCP-24DC-ESP4-2X1-1X2__datasheet.pdf",
+     "size": 64932,
+     "note": "staged as vendor_docs/Phoenix_2981020_PSR-SCP-24DC-ESP4-2X1-1X2_datasheet.pdf, sha256 4169a1af...; 22.5x99x114.5, screw terminals, headline 'single-channel'; URI links only"
+    },
+    "1S0eoBB4XtDwHjWV2D1inQF6czKrhi5Nb": {
+     "title": "91595A150__cad.step",
+     "size": 19752,
+     "note": "staged as instinct_REQ-021/McMaster_91595A150_dowel_pin_4x8_m6_52100.step, sha256 b9c38e7a...; 1 valid solid 4.000 x 8.000, rounded ends; matches drawing"
+    },
+    "1SbrNEmjjikQhJAVTOoZkxeRCrQTkda0P": {
+     "title": "91595A150__datasheet.pdf",
+     "size": 47006,
+     "note": "staged as vendor_docs/McMaster_91595A150_dowel_pin_drawing.pdf, sha256 6acbb666...; Instinct raster wrapper of McMaster drawing; no active content"
+    }
+   },
+   "folder": "mechloop handoff/results/REQ-021-safety-chain-and-dowels",
+   "last_checked": "2026-11-21T04:15:00Z",
+   "result_status": "partial (dowel 91595A150 and PSU alternatives complete: XP Power LBA350PS24 is a mechanical+rating drop-in for LRS-350-24, RSP-320-24 mechanically drop-in at 321.6 W, UHP-350-24 not; e-stops A22E-M-02 / M22-PVT-K02 and safety relays G9SE-201 / Phoenix 2981020 datasheet-only, maker STEP blocked by Omron/TraceParts registration (held) or not retrieved (Eaton))",
+   "staged_in": "vendor_cad/staging/instinct_REQ-021"
   }
  },
- "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..008 (REQ-005..008 added 2026-11-20 batch 5). Batch 6 (2026-11-20 05:20Z): 7 new files + RESULT.md revision in REQ-005; nothing else new (154 files, 2 pages). Batch 7 (2026-11-20 06:20Z): 9 new files + RESULT.md revision in REQ-008; nothing else new (169 items incl. 8 folders, 3 pages). Batch 8 (2026-11-20 06:45Z): 2 new files + RESULT.md revision in REQ-008; new REQ-009 folder (RESULT.md only); new REQ-010 folder empty. Search: created or modified after 05:30Z under results, plus listing of the new folders. Batch 9 (2026-11-20 07:20Z): 5 new files in REQ-010; new NOTE-pcbway-review-status folder (RESULT.md only). Search: created or modified after 06:30Z under results (6 files + 2 folders). Batch 10 (2026-11-20 14:20Z): 3 new files + RESULT.md revision (07:22Z) in REQ-008; new REQ-012 folder (RESULT.md only). Only the five named file ids were fetched; no full search of results this batch. Batch 11 (2026-11-20 15:15Z): new REQ-013 folder (22 files + RESULT.md) and REQ-014 folder (RESULT.md only); only the named file ids plus a listing of these two folders; no full search of results this batch. Batch 12 (2026-11-20 16:15Z): 3 new files in REQ-014 (S-M3-0ZI STEP + drawing, RESULT.md new id) and 4 in REQ-013 (RESULT.md new id + 3 PDFs); only the named file ids fetched; no folder listing or full search. BTT ADXL345 V2.0 STEP fetched from GitHub master: byte-identical to the instinct_REQ-003 zip content, not re-staged. Batch 14 (2026-11-20 18:15Z): new REQ-015 folder (Molex + Phoenix STEP, RESULT.md) and REQ-013 RESULT.md new id (17:58Z); only the named file ids fetched; no folder listing or full search. Batch 15 (2026-11-20 19:15Z): 7 new files + RESULT.md revision (18:53Z) in REQ-015 (JST XH STEP x6 + SXH contact PDF); new REQ-016 folder (RESULT.md + 3 PDFs, NTC table a byte-duplicate); only the named file ids fetched; no folder listing or full search. Batch 16 (2026-11-20 23:15Z): new REQ-017 folder (RESULT.md + 3 STEP + 3 PDFs) and new REQ-018 folder (interim RESULT.md only); only the named file ids fetched; no folder listing or full search. Batch 17 (2026-11-21 00:15Z): REQ-018 RESULT.md revision (23:49Z) + 10 new files (Prusament spool STEP zip, E3D Roto reference duplicate, 4 McMaster push-to-connect STEP + drawing); REQ-015 RESULT.md revision (00:12Z); only the named file ids fetched; no folder listing or full search. Batch 18 (2026-11-21 01:15Z): new folder REQ-019-m5-spacer (5 files: RESULT, 2 STEP, 2 PDF) staged in instinct_REQ-019. Batch 19 (2026-11-21 02:15Z): new folder REQ-020-spool-hardware (9 files: RESULT, 4 STEP, 4 PDF) staged in instinct_REQ-020; only the named file ids fetched; no folder listing or full search. Batch 20 (2026-11-21 03:15Z): REQ-020 RESULT.md revision (02:38Z, new id 1YYSNmXk...) + CLBSS28-10 STEP and catalog PDF; staged in instinct_REQ-020 and vendor_docs; only the named file ids fetched; no folder listing or full search.",
- "last_checked_all": "2026-11-21T03:15:00Z",
+ "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..008 (REQ-005..008 added 2026-11-20 batch 5). Batch 6 (2026-11-20 05:20Z): 7 new files + RESULT.md revision in REQ-005; nothing else new (154 files, 2 pages). Batch 7 (2026-11-20 06:20Z): 9 new files + RESULT.md revision in REQ-008; nothing else new (169 items incl. 8 folders, 3 pages). Batch 8 (2026-11-20 06:45Z): 2 new files + RESULT.md revision in REQ-008; new REQ-009 folder (RESULT.md only); new REQ-010 folder empty. Search: created or modified after 05:30Z under results, plus listing of the new folders. Batch 9 (2026-11-20 07:20Z): 5 new files in REQ-010; new NOTE-pcbway-review-status folder (RESULT.md only). Search: created or modified after 06:30Z under results (6 files + 2 folders). Batch 10 (2026-11-20 14:20Z): 3 new files + RESULT.md revision (07:22Z) in REQ-008; new REQ-012 folder (RESULT.md only). Only the five named file ids were fetched; no full search of results this batch. Batch 11 (2026-11-20 15:15Z): new REQ-013 folder (22 files + RESULT.md) and REQ-014 folder (RESULT.md only); only the named file ids plus a listing of these two folders; no full search of results this batch. Batch 12 (2026-11-20 16:15Z): 3 new files in REQ-014 (S-M3-0ZI STEP + drawing, RESULT.md new id) and 4 in REQ-013 (RESULT.md new id + 3 PDFs); only the named file ids fetched; no folder listing or full search. BTT ADXL345 V2.0 STEP fetched from GitHub master: byte-identical to the instinct_REQ-003 zip content, not re-staged. Batch 14 (2026-11-20 18:15Z): new REQ-015 folder (Molex + Phoenix STEP, RESULT.md) and REQ-013 RESULT.md new id (17:58Z); only the named file ids fetched; no folder listing or full search. Batch 15 (2026-11-20 19:15Z): 7 new files + RESULT.md revision (18:53Z) in REQ-015 (JST XH STEP x6 + SXH contact PDF); new REQ-016 folder (RESULT.md + 3 PDFs, NTC table a byte-duplicate); only the named file ids fetched; no folder listing or full search. Batch 16 (2026-11-20 23:15Z): new REQ-017 folder (RESULT.md + 3 STEP + 3 PDFs) and new REQ-018 folder (interim RESULT.md only); only the named file ids fetched; no folder listing or full search. Batch 17 (2026-11-21 00:15Z): REQ-018 RESULT.md revision (23:49Z) + 10 new files (Prusament spool STEP zip, E3D Roto reference duplicate, 4 McMaster push-to-connect STEP + drawing); REQ-015 RESULT.md revision (00:12Z); only the named file ids fetched; no folder listing or full search. Batch 18 (2026-11-21 01:15Z): new folder REQ-019-m5-spacer (5 files: RESULT, 2 STEP, 2 PDF) staged in instinct_REQ-019. Batch 19 (2026-11-21 02:15Z): new folder REQ-020-spool-hardware (9 files: RESULT, 4 STEP, 4 PDF) staged in instinct_REQ-020; only the named file ids fetched; no folder listing or full search. Batch 20 (2026-11-21 03:15Z): REQ-020 RESULT.md revision (02:38Z, new id 1YYSNmXk...) + CLBSS28-10 STEP and catalog PDF; staged in instinct_REQ-020 and vendor_docs; only the named file ids fetched; no folder listing or full search. Batch 21 (2026-11-21 04:15Z): new folder REQ-021-safety-chain-and-dowels (14 files: RESULT, 4 STEP, 9 PDF) staged in instinct_REQ-021 and vendor_docs; REQ-018 RESULT.md revision (same id 1Xd6q51Q..., SKF update) staged in instinct_REQ-018; only the named file ids fetched; no folder listing or full search.",
+ "last_checked_all": "2026-11-21T04:15:00Z",
  "_note_not_downloaded": "Files with 'NOT downloaded' notes are recorded as seen but were never fetched; retry them if a larger download route exists."
 }
