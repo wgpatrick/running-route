@@ -569,3 +569,5 @@ Steps 1-5 fit inside the printer's ordering and lead-time window (print service 
 - Door (owner comment, 2026-11-21): the arm opens the V13 door; it stays a plain manual door so a person can open it too
   (no Klipper door actuator).
 - Filament, spool and nozzle tasks: dropped from Arm Build 1 (owner, 2026-11-21).
+- Air (owner, 2026-11-21): no shop air; a small 12 V vacuum pump only if a suction tool earns its place; no compressor.
+- Compute (owner, 2026-11-21): a separate arm computer.
