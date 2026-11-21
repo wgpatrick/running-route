@@ -548,6 +548,12 @@ def main() -> None:
         txt = re.sub(r"<!DOCTYPE[^>\[]*(\[[^\]]*\])?\s*>\s*", "", txt, count=1)
         (dw / svg.name).write_text(txt)
     (OUT / "data.json").write_text(json.dumps(data, separators=(",", ":"), default=list))
+    # the page loads the viewer's base64 meshes as two halves (the artifact host caps a file at 16 MB): split at a multiple of 4
+    # characters so each half stays whole base64 groups. Git-ignored copies.
+    mt = (ROOT / "viewer" / "meshes.txt").read_text().strip()
+    cut = (len(mt) // 2) // 4 * 4
+    (OUT / "meshes_a.txt").write_text(mt[:cut])
+    (OUT / "meshes_b.txt").write_text(mt[cut:])
     print(f"wrote review/data.json: {len(out_parts)} parts, {len(joint_list)} joints, {len(assemblies)} assemblies, "
           f"{len(open_items)} open items, {(OUT / 'data.json').stat().st_size/1e6:.2f} MB")
 

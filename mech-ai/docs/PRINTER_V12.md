@@ -27,8 +27,7 @@ check; their inspection plans are in `inspect_form/plans/printer_v12/`.
 | 1 | `CTRL-OCTOPUS-V1.1` | 4 typical ratings (logic power, max ambient, output resistance, thermistor pull-up). Geometry now BTT's V1.0 STEP, accepted by the owner for the V1.1 | BTT (email) |
 | 2 | `EXTRUDER-E3D-ROTO` | 3 motor ratings | E3D (email) |
 | 2 | `HOTEND-REVO-24V-40W` | resistance at 23 degC, volts | E3D (email) |
-| 2 | `SPACER-AL-M5-10x5.1x10` | the X idler spacer is now a stock **10 mm** (the drive pulley's gap went 2.75 -> 3.0 so the belt stays square); the product (McMaster / MISUMI, 10 OD, 5.1-5.3 bore) is being found | Instinct |
-| 3 | `SHCS-M8x140`, `NUT-M8`, `WASHER-M8`, `SPACER-M8-12x8.4x39 / x58.32`, PTFE tube (BOM line) | the spool axle's hardware and sleeves, and the tube | Instinct REQ-018 follow-up |
+| 3 | none | the spool axle is MISUMI SFAL8-108-B15-S15 with McMaster 90592A022 nuts, NSK 608ZZ (MISUMI B608ZZ STEP), turned sleeves; the X idler spacer is McMaster 94669A079 | |
 
 Cost and lead times per stage: "Sourcing and the Build 1 schedule" below.
 
@@ -145,6 +144,29 @@ JST XH housings and headers (JST's STEPs; the SXH contact re-made from the datas
 - **CC BY-ND 4.0** on the Molex and Phoenix STEPs: the files are kept unchanged; cutting the Phoenix rail to length makes a
   derived shape in exported assemblies (the rail is not in v12's model: the WAGO rail is).
 
+## Sourcing and the Build 1 schedule
+
+`python -m mechloop.sourcing --design designs/printer_v12.py` (live distributor APIs, 2026-11-21; `out/sourcing/printer_v12/`):
+
+| Stage | Purchased lines | Purchased $ (build of 1) | Earliest finish | Gated by |
+|---|---|---|---|---|
+| 1 frame, bay, bed, Z | 89 | SRC1 | SRCL1 | SRCG1 |
+| 2 gantry, toolhead | 28 | SRC2 | 11 business days | the printed Eddy holder and duct |
+| 3 feedback, filament supply | 22 | SRC3 | 11 business days | the printed camera / SFS mounts and LED clips |
+
+Fabricated parts carry no live price (SendCutSend / Xometry / Hubs quotes are not automated: about $24 of design floors).
+The purchased total is inflated by about $640: the 16 AWG silicone wire is priced as two 500 ft spools (the tool takes the
+smallest offer it found). **The Mean Well LRS-350-24 has no distributor stock (Mouser 0, 189-day lead) and sets a 138-business-day
+critical path.** Alternatives checked live the same day (`--list`, all universal input, no 115/230 switch needed):
+
+| Supply | Best offer | Stock | Price | Note |
+|---|---|---|---|---|
+| Mean Well **RSP-320-24** (320 W, 13.4 A, PFC, fan) | Mouser 709-RSP320-24 | 921 (Newark 231) | $53.20 | **recommended**: 270 W peak need (84 %); 215 x 115 x 50 mm: 20 mm taller than the LRS, so the bay cover and the supply's hole pattern must be re-checked |
+| Mean Well UHP-350-24 (350 W, slim, fanless) | Newark 01AH8022 | 17 | $88.47 | single source; Mouser 0 |
+| TDK-Lambda RWS300B-24 (300 W) | Digi-Key | 513 (Mouser 456) | $97.90 | the non-Mean Well option; 300 W is 90 % of the peak |
+| Mean Well SE-350-24 | Digi-Key | 0 | $56.13 | obsolete |
+| CUI VGS-350-24 | not found at the distributors | | | |
+
 ## Unverified, assumed or not done
 - Hydra pad thickness (1.5 assumed); its NTC R25 (100 k assumed; not wired: the Semitec reads the bed); its max temperature.
 - Octopus V1.1 geometry is BTT's outline and hole pattern only; envelope height assumed.
@@ -153,12 +175,13 @@ JST XH housings and headers (JST's STEPs; the SXH contact re-made from the datas
 - Eddy hot-case temperature 67 degC over its 60 degC rating (estimate).
 
 ## Questions for the owner
+0. The 24 V supply: Mean Well RSP-320-24 (in stock, $53.20; 20 mm taller) in place of the out-of-stock LRS-350-24? (Then the bay is
+   re-laid round it in v12.1.)
 1. Accept the 10 A blade fuse and 10 A thermostat at 81 to 83 % on the 200 W bed, or cap the bed at `max_power: 0.8` (6.7 A,
    80 %: slower heat-up), or fit a 15 A fuse with a 14 AWG bed run (then the Mini-Fit HCS, 16 AWG max, must change)?
-2. Octopus V1.1: accept BTT's V1.0 CAD as the display model (same outline per BTT's shared SIZE drawing), or keep the outline
-   re-make until BTT publishes V1.1?
-3. X idler spacer: a stock 10 mm M5 aluminium spacer (belt plane 0.25 mm off), or a stack?
-4. Endstops: which bought D2F-01L module (or the bare switch on new mounts)?
+2. The rear spool and the feet take the machine to 389 x 510 x 511 mm: acceptable against the 420 x 420 x 480 envelope?
+3. The SFS V2's port thread (M10 x 1 assumed for the McMaster 2333N214): confirm on the part.
+4. A frame rocking mode on the feet may sit at 30 to 70 Hz (estimate): measure it with the ADXL345 on the frame before tuning.
 5. The stage-3 toolhead bracket for the nozzle camera, laser and LEDs: design it in v12.x, or move those items to Build 2?
 
 ## Files
