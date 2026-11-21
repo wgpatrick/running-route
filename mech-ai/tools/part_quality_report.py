@@ -45,6 +45,22 @@ SEV = {"error": 0, "warning": 1, "info": 2}
 CLASS_OF = {"broken": "broken", "weird": "weird", "odd": "odd dims", "purchased": "purchased", "other": "other"}
 
 NOTES = r"""
+## What the flags on the worst parts are (read in the design script)
+
+- **part_duct** (`part_duct_shape`): built from overlapping boxes at absolute coordinates with hand offsets of 0.01 to
+  0.6 mm (`y_rf - 0.01, y_rf + 0.61` "bridges chamber A to the riser", passages cut `+ 0.01` past a wall). Those offsets
+  leave the 0.03 mm edges, 0.014 mm sliver faces, 0.03 mm ledges and a 0.10 mm wall the checks report: the textbook
+  copy-forward patch artefact.
+- **nut_keeper, _fl, _fr** (`nut_keeper_local`): the keeper's opening is the union of a circle, a slot and two rounded
+  rectangles, then filleted; the profiles nearly meet and leave a 0.084 mm wide face.
+- **z_motor_plate_fl/_fr** (`motor_plate_shape`): the outline is the convex hull of four 40-gon "circles", so its edge
+  is short straight facets; two of them meet at 0.35 deg (and a 0.004 / 0.11 mm offset). A rounded outline drawn as
+  tangent lines and arcs would have none of this (and round overall dimensions, cf. 80.994 mm).
+- **x_endstop_carrier / y_endstop_carrier** (`endstop_carrier_local`): the 13 x 4.5 mm terminal slot comes within
+  0.09 mm of an M3 clearance hole: a web no laser shop can cut.
+- **estop_bracket**: the e-stop clash and the undrawn ring nut (below).
+- **sfs_mount**: the filament sensor is held by two cable ties that are not drawn.
+
 ## Known true positives (from the owner's review)
 
 - **estop / estop_bracket**: `allowed_overlap_large`, 2430 mm3. The e-stop's simulation solid
