@@ -1081,9 +1081,10 @@ def shaft_misumi_sfal8(l_plain: int) -> Stock:
 
 @part
 def dowel_pin_3x8_placeholder() -> Stock:
-    """PLACEHOLDER (owner, 2026-11-21): a 4 x 8 mm hardened dowel pin, product pending (McMaster / MISUMI number with CAD). Local frame:
-    axis Z, bottom at Z=0."""
+    """McMaster-Carr 91595A150 dowel pin, 4 x 8 mm, m6, 52100 steel (REQ-021; McMaster's STEP and drawing). (The function keeps its
+    first name; the part is the real 4 x 8 pin.) Local frame: axis Z, bottom at Z=0."""
     s = Pos(0, 0, 4.0) * Cylinder(2.0, 8.0)
-    return Stock(s, "DOWEL-PIN-4x8", "Dowel pin 4 x 8 mm, hardened (placeholder)", 0.0008, material="steel", cost_usd=0.3,
-                 ratings={"approximate": True},
-                 model={"kind": "proxy", "state": "stand-in", "source": "placeholder pin 4 x 8 (product to be named)"})
+    return Stock(s, "MCMASTER-91595A150", "McMaster 91595A150 dowel pin 4 x 8 mm, m6, 52100 steel", 0.0008, material="steel", cost_usd=0.6,
+                 model={"inbox": ["MCMASTER-91595A150"], "no_auto_features": True},
+                 real_part={"maker": "McMaster-Carr", "mpn": "91595A150", "sellers": [{"name": "McMaster-Carr", "part_number": "91595A150", "catalogue": True,
+                            "checked": "2026-11-21"}], "sold_by_maker": True})

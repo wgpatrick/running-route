@@ -27,7 +27,6 @@ check; their inspection plans are in `inspect_form/plans/printer_v12/`.
 | 1 | `TR8x2-INTEGRAL-17E19S1684AB4-330RA` (x3) | `efficiency` (0.35 typical) | StepperOnline (email) |
 | 1 | `CTRL-OCTOPUS-V1.1` | 4 typical ratings (logic power, max ambient, output resistance, thermistor pull-up). Geometry now BTT's V1.0 STEP, accepted by the owner for the V1.1 | BTT (email) |
 | 1 | `ESTOP-MUSHROOM-22MM-LATCHING-NC`, `SAFETY-RELAY-24V-MANUAL-RESET` (BOM lines) | the owner's hardwired safety chain: products with CAD being found (REQ-021); placed in the bay in v12.1 with the supply change | Instinct REQ-021 |
-| 2 | `DOWEL-PIN-4x8` (x3) | the sheet's locating pins: product with CAD (REQ-021) | Instinct REQ-021 |
 | 2 | `EXTRUDER-E3D-ROTO` | 3 motor ratings | E3D (email) |
 | 2 | `HOTEND-REVO-24V-40W` | resistance at 23 degC, volts | E3D (email) |
 | 3 | none | the spool axle is MISUMI SFAL8-108-B15-S15 with McMaster 90592A022 nuts, NSK 608ZZ (MISUMI B608ZZ STEP), turned sleeves; the X idler spacer is McMaster 94669A079 | |
@@ -165,7 +164,8 @@ critical path.** Alternatives checked live the same day (`--list`, all universal
 
 | Supply | Best offer | Stock | Price | Note |
 |---|---|---|---|---|
-| Mean Well **RSP-320-24** (320 W, 13.4 A, PFC, fan) | Mouser 709-RSP320-24 | 921 (Newark 231) | $53.20 | **recommended**: 270 W peak need (84 %); 215 x 115 x 50 mm: 20 mm taller than the LRS, so the bay cover and the supply's hole pattern must be re-checked |
+| **XP Power LBA350PS24** (350 W, 14.6 A, 90-264 VAC) | Digi-Key | 63 | $44.75 | **recommended (REQ-021)**: a mechanical drop-in for the LRS-350-24 (215 x 115 x 30, same 4 x M4 on 150 x 50 and side holes, terminal block and fan in the same places); universal input, so the 115/230 selector label goes |
+| Mean Well RSP-320-24 (320 W, 13.4 A, PFC, fan) | Mouser 709-RSP320-24 | 921 (Newark 231) | $53.20 | 270 W peak need is 84 % of it; 215 x 115 x 30 per its 2026-09-04 datasheet and STEP (the LRS case size); hole pattern to check |
 | Mean Well UHP-350-24 (350 W, slim, fanless) | Newark 01AH8022 | 17 | $88.47 | single source; Mouser 0 |
 | TDK-Lambda RWS300B-24 (300 W) | Digi-Key | 513 (Mouser 456) | $97.90 | the non-Mean Well option; 300 W is 90 % of the peak |
 | Mean Well SE-350-24 | Digi-Key | 0 | $56.13 | obsolete |
@@ -179,8 +179,9 @@ critical path.** Alternatives checked live the same day (`--list`, all universal
 - Eddy hot-case temperature 67 degC over its 60 degC rating (estimate).
 
 ## Questions for the owner
-0. The 24 V supply: Mean Well RSP-320-24 (in stock, $53.20; 20 mm taller) in place of the out-of-stock LRS-350-24? (Then the bay is
-   re-laid round it in v12.1.)
+0. The 24 V supply: XP Power LBA350PS24 (Digi-Key, 63 in stock, $44.75; a mechanical drop-in for the out-of-stock LRS-350-24) or
+   Mean Well RSP-320-24 (Mouser 921, $53.20)? The bay re-layout with the Omron G9SE-201 safety relay (17.5 mm) and the A22E-M-02
+   e-stop follows in v12.1.
 1. Accept the 10 A blade fuse and 10 A thermostat at 81 to 83 % on the 200 W bed, or cap the bed at `max_power: 0.8` (6.7 A,
    80 %: slower heat-up), or fit a 15 A fuse with a 14 AWG bed run (then the Mini-Fit HCS, 16 AWG max, must change)?
 2. The rear spool and the feet take the machine to 389 x 510 x 511 mm: acceptable against the 420 x 420 x 480 envelope?
