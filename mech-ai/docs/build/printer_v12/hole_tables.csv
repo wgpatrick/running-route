@@ -1,0 +1,231 @@
+part,id,kind,axis,x,y,z,dia_or_width,slot_length,depth,through,counterbores_dia_x_depth,counterbore_from,function,screws,on_axis,pattern,critical
+carriage_plate_left,H1,hole,Z,87.4,9.0,0.8,5.5,,1.6,True,,,clearance M5,carriage_plate_left_bolt_1,,a,
+carriage_plate_left,H2,hole,Z,13.7,15.0,0.8,3.4,,1.6,True,,,clearance M3,z_carriage_left_screw_0,,b,locates guide block z_carriage_left
+carriage_plate_left,H3,hole,Z,33.7,15.0,0.8,3.4,,1.6,True,,,clearance M3,z_carriage_left_screw_2,,c,locates guide block z_carriage_left
+carriage_plate_left,H4,hole,Z,13.7,35.0,0.8,3.4,,1.6,True,,,clearance M3,z_carriage_left_screw_1,,d,locates guide block z_carriage_left
+carriage_plate_left,H5,hole,Z,33.7,35.0,0.8,3.4,,1.6,True,,,clearance M3,z_carriage_left_screw_3,,e,locates guide block z_carriage_left
+carriage_plate_left,H6,hole,Z,87.4,41.0,0.8,5.5,,1.6,True,,,clearance M5,carriage_plate_left_bolt_0,,f,
+carriage_plate_right,H1,hole,Z,87.4,9.0,0.8,5.5,,1.6,True,,,clearance M5,carriage_plate_right_bolt_0,,a,
+carriage_plate_right,H2,hole,Z,13.7,15.0,0.8,3.4,,1.6,True,,,clearance M3,z_carriage_right_screw_1,,b,locates guide block z_carriage_right
+carriage_plate_right,H3,hole,Z,33.7,15.0,0.8,3.4,,1.6,True,,,clearance M3,z_carriage_right_screw_3,,c,locates guide block z_carriage_right
+carriage_plate_right,H4,hole,Z,13.7,35.0,0.8,3.4,,1.6,True,,,clearance M3,z_carriage_right_screw_0,,d,locates guide block z_carriage_right
+carriage_plate_right,H5,hole,Z,33.7,35.0,0.8,3.4,,1.6,True,,,clearance M3,z_carriage_right_screw_2,,e,locates guide block z_carriage_right
+carriage_plate_right,H6,hole,Z,87.4,41.0,0.8,5.5,,1.6,True,,,clearance M5,carriage_plate_right_bolt_1,,f,
+carriage_plate_rear,H1,hole,Z,87.4,9.0,0.8,5.5,,1.6,True,,,clearance M5,carriage_plate_rear_bolt_0,,a,
+carriage_plate_rear,H2,hole,Z,13.7,15.0,0.8,3.4,,1.6,True,,,clearance M3,z_carriage_rear_screw_1,,b,locates guide block z_carriage_rear
+carriage_plate_rear,H3,hole,Z,33.7,15.0,0.8,3.4,,1.6,True,,,clearance M3,z_carriage_rear_screw_3,,c,locates guide block z_carriage_rear
+carriage_plate_rear,H4,hole,Z,13.7,35.0,0.8,3.4,,1.6,True,,,clearance M3,z_carriage_rear_screw_0,,d,locates guide block z_carriage_rear
+carriage_plate_rear,H5,hole,Z,33.7,35.0,0.8,3.4,,1.6,True,,,clearance M3,z_carriage_rear_screw_2,,e,locates guide block z_carriage_rear
+carriage_plate_rear,H6,hole,Z,87.4,41.0,0.8,5.5,,1.6,True,,,clearance M5,carriage_plate_rear_bolt_1,,f,
+z_deck,H1,hole,Z,40.9,10.0,1.588,5.5,,3.175,True,,,clearance M5,z_deck_bolt_3,,a,
+z_deck,H2,hole,Z,140.9,10.0,1.588,5.5,,3.175,True,,,clearance M5,z_deck_bolt_4,,b,
+z_deck,H3,hole,Z,240.9,10.0,1.588,5.5,,3.175,True,,,clearance M5,z_deck_bolt_5,,c,
+z_deck,H4,hole,Z,10.0,49.4,1.588,5.5,,3.175,True,,,clearance M5,z_deck_bolt_8,,d,
+z_deck,H5,hole,Z,271.8,95.9,1.588,5.5,,3.175,True,,,clearance M5,z_deck_bolt_11,,e,
+z_deck,H6,hole,Z,10.0,135.4,1.588,5.5,,3.175,True,,,clearance M5,z_deck_bolt_7,,f,
+z_deck,H7,hole,Z,252.9,150.9,1.588,5.5,,3.175,True,,,hole (no screw or part on its axis in the model),,,,
+z_deck,H8,hole,Z,271.8,150.9,1.588,5.5,,3.175,True,,,clearance M5,z_deck_bolt_10,,g,
+z_deck,H9,hole,Z,271.8,205.9,1.588,5.5,,3.175,True,,,clearance M5,z_deck_bolt_9,,h,
+z_deck,H10,hole,Z,10.0,221.4,1.588,5.5,,3.175,True,,,clearance M5,z_deck_bolt_6,,i,
+z_deck,H11,hole,Z,28.9,221.4,1.588,4.3,,3.175,True,,,hole (no screw or part on its axis in the model),,,,
+z_deck,H12,hole,Z,40.9,260.8,1.588,5.5,,3.175,True,,,clearance M5,z_deck_bolt_0,,j,
+z_deck,H13,hole,Z,140.9,260.8,1.588,5.5,,3.175,True,,,clearance M5,z_deck_bolt_1,,k,
+z_deck,H14,hole,Z,240.9,260.8,1.588,5.5,,3.175,True,,,clearance M5,z_deck_bolt_2,,l,
+z_deck,S1,slot,Z,28.9,49.4,1.588,4.3,6.3,3.175,True,,,hole (no screw or part on its axis in the model),,,,
+nut_plate,H1,hole,Z,10.0,7.75,4.762,5.5,,9.525,True,,,clearance M5,nut_plate_bolt_1,,a,
+nut_plate,H2,hole,Z,92.5,8.75,4.762,4.8,,9.525,True,,,clearance M3,nut_keeper_bolt_1,,b,
+nut_plate,H3,hole,Z,76.2,46.75,4.762,4.8,,9.525,True,,,clearance M3,nut_keeper_bolt_0,,c,
+nut_plate,H4,hole,Z,10.0,47.75,4.762,5.5,,9.525,True,,,clearance M5,nut_plate_bolt_0,,d,
+nut_keeper,H1,hole,Z,6.0,14.0,1.588,3.4,,3.175,True,,,clearance M3,nut_keeper_bolt_0,,a,
+nut_keeper,H2,hole,Z,44.0,30.3,1.588,3.4,,3.175,True,,,clearance M3,nut_keeper_bolt_1,,b,
+nut_plate_fl,H1,hole,Z,7.75,10.0,4.762,5.5,,9.525,True,,,clearance M5,nut_plate_fl_bolt_0,,a,
+nut_plate_fl,H2,hole,Z,47.75,10.0,4.762,5.5,,9.525,True,,,clearance M5,nut_plate_fl_bolt_1,,b,
+nut_plate_fl,H3,hole,Z,8.75,29.1,4.762,4.8,,9.525,True,,,clearance M3,nut_keeper_fl_bolt_0,,c,
+nut_plate_fl,H4,hole,Z,46.75,45.4,4.762,4.8,,9.525,True,,,clearance M3,nut_keeper_fl_bolt_1,,d,
+nut_keeper_fl,H1,hole,Z,6.0,14.0,1.588,3.4,,3.175,True,,,clearance M3,nut_keeper_fl_bolt_0,,a,
+nut_keeper_fl,H2,hole,Z,44.0,30.3,1.588,3.4,,3.175,True,,,clearance M3,nut_keeper_fl_bolt_1,,b,
+nut_plate_fr,H1,hole,Z,8.75,7.2,4.762,4.8,,9.525,True,,,clearance M3,nut_keeper_fr_bolt_1,,a,
+nut_plate_fr,H2,hole,Z,46.75,23.5,4.762,4.8,,9.525,True,,,clearance M3,nut_keeper_fr_bolt_0,,b,
+nut_plate_fr,H3,hole,Z,7.75,42.6,4.762,5.5,,9.525,True,,,clearance M5,nut_plate_fr_bolt_1,,c,
+nut_plate_fr,H4,hole,Z,47.75,42.6,4.762,5.5,,9.525,True,,,clearance M5,nut_plate_fr_bolt_0,,d,
+nut_keeper_fr,H1,hole,Z,6.0,6.7,1.588,3.4,,3.175,True,,,clearance M3,nut_keeper_fr_bolt_1,,a,
+nut_keeper_fr,H2,hole,Z,44.0,23.0,1.588,3.4,,3.175,True,,,clearance M3,nut_keeper_fr_bolt_0,,b,
+bed_plate,H1,hole,Z,49.5,8.0,2.06,4.5,,4.12,True,,,clearance ,bed_stud_0,,a,
+bed_plate,H2,hole,Z,221.5,8.0,2.06,4.5,,4.12,True,,,clearance ,bed_stud_1,,b,
+bed_plate,H3,hole,Z,120.0,232.0,2.06,4.5,,4.12,True,,,clearance ,bed_stud_2,,c,
+z_motor_plate,H1,hole,Z,7.997,8.0,3.175,5.5,,6.35,True,,,clearance M5,z_mount_rear_bolt_0,z_mount_rear_spacer_0 (custom),a,
+z_motor_plate,H2,hole,Z,63.997,8.0,3.175,5.5,,6.35,True,,,clearance M5,z_mount_rear_bolt_1,z_mount_rear_spacer_1 (custom),b,
+z_motor_plate,H3,hole,Z,20.497,24.1,3.175,3.4,,6.35,True,,,clearance M3,z_motor_screw_0,,c,locates motor z_motor
+z_motor_plate,H4,hole,Z,51.497,24.1,3.175,3.4,,6.35,True,,,clearance M3,z_motor_screw_2,,c,locates motor z_motor
+z_motor_plate,H5,hole,Z,35.997,39.6,3.175,22.3,,6.35,True,,,bore / opening,,leadscrew (TR8x2-INTEGRAL-17E19S1684AB4-330RA),,
+z_motor_plate,H6,hole,Z,20.497,55.1,3.175,3.4,,6.35,True,,,clearance M3,z_motor_screw_1,,c,locates motor z_motor
+z_motor_plate,H7,hole,Z,51.497,55.1,3.175,3.4,,6.35,True,,,clearance M3,z_motor_screw_3,,c,locates motor z_motor
+z_mount_rear_spacer_0,H1,hole,X,26.6,5.0,5.0,5.3,,53.2,True,,,clearance M5,z_mount_rear_bolt_0,,a,
+z_mount_rear_spacer_1,H1,hole,X,26.6,5.0,5.0,5.3,,53.2,True,,,clearance M5,z_mount_rear_bolt_1,,a,
+z_motor_plate_fl,H1,hole,Z,25.497,6.5,3.175,3.4,,6.35,True,,,clearance M3,z_motor_fl_screw_2,,a,locates motor z_motor_fl
+z_motor_plate_fl,H2,hole,Z,56.497,6.5,3.175,3.4,,6.35,True,,,clearance M3,z_motor_fl_screw_3,,a,locates motor z_motor_fl
+z_motor_plate_fl,H3,hole,Z,40.997,22.0,3.175,22.3,,6.35,True,,,bore / opening,,leadscrew_fl (TR8x2-INTEGRAL-17E19S1684AB4-330RA),,
+z_motor_plate_fl,H4,hole,Z,7.997,37.5,3.175,5.5,,6.35,True,,,clearance M5,z_mount_fl_bolt_0,z_mount_fl_spacer_0 (custom),b,
+z_motor_plate_fl,H5,hole,Z,25.497,37.5,3.175,3.4,,6.35,True,,,clearance M3,z_motor_fl_screw_0,,a,locates motor z_motor_fl
+z_motor_plate_fl,H6,hole,Z,56.497,37.5,3.175,3.4,,6.35,True,,,clearance M3,z_motor_fl_screw_1,,a,locates motor z_motor_fl
+z_motor_plate_fl,H7,hole,Z,72.997,37.5,3.175,5.5,,6.35,True,,,clearance M5,z_mount_fl_bolt_1,z_mount_fl_spacer_1 (custom),c,
+z_mount_fl_spacer_0,H1,hole,X,24.5,5.0,5.0,5.3,,49.0,True,,,clearance M5,z_mount_fl_bolt_0,,a,
+z_mount_fl_spacer_1,H1,hole,X,24.5,5.0,5.0,5.3,,49.0,True,,,clearance M5,z_mount_fl_bolt_1,,a,
+z_motor_plate_fr,H1,hole,Z,7.997,8.0,3.175,5.5,,6.35,True,,,clearance M5,z_mount_fr_bolt_0,z_mount_fr_spacer_0 (custom),a,
+z_motor_plate_fr,H2,hole,Z,25.497,8.0,3.175,3.4,,6.35,True,,,clearance M3,z_motor_fr_screw_2,,b,locates motor z_motor_fr
+z_motor_plate_fr,H3,hole,Z,56.497,8.0,3.175,3.4,,6.35,True,,,clearance M3,z_motor_fr_screw_3,,b,locates motor z_motor_fr
+z_motor_plate_fr,H4,hole,Z,72.997,8.0,3.175,5.5,,6.35,True,,,clearance M5,z_mount_fr_bolt_1,z_mount_fr_spacer_1 (custom),c,
+z_motor_plate_fr,H5,hole,Z,40.997,23.5,3.175,22.3,,6.35,True,,,bore / opening,,leadscrew_fr (TR8x2-INTEGRAL-17E19S1684AB4-330RA),,
+z_motor_plate_fr,H6,hole,Z,25.497,39.0,3.175,3.4,,6.35,True,,,clearance M3,z_motor_fr_screw_0,,b,locates motor z_motor_fr
+z_motor_plate_fr,H7,hole,Z,56.497,39.0,3.175,3.4,,6.35,True,,,clearance M3,z_motor_fr_screw_1,,b,locates motor z_motor_fr
+z_mount_fr_spacer_0,H1,hole,X,24.5,5.0,5.0,5.3,,49.0,True,,,clearance M5,z_mount_fr_bolt_0,,a,
+z_mount_fr_spacer_1,H1,hole,X,24.5,5.0,5.0,5.3,,49.0,True,,,clearance M5,z_mount_fr_bolt_1,,a,
+y_plate_left,H1,hole,Z,20.024,13.5,2.375,3.5,,4.75,True,,,clearance M3,y_plate_left_screw_0,,a,locates guide block y_carriage_left
+y_plate_left,H2,hole,Z,40.024,13.5,2.375,3.5,,4.75,True,,,clearance M3,y_plate_left_screw_2,,a,locates guide block y_carriage_left
+y_plate_left,H3,hole,Z,20.024,33.5,2.375,3.5,,4.75,True,,,clearance M3,y_plate_left_screw_1,,a,locates guide block y_carriage_left
+y_plate_left,H4,hole,Z,40.024,33.5,2.375,3.5,,4.75,True,,,clearance M3,y_plate_left_screw_3,,a,locates guide block y_carriage_left
+y_plate_left,S1,slot,Z,9.8,6.65,2.375,4.8,10.0,4.75,True,,,hole (no screw or part on its axis in the model),,,,
+y_plate_left,S2,slot,Z,9.8,16.45,2.375,4.8,10.0,4.75,True,,,hole (no screw or part on its axis in the model),,,,
+y_plate_left,S3,slot,Z,60.024,23.5,2.375,5.5,8.5,4.75,True,,,clearance M5,beam_bolt_left_1,,b,
+y_plate_left,S4,slot,Z,74.024,23.5,2.375,5.5,8.5,4.75,True,,,clearance M5,beam_bolt_left,,c,
+y_plate_left,S5,slot,Z,9.8,27.45,2.375,4.8,10.0,4.75,True,,,hole (no screw or part on its axis in the model),,,,
+y_plate_left,S6,slot,Z,9.8,37.25,2.375,4.8,10.0,4.75,True,,,hole (no screw or part on its axis in the model),,,,
+y_plate_right,H1,hole,Z,51.0,13.5,2.375,3.5,,4.75,True,,,clearance M3,y_plate_right_screw_0,,a,locates guide block y_carriage_right
+y_plate_right,H2,hole,Z,71.0,13.5,2.375,3.5,,4.75,True,,,clearance M3,y_plate_right_screw_2,,a,locates guide block y_carriage_right
+y_plate_right,H3,hole,Z,51.0,33.5,2.375,3.5,,4.75,True,,,clearance M3,y_plate_right_screw_1,,a,locates guide block y_carriage_right
+y_plate_right,H4,hole,Z,71.0,33.5,2.375,3.5,,4.75,True,,,clearance M3,y_plate_right_screw_3,,a,locates guide block y_carriage_right
+y_plate_right,S1,slot,Z,81.224,6.65,2.375,4.8,10.0,4.75,True,,,hole (no screw or part on its axis in the model),,,,
+y_plate_right,S2,slot,Z,81.224,16.45,2.375,4.8,10.0,4.75,True,,,hole (no screw or part on its axis in the model),,,,
+y_plate_right,S3,slot,Z,17.0,23.5,2.375,5.5,8.5,4.75,True,,,clearance M5,beam_bolt_right,,b,
+y_plate_right,S4,slot,Z,31.0,23.5,2.375,5.5,8.5,4.75,True,,,clearance M5,beam_bolt_right_1,,c,
+y_plate_right,S5,slot,Z,81.224,27.45,2.375,4.8,10.0,4.75,True,,,hole (no screw or part on its axis in the model),,,,
+y_plate_right,S6,slot,Z,81.224,37.25,2.375,4.8,10.0,4.75,True,,,hole (no screw or part on its axis in the model),,,,
+y_plate_right,S7,slot,Z,34.7,50.4,2.375,3.6,7.6,4.75,True,,,clearance M3,x_endstop_screw_0,,d,
+y_plate_right,S8,slot,Z,34.7,65.4,2.375,3.6,7.6,4.75,True,,,clearance M3,x_endstop_screw_1,,e,
+tool_plate,H1,hole,Z,17.0,13.0,1.587,3.4,,3.175,True,,,clearance M3,tool_screw_0,,a,locates guide block x_carriage
+tool_plate,H2,hole,Z,37.0,13.0,1.587,3.4,,3.175,True,,,clearance M3,tool_screw_2,,a,locates guide block x_carriage
+tool_plate,H3,hole,Z,55.0,13.5,1.587,3.4,,3.175,True,,,clearance M3,x_belt_bracket_screw_0,,b,
+tool_plate,H4,hole,Z,27.0,16.558,1.587,4.27,,3.175,True,,,clearance M3,extruder_screw_0,extruder_nut_0 (NUT-PEM-S-M3-0),c,
+tool_plate,H5,hole,Z,57.5,23.358,1.587,4.27,,3.175,True,,,clearance M3,extruder_screw_1,extruder_nut_1 (NUT-PEM-S-M3-0) x_belt_bracket (custom),d,
+tool_plate,H6,hole,Z,6.5,26.5,1.587,3.4,,3.175,True,,,clearance M3,part_duct_screw_0,,e,
+tool_plate,H7,hole,Z,55.0,32.5,1.587,3.4,,3.175,True,,,clearance M3,x_belt_bracket_screw_1,,f,
+tool_plate,H8,hole,Z,17.0,33.0,1.587,3.4,,3.175,True,,,clearance M3,tool_screw_1,,a,locates guide block x_carriage
+tool_plate,H9,hole,Z,37.0,33.0,1.587,3.4,,3.175,True,,,clearance M3,tool_screw_3,,a,locates guide block x_carriage
+tool_plate,H10,hole,Z,6.5,38.0,1.587,3.4,,3.175,True,,,clearance M3,part_duct_screw_1,,g,
+tool_plate_rear,H1,hole,Z,17.0,13.0,2.375,6.5,,4.75,True,,,clearance M3,tool_screw_0,,a,locates guide block x_carriage
+tool_plate_rear,H2,hole,Z,37.0,13.0,2.375,6.5,,4.75,True,,,clearance M3,tool_screw_2,,a,locates guide block x_carriage
+tool_plate_rear,H3,hole,Z,27.0,16.558,2.375,8.1,,4.75,True,,,clearance M3,extruder_screw_0,extruder_nut_0 (NUT-PEM-S-M3-0),b,
+tool_plate_rear,H4,hole,Z,57.5,23.358,2.375,8.1,,4.75,True,,,clearance M3,extruder_screw_1,extruder_nut_1 (NUT-PEM-S-M3-0),c,
+tool_plate_rear,H5,hole,Z,6.5,26.5,2.375,4.8,,4.75,True,,,clearance M3,part_duct_screw_0,,d,
+tool_plate_rear,H6,hole,Z,17.0,33.0,2.375,6.5,,4.75,True,,,clearance M3,tool_screw_1,,a,locates guide block x_carriage
+tool_plate_rear,H7,hole,Z,37.0,33.0,2.375,6.5,,4.75,True,,,clearance M3,tool_screw_3,,a,locates guide block x_carriage
+tool_plate_rear,H8,hole,Z,6.5,38.0,2.375,4.8,,4.75,True,,,clearance M3,part_duct_screw_1,,e,
+probe_mount,H1,hole,Z,22.05,35.208,1.143,3.4,,2.286,True,,,clearance M3,extruder_screw_0,,a,
+probe_mount,H2,hole,Z,52.55,42.008,1.143,3.4,,2.286,True,,,clearance M3,extruder_screw_1,,b,
+probe_mount,H3,hole,X,1.143,5.75,9.036,3.4,,2.286,True,,,clearance M3,eddy_holder_bolt_0,,c,
+probe_mount,H4,hole,X,1.143,5.75,16.636,3.4,,2.286,True,,,clearance M3,eddy_holder_bolt_1,,d,
+eddy_holder,H1,hole,Z,5.94,4.75,0.75,3.6,,1.5,False,,,clearance M3,eddy_holder_bolt_0,,a,
+eddy_holder,H2,hole,Z,5.94,4.75,5.35,3.6,,1.3,False,,,clearance M3,eddy_holder_bolt_0,,a,
+eddy_holder,H3,hole,Z,13.54,4.75,0.75,3.6,,1.5,False,,,clearance M3,eddy_holder_bolt_1,,b,
+eddy_holder,H4,hole,Z,13.54,4.75,5.35,3.6,,1.3,False,,,clearance M3,eddy_holder_bolt_1,,b,
+eddy_holder,H5,hole,Y,4.49,4.25,8.614,3.7,,8.5,True,,,clearance M3,eddy_bolt_0,,c,
+eddy_holder,H6,hole,Y,14.99,4.25,8.614,3.7,,8.5,True,,,clearance M3,eddy_bolt_1,,d,
+part_duct,H1,hole,X,64.426,5.395,54.029,3.6,,4.0,True,,,clearance M3,part_fan_screw_1,,a,
+part_duct,H2,hole,X,1.0,45.09,10.169,3.6,,2.0,False,,,clearance M3,part_duct_screw_1,,b,
+part_duct,H3,hole,X,7.65,45.09,10.169,3.6,,1.7,False,,,clearance M3,part_duct_screw_1,,b,
+part_duct,H4,hole,X,64.426,48.595,92.119,3.6,,4.0,True,,,clearance M3,part_fan_screw_0,,c,
+part_duct,H5,hole,X,1.0,56.59,10.169,3.6,,2.0,True,,,clearance M3,part_duct_screw_0,,d,
+part_duct,H6,hole,X,7.65,56.59,10.169,3.6,,1.7,True,,,clearance M3,part_duct_screw_0,,d,
+x_belt_bracket,H1,hole,Z,6.2,5.0,11.857,3.4,,2.286,True,,,clearance M3,x_belt_clamp_screw_2,,a,
+x_belt_bracket,H2,hole,Z,20.2,5.0,11.857,3.4,,2.286,True,,,clearance M3,x_belt_clamp_screw_3,,b,
+x_belt_bracket,H3,hole,Z,6.2,25.0,11.857,3.4,,2.286,True,,,clearance M3,x_belt_clamp_screw_0,,c,
+x_belt_bracket,H4,hole,Z,20.2,25.0,11.857,3.4,,2.286,True,,,clearance M3,x_belt_clamp_screw_1,,d,
+x_belt_bracket,H5,hole,X,29.857,5.5,3.38,3.4,,2.286,True,,,clearance M3,x_belt_bracket_screw_1,,e,
+x_belt_bracket,H6,hole,X,29.857,24.5,3.38,3.4,,2.286,True,,,clearance M3,x_belt_bracket_screw_0,,f,
+x_belt_clamp,H1,hole,Z,5.0,4.7,1.016,3.4,,2.032,True,,,clearance M3,x_belt_clamp_screw_0,,a,
+x_belt_clamp,H2,hole,Z,25.0,4.7,1.016,3.4,,2.032,True,,,clearance M3,x_belt_clamp_screw_2,,b,
+x_belt_clamp,H3,hole,Z,5.0,18.7,1.016,3.4,,2.032,True,,,clearance M3,x_belt_clamp_screw_1,,c,
+x_belt_clamp,H4,hole,Z,25.0,18.7,1.016,3.4,,2.032,True,,,clearance M3,x_belt_clamp_screw_3,,d,
+x_motor_mount,H1,hole,Z,33.5,8.0,1.587,3.6,,3.175,True,,,clearance M3,x_motor_screw_0,,a,locates motor x_motor
+x_motor_mount,H2,hole,Z,64.5,8.0,1.587,3.6,,3.175,True,,,clearance M3,x_motor_screw_1,,b,locates motor x_motor
+x_motor_mount,H3,hole,Z,49.0,23.5,1.587,23.0,,3.175,True,,,bore / opening,,x_motor (NEMA17-34),,pilot of motor x_motor
+x_motor_mount,H4,hole,Z,33.5,39.0,1.587,3.6,,3.175,True,,,clearance M3,x_motor_screw_2,,c,locates motor x_motor
+x_motor_mount,H5,hole,Z,64.5,39.0,1.587,3.6,,3.175,True,,,clearance M3,x_motor_screw_3,,d,locates motor x_motor
+x_motor_mount,S1,slot,Z,8.0,15.8,1.587,5.5,11.5,3.175,True,,,clearance M5,x_motor_mount_bolt_0,,e,
+x_motor_mount,S2,slot,Z,8.0,39.8,1.587,5.5,11.5,3.175,True,,,clearance M5,x_motor_mount_bolt_1,,f,
+x_idler_mount,H1,hole,Z,8.0,10.0,1.587,5.5,,3.175,True,,,clearance M5,x_idler_mount_bolt_0,,a,
+x_idler_mount,H2,hole,Z,52.183,30.5,1.587,5.5,,3.175,True,,,clearance M5,x_idler_bolt,x_idler_spacer (MCMASTER-94669A079),b,axle of x_idler: sets the belt plane
+x_idler_mount,H3,hole,Z,8.0,34.0,1.587,5.5,,3.175,True,,,clearance M5,x_idler_mount_bolt_1,,c,
+x_endstop_carrier,H1,hole,Z,2.5,3.3,0.8,3.4,,1.6,True,,,clearance M3,x_endstop_screw_0,,a,
+x_endstop_carrier,H2,hole,Z,17.5,3.3,0.8,3.4,,1.6,True,,,clearance M3,x_endstop_screw_1,,b,
+y_motor_mount,H1,hole,Z,17.0,10.0,0.94,5.5,,1.88,True,,,clearance M5,y_motor_mount_bolt_0,,a,
+y_motor_mount,H2,hole,Z,43.0,10.0,0.94,5.5,,1.88,True,,,clearance M5,y_motor_mount_bolt_1,,b,
+y_motor_mount,H3,hole,Z,63.5,16.584,0.94,3.6,,1.88,True,,,clearance M3,y_motor_screw_0,,c,locates motor y_motor
+y_motor_mount,H4,hole,Z,94.5,16.584,0.94,3.6,,1.88,True,,,clearance M3,y_motor_screw_2,,d,locates motor y_motor
+y_motor_mount,H5,hole,Z,79.0,32.084,0.94,23.0,,1.88,True,,,bore / opening,,y_motor (NEMA17-48),,pilot of motor y_motor
+y_motor_mount,H6,hole,Z,63.5,47.584,0.94,3.6,,1.88,True,,,clearance M3,y_motor_screw_1,,e,locates motor y_motor
+y_motor_mount,H7,hole,Z,94.5,47.584,0.94,3.6,,1.88,True,,,clearance M3,y_motor_screw_3,,f,locates motor y_motor
+y_idler_mount,H1,hole,Z,17.365,10.0,0.762,5.5,,1.524,True,,,clearance M5,y_idler_mount_bolt_0,,a,
+y_idler_mount,H2,hole,Z,65.365,10.0,0.762,5.5,,1.524,True,,,clearance M5,y_idler_mount_bolt_1,,b,
+y_idler_mount,H3,hole,Z,9.0,28.901,0.762,5.5,,1.524,True,,,clearance M5,y_idler_bolt,,c,axle of y_idler: sets the belt plane
+y_motor_mount_l,H1,hole,Z,17.0,10.0,0.94,5.5,,1.88,True,,,clearance M5,y_motor_mount_l_bolt_0,,a,
+y_motor_mount_l,H2,hole,Z,43.0,10.0,0.94,5.5,,1.88,True,,,clearance M5,y_motor_mount_l_bolt_1,,b,
+y_motor_mount_l,H3,hole,Z,63.5,16.584,0.94,3.6,,1.88,True,,,clearance M3,y_motor_l_screw_0,,c,locates motor y_motor_l
+y_motor_mount_l,H4,hole,Z,94.5,16.584,0.94,3.6,,1.88,True,,,clearance M3,y_motor_l_screw_2,,d,locates motor y_motor_l
+y_motor_mount_l,H5,hole,Z,79.0,32.084,0.94,23.0,,1.88,True,,,bore / opening,,y_motor_l (NEMA17-48),,pilot of motor y_motor_l
+y_motor_mount_l,H6,hole,Z,63.5,47.584,0.94,3.6,,1.88,True,,,clearance M3,y_motor_l_screw_1,,e,locates motor y_motor_l
+y_motor_mount_l,H7,hole,Z,94.5,47.584,0.94,3.6,,1.88,True,,,clearance M3,y_motor_l_screw_3,,f,locates motor y_motor_l
+y_idler_mount_l,H1,hole,Z,17.365,10.0,0.762,5.5,,1.524,True,,,clearance M5,y_idler_mount_l_bolt_0,,a,
+y_idler_mount_l,H2,hole,Z,65.365,10.0,0.762,5.5,,1.524,True,,,clearance M5,y_idler_mount_l_bolt_1,,b,
+y_idler_mount_l,H3,hole,Z,9.0,28.901,0.762,5.5,,1.524,True,,,clearance M5,y_idler_l_bolt,,c,axle of y_idler_l: sets the belt plane
+y_endstop_carrier,H1,hole,Z,2.5,9.2,0.8,3.4,,1.6,True,,,clearance M3,y_endstop_screw_1,,a,
+y_endstop_carrier,H2,hole,Z,17.5,9.2,0.8,3.4,,1.6,True,,,clearance M3,y_endstop_screw_0,,b,
+y_endstop_mount,H1,hole,Z,4.435,9.0,1.587,3.4,,3.175,True,,,clearance M3,y_endstop_screw_0,,a,
+y_endstop_mount,H2,hole,Z,19.5,9.0,1.587,5.5,,3.175,True,,,clearance M5,y_endstop_mount_bolt_0,,b,
+y_endstop_mount,H3,hole,Z,31.5,9.0,1.587,5.5,,3.175,True,,,clearance M5,y_endstop_mount_bolt_1,,c,
+y_endstop_mount,H4,hole,Z,4.435,24.0,1.587,3.4,,3.175,True,,,clearance M3,y_endstop_screw_1,,d,
+mains_cover_psu,H1,hole,Z,4.0,4.0,16.432,3.6,,32.865,True,,,clearance M3,mains_cover_psu_screw_0,,a,
+mains_cover_psu,H2,hole,Z,135.0,4.0,16.432,3.6,,32.865,True,,,clearance M3,mains_cover_psu_screw_1,,b,
+electronics_tray,H1,hole,Z,10.0,6.5,1.587,5.5,,3.175,True,,,clearance M5,z_mount_fl_bolt_0,z_mount_fl_spacer_0 (custom),a,
+electronics_tray,H2,hole,Z,330.0,6.5,1.587,5.5,,3.175,True,,,clearance M5,z_mount_fr_bolt_0,z_mount_fr_spacer_0 (custom),b,
+electronics_tray,H3,hole,Z,206.0,11.0,1.587,3.2,,3.175,True,,,clearance M2.5,host_screw_0,host_washer_0 (WASHER-M2.5),c,
+electronics_tray,H4,hole,Z,117.0,35.5,1.587,4.5,,3.175,True,,,clearance M4,psu_screw_2,,d,
+electronics_tray,H5,hole,Z,167.0,35.5,1.587,4.5,,3.175,True,,,clearance M4,psu_screw_3,,d,
+electronics_tray,H6,hole,Z,264.0,60.0,1.587,3.2,,3.175,True,,,clearance M2.5,host_screw_3,host_washer_3 (WASHER-M2.5),e,
+electronics_tray,H7,hole,Z,219.5,70.5,1.587,3.4,,3.175,True,,,clearance M3,control_board_screw_2,,f,
+electronics_tray,H8,hole,Z,309.5,70.5,1.587,3.4,,3.175,True,,,clearance M3,control_board_screw_3,,g,
+electronics_tray,H9,hole,Z,10.0,71.5,1.587,5.5,,3.175,True,,,clearance M5,z_mount_fl_bolt_1,z_mount_fl_spacer_1 (custom),h,
+electronics_tray,H10,hole,Z,330.0,71.5,1.587,5.5,,3.175,True,,,clearance M5,z_mount_fr_bolt_1,z_mount_fr_spacer_1 (custom),i,
+electronics_tray,H11,hole,Z,46.0,109.5,1.587,3.4,,3.175,True,,,clearance M3,din_rail_bolt_0,,j,
+electronics_tray,H12,hole,Z,73.0,109.5,1.587,3.4,,3.175,True,,,clearance M3,din_rail_bolt_1,,k,
+electronics_tray,H13,hole,Z,117.0,185.5,1.587,4.5,,3.175,True,,,clearance M4,psu_screw_0,,d,
+electronics_tray,H14,hole,Z,167.0,185.5,1.587,4.5,,3.175,True,,,clearance M4,psu_screw_1,,d,
+electronics_tray,H15,hole,Z,76.5,204.5,1.587,3.6,,3.175,True,,,clearance M3,mains_cover_psu_screw_0,,l,
+electronics_tray,H16,hole,Z,207.5,204.5,1.587,3.6,,3.175,True,,,clearance M3,mains_cover_psu_screw_1,,m,
+electronics_tray,H17,hole,Z,10.0,212.5,1.587,5.5,,3.175,True,,,clearance M5,tray_bolt_0,,n,
+electronics_tray,H18,hole,Z,330.0,212.5,1.587,5.5,,3.175,True,,,clearance M5,tray_bolt_1,,o,
+electronics_tray,H19,hole,Z,219.5,220.5,1.587,3.4,,3.175,True,,,clearance M3,control_board_screw_0,,p,
+electronics_tray,H20,hole,Z,309.5,220.5,1.587,3.4,,3.175,True,,,clearance M3,control_board_screw_1,,q,
+inlet_panel,H1,hole,Z,8.0,10.0,1.27,5.5,,2.54,True,,,clearance M5,inlet_panel_bolt_1,,a,
+inlet_panel,H2,hole,Z,78.0,17.0,1.27,3.4,,2.54,True,,,clearance M3,mains_cover_inlet_screw_1,,b,
+inlet_panel,H3,hole,Z,30.0,40.0,1.27,3.4,,2.54,True,,,clearance M3,inlet_screw_1,,c,
+inlet_panel,H4,hole,Z,86.0,40.0,1.27,3.4,,2.54,True,,,clearance M3,inlet_screw_0,,d,
+inlet_panel,H5,hole,Z,78.0,63.0,1.27,3.4,,2.54,True,,,clearance M3,mains_cover_inlet_screw_0,,e,
+inlet_panel,H6,hole,Z,8.0,70.0,1.27,5.5,,2.54,True,,,clearance M5,inlet_panel_bolt_0,,f,
+mains_cover_inlet,H1,hole,Y,4.0,29.5,54.0,3.6,,9.0,True,,,clearance M3,mains_cover_inlet_screw_0,,a,
+mains_cover_inlet,H2,hole,Y,50.0,29.5,54.0,3.6,,9.0,True,,,clearance M3,mains_cover_inlet_screw_1,,b,
+cam_overview_mount,H1,hole,Z,6.0,7.0,3.0,3.6,,6.0,True,,,clearance M3,cam_overview_mount_screw_0,,a,
+cam_overview_mount,H2,hole,Z,38.0,7.0,3.0,3.6,,6.0,True,,,clearance M3,cam_overview_mount_screw_1,,b,
+cam_overview_mount,H3,hole,Y,11.5,7.0,23.0,2.4,,14.0,True,,,clearance M2,cam_overview_screw_0,cam_overview_screw_0_washer (WASHER-M2),c,
+cam_overview_mount,H4,hole,Y,32.5,7.0,23.0,2.4,,14.0,True,,,clearance M2,cam_overview_screw_1,cam_overview_screw_1_washer (WASHER-M2),d,
+cam_topdown_mount,H1,hole,Y,6.0,3.0,9.0,3.6,,6.0,True,,,clearance M3,cam_topdown_mount_screw_0,,a,
+cam_topdown_mount,H2,hole,Y,38.0,3.0,9.0,3.6,,6.0,True,,,clearance M3,cam_topdown_mount_screw_1,,b,
+cam_topdown_mount,H3,hole,Y,11.5,17.0,39.0,2.4,,6.0,True,,,clearance M2,cam_topdown_screw_0,cam_topdown_screw_0_washer (WASHER-M2),c,
+cam_topdown_mount,H4,hole,Y,32.5,17.0,39.0,2.4,,6.0,True,,,clearance M2,cam_topdown_screw_1,cam_topdown_screw_1_washer (WASHER-M2),d,
+sfs_mount,H1,hole,Y,3.5,3.0,9.0,3.6,,6.0,True,,,clearance M3,sfs_mount_screw_0,,a,
+sfs_mount,H2,hole,Y,40.5,3.0,9.0,3.6,,6.0,True,,,clearance M3,sfs_mount_screw_1,,b,
+led_clip_0,H1,hole,Y,6.0,1.5,16.0,3.6,,3.0,True,,,clearance M3,led_clip_0_screw,,a,
+led_clip_1,H1,hole,Y,6.0,1.5,16.0,3.6,,3.0,True,,,clearance M3,led_clip_1_screw,,a,
+spool_plate,H1,hole,Z,116.0,7.0,1.588,5.5,,3.175,True,,,clearance M5,spool_plate_screw_0,,a,
+spool_plate,H2,hole,Z,12.0,20.0,1.588,9.0,,3.175,True,,,clearance M8,spool_axle,,b,
+spool_plate,H3,hole,Z,116.0,33.0,1.588,5.5,,3.175,True,,,clearance M5,spool_plate_screw_1,,a,
