@@ -172,9 +172,10 @@ from mechloop.parts.batch12 import (tnut_hntp5, psu_xp_lba350ps24, estop_omron_a
 # ---- v12.1 change flags (docs/OPERATING_MODES.md): every owner decision is its own switch; all off = printer_v12 ----------
 import os as _os
 
-CHANGE_IDS = ("estop-mount", "zmotor-holes", "znut-direct", "carriage-plate-rigid", "rear-z-inside")
+CHANGE_IDS = ("estop-mount", "zmotor-holes", "znut-direct", "carriage-plate-rigid", "rear-z-inside", "spool-closer")
 CHANGES = {k: True for k in CHANGE_IDS}
-CHANGE_DEPENDS = {"rear-z-inside": ("znut-direct",)}      # the rear plate is the fronts' direct-nut plate
+CHANGE_DEPENDS = {"rear-z-inside": ("znut-direct",),       # the rear plate is the fronts' direct-nut plate
+                  "spool-closer": ("rear-z-inside",)}      # v12's rear screw (y 198-206, x 0) stands where the closer spool goes
 _env = _os.environ.get("MECHLOOP_CHANGES")
 if _env is not None:
     _on = set(CHANGE_IDS) if _env.strip() == "all" else set() if _env.strip() in ("", "none") else {x.strip() for x in _env.split(",") if x.strip()}
@@ -212,6 +213,11 @@ CHANGE_INFO = {     # for the review page's Changes tab (tools/build_change.py)
                                  "front-left screw's line (x -144.5, y 108), with the fronts' direct-bolted nut plate and its motor "
                                  "on posts on the bottom back rail. Needs znut-direct.",
                       "threads": ["cc37dd59-6fa9-4d22-91dc-1ba874609e41"]},
+    "spool-closer": {"title": "Spool 44 mm closer to the back wall",
+                     "summary": "With the rear Z screw inside the frame, the spool moves from y 236 to y 192, just clear of the safety "
+                                "relay's DIN rail and its screw heads; spool_sleeve_0 is 44 mm shorter and the axle the shortest MISUMI "
+                                "SFAL8 that carries the stack (SFAL8-64-B15-S15). Needs rear-z-inside.",
+                     "threads": ["f2ab0822-37c9-47a9-a7c7-ba113e35cbd2"]},
 }
 _on_ids = [k for k in CHANGE_IDS if CHANGES[k]]
 DESIGN_NAME = ("printer_v12_1" if len(_on_ids) == len(CHANGE_IDS) else "printer_v12_1-base" if not _on_ids
@@ -3368,6 +3374,11 @@ def add_soak_case(d, zs, posts, carrier, zcars, nplates, on_rail, on_nut):
 # ---- feedback hardware on the frame (stage 3) ------------------------------------------------------------------------------------
 SPOOL_AX = (95.0, 290.0)           # v12 (owner): spool axle, world x / z, behind the frame (plate inboard of the right Y motor, x 122+)
 SPOOL_Y0 = 236.0                   # the spool's front face: clear of everything behind the back wall (rear nut plate and Y motors to 226)
+if CH("spool-closer"):
+    # v12.1 spool-closer: with the rear Z screw inside the frame the nearest things behind the back wall are the safety relay's DIN rail
+    # (y 180 .. 188, x -172 .. 74, z 337.5 .. 352.5: the spool reaches x -5 .. 195, z 175 .. 375) and its M5 heads (to y 187.2):
+    # the spool's front face 4 mm clear of them
+    SPOOL_Y0 = 192.0
 PTFE_MIN_R = 50.0                  # minimum bend radius of the 4 mm PTFE tube until its datasheet arrives (owner)
 
 
@@ -3394,6 +3405,11 @@ def add_filament_supply(d):
     t_n = NUT["M8"][1]                                      # 6.8 (ISO 4032 table; McMaster 90592A022 6.5)
     y_rear = yb - t_n                                        # the rod's rear end: flush with the inner nut's back face
     l_plain = 108
+    if CH("spool-closer"):
+        # the shortest SFAL8 (L in 1 mm steps) whose front thread still carries the front nut and stops short of the rear bearing's
+        # sleeve: rod end >= front nut's outer face and >= the end spacer's start + 15 (the thread zone), +1 mm
+        y_fn_ = SPOOL_Y0 + 55.0 + 3.5 + 8.0
+        l_plain = int(math.ceil(max(y_fn_ + t_n, SPOOL_Y0 + 55.0 + 3.5 + 15.0) - y_rear - 30.0 + 1.0))
     place(d, "spool_axle", shaft_misumi_sfal8(l_plain), Location(Plane(origin=(xa, y_rear, za), z_dir=(0, 1, 0))))
     add_nut(d, "spool_axle_nut", "M8", at=(xa, yb, za), direction=(0, -1, 0))
     d.join("spool_axle_nut", "spool_plate", "clamps the rod's rear thread against the plate")
