@@ -543,3 +543,7 @@ Steps 1-5 fit inside the printer's ordering and lead-time window (print service 
   hardwired e-stop and safety relay (added to printer_v12 now).
 - Budget: no hard ceiling, but a few thousand dollars or less for Arm Build 1.
 - Kinematics stay open as design research (SCARA, front-loading Cartesian, compact 5-axis carried forward).
+- Stage C revised (owner comment on the doc, 2026-11-21): start with simple assemblies (2-3 printed parts joined by screws
+  into captured nuts) and grow in complexity. Which further operations and stations come next (heat-set inserts, press-fit
+  bearings, magnets, others) stays open, added only when a target assembly needs them. The live, commentable version of
+  this scope is the Claude Doc "Robot Arm Scope" (https://claude.ai/artifact/96CZGsQoQJbsV2aMJt1LwS).
