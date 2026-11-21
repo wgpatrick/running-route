@@ -58,8 +58,10 @@ def design_module(design: str):
 
 def signature(c) -> tuple:
     bb = c.shape.bounding_box()
+    cm = c.shape.center()          # a hole moved inside a plate changes neither its volume nor its box
     return (c.sku, c.material, round(float(c.shape.volume), 1),
-            tuple(round(v, 2) for v in (bb.min.X, bb.min.Y, bb.min.Z, bb.max.X, bb.max.Y, bb.max.Z)))
+            tuple(round(v, 2) for v in (bb.min.X, bb.min.Y, bb.min.Z, bb.max.X, bb.max.Y, bb.max.Z)),
+            tuple(round(v, 2) for v in (cm.X, cm.Y, cm.Z)))
 
 
 def with_deps(cid: str, deps: dict) -> list[str]:

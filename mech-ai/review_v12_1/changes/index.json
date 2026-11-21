@@ -142,6 +142,44 @@
    "file": "changes/znut-direct.json",
    "design": "printer_v12_1+znut-direct",
    "status_reason": "112 errors not in v12 (thread engagement of the M4s, tool access, motor-plate webs): being fixed"
+  },
+  {
+   "id": "bed-thumb-reach",
+   "title": "Bed thumb nuts below the square, reachable by fingers",
+   "summary": "Hand levelling stays (studs, die springs, thumb nuts; fitted hole, slot, oversize hole). Each thumb nut sat 0.9 mm from a member of the 2020 square. The studs cannot move inward (the 210 mm heater pad is under the plate), so each thumb nut now hangs below the square on two stock 10 mm spacers (McMaster 94669A079) and the stud is an M4 x 60. The rear stud moves 42.5 mm left along the plate's rear edge, clear of v12's rear nut plate under the rear member (it stays put with rear-z-inside). At least 20 mm free all round each knob. New requirement: finger clearance for every hand-adjusted part.",
+   "threads": [
+    "2211e7e2-0d7e-485a-adfb-083c2c2d279c"
+   ],
+   "status": "needs work",
+   "status_reason": "the new M4 x 60 countersunk studs have no maker part number or supplier STEP yet (2 new practice DG-07 errors)",
+   "depends_on": [],
+   "removed": [],
+   "modified": [
+    "bed_plate",
+    "bed_spring_2",
+    "bed_spring_2_seat",
+    "bed_stud_0",
+    "bed_stud_1",
+    "bed_stud_2",
+    "bed_stud_2_nut",
+    "bed_stud_2_washer",
+    "bed_thumb_0",
+    "bed_thumb_1",
+    "bed_thumb_2",
+    "bed_thumb_2_washer",
+    "z_deck"
+   ],
+   "added": [
+    "bed_thumb_0_spacer_0",
+    "bed_thumb_0_spacer_1",
+    "bed_thumb_1_spacer_0",
+    "bed_thumb_1_spacer_1",
+    "bed_thumb_2_spacer_0",
+    "bed_thumb_2_spacer_1"
+   ],
+   "checks": "fast checks (geometry, interference, manufacture, assemblability, practice): 9 errors, 143 warnings (v12: 7 errors, 143 warnings in those checks); 2 NEW errors, both practice DG-07 on FHCS-M4x60 (the longer stud: no maker part number, no supplier STEP); no other error new or cleared; the other errors are the existing DG-07 placeholder-part rule (as in v12); parts 907 -> 913 (+6 spacers); part_quality (2 changed custom parts, bed_plate and z_deck, audits on every changed part): clean (no errors or warnings); new requirement, finger clearance: 21.4 / 21.4 / 24.3 mm free round the three thumb nuts (v12: 0.9 mm from the square's members); bed spring preload, plate growth and three-point requirements pass; full checks running",
+   "file": "changes/bed-thumb-reach.json",
+   "design": "printer_v12_1+bed-thumb-reach"
   }
  ]
 }

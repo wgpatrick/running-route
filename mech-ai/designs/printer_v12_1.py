@@ -172,7 +172,7 @@ from mechloop.parts.batch12 import (tnut_hntp5, psu_xp_lba350ps24, estop_omron_a
 # ---- v12.1 change flags (docs/OPERATING_MODES.md): every owner decision is its own switch; all off = printer_v12 ----------
 import os as _os
 
-CHANGE_IDS = ("estop-mount", "zmotor-holes", "znut-direct", "carriage-plate-rigid", "rear-z-inside", "spool-closer")
+CHANGE_IDS = ("estop-mount", "zmotor-holes", "znut-direct", "carriage-plate-rigid", "rear-z-inside", "spool-closer", "bed-thumb-reach")
 CHANGES = {k: True for k in CHANGE_IDS}
 CHANGE_DEPENDS = {"rear-z-inside": ("znut-direct",),       # the rear plate is the fronts' direct-nut plate
                   "spool-closer": ("rear-z-inside",)}      # v12's rear screw (y 198-206, x 0) stands where the closer spool goes
@@ -218,6 +218,14 @@ CHANGE_INFO = {     # for the review page's Changes tab (tools/build_change.py)
                                 "relay's DIN rail and its screw heads; spool_sleeve_0 is 44 mm shorter and the axle the shortest MISUMI "
                                 "SFAL8 that carries the stack (SFAL8-64-B15-S15). Needs rear-z-inside.",
                      "threads": ["f2ab0822-37c9-47a9-a7c7-ba113e35cbd2"]},
+    "bed-thumb-reach": {"title": "Bed thumb nuts below the square, reachable by fingers",
+                        "summary": "Hand levelling stays (studs, die springs, thumb nuts; fitted hole, slot, oversize hole). Each thumb nut "
+                                   "sat 0.9 mm from a member of the 2020 square. The studs cannot move inward (the 210 mm heater pad is "
+                                   "under the plate), so each thumb nut now hangs below the square on two stock 10 mm spacers (McMaster "
+                                   "94669A079) and the stud is an M4 x 60. The rear stud moves 42.5 mm left along the plate's rear edge, "
+                                   "clear of v12's rear nut plate under the rear member (it stays put with rear-z-inside). At least 20 "
+                                   "mm free all round each knob. New requirement: finger clearance for every hand-adjusted part.",
+                        "threads": ["2211e7e2-0d7e-485a-adfb-083c2c2d279c"]},
 }
 _on_ids = [k for k in CHANGE_IDS if CHANGES[k]]
 DESIGN_NAME = ("printer_v12_1" if len(_on_ids) == len(CHANGE_IDS) else "printer_v12_1-base" if not _on_ids
@@ -320,6 +328,15 @@ SPRING_H = 12.0        # DJ-8X20YCS installed: 8 mm of its 20 compressed, 60.8 N
 SPRING_K = 7.6
 GAP = W4 + NUT4 + SPRING_H + W4           # plate underside to deck top: 16.8 mm
 STUD_L = 40.0          # M4 x 40 countersunk: 12 mm in the plate, 16.8 gap, deck, washer, 7 mm into the thumb nut
+THUMB_DROP = 0.0       # how far below the deck's large washer each thumb nut sits (v12: on the washer)
+FINGER_CLEAR = 20.0    # v12.1 bed-thumb-reach (owner): free space all round a part turned by hand
+if CH("bed-thumb-reach"):
+    # v12.1 bed-thumb-reach. Each thumb nut stood inside the square, 0.9 mm from a member's inner face (the stud 8.9 mm from it,
+    # the knurl 8 mm in radius). Moving the studs inward to 28 mm from the members puts them 12 mm inside the 210 mm heater pad
+    # (stock, bonded under the plate), so the nuts go DOWN instead: two stock 10 mm aluminium spacers (McMaster 94669A079, 10 OD,
+    # 5.3 bore) between the large washer and the thumb nut put the nut's collar 1.1 mm below the square's underside and its
+    # knurl 7 mm below it, in open space; the stud is 20 mm longer (M4 x 60), the same 3.6 mm past the nut.
+    THUMB_DROP, STUD_L = 20.0, 60.0
 CSK_SINK = (CSK["M4"][0] - CSK["M4"][1]) / 2      # 0.72 mm: how far an M4 countersunk head sits below the surface
 LEVEL_RANGE = 1.5      # +/- at each thumb nut (v9 2.0: the spring's 10 mm and the preload margin leave 1.5; the stack-up needs 0.7)
 LEV_X, LEV_Y = 86.0, 112.0                # v12: 112 (outside the 210 pad, 8 mm in from the 240 plate's edge); v11: 108 (v10 109.5): 8 mm inside the 232 mm plate's edges; three studs: front pair at (+/-86, BED_CY - 109.5) beside the square's front member (thumb nuts
@@ -327,6 +344,13 @@ LEV_X, LEV_Y = 86.0, 112.0                # v12: 112 (outside the 210 pad, 8 mm 
                                           # each 11.4 mm from a member's inner face and within 60 mm of a lead-screw nut
 # deck hole per stud (thermal growth of the plate): 0 fitted, 1 slot towards 0, 2 oversize
 BED_MOUNTS = [(-LEV_X, BED_CY - LEV_Y), (LEV_X, BED_CY - LEV_Y), (BED_CX, BED_CY + LEV_Y)]
+if CH("bed-thumb-reach") and not CH("rear-z-inside"):
+    # v12.1 bed-thumb-reach: v12's rear nut plate runs under the rear member from x -27.8 to +27.8 (its bolt heads down to z 129.6),
+    # 8.9 mm behind the rear stud's axis: the rear thumb nut, lowered below the square, would sit against it. The rear stud moves
+    # 42.5 mm left along the plate's rear edge (still outside the heater pad, 17.5 mm from the left rear sheet pin), the ring round
+    # its knob 22 mm clear of the plate. It still carries half the bed; the front pair 0.17 / 0.33. With rear-z-inside the rear
+    # nut plate is under the left member instead and the stud stays on the centre line.
+    BED_MOUNTS[2] = (BED_CX - 42.5, BED_CY + LEV_Y)
 DECK_FIT, DECK_FREE = 4.3, 5.5
 # v11: the 330 mm screws (328 above the motor face, as sold) cannot stand under the top rails with their motors on the bottom
 # rails (motor body 48 + screw 328 = 376 > the 364 between the rails' faces). So the front two stand INBOARD of the top side
@@ -1752,15 +1776,28 @@ def build_frame_z():
         add_washer(d, dw, "M4", (x, y, Z_SQT), (0, 0, -1), body="zbody", series="large")
         d.join(dw, "z_deck", "clamp: held against the deck's underside by the spring's preload (the located stud)" if i == 0 else
                "sliding free: held against the deck's underside by the spring's preload, slips as the plate grows")
-        add_thumb_nut(d, th, "M4", (x, y, Z_SQT - W4L), (0, 0, -1), body="zbody", screw=p)
-        d.join(th, dw, "clamp")
+        if THUMB_DROP:
+            for k in range(2):
+                spn = f"bed_thumb_{i}_spacer_{k}"
+                place(d, spn, spacer_mcmaster_94669a079(), Location((x, y, Z_SQT - W4L - 10.0 * (k + 1))), body="zbody")
+                d.join(spn, dw if k == 0 else f"bed_thumb_{i}_spacer_0", "clamp: a sleeve on the stud, held by the thumb nut")
+                d.join(spn, p, "slid over the stud")
+                d.get(spn).meta["description"] = (f"Spacer {k + 1} of 2 under bed levelling point {i}'s deck washer: it holds the thumb nut "
+                                                  "below the 2020 square, where fingers reach it. Slides on the deck with the washer.")
+        add_thumb_nut(d, th, "M4", (x, y, Z_SQT - W4L - THUMB_DROP), (0, 0, -1), body="zbody", screw=p)
+        d.join(th, f"bed_thumb_{i}_spacer_1" if THUMB_DROP else dw, "clamp")
+        if CH("bed-thumb-reach"):      # the grip: the knurled head (axis, its radius, its z band), for the finger-clearance check
+            tn = d.get(th).meta["interfaces"]
+            zc_ = Z_SQT - W4L - THUMB_DROP
+            d.get(th).meta["hand_adjusted"] = {"axis": (x, y), "r": tn["knurl_dia"] / 2,
+                                                "z": (zc_ - tn["height"], zc_ - tn["height"] + tn["knurl_height"])}
         hole = ("a fitted 4.3 mm hole (this stud, front left, locates the bed)" if i == 0 else
                 "a 4.3 mm slot pointing at stud 0 (front right: holds the bed from turning)" if i == 1 else "a 5.5 mm oversize hole (rear: free)")
         desc = (f"Bed levelling point {i}: an M4 x {STUD_L:g} countersunk screw from the bed's top face (head 0.7 mm below it, under the "
                 f"magnetic base) is locked to the plate by a washer and nut underneath, so it is a fixed stud. A die spring "
                 f"(DJ-8X20YCS, {SPRING_K} N/mm, compressed {20 - SPRING_H:g} mm: {SPRING_K * (20 - SPRING_H):.0f} N) between that nut and the "
                 f"deck pushes the bed up; the stud passes the deck through {hole} and a large washer and knurled thumb nut under "
-                f"the deck hold it down. Turn the thumb nut to level: 0.7 mm per turn, +/-{LEVEL_RANGE:g} mm. Three points: they set the bed's "
+                f"the deck hold it down" + (" (the nut on two 10 mm spacers, below the 2020 square, where fingers reach it)" if THUMB_DROP else "") + f". Turn the thumb nut to level: 0.7 mm per turn, +/-{LEVEL_RANGE:g} mm. Three points: they set the bed's "
                 f"plane and cannot twist the plate.")
         for nm_ in (p, jam, spr, th):
             d.get(nm_).meta["description"] = desc
@@ -2620,7 +2657,8 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
     # under the deck. The springs are left out: while they are preloaded the bed is held by the studs against the thumb
     # nuts (docs/PRINTER_V9.md works the preload margin)
     posts = [f"bed_stud_{i}{sfx}" for i in range(len(BED_MOUNTS)) for sfx in ("", "_washer", "_nut")] \
-        + [f"bed_thumb_{i}{sfx}" for i in range(len(BED_MOUNTS)) for sfx in ("", "_washer")]
+        + [f"bed_thumb_{i}{sfx}" for i in range(len(BED_MOUNTS)) for sfx in ("", "_washer")] \
+        + ([f"bed_thumb_{i}_spacer_{k}" for i in range(len(BED_MOUNTS)) for k in range(2)] if THUMB_DROP else [])
     zcars, on_rail, carrier, nplates = zs["zcars"], zs["on_rail"], zs["carrier"], zs["nut_plates"]
     bed_stack = ["bed_plate", "bed_magnet", "bed"]
     d.printer["bed_support"] = {"parts": [*bed_stack, *posts, *carrier, *zcars, *nplates]}
@@ -2913,6 +2951,45 @@ def add_requirements(d, zs):
                     f"nearest lead-screw nut; the bed's centre puts {' / '.join(f'{v:.2f}' for v in stud_loads(BED_CX, BED_CY))} of its weight on them; "
                     f"no thread in the plate")
     d.requirements.append(Requirement("v10: the bed stands on three sprung, thumb-nut levelling points (a plane, no twist), none tapped into the plate", three_points))
+
+    def finger_reach(dd):
+        # every part turned by hand (meta "hand_adjusted": its grip's vertical axis, radius and z band): no other solid inside a ring
+        # FINGER_CLEAR wide round the grip, from 5 mm below to 5 mm above it (the fingers' room); the parts on its own axis inside
+        # the grip's radius (stud, spacers) are not in the ring. The bed is at the bottom of its travel as drawn (the tightest case)
+        from build123d import Cylinder as _Cyl
+        out, bad = [], []
+        for c in dd.components:
+            g = c.meta.get("hand_adjusted")
+            if not isinstance(g, dict):
+                continue
+            (ax, ay), r, (z0, z1) = g["axis"], g["r"], g["z"]
+            h = z1 - z0 + 10.0
+            ring = Pos(ax, ay, (z0 + z1) / 2) * (_Cyl(r + FINGER_CLEAR, h) - _Cyl(r, h))
+            wide = Pos(ax, ay, (z0 + z1) / 2) * (_Cyl(r + FINGER_CLEAR + 25.0, h) - _Cyl(r, h))
+            wb = wide.bounding_box()
+            grip = Pos(ax, ay, (z0 + z1) / 2) * _Cyl(r, z1 - z0)
+            near, hits = [], []
+            for o in dd.components:
+                if o.name == c.name:
+                    continue
+                ob = o.shape.bounding_box()
+                if (ob.max.X < wb.min.X or ob.min.X > wb.max.X or ob.max.Y < wb.min.Y or ob.min.Y > wb.max.Y
+                        or ob.max.Z < wb.min.Z or ob.min.Z > wb.max.Z):
+                    continue
+                if (o.shape & wide).volume > 1e-3:
+                    near.append((o.shape.distance_to(grip), o.name))
+                    if (o.shape & ring).volume > 1e-3:
+                        hits.append(o.name)
+            gap = min(near)[0] if near else FINGER_CLEAR + 25.0
+            out.append(f"{c.name} {gap:.1f} mm" + (f" (nearest {min(near)[1]})" if near else " (nothing within 45 mm)"))
+            if hits:
+                bad.append(f"{c.name}: {', '.join(sorted(hits))}")
+        ok = bool(out) and not bad
+        return ok, (f"free space round each hand-turned grip, {FINGER_CLEAR:g} mm needed: " + "; ".join(out)
+                    + (f"; inside the {FINGER_CLEAR:g} mm ring: " + "; ".join(bad) if bad else ""))
+    if CH("bed-thumb-reach"):
+        d.requirements.append(Requirement(f"v12.1: every part turned by hand (the bed's thumb nuts) has at least {FINGER_CLEAR:g} mm of free "
+                                          "space all round its grip for the fingers", finger_reach))
 
     def heater_cover(dd):
         hb = dd.get("bed_heater").shape.bounding_box()
