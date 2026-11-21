@@ -100,6 +100,8 @@ a.lnk,button.lnk{color:var(--accent);background:none;border:0;padding:0;font:inh
 .rank{font:600 10px var(--f-mono);border-radius:3px;padding:0 5px;margin-right:6px}
 .rank.A{background:var(--err-soft);color:var(--err)} .rank.B{background:var(--warn-soft);color:var(--warn)} .rank.C{background:var(--info-soft);color:var(--info)}
 .fb{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px;margin-top:8px}
+.vtools label:has(#hidefast:checked){background:var(--warn-soft);color:var(--warn);border-color:var(--warn);font-weight:600}
+.vtools label:has(#hidefast:checked)::after{content:' (on)'}
 .fbtags{display:flex;gap:6px;margin-bottom:8px}.fbtags select{flex:1;min-width:0}
 .verdicts{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
 .verdicts label{display:flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:4px;padding:4px 10px;cursor:pointer;font-size:13px}
