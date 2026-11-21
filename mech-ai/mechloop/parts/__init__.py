@@ -411,8 +411,9 @@ def bearing(designation: str = "608") -> Stock:
         iface.update({"da_min": 10.0, "d1": 12.15, "D2": 19.2, "Da_max": 20.0, "axial_limit_n": 0.25 * C0})
     model = {}
     if designation == "608":    # v12: a plain ring at the ISO 15 boundary dimensions (8 x 22 x 7) is the bearing's whole envelope
-        model = {"kind": "proxy", "state": "stand-in", "source": "ring 8 x 22 x 7: the NSK 608ZZ page / CAD is awaited (REQ-018); "
-                 "a re-make must cite the maker's own drawing"}
+        model = {"inbox": ["BRG-608"], "no_auto_features": True,
+                 "source": "display model: MISUMI's B608ZZ STEP (8 x 22 x 7 ZZ, the NSK 608ZZ's dimensions per NSK's own page "
+                           "vendor_docs/NSK_608ZZ1MC3_dimension_page_capture.pdf: d 8, D 22, B 7, r 0.3), REQ-020"}
     return Stock(ring, f"BRG-{designation}", f"Ball bearing {designation} ({d}x{D}x{B})", m,
                  ratings={"dynamic_load_n": C, "static_load_n": C0}, interfaces=iface,
                  cost_usd=1.0, model=model)
@@ -744,7 +745,7 @@ def fhcs(size: str = "M5", length: float = 16.0) -> Stock:
 NUT = {"M2": (4.0, 1.6), "M2.5": (5.0, 2.0), "M3": (5.5, 2.4), "M4": (7.0, 3.2), "M5": (8.0, 4.7), "M6": (10.0, 5.2), "M8": (13.0, 6.8)}
 
 
-NUT_DIN934 = {"M5": 4.0}      # where DIN 934 (what McMaster's 90591A series is) differs in height from ISO 4032
+NUT_DIN934 = {"M5": 4.0, "M8": 6.5}      # where DIN 934 (what McMaster's 90591A series is) differs in height from ISO 4032
 # Prevailing-torque hex nuts with a nylon insert, ISO 10511 (the thin type; DIN 985 has the same heights): height m max, mm.
 # Across flats as ISO 4032. RECALLED from the standard's table (not fetched): check against the nut you buy.
 NUT_ISO10511 = {"M3": 4.0, "M4": 5.0, "M5": 5.0, "M6": 6.0, "M8": 8.0}

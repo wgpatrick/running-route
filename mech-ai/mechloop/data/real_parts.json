@@ -1014,9 +1014,10 @@
     }
    ],
    "ratings_source": {
-    "dynamic_load_n": "SKF 608 product data (vendor_cad/staging/practice_refs/08_SKF_608_product_data.pdf): 3.45 kN (NSK 608ZZ via MISUMI: 3.3 kN; the spool load is about 12 N)",
-    "static_load_n": "SKF 608 product data: 1.37 kN"
-   }
+    "dynamic_load_n": "SKF 608 product data 3.45 kN; NSK 608ZZ1MC3 page (vendor_docs/NSK_608ZZ1MC3_dimension_page_capture.pdf): Cr 3.65 kN",
+    "static_load_n": "NSK 608ZZ1MC3 page: C0r 1.37 kN (SKF: 1.37 kN)"
+   },
+   "datasheet": "vendor_docs/NSK_608ZZ1MC3_dimension_page_capture.pdf"
   }
  }
 }

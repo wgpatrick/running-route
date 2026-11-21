@@ -48,7 +48,8 @@
   "SHCS-M5x65": "91290A270",
   "WASHER-M2": "91166A180",
   "NUT-M2": "91828A111",
-  "WASHER-M5-SERRATED": "91106A126"
+  "WASHER-M5-SERRATED": "91106A126",
+  "NUT-M8": "90592A022"
  },
  "pages": "https://www.mcmaster.com/<part number>/",
  "wrong_file": {},
@@ -394,7 +395,8 @@
    "SHCS-M5x6",
    "SHCS-M5x65",
    "WASHER-M2",
-   "WASHER-M5-SERRATED"
+   "WASHER-M5-SERRATED",
+   "NUT-M8"
   ],
   "note": "McMaster drawing + STEP collected by Instinct for the owner (REQ-001, REQ-002, REQ-006); M4 x 6 is now 91290A139 (black-oxide, 12.9) instead of the zinc 90128A208; NUT-M2 is 91828A111 (18-8, DIN 934 height 1.6), not the thin 90370A201"
  }

@@ -1058,3 +1058,22 @@ def spacer_mcmaster_94669a079() -> Stock:
                  real_part={"maker": "McMaster-Carr", "mpn": "94669A079", "sellers": [{"name": "McMaster-Carr", "part_number": "94669A079", "catalogue": True,
                             "checked": "2026-11-21", "note": "$2.53"}], "sold_by_maker": True,
                             "datasheet": "vendor_docs/McMaster_94669A079_Al_spacer_M5_10x10_drawing.pdf"})
+
+
+SFAL_PAGE = "vendor_docs/Misumi_SFAL_both-ends-threaded_shaft_catalog_p228-229.pdf"
+
+
+@part
+def shaft_misumi_sfal8(l_plain: int) -> Stock:
+    """MISUMI SFAL8-<L>-B15-S15 both-ends-threaded linear shaft: 52100 steel, D 8 g6, M8 x 1.25 x 15 at both ends, overall L + 30 (MISUMI
+    catalogue p.228; REQ-020's STEP of SFAL8-90 is the same family). Re-made from the catalogue drawing as a plain 8 mm rod (threads
+    not drawn). Local frame: axis Z, one end at Z=0, `thread_ends` the two 15 mm zones."""
+    L = float(l_plain) + 30.0
+    s = Pos(0, 0, L / 2) * Cylinder(4.0, L)
+    return Stock(s, f"SFAL8-{int(l_plain)}-B15-S15", f"MISUMI SFAL8-{int(l_plain)}-B15-S15 shaft, D8, M8 both ends, {L:g} overall", 0.0004 * L,
+                 material="steel", cost_usd=37.87, interfaces={"length": L, "thread_ends": [(0.0, 15.0), (L - 15.0, L)]},
+                 model={"kind": "generated to standard", "remade_from": SFAL_PAGE, "no_auto_features": True,
+                        "source": f"re-made from MISUMI's SFAL page: D 8, L {int(l_plain)}, B = S = 15 (M8 x 1.25)"},
+                 real_part={"maker": "MISUMI", "mpn": f"SFAL8-{int(l_plain)}-B15-S15", "sellers": [{"name": "MISUMI USA", "part_number": f"SFAL8-{int(l_plain)}-B15-S15",
+                            "catalogue": True, "checked": "2026-11-21", "note": "SFAL8-90 was $37.87 (REQ-020); this L to confirm"}],
+                            "datasheet": SFAL_PAGE})

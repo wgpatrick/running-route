@@ -140,7 +140,7 @@ from mechloop.parts.hardware import WASHER, spacer_round
 from mechloop.parts.probes import add_probe_nuts, probe_omron_e2e
 from mechloop.parts.toolhead import extruder_roto, hotend_revo
 from mechloop.shops import assign
-from mechloop.parts.batch12 import (tnut_hntp5, spacer_mcmaster_94669a079, switch_omron_d2f_01l, foot_misumi_nfjn5_30, spool_1kg_placeholder, spacer_tube_m8_placeholder, coupler_mcmaster_2333n214, add_bracket_misumi, adxl345_btt, cam_arducam_b0454, cob_led, contactor_finder_2232, din_endstop_wago,
+from mechloop.parts.batch12 import (tnut_hntp5, shaft_misumi_sfal8, spacer_mcmaster_94669a079, switch_omron_d2f_01l, foot_misumi_nfjn5_30, spool_1kg_placeholder, spacer_tube_m8_placeholder, coupler_mcmaster_2333n214, add_bracket_misumi, adxl345_btt, cam_arducam_b0454, cob_led, contactor_finder_2232, din_endstop_wago,
                                     din_rail_wago, heater_hydra_sq1451144, hiwin_mgn12_rail, hiwin_mgn12h_block, laser_vlm520, lens_cil062,
                                     leadscrew_motor_a4003, leadscrew_nut_pom_a4003, leadscrew_screw_a4003, picam3, pi5_host, probe_eddy_duo,
                                     relay_phoenix_1119897, sfs_v2, spacer_harwin, thermostat_cs7,
@@ -2690,7 +2690,7 @@ def add_requirements(d, zs):
     d.requirements.append(Requirement("target: no purchased part is a stand-in where the catalogue has a real one", lambda dd: (
         sorted(px := [c.name for c in dd.components if c.cots and not c.meta.get("catalog")]) == STANDINS,
         f"hand-made purchased parts: {px or 'none'} (v12: the Wham Bam magnetic base is a catalogue part)")))
-    PRINTED = ["part_duct", "mains_cover_psu", "mains_cover_inlet", "eddy_holder", "cam_overview_mount", "cam_topdown_mount", "sfs_mount",
+    PRINTED = ["part_duct", "mains_cover_psu", "mains_cover_inlet", "eddy_holder", "cam_overview_mount", "cam_topdown_mount", "sfs_mount", "spool_sleeve_0", "spool_sleeve_1", "spool_end_spacer",
                "led_clip_0", "led_clip_1"]
     d.requirements.append(Requirement("no printed part in a load path (owner's guideline): printed parts are the duct, covers and sensor holders", lambda dd: (
         sorted(pp := [c.name for c in dd.components if c.material in ("abs", "petg", "pla") and not c.cots]) == sorted(PRINTED), f"printed: {pp}")))
@@ -2885,23 +2885,34 @@ def add_filament_supply(d):
         add_screw(d, f"spool_plate_screw_{i}", "M5", 8, at=(xh, yb + G32, FZ), direction=(0, -1, 0), threads_into="frame_top_back", tnut=True, tnut_stock=tnut_hntp5(),
                   clamps=("spool_plate",))
     y_b1, y_b2 = SPOOL_Y0 + 9.0, SPOOL_Y0 + 55.0             # bearing centres inside the 64 mm hub (Prusament)
-    y_end = SPOOL_Y0 + 64.13 + 4.0
-    ax_len = 140.0
-    # axle: M8 x 140 socket head at the free end (inside the 52 mm hub bore the spool slides over it), nut and washer on the plate's
-    # inner face; sleeves hold the bearings
-    add_screw(d, "spool_axle", "M8", ax_len, at=(xa, y_end, za), direction=(0, -1, 0), clamps=("spool_plate",))
-    d.get("spool_axle").meta["torque_nm"] = 10.0
-    place(d, "spool_sleeve_0", spacer_tube_m8_placeholder(round(y_b1 - 3.5 - (yb + G32), 2)), Location(Plane(origin=(xa, yb + G32, za), z_dir=(0, 1, 0))))
-    place(d, "spool_sleeve_1", spacer_tube_m8_placeholder(round(y_b2 - y_b1 - 7.0, 2)), Location(Plane(origin=(xa, y_b1 + 3.5, za), z_dir=(0, 1, 0))))
+    # REQ-020: axle = MISUMI SFAL8-108-B15-S15 (8 mm g6 rod, M8 x 15 at both ends, 138 overall). Rear thread through the plate, a McMaster
+    # 90592A022 nut on the plate's inner face; on the rod, printed PETG sleeves (10 OD: they bear on the 608s' inner rings only, NSK's
+    # abutment) and the bearings, a printed end spacer, and a second nut on the front thread clamps the stack against the plate.
+    # The spool slides over the free end (hub 51.25 > the 13 mm nut): no tools.
+    t_n = 6.5
+    y_rear = yb - t_n                                        # the rod's rear end: flush with the inner nut's back face
+    l_plain = 108
+    place(d, "spool_axle", shaft_misumi_sfal8(l_plain), Location(Plane(origin=(xa, y_rear, za), z_dir=(0, 1, 0))))
+    add_nut(d, "spool_axle_nut", "M8", at=(xa, yb, za), direction=(0, -1, 0), standard="din934")
+    d.join("spool_axle_nut", "spool_plate", "clamps the rod's rear thread against the plate")
+    d.join("spool_axle", "spool_plate", "rear thread through the plate, nuts each side of the stack")
+    d.allow_overlap("spool_axle_nut", "spool_axle")
+    sleeves = [("spool_sleeve_0", yb + G32, y_b1 - 3.5), ("spool_sleeve_1", y_b1 + 3.5, y_b2 - 3.5), ("spool_end_spacer", y_b2 + 3.5, y_b2 + 3.5 + 8.0)]
+    for nm_, y0_, y1_ in sleeves:
+        sl = Pos(xa, (y0_ + y1_) / 2, za) * (ycyl(5.0, y1_ - y0_) - ycyl(8.4 / 2, y1_ - y0_))
+        d.add(nm_, sl, material=COOL, process="printed", meta={"print_up": "+Y", "print": {**PRINT_ABS, "orientation": "+Y", "infill": 1.0},
+                                                              "description": "v12: printed PETG sleeve on the spool axle (10 OD: bears on the 608s' inner rings only)"})
+        d.allow_overlap(nm_, "spool_axle")
+        d.join(nm_, "spool_axle", "on the rod, clamped in the stack")
     for i, yy in enumerate((y_b1, y_b2)):
         place(d, f"spool_bearing_{i}", bearing("608"), Location(Plane(origin=(xa, yy, za), z_dir=(0, 1, 0))))
-        d.join(f"spool_bearing_{i}", "spool_axle", "on the axle, clamped between the sleeves")
-    add_washer(d, "spool_axle_nwasher", "M8", (xa, yb, za), (0, -1, 0), screw="spool_axle")
-    add_nut(d, "spool_axle_nut", "M8", at=(xa, yb - WASHER["normal"]["M8"][2], za), direction=(0, -1, 0), screw="spool_axle")
-    d.join("spool_axle_nut", "spool_plate", "clamped through its washer")
-    for i in (0, 1):
-        d.join(f"spool_sleeve_{i}", "spool_axle", "sleeve on the axle")
-        d.allow_overlap(f"spool_sleeve_{i}", "spool_axle")
+        d.join(f"spool_bearing_{i}", "spool_axle", "on the rod, inner ring clamped between the sleeves")
+    y_fn = y_b2 + 3.5 + 8.0
+    add_nut(d, "spool_axle_fnut", "M8", at=(xa, y_fn, za), direction=(0, 1, 0), standard="din934")
+    d.allow_overlap("spool_axle_fnut", "spool_axle")
+    d.join("spool_axle_fnut", "spool_end_spacer", "front nut clamps the stack")
+    rod_end = y_rear + l_plain + 30.0
+    assert rod_end >= y_fn + t_n and rod_end - 15.0 >= y_b2 + 3.5 - 0.05, "SFAL thread zones vs the stack"
     # the spool hangs on the bearings: hub bore 52 on the 22 mm outer races, centre 15 mm below the axle
     place(d, "spool", spool_1kg_placeholder(), Location(Plane(origin=(xa, SPOOL_Y0 + 64.13 / 2, za - (51.25 - 22.0) / 2), z_dir=(0, 1, 0))))
     d.join("spool", "spool_bearing_0", "the hub rests on the outer races (rolls; lifts off the free end)")
