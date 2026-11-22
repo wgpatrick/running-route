@@ -889,7 +889,9 @@ def nut_plate_direct_local(z0, z1, nut_out=NUT_OUT, shift=0.0):
       under the head, washer and nut (thread-locked) on the plate's top face. Not tapped: SendCutSend taps M5 and up in 3/8 in and
       practice DG-02 keeps threads out of aluminium we make; the two inner holes are left empty because a nut on them would sit
       under the square's member. The flange's own face carries the thrust; the bolts hold it square and take the drive torque. The
-      screw passes a 9 mm hole, open to the plate's outer edge so the plate slides onto a screw whose motor already stands.
+      screw passes a closed 9 mm hole: motor, screw, nut and this plate are one bench unit, put in from above before the top side
+      rail (as v12's front units), then the plate's two M5 are driven up into the member. (An open slot would leave 2.4 mm webs
+      beside the bolt holes, under the shop's 4.76 mm.)
     - Loads: 3 x the bed's weight up through the flange (FEA nut_thrust); the drive torque reacted by the four M4.
     - Process: 9.525 mm (3/8 in) 6061-T6 laser cut at SendCutSend; two 4.8 mm bolt holes.
     - Envelope: under the member from its inner edge to `nut_out` + NP_R1_D beyond its outer face; 2 NP_U along the member
@@ -900,8 +902,7 @@ def nut_plate_direct_local(z0, z1, nut_out=NUT_OUT, shift=0.0):
     y0, y1 = -nut_out - 20.0, NP_R1_D
     u0, u1 = -NP_U - shift, max(NP_U - shift, 13.0 + 4.0)
     s = Pos((u0 + u1) / 2, (y0 + y1) / 2, z0) * extrude(RectangleRounded(u1 - u0, y1 - y0, 3.0), h)
-    s -= zc(0, 0, z0, z1, NP_HOLE_D / 2)
-    s -= bx(-NP_HOLE_D / 2, NP_HOLE_D / 2, 0.0, y1 + 1.0, z0, z1)          # open outward: the plate slides onto the screw
+    s -= zc(0, 0, z0, z1, NP_HOLE_D / 2)          # closed: plate, nut and drive go in as one bench unit (v12's front units did)
     for u, v in NUT_BOLT_HOLES:
         s -= zc(u, v, z0, z1, NUT_BOLT_HOLE / 2)
     for u in (-NP_BOLT_U - shift, NP_BOLT_U - shift):
@@ -1643,6 +1644,9 @@ def build_frame_z():
             bolt_nut(d, f"z_nut{tg}_bolt_{i}", "M3", NUT_BOLT_L, (*W(u, v), Z_TAB - NUT_FT), (0, 0, 1), "zbody", (f"z_nut{tg}", f"nut_plate{tg}"),
                      nut_at=(*W(u, v), zn1))
             d.get(f"z_nut{tg}_bolt_{i}").meta["locking"] = "adhesive"
+            for f_ in d.fasteners:
+                if f_.name == f"z_nut{tg}_bolt_{i}":
+                    f_.tool_length = 25.0      # a 2.5 mm L-key's short arm (ISO 2936: 18 mm) from below; the motor plate is 50 mm down
             # A4003 marks the flange's holes "4-M4" without saying tapped or clear: drawn 4.0 (the catalogue part); an M3 passes either
             # way only if they are clearance holes: if they are tapped M4, drill them to 4.0 at the bench (FLAGGED, docs/PRINTER_V12_1.md)
         d.join(f"z_nut{tg}", f"nut_plate{tg}", "bolted: 2 x M3 x 20 through the flange's two outer holes and the plate, nuts on top")
@@ -1652,7 +1656,7 @@ def build_frame_z():
                f"the plate's top face); the plate is bolted under the "
                f"2020 square's member {member} (two M5 from below into T-nuts) and reaches {n_out:.1f} mm out to the screw. The nut is fixed: "
                f"the screw, held only by its motor and free at its top end, bends slightly to follow any misalignment (as on a Voron Trident). "
-               f"The screw passes a 9 mm hole open to the plate's outer edge, so the plate slides onto a screw whose motor already stands.")
+               f"Motor, screw, nut and plate go in as one bench unit from above, before the top side rail.")
         d.get(f"nut_plate{tg}").meta["description"] = "Laser-cut 6061 nut plate under the carrier's square. " + how
         d.get(f"z_nut{tg}").meta["description"] = f"POM anti-backlash nut, bolted under nut_plate{tg}. " + how
     for tg, cx, cy, ang, member in ([] if CH("znut-direct") else NUTS):
@@ -2502,9 +2506,10 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
         # v11: the POM nut comes on the screw (threaded on at the bench from the screw's free end) and goes in with the drive; the
         # nut plate and keeper, open-slotted, slide onto it sideways afterwards
         unit = [n for n in mount_parts[tg] if "_bolt_" not in n and "_spacer_" not in n and n in have] + [f"z_nut{tg}"]
-        if tg:      # the front ones: the whole nut stack goes in with the drive (from above, before the top side rail), then the
-                    # nut plate's two M5 are driven up into the square's member
-            unit += [n for n in have if n.startswith((f"nut_plate{tg}", f"nut_keeper{tg}", f"nut_pin{tg}")) and not n.startswith(f"nut_plate{tg}_bolt")]
+        if tg or CH("znut-direct"):   # the front ones (znut-direct: all three): the whole nut stack goes in with the drive (from above,
+                    # before the top side rail), then the nut plate's two M5 are driven up into the square's member
+            unit += [n for n in have if n.startswith((f"nut_plate{tg}", f"nut_keeper{tg}", f"nut_pin{tg}", f"z_nut{tg}_bolt"))
+                     and not n.startswith(f"nut_plate{tg}_bolt")]
         d.subassemblies[f"z_drive{tg or '_rear'}"] = unit
     # v9 / v10: the bed is a bench unit: plate with its three countersunk studs, their washers and lock nuts, heater and cut-off;
     # the springs go over the studs, the unit goes down through the deck's holes, the thumb nuts go on from below, and the

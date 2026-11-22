@@ -65,8 +65,8 @@ front face as 2.5 mm tap-drill holes 4.5 deep. Used for all three Z motors. Noth
   shear at 13 mm). M3 rather than M4 because McMaster numbers and STEPs are on record for the M3 sizes only (an M4 x 20 would be a
   new DG-07 placeholder). **Flagged:** A4003 writes "4-M4" without saying tapped or clearance: if they are tapped, drill two to
   4.0 at the bench. Heads and washers clear the nut's 18 mm barrel by 0.6 mm.
-- `nut_plate_direct_local()`: rebuilt from a spec (docstring): screw hole 9 mm (0.5 mm all round), **open to the plate's outer edge**
-  so the plate slides onto a screw whose motor already stands; two M5 into the member's bottom slot.
+- `nut_plate_direct_local()`: rebuilt from a spec (docstring): screw hole 9 mm (0.5 mm all round), closed (motor, screw, nut and plate are one bench unit put in from above before the top side rail, as v12's front units; an open slot would leave 2.4 mm webs, under the shop's 4.76)
+  ; two M5 into the member's bottom slot.
 - **Motor plates lined up at assembly** (needed once the nut cannot float): the three motor plates are redrawn from a spec with true
   arcs (`motor_plate_arcs()`, 8 mm round the hull of the motor screws and posts; v12's were hulls of 40-gons with slivers) and their
   post holes are 8 mm (inside the 10 mm posts' faces, covered by the M5 washers): each plate slides +/-1.25 mm. Assembly: post bolts
