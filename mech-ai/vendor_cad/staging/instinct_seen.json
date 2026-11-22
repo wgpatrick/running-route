@@ -1702,6 +1702,11 @@
       "fulfilled_at": "2026-11-22T01:18:00Z",
       "result_folder_id": "1e4J3SWlFlCPMxJOH0yp1kAjcfcSDCCWS",
       "result": "McMaster 91100A140 (WASHER-M5-LARGE, zinc steel), alternate 91116A140 (18-8); staged in vendor_cad/staging/instinct_REQ-023"
+    },
+    {
+      "req": "REQ-024-m4-socket-screw",
+      "drive_id": "1IezAf2bsNt52NWmT9TCdx9L0Z8tbfF4T",
+      "for": "electronics-under-deck G9SE tabs"
     }
   ]
 }

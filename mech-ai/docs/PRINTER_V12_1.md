@@ -88,11 +88,10 @@ front face as 2.5 mm tap-drill holes 4.5 deep. Used for all three Z motors. Noth
   apart, the thickness of v12's flexure plate, and the square's position is fixed by the bed and deck layout. A straight plate of
   6.35 mm between them would move the square 4.75 mm inboard on three sides, which shrinks the carrier and puts the bed thumb nuts
   (already 0.9 mm from the members) into the members and the stud washers onto the heater pad. So the owner's **fallback** is used:
-  a 50 mm length of **6061-T6 angle, 2 x 1 x 1/4 in**, saw cut and drilled (Xometry, `carriage_angle_local()`, spec docstring). Leg
-  A on the block's face (four M3 x 10 into the block), leg B under the square's member (two M5 x 12 (no washer: drilled holes) up into T-nuts in its
-  **bottom** slot; the side slot cannot be reached by any part that also sits on the block's face).
-  - **Flagged:** the M5 heads meet leg A's inner face at the root, so a **sharp-corner** angle (inside radius <= 1 mm) is needed;
-    with a rounder root, spot-face it under the two heads. McMaster part number to be picked (not confirmed here).
+  a 52 mm length of **6061-T6 angle, 2 x 1 x 1/4 in**, saw cut, leg A milled down to 29 mm wide, drilled (Xometry,
+  `carriage_angle_local()`, spec docstring). Leg A on the block's face (four M3 x 10 into the block), leg B under the square's
+  member (two M5 x 12 with washers up into T-nuts in its **bottom** slot, standing beside the trimmed leg A; the side slot cannot be
+  reached by any part that also sits on the block's face). Root radius taken as 1/8 in (assumed); McMaster part number to pick.
   - No catalogue bracket matching MGN12H holes and a 2020 bottom slot was found in the parts at hand.
 - The block is raised to sit 1 mm under the square (block centre 23.65 mm higher); the three Z rails rise with it (rail centre z 225.7,
   top 373.2, 10.8 mm under the top rails), so the block's travel on its rail is unchanged.

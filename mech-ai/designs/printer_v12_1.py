@@ -449,8 +449,10 @@ ZC = Z_SQB - L_FLEX - 1.0 - 22.7                  # centre of the guide blocks (
 # face, leg B (ANG_B) under the square's member, two M5 up into its bottom slot. The block rises to sit 1 mm under leg B; the
 # rails rise with it (Z_RAIL_DZ) so the block's travel on its rail is unchanged.
 T_ANG, ANG_A, ANG_B, ANG_L = G64, 50.8, 25.4, 50.0      # 2 x 1 x 1/4 in angle, cut 50 mm long
-ANG_R_IN = 1.0         # inside root radius: a sharp-corner angle is needed (the M5 heads under leg B, no washer, meet leg A's inner face at
-                       # the root's tangent line): FLAGGED, confirm on the stock bought; with a larger root, spot-face it under the two heads
+ANG_R_IN = 3.2         # inside root radius of the stock angle (1/8 in, typical of 1/4 in wall 6061 angle; ASSUMED)
+ANG_A_HW = 14.5        # leg A trimmed to 29 mm wide (the block's 20 mm hole square + 4.5 mm webs): the M5 heads and washers under leg B
+                       # stand beside it, clear of the root, not under it
+ANG_B_HW, ANG_BOLT_U = 26.0, 20.5      # leg B 52 mm along the wall; its two M5 at +/-20.5 (washers 1 mm clear of leg A's ends)
 ZC_V12 = ZC
 if CH("carriage-plate-rigid"):
     ZC = Z_SQB - T_ANG - 1.0 - 22.7
@@ -922,24 +924,24 @@ def carriage_angle_local(z_blk):
       member, two M5 up into T-nuts in its bottom slot (the slot's centre line, T_CP + 10 mm in from the block's face).
     - Loads: the carrier's moments about the rail (bed weight off-centre, Z_TILT_ADJUST tilt) and side loads from rail
       misalignment left after the alignment; stiff in every direction.
-    - Process: a 50 mm length of 6061-T6 sharp-corner angle, 2 x 1 x 1/4 in (stock; root radius <= 1 mm, FLAGGED), saw cut and
-      drilled (6 holes); no laser part can do it: a straight 1/4 in plate cannot sit between the block's face and the square's
+    - Process: a 52 mm length of 6061-T6 angle, 2 x 1 x 1/4 in (stock, root radius taken as 1/8 in), saw cut, leg A milled down to
+      29 mm wide so the two M5 heads stand beside it, drilled (6 holes); no laser part can do it: a straight 1/4 in plate cannot sit between the block's face and the square's
       outer face, which are 1.6 mm apart.
-    - Envelope: leg A between the block's face and 6.35 mm inboard, from the square's underside down 50.8; leg B under the
-      member, 25.4 inboard from the block's face; 50 along the wall.
+    - Envelope: leg A between the block's face and 6.35 mm inboard, from the square's underside down 50.8, 29 along the wall;
+      leg B under the member, 25.4 inboard from the block's face, 52 along the wall.
     Local frame as carriage_plate_local: x along the wall, y up (0 on the square's centre line), z from the block's face (0)
     towards the square. z_blk: the block's centre, from the square's centre line."""
     yt = -10.0                                                     # the square's underside
-    s = bx(-ANG_L / 2, ANG_L / 2, yt - ANG_A, yt, 0.0, T_ANG)        # leg A, on the block
-    s += bx(-ANG_L / 2, ANG_L / 2, yt - T_ANG, yt, 0.0, ANG_B)       # leg B, under the member
+    s = bx(-ANG_A_HW, ANG_A_HW, yt - ANG_A, yt, 0.0, T_ANG)          # leg A, on the block (trimmed to 29 mm)
+    s += bx(-ANG_B_HW, ANG_B_HW, yt - T_ANG, yt, 0.0, ANG_B)         # leg B, under the member
     r = ANG_R_IN
-    root = bx(-ANG_L / 2, ANG_L / 2, yt - T_ANG - r, yt - T_ANG, T_ANG, T_ANG + r)
-    root -= Pos(0, yt - T_ANG - r, T_ANG + r) * Rot(0, 90, 0) * Cylinder(r, ANG_L)
+    root = bx(-ANG_A_HW, ANG_A_HW, yt - T_ANG - r, yt - T_ANG, T_ANG, T_ANG + r)
+    root -= Pos(0, yt - T_ANG - r, T_ANG + r) * Rot(0, 90, 0) * Cylinder(r, 2 * ANG_A_HW)
     s += root
     for u in (-10.0, 10.0):
         for v in (-10.0, 10.0):
             s -= Pos(u, z_blk + v, T_ANG / 2) * Cylinder(clearance_hole("M3") / 2, T_ANG)
-    for u in (-CP_BOLT_U, CP_BOLT_U):
+    for u in (-ANG_BOLT_U, ANG_BOLT_U):
         s -= Pos(u, yt - T_ANG / 2, T_CP + 10.0) * Rot(90, 0, 0) * Cylinder(clearance_hole("M5") / 2, T_ANG)
     return s
 
@@ -1581,21 +1583,21 @@ def build_frame_z():
             frame = Location(Plane(origin=tuple(face), x_dir=tuple(tv), z_dir=tuple(nv)))
             d.add(pl, frame * carriage_angle_local(ZC - Z_SQ), material=AL, body="zbody", process="machined", meta={
                 "finish": "bare", "form": "cut from stock angle", "edge_break_mm": 0.3, "dfm": {"shop": "xometry"},
-                "cnc_reason": "a 50 mm length of 6061-T6 structural angle 2 x 1 x 1/4 in, saw cut and drilled (6 holes): no flat laser "
+                "cnc_reason": "a 52 mm length of 6061-T6 structural angle 2 x 1 x 1/4 in, saw cut, one leg milled to 29 mm, drilled (6 holes): no flat laser "
                               "part fits, the block's face and the square's outer face being 1.6 mm apart",
                 "description": (
-                    f"Carriage bracket ({nm}), v12.1: one of three identical rigid brackets cut from 6061 angle (2 x 1 x 1/4 in, 50 mm long). "
+                    f"Carriage bracket ({nm}), v12.1: one of three identical rigid brackets cut from 6061 angle (2 x 1 x 1/4 in, 52 mm long). "
                     f"Leg A is screwed to the guide block z_carriage_{nm} (four M3 x 10 into the block's own threads), leg B lies under the "
-                    f"2020 square's member {member} (two M5 x 12 up into T-nuts in its bottom slot). The block sits 1 mm under the square. "
+                    f"2020 square's member {member} (two M5 x 12 with washers up into T-nuts in its bottom slot, beside leg A). The block sits 1 mm under the square. "
                     f"Rigid: the Z rails are aligned at assembly (rear rail the datum; left and right rails' screws left loose, the bed run "
                     f"up and down so they settle, then tightened top to bottom).")})
             for i, h in enumerate(car.meta["interfaces"]["mount_holes_m3"]):
                 add_screw(d, f"z_carriage_{nm}_screw_{i}", "M3", 10, at=tuple(np.array(h) + T_ANG * nv), direction=tuple(-nv), body="zbody",
                           threads_into=f"z_carriage_{nm}", clamps=(pl,), washer=True, locking="adhesive")
-            for i, u in enumerate((-CP_BOLT_U, CP_BOLT_U)):
+            for i, u in enumerate((-ANG_BOLT_U, ANG_BOLT_U)):
                 at = face + u * tv + (T_CP + 10.0) * nv + np.array([0.0, 0.0, -10.0 - T_ANG])
                 add_screw(d, f"{pl}_bolt_{i}", "M5", 12, at=tuple(at), direction=(0, 0, 1), body="zbody",
-                          threads_into=member, tnut=True, clamps=(pl,), locking="adhesive")      # no washer: drilled hole, and no room
+                          threads_into=member, tnut=True, clamps=(pl,), washer=True, locking="adhesive")
             guide_parts[nm] = (nv, np.array([bx_, by_]))
             continue
         cp = Location(Plane(origin=tuple(face), x_dir=tuple(tv), z_dir=tuple(nv))) * carriage_plate_local(ZC - Z_SQ)
