@@ -54,12 +54,11 @@
   {
    "id": "znut-direct",
    "title": "Z nuts bolted direct to the plate",
-   "summary": "Each POM nut's flange is bolted to its nut plate with two M3 through-bolts in its own outer holes (the shop cannot tap M4 in 3/8 in plate; nuts on the inner holes would sit under the square). The floating keeper, spacers, keeper bolts and the anti-rotation pin are removed; each motor plate is lined up with its fixed nut at assembly and the screw, free at its top, takes the rest.",
+   "summary": "Each POM nut's flange is bolted to its nut plate with two M3 through-bolts in two of its own holes (the shop cannot tap M4 in 3/8 in plate). The floating keeper, spacers, keeper bolts and the anti-rotation pin are removed; each motor plate is lined up with its fixed nut at assembly and the screw, free at its top, takes the rest.",
    "threads": [
     "10eab134-e341-4786-bae2-d085e018c34d"
    ],
-   "status": "needs work",
-   "status_reason": "70 error(s) not in v12: assemblability/tool_access_blocked, assemblability/trapped_part",
+   "status": "proposed",
    "depends_on": [],
    "removed": [
     "nut_keeper",
@@ -111,7 +110,10 @@
     "nut_plate_fr",
     "z_motor_plate",
     "z_motor_plate_fl",
-    "z_motor_plate_fr"
+    "z_motor_plate_fr",
+    "z_nut",
+    "z_nut_fl",
+    "z_nut_fr"
    ],
    "added": [
     "z_nut_bolt_0",
@@ -139,7 +141,7 @@
     "z_nut_fr_bolt_1_nwasher",
     "z_nut_fr_bolt_1_washer"
    ],
-   "checks": "fast checks (geometry, interference, manufacture, assemblability, practice, part_quality): 77 errors, 124 warnings (v12: 7 errors, 143 warnings); 70 NEW error(s): assemblability/trapped_part: bracket_10 cannot be installed: it is held by fasteners ['bracket_10_screw'] that themselves cannot be driven.; assemblability/tool_access_blocked: Fastener bracket_10_screw cannot be driven: the screw and a 6 mm x 50 mm driver along its axis are blocked by ['z_motor_fr', 'z_mount_fr_bol; assemblability/trapped_part: bracket_10_screw_tnut cannot be installed: it is held by fasteners ['bracket_10_screw'] that themselves cannot be driven.; assemblability/trapped_part: Part bracket_15 cannot be installed/removed along any straight path: no straight way in: blocked by ['bracket_7', 'control_board_nut_1', 'co; the other errors are the existing practice DG-07 placeholder-part rule (as in v12); parts 907 -> 889 (-18); part_quality (6 changed custom part(s), audits on every changed part): clean (no errors or warnings); cleared against v12: z_motor_plate_fl near_parallel_faces, z_motor_plate_fl small_step, z_motor_plate_fr near_parallel_faces, z_motor_plate_fr small_step; full checks running",
+   "checks": "fast checks (geometry, interference, manufacture, assemblability, practice, part_quality): 7 errors, 129 warnings (v12: 7 errors, 143 warnings); no error new or cleared against v12; the other errors are the existing practice DG-07 placeholder-part rule (as in v12); parts 907 -> 889 (-18); part_quality (6 changed custom part(s), audits on every changed part): 4 warning(s): z_motor_plate_fl near_parallel_faces, z_motor_plate_fl small_step, z_motor_plate_fr near_parallel_faces, z_motor_plate_fr small_step; full checks running",
    "file": "changes/znut-direct.json",
    "design": "printer_v12_1+znut-direct"
   }
