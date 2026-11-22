@@ -55,16 +55,16 @@ thumb nuts.
 front face as 2.5 mm tap-drill holes 4.5 deep. Used for all three Z motors. Nothing else changes.
 
 ### 3. `znut-direct`: the Z nuts bolted direct
-- Each POM nut's 26 mm square flange is bolted to the underside of its 9.525 mm nut plate by **four M4 x 12 through the flange's own
-  holes into M4 threads tapped in the plate** (7 mm of thread, 1.75 d in 6061). Flange hole pattern **confirmed from StepperOnline
-  drawing A4003: 4-M4 on an 18.5 mm square** (the part model already had it). The threads are drilled 3.3 and tapped by the builder
-  after cutting, **through the nut's own flange as the drilling template** (a laser cannot cut 3.3 mm in 9.525 mm plate and
-  SendCutSend taps M5 and up in 3/8 in), so, as the design's convention for tapped holes, they are not drawn. Practice DG-02 ("no
-  thread tapped in aluminium we make") flags it as a warning: the owner asked for tapped holes; a steel wire insert would satisfy
-  DG-02 but has no maker-backed catalogue part here (DG-07). **Flagged:** A4003 writes "4-M4" without saying tapped or clearance; if
-  the flange holes are tapped M4, drill them to 4.5 at the bench. The M4 heads clear the nut's 18 mm barrel by 0.6 mm (no washers);
-  they are driven from below with a 3 mm L-key's short arm. **New DG-07 placeholder:** SHCS-M4x12 has no McMaster number recorded in
-  mechloop/parts/vendor/mcmaster_fasteners.json (to add).
+- Each POM nut's 26 mm square flange is bolted to the underside of its 9.525 mm nut plate by **two M3 x 20 through-bolts in the
+  flange's own two OUTER holes**, washer under the head, washer and thread-locked nut on the plate's top face. Flange hole pattern
+  **confirmed from StepperOnline drawing A4003: 4-M4 on an 18.5 mm square** (the part model already had it). **Deviation from
+  "screws into tapped holes in the plate":** SendCutSend taps M5 and up in 3/8 in 6061 (its tapping table), so M4 threads would be
+  a builder's second operation, which the shop rules flag as errors and practice DG-02 rejects; the two inner flange holes are left
+  empty because a nut on them would sit under the square's member (the flange's inner holes are 0.15 mm outside the member's face).
+  The flange's own face carries the thrust; the two bolts hold the nut square and take the drive torque (0.44 N.m at most: 34 N of
+  shear at 13 mm). M3 rather than M4 because McMaster numbers and STEPs are on record for the M3 sizes only (an M4 x 20 would be a
+  new DG-07 placeholder). **Flagged:** A4003 writes "4-M4" without saying tapped or clearance: if they are tapped, drill two to
+  4.0 at the bench. Heads and washers clear the nut's 18 mm barrel by 0.6 mm.
 - `nut_plate_direct_local()`: rebuilt from a spec (docstring): screw hole 9 mm (0.5 mm all round), **open to the plate's outer edge**
   so the plate slides onto a screw whose motor already stands; two M5 into the member's bottom slot.
 - **Motor plates lined up at assembly** (needed once the nut cannot float): the three motor plates are redrawn from a spec with true
