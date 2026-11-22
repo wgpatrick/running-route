@@ -210,6 +210,47 @@ def blower_bfb0524hh() -> Stock:
                                 note="maker's specification for approval (A00) and the maker's STEP"))
 
 
+@part
+def blower_bfb0524hh_v2() -> Stock:
+    """Delta BFB0524HH (as blower_bfb0524hh: same product, specification and ratings) with its geometry checked against Delta's
+    dimension drawing (vendor_docs/delta_BFB_51x51x15_series_drawing.pdf) and the maker's STEP (vendor_cad/inbox/BFB0524HH.step)
+    (v12.1 part-cooling-rebuild). What the STEP shows, in its own centred frame: the inlet (dia 31.3 ring, centre x 2.2, z -0.2) on
+    the -Y face, the +Y face closed (motor boss); the outlet's rim (20.1 x 15.3 outside, 17.7 x 12.5 inside) on the -Z edge at
+    x -25.5 .. -5.4, its mouth closed by a face 0.5 mm in (a simplified model); the two lugs' holes at (22.3, -18.3) and (-20.9, 19.9).
+    The drawing's front view (the inlet side) has the outlet at the top LEFT and the upper lug at the right: the STEP is its mirror
+    image (the inlet centre, outlet and lugs are otherwise where the drawing has them, within 1 mm). v1 (blower_bfb0524hh) also put
+    its outlet on the +Z edge, which matches neither. Here the frame is the STEP's mirrored in X (x -> -x), so the solid agrees with
+    the drawing: inlet on -Y (centre (-2.2, -0.2)), outlet on the -Z edge at x 5.4 .. 25.5 (inside 6.6 .. 24.3 by y -6.6 .. 5.9),
+    air leaving along -Z, holes at (-22.3, -18.24) and (20.9, 19.85) (dia 4.5 +/-0.3, drawing). Display model: the maker's STEP,
+    mirrored the same way. Simulation solid: the bounding box with the two holes."""
+    from build123d import Plane, mirror
+    v1 = blower_bfb0524hh()
+    v = vendor_data("delta_bfb0524hh")["values"]
+    sx, sy, sz = v["size_mm"]
+    body = Box(sx, sy, sz)
+    holes = [(-x, -sy / 2, z) for x, z in v["mount_holes"]["positions_mm"]]
+    for x, _, z in holes:
+        body -= Pos(x, 0, z) * Rot(90, 0, 0) * Cylinder(v["mount_holes"]["dia_mm"] / 2, sy)
+    detail = mirror(v1.detail, about=Plane.YZ) if v1.detail is not None else None
+    out_in = (6.63, 24.31, -6.57, 5.91)           # the outlet's inside (x0, x1, y0, y1), STEP measured, mirrored
+    out_rim = (5.42, 25.52, -7.67, 7.58)
+    z_out = -sz / 2
+    st = Stock(body, v1.sku, v1.description, v1.mass_kg, material=v1.material, cost_usd=v1.cost_usd,
+               model={"kind": "vendor CAD", "file": "vendor_cad/inbox/BFB0524HH.step",
+                      "source": "Delta's STEP of the BFB0524HH, mirrored across its X = 0 plane to agree with Delta's dimension drawing",
+                      "note": "the file is the drawing's mirror image (outlet and lugs on the opposite sides seen from the inlet); "
+                              "vendor_docs/delta_BFB_51x51x15_series_drawing.pdf front view", "tolerance": {"volume_ratio": (0.5, 3.5)}},
+               interfaces={"mount_holes_m4": holes, "mount_hole_dia": v["mount_holes"]["dia_mm"],
+                           "outlet_inside": out_in, "outlet_rim": out_rim, "outlet_face_z": z_out,
+                           "outlet_centre": [((out_in[0] + out_in[1]) / 2, (out_in[2] + out_in[3]) / 2, z_out)],
+                           "outlet_size": (out_in[1] - out_in[0], out_in[3] - out_in[2]), "outlet_direction": (0.0, 0.0, -1.0),
+                           "inlet_centre": [(-2.2, -sy / 2, -0.2)], "inlet_dia": 31.3, "inlet_direction": (0.0, -1.0, 0.0),
+                           "thickness": sy, "width": sx, "height": sz},
+               ratings=dict(v1.ratings), source=dict(v1.source))
+    st.detail = detail
+    return st
+
+
 def blower_flow_estimate_pa(outlet_area_mm2: float, k_total: float, pq_cfm_pa, rho: float = 1.2) -> dict:
     """As blower_flow_estimate, for a P-Q curve given in (CFM, Pa)."""
     pq = [(q, p / INH2O_PA) for q, p in pq_cfm_pa]

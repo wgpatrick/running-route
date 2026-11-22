@@ -152,6 +152,7 @@ from mechloop.parts import (Stock, add_corner_bracket, add_nut, add_screw, add_w
 from mechloop.parts.batch6 import fan_cg3010u24
 from mechloop.parts.batch7 import leadscrew_motor_17e19_ab4, leadscrew_screw_17e19_ab4, octopus_v11
 from mechloop.parts.batch8 import add_thumb_nut, die_spring_dj8x20
+from mechloop.parts.batch10 import blower_bfb0524hh_v2
 from mechloop.parts.batch10 import blower_bfb0524hh, blower_flow_estimate_pa, leadscrew_nut_pom_ab4, print_sheet_pei220
 from mechloop.parts.hardware import washer_toothed
 from mechloop.parts.electrical import (THERMISTORS, add_electrical_bom, bed_heater_pad, device_from, embedded_device,
@@ -173,7 +174,7 @@ from mechloop.parts.batch12 import (tnut_hntp5, psu_xp_lba350ps24, estop_omron_a
 # ---- v12.1 change flags (docs/OPERATING_MODES.md): every owner decision is its own switch; all off = printer_v12 ----------
 import os as _os
 
-CHANGE_IDS = ("estop-mount", "zmotor-holes", "znut-direct", "carriage-plate-rigid", "rear-z-inside", "spool-closer", "bed-thumb-reach", "topdown-camera")
+CHANGE_IDS = ("estop-mount", "zmotor-holes", "znut-direct", "carriage-plate-rigid", "rear-z-inside", "spool-closer", "bed-thumb-reach", "topdown-camera", "part-cooling-rebuild")
 CHANGES = {k: True for k in CHANGE_IDS}
 CHANGE_DEPENDS = {"rear-z-inside": ("znut-direct",),       # the rear plate is the fronts' direct-nut plate
                   "spool-closer": ("rear-z-inside",)}      # v12's rear screw (y 198-206, x 0) stands where the closer spool goes
@@ -233,6 +234,15 @@ CHANGE_INFO = {     # for the review page's Changes tab (tools/build_change.py)
                                   "the gantry parks at the front. New check: from that pose the whole sheet and a 150 mm calibration "
                                   "target on it are inside the view and nothing blocks them; views from both cameras are saved.",
                        "threads": ["e27554c6-9501-4b74-97a3-08679ac0af62"]},
+    "part-cooling-rebuild": {"title": "Part cooling: blower turned so its inlet breathes, duct rebuilt to its real outlet",
+                             "summary": "Checked against Delta's drawing, the blower's STEP is mirrored, and v12's model put the outlet on "
+                                        "the wrong edge. As placed, the inlet faced forward onto the probe bracket and the duct's cradle sat on "
+                                        "the closed face. The blower is now drawn as on the drawing (the maker's STEP, mirrored) and turned "
+                                        "so the inlet faces back into free air, outlet down. The duct is rebuilt from a spec: a mouth on "
+                                        "the real outlet, a riser, one radiused bend, a plenum under the Roto, a converging nozzle and "
+                                        "v11's 14 x 3 mm jet at the nozzle tip. Walls 1.6 mm (tube 1.2), no internal supports, the "
+                                        "cradle's arms clear of the inlet. New check: duct and fan alignment.",
+                             "threads": []},
 }
 _on_ids = [k for k in CHANGE_IDS if CHANGES[k]]
 DESIGN_NAME = ("printer_v12_1" if len(_on_ids) == len(CHANGE_IDS) else "printer_v12_1-base" if not _on_ids
@@ -1191,6 +1201,117 @@ def part_duct_shape(y_noz, bl_y0):
     return c
 
 
+# ---- v12.1 part-cooling-rebuild: the duct rebuilt from its spec, in its own frame (origin at the nozzle tip, x right, y back, z up) -------
+DV2_W, DV2_WT = 1.6, 1.2                 # chamber walls; the jet tube's walls (owner: >= 1.2)
+
+
+def _rect_wire(c, n, w, h):
+    """A w x h rectangle centred at c in the plane square to n; its width along the horizontal p = n x z (or x for a vertical n)."""
+    from build123d import Rectangle
+    n = np.asarray(n, float) / np.linalg.norm(n)
+    p = np.cross(n, [0, 0, 1.0])
+    p = np.array([1.0, 0, 0]) if np.linalg.norm(p) < 1e-9 else p / np.linalg.norm(p)
+    return Location(Plane(origin=tuple(float(v) for v in c), x_dir=tuple(float(v) for v in p), z_dir=tuple(float(v) for v in n))) * Rectangle(w, h)
+
+
+def _loft2(c0, n0, w0, h0, c1, n1, w1, h1):
+    from build123d import loft, Sketch
+    return loft([Sketch() + _rect_wire(c0, n0, w0, h0), Sketch() + _rect_wire(c1, n1, w1, h1)], ruled=True)
+
+
+def part_duct_v2_local(g):
+    """v12.1 part-cooling-rebuild: the part-cooling duct from its spec, in the nozzle-tip frame. `g` gives the mates in that frame
+    (part_duct_v2_mates). Spec:
+    - function: take the BFB0524HH's whole outlet (g["out_in"]: x0, x1, y0, y1 of its inside, at height g["out_z"], air going down)
+      and lead it without steps down behind the Roto, round one radiused bend, forward under the Roto into a plenum, and out through a
+      converging nozzle and the 14 x 3 mm tube of v11 whose jet (g["jet_o"], g["jet_ax"]) reaches the nozzle's axis 0.5 mm under the tip;
+    - mates: the blower's outlet rim (its face seats on the duct's mouth); the blower's two lugs (g["lugs"]: M3 x 25 through-bolts into
+      a cradle BEHIND the blower, on the inlet side, kept 3 mm outside the inlet ring g["inlet"]); the tool plates' tab (the flange,
+      g["flange"], two M3 x 16 into captive nylocs, as v11);
+    - loads: the blower (28 g) and handling; process: PETG print service (Hubs), printed upright (floor on the bed): every inside roof
+      is a bridge of 18 mm or less or slopes at 45 degrees or steeper, no internal supports; walls 1.6 mm (tube 1.2);
+    - envelope: behind the Roto's rear face + 0.6, below its underside - 1.25 (the plenum's roof), in front of the top back rail's
+      limit below its height (g["rail_y"], g["rail_z"]), 3.05 mm above the tip, 4.5 mm or more from the heater block."""
+    W, WT = DV2_W, DV2_WT
+    x0, x1, y0, y1 = g["out_in"]
+    out_z = g["out_z"]
+    zr = g["roto_under"] - 1.25                 # the plenum's outer roof
+    yf = g["roto_rear"] + 0.6                   # the riser's outer front
+    floor = 3.05                                # the outer floor above the tip (owner: >= 2.5)
+    rx0, rx1 = x0 - 2.0, x1 - 2.0               # riser: 2 mm left of the outlet (the transition takes it)
+    ry0 = yf + W
+    pz0, pz1 = floor + W, zr - W                # plenum's inside height
+    ry1 = ry0 + (pz1 - pz0)                     # riser depth = plenum height: the bend is a true quarter circle
+    assert ry1 + W <= g["rail_y"] + 1e-6, (ry1 + W, g["rail_y"])
+    zt = g["rail_z"]                            # the straight riser ends here; above it the transition to the outlet
+    py0, px0 = 20.0, 20.0                       # plenum front and left wall (inside)
+    rb = pz1 - pz0
+    jo, ja = np.asarray(g["jet_o"], float), np.asarray(g["jet_ax"], float)
+    b = jo - ja * OUT_L                         # the tube's inner end
+    pw = b - ja * 8.0                           # the converging nozzle's wide end, inside the plenum / bend
+
+    def passage(o, ot):
+        s = bx(rx0 - o, rx1 + o, ry0 - o, ry1 + o, pz1, zt)                                                # riser
+        s += _loft2(((x0 + x1) / 2, (y0 + y1) / 2, out_z), (0, 0, -1), x1 - x0 + 2 * o, y1 - y0 + 2 * o,
+                    ((rx0 + rx1) / 2, (ry0 + ry1) / 2, zt), (0, 0, -1), rx1 - rx0 + 2 * o, ry1 - ry0 + 2 * o)   # outlet -> riser
+        if o == 0:
+            s += bx(x0, x1, y0, y1, out_z, out_z + 1.0)                                                  # the mouth, cut clean
+        s += (bx(rx0 - o, rx1 + o, ry0, ry1 + o, pz0 - o, pz1)
+              & (Pos((rx0 + rx1) / 2, ry0, pz1) * xcyl(rb + o, rx1 - rx0 + 2 * o + 0.02)))                 # the radiused bend
+        s += bx(px0 - o, rx1 + o, py0 - o, ry0, pz0 - o, pz1 + o)                                        # plenum under the Roto
+        s += bx(px0 - o, rx0, ry0 - 0.01, 33.0 + o, pz0 - o, pz1 + o)              # its back-left bay, beside the bend, for the nozzle's wide end
+        s += _loft2(pw, ja, OUT_W + 2 * o, 8.5 + 2 * o, b, ja, OUT_W + 2 * ot, OUT_H + 2 * ot)           # converging nozzle
+        s += _tube(jo + (ja * 0.05 if o == 0 else 0.0), ja, OUT_W + 2 * ot, OUT_H + 2 * ot, OUT_L + (0.1 if o == 0 else 0.0))
+        return s
+
+    s = passage(W, WT)
+    # flange on the tool plates' tab and the arm under the Roto to the plenum (v11's, to the plenum's roof)
+    fx0, fx1, fy0, fy1, fz0 = g["flange"]
+    s += bx(fx0, fx1, fy0, fy1, fz0, zr)
+    s += bx(24.0, fx1, fy1, py0 - W, fz0, zr)          # from x 24: clear of the jet tube's mouth and its jet
+    # cradle behind the blower: an upright to the upper lug and a bar to the lower one, both outside the inlet ring + 3 mm
+    (ux, uz), (lx, lz) = g["lugs"]
+    yb0, yb1 = g["blower_back"], g["blower_back"] + CRADLE_T
+    s += bx(ux - 4.0, ux + 4.0, yb0, yb1, out_z - 6.5, uz + 4.0)                     # upright, down past the mouth
+    s += bx(ux - 4.0, ux + 4.0, 44.0, yb1, out_z - 6.5, out_z)                        # its web, into the transition's back wall
+    s += bx(ux - 4.0, lx + 4.0, yb0, yb1, out_z, out_z + 5.5)                         # bar along the blower's lower edge
+    s += bx(lx - 4.5, lx + 4.0, yb0, yb1, out_z, lz + 4.5)                            # pad round the lower lug
+    s -= passage(0.0, 0.0)
+    for x, z in g["flange_screws"]:
+        s -= Pos(x, (fy0 + fy1) / 2, z) * ycyl(PH3 / 2, fy1 - fy0)
+        s -= nut_pocket((x, g["pocket_y"], z), (0, 1, 0), (0, 0, -1))
+    for x, z in g["lugs"]:
+        s -= Pos(x, (yb0 + yb1) / 2, z) * ycyl(printed_clearance_hole("M3") / 2, CRADLE_T)
+    return s
+
+
+def part_duct_v2_mates(d_or_none, y_noz, bl_y0):
+    """The duct's mates in the nozzle-tip frame, from the parts they belong to (world -> local: minus the tip)."""
+    tip = np.array([NOZ_X, y_noz, Z_NOZZLE])
+    bc, yc, zc = (BL_X0 + BL_X1) / 2, bl_y0 + BL_T / 2, BL_Z0 + BL_W / 2
+    st = blower_bfb0524hh_v2()
+    it = st.interfaces
+    # the blower turned so its outlet (local -Z) points down and its inlet (local -Y) faces BACK: local x -> world -x, y -> -y, z -> z
+    w = lambda p: np.array([bc - p[0], yc - p[1], zc + p[2]])
+    ox0, ox1, oy0, oy1 = it["outlet_inside"]
+    a, b_ = w((ox1, oy1, it["outlet_face_z"])), w((ox0, oy0, it["outlet_face_z"]))
+    out_in = (a[0] - tip[0], b_[0] - tip[0], a[1] - tip[1], b_[1] - tip[1])
+    lugs = [tuple((w(p) - tip)[[0, 2]]) for p in it["mount_holes_m4"]]
+    lugs.sort(key=lambda q: -q[1])                       # upper one first
+    inlet = w(it["inlet_centre"][0]) - tip
+    o, ax = _outlet_frame(y_noz)
+    yf = YB0 + R_TPR
+    return {"out_in": out_in, "out_z": float(BL_Z0 - tip[2]), "roto_rear": float(YB0 + R_TPR + ROTO_W - tip[1]),
+            "roto_under": float(ROTO_O[2] + _ROTO_UNDER - tip[2]), "rail_y": float(bl_y0 + 11.0 - tip[1]), "rail_z": float(Z_NOZZLE + 32.55 - tip[2]),
+            "jet_o": o - tip, "jet_ax": ax, "lugs": lugs, "inlet": (inlet, it["inlet_dia"]), "blower_back": float(bl_y0 + BL_T - tip[1]),
+            "flange": (FC_X0 - tip[0], FC_X1 - tip[0], yf - tip[1], yf + FC_FL - tip[1], Z_BEAM + FC_Z0 - tip[2]),
+            "flange_screws": [(x - tip[0], Z_BEAM + z - tip[2]) for x, z in FC_SCREWS], "pocket_y": float(yf + POCKET_WALL - tip[1]),
+            "tip": tip}
+
+
+_ROTO_UNDER = min(_ROTO["body_box"][0][2], -11.75)       # the Roto's underside below its origin (its solid reaches -11.75)
+
+
 EDDY_DX = -8.0                                 # v12: the Eddy's coil 8 mm left of the nozzle (clear of the Roto's lower screw head)
 EDDY_H = 2.5                                   # coil face above the nozzle tip (BTT: 2-3 mm; HEIGHT_SENSING 2.5)
 EDDY_HOLDER_T = 8.5                            # printed holder on the Eddy's left (its mounting face), PETG
@@ -1343,7 +1464,9 @@ def build_electrical(d: Design) -> Electrical:
     el.loom("toolhead", [Waypoint("xbody", (NOZ_X - 8.0, yl, Z_BEAM + 33.0), clamp="probe_mount"),
                          ("xbody", (NOZ_X - 12.0, yl + 14.0, Z_BEAM + 58.0)),      # v11: up past the blower's left side,
                          ("xbody", (NOZ_X + 12.0, by_c + 5.0, Z_BEAM + 70.0)),     # over its top and behind its cradle
-                         Waypoint("xbody", (NOZ_X + 40.0, by_c + 1.5, BL_Z0 + BL_W - 1.0), clamp="part_duct"),   # on the cradle's back
+                         Waypoint("xbody", ((BL_X0 + BL_X1) / 2 - 20.9 if CH("part-cooling-rebuild") else NOZ_X + 40.0, by_c + 1.5,
+                                            BL_Z0 + BL_W - 1.0 if not CH("part-cooling-rebuild") else BL_Z0 + BL_W / 2 + 19.85 + 3.0),
+                                  clamp="part_duct"),   # on the cradle's back (v12.1: on its upright, beside the upper lug)
                          Waypoint("world", (118.0, 175.0, FZ + 12.0), clamp="frame_top_back"), Waypoint("world", P1)],
             flex_length={3: 480.0})
     # over the back rail's rear edge on a 30 mm radius (the 10 mm bundle needs 26), down the outside of the back wall (beside the
@@ -1982,8 +2105,16 @@ def build() -> Design:
     # part cooling (v11): the BFB0524HH blower behind the Roto, 0.1 mm behind the probe bracket's leg, outlet down into the duct
     y_noz = YB0 + HOT_OFF
     bl_y0 = yb_pm + B23 + 2 * WASHER["large"]["M3"][2] + 3.0 + 1.5     # 1.5 mm behind the Roto screws' heads and washers
-    d.add("part_duct", part_duct_shape(y_noz, bl_y0), material=HOT, body="xbody", process="printed",
-          meta={"print_up": "-Y", "print": {**PRINT_ABS, "orientation": "-Y"}, "service_temp_c": 45.0})
+    if CH("part-cooling-rebuild"):
+        mates = part_duct_v2_mates(d, y_noz, bl_y0)
+        d.add("part_duct", Pos(*mates["tip"]) * part_duct_v2_local(mates), material=HOT, body="xbody", process="printed",
+              meta={"print_up": "+Z", "print": {**PRINT_ABS, "orientation": "+Z"}, "service_temp_c": 45.0,
+                    "description": "printed PETG part-cooling duct (v12.1, rebuilt from its spec): mouth on the blower's outlet, riser behind the "
+                                   "Roto, one radiused bend, plenum under the Roto, converging nozzle and a 14 x 3 mm jet at the nozzle tip; "
+                                   "a flange on the tool plates' tab and a cradle behind the blower clear of its inlet"})
+    else:
+      d.add("part_duct", part_duct_shape(y_noz, bl_y0), material=HOT, body="xbody", process="printed",
+            meta={"print_up": "-Y", "print": {**PRINT_ABS, "orientation": "-Y"}, "service_temp_c": 45.0})
     for i, (x, z) in enumerate(FC_SCREWS):
         # through both tool plates and the duct's flange into a nyloc nut and washer captured in the flange
         add_screw(d, f"part_duct_screw_{i}", "M3", 16, at=(x, yf, Z_BEAM + z), direction=(0, 1, 0), body="xbody",
@@ -1991,10 +2122,18 @@ def build() -> Design:
         captive_nut(d, f"part_duct_screw_{i}", (x, YB0 + R_TPR + POCKET_WALL, Z_BEAM + z), (0, 1, 0), "part_duct", "xbody")
     bc = (BL_X0 + BL_X1) / 2
     # turned so its outlet (local +Z) points down and lies at the blower's left end (local X -> world -X, thickness along Y)
-    place(d, "part_fan", blower_bfb0524hh(), Location(Plane(origin=(bc, bl_y0 + BL_T / 2, BL_Z0 + BL_W / 2), x_dir=(-1, 0, 0), z_dir=(0, 0, -1))),
-          body="xbody")
+    if CH("part-cooling-rebuild"):
+        # v12.1: the blower as Delta's drawing has it (blower_bfb0524hh_v2), turned so its outlet (local -Z) points down at the duct's
+        # mouth and its inlet (local -Y) faces BACK into free air: local x -> world -x, y -> -y, z -> z
+        place(d, "part_fan", blower_bfb0524hh_v2(), Location(Plane(origin=(bc, bl_y0 + BL_T / 2, BL_Z0 + BL_W / 2), x_dir=(-1, 0, 0), z_dir=(0, 0, 1))),
+              body="xbody")
+        holes_ = [(x + mates["tip"][0], z + mates["tip"][2]) for x, z in mates["lugs"]]
+    else:
+      place(d, "part_fan", blower_bfb0524hh(), Location(Plane(origin=(bc, bl_y0 + BL_T / 2, BL_Z0 + BL_W / 2), x_dir=(-1, 0, 0), z_dir=(0, 0, -1))),
+            body="xbody")
+      holes_ = BL_HOLES()
     W3n = WASHER["normal"]["M3"][2]
-    for i, (x, z) in enumerate(BL_HOLES()):
+    for i, (x, z) in enumerate(holes_):
         # v11: the Delta's two holes (upper left, lower right; measured on its STEP): M3 x 25 through the blower (washer on the plastic) and the duct's
         # cradle, washer and nut on the cradle's back; the outlet seats in the riser's opening below
         # M3 (with washers) in the blower's 4.3 mm holes: lighter than M4; the toolhead stays under its 0.40 kg target
@@ -3171,6 +3310,48 @@ def add_requirements(d, zs):
                     f"{est['free_air_cfm']:g} CFM and shut-off {est['shutoff_pa']:.0f} Pa from the listing, the curve's shape between them assumed) and a duct loss of K = {est['k_total']:g} (handbook figures)")
     d.requirements.append(Requirement("v11: part cooling: the radial blower's jet lands just under the nozzle tip; the duct is >= 2.5 mm above the tip and "
                                       ">= 4.5 mm from the heater block (flow reported as an estimate)", cooling))
+
+    def duct_fan(dd):
+        # v12.1: the blower's real outlet opens into the duct's passage, square to it, and its inlet has free air
+        fan, duct = dd.get("part_fan"), dd.get("part_duct").shape
+        it, M = fan.meta["interfaces"], np.array(fan.meta["placement"], float)
+        w = lambda q: M[:, :3] @ np.asarray(q, float) + M[:, 3]
+        st = blower_bfb0524hh_v2().interfaces
+        ox0, ox1, oy0, oy1 = st["outlet_inside"]
+        zf = st["outlet_face_z"]
+        down = M[:, :3] @ np.array(st["outlet_direction"])
+        pts = [w((x, y, zf)) + down * 1.0 for x in np.linspace(ox0 + 0.6, ox1 - 0.6, 6) for y in np.linspace(oy0 + 0.6, oy1 - 0.6, 5)]
+        from build123d import Vector as _V
+        blocked = sum(1 for q in pts if duct.is_inside(_V(*q)))
+        # each point enclosed: a probe 25 mm long sideways from it meets the duct's wall in all four directions (the mouth surrounds the outlet)
+        ex, ey = M[:, :3] @ np.array([1.0, 0, 0]), M[:, :3] @ np.array([0, 1.0, 0])
+        def walled(q):
+            return all(any(duct.is_inside(_V(*(q + s_ * t * e))) for t in np.linspace(0.4, 25.0, 62)) for e in (ex, ey) for s_ in (-1, 1))
+        enclosed = sum(1 for q in pts if walled(q))
+        ok_dir = float(down @ np.array([0, 0, -1.0])) > 0.99
+        # inlet: a disc of the inlet's diameter, 8 mm deep in front of it, meets no part
+        from build123d import Cylinder as _Cyl
+        ic, idir = w(st["inlet_centre"][0]), M[:, :3] @ np.array(st["inlet_direction"])
+        disc = Location(Plane(origin=tuple(ic + idir * 4.05), z_dir=tuple(idir))) * _Cyl(st["inlet_dia"] / 2, 8.0)
+        db = disc.bounding_box()
+        hit = []
+        for c in dd.components:
+            if c.name == "part_fan" or c.body != "xbody":
+                continue
+            cb = c.shape.bounding_box()
+            if cb.max.X < db.min.X or cb.min.X > db.max.X or cb.max.Y < db.min.Y or cb.min.Y > db.max.Y or cb.max.Z < db.min.Z or cb.min.Z > db.max.Z:
+                continue
+            if (c.shape & disc).volume > 1e-3:
+                hit.append(c.name)
+        facing = "back (+Y)" if idir[1] > 0.9 else "front (-Y)" if idir[1] < -0.9 else str(np.round(idir, 2))
+        ok = blocked == 0 and enclosed == len(pts) and ok_dir and not hit
+        return ok, (f"blower outlet ({ox1 - ox0:.1f} x {oy1 - oy0:.1f} mm inside, Delta's drawing / STEP) pointing "
+                    f"{'down' if ok_dir else np.round(down, 2)}: {len(pts) - blocked} of {len(pts)} points 1 mm past its face are in the duct's open "
+                    f"passage, {enclosed} of {len(pts)} walled in by the duct's mouth on all four sides; inlet (dia {st['inlet_dia']:g}) faces {facing}: "
+                    + ("nothing within 8 mm in front of it" if not hit else f"blocked by {', '.join(hit)}"))
+    if CH("part-cooling-rebuild"):
+        d.requirements.append(Requirement("v12.1: the blower's outlet opens straight into the duct (mouth on the real outlet) and its inlet has free air",
+                                          duct_fan))
 
     def bent(dd):
         b = sorted(c.name for c in dd.components if not c.cots and c.material == "al5052")

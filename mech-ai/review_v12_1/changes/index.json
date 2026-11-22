@@ -207,6 +207,31 @@
    "checks": "fast checks (geometry, interference, manufacture, assemblability, practice): 7 errors, 142 warnings (v12: 7 errors, 143 warnings in those checks); no error new or cleared against v12; 1 warning cleared (v12's top-down bracket needed support material); the errors are the existing DG-07 placeholder-part rule (as in v12); parts 907 -> 907 (+0); part_quality (1 changed custom part, cam_topdown_mount, audits on every changed part): clean (no errors or warnings); new camera-view check (gantry parked at the front, bed at Z 90): the top-down camera sees 289 of 289 sheet points and 49 of 49 calibration-target points, nothing in the way, and the whole sheet stays visible for bed Z 70 to 140 (prints up to 110 mm tall; higher, the top back rail hides the sheet's rear edge); the overview camera (v12's, unchanged) sees none of the sheet in that pose, because the parked gantry fills its view (reported, not required); views saved in changes/topdown-camera_views/; full checks running",
    "file": "changes/topdown-camera.json",
    "design": "printer_v12_1+topdown-camera"
+  },
+  {
+   "id": "part-cooling-rebuild",
+   "title": "Part cooling: blower turned so its inlet breathes, duct rebuilt to its real outlet",
+   "summary": "Checked against Delta's drawing, the blower's STEP is mirrored, and v12's model put the outlet on the wrong edge. As placed, the inlet faced forward onto the probe bracket and the duct's cradle sat on the closed face. The blower is now drawn as on the drawing (the maker's STEP, mirrored) and turned so the inlet faces back into free air, outlet down. The duct is rebuilt from a spec: a mouth on the real outlet, a riser, one radiused bend, a plenum under the Roto, a converging nozzle and v11's 14 x 3 mm jet at the nozzle tip. Walls 1.6 mm (tube 1.2), no internal supports, the cradle's arms clear of the inlet. New check: duct and fan alignment.",
+   "threads": [],
+   "status": "proposed",
+   "depends_on": [],
+   "removed": [],
+   "modified": [
+    "part_duct",
+    "part_fan",
+    "part_fan_screw_0",
+    "part_fan_screw_0_nut",
+    "part_fan_screw_0_nwasher",
+    "part_fan_screw_0_washer",
+    "part_fan_screw_1",
+    "part_fan_screw_1_nut",
+    "part_fan_screw_1_nwasher",
+    "part_fan_screw_1_washer"
+   ],
+   "added": [],
+   "checks": "fast checks (geometry, interference, manufacture, assemblability, practice): 7 errors, 144 warnings (v12: 7 errors, 143 warnings in those checks); no error new or cleared against v12; 1 new warning: part_duct tall_thin_print (98 mm tall standing upright to print: print it with a brim); the errors are the existing DG-07 placeholder-part rule (as in v12); parts 907 -> 907 (+0); part_quality (1 changed custom part, part_duct, audits on every changed part): v12's tiny_edge and sliver_face errors and its thin_wall warning cleared; 1 warning left, small_step (the 0.35 mm ledge in v11's captive-nut pocket, also in v12); requirements: new duct/fan alignment check passes (30 of 30 points 1 mm past the outlet are in the open passage and walled in by the duct's mouth, the inlet faces back with nothing within 8 mm); the v11 cooling check passes (duct 5.15 mm from the heater block, 2.88 mm above the tip, jet 0.5 mm under the tip); toolhead 0.396 kg (limit 0.45); found in v12: Delta's STEP is the mirror image of Delta's drawing, v12's model put the outlet on the wrong edge, and as placed the real outlet blew up out of the blower's top while the inlet faced forward at the Roto; full checks running",
+   "file": "changes/part-cooling-rebuild.json",
+   "design": "printer_v12_1+part-cooling-rebuild"
   }
  ]
 }
