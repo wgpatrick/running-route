@@ -1272,7 +1272,8 @@ def part_duct_v2_local(g):
     # cradle behind the blower: an upright to the upper lug and a bar to the lower one, both outside the inlet ring + 3 mm
     (ux, uz), (lx, lz) = g["lugs"]
     yb0, yb1 = g["blower_back"], g["blower_back"] + CRADLE_T
-    s += bx(ux - 4.0, ux + 4.0, yb0, yb1, out_z - 6.5, uz + 4.0)                     # upright, down past the mouth
+    s += bx(ux - 4.0, ux + 4.0, yb0, yb1, out_z - 6.5, uz + 5.5)                     # upright, down past the mouth
+    s += bx(ux + 3.0, ux + 16.0, yb0, yb1, uz - 1.0, uz + 5.5)                        # its tab for the toolhead loom's clamp (v12's spot)
     s += bx(ux - 4.0, ux + 4.0, 44.0, yb1, out_z - 6.5, out_z)                        # its web, into the transition's back wall
     s += bx(ux - 4.0, lx + 4.0, yb0, yb1, out_z, out_z + 5.5)                         # bar along the blower's lower edge
     s += bx(lx - 4.5, lx + 4.0, yb0, yb1, out_z, lz + 4.5)                            # pad round the lower lug
@@ -1464,9 +1465,8 @@ def build_electrical(d: Design) -> Electrical:
     el.loom("toolhead", [Waypoint("xbody", (NOZ_X - 8.0, yl, Z_BEAM + 33.0), clamp="probe_mount"),
                          ("xbody", (NOZ_X - 12.0, yl + 14.0, Z_BEAM + 58.0)),      # v11: up past the blower's left side,
                          ("xbody", (NOZ_X + 12.0, by_c + 5.0, Z_BEAM + 70.0)),     # over its top and behind its cradle
-                         Waypoint("xbody", ((BL_X0 + BL_X1) / 2 - 20.9 if CH("part-cooling-rebuild") else NOZ_X + 40.0, by_c + 1.5,
-                                            BL_Z0 + BL_W - 1.0 if not CH("part-cooling-rebuild") else BL_Z0 + BL_W / 2 + 19.85 + 3.0),
-                                  clamp="part_duct"),   # on the cradle's back (v12.1: on its upright, beside the upper lug)
+                         Waypoint("xbody", (NOZ_X + 40.0, by_c + 1.5, BL_Z0 + BL_W - 1.0), clamp="part_duct"),   # on the cradle's back
+                                                                                     # (v12.1 part-cooling-rebuild: on the upright's loom tab)
                          Waypoint("world", (118.0, 175.0, FZ + 12.0), clamp="frame_top_back"), Waypoint("world", P1)],
             flex_length={3: 480.0})
     # over the back rail's rear edge on a 30 mm radius (the 10 mm bundle needs 26), down the outside of the back wall (beside the
