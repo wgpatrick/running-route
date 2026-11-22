@@ -76,12 +76,12 @@ front face as 2.5 mm tap-drill holes 4.5 deep. Used for all three Z motors. Noth
   anti-rotation `nut_pin*` screw, its sleeve and nut. The joint now declares a bolted nut: reverse gap 0 (anti-backlash nut,
   assumed), no nut-tilt allowance (the nut cannot rock; the screw, free at its top end, bends instead, as on a Voron Trident).
 - FEA `nut_thrust` loads the plate on its underside (where the flange bears).
-- **Z binding with the fixed nut** (tolerance model, 3000 builds, 99.7th percentile): the nut sits up to 0.16 mm off its screw at
-  the bottom of the travel (taken out by the motor-plate alignment) and the screw-to-rail angle adds up to 1.32 .. 1.73 mm over the
-  180 mm travel. That drift is met at the top of the travel, where the screw is a 227 mm cantilever from the motor's bearings:
-  3 E I x / L^3 with the 6.24 mm root (I = 74.5 mm4) gives at most **6.4 N sideways on the nut, about 1.3 N of drag (mu 0.2)
-  against 691 N of drive: 0.2 %** (hand calculation from the tolerance model's figures; the verifier's own bending model reports 0
-  because it counts the alignment range against the whole misalignment). v12's floating nut had the same small figure (0.27 N).
+- **Z binding with the fixed nut** (full affected-tier verify, tolerance model, 3000 builds, 99.7th percentile): the nut sits up to
+  0.16 mm off its screw at the bottom of the travel and the screw-to-rail angle adds 1.36 .. 1.97 mm over the 180 mm travel
+  (1.41 .. 2.05 mm in all). The motor-plate alignment takes 1.25 mm; the rest the screw takes by bending as a cantilever from the
+  motor (free length 227 mm at the top): **at most 0.6 N of drag against 691 N of drive (0.09 %)**; no binding error. (v12's
+  floating nut: 0.27 N.) Bed support unchanged: one screw may stand 1.46 mm out of plane before a block limit (as v12); FEA
+  nut_thrust FoS 62, 0.015 mm. Full verify: 7 errors (the v12 DG-07 placeholders), 154 warnings (v12 174); parts 907 -> 889.
 
 ### 4. `carriage-plate-rigid`: rigid carriage brackets
 - **Deviation from "a straight 1/4 in plate":** the block's mounting face (x 137) and the square's outer face (x 135.4) are 1.6 mm
