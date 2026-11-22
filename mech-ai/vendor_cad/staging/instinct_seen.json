@@ -1641,10 +1641,48 @@
       "last_checked": "2026-11-22T00:25:00Z",
       "result_status": "complete (McMaster 92125A221 18-8 SS M4x0.7x60 ISO 10642 / DIN 7991 flat head, 2.5 hex, $9.71/25; STEP verified against drawing; 91294A black-oxide family has no M4x60 per Instinct)",
       "staged_in": "vendor_cad/staging/instinct_REQ-022"
+    },
+    "1e4J3SWlFlCPMxJOH0yp1kAjcfcSDCCWS": {
+      "files": {
+        "13ixg6tR4ePpky3KPBbzUhYr62h9M0eUY": {
+          "title": "RESULT.md",
+          "size": 1483,
+          "modifiedTime": "2026-11-22T00:50:00.794Z",
+          "note": "staged as instinct_REQ-023/RESULT_instinct_REQ-023_2026-11-22.md, sha256 c16147aa...; STATUS COMPLETE, 2 candidates (McMaster 91100A140 zinc steel, 91116A140 18-8), no purchase"
+        },
+        "1p6ECduf02bQQXHHz5F1JojruHFbFifFq": {
+          "title": "91100A140__cad.step",
+          "size": 236990,
+          "modifiedTime": "2026-11-22T00:49:53.641Z",
+          "note": "staged as instinct_REQ-023/McMaster_91100A140_Washer_M5_Oversized_5.3x15x1.2_ZincSteel.step, sha256 9ef7536f...; 1 valid solid, ID 5.300 OD 15.000 t 1.200, R0.291 edges on one face; matches drawing; 20 zero-volume void shells (harmless); CHOSEN (WASHER-M5-LARGE)"
+        },
+        "1CjohsSvZDE-5cpqjsok2h8cLdrxdFgdS": {
+          "title": "91100A140__datasheet.pdf",
+          "size": 50807,
+          "modifiedTime": "2026-11-22T00:49:54.672Z",
+          "note": "staged as vendor_docs/mcmaster_91100A140_datasheet.pdf, sha256 48cfeb63...; Instinct raster wrapper of McMaster drawing (15 OD, 5.3 ID, 1 to 1.4 thick), no active content"
+        },
+        "1TdzfsP0O8J9ZH9nXA6GBayIUOB1RmlGD": {
+          "title": "91116A140__cad.step",
+          "size": 245975,
+          "modifiedTime": "2026-11-22T00:49:55.861Z",
+          "note": "staged as instinct_REQ-023/McMaster_91116A140_Washer_M5_Oversized_5.3x15x1.2_18-8SS.step, sha256 5f1b33c7...; 1 valid solid, ID 5.300 OD 15.000 t 1.200, R0.075 edges both faces; matches drawing; 20 zero-volume void shells (harmless); alternate"
+        },
+        "1Phbsz4rBTbrF7kyKatrfG7nkp6ZCBi4A": {
+          "title": "91116A140__datasheet.pdf",
+          "size": 49054,
+          "modifiedTime": "2026-11-22T00:49:56.879Z",
+          "note": "staged as vendor_docs/mcmaster_91116A140_datasheet.pdf, sha256 8b6eeee4...; Instinct raster wrapper of McMaster drawing (15 OD, 5.3 ID, 1 to 1.4 thick), no active content"
+        }
+      },
+      "folder": "mechloop handoff/results/REQ-023-m5-large-washer",
+      "last_checked": "2026-11-22T01:18:00Z",
+      "result_status": "complete (two McMaster Oversized Washers M5 5.3 x 15 x 1.0-1.4: 91100A140 zinc steel $5.12/100 chosen as WASHER-M5-LARGE, 91116A140 18-8 $15.47/100 alternate; both STEPs verified against drawings; 91166A family has no 15 mm OD per Instinct)",
+      "staged_in": "vendor_cad/staging/instinct_REQ-023"
     }
   },
-  "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..008 (REQ-005..008 added 2026-11-20 batch 5). Batch 6 (2026-11-20 05:20Z): 7 new files + RESULT.md revision in REQ-005; nothing else new (154 files, 2 pages). Batch 7 (2026-11-20 06:20Z): 9 new files + RESULT.md revision in REQ-008; nothing else new (169 items incl. 8 folders, 3 pages). Batch 8 (2026-11-20 06:45Z): 2 new files + RESULT.md revision in REQ-008; new REQ-009 folder (RESULT.md only); new REQ-010 folder empty. Search: created or modified after 05:30Z under results, plus listing of the new folders. Batch 9 (2026-11-20 07:20Z): 5 new files in REQ-010; new NOTE-pcbway-review-status folder (RESULT.md only). Search: created or modified after 06:30Z under results (6 files + 2 folders). Batch 10 (2026-11-20 14:20Z): 3 new files + RESULT.md revision (07:22Z) in REQ-008; new REQ-012 folder (RESULT.md only). Only the five named file ids were fetched; no full search of results this batch. Batch 11 (2026-11-20 15:15Z): new REQ-013 folder (22 files + RESULT.md) and REQ-014 folder (RESULT.md only); only the named file ids plus a listing of these two folders; no full search of results this batch. Batch 12 (2026-11-20 16:15Z): 3 new files in REQ-014 (S-M3-0ZI STEP + drawing, RESULT.md new id) and 4 in REQ-013 (RESULT.md new id + 3 PDFs); only the named file ids fetched; no folder listing or full search. BTT ADXL345 V2.0 STEP fetched from GitHub master: byte-identical to the instinct_REQ-003 zip content, not re-staged. Batch 14 (2026-11-20 18:15Z): new REQ-015 folder (Molex + Phoenix STEP, RESULT.md) and REQ-013 RESULT.md new id (17:58Z); only the named file ids fetched; no folder listing or full search. Batch 15 (2026-11-20 19:15Z): 7 new files + RESULT.md revision (18:53Z) in REQ-015 (JST XH STEP x6 + SXH contact PDF); new REQ-016 folder (RESULT.md + 3 PDFs, NTC table a byte-duplicate); only the named file ids fetched; no folder listing or full search. Batch 16 (2026-11-20 23:15Z): new REQ-017 folder (RESULT.md + 3 STEP + 3 PDFs) and new REQ-018 folder (interim RESULT.md only); only the named file ids fetched; no folder listing or full search. Batch 17 (2026-11-21 00:15Z): REQ-018 RESULT.md revision (23:49Z) + 10 new files (Prusament spool STEP zip, E3D Roto reference duplicate, 4 McMaster push-to-connect STEP + drawing); REQ-015 RESULT.md revision (00:12Z); only the named file ids fetched; no folder listing or full search. Batch 18 (2026-11-21 01:15Z): new folder REQ-019-m5-spacer (5 files: RESULT, 2 STEP, 2 PDF) staged in instinct_REQ-019. Batch 19 (2026-11-21 02:15Z): new folder REQ-020-spool-hardware (9 files: RESULT, 4 STEP, 4 PDF) staged in instinct_REQ-020; only the named file ids fetched; no folder listing or full search. Batch 20 (2026-11-21 03:15Z): REQ-020 RESULT.md revision (02:38Z, new id 1YYSNmXk...) + CLBSS28-10 STEP and catalog PDF; staged in instinct_REQ-020 and vendor_docs; only the named file ids fetched; no folder listing or full search. Batch 21 (2026-11-21 04:15Z): new folder REQ-021-safety-chain-and-dowels (14 files: RESULT, 4 STEP, 9 PDF) staged in instinct_REQ-021 and vendor_docs; REQ-018 RESULT.md revision (same id 1Xd6q51Q..., SKF update) staged in instinct_REQ-018; only the named file ids fetched; no folder listing or full search. Batch 22 (2026-11-22 00:25Z): new folder REQ-022-m4x60-flat-head-screw (3 files: RESULT, STEP, PDF), folder listed by parentId; staged in instinct_REQ-022 and vendor_docs; REQ-022 fulfilled (FHCS-M4x60 = McMaster 92125A221).",
-  "last_checked_all": "2026-11-22T00:25:00Z",
+  "_note_other_folders": "Top-level folder_id/files are REQ-001; other_folders holds REQ-002..008 (REQ-005..008 added 2026-11-20 batch 5). Batch 6 (2026-11-20 05:20Z): 7 new files + RESULT.md revision in REQ-005; nothing else new (154 files, 2 pages). Batch 7 (2026-11-20 06:20Z): 9 new files + RESULT.md revision in REQ-008; nothing else new (169 items incl. 8 folders, 3 pages). Batch 8 (2026-11-20 06:45Z): 2 new files + RESULT.md revision in REQ-008; new REQ-009 folder (RESULT.md only); new REQ-010 folder empty. Search: created or modified after 05:30Z under results, plus listing of the new folders. Batch 9 (2026-11-20 07:20Z): 5 new files in REQ-010; new NOTE-pcbway-review-status folder (RESULT.md only). Search: created or modified after 06:30Z under results (6 files + 2 folders). Batch 10 (2026-11-20 14:20Z): 3 new files + RESULT.md revision (07:22Z) in REQ-008; new REQ-012 folder (RESULT.md only). Only the five named file ids were fetched; no full search of results this batch. Batch 11 (2026-11-20 15:15Z): new REQ-013 folder (22 files + RESULT.md) and REQ-014 folder (RESULT.md only); only the named file ids plus a listing of these two folders; no full search of results this batch. Batch 12 (2026-11-20 16:15Z): 3 new files in REQ-014 (S-M3-0ZI STEP + drawing, RESULT.md new id) and 4 in REQ-013 (RESULT.md new id + 3 PDFs); only the named file ids fetched; no folder listing or full search. BTT ADXL345 V2.0 STEP fetched from GitHub master: byte-identical to the instinct_REQ-003 zip content, not re-staged. Batch 14 (2026-11-20 18:15Z): new REQ-015 folder (Molex + Phoenix STEP, RESULT.md) and REQ-013 RESULT.md new id (17:58Z); only the named file ids fetched; no folder listing or full search. Batch 15 (2026-11-20 19:15Z): 7 new files + RESULT.md revision (18:53Z) in REQ-015 (JST XH STEP x6 + SXH contact PDF); new REQ-016 folder (RESULT.md + 3 PDFs, NTC table a byte-duplicate); only the named file ids fetched; no folder listing or full search. Batch 16 (2026-11-20 23:15Z): new REQ-017 folder (RESULT.md + 3 STEP + 3 PDFs) and new REQ-018 folder (interim RESULT.md only); only the named file ids fetched; no folder listing or full search. Batch 17 (2026-11-21 00:15Z): REQ-018 RESULT.md revision (23:49Z) + 10 new files (Prusament spool STEP zip, E3D Roto reference duplicate, 4 McMaster push-to-connect STEP + drawing); REQ-015 RESULT.md revision (00:12Z); only the named file ids fetched; no folder listing or full search. Batch 18 (2026-11-21 01:15Z): new folder REQ-019-m5-spacer (5 files: RESULT, 2 STEP, 2 PDF) staged in instinct_REQ-019. Batch 19 (2026-11-21 02:15Z): new folder REQ-020-spool-hardware (9 files: RESULT, 4 STEP, 4 PDF) staged in instinct_REQ-020; only the named file ids fetched; no folder listing or full search. Batch 20 (2026-11-21 03:15Z): REQ-020 RESULT.md revision (02:38Z, new id 1YYSNmXk...) + CLBSS28-10 STEP and catalog PDF; staged in instinct_REQ-020 and vendor_docs; only the named file ids fetched; no folder listing or full search. Batch 21 (2026-11-21 04:15Z): new folder REQ-021-safety-chain-and-dowels (14 files: RESULT, 4 STEP, 9 PDF) staged in instinct_REQ-021 and vendor_docs; REQ-018 RESULT.md revision (same id 1Xd6q51Q..., SKF update) staged in instinct_REQ-018; only the named file ids fetched; no folder listing or full search. Batch 22 (2026-11-22 00:25Z): new folder REQ-022-m4x60-flat-head-screw (3 files: RESULT, STEP, PDF), folder listed by parentId; staged in instinct_REQ-022 and vendor_docs; REQ-022 fulfilled (FHCS-M4x60 = McMaster 92125A221). Batch 23 (2026-11-22 01:18Z): new folder REQ-023-m5-large-washer (5 files: RESULT, 2 STEP, 2 PDF), folder listed by parentId; staged in instinct_REQ-023 and vendor_docs; REQ-023 fulfilled (WASHER-M5-LARGE = McMaster 91100A140, 91116A140 alternate).",
+  "last_checked_all": "2026-11-22T01:18:00Z",
   "_note_not_downloaded": "Files with 'NOT downloaded' notes are recorded as seen but were never fetched; retry them if a larger download route exists.",
   "pending_requests": [
     {
@@ -1655,6 +1693,15 @@
       "fulfilled_at": "2026-11-22T00:25:00Z",
       "result_folder_id": "13RJADVsQ5SmYd0GHSB3UWOl6WI7NBNDv",
       "result": "McMaster 92125A221 (FHCS-M4x60), staged in vendor_cad/staging/instinct_REQ-022"
+    },
+    {
+      "req": "REQ-023-m5-large-washer",
+      "drive_id": "17v1OGWsWs0OrU2uqhztKtxLt_CKHAwPD",
+      "for": "M5 jam nut across a 6.2 mm T-slot opening (per the request; likely the frame feet in printer_v12_1 add_feet, inferred)",
+      "status": "fulfilled",
+      "fulfilled_at": "2026-11-22T01:18:00Z",
+      "result_folder_id": "1e4J3SWlFlCPMxJOH0yp1kAjcfcSDCCWS",
+      "result": "McMaster 91100A140 (WASHER-M5-LARGE, zinc steel), alternate 91116A140 (18-8); staged in vendor_cad/staging/instinct_REQ-023"
     }
   ]
 }

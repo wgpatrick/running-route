@@ -1459,9 +1459,10 @@ def build_z_mount(d, tag, x0, y0, turn, posts, rail, on_tray):
             f"8 mm holes over the posts (the M5's 10 mm washer covers them), so the plate (and the motor's screw) can be slid +/-1.25 mm to line "
             f"up with the fixed nut at assembly (bed at the bottom of its travel, post bolts loose, then tightened)."))
     elif tag == "" and CH("rear-z-inside"):
-        sheet(d, plate, motor_plate_arcs(x0, y0, posts, z_mf, MP_ALIGN_HOLE), AL, description=(
-            f"Rear Z motor plate (v12.1): 6.35 mm 6061, the motor hung under it by its pilot and four M3, on two turned posts on the "
-            f"bottom back rail (like the front plates, posts on the rail's line, the motor 15.5 mm inboard of it); outline true arcs."))
+        sheet(d, plate, motor_plate_shape(x0, y0, posts, z_mf, MP_ALIGN_HOLE), AL, description=(
+            f"Rear Z motor plate (v12.1 rear-z-inside): 6.35 mm 6061 like the front plates (motor hung under it by its pilot and four M3, "
+            f"8 mm alignment holes over its posts), the motor beside the left side wall at y {LS_Y:g}, its two turned posts on the bottom "
+            f"back rail's top slot."))
     else:
         sheet(d, plate, motor_plate_shape(x0, y0, posts, z_mf), AL)
     place(d, mot, leadscrew_motor_a4003_tapped() if CH("zmotor-holes") else leadscrew_motor_a4003(), Location((x0, y0, z_mf), (0, 0, turn)))

@@ -50,7 +50,8 @@
   "NUT-M2": "91828A111",
   "WASHER-M5-SERRATED": "91106A126",
   "NUT-M8": "90592A022",
-  "FHCS-M4x60": "92125A221"
+  "FHCS-M4x60": "92125A221",
+  "WASHER-M5-LARGE": "91100A140"
  },
  "pages": "https://www.mcmaster.com/<part number>/",
  "wrong_file": {},
@@ -398,8 +399,9 @@
    "WASHER-M2",
    "WASHER-M5-SERRATED",
    "NUT-M8",
-   "FHCS-M4x60"
+   "FHCS-M4x60",
+   "WASHER-M5-LARGE"
   ],
-  "note": "McMaster drawing + STEP collected by Instinct for the owner (REQ-001, REQ-002, REQ-006); M4 x 6 is now 91290A139 (black-oxide, 12.9) instead of the zinc 90128A208; NUT-M2 is 91828A111 (18-8, DIN 934 height 1.6), not the thin 90370A201; FHCS-M4x60 is 92125A221 (REQ-022, 2026-11-22): 18-8 stainless, not the black-oxide 91294A family of FHCS-M4x40 (no M4 x 60 there), STEP vendor_cad/staging/instinct_REQ-022/McMaster_92125A221_FHCS_M4x0.7x60_18-8SS_ISO10642.step, drawing vendor_docs/mcmaster_92125A221_datasheet.pdf, checks in instinct_REQ-022/MANIFEST.md"
+  "note": "McMaster drawing + STEP collected by Instinct for the owner (REQ-001, REQ-002, REQ-006); M4 x 6 is now 91290A139 (black-oxide, 12.9) instead of the zinc 90128A208; NUT-M2 is 91828A111 (18-8, DIN 934 height 1.6), not the thin 90370A201; FHCS-M4x60 is 92125A221 (REQ-022, 2026-11-22): 18-8 stainless, not the black-oxide 91294A family of FHCS-M4x40 (no M4 x 60 there), STEP vendor_cad/staging/instinct_REQ-022/McMaster_92125A221_FHCS_M4x0.7x60_18-8SS_ISO10642.step, drawing vendor_docs/mcmaster_92125A221_datasheet.pdf, checks in instinct_REQ-022/MANIFEST.md; WASHER-M5-LARGE is 91100A140 (REQ-023, 2026-11-22): zinc-plated steel Oversized Washer, M5, 5.3 ID x 15.0 OD x 1.2 (drawing 1 to 1.4), the same material as WASHER-M5 91166A240 (the 91166A family has no 15 mm OD); matches the ISO 7093-1 large M5 entry in hardware.py WASHER; 18-8 alternate 91116A140 also staged; STEP vendor_cad/staging/instinct_REQ-023/McMaster_91100A140_Washer_M5_Oversized_5.3x15x1.2_ZincSteel.step, drawing vendor_docs/mcmaster_91100A140_datasheet.pdf, checks in instinct_REQ-023/MANIFEST.md"
  }
 }
