@@ -150,8 +150,7 @@
    "threads": [
     "2211e7e2-0d7e-485a-adfb-083c2c2d279c"
    ],
-   "status": "needs work",
-   "status_reason": "the new M4 x 60 countersunk studs have no maker part number or supplier STEP yet (2 new practice DG-07 errors)",
+   "status": "proposed",
    "depends_on": [],
    "removed": [],
    "modified": [
@@ -177,7 +176,7 @@
     "bed_thumb_2_spacer_0",
     "bed_thumb_2_spacer_1"
    ],
-   "checks": "fast checks (geometry, interference, manufacture, assemblability, practice): 9 errors, 143 warnings (v12: 7 errors, 143 warnings in those checks); 2 NEW errors, both practice DG-07 on FHCS-M4x60 (the longer stud: no maker part number, no supplier STEP); no other error new or cleared; the other errors are the existing DG-07 placeholder-part rule (as in v12); parts 907 -> 913 (+6 spacers); part_quality (2 changed custom parts, bed_plate and z_deck, audits on every changed part): clean (no errors or warnings); new requirement, finger clearance: 21.4 / 21.4 / 24.3 mm free round the three thumb nuts (v12: 0.9 mm from the square's members); bed spring preload, plate growth and three-point requirements pass; full checks running",
+   "checks": "fast checks (geometry, interference, manufacture, assemblability, practice): 7 errors, 143 warnings (v12: 7 errors, 143 warnings in those checks); no error new or cleared against v12; the errors are the existing DG-07 placeholder-part rule (as in v12); the longer stud is McMaster 92125A221 (M4 x 60, 18-8 stainless, ISO 10642, McMaster STEP and drawing, REQ-022), rated as class 50 stainless (1475 N against about 61 to 72 N of spring preload); parts 907 -> 913 (+6 spacers); part_quality (2 changed custom parts, bed_plate and z_deck, audits on every changed part): clean (no errors or warnings); new requirement, finger clearance: 21.4 / 21.4 / 24.3 mm free round the three thumb nuts (v12: 0.9 mm from the square's members); full checks (tolerance, fea, motion, printing, electrical, subsystems, ratings, requirements; run with the stud as steel before the stainless rating, so the stud's lower strength is not in them): 0 errors, 32 warnings (v12: 0 errors, 31 warnings in those checks); no error new or cleared against v12; every requirement passes, including spring preload, plate growth and three-point levelling; warnings that changed: a 1 kg print on the worst corner now lowers the surface 0.055 mm (v12 0.030; limit 0.2, a warning in both) because the rear stud moved 42.5 mm left; one Monte Carlo tolerance warning on the Eddy holder's washers (0.07 % of builds), which the change does not touch",
    "file": "changes/bed-thumb-reach.json",
    "design": "printer_v12_1+bed-thumb-reach"
   },

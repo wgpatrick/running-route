@@ -1901,6 +1901,14 @@ def build_frame_z():
         sc = add_screw(d, p, "M4", STUD_L, at=(x, y, Z_BED + T_BED - CSK_SINK), direction=(0, 0, -1), body="zbody",
                        clamps=("bed_plate", wt, "z_deck"), head="countersunk", locking="adhesive")
         sc.meta["fully_threaded"] = True          # buy DIN 7991 / ISO 10642 fully threaded: the lock nut sits 6 to 10 mm under the head
+        if CH("bed-thumb-reach"):
+            # v12.1: the M4 x 60 is McMaster 92125A221, 18-8 stainless (REQ-022; the black-oxide 91294A family of the M4 x 40 stops at
+            # M4 x 50). McMaster gives 70,000 psi (483 MPa) tensile: rated here as property class 50 (yield 210 MPa x 8.78 mm2 stress
+            # area = 1844 N), with the same 0.8 factor fhcs() applies to 12.9: 1475 N, against about 61 to 72 N of spring preload
+            sc.material = SS
+            sc.ratings["proof_load_n"] = round(0.8 * 210.0 * 8.78)
+            sc.ratings["grade"] = "18-8 stainless (McMaster 92125A221: 70,000 psi tensile), rated as class 50"
+            sc.meta["datasheet"] = "vendor_docs/mcmaster_92125A221_datasheet.pdf"
         d.join(wt, "bed_plate", "clamped by the stud's lock nut")
         add_nut(d, jam, "M4", at=(x, y, Z_BED - W4), direction=(0, 0, -1), body="zbody", screw=p, locking="adhesive")
         d.join(jam, wt, "clamp")

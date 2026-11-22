@@ -49,7 +49,8 @@
   "WASHER-M2": "91166A180",
   "NUT-M2": "91828A111",
   "WASHER-M5-SERRATED": "91106A126",
-  "NUT-M8": "90592A022"
+  "NUT-M8": "90592A022",
+  "FHCS-M4x60": "92125A221"
  },
  "pages": "https://www.mcmaster.com/<part number>/",
  "wrong_file": {},
@@ -396,8 +397,9 @@
    "SHCS-M5x65",
    "WASHER-M2",
    "WASHER-M5-SERRATED",
-   "NUT-M8"
+   "NUT-M8",
+   "FHCS-M4x60"
   ],
-  "note": "McMaster drawing + STEP collected by Instinct for the owner (REQ-001, REQ-002, REQ-006); M4 x 6 is now 91290A139 (black-oxide, 12.9) instead of the zinc 90128A208; NUT-M2 is 91828A111 (18-8, DIN 934 height 1.6), not the thin 90370A201"
+  "note": "McMaster drawing + STEP collected by Instinct for the owner (REQ-001, REQ-002, REQ-006); M4 x 6 is now 91290A139 (black-oxide, 12.9) instead of the zinc 90128A208; NUT-M2 is 91828A111 (18-8, DIN 934 height 1.6), not the thin 90370A201; FHCS-M4x60 is 92125A221 (REQ-022, 2026-11-22): 18-8 stainless, not the black-oxide 91294A family of FHCS-M4x40 (no M4 x 60 there), STEP vendor_cad/staging/instinct_REQ-022/McMaster_92125A221_FHCS_M4x0.7x60_18-8SS_ISO10642.step, drawing vendor_docs/mcmaster_92125A221_datasheet.pdf, checks in instinct_REQ-022/MANIFEST.md"
  }
 }
