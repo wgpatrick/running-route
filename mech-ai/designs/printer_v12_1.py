@@ -161,6 +161,7 @@ from mechloop.parts.hardware import WASHER, spacer_round
 from mechloop.parts.probes import add_probe_nuts, probe_omron_e2e
 from mechloop.parts.toolhead import extruder_roto, hotend_revo
 from mechloop.shops import assign
+from mechloop.parts.batch12 import picam3_wide, PICAM3_FOV
 from mechloop.parts.batch12 import (tnut_hntp5, psu_xp_lba350ps24, estop_omron_a22e_m_02, estop_omron_a22e_m_02_v2, leadscrew_motor_a4003_tapped, safety_relay_omron_g9se_201, dowel_pin_3x8_placeholder, shaft_misumi_sfal8, spacer_mcmaster_94669a079, switch_omron_d2f_01l, foot_misumi_nfjn5_30, spool_1kg_placeholder, spacer_tube_m8_placeholder, coupler_mcmaster_2333n214, add_bracket_misumi, adxl345_btt, cam_arducam_b0454, cob_led, contactor_finder_2232, din_endstop_wago,
 
 
@@ -172,7 +173,7 @@ from mechloop.parts.batch12 import (tnut_hntp5, psu_xp_lba350ps24, estop_omron_a
 # ---- v12.1 change flags (docs/OPERATING_MODES.md): every owner decision is its own switch; all off = printer_v12 ----------
 import os as _os
 
-CHANGE_IDS = ("estop-mount", "zmotor-holes", "znut-direct", "carriage-plate-rigid", "rear-z-inside", "spool-closer", "bed-thumb-reach")
+CHANGE_IDS = ("estop-mount", "zmotor-holes", "znut-direct", "carriage-plate-rigid", "rear-z-inside", "spool-closer", "bed-thumb-reach", "topdown-camera")
 CHANGES = {k: True for k in CHANGE_IDS}
 CHANGE_DEPENDS = {"rear-z-inside": ("znut-direct",),       # the rear plate is the fronts' direct-nut plate
                   "spool-closer": ("rear-z-inside",)}      # v12's rear screw (y 198-206, x 0) stands where the closer spool goes
@@ -226,6 +227,12 @@ CHANGE_INFO = {     # for the review page's Changes tab (tools/build_change.py)
                                    "clear of v12's rear nut plate under the rear member (it stays put with rear-z-inside). At least 20 "
                                    "mm free all round each knob. New requirement: finger clearance for every hand-adjusted part.",
                         "threads": ["2211e7e2-0d7e-485a-adfb-083c2c2d279c"]},
+    "topdown-camera": {"title": "Top-down camera: Camera Module 3 Wide tilted 55 degrees down",
+                       "summary": "The top-down camera becomes a Raspberry Pi Camera Module 3 Wide (SC1224, 102 x 67 degrees) on a new "
+                                  "printed bracket on the top back rail's rear face, its lens tilted 55 degrees down at the bed. For photos "
+                                  "the gantry parks at the front. New check: from that pose the whole sheet and a 150 mm calibration "
+                                  "target on it are inside the view and nothing blocks them; views from both cameras are saved.",
+                       "threads": ["e27554c6-9501-4b74-97a3-08679ac0af62"]},
 }
 _on_ids = [k for k in CHANGE_IDS if CHANGES[k]]
 DESIGN_NAME = ("printer_v12_1" if len(_on_ids) == len(CHANGE_IDS) else "printer_v12_1-base" if not _on_ids
@@ -278,6 +285,12 @@ FRONT_EXT = 13.0       # v8.2 (owner review): the frame's front is 13 mm further
                        # machine inside its 420 mm envelope (26 mm, lugs untrimmed, made it 431)
 FD = FY + FRONT_EXT    # frame depth, outside to outside of the front and back rails
 FRONT_Y = -(FY / 2 - 10) - FRONT_EXT   # centre line of the front rails and posts (v8.1 -170)
+# v12.1 topdown-camera: the camera's pose and the photo pose (gantry parked at the front, the bed high enough that the top back rail
+# does not hide the sheet's rear edge from a camera behind it: rail's top front edge y 160, z 404)
+CAM_TD_X, CAM_TD_TILT = -60.0, 55.0          # v12's x (clear of the rear lead screw at x 0 and of the SFS at x 40); lens 55 deg below level
+CAM_TD_B = (2.0, 62.0)                        # board-back centre in the bracket's frame (y behind the rail's rear face, z above its centre)
+PHOTO_Z = 90.0                                # Z joint for photos and calibration: the sheet 90 mm above its lowest (prints up to ~110 mm tall)
+CAL_TARGET = 150.0                            # ChArUco calibration target, square, laid on the sheet's centre (not a drawn part)
 
 # ---- toolhead offset (v10) -----------------------------------------------------------
 C_NOZ = 15.5           # the nozzle is 15.5 mm to the LEFT of the X guide block's centre: the Roto reaches 16.2 mm left and
@@ -2737,6 +2750,50 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
     return d
 
 
+PHOTO_POSE = {"y": -104.05, "x": 0.0, "z": PHOTO_Z}       # v12.1 topdown-camera: Y at its front limit (the joint's range)
+PICAM3_OPTICS = {"lens_centre": [(0.0, 2.0, 11.3)], "lens_axis": [(0.0, 2.0, 111.3)], "image_up": [(0.0, 12.0, 11.3)],
+                 "fov_deg": PICAM3_FOV["standard"]}      # v12's standard Camera Module 3 (picam3: lens 2 mm above centre, 11.3 deep)
+
+
+def camera_targets(dd, pose):
+    """World points at `pose` on the print sheet's top (17 x 17 grid) and on the calibration target (7 x 7 over CAL_TARGET square at the
+    sheet's centre), 0.3 mm above the surface."""
+    from mechloop.geom import forward_kinematics
+    c = dd.get("bed")
+    T = forward_kinematics(dd, pose)[c.body]
+    bb = c.shape.bounding_box()
+    z = bb.max.Z + 0.3
+    sheet = [(x, y, z) for x in np.linspace(bb.min.X + 0.5, bb.max.X - 0.5, 17) for y in np.linspace(bb.min.Y + 0.5, bb.max.Y - 0.5, 17)]
+    cx, cy, hw = (bb.min.X + bb.max.X) / 2, (bb.min.Y + bb.max.Y) / 2, CAL_TARGET / 2
+    target = [(x, y, z + 0.5) for x in np.linspace(cx - hw, cx + hw, 7) for y in np.linspace(cy - hw, cy + hw, 7)]
+    w = lambda pts: [tuple(T[:3, :3] @ np.array(p) + T[:3, 3]) for p in pts]
+    return w(sheet), w(target)
+
+
+def camera_view_results(dd):
+    """Both cameras at the photo pose (mechloop.camera_view): sheet and target points inside the view and unblocked; for the top-down
+    one also the bed heights (Z joint, 10 mm steps) at which the whole sheet stays visible."""
+    from mechloop.camera_view import view_check
+    out = {}
+    for cam, optics in (("cam_topdown", None), ("cam_overview", PICAM3_OPTICS)):
+        sheet, target = camera_targets(dd, PHOTO_POSE)
+        r1 = view_check(dd, cam, sheet, PHOTO_POSE, optics=optics)
+        r2 = view_check(dd, cam, target, PHOTO_POSE, optics=optics)
+        blk = sorted({b for b in r1["occluded_by"] + r2["occluded_by"] if b})
+        out[cam] = {"sheet_n": r1["n"], "sheet_ok": r1["n_ok"], "target_n": r2["n"], "target_ok": r2["n_ok"],
+                    "outside": int((~r1["inside"]).sum()), "blocked": sum(1 for b in r1["occluded_by"] if b), "blockers": blk[:6],
+                    "fov": r1["fov"], "centre": [float(v) for v in r1["centre"]]}
+    zs_ok = []
+    for zj in np.arange(0.0, PRINT_Z + 0.1, 10.0):
+        pose = dict(PHOTO_POSE, z=float(zj))
+        sheet, _ = camera_targets(dd, pose)
+        r = view_check(dd, "cam_topdown", sheet, pose)
+        if r["n_ok"] == r["n"]:
+            zs_ok.append(float(zj))
+    out["cam_topdown"]["z_range"] = (f"{min(zs_ok):g} to {max(zs_ok):g} (print heights up to {PRINT_Z - min(zs_ok):g} mm)" if zs_ok else "none")
+    return out
+
+
 def add_requirements(d, zs):
     def jr(dd, name):
         return next(j for j in dd.joints if j.name == name)
@@ -2952,6 +3009,17 @@ def add_requirements(d, zs):
                     f"no thread in the plate")
     d.requirements.append(Requirement("v10: the bed stands on three sprung, thumb-nut levelling points (a plane, no twist), none tapped into the plate", three_points))
 
+    def camera_views(dd):
+        res = camera_view_results(dd)
+        td, ov = res["cam_topdown"], res["cam_overview"]
+        ok = td["sheet_ok"] == td["sheet_n"] and td["target_ok"] == td["target_n"]
+        txt = lambda r: (f"sheet {r['sheet_ok']}/{r['sheet_n']} points seen (outside the view {r['outside']}, blocked {r['blocked']}"
+                         + (f" by {', '.join(r['blockers'])}" if r["blockers"] else "") + f"), target {r['target_ok']}/{r['target_n']}")
+        return ok, (f"photo pose: gantry at Y {PHOTO_POSE['y']:g} (front), X {PHOTO_POSE['x']:g}, bed at Z {PHOTO_Z:g}. Top-down (Camera Module 3 Wide, "
+                    f"{td['fov'][0]:g} x {td['fov'][1]:g} deg, lens at {', '.join(f'{v:.0f}' for v in td['centre'])}, {CAM_TD_TILT:g} deg down): {txt(td)}; "
+                    f"the whole sheet stays visible for bed Z {td['z_range']}. Overview (Camera Module 3, {ov['fov'][0]:g} x {ov['fov'][1]:g} deg, "
+                    f"level, on the top front rail): {txt(ov)} (reported, not required: it is v12's overview camera, unchanged)")
+
     def finger_reach(dd):
         # every part turned by hand (meta "hand_adjusted": its grip's vertical axis, radius and z band): no other solid inside a ring
         # FINGER_CLEAR wide round the grip, from 5 mm below to 5 mm above it (the fingers' room); the parts on its own axis inside
@@ -2987,6 +3055,10 @@ def add_requirements(d, zs):
         ok = bool(out) and not bad
         return ok, (f"free space round each hand-turned grip, {FINGER_CLEAR:g} mm needed: " + "; ".join(out)
                     + (f"; inside the {FINGER_CLEAR:g} mm ring: " + "; ".join(bad) if bad else ""))
+    if CH("topdown-camera"):
+        d.requirements.append(Requirement(f"v12.1: the top-down camera sees the whole sheet and the {CAL_TARGET:g} mm calibration target, nothing in "
+                                          f"the way, with the gantry parked at the front and the bed at Z {PHOTO_Z:g} (the overview camera reported)",
+                                          camera_views))
     if CH("bed-thumb-reach"):
         d.requirements.append(Requirement(f"v12.1: every part turned by hand (the bed's thumb nuts) has at least {FINGER_CLEAR:g} mm of free "
                                           "space all round its grip for the fingers", finger_reach))
@@ -3550,6 +3622,41 @@ def ptfe_curve(p0, p3, rise=10.0, n=80):
     return pts, float(length), float(r)
 
 
+def cam_topdown_wide_mount_local():
+    """v12.1 topdown-camera: the printed bracket for the Camera Module 3 Wide, built in its own frame: origin on the top back rail's
+    rear face at the rail's centre height, x along the rail, y backwards (away from the rail), z up. Spec:
+    - function: hold the SC1224 with its lens axis CAM_TD_TILT below level, looking forward over the rail at the bed, every part of it
+      behind y 170 (the toolhead reaches y 166.4 at the rear over-travel) and below z 480;
+    - mates: the rail's rear face (two M3 x 10 into T-nuts in the rear slot, 16 mm either side, as v12's bracket); the camera's two
+      lower holes (dia 2.2 on 21) by M2 x 20 through a 14 mm seat block, nut and washer on the board's front;
+    - loads: the camera's 4 g; process: printed PETG (Hubs), lying on its flat back face (y 21): the seat's back leans 35 degrees
+      from vertical as printed, no supports; the rail screws' heads in counterbores from that face;
+    - envelope: x +/-22, y 0 to 21, z -9 to 77; the board, lens and connector kept out of it.
+    Returns (shape, seat frame (origin, x, v, n) in the local frame)."""
+    a = math.radians(CAM_TD_TILT)
+    n = np.array([0.0, -math.cos(a), -math.sin(a)])          # lens axis (forward and down)
+    v = np.array([0.0, -math.sin(a), math.cos(a)])           # the board's +Y (towards its lens / connector edge)
+    B = np.array([0.0, CAM_TD_B[0], CAM_TD_B[1]])
+    seat_plane = lambda: Plane(origin=tuple(B), x_dir=(1, 0, 0), z_dir=tuple(n))
+    h = 23.862
+    base = bx(-22.0, 22.0, 0.0, 21.0, -9.0, 9.0)        # full depth: the part prints lying on its back face (y 21), flat
+    col = bx(-12.5, 12.5, 6.0, 21.0, -9.0, CAM_TD_B[1] + 12.0)
+    col &= bx(-30.0, 30.0, -10.0, 30.0, -20.0, 40.0) + Location(seat_plane()) * (Pos(0, 0, 36.0) * Box(60.0, 120.0, 100.0))   # its top in the seat's back plane
+    # the seat block: 27 wide, from the board's bottom edge - 1 to below the connector (which stands 5.71 down from the top edge)
+    v0, v1 = -h / 2 - 1.0, h / 2 - 5.71 - 0.6
+    seat = Location(seat_plane()) * (Pos(0, (v0 + v1) / 2, -7.0) * Box(27.0, v1 - v0, 14.0))
+    shape = base + col + seat
+    keep = Location(seat_plane()) * (Pos(0, 0, 8.0) * Box(27.5, h + 3.0, 16.0))          # board, lens, nuts: nothing in front
+    keep += Location(seat_plane()) * (Pos(0, h / 2 - 5.71 / 2, -2.0) * Box(21.0, 6.5, 4.0))   # the connector behind the board
+    shape -= keep
+    for xh in (-10.5, 10.5):
+        shape -= Location(seat_plane()) * (Pos(xh, -h / 2 + 2.0, -10.0) * Cylinder(2.4 / 2, 20.0))
+    for xh in (-16.0, 16.0):           # the rail screws: 6 mm of plate under the head, a counterbore behind it for the head and driver
+        shape -= Pos(xh, 3.0, 0.0) * ycyl(PH3 / 2, 6.0)
+        shape -= Pos(xh, 13.5, 0.0) * ycyl(8.0 / 2, 15.0)
+    return shape, (B, np.array([1.0, 0, 0]), v, n)
+
+
 def add_feedback_hardware(d):
     """Overview and top-down Pi Camera Module 3s on printed brackets on the top front / back rails, the BTT SFS V2 on the top back rail's rear face,
     the overview COB strip in two printed clips on the top front rail. The nozzle camera, its lens, the line laser, the two nozzle LED
@@ -3579,7 +3686,7 @@ def add_feedback_hardware(d):
     # top-down camera and filament sensor: printed brackets on the top back rail's REAR face (y 180), behind the toolhead's reach at the
     # rear end of Y (the blower passes over the rail's top there); each by two M3 x 10 into T-nuts in the rail's rear slot
     yb = FY / 2                                          # the rail's rear face
-    for nm, xb in (("cam_topdown", -60.0), ("sfs", 40.0)):     # sfs: 40, clear of the rear lead screw (x 0)
+    for nm, xb in ((("cam_topdown", -60.0),) if not CH("topdown-camera") else ()) + (("sfs", 40.0),):     # sfs: 40, clear of the rear lead screw (x 0)
         br = bx(xb - 22.0, xb + 22.0, yb, yb + 6.0, FZ - 9.0, FZ + 9.0)
         sxh = 18.5 if nm == "sfs" else 16.0          # sfs: heads clear of the vertical sensor (16 closed in 1 % of builds)
         br -= Pos(xb - sxh, yb + 3.0, FZ) * ycyl(PH3 / 2, 6.0) + Pos(xb + sxh, yb + 3.0, FZ) * ycyl(PH3 / 2, 6.0)
@@ -3594,10 +3701,30 @@ def add_feedback_hardware(d):
             add_screw(d, f"{nm}_mount_screw_{i}", "M3", 10, at=(xb + xh, yb + 6.0, FZ), direction=(0, -1, 0), threads_into="frame_top_back", tnut=True,
                       washer=True, clamps=(f"{nm}_mount",))
     yc = yb + 14.0
-    place(d, "cam_topdown", picam3(), Location(Plane(origin=(-60.0, yc, FZ + 30.0 + 9.931), x_dir=(1, 0, 0), z_dir=(0, -1, 0))))
-    for i, xh in enumerate((-10.5, 10.5)):
+    if not CH("topdown-camera"):
+      place(d, "cam_topdown", picam3(), Location(Plane(origin=(-60.0, yc, FZ + 30.0 + 9.931), x_dir=(1, 0, 0), z_dir=(0, -1, 0))))
+      for i, xh in enumerate((-10.5, 10.5)):
         bolt_nut(d, f"cam_topdown_screw_{i}", "M2", 20, (-60.0 + xh, yb + 20.0, FZ + 30.0), (0, -1, 0), "world", ("cam_topdown_mount", "cam_topdown"),
                  nut_at=(-60.0 + xh, yc - 1.0, FZ + 30.0))
+    else:
+        # v12.1 topdown-camera: the Camera Module 3 Wide on its own bracket (cam_topdown_wide_mount_local), moved to the rail's rear face
+        shp, (B, ex, ev, en) = cam_topdown_wide_mount_local()
+        o = np.array([CAM_TD_X, yb, FZ])
+        d.add("cam_topdown_mount", Pos(*o) * shp, material=COOL, process="printed",
+              meta={"print_up": "-Y", "print": {**PRINT_ABS, "orientation": "-Y", "infill": 0.4},
+                    "description": f"printed bracket on the top back rail's rear face holding the top-down camera (Camera Module 3 Wide) "
+                                   f"with its lens {CAM_TD_TILT:g} degrees below level, looking forward over the rail at the bed"})
+        for i, xh in enumerate((-16.0, 16.0)):
+            add_screw(d, f"cam_topdown_mount_screw_{i}", "M3", 10, at=(CAM_TD_X + xh, yb + 6.0, FZ), direction=(0, -1, 0), threads_into="frame_top_back",
+                      tnut=True, washer=True, clamps=("cam_topdown_mount",))
+        Bw = o + B
+        place(d, "cam_topdown", picam3_wide(), Location(Plane(origin=tuple(Bw), x_dir=(1, 0, 0), z_dir=tuple(en))))
+        for i, xh in enumerate((-10.5, 10.5)):
+            hp = Bw + xh * ex + (-23.862 / 2 + 2.0) * ev
+            bolt_nut(d, f"cam_topdown_screw_{i}", "M2", 20, tuple(hp - 14.0 * en), tuple(en), "world", ("cam_topdown_mount", "cam_topdown"),
+                     nut_at=tuple(hp + 1.12 * en))
+        d.get("cam_topdown").meta["description"] = ("Raspberry Pi Camera Module 3 Wide (SC1224), the top-down camera: on its printed bracket behind "
+                                                    f"the top back rail, lens {CAM_TD_TILT:g} degrees below level; photos with the gantry parked at the front")
     place(d, "filament_sensor", sfs_v2(), Location((40.0, yb + 10.0 + 30.3 / 2, FZ - 9.0 + 53.15 / 2), (0, 90, 0)))     # v12: filament axis vertical: in from the spool below, out at the top towards the toolhead
     d.join("filament_sensor", "sfs_mount", "two cable ties round the sensor and the bracket's plate (its own holes face the spool)")
     # overview COB strip in two printed clips on the top front rail's inner face: the clip's plate on the face (screw at the slot), the

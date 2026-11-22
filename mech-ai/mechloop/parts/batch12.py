@@ -650,6 +650,41 @@ def picam3() -> Stock:
                    ratings={"max_ambient_c": 50.0}, interfaces={"mount_holes_m2": holes})
 
 
+# Raspberry Pi Camera Module 3 optics (product brief, vendor_docs/RaspberryPi_Camera-Module-3_product_brief.pdf; the wide drawing gives
+# 102 x 67 degrees): horizontal across the board's 25 mm width (local X), vertical along its 23.862 mm height (local Y)
+PICAM3_FOV = {"standard": (66.0, 41.0), "wide": (102.0, 67.0)}
+
+
+@part
+def picam3_wide() -> Stock:
+    """Raspberry Pi Camera Module 3 Wide (SC1224), re-made from Raspberry Pi's mechanical drawing
+    (vendor_docs/RaspberryPi_Camera-Module-3_wide_mechanical_drawing.pdf): board 25 x 23.862 x 1.12; four dia 2.2 holes on
+    21 x 12.5 (2.0 from the sides and the bottom edge); lens housing 10.8 square, its centre 14.4 above the bottom edge, 4.23 deep,
+    then the dia 6.95 barrel to 8.3 in front of the board; the FPC connector 19.61 x 5.71 on the back along the top edge, 12
+    overall. Field of view 102 x 67 degrees. Local frame: board back on Z=0, lens up +Z, board centred (X across the 25 mm width,
+    +Y towards the lens's edge); interfaces give the optics for mechloop.camera_view."""
+    w, h, t = 25.0, 23.862, 1.12
+    ly = 14.4 - h / 2                                  # lens centre above the board's centre
+    s = Pos(0, 0, t / 2) * Box(w, h, t)
+    s += Pos(0, ly, t + 4.23 / 2) * Box(10.8, 10.8, 4.23)
+    s += Pos(0, ly, t + 4.23 + (8.3 - 4.23) / 2) * Cylinder(6.95 / 2, 8.3 - 4.23)
+    s += Pos(0, h / 2 - 5.71 / 2, -(12.0 - 8.3 - t) / 2) * Box(19.61, 5.71, 12.0 - 8.3 - t)
+    holes = [(x, y, 0.0) for x in (-10.5, 10.5) for y in (-h / 2 + 2.0, -h / 2 + 14.5)]
+    for x, y, _ in holes:
+        s -= Pos(x, y, t / 2) * Cylinder(1.1, t)
+    tip = t + 8.3
+    return _simple("CAM-RPI-CM3W-SC1224", "Raspberry Pi Camera Module 3 Wide (top-down camera)", s, 0.004, 35.0,
+                   {"maker": "Raspberry Pi Ltd", "mpn": "SC1224", "sellers": [{"name": "Raspberry Pi Approved Resellers", "part_number": "SC1224",
+                                                                               "checked": None, "note": "not checked online (no network in this session)"}],
+                    "datasheet": "vendor_docs/RaspberryPi_Camera-Module-3_wide_mechanical_drawing.pdf",
+                    "ratings_source": {"max_ambient_c": "product brief 0-50 degC"}},
+                   {"kind": "generated to standard", "remade_from": "vendor_docs/RaspberryPi_Camera-Module-3_wide_mechanical_drawing.pdf",
+                    "no_auto_features": True, "source": "board, holes, lens housing, barrel and connector from Raspberry Pi's mechanical drawing"},
+                   ratings={"max_ambient_c": 50.0},
+                   interfaces={"mount_holes_m2": holes, "lens_centre": [(0.0, ly, tip)], "lens_axis": [(0.0, ly, tip + 100.0)],
+                               "image_up": [(0.0, ly + 10.0, tip)], "fov_deg": PICAM3_FOV["wide"]})
+
+
 @part
 def laser_vlm520() -> Stock:
     """Quarton VLM-520-56 LPO-D30-F10 green line laser, 520 nm, 30 degree fan, Class 1M, 3-6 V 80 mA, dia 10 mm brass body (case may

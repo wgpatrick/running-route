@@ -180,6 +180,33 @@
    "checks": "fast checks (geometry, interference, manufacture, assemblability, practice): 9 errors, 143 warnings (v12: 7 errors, 143 warnings in those checks); 2 NEW errors, both practice DG-07 on FHCS-M4x60 (the longer stud: no maker part number, no supplier STEP); no other error new or cleared; the other errors are the existing DG-07 placeholder-part rule (as in v12); parts 907 -> 913 (+6 spacers); part_quality (2 changed custom parts, bed_plate and z_deck, audits on every changed part): clean (no errors or warnings); new requirement, finger clearance: 21.4 / 21.4 / 24.3 mm free round the three thumb nuts (v12: 0.9 mm from the square's members); bed spring preload, plate growth and three-point requirements pass; full checks running",
    "file": "changes/bed-thumb-reach.json",
    "design": "printer_v12_1+bed-thumb-reach"
+  },
+  {
+   "id": "topdown-camera",
+   "title": "Top-down camera: Camera Module 3 Wide tilted 55 degrees down",
+   "summary": "The top-down camera becomes a Raspberry Pi Camera Module 3 Wide (SC1224, 102 x 67 degrees) on a new printed bracket on the top back rail's rear face, its lens tilted 55 degrees down at the bed. For photos the gantry parks at the front. New check: from that pose the whole sheet and a 150 mm calibration target on it are inside the view and nothing blocks them; views from both cameras are saved.",
+   "threads": [
+    "e27554c6-9501-4b74-97a3-08679ac0af62"
+   ],
+   "status": "proposed",
+   "depends_on": [],
+   "removed": [],
+   "modified": [
+    "cam_topdown",
+    "cam_topdown_mount",
+    "cam_topdown_screw_0",
+    "cam_topdown_screw_0_nut",
+    "cam_topdown_screw_0_nwasher",
+    "cam_topdown_screw_0_washer",
+    "cam_topdown_screw_1",
+    "cam_topdown_screw_1_nut",
+    "cam_topdown_screw_1_nwasher",
+    "cam_topdown_screw_1_washer"
+   ],
+   "added": [],
+   "checks": "fast checks (geometry, interference, manufacture, assemblability, practice): 7 errors, 142 warnings (v12: 7 errors, 143 warnings in those checks); no error new or cleared against v12; 1 warning cleared (v12's top-down bracket needed support material); the errors are the existing DG-07 placeholder-part rule (as in v12); parts 907 -> 907 (+0); part_quality (1 changed custom part, cam_topdown_mount, audits on every changed part): clean (no errors or warnings); new camera-view check (gantry parked at the front, bed at Z 90): the top-down camera sees 289 of 289 sheet points and 49 of 49 calibration-target points, nothing in the way, and the whole sheet stays visible for bed Z 70 to 140 (prints up to 110 mm tall; higher, the top back rail hides the sheet's rear edge); the overview camera (v12's, unchanged) sees none of the sheet in that pose, because the parked gantry fills its view (reported, not required); views saved in changes/topdown-camera_views/; full checks running",
+   "file": "changes/topdown-camera.json",
+   "design": "printer_v12_1+topdown-camera"
   }
  ]
 }
