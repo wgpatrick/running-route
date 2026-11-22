@@ -3,6 +3,8 @@
 # Two lanes so fast checks never wait behind slow verifies:
 #   fast lane (HEAVY_FAST_SLOTS, default 2): `--only` runs without fea/tolerance/motion/printing, or build_change.py without --verify
 #   slow lane (HEAVY_SLOTS, default 2): everything else (full / affected-tier verifies, FEA, tolerance Monte Carlo)
+# Each slot is pinned to its own CPU core (4 cores): a tiered verify forks up to 4 workers, which oversubscribed the
+# machine (load 13 on 4 cores) when every slot ran one.
 # Force a lane with HEAVY_LANE=fast|slow.  Usage: tools/heavy.sh <command...>
 args=" $* "
 lane=${HEAVY_LANE:-}
@@ -15,7 +17,11 @@ if [ "$lane" = fast ]; then N=${HEAVY_FAST_SLOTS:-2}; pre=fast; else N=${HEAVY_S
 while true; do
   for i in $(seq 1 "$N"); do
     exec 9>"/tmp/mechloop_heavy.$pre$i"
-    if flock -n 9; then "$@"; rc=$?; flock -u 9; exit $rc; fi
+    if flock -n 9; then
+      # pin this job (and its worker processes) to one core: slow slots use cores 0-1, fast slots cores 2-3
+      if [ "$pre" = fast ]; then core=$(( (i - 1) % 2 + 2 )); else core=$(( (i - 1) % 2 )); fi
+      taskset -c "$core" "$@"; rc=$?; flock -u 9; exit $rc
+    fi
   done
   sleep 2
 done
