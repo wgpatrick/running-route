@@ -251,6 +251,95 @@
    "checks": "fast checks (geometry, interference, manufacture, assemblability, practice, part_quality): 13 errors, 152 warnings (v12: 7 errors, 143 warnings); 6 NEW error(s): interference/screw_bottoms_in_slot: carriage_plate_left_bolt_0 (SHCS-M5x12) goes 5.65 mm into the slot of sq_left through a 6.35 mm stack; the slot is 6 mm deep, so it ends 0.3; interference/screw_bottoms_in_slot: carriage_plate_left_bolt_1 (SHCS-M5x12) goes 5.65 mm into the slot of sq_left through a 6.35 mm stack; the slot is 6 mm deep, so it ends 0.3; interference/screw_bottoms_in_slot: carriage_plate_right_bolt_0 (SHCS-M5x12) goes 5.65 mm into the slot of sq_right through a 6.35 mm stack; the slot is 6 mm deep, so it ends 0; interference/screw_bottoms_in_slot: carriage_plate_right_bolt_1 (SHCS-M5x12) goes 5.65 mm into the slot of sq_right through a 6.35 mm stack; the slot is 6 mm deep, so it ends 0; the other errors are the existing practice DG-07 placeholder-part rule (as in v12); parts 907 -> 901 (-6); part_quality (3 changed custom part(s), audits on every changed part): clean (no errors or warnings); full checks running",
    "file": "changes/carriage-plate-rigid.json",
    "design": "printer_v12_1+carriage-plate-rigid"
+  },
+  {
+   "id": "bed-thumb-reach",
+   "title": "Bed thumb nuts below the square, reachable by fingers",
+   "summary": "Hand levelling stays (studs, die springs, thumb nuts; fitted hole, slot, oversize hole). Each thumb nut sat 0.9 mm from a member of the 2020 square. The studs cannot move inward (the 210 mm heater pad is under the plate), so each thumb nut now hangs below the square on two stock 10 mm spacers (McMaster 94669A079) and the stud is an M4 x 60. The rear stud moves 42.5 mm left along the plate's rear edge, clear of v12's rear nut plate under the rear member (it stays put with rear-z-inside). At least 20 mm free all round each knob. New requirement: finger clearance for every hand-adjusted part.",
+   "threads": [
+    "2211e7e2-0d7e-485a-adfb-083c2c2d279c"
+   ],
+   "status": "proposed",
+   "depends_on": [],
+   "removed": [],
+   "modified": [
+    "bed_plate",
+    "bed_spring_2",
+    "bed_spring_2_seat",
+    "bed_stud_0",
+    "bed_stud_1",
+    "bed_stud_2",
+    "bed_stud_2_nut",
+    "bed_stud_2_washer",
+    "bed_thumb_0",
+    "bed_thumb_1",
+    "bed_thumb_2",
+    "bed_thumb_2_washer",
+    "z_deck"
+   ],
+   "added": [
+    "bed_thumb_0_spacer_0",
+    "bed_thumb_0_spacer_1",
+    "bed_thumb_1_spacer_0",
+    "bed_thumb_1_spacer_1",
+    "bed_thumb_2_spacer_0",
+    "bed_thumb_2_spacer_1"
+   ],
+   "checks": "fast checks (geometry, interference, manufacture, assemblability, practice): 7 errors, 143 warnings (v12: 7 errors, 143 warnings in those checks); no error new or cleared against v12; the errors are the existing DG-07 placeholder-part rule (as in v12); the longer stud is McMaster 92125A221 (M4 x 60, 18-8 stainless, ISO 10642, McMaster STEP and drawing, REQ-022), rated as class 50 stainless (1475 N against about 61 to 72 N of spring preload); parts 907 -> 913 (+6 spacers); part_quality (2 changed custom parts, bed_plate and z_deck, audits on every changed part): clean (no errors or warnings); new requirement, finger clearance: 21.4 / 21.4 / 24.3 mm free round the three thumb nuts (v12: 0.9 mm from the square's members); full checks (tolerance, fea, motion, printing, electrical, subsystems, ratings, requirements; run with the stud as steel before the stainless rating, so the stud's lower strength is not in them): 0 errors, 32 warnings (v12: 0 errors, 31 warnings in those checks); no error new or cleared against v12; every requirement passes, including spring preload, plate growth and three-point levelling; warnings that changed: a 1 kg print on the worst corner now lowers the surface 0.055 mm (v12 0.030; limit 0.2, a warning in both) because the rear stud moved 42.5 mm left; one Monte Carlo tolerance warning on the Eddy holder's washers (0.07 % of builds), which the change does not touch",
+   "file": "changes/bed-thumb-reach.json",
+   "design": "printer_v12_1+bed-thumb-reach"
+  },
+  {
+   "id": "topdown-camera",
+   "title": "Top-down camera: Camera Module 3 Wide tilted 55 degrees down",
+   "summary": "The top-down camera becomes a Raspberry Pi Camera Module 3 Wide (SC1224, 102 x 67 degrees) on a new printed bracket on the top back rail's rear face, its lens tilted 55 degrees down at the bed. For photos the gantry parks at the front. New check: from that pose the whole sheet and a 150 mm calibration target on it are inside the view and nothing blocks them; views from both cameras are saved.",
+   "threads": [
+    "e27554c6-9501-4b74-97a3-08679ac0af62"
+   ],
+   "status": "proposed",
+   "depends_on": [],
+   "removed": [],
+   "modified": [
+    "cam_topdown",
+    "cam_topdown_mount",
+    "cam_topdown_screw_0",
+    "cam_topdown_screw_0_nut",
+    "cam_topdown_screw_0_nwasher",
+    "cam_topdown_screw_0_washer",
+    "cam_topdown_screw_1",
+    "cam_topdown_screw_1_nut",
+    "cam_topdown_screw_1_nwasher",
+    "cam_topdown_screw_1_washer"
+   ],
+   "added": [],
+   "checks": "fast checks (geometry, interference, manufacture, assemblability, practice): 7 errors, 142 warnings (v12: 7 errors, 143 warnings in those checks); no error new or cleared against v12; 1 warning cleared (v12's top-down bracket needed support material); the errors are the existing DG-07 placeholder-part rule (as in v12); parts 907 -> 907 (+0); part_quality (1 changed custom part, cam_topdown_mount, audits on every changed part): clean (no errors or warnings); new camera-view check (gantry parked at the front, bed at Z 90): the top-down camera sees 289 of 289 sheet points and 49 of 49 calibration-target points, nothing in the way, and the whole sheet stays visible for bed Z 70 to 140 (prints up to 110 mm tall; higher, the top back rail hides the sheet's rear edge); the overview camera (v12's, unchanged) sees none of the sheet in that pose, because the parked gantry fills its view (reported, not required); views saved in changes/topdown-camera_views/; full checks (tolerance, motion, printing, electrical, subsystems, ratings): 0 errors, 33 warnings (v12: 0 errors, 30 warnings in those checks); no error new or cleared against v12; the warnings that changed are Monte Carlo tolerance warnings on parts the change does not touch (the X belt, the Eddy holder, a Y tension screw, a sheet pin, a Z motor, each in 0.03 % to 5 % of builds); FEA not run: the camera is in no FEA load case, and the 2-hour run was stopped while waiting for the shared FEA solver",
+   "file": "changes/topdown-camera.json",
+   "design": "printer_v12_1+topdown-camera"
+  },
+  {
+   "id": "part-cooling-rebuild",
+   "title": "Part cooling: blower turned so its inlet breathes, duct rebuilt to its real outlet",
+   "summary": "Checked against Delta's drawing, the blower's STEP is mirrored, and v12's model put the outlet on the wrong edge. As placed, the inlet faced forward onto the probe bracket and the duct's cradle sat on the closed face. The blower is now drawn as on the drawing (the maker's STEP, mirrored) and turned so the inlet faces back into free air, outlet down. The duct is rebuilt from a spec: a mouth on the real outlet, a riser, one radiused bend, a plenum under the Roto, a converging nozzle and v11's 14 x 3 mm jet at the nozzle tip. Walls 1.6 mm (tube 1.2), no internal supports, the cradle's arms clear of the inlet. New check: duct and fan alignment.",
+   "threads": [],
+   "status": "proposed",
+   "depends_on": [],
+   "removed": [],
+   "modified": [
+    "part_duct",
+    "part_fan",
+    "part_fan_screw_0",
+    "part_fan_screw_0_nut",
+    "part_fan_screw_0_nwasher",
+    "part_fan_screw_0_washer",
+    "part_fan_screw_1",
+    "part_fan_screw_1_nut",
+    "part_fan_screw_1_nwasher",
+    "part_fan_screw_1_washer"
+   ],
+   "added": [],
+   "checks": "fast checks (geometry, interference, manufacture, assemblability, practice, electrical): 7 errors, 147 warnings (v12: 7 errors, 146 warnings in those checks); no error new or cleared against v12; 1 new warning: part_duct tall_thin_print (99 mm tall standing upright to print: print it with a brim); the errors are the existing DG-07 placeholder-part rule (as in v12); parts 907 -> 907 (+0); part_quality (1 changed custom part, part_duct, audits on every changed part): v12's tiny_edge and sliver_face errors and its thin_wall warning cleared; 1 warning left, small_step (the 0.35 mm ledge in v11's captive-nut pocket, also in v12); requirements: new duct/fan alignment check passes (30 of 30 points 1 mm past the outlet are in the open passage and walled in by the duct's mouth, the inlet faces back with nothing within 8 mm); the v11 cooling check passes (duct 5.15 mm from the heater block, 2.88 mm above the tip, jet 0.5 mm under the tip); toolhead 0.396 kg (limit 0.45); full checks (tolerance, fea, motion, printing, subsystems, ratings, requirements): no error new or cleared against v12, every requirement passes; one electrical error they found (the toolhead loom bent too tight at its clamp on the cradle) is fixed: the cradle has a tab at v12's clamp point and electrical now passes (0 errors, 3 warnings, as v12); found in v12: Delta's STEP is the mirror image of Delta's drawing, v12's model put the outlet on the wrong edge, and as placed the real outlet blew up out of the blower's top while the inlet faced forward at the Roto",
+   "file": "changes/part-cooling-rebuild.json",
+   "design": "printer_v12_1+part-cooling-rebuild"
   }
  ]
 }

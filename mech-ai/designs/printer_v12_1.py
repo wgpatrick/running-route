@@ -151,6 +151,7 @@ from mechloop.parts import (Stock, add_corner_bracket, add_nut, add_screw, add_w
 from mechloop.parts.batch6 import fan_cg3010u24
 from mechloop.parts.batch7 import leadscrew_motor_17e19_ab4, leadscrew_screw_17e19_ab4, octopus_v11
 from mechloop.parts.batch8 import add_thumb_nut, die_spring_dj8x20
+from mechloop.parts.batch10 import blower_bfb0524hh_v2
 from mechloop.parts.batch10 import blower_bfb0524hh, blower_flow_estimate_pa, leadscrew_nut_pom_ab4, print_sheet_pei220
 from mechloop.parts.hardware import washer_toothed
 from mechloop.parts.electrical import (THERMISTORS, add_electrical_bom, bed_heater_pad, device_from, embedded_device,
@@ -160,6 +161,7 @@ from mechloop.parts.hardware import WASHER, spacer_round
 from mechloop.parts.probes import add_probe_nuts, probe_omron_e2e
 from mechloop.parts.toolhead import extruder_roto, hotend_revo
 from mechloop.shops import assign
+from mechloop.parts.batch12 import picam3_wide, PICAM3_FOV
 from mechloop.parts.batch12 import (tnut_hntp5, psu_xp_lba350ps24, estop_omron_a22e_m_02, estop_omron_a22e_m_02_v2, leadscrew_motor_a4003_tapped, safety_relay_omron_g9se_201, dowel_pin_3x8_placeholder, shaft_misumi_sfal8, spacer_mcmaster_94669a079, switch_omron_d2f_01l, foot_misumi_nfjn5_30, spool_1kg_placeholder, spacer_tube_m8_placeholder, coupler_mcmaster_2333n214, add_bracket_misumi, adxl345_btt, cam_arducam_b0454, cob_led, contactor_finder_2232, din_endstop_wago,
 
 
@@ -171,7 +173,7 @@ from mechloop.parts.batch12 import (tnut_hntp5, psu_xp_lba350ps24, estop_omron_a
 # ---- v12.1 change flags (docs/OPERATING_MODES.md): every owner decision is its own switch; all off = printer_v12 ----------
 import os as _os
 
-CHANGE_IDS = ("estop-mount", "zmotor-holes", "znut-direct", "carriage-plate-rigid", "rear-z-inside", "spool-closer")
+CHANGE_IDS = ("estop-mount", "zmotor-holes", "znut-direct", "carriage-plate-rigid", "rear-z-inside", "spool-closer", "bed-thumb-reach", "topdown-camera", "part-cooling-rebuild")
 CHANGES = {k: True for k in CHANGE_IDS}
 CHANGE_DEPENDS = {"rear-z-inside": ("znut-direct",),       # the rear plate is the fronts' direct-nut plate
                   "spool-closer": ("rear-z-inside",)}      # v12's rear screw (y 198-206, x 0) stands where the closer spool goes
@@ -217,6 +219,29 @@ CHANGE_INFO = {     # for the review page's Changes tab (tools/build_change.py)
                                 "relay's DIN rail and its screw heads; spool_sleeve_0 is 44 mm shorter and the axle the shortest MISUMI "
                                 "SFAL8 that carries the stack (SFAL8-64-B15-S15). Needs rear-z-inside.",
                      "threads": ["f2ab0822-37c9-47a9-a7c7-ba113e35cbd2"]},
+    "bed-thumb-reach": {"title": "Bed thumb nuts below the square, reachable by fingers",
+                        "summary": "Hand levelling stays (studs, die springs, thumb nuts; fitted hole, slot, oversize hole). Each thumb nut "
+                                   "sat 0.9 mm from a member of the 2020 square. The studs cannot move inward (the 210 mm heater pad is "
+                                   "under the plate), so each thumb nut now hangs below the square on two stock 10 mm spacers (McMaster "
+                                   "94669A079) and the stud is an M4 x 60. The rear stud moves 42.5 mm left along the plate's rear edge, "
+                                   "clear of v12's rear nut plate under the rear member (it stays put with rear-z-inside). At least 20 "
+                                   "mm free all round each knob. New requirement: finger clearance for every hand-adjusted part.",
+                        "threads": ["2211e7e2-0d7e-485a-adfb-083c2c2d279c"]},
+    "topdown-camera": {"title": "Top-down camera: Camera Module 3 Wide tilted 55 degrees down",
+                       "summary": "The top-down camera becomes a Raspberry Pi Camera Module 3 Wide (SC1224, 102 x 67 degrees) on a new "
+                                  "printed bracket on the top back rail's rear face, its lens tilted 55 degrees down at the bed. For photos "
+                                  "the gantry parks at the front. New check: from that pose the whole sheet and a 150 mm calibration "
+                                  "target on it are inside the view and nothing blocks them; views from both cameras are saved.",
+                       "threads": ["e27554c6-9501-4b74-97a3-08679ac0af62"]},
+    "part-cooling-rebuild": {"title": "Part cooling: blower turned so its inlet breathes, duct rebuilt to its real outlet",
+                             "summary": "Checked against Delta's drawing, the blower's STEP is mirrored, and v12's model put the outlet on "
+                                        "the wrong edge. As placed, the inlet faced forward onto the probe bracket and the duct's cradle sat on "
+                                        "the closed face. The blower is now drawn as on the drawing (the maker's STEP, mirrored) and turned "
+                                        "so the inlet faces back into free air, outlet down. The duct is rebuilt from a spec: a mouth on "
+                                        "the real outlet, a riser, one radiused bend, a plenum under the Roto, a converging nozzle and "
+                                        "v11's 14 x 3 mm jet at the nozzle tip. Walls 1.6 mm (tube 1.2), no internal supports, the "
+                                        "cradle's arms clear of the inlet. New check: duct and fan alignment.",
+                             "threads": []},
 }
 _on_ids = [k for k in CHANGE_IDS if CHANGES[k]]
 DESIGN_NAME = ("printer_v12_1" if len(_on_ids) == len(CHANGE_IDS) else "printer_v12_1-base" if not _on_ids
@@ -269,6 +294,12 @@ FRONT_EXT = 13.0       # v8.2 (owner review): the frame's front is 13 mm further
                        # machine inside its 420 mm envelope (26 mm, lugs untrimmed, made it 431)
 FD = FY + FRONT_EXT    # frame depth, outside to outside of the front and back rails
 FRONT_Y = -(FY / 2 - 10) - FRONT_EXT   # centre line of the front rails and posts (v8.1 -170)
+# v12.1 topdown-camera: the camera's pose and the photo pose (gantry parked at the front, the bed high enough that the top back rail
+# does not hide the sheet's rear edge from a camera behind it: rail's top front edge y 160, z 404)
+CAM_TD_X, CAM_TD_TILT = -60.0, 55.0          # v12's x (clear of the rear lead screw at x 0 and of the SFS at x 40); lens 55 deg below level
+CAM_TD_B = (2.0, 62.0)                        # board-back centre in the bracket's frame (y behind the rail's rear face, z above its centre)
+PHOTO_Z = 90.0                                # Z joint for photos and calibration: the sheet 90 mm above its lowest (prints up to ~110 mm tall)
+CAL_TARGET = 150.0                            # ChArUco calibration target, square, laid on the sheet's centre (not a drawn part)
 
 # ---- toolhead offset (v10) -----------------------------------------------------------
 C_NOZ = 15.5           # the nozzle is 15.5 mm to the LEFT of the X guide block's centre: the Roto reaches 16.2 mm left and
@@ -319,6 +350,15 @@ SPRING_H = 12.0        # DJ-8X20YCS installed: 8 mm of its 20 compressed, 60.8 N
 SPRING_K = 7.6
 GAP = W4 + NUT4 + SPRING_H + W4           # plate underside to deck top: 16.8 mm
 STUD_L = 40.0          # M4 x 40 countersunk: 12 mm in the plate, 16.8 gap, deck, washer, 7 mm into the thumb nut
+THUMB_DROP = 0.0       # how far below the deck's large washer each thumb nut sits (v12: on the washer)
+FINGER_CLEAR = 20.0    # v12.1 bed-thumb-reach (owner): free space all round a part turned by hand
+if CH("bed-thumb-reach"):
+    # v12.1 bed-thumb-reach. Each thumb nut stood inside the square, 0.9 mm from a member's inner face (the stud 8.9 mm from it,
+    # the knurl 8 mm in radius). Moving the studs inward to 28 mm from the members puts them 12 mm inside the 210 mm heater pad
+    # (stock, bonded under the plate), so the nuts go DOWN instead: two stock 10 mm aluminium spacers (McMaster 94669A079, 10 OD,
+    # 5.3 bore) between the large washer and the thumb nut put the nut's collar 1.1 mm below the square's underside and its
+    # knurl 7 mm below it, in open space; the stud is 20 mm longer (M4 x 60), the same 3.6 mm past the nut.
+    THUMB_DROP, STUD_L = 20.0, 60.0
 CSK_SINK = (CSK["M4"][0] - CSK["M4"][1]) / 2      # 0.72 mm: how far an M4 countersunk head sits below the surface
 LEVEL_RANGE = 1.5      # +/- at each thumb nut (v9 2.0: the spring's 10 mm and the preload margin leave 1.5; the stack-up needs 0.7)
 LEV_X, LEV_Y = 86.0, 112.0                # v12: 112 (outside the 210 pad, 8 mm in from the 240 plate's edge); v11: 108 (v10 109.5): 8 mm inside the 232 mm plate's edges; three studs: front pair at (+/-86, BED_CY - 109.5) beside the square's front member (thumb nuts
@@ -326,6 +366,13 @@ LEV_X, LEV_Y = 86.0, 112.0                # v12: 112 (outside the 210 pad, 8 mm 
                                           # each 11.4 mm from a member's inner face and within 60 mm of a lead-screw nut
 # deck hole per stud (thermal growth of the plate): 0 fitted, 1 slot towards 0, 2 oversize
 BED_MOUNTS = [(-LEV_X, BED_CY - LEV_Y), (LEV_X, BED_CY - LEV_Y), (BED_CX, BED_CY + LEV_Y)]
+if CH("bed-thumb-reach") and not CH("rear-z-inside"):
+    # v12.1 bed-thumb-reach: v12's rear nut plate runs under the rear member from x -27.8 to +27.8 (its bolt heads down to z 129.6),
+    # 8.9 mm behind the rear stud's axis: the rear thumb nut, lowered below the square, would sit against it. The rear stud moves
+    # 42.5 mm left along the plate's rear edge (still outside the heater pad, 17.5 mm from the left rear sheet pin), the ring round
+    # its knob 22 mm clear of the plate. It still carries half the bed; the front pair 0.17 / 0.33. With rear-z-inside the rear
+    # nut plate is under the left member instead and the stud stays on the centre line.
+    BED_MOUNTS[2] = (BED_CX - 42.5, BED_CY + LEV_Y)
 DECK_FIT, DECK_FREE = 4.3, 5.5
 # v11: the 330 mm screws (328 above the motor face, as sold) cannot stand under the top rails with their motors on the bottom
 # rails (motor body 48 + screw 328 = 376 > the 364 between the rails' faces). So the front two stand INBOARD of the top side
@@ -1158,6 +1205,118 @@ def part_duct_shape(y_noz, bl_y0):
     return c
 
 
+# ---- v12.1 part-cooling-rebuild: the duct rebuilt from its spec, in its own frame (origin at the nozzle tip, x right, y back, z up) -------
+DV2_W, DV2_WT = 1.6, 1.2                 # chamber walls; the jet tube's walls (owner: >= 1.2)
+
+
+def _rect_wire(c, n, w, h):
+    """A w x h rectangle centred at c in the plane square to n; its width along the horizontal p = n x z (or x for a vertical n)."""
+    from build123d import Rectangle
+    n = np.asarray(n, float) / np.linalg.norm(n)
+    p = np.cross(n, [0, 0, 1.0])
+    p = np.array([1.0, 0, 0]) if np.linalg.norm(p) < 1e-9 else p / np.linalg.norm(p)
+    return Location(Plane(origin=tuple(float(v) for v in c), x_dir=tuple(float(v) for v in p), z_dir=tuple(float(v) for v in n))) * Rectangle(w, h)
+
+
+def _loft2(c0, n0, w0, h0, c1, n1, w1, h1):
+    from build123d import loft, Sketch
+    return loft([Sketch() + _rect_wire(c0, n0, w0, h0), Sketch() + _rect_wire(c1, n1, w1, h1)], ruled=True)
+
+
+def part_duct_v2_local(g):
+    """v12.1 part-cooling-rebuild: the part-cooling duct from its spec, in the nozzle-tip frame. `g` gives the mates in that frame
+    (part_duct_v2_mates). Spec:
+    - function: take the BFB0524HH's whole outlet (g["out_in"]: x0, x1, y0, y1 of its inside, at height g["out_z"], air going down)
+      and lead it without steps down behind the Roto, round one radiused bend, forward under the Roto into a plenum, and out through a
+      converging nozzle and the 14 x 3 mm tube of v11 whose jet (g["jet_o"], g["jet_ax"]) reaches the nozzle's axis 0.5 mm under the tip;
+    - mates: the blower's outlet rim (its face seats on the duct's mouth); the blower's two lugs (g["lugs"]: M3 x 25 through-bolts into
+      a cradle BEHIND the blower, on the inlet side, kept 3 mm outside the inlet ring g["inlet"]); the tool plates' tab (the flange,
+      g["flange"], two M3 x 16 into captive nylocs, as v11);
+    - loads: the blower (28 g) and handling; process: PETG print service (Hubs), printed upright (floor on the bed): every inside roof
+      is a bridge of 18 mm or less or slopes at 45 degrees or steeper, no internal supports; walls 1.6 mm (tube 1.2);
+    - envelope: behind the Roto's rear face + 0.6, below its underside - 1.25 (the plenum's roof), in front of the top back rail's
+      limit below its height (g["rail_y"], g["rail_z"]), 3.05 mm above the tip, 4.5 mm or more from the heater block."""
+    W, WT = DV2_W, DV2_WT
+    x0, x1, y0, y1 = g["out_in"]
+    out_z = g["out_z"]
+    zr = g["roto_under"] - 1.25                 # the plenum's outer roof
+    yf = g["roto_rear"] + 0.6                   # the riser's outer front
+    floor = 3.05                                # the outer floor above the tip (owner: >= 2.5)
+    rx0, rx1 = x0 - 2.0, x1 - 2.0               # riser: 2 mm left of the outlet (the transition takes it)
+    ry0 = yf + W
+    pz0, pz1 = floor + W, zr - W                # plenum's inside height
+    ry1 = ry0 + (pz1 - pz0)                     # riser depth = plenum height: the bend is a true quarter circle
+    assert ry1 + W <= g["rail_y"] + 1e-6, (ry1 + W, g["rail_y"])
+    zt = g["rail_z"]                            # the straight riser ends here; above it the transition to the outlet
+    py0, px0 = 20.0, 20.0                       # plenum front and left wall (inside)
+    rb = pz1 - pz0
+    jo, ja = np.asarray(g["jet_o"], float), np.asarray(g["jet_ax"], float)
+    b = jo - ja * OUT_L                         # the tube's inner end
+    pw = b - ja * 8.0                           # the converging nozzle's wide end, inside the plenum / bend
+
+    def passage(o, ot):
+        s = bx(rx0 - o, rx1 + o, ry0 - o, ry1 + o, pz1, zt)                                                # riser
+        s += _loft2(((x0 + x1) / 2, (y0 + y1) / 2, out_z), (0, 0, -1), x1 - x0 + 2 * o, y1 - y0 + 2 * o,
+                    ((rx0 + rx1) / 2, (ry0 + ry1) / 2, zt), (0, 0, -1), rx1 - rx0 + 2 * o, ry1 - ry0 + 2 * o)   # outlet -> riser
+        if o == 0:
+            s += bx(x0, x1, y0, y1, out_z, out_z + 1.0)                                                  # the mouth, cut clean
+        s += (bx(rx0 - o, rx1 + o, ry0, ry1 + o, pz0 - o, pz1)
+              & (Pos((rx0 + rx1) / 2, ry0, pz1) * xcyl(rb + o, rx1 - rx0 + 2 * o + 0.02)))                 # the radiused bend
+        s += bx(px0 - o, rx1 + o, py0 - o, ry0, pz0 - o, pz1 + o)                                        # plenum under the Roto
+        s += bx(px0 - o, rx0, ry0 - 0.01, 33.0 + o, pz0 - o, pz1 + o)              # its back-left bay, beside the bend, for the nozzle's wide end
+        s += _loft2(pw, ja, OUT_W + 2 * o, 8.5 + 2 * o, b, ja, OUT_W + 2 * ot, OUT_H + 2 * ot)           # converging nozzle
+        s += _tube(jo + (ja * 0.05 if o == 0 else 0.0), ja, OUT_W + 2 * ot, OUT_H + 2 * ot, OUT_L + (0.1 if o == 0 else 0.0))
+        return s
+
+    s = passage(W, WT)
+    # flange on the tool plates' tab and the arm under the Roto to the plenum (v11's, to the plenum's roof)
+    fx0, fx1, fy0, fy1, fz0 = g["flange"]
+    s += bx(fx0, fx1, fy0, fy1, fz0, zr)
+    s += bx(24.0, fx1, fy1, py0 - W, fz0, zr)          # from x 24: clear of the jet tube's mouth and its jet
+    # cradle behind the blower: an upright to the upper lug and a bar to the lower one, both outside the inlet ring + 3 mm
+    (ux, uz), (lx, lz) = g["lugs"]
+    yb0, yb1 = g["blower_back"], g["blower_back"] + CRADLE_T
+    s += bx(ux - 4.0, ux + 4.0, yb0, yb1, out_z - 6.5, uz + 5.5)                     # upright, down past the mouth
+    s += bx(ux + 3.0, ux + 16.0, yb0, yb1, uz - 1.0, uz + 5.5)                        # its tab for the toolhead loom's clamp (v12's spot)
+    s += bx(ux - 4.0, ux + 4.0, 44.0, yb1, out_z - 6.5, out_z)                        # its web, into the transition's back wall
+    s += bx(ux - 4.0, lx + 4.0, yb0, yb1, out_z, out_z + 5.5)                         # bar along the blower's lower edge
+    s += bx(lx - 4.5, lx + 4.0, yb0, yb1, out_z, lz + 4.5)                            # pad round the lower lug
+    s -= passage(0.0, 0.0)
+    for x, z in g["flange_screws"]:
+        s -= Pos(x, (fy0 + fy1) / 2, z) * ycyl(PH3 / 2, fy1 - fy0)
+        s -= nut_pocket((x, g["pocket_y"], z), (0, 1, 0), (0, 0, -1))
+    for x, z in g["lugs"]:
+        s -= Pos(x, (yb0 + yb1) / 2, z) * ycyl(printed_clearance_hole("M3") / 2, CRADLE_T)
+    return s
+
+
+def part_duct_v2_mates(d_or_none, y_noz, bl_y0):
+    """The duct's mates in the nozzle-tip frame, from the parts they belong to (world -> local: minus the tip)."""
+    tip = np.array([NOZ_X, y_noz, Z_NOZZLE])
+    bc, yc, zc = (BL_X0 + BL_X1) / 2, bl_y0 + BL_T / 2, BL_Z0 + BL_W / 2
+    st = blower_bfb0524hh_v2()
+    it = st.interfaces
+    # the blower turned so its outlet (local -Z) points down and its inlet (local -Y) faces BACK: local x -> world -x, y -> -y, z -> z
+    w = lambda p: np.array([bc - p[0], yc - p[1], zc + p[2]])
+    ox0, ox1, oy0, oy1 = it["outlet_inside"]
+    a, b_ = w((ox1, oy1, it["outlet_face_z"])), w((ox0, oy0, it["outlet_face_z"]))
+    out_in = (a[0] - tip[0], b_[0] - tip[0], a[1] - tip[1], b_[1] - tip[1])
+    lugs = [tuple((w(p) - tip)[[0, 2]]) for p in it["mount_holes_m4"]]
+    lugs.sort(key=lambda q: -q[1])                       # upper one first
+    inlet = w(it["inlet_centre"][0]) - tip
+    o, ax = _outlet_frame(y_noz)
+    yf = YB0 + R_TPR
+    return {"out_in": out_in, "out_z": float(BL_Z0 - tip[2]), "roto_rear": float(YB0 + R_TPR + ROTO_W - tip[1]),
+            "roto_under": float(ROTO_O[2] + _ROTO_UNDER - tip[2]), "rail_y": float(bl_y0 + 11.0 - tip[1]), "rail_z": float(Z_NOZZLE + 32.55 - tip[2]),
+            "jet_o": o - tip, "jet_ax": ax, "lugs": lugs, "inlet": (inlet, it["inlet_dia"]), "blower_back": float(bl_y0 + BL_T - tip[1]),
+            "flange": (FC_X0 - tip[0], FC_X1 - tip[0], yf - tip[1], yf + FC_FL - tip[1], Z_BEAM + FC_Z0 - tip[2]),
+            "flange_screws": [(x - tip[0], Z_BEAM + z - tip[2]) for x, z in FC_SCREWS], "pocket_y": float(yf + POCKET_WALL - tip[1]),
+            "tip": tip}
+
+
+_ROTO_UNDER = min(_ROTO["body_box"][0][2], -11.75)       # the Roto's underside below its origin (its solid reaches -11.75)
+
+
 EDDY_DX = -8.0                                 # v12: the Eddy's coil 8 mm left of the nozzle (clear of the Roto's lower screw head)
 EDDY_H = 2.5                                   # coil face above the nozzle tip (BTT: 2-3 mm; HEIGHT_SENSING 2.5)
 EDDY_HOLDER_T = 8.5                            # printed holder on the Eddy's left (its mounting face), PETG
@@ -1311,6 +1470,7 @@ def build_electrical(d: Design) -> Electrical:
                          ("xbody", (NOZ_X - 12.0, yl + 14.0, Z_BEAM + 58.0)),      # v11: up past the blower's left side,
                          ("xbody", (NOZ_X + 12.0, by_c + 5.0, Z_BEAM + 70.0)),     # over its top and behind its cradle
                          Waypoint("xbody", (NOZ_X + 40.0, by_c + 1.5, BL_Z0 + BL_W - 1.0), clamp="part_duct"),   # on the cradle's back
+                                                                                     # (v12.1 part-cooling-rebuild: on the upright's loom tab)
                          Waypoint("world", (118.0, 175.0, FZ + 12.0), clamp="frame_top_back"), Waypoint("world", P1)],
             flex_length={3: 480.0})
     # over the back rail's rear edge on a 30 mm radius (the 10 mm bundle needs 26), down the outside of the back wall (beside the
@@ -1748,6 +1908,14 @@ def build_frame_z():
         sc = add_screw(d, p, "M4", STUD_L, at=(x, y, Z_BED + T_BED - CSK_SINK), direction=(0, 0, -1), body="zbody",
                        clamps=("bed_plate", wt, "z_deck"), head="countersunk", locking="adhesive")
         sc.meta["fully_threaded"] = True          # buy DIN 7991 / ISO 10642 fully threaded: the lock nut sits 6 to 10 mm under the head
+        if CH("bed-thumb-reach"):
+            # v12.1: the M4 x 60 is McMaster 92125A221, 18-8 stainless (REQ-022; the black-oxide 91294A family of the M4 x 40 stops at
+            # M4 x 50). McMaster gives 70,000 psi (483 MPa) tensile: rated here as property class 50 (yield 210 MPa x 8.78 mm2 stress
+            # area = 1844 N), with the same 0.8 factor fhcs() applies to 12.9: 1475 N, against about 61 to 72 N of spring preload
+            sc.material = SS
+            sc.ratings["proof_load_n"] = round(0.8 * 210.0 * 8.78)
+            sc.ratings["grade"] = "18-8 stainless (McMaster 92125A221: 70,000 psi tensile), rated as class 50"
+            sc.meta["datasheet"] = "vendor_docs/mcmaster_92125A221_datasheet.pdf"
         d.join(wt, "bed_plate", "clamped by the stud's lock nut")
         add_nut(d, jam, "M4", at=(x, y, Z_BED - W4), direction=(0, 0, -1), body="zbody", screw=p, locking="adhesive")
         d.join(jam, wt, "clamp")
@@ -1759,15 +1927,28 @@ def build_frame_z():
         add_washer(d, dw, "M4", (x, y, Z_SQT), (0, 0, -1), body="zbody", series="large")
         d.join(dw, "z_deck", "clamp: held against the deck's underside by the spring's preload (the located stud)" if i == 0 else
                "sliding free: held against the deck's underside by the spring's preload, slips as the plate grows")
-        add_thumb_nut(d, th, "M4", (x, y, Z_SQT - W4L), (0, 0, -1), body="zbody", screw=p)
-        d.join(th, dw, "clamp")
+        if THUMB_DROP:
+            for k in range(2):
+                spn = f"bed_thumb_{i}_spacer_{k}"
+                place(d, spn, spacer_mcmaster_94669a079(), Location((x, y, Z_SQT - W4L - 10.0 * (k + 1))), body="zbody")
+                d.join(spn, dw if k == 0 else f"bed_thumb_{i}_spacer_0", "clamp: a sleeve on the stud, held by the thumb nut")
+                d.join(spn, p, "slid over the stud")
+                d.get(spn).meta["description"] = (f"Spacer {k + 1} of 2 under bed levelling point {i}'s deck washer: it holds the thumb nut "
+                                                  "below the 2020 square, where fingers reach it. Slides on the deck with the washer.")
+        add_thumb_nut(d, th, "M4", (x, y, Z_SQT - W4L - THUMB_DROP), (0, 0, -1), body="zbody", screw=p)
+        d.join(th, f"bed_thumb_{i}_spacer_1" if THUMB_DROP else dw, "clamp")
+        if CH("bed-thumb-reach"):      # the grip: the knurled head (axis, its radius, its z band), for the finger-clearance check
+            tn = d.get(th).meta["interfaces"]
+            zc_ = Z_SQT - W4L - THUMB_DROP
+            d.get(th).meta["hand_adjusted"] = {"axis": (x, y), "r": tn["knurl_dia"] / 2,
+                                                "z": (zc_ - tn["height"], zc_ - tn["height"] + tn["knurl_height"])}
         hole = ("a fitted 4.3 mm hole (this stud, front left, locates the bed)" if i == 0 else
                 "a 4.3 mm slot pointing at stud 0 (front right: holds the bed from turning)" if i == 1 else "a 5.5 mm oversize hole (rear: free)")
         desc = (f"Bed levelling point {i}: an M4 x {STUD_L:g} countersunk screw from the bed's top face (head 0.7 mm below it, under the "
                 f"magnetic base) is locked to the plate by a washer and nut underneath, so it is a fixed stud. A die spring "
                 f"(DJ-8X20YCS, {SPRING_K} N/mm, compressed {20 - SPRING_H:g} mm: {SPRING_K * (20 - SPRING_H):.0f} N) between that nut and the "
                 f"deck pushes the bed up; the stud passes the deck through {hole} and a large washer and knurled thumb nut under "
-                f"the deck hold it down. Turn the thumb nut to level: 0.7 mm per turn, +/-{LEVEL_RANGE:g} mm. Three points: they set the bed's "
+                f"the deck hold it down" + (" (the nut on two 10 mm spacers, below the 2020 square, where fingers reach it)" if THUMB_DROP else "") + f". Turn the thumb nut to level: 0.7 mm per turn, +/-{LEVEL_RANGE:g} mm. Three points: they set the bed's "
                 f"plane and cannot twist the plate.")
         for nm_ in (p, jam, spr, th):
             d.get(nm_).meta["description"] = desc
@@ -1939,8 +2120,16 @@ def build() -> Design:
     # part cooling (v11): the BFB0524HH blower behind the Roto, 0.1 mm behind the probe bracket's leg, outlet down into the duct
     y_noz = YB0 + HOT_OFF
     bl_y0 = yb_pm + B23 + 2 * WASHER["large"]["M3"][2] + 3.0 + 1.5     # 1.5 mm behind the Roto screws' heads and washers
-    d.add("part_duct", part_duct_shape(y_noz, bl_y0), material=HOT, body="xbody", process="printed",
-          meta={"print_up": "-Y", "print": {**PRINT_ABS, "orientation": "-Y"}, "service_temp_c": 45.0})
+    if CH("part-cooling-rebuild"):
+        mates = part_duct_v2_mates(d, y_noz, bl_y0)
+        d.add("part_duct", Pos(*mates["tip"]) * part_duct_v2_local(mates), material=HOT, body="xbody", process="printed",
+              meta={"print_up": "+Z", "print": {**PRINT_ABS, "orientation": "+Z"}, "service_temp_c": 45.0,
+                    "description": "printed PETG part-cooling duct (v12.1, rebuilt from its spec): mouth on the blower's outlet, riser behind the "
+                                   "Roto, one radiused bend, plenum under the Roto, converging nozzle and a 14 x 3 mm jet at the nozzle tip; "
+                                   "a flange on the tool plates' tab and a cradle behind the blower clear of its inlet"})
+    else:
+      d.add("part_duct", part_duct_shape(y_noz, bl_y0), material=HOT, body="xbody", process="printed",
+            meta={"print_up": "-Y", "print": {**PRINT_ABS, "orientation": "-Y"}, "service_temp_c": 45.0})
     for i, (x, z) in enumerate(FC_SCREWS):
         # through both tool plates and the duct's flange into a nyloc nut and washer captured in the flange
         add_screw(d, f"part_duct_screw_{i}", "M3", 16, at=(x, yf, Z_BEAM + z), direction=(0, 1, 0), body="xbody",
@@ -1948,10 +2137,18 @@ def build() -> Design:
         captive_nut(d, f"part_duct_screw_{i}", (x, YB0 + R_TPR + POCKET_WALL, Z_BEAM + z), (0, 1, 0), "part_duct", "xbody")
     bc = (BL_X0 + BL_X1) / 2
     # turned so its outlet (local +Z) points down and lies at the blower's left end (local X -> world -X, thickness along Y)
-    place(d, "part_fan", blower_bfb0524hh(), Location(Plane(origin=(bc, bl_y0 + BL_T / 2, BL_Z0 + BL_W / 2), x_dir=(-1, 0, 0), z_dir=(0, 0, -1))),
-          body="xbody")
+    if CH("part-cooling-rebuild"):
+        # v12.1: the blower as Delta's drawing has it (blower_bfb0524hh_v2), turned so its outlet (local -Z) points down at the duct's
+        # mouth and its inlet (local -Y) faces BACK into free air: local x -> world -x, y -> -y, z -> z
+        place(d, "part_fan", blower_bfb0524hh_v2(), Location(Plane(origin=(bc, bl_y0 + BL_T / 2, BL_Z0 + BL_W / 2), x_dir=(-1, 0, 0), z_dir=(0, 0, 1))),
+              body="xbody")
+        holes_ = [(x + mates["tip"][0], z + mates["tip"][2]) for x, z in mates["lugs"]]
+    else:
+      place(d, "part_fan", blower_bfb0524hh(), Location(Plane(origin=(bc, bl_y0 + BL_T / 2, BL_Z0 + BL_W / 2), x_dir=(-1, 0, 0), z_dir=(0, 0, -1))),
+            body="xbody")
+      holes_ = BL_HOLES()
     W3n = WASHER["normal"]["M3"][2]
-    for i, (x, z) in enumerate(BL_HOLES()):
+    for i, (x, z) in enumerate(holes_):
         # v11: the Delta's two holes (upper left, lower right; measured on its STEP): M3 x 25 through the blower (washer on the plastic) and the duct's
         # cradle, washer and nut on the cradle's back; the outlet seats in the riser's opening below
         # M3 (with washers) in the blower's 4.3 mm holes: lighter than M4; the toolhead stays under its 0.40 kg target
@@ -2628,7 +2825,8 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
     # under the deck. The springs are left out: while they are preloaded the bed is held by the studs against the thumb
     # nuts (docs/PRINTER_V9.md works the preload margin)
     posts = [f"bed_stud_{i}{sfx}" for i in range(len(BED_MOUNTS)) for sfx in ("", "_washer", "_nut")] \
-        + [f"bed_thumb_{i}{sfx}" for i in range(len(BED_MOUNTS)) for sfx in ("", "_washer")]
+        + [f"bed_thumb_{i}{sfx}" for i in range(len(BED_MOUNTS)) for sfx in ("", "_washer")] \
+        + ([f"bed_thumb_{i}_spacer_{k}" for i in range(len(BED_MOUNTS)) for k in range(2)] if THUMB_DROP else [])
     zcars, on_rail, carrier, nplates = zs["zcars"], zs["on_rail"], zs["carrier"], zs["nut_plates"]
     bed_stack = ["bed_plate", "bed_magnet", "bed"]
     d.printer["bed_support"] = {"parts": [*bed_stack, *posts, *carrier, *zcars, *nplates]}
@@ -2705,6 +2903,50 @@ def finish_build(d, zs, bed_own, mounts, mount_parts) -> Design:
             c.meta.setdefault("dfm", {})["process_shop"] = "hubs"
     tag_stages(d)
     return d
+
+
+PHOTO_POSE = {"y": -104.05, "x": 0.0, "z": PHOTO_Z}       # v12.1 topdown-camera: Y at its front limit (the joint's range)
+PICAM3_OPTICS = {"lens_centre": [(0.0, 2.0, 11.3)], "lens_axis": [(0.0, 2.0, 111.3)], "image_up": [(0.0, 12.0, 11.3)],
+                 "fov_deg": PICAM3_FOV["standard"]}      # v12's standard Camera Module 3 (picam3: lens 2 mm above centre, 11.3 deep)
+
+
+def camera_targets(dd, pose):
+    """World points at `pose` on the print sheet's top (17 x 17 grid) and on the calibration target (7 x 7 over CAL_TARGET square at the
+    sheet's centre), 0.3 mm above the surface."""
+    from mechloop.geom import forward_kinematics
+    c = dd.get("bed")
+    T = forward_kinematics(dd, pose)[c.body]
+    bb = c.shape.bounding_box()
+    z = bb.max.Z + 0.3
+    sheet = [(x, y, z) for x in np.linspace(bb.min.X + 0.5, bb.max.X - 0.5, 17) for y in np.linspace(bb.min.Y + 0.5, bb.max.Y - 0.5, 17)]
+    cx, cy, hw = (bb.min.X + bb.max.X) / 2, (bb.min.Y + bb.max.Y) / 2, CAL_TARGET / 2
+    target = [(x, y, z + 0.5) for x in np.linspace(cx - hw, cx + hw, 7) for y in np.linspace(cy - hw, cy + hw, 7)]
+    w = lambda pts: [tuple(T[:3, :3] @ np.array(p) + T[:3, 3]) for p in pts]
+    return w(sheet), w(target)
+
+
+def camera_view_results(dd):
+    """Both cameras at the photo pose (mechloop.camera_view): sheet and target points inside the view and unblocked; for the top-down
+    one also the bed heights (Z joint, 10 mm steps) at which the whole sheet stays visible."""
+    from mechloop.camera_view import view_check
+    out = {}
+    for cam, optics in (("cam_topdown", None), ("cam_overview", PICAM3_OPTICS)):
+        sheet, target = camera_targets(dd, PHOTO_POSE)
+        r1 = view_check(dd, cam, sheet, PHOTO_POSE, optics=optics)
+        r2 = view_check(dd, cam, target, PHOTO_POSE, optics=optics)
+        blk = sorted({b for b in r1["occluded_by"] + r2["occluded_by"] if b})
+        out[cam] = {"sheet_n": r1["n"], "sheet_ok": r1["n_ok"], "target_n": r2["n"], "target_ok": r2["n_ok"],
+                    "outside": int((~r1["inside"]).sum()), "blocked": sum(1 for b in r1["occluded_by"] if b), "blockers": blk[:6],
+                    "fov": r1["fov"], "centre": [float(v) for v in r1["centre"]]}
+    zs_ok = []
+    for zj in np.arange(0.0, PRINT_Z + 0.1, 10.0):
+        pose = dict(PHOTO_POSE, z=float(zj))
+        sheet, _ = camera_targets(dd, pose)
+        r = view_check(dd, "cam_topdown", sheet, pose)
+        if r["n_ok"] == r["n"]:
+            zs_ok.append(float(zj))
+    out["cam_topdown"]["z_range"] = (f"{min(zs_ok):g} to {max(zs_ok):g} (print heights up to {PRINT_Z - min(zs_ok):g} mm)" if zs_ok else "none")
+    return out
 
 
 def add_requirements(d, zs):
@@ -2922,6 +3164,60 @@ def add_requirements(d, zs):
                     f"no thread in the plate")
     d.requirements.append(Requirement("v10: the bed stands on three sprung, thumb-nut levelling points (a plane, no twist), none tapped into the plate", three_points))
 
+    def camera_views(dd):
+        res = camera_view_results(dd)
+        td, ov = res["cam_topdown"], res["cam_overview"]
+        ok = td["sheet_ok"] == td["sheet_n"] and td["target_ok"] == td["target_n"]
+        txt = lambda r: (f"sheet {r['sheet_ok']}/{r['sheet_n']} points seen (outside the view {r['outside']}, blocked {r['blocked']}"
+                         + (f" by {', '.join(r['blockers'])}" if r["blockers"] else "") + f"), target {r['target_ok']}/{r['target_n']}")
+        return ok, (f"photo pose: gantry at Y {PHOTO_POSE['y']:g} (front), X {PHOTO_POSE['x']:g}, bed at Z {PHOTO_Z:g}. Top-down (Camera Module 3 Wide, "
+                    f"{td['fov'][0]:g} x {td['fov'][1]:g} deg, lens at {', '.join(f'{v:.0f}' for v in td['centre'])}, {CAM_TD_TILT:g} deg down): {txt(td)}; "
+                    f"the whole sheet stays visible for bed Z {td['z_range']}. Overview (Camera Module 3, {ov['fov'][0]:g} x {ov['fov'][1]:g} deg, "
+                    f"level, on the top front rail): {txt(ov)} (reported, not required: it is v12's overview camera, unchanged)")
+
+    def finger_reach(dd):
+        # every part turned by hand (meta "hand_adjusted": its grip's vertical axis, radius and z band): no other solid inside a ring
+        # FINGER_CLEAR wide round the grip, from 5 mm below to 5 mm above it (the fingers' room); the parts on its own axis inside
+        # the grip's radius (stud, spacers) are not in the ring. The bed is at the bottom of its travel as drawn (the tightest case)
+        from build123d import Cylinder as _Cyl
+        out, bad = [], []
+        for c in dd.components:
+            g = c.meta.get("hand_adjusted")
+            if not isinstance(g, dict):
+                continue
+            (ax, ay), r, (z0, z1) = g["axis"], g["r"], g["z"]
+            h = z1 - z0 + 10.0
+            ring = Pos(ax, ay, (z0 + z1) / 2) * (_Cyl(r + FINGER_CLEAR, h) - _Cyl(r, h))
+            wide = Pos(ax, ay, (z0 + z1) / 2) * (_Cyl(r + FINGER_CLEAR + 25.0, h) - _Cyl(r, h))
+            wb = wide.bounding_box()
+            grip = Pos(ax, ay, (z0 + z1) / 2) * _Cyl(r, z1 - z0)
+            near, hits = [], []
+            for o in dd.components:
+                if o.name == c.name:
+                    continue
+                ob = o.shape.bounding_box()
+                if (ob.max.X < wb.min.X or ob.min.X > wb.max.X or ob.max.Y < wb.min.Y or ob.min.Y > wb.max.Y
+                        or ob.max.Z < wb.min.Z or ob.min.Z > wb.max.Z):
+                    continue
+                if (o.shape & wide).volume > 1e-3:
+                    near.append((o.shape.distance_to(grip), o.name))
+                    if (o.shape & ring).volume > 1e-3:
+                        hits.append(o.name)
+            gap = min(near)[0] if near else FINGER_CLEAR + 25.0
+            out.append(f"{c.name} {gap:.1f} mm" + (f" (nearest {min(near)[1]})" if near else " (nothing within 45 mm)"))
+            if hits:
+                bad.append(f"{c.name}: {', '.join(sorted(hits))}")
+        ok = bool(out) and not bad
+        return ok, (f"free space round each hand-turned grip, {FINGER_CLEAR:g} mm needed: " + "; ".join(out)
+                    + (f"; inside the {FINGER_CLEAR:g} mm ring: " + "; ".join(bad) if bad else ""))
+    if CH("topdown-camera"):
+        d.requirements.append(Requirement(f"v12.1: the top-down camera sees the whole sheet and the {CAL_TARGET:g} mm calibration target, nothing in "
+                                          f"the way, with the gantry parked at the front and the bed at Z {PHOTO_Z:g} (the overview camera reported)",
+                                          camera_views))
+    if CH("bed-thumb-reach"):
+        d.requirements.append(Requirement(f"v12.1: every part turned by hand (the bed's thumb nuts) has at least {FINGER_CLEAR:g} mm of free "
+                                          "space all round its grip for the fingers", finger_reach))
+
     def heater_cover(dd):
         hb = dd.get("bed_heater").shape.bounding_box()
         x0, x1, y0, y1 = BED_CX - PRINT_X / 2, BED_CX + PRINT_X / 2, BED_CY - PRINT_Y / 2, BED_CY + PRINT_Y / 2
@@ -3030,6 +3326,48 @@ def add_requirements(d, zs):
                     f"{est['free_air_cfm']:g} CFM and shut-off {est['shutoff_pa']:.0f} Pa from the listing, the curve's shape between them assumed) and a duct loss of K = {est['k_total']:g} (handbook figures)")
     d.requirements.append(Requirement("v11: part cooling: the radial blower's jet lands just under the nozzle tip; the duct is >= 2.5 mm above the tip and "
                                       ">= 4.5 mm from the heater block (flow reported as an estimate)", cooling))
+
+    def duct_fan(dd):
+        # v12.1: the blower's real outlet opens into the duct's passage, square to it, and its inlet has free air
+        fan, duct = dd.get("part_fan"), dd.get("part_duct").shape
+        it, M = fan.meta["interfaces"], np.array(fan.meta["placement"], float)
+        w = lambda q: M[:, :3] @ np.asarray(q, float) + M[:, 3]
+        st = blower_bfb0524hh_v2().interfaces
+        ox0, ox1, oy0, oy1 = st["outlet_inside"]
+        zf = st["outlet_face_z"]
+        down = M[:, :3] @ np.array(st["outlet_direction"])
+        pts = [w((x, y, zf)) + down * 1.0 for x in np.linspace(ox0 + 0.6, ox1 - 0.6, 6) for y in np.linspace(oy0 + 0.6, oy1 - 0.6, 5)]
+        from build123d import Vector as _V
+        blocked = sum(1 for q in pts if duct.is_inside(_V(*q)))
+        # each point enclosed: a probe 25 mm long sideways from it meets the duct's wall in all four directions (the mouth surrounds the outlet)
+        ex, ey = M[:, :3] @ np.array([1.0, 0, 0]), M[:, :3] @ np.array([0, 1.0, 0])
+        def walled(q):
+            return all(any(duct.is_inside(_V(*(q + s_ * t * e))) for t in np.linspace(0.4, 25.0, 62)) for e in (ex, ey) for s_ in (-1, 1))
+        enclosed = sum(1 for q in pts if walled(q))
+        ok_dir = float(down @ np.array([0, 0, -1.0])) > 0.99
+        # inlet: a disc of the inlet's diameter, 8 mm deep in front of it, meets no part
+        from build123d import Cylinder as _Cyl
+        ic, idir = w(st["inlet_centre"][0]), M[:, :3] @ np.array(st["inlet_direction"])
+        disc = Location(Plane(origin=tuple(ic + idir * 4.05), z_dir=tuple(idir))) * _Cyl(st["inlet_dia"] / 2, 8.0)
+        db = disc.bounding_box()
+        hit = []
+        for c in dd.components:
+            if c.name == "part_fan" or c.body != "xbody":
+                continue
+            cb = c.shape.bounding_box()
+            if cb.max.X < db.min.X or cb.min.X > db.max.X or cb.max.Y < db.min.Y or cb.min.Y > db.max.Y or cb.max.Z < db.min.Z or cb.min.Z > db.max.Z:
+                continue
+            if (c.shape & disc).volume > 1e-3:
+                hit.append(c.name)
+        facing = "back (+Y)" if idir[1] > 0.9 else "front (-Y)" if idir[1] < -0.9 else str(np.round(idir, 2))
+        ok = blocked == 0 and enclosed == len(pts) and ok_dir and not hit
+        return ok, (f"blower outlet ({ox1 - ox0:.1f} x {oy1 - oy0:.1f} mm inside, Delta's drawing / STEP) pointing "
+                    f"{'down' if ok_dir else np.round(down, 2)}: {len(pts) - blocked} of {len(pts)} points 1 mm past its face are in the duct's open "
+                    f"passage, {enclosed} of {len(pts)} walled in by the duct's mouth on all four sides; inlet (dia {st['inlet_dia']:g}) faces {facing}: "
+                    + ("nothing within 8 mm in front of it" if not hit else f"blocked by {', '.join(hit)}"))
+    if CH("part-cooling-rebuild"):
+        d.requirements.append(Requirement("v12.1: the blower's outlet opens straight into the duct (mouth on the real outlet) and its inlet has free air",
+                                          duct_fan))
 
     def bent(dd):
         b = sorted(c.name for c in dd.components if not c.cots and c.material == "al5052")
@@ -3481,6 +3819,41 @@ def ptfe_curve(p0, p3, rise=10.0, n=80):
     return pts, float(length), float(r)
 
 
+def cam_topdown_wide_mount_local():
+    """v12.1 topdown-camera: the printed bracket for the Camera Module 3 Wide, built in its own frame: origin on the top back rail's
+    rear face at the rail's centre height, x along the rail, y backwards (away from the rail), z up. Spec:
+    - function: hold the SC1224 with its lens axis CAM_TD_TILT below level, looking forward over the rail at the bed, every part of it
+      behind y 170 (the toolhead reaches y 166.4 at the rear over-travel) and below z 480;
+    - mates: the rail's rear face (two M3 x 10 into T-nuts in the rear slot, 16 mm either side, as v12's bracket); the camera's two
+      lower holes (dia 2.2 on 21) by M2 x 20 through a 14 mm seat block, nut and washer on the board's front;
+    - loads: the camera's 4 g; process: printed PETG (Hubs), lying on its flat back face (y 21): the seat's back leans 35 degrees
+      from vertical as printed, no supports; the rail screws' heads in counterbores from that face;
+    - envelope: x +/-22, y 0 to 21, z -9 to 77; the board, lens and connector kept out of it.
+    Returns (shape, seat frame (origin, x, v, n) in the local frame)."""
+    a = math.radians(CAM_TD_TILT)
+    n = np.array([0.0, -math.cos(a), -math.sin(a)])          # lens axis (forward and down)
+    v = np.array([0.0, -math.sin(a), math.cos(a)])           # the board's +Y (towards its lens / connector edge)
+    B = np.array([0.0, CAM_TD_B[0], CAM_TD_B[1]])
+    seat_plane = lambda: Plane(origin=tuple(B), x_dir=(1, 0, 0), z_dir=tuple(n))
+    h = 23.862
+    base = bx(-22.0, 22.0, 0.0, 21.0, -9.0, 9.0)        # full depth: the part prints lying on its back face (y 21), flat
+    col = bx(-12.5, 12.5, 6.0, 21.0, -9.0, CAM_TD_B[1] + 12.0)
+    col &= bx(-30.0, 30.0, -10.0, 30.0, -20.0, 40.0) + Location(seat_plane()) * (Pos(0, 0, 36.0) * Box(60.0, 120.0, 100.0))   # its top in the seat's back plane
+    # the seat block: 27 wide, from the board's bottom edge - 1 to below the connector (which stands 5.71 down from the top edge)
+    v0, v1 = -h / 2 - 1.0, h / 2 - 5.71 - 0.6
+    seat = Location(seat_plane()) * (Pos(0, (v0 + v1) / 2, -7.0) * Box(27.0, v1 - v0, 14.0))
+    shape = base + col + seat
+    keep = Location(seat_plane()) * (Pos(0, 0, 8.0) * Box(27.5, h + 3.0, 16.0))          # board, lens, nuts: nothing in front
+    keep += Location(seat_plane()) * (Pos(0, h / 2 - 5.71 / 2, -2.0) * Box(21.0, 6.5, 4.0))   # the connector behind the board
+    shape -= keep
+    for xh in (-10.5, 10.5):
+        shape -= Location(seat_plane()) * (Pos(xh, -h / 2 + 2.0, -10.0) * Cylinder(2.4 / 2, 20.0))
+    for xh in (-16.0, 16.0):           # the rail screws: 6 mm of plate under the head, a counterbore behind it for the head and driver
+        shape -= Pos(xh, 3.0, 0.0) * ycyl(PH3 / 2, 6.0)
+        shape -= Pos(xh, 13.5, 0.0) * ycyl(8.0 / 2, 15.0)
+    return shape, (B, np.array([1.0, 0, 0]), v, n)
+
+
 def add_feedback_hardware(d):
     """Overview and top-down Pi Camera Module 3s on printed brackets on the top front / back rails, the BTT SFS V2 on the top back rail's rear face,
     the overview COB strip in two printed clips on the top front rail. The nozzle camera, its lens, the line laser, the two nozzle LED
@@ -3510,7 +3883,7 @@ def add_feedback_hardware(d):
     # top-down camera and filament sensor: printed brackets on the top back rail's REAR face (y 180), behind the toolhead's reach at the
     # rear end of Y (the blower passes over the rail's top there); each by two M3 x 10 into T-nuts in the rail's rear slot
     yb = FY / 2                                          # the rail's rear face
-    for nm, xb in (("cam_topdown", -60.0), ("sfs", 40.0)):     # sfs: 40, clear of the rear lead screw (x 0)
+    for nm, xb in ((("cam_topdown", -60.0),) if not CH("topdown-camera") else ()) + (("sfs", 40.0),):     # sfs: 40, clear of the rear lead screw (x 0)
         br = bx(xb - 22.0, xb + 22.0, yb, yb + 6.0, FZ - 9.0, FZ + 9.0)
         sxh = 18.5 if nm == "sfs" else 16.0          # sfs: heads clear of the vertical sensor (16 closed in 1 % of builds)
         br -= Pos(xb - sxh, yb + 3.0, FZ) * ycyl(PH3 / 2, 6.0) + Pos(xb + sxh, yb + 3.0, FZ) * ycyl(PH3 / 2, 6.0)
@@ -3525,10 +3898,30 @@ def add_feedback_hardware(d):
             add_screw(d, f"{nm}_mount_screw_{i}", "M3", 10, at=(xb + xh, yb + 6.0, FZ), direction=(0, -1, 0), threads_into="frame_top_back", tnut=True,
                       washer=True, clamps=(f"{nm}_mount",))
     yc = yb + 14.0
-    place(d, "cam_topdown", picam3(), Location(Plane(origin=(-60.0, yc, FZ + 30.0 + 9.931), x_dir=(1, 0, 0), z_dir=(0, -1, 0))))
-    for i, xh in enumerate((-10.5, 10.5)):
+    if not CH("topdown-camera"):
+      place(d, "cam_topdown", picam3(), Location(Plane(origin=(-60.0, yc, FZ + 30.0 + 9.931), x_dir=(1, 0, 0), z_dir=(0, -1, 0))))
+      for i, xh in enumerate((-10.5, 10.5)):
         bolt_nut(d, f"cam_topdown_screw_{i}", "M2", 20, (-60.0 + xh, yb + 20.0, FZ + 30.0), (0, -1, 0), "world", ("cam_topdown_mount", "cam_topdown"),
                  nut_at=(-60.0 + xh, yc - 1.0, FZ + 30.0))
+    else:
+        # v12.1 topdown-camera: the Camera Module 3 Wide on its own bracket (cam_topdown_wide_mount_local), moved to the rail's rear face
+        shp, (B, ex, ev, en) = cam_topdown_wide_mount_local()
+        o = np.array([CAM_TD_X, yb, FZ])
+        d.add("cam_topdown_mount", Pos(*o) * shp, material=COOL, process="printed",
+              meta={"print_up": "-Y", "print": {**PRINT_ABS, "orientation": "-Y", "infill": 0.4},
+                    "description": f"printed bracket on the top back rail's rear face holding the top-down camera (Camera Module 3 Wide) "
+                                   f"with its lens {CAM_TD_TILT:g} degrees below level, looking forward over the rail at the bed"})
+        for i, xh in enumerate((-16.0, 16.0)):
+            add_screw(d, f"cam_topdown_mount_screw_{i}", "M3", 10, at=(CAM_TD_X + xh, yb + 6.0, FZ), direction=(0, -1, 0), threads_into="frame_top_back",
+                      tnut=True, washer=True, clamps=("cam_topdown_mount",))
+        Bw = o + B
+        place(d, "cam_topdown", picam3_wide(), Location(Plane(origin=tuple(Bw), x_dir=(1, 0, 0), z_dir=tuple(en))))
+        for i, xh in enumerate((-10.5, 10.5)):
+            hp = Bw + xh * ex + (-23.862 / 2 + 2.0) * ev
+            bolt_nut(d, f"cam_topdown_screw_{i}", "M2", 20, tuple(hp - 14.0 * en), tuple(en), "world", ("cam_topdown_mount", "cam_topdown"),
+                     nut_at=tuple(hp + 1.12 * en))
+        d.get("cam_topdown").meta["description"] = ("Raspberry Pi Camera Module 3 Wide (SC1224), the top-down camera: on its printed bracket behind "
+                                                    f"the top back rail, lens {CAM_TD_TILT:g} degrees below level; photos with the gantry parked at the front")
     place(d, "filament_sensor", sfs_v2(), Location((40.0, yb + 10.0 + 30.3 / 2, FZ - 9.0 + 53.15 / 2), (0, 90, 0)))     # v12: filament axis vertical: in from the spool below, out at the top towards the toolhead
     d.join("filament_sensor", "sfs_mount", "two cable ties round the sensor and the bracket's plate (its own holes face the spool)")
     # overview COB strip in two printed clips on the top front rail's inner face: the clip's plate on the face (screw at the slot), the
